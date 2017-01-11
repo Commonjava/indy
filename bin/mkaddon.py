@@ -12,7 +12,6 @@ TEMPLATE_DIR='addons/template'
 DEP_INSERTION='DO NOT REMOVE: append::depMgmt'
 ADDON_INSERTION='DO NOT REMOVE: append::addon'
 
-MODULE_INCLUSION = "<module>indy-%(addon)s-%(module)s</module>"
 DEP="""
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -65,7 +64,7 @@ addonPom = os.path.join(addonPath, 'pom.xml')
 with open(addonPom) as f:
 	pomTemplate= f.read()
 
-modulesSection="\n    ".join([MODULE_INCLUSION % {'addon': args.short_name, 'module': m} for m in args.modules])
+modulesSection="\n    ".join(["<module>%s</module>" % m for m in args.modules])
 
 print "Writing add-on POM"
 with open(addonPom, 'w') as f:
