@@ -85,7 +85,7 @@ deps = [DEP % {'short_name': args.short_name, 'module': m, 'version': version, '
 if 'common' in args.modules:
 	deps.append(DEP % {'short_name': args.short_name, 'module': 'common', 'version': version, 'extra': "\n        ".join(["", "<classifier>confset</classifier>", "<type>tar.gz</type>"])})
 
-println "Adding module dependencies to dependencyManagement in root POM"
+print "Adding module dependencies to dependencyManagement in root POM"
 with open(rootPom,'w') as f:
 	for line in rootPomLines:
 		if DEP_INSERTION in line:
@@ -98,7 +98,7 @@ allAddonsPom = os.path.join(BASE, ADDONS_DIR, 'pom.xml')
 with open(allAddonsPom) as f:
 	allAddonsLines= f.readlines()
 
-println "Adding new add-on to add-ons parent POM"
+print "Adding new add-on to add-ons parent POM"
 with open(allAddonsPom, 'w') as f:
 	for line in allAddonsLines:
 		if ADDON_INSERTION in line:
