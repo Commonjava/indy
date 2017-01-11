@@ -670,6 +670,10 @@
         <scope>test</scope>
       </dependency>
 
+
+      <!-- DO NOT REMOVE: append::depMgmt -->
+
+
       <dependency>
         <groupId>org.commonjava.cdi.util</groupId>
         <artifactId>weft</artifactId>
