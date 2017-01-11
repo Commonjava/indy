@@ -79,6 +79,11 @@
     <it-forkCount>3</it-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
     <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
+    <testTimeout>120</testTimeout>
+
+    <disableLauncher>false</disableLauncher>
+
+    <skipTests>false</skipTests>
 
     <skipSurefire>${skipTests}</skipSurefire>
     <skipITs>true</skipITs>
