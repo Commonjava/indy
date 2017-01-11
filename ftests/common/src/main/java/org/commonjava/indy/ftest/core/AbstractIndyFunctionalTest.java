@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.boot.BootStatus;
 import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.client.core.Indy;
+import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
@@ -107,8 +108,14 @@ public abstract class AbstractIndyFunctionalTest
             throw new IllegalStateException( "server fixture failed to boot.", status.getError() );
         }
 
-        client = new Indy( fixture.getUrl(), new IndyObjectMapper( getAdditionalMapperModules() ),
-                            getAdditionalClientModules() ).connect();
+        client = createIndyClient();
+    }
+
+    protected Indy createIndyClient()
+            throws IndyClientException
+    {
+        return new Indy( fixture.getUrl(), new IndyObjectMapper( getAdditionalMapperModules() ),
+                           getAdditionalClientModules() );
     }
 
     protected float getTestEnvironmentTimeoutMultiplier()

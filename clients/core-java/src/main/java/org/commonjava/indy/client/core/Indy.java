@@ -129,9 +129,12 @@ public class Indy
         setup( module );
     }
 
+    /**
+     * Not used since migration to jHTTPc library
+     */
+    @Deprecated
     public Indy connect()
     {
-        http.connect();
         return this;
     }
 
