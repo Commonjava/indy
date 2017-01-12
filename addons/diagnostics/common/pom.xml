@@ -68,7 +68,7 @@
     </dependency>
   </dependencies>
 
-  <build>
+<!--   <build>
     <plugins>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -82,7 +82,6 @@
             <configuration>
               <descriptorRefs>
                 <descriptorRef>confset</descriptorRef>
-                <!-- <descriptorRef>dataset</descriptorRef> -->
               </descriptorRefs>
             </configuration>
           </execution>
@@ -90,5 +89,5 @@
       </plugin>
     </plugins>
   </build>
-
+ -->
 </project>
