@@ -12,13 +12,11 @@ TEMPLATE_DIR='addons/template'
 DEP_INSERTION='DO NOT REMOVE: append::depMgmt'
 ADDON_INSERTION='DO NOT REMOVE: append::addon'
 
-DEP="""
-      <dependency>
+DEP="""<dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-%(short_name)s-%(module)s</artifactId>
+        <artifactId>indy-%(dep_name)s</artifactId>
         <version>%(version)s</version>%(extra)s
-      </dependency>
-"""
+      </dependency>"""
 
 DEFAULT_MODULES=['common', 'client-api', 'model-java', 'jaxrs', 'ftests']
 
@@ -80,9 +78,18 @@ for line in rootPomLines:
 		version = match.group(1)
 		break
 
-deps = [DEP % {'short_name': args.short_name, 'module': m, 'version': version, 'extra': ("\n      <scope>test</scope>" if m == 'ftests' else "")} for m in args.modules]
+deps = [DEP % {
+			'dep_name': ("ftests-%s" % args.short_name if m == 'ftests' else "%s-%s" % (args.short_name, m)), 
+			'version': version, 
+			'extra': ("\n      <scope>test</scope>" if m == 'ftests' else "")
+		} for m in args.modules]
+
 if 'common' in args.modules:
-	deps.append(DEP % {'short_name': args.short_name, 'module': 'common', 'version': version, 'extra': "\n        ".join(["", "<classifier>confset</classifier>", "<type>tar.gz</type>"])})
+	deps.append(DEP % {
+			'dep_name': "%s-common" % args.short_name, 
+			'version': version, 
+			'extra': "\n        ".join(["", "<classifier>confset</classifier>", "<type>tar.gz</type>"])
+		})
 
 print "Adding module dependencies to dependencyManagement in root POM"
 with open(rootPom,'w') as f:
