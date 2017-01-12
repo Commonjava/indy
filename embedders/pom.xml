@@ -88,6 +88,14 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-diagnostics-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-diagnostics-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-content-index</artifactId>
     </dependency>
     <dependency>
@@ -165,6 +173,11 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-httprox</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-diagnostics</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -248,6 +261,7 @@
               <dependency>org.commonjava.indy:indy-ftests-core</dependency>
               <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
               <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
             </dependenciesToScan>
           </configuration>
           <executions>
