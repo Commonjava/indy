@@ -40,6 +40,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-diagnostics</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -62,7 +66,8 @@
           <configuration>
             <dependenciesToScan>
               <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-            </dependenciesToScan> 
+              <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
+            </dependenciesToScan>
           </configuration>
           <executions>
             <execution>

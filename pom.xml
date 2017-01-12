@@ -675,6 +675,35 @@
         <scope>test</scope>
       </dependency>
 
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-jaxrs</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-client-java</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-common</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-diagnostics</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-common</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+        <classifier>confset</classifier>
+        <type>tar.gz</type>
+      </dependency>
+
 
       <!-- DO NOT REMOVE: append::depMgmt -->
 
