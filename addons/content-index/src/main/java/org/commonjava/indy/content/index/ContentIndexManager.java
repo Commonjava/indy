@@ -20,6 +20,7 @@ import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -321,6 +323,11 @@ public class ContentIndexManager
         } );
     }
 
+    /**
+     * <b>NOT Recursive</b>. This assumes you've recursed the group membership structure beforehand, using
+     * {@link StoreDataManager#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
+     * the path should be cleared.
+     */
     public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
         if ( groups == null || groups.isEmpty() )
@@ -328,24 +335,9 @@ public class ContentIndexManager
             return;
         }
 
-        Set<Group> nextGroups = new HashSet<>();
         groups.forEach( (group)->{
             removeIndexedStorePath( path, group.getKey(), pathConsumer );
-            try
-            {
-                nextGroups.addAll( storeDataManager.getGroupsContaining( group.getKey() ) );
-            }
-            catch ( IndyDataException e )
-            {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", group.getKey(), e.getMessage() ),
-                              e );
-            }
         } );
-
-        nextGroups.removeAll( groups );
-
-        clearIndexedPathFrom( path, nextGroups, pathConsumer );
     }
 
 }
