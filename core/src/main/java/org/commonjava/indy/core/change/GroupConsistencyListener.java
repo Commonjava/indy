@@ -15,13 +15,7 @@
  */
 package org.commonjava.indy.core.change;
 
-import java.util.Set;
-
-import javax.enterprise.event.Observes;
-import javax.inject.Inject;
-
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -33,6 +27,10 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+import java.util.Set;
+
 @javax.enterprise.context.ApplicationScoped
 public class GroupConsistencyListener
 {
@@ -43,8 +41,6 @@ public class GroupConsistencyListener
 
     @Inject
     private StoreDataManager proxyDataManager;
-
-    private final ChangeSynchronizer changeSync = new ChangeSynchronizer();
 
     private void processChanged( final ArtifactStore store )
     {
@@ -65,8 +61,6 @@ public class GroupConsistencyListener
                                                      new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                               GROUP_CONSISTENCY_ORIGIN ) );
             }
-
-            changeSync.setChanged();
         }
         catch ( final IndyDataException e )
         {
@@ -75,23 +69,6 @@ public class GroupConsistencyListener
         }
     }
 
-    // public void storeDeleted( @Observes final CouchChangeJ2EEEvent event )
-    // {
-    // final CouchDocChange change = event.getChange();
-    // final String id = change.getId();
-    //
-    // final boolean canProcess =
-    // change.isDeleted()
-    // && ( id.startsWith( StoreType.repository.name() ) || id.startsWith( StoreType.deploy_point.name() ) ||
-    // id.startsWith( StoreType.group.name() ) );
-    //
-    // if ( canProcess )
-    // {
-    // final StoreKey key = StoreKey.fromString( id );
-    // processChanged( key );
-    // }
-    // }
-
     public void storeDeleted( @Observes final ArtifactStoreDeletePreEvent event )
     {
         //        logger.info( "Processing proxy-manager store deletion: {}", event );
@@ -99,11 +76,6 @@ public class GroupConsistencyListener
         {
             processChanged( store );
         }
-    }
-
-    public void waitForChange( final long total, final long poll )
-    {
-        changeSync.waitForChange( 1, total, poll );
     }
 
 }

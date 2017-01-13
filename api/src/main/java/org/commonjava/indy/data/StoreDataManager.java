@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.data;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -240,4 +241,13 @@ public interface StoreDataManager
      */
     boolean isStarted();
 
+    /**
+     * Return the set of {@link Group}s that contain the given {@link StoreKey}s either directly or indirectly.
+     */
+    Set<Group> getGroupsAffectedBy( StoreKey... keys );
+
+    /**
+     * Return the set of {@link Group}s that contain the given {@link StoreKey}s either directly or indirectly.
+     */
+    Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys );
 }

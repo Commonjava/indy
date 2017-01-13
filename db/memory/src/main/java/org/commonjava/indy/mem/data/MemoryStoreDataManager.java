@@ -38,6 +38,7 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -413,6 +414,52 @@ public class MemoryStoreDataManager
     public boolean isStarted()
     {
         return true;
+    }
+
+    @Override
+    public Set<Group> getGroupsAffectedBy( StoreKey... keys )
+    {
+        return getGroupsAffectedBy( Arrays.asList( keys ) );
+    }
+
+    @Override
+    public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Getting groups affected by: {}", keys );
+
+        Set<ArtifactStore> all = new HashSet<>( stores.values() );
+
+        List<StoreKey> toProcess = new ArrayList<>();
+        toProcess.addAll( keys.parallelStream().collect( Collectors.toSet()) );
+
+        Set<StoreKey> processed = new HashSet<>();
+
+        Set<Group> groups = new HashSet<>();
+
+        while ( !toProcess.isEmpty() )
+        {
+            StoreKey next = toProcess.remove( 0 );
+            if ( processed.contains( next ) )
+            {
+                continue;
+            }
+
+            for ( ArtifactStore store : all )
+            {
+                if ( !processed.contains( store.getKey() ) && ( store instanceof Group ) )
+                {
+                    Group g = (Group) store;
+                    if ( g.getConstituents() != null && g.getConstituents().contains( next ) )
+                    {
+                        groups.add( g );
+                        toProcess.add( g.getKey() );
+                    }
+                }
+            }
+        }
+
+        return groups;
     }
 
     private boolean store( final ArtifactStore store, final ChangeSummary summary,

@@ -159,7 +159,9 @@ public class DefaultStoreEventDispatcher
     @Override
     public void enabled( EventMetadata eventMetadata, ArtifactStore... stores )
     {
-        fireEnablement( false, eventMetadata, false, stores );
+        executor.execute( ()->{
+            fireEnablement( false, eventMetadata, false, stores );
+        } );
     }
 
     @Override
@@ -171,7 +173,9 @@ public class DefaultStoreEventDispatcher
     @Override
     public void disabled( EventMetadata eventMetadata, ArtifactStore... stores )
     {
-        fireEnablement( false, eventMetadata, true, stores );
+        executor.execute( ()->{
+            fireEnablement( false, eventMetadata, true, stores );
+        } );
     }
 
     private void fireEnablement( boolean preprocess, EventMetadata eventMetadata, boolean disabling,

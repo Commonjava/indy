@@ -26,6 +26,8 @@ import org.commonjava.maven.galley.event.EventMetadata;
  * gives more information about the nature of the update.
  * <br/>
  * This event is fired <b>AFTER</b> the updated {@link ArtifactStore} is actually persisted.
+ * <br/>
+ * As opposed to the {@link ArtifactStorePostUpdateEvent}, this one MAY run asynchronously to avoid performance penalties for the user..
  */
 public class ArtifactStorePostUpdateEvent
     extends ArtifactStoreUpdateEvent
