@@ -79,6 +79,11 @@
     <it-forkCount>3</it-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
     <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
+    <testTimeout>120</testTimeout>
+
+    <disableLauncher>false</disableLauncher>
+
+    <skipTests>false</skipTests>
 
     <skipSurefire>${skipTests}</skipSurefire>
     <skipITs>true</skipITs>
@@ -669,6 +674,39 @@
         <version>1.1.1-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-jaxrs</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-client-java</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-common</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-diagnostics</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+      <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-common</artifactId>
+        <version>1.1.1-SNAPSHOT</version>
+        <classifier>confset</classifier>
+        <type>tar.gz</type>
+      </dependency>
+
+
+      <!-- DO NOT REMOVE: append::depMgmt -->
+
 
       <dependency>
         <groupId>org.commonjava.cdi.util</groupId>
