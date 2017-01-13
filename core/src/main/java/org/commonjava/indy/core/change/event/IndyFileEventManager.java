@@ -18,6 +18,8 @@ package org.commonjava.indy.core.change.event;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
+import org.commonjava.indy.content.ContentManager;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileErrorEvent;
@@ -69,36 +71,55 @@ public class IndyFileEventManager
     @Override
     public void fire( final FileNotFoundEvent evt )
     {
-        doFire( notFoundEvent, evt );
+        if ( fireEvent( evt.getEventMetadata() ) ){
+            doFire( notFoundEvent, evt );
+        }
     }
 
     @Override
     public void fire( final FileStorageEvent evt )
     {
-        doFire( storageEvent, evt );
+        if ( fireEvent( evt.getEventMetadata() ) )
+        {
+            doFire( storageEvent, evt );
+        }
     }
 
     @Override
     public void fire( final FileAccessEvent evt )
     {
-        doFire( accessEvent, evt );
+        if ( fireEvent( evt.getEventMetadata() ) )
+        {
+            doFire( accessEvent, evt );
+        }
     }
 
     @Override
     public void fire( final FileDeletionEvent evt )
     {
-        doFire( deleteEvent, evt );
+        if ( fireEvent( evt.getEventMetadata() ) )
+        {
+            doFire( deleteEvent, evt );
+        }
     }
 
     @Override
     public void fire( final FileErrorEvent evt )
     {
-        doFire( errorEvent, evt );
+        if ( fireEvent( evt.getEventMetadata() ) )
+        {
+            doFire( errorEvent, evt );
+        }
     }
 
     public void fire( final IndyStoreErrorEvent evt )
     {
         doFire( storeErrorEvent, evt );
+    }
+
+    private boolean fireEvent( EventMetadata eventMetadata )
+    {
+        return ( eventMetadata == null || !Boolean.TRUE.equals( eventMetadata.get( ContentManager.SUPPRESS_EVENTS ) ) );
     }
 
     private <T> void doFire( final Event<T> eventQ, final T evt )

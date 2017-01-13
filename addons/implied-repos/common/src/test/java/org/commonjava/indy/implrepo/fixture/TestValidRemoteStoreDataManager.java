@@ -29,6 +29,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -205,5 +206,17 @@ public class TestValidRemoteStoreDataManager
     public boolean isStarted()
     {
         return delegate.isStarted();
+    }
+
+    @Override
+    public Set<Group> getGroupsAffectedBy( StoreKey... keys )
+    {
+        return delegate.getGroupsAffectedBy( keys );
+    }
+
+    @Override
+    public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
+    {
+        return delegate.getGroupsAffectedBy( keys );
     }
 }

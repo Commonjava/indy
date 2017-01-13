@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.autoprox.fixture;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -222,6 +223,18 @@ public class TestAutoProxyDataManager
     public boolean isStarted()
     {
         return delegate.isStarted();
+    }
+
+    @Override
+    public Set<Group> getGroupsAffectedBy( StoreKey... keys )
+    {
+        return delegate.getGroupsAffectedBy( keys );
+    }
+
+    @Override
+    public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
+    {
+        return delegate.getGroupsAffectedBy( keys );
     }
 
 }
