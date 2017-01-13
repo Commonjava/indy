@@ -39,6 +39,8 @@ public interface ContentManager
 
     String ENTRY_POINT_STORE = "entry-point-store";
 
+    String SUPPRESS_EVENTS = "suppress-events";
+
     /**
      * Retrieve the content at the given path from the first store possible, then return then return the transfer that references the content without 
      * iterating any farther.

@@ -15,21 +15,19 @@
  */
 package org.commonjava.indy.core.change;
 
-import java.io.IOException;
-import java.util.Map;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-
-import org.commonjava.indy.change.event.AbstractStoreDeleteEvent;
-import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
+import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Observes;
+import java.io.IOException;
+import java.util.Map;
+
 /**
- * Listens for {@link ArtifactStoreDeletePreEvent} and remove associated cached/stored artifacts. This is a best effort...if deleting a hosted repo
+ * Listens for {@link ArtifactStoreDeletePostEvent} and remove associated cached/stored artifacts. This is a best effort...if deleting a hosted repo
  * that uses a read-only storage location, delete may fail with only an error entry in the logs.
  * 
  * @author jdcasey
@@ -40,7 +38,7 @@ public class StorageDeletionListener
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public void clearStorage( @Observes final AbstractStoreDeleteEvent event )
+    public void clearStorage( @Observes final ArtifactStoreDeletePostEvent event )
     {
         for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots()
                                                                         .entrySet() )
@@ -54,6 +52,7 @@ public class StorageDeletionListener
 
     private void recurseAndDelete( final Transfer txfr )
     {
+        String dir = txfr.getFullPath();
         try
         {
             final String[] list = txfr.list();

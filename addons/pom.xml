@@ -42,5 +42,7 @@
     <module>revisions</module>
     <module>setback</module>
     <module>pkg-maven</module>
+    <module>diagnostics</module>
+    <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>
