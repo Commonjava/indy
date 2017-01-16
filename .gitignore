@@ -27,4 +27,5 @@ embedders/savant/indexedStorePath/*
 embedder-tests/savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
 embedder-tests/savant/org.commonjava.indy.folo.model.TrackingKey/*
 embedder-tests/savant/indexedStorePath/*
+**/indexedStorePath/*
 
