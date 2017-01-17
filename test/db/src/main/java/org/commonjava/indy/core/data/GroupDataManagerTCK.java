@@ -21,9 +21,12 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.StoreDataManager;
@@ -241,6 +244,44 @@ public abstract class GroupDataManagerTCK
 
         g = result.get( 1 );
         assertThat( g.getName(), equalTo( grp2.getName() ) );
+    }
+
+    @Test
+    public void createTwoGroupsAndAffectedByForOneLevel() throws Exception{
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
+        final StoreKey central = new StoreKey( StoreType.remote, "central" );
+        final StoreKey repo2 = new StoreKey( StoreType.remote, "repo2" );
+        Group g1 = new Group( "g1", central );
+        Group g2 = new Group( "g2", repo2 );
+
+        store( g1, g2 );
+
+        List<StoreKey> keys = Arrays.asList( central, repo2 );
+
+        Set<StoreKey> gKeys =
+                manager.getGroupsAffectedBy( keys ).stream().map( Group::getKey ).collect( Collectors.toSet() );
+
+        assertThat( gKeys.contains( g1.getKey() ), equalTo( Boolean.TRUE ) );
+        assertThat( gKeys.contains( g2.getKey() ), equalTo( Boolean.TRUE ) );
+    }
+
+    @Test
+    public void createTwoGroupsAndAffectedByForTwoLevel() throws Exception{
+        final StoreDataManager manager = getFixtureProvider().getDataManager();
+        final StoreKey central = new StoreKey( StoreType.remote, "central" );
+        Group g1 = new Group( "g1", central );
+        Group g2 = new Group( "g2", g1.getKey() );
+
+        store(g1, g2);
+
+        List<StoreKey> keys = Collections.singletonList( central );
+
+        Set<StoreKey> gKeys =
+                manager.getGroupsAffectedBy( keys ).stream().map( Group::getKey ).collect( Collectors.toSet() );
+
+        assertThat( gKeys.contains( g1.getKey() ), equalTo( Boolean.TRUE ) );
+        //FIXME: should this group:g2 be in result?
+        assertThat( gKeys.contains( g2.getKey() ), equalTo( Boolean.TRUE )  );
     }
 
 }
