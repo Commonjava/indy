@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -289,7 +288,7 @@ public class MemoryStoreDataManager
 
     @Override
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
-                                                  final EventMetadata eventMetadata )
+                                     final EventMetadata eventMetadata )
             throws IndyDataException
     {
         ReentrantLock opLock = getOpLock( key );
@@ -431,7 +430,7 @@ public class MemoryStoreDataManager
         Set<ArtifactStore> all = new HashSet<>( stores.values() );
 
         List<StoreKey> toProcess = new ArrayList<>();
-        toProcess.addAll( keys.parallelStream().collect( Collectors.toSet()) );
+        toProcess.addAll( keys.parallelStream().collect( Collectors.toSet() ) );
 
         Set<StoreKey> processed = new HashSet<>();
 
@@ -439,11 +438,16 @@ public class MemoryStoreDataManager
 
         while ( !toProcess.isEmpty() )
         {
+            // as long as we have another key to process, pop it off the list (remove it) and process it.
             StoreKey next = toProcess.remove( 0 );
             if ( processed.contains( next ) )
             {
+                // if we've already handled this group (via another branch in the group membership tree, etc. then don't bother.
                 continue;
             }
+
+            // use this to avoid reprocessing groups we've already encountered.
+            processed.add( next );
 
             for ( ArtifactStore store : all )
             {
@@ -453,6 +457,8 @@ public class MemoryStoreDataManager
                     if ( g.getConstituents() != null && g.getConstituents().contains( next ) )
                     {
                         groups.add( g );
+
+                        // add this group as another one to process for groups that contain it...and recurse upwards
                         toProcess.add( g.getKey() );
                     }
                 }
@@ -462,9 +468,8 @@ public class MemoryStoreDataManager
         return groups;
     }
 
-    private boolean store( final ArtifactStore store, final ChangeSummary summary,
-                           final boolean skipIfExists, final boolean fireEvents,
-                           final EventMetadata eventMetadata )
+    private boolean store( final ArtifactStore store, final ChangeSummary summary, final boolean skipIfExists,
+                           final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
         ReentrantLock opLock = getOpLock( store.getKey() );
