@@ -146,11 +146,11 @@ public class RecursiveGroupMetadataFoundAfterMemberAddTest
     {
         try(InputStream stream = client.content().get( store.getKey(), path ))
         {
-            assertThat( stream, notNullValue() );
+            assertThat( "Stream for " + store.getKey() + ":" + path + " was missing!", stream, notNullValue() );
 
             String downloaded = IOUtils.toString( stream );
 
-            logger.debug( "Comparing downloaded XML:\n\n{}\n\nTo expected XML:\n\n{}\n\n", downloaded, expectedXml );
+            logger.debug( "{}:{}: Comparing downloaded XML:\n\n{}\n\nTo expected XML:\n\n{}\n\n", store.getKey(), path, downloaded, expectedXml );
 
             XMLUnit.setIgnoreWhitespace( true );
             XMLUnit.setIgnoreDiffBetweenTextAndCDATA( true );
@@ -172,7 +172,7 @@ public class RecursiveGroupMetadataFoundAfterMemberAddTest
     {
         try(InputStream stream = client.content().get( store.getKey(), path ))
         {
-            assertThat( stream, nullValue() );
+            assertThat( "Stream for " + store.getKey() + ":" + path + " was NOT missing!", stream, nullValue() );
         }
     }
 
