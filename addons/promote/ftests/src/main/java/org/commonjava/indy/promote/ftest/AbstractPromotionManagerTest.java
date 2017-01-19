@@ -38,6 +38,8 @@ public class AbstractPromotionManagerTest
 
     protected ArtifactStore target;
 
+    protected final IndyPromoteClientModule promotions = new IndyPromoteClientModule();
+
     @Before
     public void setupRepos()
         throws Exception
@@ -75,6 +77,6 @@ public class AbstractPromotionManagerTest
     @Override
     protected Collection<IndyClientModule> getAdditionalClientModules()
     {
-        return Collections.singletonList( new IndyPromoteClientModule() );
+        return Collections.singletonList( promotions );
     }
 }

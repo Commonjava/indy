@@ -316,11 +316,13 @@ public class ContentIndexObserver
                 }
             }
 
+            logger.debug( "Got members affected by membership divergence: {}", affectedMembers );
             if ( !affectedMembers.isEmpty() )
             {
                 Set<Group> groups = storeDataManager.getGroupsAffectedBy( group.getKey() );
                 groups.add( group );
 
+                logger.debug( "Got affected groups: {}", groups );
                 Set<String> paths = new HashSet<>();
                 affectedMembers.forEach( ( memberKey ) -> paths.addAll(
                         indexManager.getAllIndexedPathsForStore( memberKey )
