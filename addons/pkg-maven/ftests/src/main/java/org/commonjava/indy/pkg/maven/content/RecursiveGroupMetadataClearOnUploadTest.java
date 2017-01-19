@@ -127,7 +127,7 @@ public class RecursiveGroupMetadataClearOnUploadTest
              targetMethod = "clearIndexedPathFrom",
              targetLocation = "ENTRY",
              binding = "tctx:org.commonjava.cdi.util.weft.ThreadContext = ThreadContext.getContext(true);"
-                     + "key:StoreKey = (StoreKey) tctx.get(\"ContentIndex:originKey\");"
+                     + "key:org.commonjava.indy.model.core.StoreKey = tctx.get(\"ContentIndex:originKey\");"
                      + "isFlagged:boolean = \"groupA\".equals(key.getName());",
              condition = "isFlagged", action = "System.out.println(\"Slowing down 4s\");" + "Thread.sleep(4000);" )
     @Test
