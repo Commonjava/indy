@@ -169,12 +169,12 @@ public class IndyContentClientModule
 
         if ( resources.getStatusCode() != 200 )
         {
+            IOUtils.closeQuietly( resources );
             if ( resources.getStatusCode() == 404 )
             {
                 return null;
             }
 
-            IOUtils.closeQuietly( resources );
             throw new IndyClientException( resources.getStatusCode(), "Response returned status: %s.",
                                             resources.getStatusLine() );
         }
@@ -187,6 +187,7 @@ public class IndyContentClientModule
         }
         catch ( final IOException e )
         {
+            IOUtils.closeQuietly( resources );
             throw new IndyClientException( "Failed to open response content stream: %s", e,
                                             e.getMessage() );
         }

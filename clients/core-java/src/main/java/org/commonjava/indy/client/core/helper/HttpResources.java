@@ -149,8 +149,11 @@ public class HttpResources
     public void close()
         throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Closing resources for: {}", request == null ? "UNKNOWN" : request.getRequestLine().getUri() );
         if ( responseEntityStream != null )
         {
+            logger.debug( "Closing response entity stream" );
             // do this quietly, since it's probable that the wrapper HttpResourcesManagingInputStream will have closed it implicitly before this is called.
             IOUtils.closeQuietly( responseEntityStream );
         }
