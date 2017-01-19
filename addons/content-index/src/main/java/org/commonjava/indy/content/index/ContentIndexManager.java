@@ -335,7 +335,11 @@ public class ContentIndexManager
             return;
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+//        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
+
         groups.forEach( (group)->{
+            logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
             removeIndexedStorePath( path, group.getKey(), pathConsumer );
         } );
     }
