@@ -15,12 +15,9 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.ThreadContext;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
-import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
@@ -29,7 +26,6 @@ import org.commonjava.indy.core.expire.ContentExpiration;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
 import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -50,16 +46,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -100,7 +91,7 @@ public class ContentIndexObserver
 
     public ContentIndexObserver( final StoreDataManager storeDataManager, final ContentIndexManager indexManager,
                                  final SpecialPathManager specialPathManager,
-                                 final DirectContentAccess directContentAccess, final IndyObjectMapper objectMapper)
+                                 final DirectContentAccess directContentAccess, final IndyObjectMapper objectMapper )
     {
         this.storeDataManager = storeDataManager;
         this.indexManager = indexManager;
@@ -316,11 +307,13 @@ public class ContentIndexObserver
                 }
             }
 
+            logger.debug( "Got members affected by membership divergence: {}", affectedMembers );
             if ( !affectedMembers.isEmpty() )
             {
                 Set<Group> groups = storeDataManager.getGroupsAffectedBy( group.getKey() );
                 groups.add( group );
 
+                logger.debug( "Got affected groups: {}", groups );
                 Set<String> paths = new HashSet<>();
                 affectedMembers.forEach( ( memberKey ) -> paths.addAll(
                         indexManager.getAllIndexedPathsForStore( memberKey )
@@ -337,114 +330,114 @@ public class ContentIndexObserver
 
     private void propagatePathlessStoreEvent( final Iterable<ArtifactStore> stores )
     {
-        StreamSupport.stream( stores.spliterator(), true).forEach( ( store ) -> {
-                final StoreKey key = store.getKey();
+        StreamSupport.stream( stores.spliterator(), true ).forEach( ( store ) -> {
+            final StoreKey key = store.getKey();
 
-                Set<String> paths = new HashSet<>();
-                indexManager.removeAllIndexedPathsForStore( key, indexedStorePath -> {
-                    paths.add( indexedStorePath.getPath() );
-                } );
-                indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath -> {
-                    paths.add( indexedStorePath.getPath() );
-                } );
-
-                if ( !paths.isEmpty() )
-                {
-                    Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
-
-                    paths.stream()
-                         .filter( mergablePathStrings() )
-                         .forEach( ( path ) -> indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() ) );
-                }
+            Set<String> paths = new HashSet<>();
+            indexManager.removeAllIndexedPathsForStore( key, indexedStorePath -> {
+                paths.add( indexedStorePath.getPath() );
             } );
+            indexManager.removeAllOriginIndexedPathsForStore( key, indexedStorePath -> {
+                paths.add( indexedStorePath.getPath() );
+            } );
+
+            if ( !paths.isEmpty() )
+            {
+                Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
+
+                paths.stream()
+                     .filter( mergablePathStrings() )
+                     .forEach( ( path ) -> indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() ) );
+            }
+        } );
     }
 
     private void propagateStoreEnablementEvent( final Iterable<ArtifactStore> stores )
     {
-        StreamSupport.stream( stores.spliterator(), true).forEach( ( store ) -> {
-                final StoreKey key = store.getKey();
-                if ( key.getType() == StoreType.hosted )
+        StreamSupport.stream( stores.spliterator(), true ).forEach( ( store ) -> {
+            final StoreKey key = store.getKey();
+            if ( key.getType() == StoreType.hosted )
+            {
+                // for hosted repos we need to delete from containing groups all mergable content present in the
+                // hosted repo's index, because it is always complete and up-to-date (if initial indexing is
+                // finished)
+
+                List<IndexedStorePath> indexedStorePaths = indexManager.getAllIndexedPathsForStore( key );
+
+                if ( indexedStorePaths != null && !indexedStorePaths.isEmpty() )
                 {
-                    // for hosted repos we need to delete from containing groups all mergable content present in the
-                    // hosted repo's index, because it is always complete and up-to-date (if initial indexing is
-                    // finished)
+                    Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
 
-                    List<IndexedStorePath> indexedStorePaths = indexManager.getAllIndexedPathsForStore( key );
-
-                    if ( indexedStorePaths != null && !indexedStorePaths.isEmpty() )
+                    indexedStorePaths.stream().filter( mergableStorePaths() ).forEach( ( indexedStorePath ) -> {
+                        String path = indexedStorePath.getPath();
+                        indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+                    } );
+                }
+            }
+            else
+            {
+                // for remote repos and groups we need to delete from containing groups ALL mergable content,
+                // because we don't have a complete index for it and building it is too expensive, so we cannot
+                // be sure if the resulting mergable content would be influenced by the newly added/enabled repo
+                // or not
+                try
+                {
+                    Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
+                    if ( !groups.isEmpty() )
                     {
-                        Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
-
-                        indexedStorePaths.stream().filter( mergableStorePaths() ).forEach( ( indexedStorePath ) -> {
-                            String path = indexedStorePath.getPath();
-                            indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+                        groups.parallelStream().forEach( ( group ) -> {
+                            List<IndexedStorePath> paths = indexManager.getAllIndexedPathsForStore( group.getKey() );
+                            if ( paths != null )
+                            {
+                                paths.stream()
+                                     .filter( mergableStorePaths() )
+                                     .forEach( path -> indexManager.clearIndexedPathFrom( path.getPath(), groups,
+                                                                                          deleteTransfers() ) );
+                            }
                         } );
                     }
                 }
-                else
+                catch ( Exception e )
                 {
-                    // for remote repos and groups we need to delete from containing groups ALL mergable content,
-                    // because we don't have a complete index for it and building it is too expensive, so we cannot
-                    // be sure if the resulting mergable content would be influenced by the newly added/enabled repo
-                    // or not
-                    try
-                    {
-                        Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
-                        if ( !groups.isEmpty() )
-                        {
-                            groups.parallelStream().forEach( ( group ) -> {
-                                List<IndexedStorePath> paths =
-                                        indexManager.getAllIndexedPathsForStore( group.getKey() );
-                                if ( paths != null )
-                                {
-                                    paths.stream()
-                                         .filter( mergableStorePaths() )
-                                         .forEach( path -> indexManager.clearIndexedPathFrom( path.getPath(), groups,
-                                                                                              deleteTransfers() ) );
-                                }
-                            } );
-                        }
-                    }
-                    catch ( Exception e )
-                    {
-                        Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error( String.format( "Failed to lookup groups containing: %s. Reason: %s", key,
-                                                     e.getMessage() ), e );
-                    }
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error(
+                            String.format( "Failed to lookup groups containing: %s. Reason: %s", key, e.getMessage() ),
+                            e );
                 }
-            } );
+            }
+        } );
     }
 
-//    private void propagatePathRemovals( final Set<IndexedStorePath> removals )
-//    {
-//        Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
-//        removals.stream().filter( mergableStorePaths() ).forEach( indexedStorePath -> {
-//            StoreKey storeKey = indexedStorePath.getStoreKey();
-//            try
-//            {
-//                ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
-//
-//                Set<Group> groups = containersForKey.get( storeKey );
-//                if ( groups == null )
-//                {
-//                    groups = storeDataManager.getGroupsAffectedBy( storeKey );
-//                    containersForKey.put( storeKey, groups );
-//                }
-//
-//                String path = indexedStorePath.getPath();
-//
-//                // If the file is stored local to the group, it's merged and must die.
-//                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
-//            }
-//            catch ( IndyDataException e )
-//            {
-//                Logger logger = LoggerFactory.getLogger( getClass() );
-//                logger.error(
-//                        String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey,
-//                                       e.getMessage() ), e );
-//            }
-//        } );
-//    }
+    //    private void propagatePathRemovals( final Set<IndexedStorePath> removals )
+    //    {
+    //        Map<StoreKey, Set<Group>> containersForKey = new HashMap<>();
+    //        removals.stream().filter( mergableStorePaths() ).forEach( indexedStorePath -> {
+    //            StoreKey storeKey = indexedStorePath.getStoreKey();
+    //            try
+    //            {
+    //                ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+    //
+    //                Set<Group> groups = containersForKey.get( storeKey );
+    //                if ( groups == null )
+    //                {
+    //                    groups = storeDataManager.getGroupsAffectedBy( storeKey );
+    //                    containersForKey.put( storeKey, groups );
+    //                }
+    //
+    //                String path = indexedStorePath.getPath();
+    //
+    //                // If the file is stored local to the group, it's merged and must die.
+    //                indexManager.clearIndexedPathFrom( path, groups, deleteTransfers() );
+    //            }
+    //            catch ( IndyDataException e )
+    //            {
+    //                Logger logger = LoggerFactory.getLogger( getClass() );
+    //                logger.error(
+    //                        String.format( "Failed to lookup store, or groups containing store: %s. Reason: %s", storeKey,
+    //                                       e.getMessage() ), e );
+    //            }
+    //        } );
+    //    }
 
     private void propagateClear( final StoreKey key, final String path )
     {

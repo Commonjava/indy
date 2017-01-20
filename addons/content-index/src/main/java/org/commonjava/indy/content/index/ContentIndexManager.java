@@ -25,8 +25,10 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.infinispan.cdi.ConfigureCache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
@@ -66,6 +68,22 @@ public class ContentIndexManager
     @WeftManaged
     @Inject
     private Executor executor;
+
+    @Inject
+    private NotFoundCache nfc;
+
+    protected ContentIndexManager(){}
+
+    public ContentIndexManager( StoreDataManager storeDataManager, SpecialPathManager specialPathManager,
+                                CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex, Executor executor,
+                                NotFoundCache nfc )
+    {
+        this.storeDataManager = storeDataManager;
+        this.specialPathManager = specialPathManager;
+        this.contentIndex = contentIndex;
+        this.executor = executor;
+        this.nfc = nfc;
+    }
 
     public void removeAllOriginIndexedPathsForStore( StoreKey memberKey, Consumer<IndexedStorePath> pathConsumer )
     {
@@ -161,15 +179,21 @@ public class ContentIndexManager
         } );
     }
 
-    public void removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
+    public boolean removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
 //        Logger logger = LoggerFactory.getLogger( getClass() );
         IndexedStorePath topPath = new IndexedStorePath( key, path );
 //        logger.trace( "Attempting to remove indexed path: {}", topPath );
-        if ( contentIndex.remove( topPath ) != null && pathConsumer != null )
+        if ( contentIndex.remove( topPath ) != null )
         {
-            pathConsumer.accept( topPath );
+            if ( pathConsumer != null )
+            {
+                pathConsumer.accept( topPath );
+            }
+            return true;
         }
+
+        return false;
 //
 //        QueryFactory queryFactory = Search.getQueryFactory( contentIndex );
 //
@@ -335,8 +359,18 @@ public class ContentIndexManager
             return;
         }
 
+        Logger logger = LoggerFactory.getLogger( getClass() );
+//        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
+
         groups.forEach( (group)->{
-            removeIndexedStorePath( path, group.getKey(), pathConsumer );
+            logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
+
+            // if we remove an indexed path, it SHOULD mean there was content. If not, we should delete the NFC entry.
+            if ( !removeIndexedStorePath( path, group.getKey(), pathConsumer ) )
+            {
+                ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
+                nfc.clearMissing( resource );
+            }
         } );
     }
 
