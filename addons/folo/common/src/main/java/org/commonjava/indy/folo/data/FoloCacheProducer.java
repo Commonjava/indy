@@ -20,9 +20,11 @@ import org.commonjava.indy.folo.data.idxmodel.TrackedContentEntryTransformer;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Factory;
 import org.hibernate.search.cfg.Environment;
 import org.hibernate.search.cfg.SearchMapping;
 import org.infinispan.configuration.cache.Configuration;
@@ -48,6 +50,8 @@ import java.util.Properties;
 public class FoloCacheProducer
 {
 
+//    private static final String FOLO_DATA_DIR = "folo";
+
     private static final String SEALED_NAME = "folo-sealed";
 
     private static final String IN_PROGRESS_NAME = "folo-in-progress";
@@ -55,14 +59,17 @@ public class FoloCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
+    @Inject
+    private DataFileConfiguration dataConfig;
+
     @PostConstruct
     public void initIndexing()
     {
-        registerIndexableEntities();
         registerTransformer();
     }
 
-    private void registerIndexableEntities()
+    @Factory
+    public SearchMapping getSearchMapping()
     {
         final SearchMapping entryMapping = new SearchMapping();
         entryMapping.entity( TrackedContentEntry.class ).indexed()
@@ -80,34 +87,44 @@ public class FoloCacheProducer
                     .indexEmbedded().entity( TrackingKey.class ).indexed()
                     .property( "id", ElementType.METHOD ).field().analyze( Analyze.NO );
 
-        Properties properties = new Properties();
-        properties.put( Environment.MODEL_MAPPING, entryMapping);
-
-        Configuration sealedConfig=
-                cacheProducer.getCacheConfiguration( SEALED_NAME );
-
-        if ( sealedConfig == null )
-        {
-            sealedConfig = cacheProducer.getDefaultCacheConfiguration();
-        }
-
-        if ( sealedConfig != null )
-        {
-            final Configuration indexingConfig =
-                    new ConfigurationBuilder().read( sealedConfig ).indexing().withProperties( properties ).index(
-                            Index.LOCAL ).build();
-
-            cacheProducer.setCacheConfiguration( SEALED_NAME, indexingConfig );
-        }
+        return entryMapping;
     }
+//
+//        Properties properties = new Properties();
+//        properties.put( Environment.MODEL_MAPPING, entryMapping);
+//
+//        // note: if this is a java.io.File type, it doesn't seem to work. So, we get the absolute path.
+//        properties.put("hibernate.search.default.indexBase", dataConfig.getDataDir( FOLO_DATA_DIR ).getAbsolutePath() );
+//
+//        Configuration sealedConfig=
+//                cacheProducer.getCacheConfiguration( SEALED_NAME );
+//
+//        if ( sealedConfig == null )
+//        {
+//            sealedConfig = cacheProducer.getDefaultCacheConfiguration();
+//        }
+//
+//        if ( sealedConfig != null )
+//        {
+//            final Configuration indexingConfig =
+//                    new ConfigurationBuilder().read( sealedConfig ).indexing().withProperties( properties ).index(
+//                            Index.LOCAL ).build();
+//
+//            cacheProducer.setCacheConfiguration( SEALED_NAME, indexingConfig );
+//        }
+//    }
 
     private void registerTransformer(){
         final CacheHandle<TrackingKey, TrackedContent> handler =
                 cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
 
-        SearchManagerImplementor searchManager = handler.execute( cache -> (SearchManagerImplementor) Search.getSearchManager( cache ) );
+        handler.execute( cache->{
+            SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
 
-        searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
+            searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
+
+            return null;
+        } );
     }
 
     @FoloInprogressCache
