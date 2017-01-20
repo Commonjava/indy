@@ -322,6 +322,8 @@ public class ContentIndexObserver
                                     .map( isp -> isp.getPath() )
                                     .collect( Collectors.toSet() ) ) );
 
+                logger.debug( "Got mergable paths from diverged portion of membership: {}", paths );
+
                 paths.parallelStream()
                      .forEach( p -> indexManager.clearIndexedPathFrom( p, groups, deleteTransfers() ) );
             }
