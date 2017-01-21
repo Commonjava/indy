@@ -5,11 +5,20 @@
     xmlns="urn:infinispan:config:8.2">
 
   <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
+    <local-cache name="koji-maven-version-metadata" >
+      <eviction size="100000" type="COUNT"/>
+      <persistence passivation="false">
+        <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/koji-maven-version-metadata">
+          <write-behind/>
+        </file-store>
+      </persistence>
+    </local-cache>
+
     <local-cache name="folo-in-progress" >
       <eviction size="100000" type="COUNT"/>
       <persistence passivation="false">
         <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/folo-in-progress">
-          <!--<write-behind/>-->
+          <write-behind/>
         </file-store>
       </persistence>
     </local-cache>
@@ -19,72 +28,24 @@
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
-      <!--<indexing index="ALL">-->
-        <!--<indexed-entities>-->
-          <!--<indexed-entity>org.commonjava.indy.folo.model.TrackedContentEntry</indexed-entity>-->
-        <!--</indexed-entities>-->
-      <!--</indexing>-->
+      <indexing index="LOCAL">
+        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
+        <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property>
+      </indexing>
     </local-cache>
     
     <local-cache name="content-index">
       <eviction size="10000" type="COUNT"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index">
-          <!--<write-behind/>-->
+          <write-behind/>
         </file-store>
       </persistence>
       <indexing index="LOCAL">
-        <property name="default.directory_provider">infinispan</property>
-        <property name="default.indexmanager">org.infinispan.query.indexmanager.InfinispanIndexManager</property>
-        <property name="default.metadata_cachename">content-idx-lucene-metadata</property>
-        <property name="default.data_cachename">content-idx-lucene-data</property>
-        <property name="default.locking_cachename">content-idx-lucene-locks</property>
-        <indexed-entities>
-          <indexed-entity>org.commonjava.indy.content.index.IndexedStorePath</indexed-entity>
-        </indexed-entities>
+        <property name="hibernate.search.model_mapping">org.commonjava.indy.content.index.ContentIndexCacheProducer</property>
+        <property name="hibernate.search.default.indexBase">${indy.data}/content-index/search</property>
       </indexing>
     </local-cache>
-
-    <local-cache name="content-index-lucene-metadata">
-      <eviction size="10000" type="COUNT"/>
-      <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index-lucene/metadata">
-          <!--<write-behind/>-->
-        </file-store>
-      </persistence>
-    </local-cache>
-    <local-cache name="content-index-lucene-data">
-      <eviction size="10000" type="COUNT"/>
-      <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index-lucene/data">
-          <!--<write-behind/>-->
-        </file-store>
-      </persistence>
-    </local-cache>
-    <local-cache name="content-index-lucene-locks">
-      <eviction size="10000" type="COUNT"/>
-      <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index-lucene/locks">
-          <!--<write-behind/>-->
-        </file-store>
-      </persistence>
-    </local-cache>
-    <!-- <local-cache name="fs-storage-metadata">
-      <locking isolation="READ_COMMITTED"/>
-      <eviction max-entries="100000" type="COUNT"/>
-      <persistence passivation="true">
-        <file-store purge="false" preload="false" fetch-state="true" path="${indy.data}/storage-metadata"/>
-      </persistence>
-    </local-cache>
-
-    <local-cache name="fs-storage-data">
-      <locking isolation="READ_COMMITTED"/>
-      <persistence passivation="true">
-        <store class="org.commonjava.indy.filer.ispn.fileio.StorageFileIO" preload="false" fetch-state="true" purge="true">
-          <property name="storage-root">${indy.storage.dir}</property>
-        </store>
-      </persistence>
-    </local-cache> -->
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
       <eviction size="1000" type="COUNT" strategy="LRU"/>

@@ -45,6 +45,7 @@ import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.commonjava.maven.galley.testing.core.transport.job.TestListing;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
@@ -91,7 +92,7 @@ public class MavenMetadataGeneratorTest
 
         DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads );
 
-        generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper );
+        generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper, new MemoryNotFoundCache() );
 
         metadataReader =
             new MavenMetadataReader( xml, locations, fixture.getArtifactMetadataManager(), fixture.getXPathManager() );
