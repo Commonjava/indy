@@ -16,8 +16,12 @@
 package org.commonjava.indy.core.content;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
@@ -30,9 +34,12 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,16 +57,32 @@ public abstract class AbstractMergedContentGenerator
     @Inject
     protected GroupMergeHelper helper;
 
+    @Inject
+    private NotFoundCache nfc;
+
+    @Inject
+    private Instance<MergedContentAction> mergedContentActionInjected;
+
+    private Iterable<MergedContentAction> mergedContentActions;
+
     protected AbstractMergedContentGenerator()
     {
     }
 
     protected AbstractMergedContentGenerator( final DirectContentAccess fileManager, final StoreDataManager storeManager,
-                                              final GroupMergeHelper helper )
+                                              final GroupMergeHelper helper, final NotFoundCache nfc, final MergedContentAction...mergedContentActions )
     {
         this.fileManager = fileManager;
         this.storeManager = storeManager;
         this.helper = helper;
+        this.nfc = nfc;
+        this.mergedContentActions = Arrays.asList( mergedContentActions );
+    }
+
+    @PostConstruct
+    public void cdiInit()
+    {
+        this.mergedContentActions = mergedContentActionInjected;
     }
 
     @Override
@@ -87,52 +110,46 @@ public abstract class AbstractMergedContentGenerator
     protected abstract String getMergedMetadataName();
 
     protected void clearAllMerged( final ArtifactStore store, final String path )
-        throws IndyWorkflowException
     {
+        final Set<Group> groups = storeManager.getGroupsAffectedBy( store.getKey() );
         if ( StoreType.group == store.getKey()
                                      .getType() )
         {
-            final Group group = (Group) store;
-            clearMergedFile( group, path );
+            groups.add( (Group) store );
         }
 
-        try
-        {
-            final Set<Group> groups = storeManager.getGroupsContaining( store.getKey() );
-            if ( groups != null )
-            {
-                for ( final Group group : groups )
-                {
-                    clearMergedFile( group, path );
-                }
-            }
-        }
-        catch ( final IndyDataException e )
-        {
-            throw new IndyWorkflowException(
+        groups.parallelStream().forEach( group -> clearMergedFile( group, path ) );
 
-            "Failed to lookup groups whose membership contains: {} (to trigger re-generation on demand: {}. Error: {}",
-                                              e, store.getKey(), path, e.getMessage() );
+        if ( mergedContentActions != null )
+        {
+            StreamSupport.stream( mergedContentActions.spliterator(), true )
+                         .forEach( action -> action.clearMergedPath( store, groups, path ) );
         }
     }
 
     protected void clearMergedFile( final Group group, final String path )
-        throws IndyWorkflowException
     {
-        // delete so it'll be recomputed.
-        final Transfer target = fileManager.getTransfer( group, path );
         try
         {
-            logger.debug( "Deleting merged file: {}", target );
-            target.delete( true );
-            helper.deleteChecksumsAndMergeInfo( group, path );
-        }
-        catch ( final IOException e )
-        {
-            throw new IndyWorkflowException(
+            // delete so it'll be recomputed.
+            final Transfer target = fileManager.getTransfer( group, path );
 
-            "Failed to delete generated file (to allow re-generation on demand: {}. Error: {}", e,
-                                              target.getFullPath(), e.getMessage() );
+            if ( target.exists() )
+            {
+                logger.debug( "Deleting merged file: {}", target );
+                target.delete( false );
+                helper.deleteChecksumsAndMergeInfo( group, path );
+            }
+            else
+            {
+                ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
+                nfc.clearMissing( resource );
+            }
+        }
+        catch ( final IndyWorkflowException | IOException e )
+        {
+            logger.error( "Failed to delete generated file (to allow re-generation on demand: {}/{}. Error: {}", e,
+                          group.getKey(), path, e.getMessage() );
         }
     }
 

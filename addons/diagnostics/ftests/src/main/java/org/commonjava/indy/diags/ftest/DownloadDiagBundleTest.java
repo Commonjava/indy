@@ -4,12 +4,18 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.module.IndyRawHttpModule;
 import org.commonjava.indy.diag.client.IndyDiagnosticsClientModule;
 import org.commonjava.indy.diag.data.DiagnosticsManager;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
+import org.commonjava.util.jhttpc.model.SiteConfig;
+import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,6 +41,7 @@ public class DownloadDiagBundleTest
     private IndyDiagnosticsClientModule module = new IndyDiagnosticsClientModule();
 
     @Test
+    @Ignore
     public void run()
             throws IndyClientException, IOException
     {
@@ -65,6 +72,16 @@ public class DownloadDiagBundleTest
 
         assertThat( "Didn't find thread dump!", foundThreadDump, equalTo( true ) );
         assertThat( "Didn't find any logs!", logCount > 0, equalTo( true ) );
+    }
+
+    protected Indy createIndyClient()
+            throws IndyClientException
+    {
+        SiteConfig config = new SiteConfigBuilder( "indy", fixture.getUrl() ).withRequestTimeoutSeconds( 120 ).build();
+        Collection<IndyClientModule> modules = getAdditionalClientModules();
+
+        return new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( getAdditionalMapperModules() ),
+                         modules.toArray(new IndyClientModule[modules.size()]) );
     }
 
     @Override

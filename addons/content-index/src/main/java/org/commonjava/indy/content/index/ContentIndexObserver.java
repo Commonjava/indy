@@ -22,6 +22,7 @@ import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.core.content.MergedContentAction;
 import org.commonjava.indy.core.expire.ContentExpiration;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
@@ -67,6 +68,7 @@ import java.util.stream.StreamSupport;
  */
 @ApplicationScoped
 public class ContentIndexObserver
+        implements MergedContentAction
 {
     private static final String ORIGIN_KEY = "ContentIndex:originKey";
 
@@ -100,22 +102,43 @@ public class ContentIndexObserver
         this.objectMapper = objectMapper;
     }
 
-    public void onFileDeletion( @Observes final FileDeletionEvent event )
+    public void clearMergedPath( ArtifactStore originatingStore, Set<Group> groups, String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Got file-deletion event: {}", event );
+        logger.debug( "Clearing merged path: {} from indexes of: {} (triggered by: {})", path, groups, originatingStore );
 
-        StoreKey key = LocationUtils.getKey( event );
-        String path = event.getTransfer().getPath();
+        StoreKey key = originatingStore.getKey();
 
-        AtomicBoolean result = new AtomicBoolean( false );
-        indexManager.removeIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
-
-        if ( result.get() )
+        ThreadContext context = ThreadContext.getContext( true );
+        context.put( ORIGIN_KEY, key );
+        try
         {
-            propagateClear( key, path );
+            // the only time a group will have local storage of the path is when it has been merged
+            // ...in which case we should try to delete it.
+            indexManager.clearIndexedPathFrom( path, groups, null );
+        }
+        finally
+        {
+            context.remove( ORIGIN_KEY );
         }
     }
+
+//    public void onFileDeletion( @Observes final FileDeletionEvent event )
+//    {
+//        Logger logger = LoggerFactory.getLogger( getClass() );
+//        logger.trace( "Got file-deletion event: {}", event );
+//
+//        StoreKey key = LocationUtils.getKey( event );
+//        String path = event.getTransfer().getPath();
+//
+//        AtomicBoolean result = new AtomicBoolean( false );
+//        indexManager.removeIndexedStorePath( path, key, indexedStorePath -> result.set( true ) );
+//
+//        if ( result.get() )
+//        {
+//            propagateClear( key, path );
+//        }
+//    }
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
@@ -126,17 +149,17 @@ public class ContentIndexObserver
         indexManager.indexPathInStores( event.getTransfer().getPath(), key );
     }
 
-    public void onFileStorage( @Observes final FileStorageEvent event )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Got file-storage event: {}", event );
-
-        StoreKey key = LocationUtils.getKey( event );
-        String path = event.getTransfer().getPath();
-        indexManager.indexPathInStores( path, key );
-
-        propagateClear( key, path );
-    }
+//    public void onFileStorage( @Observes final FileStorageEvent event )
+//    {
+//        Logger logger = LoggerFactory.getLogger( getClass() );
+//        logger.trace( "Got file-storage event: {}", event );
+//
+//        StoreKey key = LocationUtils.getKey( event );
+//        String path = event.getTransfer().getPath();
+//        indexManager.indexPathInStores( path, key );
+//
+//        propagateClear( key, path );
+//    }
 
     public void onStoreDisable( @Observes final ArtifactStoreEnablementEvent event )
     {

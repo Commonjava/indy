@@ -19,6 +19,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
+import org.commonjava.indy.core.content.MergedContentAction;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -28,6 +29,7 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 
 import javax.inject.Inject;
 import java.io.IOException;
@@ -68,10 +70,10 @@ public class ArchetypeCatalogGenerator
     }
 
     public ArchetypeCatalogGenerator( final DirectContentAccess downloadManager, final StoreDataManager storeManager,
-                                      final ArchetypeCatalogMerger merger,
-                                      final GroupMergeHelper mergeHelper )
+                                      final ArchetypeCatalogMerger merger, final GroupMergeHelper mergeHelper,
+                                      final NotFoundCache nfc, final MergedContentAction... mergedContentActions )
     {
-        super( downloadManager, storeManager, mergeHelper );
+        super( downloadManager, storeManager, mergeHelper, nfc, mergedContentActions );
         this.merger = merger;
         this.helper = mergeHelper;
     }

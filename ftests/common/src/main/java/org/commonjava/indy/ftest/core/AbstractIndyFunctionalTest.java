@@ -25,6 +25,9 @@ import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
+import org.commonjava.util.jhttpc.model.SiteConfig;
+import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -114,8 +117,11 @@ public abstract class AbstractIndyFunctionalTest
     protected Indy createIndyClient()
             throws IndyClientException
     {
-        return new Indy( fixture.getUrl(), new IndyObjectMapper( getAdditionalMapperModules() ),
-                           getAdditionalClientModules() );
+        SiteConfig config = new SiteConfigBuilder( "indy", fixture.getUrl() ).withRequestTimeoutSeconds( 60 ).build();
+        Collection<IndyClientModule> modules = getAdditionalClientModules();
+
+        return new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( getAdditionalMapperModules() ),
+                         modules.toArray(new IndyClientModule[modules.size()]) );
     }
 
     protected float getTestEnvironmentTimeoutMultiplier()
