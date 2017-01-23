@@ -156,41 +156,6 @@ public class RecursiveGroupMetadataFoundAfterMemberAddTest
         assertContent( groupA, PATH, HOSTED_X_CONTENT );
     }
 
-    private void assertContent( ArtifactStore store, String path, String expectedXml )
-            throws IndyClientException, IOException
-    {
-        try(InputStream stream = client.content().get( store.getKey(), path ))
-        {
-            assertThat( "Stream for " + store.getKey() + ":" + path + " was missing!", stream, notNullValue() );
-
-            String downloaded = IOUtils.toString( stream );
-
-            logger.debug( "{}:{}: Comparing downloaded XML:\n\n{}\n\nTo expected XML:\n\n{}\n\n", store.getKey(), path, downloaded, expectedXml );
-
-            XMLUnit.setIgnoreWhitespace( true );
-            XMLUnit.setIgnoreDiffBetweenTextAndCDATA( true );
-            XMLUnit.setIgnoreAttributeOrder( true );
-            XMLUnit.setIgnoreComments( true );
-
-            assertXMLEqual( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey(),
-                            downloaded, expectedXml );
-        }
-        catch ( SAXException e )
-        {
-            e.printStackTrace();
-            fail( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey() );
-        }
-    }
-
-    private void assertNullContent( ArtifactStore store, String path )
-            throws IndyClientException, IOException
-    {
-        try(InputStream stream = client.content().get( store.getKey(), path ))
-        {
-            assertThat( "Stream for " + store.getKey() + ":" + path + " was NOT missing!", stream, nullValue() );
-        }
-    }
-
     @Override
     protected boolean createStandardTestStructures()
     {
