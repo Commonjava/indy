@@ -250,6 +250,8 @@ public class DefaultContentManager
                 if ( generator.canProcess( path ) )
                 {
                     item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
+                    logger.debug( "From content {}.generateGroupFileContent: {} (exists? {})",
+                                  generator.getClass().getSimpleName(), item, item != null && item.exists() );
                     generated = true;
                     break;
                 }

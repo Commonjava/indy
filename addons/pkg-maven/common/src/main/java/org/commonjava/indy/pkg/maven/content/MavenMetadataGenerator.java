@@ -295,6 +295,8 @@ public class MavenMetadataGenerator
 
         final Transfer target = fileManager.getTransfer( group, path );
 
+        logger.debug( "Working on metadata file: {} (already exists? {})", target, target != null && target.exists() );
+
         if ( !target.exists() )
         {
             String toMergePath = path;
