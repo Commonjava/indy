@@ -20,6 +20,8 @@ import java.io.File;
 public class GitConfig
 {
 
+    private static final long DEFAULT_LOCK_TIMEOUT_MILLIS = 2000;
+
     private final File dir;
 
     private final String url;
@@ -29,6 +31,8 @@ public class GitConfig
     private String remoteBranchName;
 
     private String userEmail;
+
+    private Long lockTimeoutMillis;
 
     public GitConfig( final File dir, final String url, final boolean commitFileManifestsEnabled )
     {
@@ -80,5 +84,20 @@ public class GitConfig
     public String getUserEmail()
     {
         return userEmail;
+    }
+
+    public Long getLockTimeoutMillis()
+    {
+        return lockTimeoutMillis;
+    }
+
+    public void setLockTimeoutMillis( Long lockTimeoutMillis )
+    {
+        this.lockTimeoutMillis = lockTimeoutMillis;
+    }
+
+    public long getLockMillis()
+    {
+        return lockTimeoutMillis == null ? DEFAULT_LOCK_TIMEOUT_MILLIS : lockTimeoutMillis;
     }
 }

@@ -67,6 +67,74 @@ public class GitManagerConcurrentTest
                                  targetMethod = "<init>",
                                  targetLocation = "ENTRY",
                                  action = "createRendezvous($0, 2, true)" ),
+            @BMRule( name = "getHeadCommit call", targetClass = "GitManager",
+                     targetMethod = "getHeadCommit(File)",
+                     targetLocation = "ENTRY",
+                     action = "debug(\"getHeadCommit() waiting...\"); rendezvous($0); debug(\"getHeadCommit(): thread proceeding.\")" ),
+            @BMRule( name = "addAndCommitPaths call", targetClass = "GitManager",
+                     targetMethod = "addAndCommitPaths(ChangeSummary,Collection)",
+                     targetLocation = "ENTRY",
+                     action = "debug(\"addAndCommitPaths() waiting...\"); rendezvous($0); debug(\"addAndCommitPaths(): thread proceeding.\")" ),
+    } )
+    @Test
+    public void addToRepoWhileGettingHeadCommit()
+            throws Exception
+    {
+        final int threshold = 2;
+        final Executor pool = Executors.newFixedThreadPool( threshold );
+        CountDownLatch latch = new CountDownLatch( threshold );
+
+        final File f = new File( cloneDir, String.format( "test.txt" ) );
+        FileUtils.write( f, "This is a test" );
+
+        final String user = "testAddAndCommit";
+        git.addAndCommitFiles( new ChangeSummary( user, "first commit"), f );
+
+        pool.execute( () -> {
+            try
+            {
+                git.getHeadCommit( f );
+            }
+            catch ( Exception e )
+            {
+                e.printStackTrace();
+                failed = true;
+            }
+            finally
+            {
+                latch.countDown();
+            }
+        } );
+
+        pool.execute( () -> {
+            try
+            {
+                FileUtils.write( f, "This is another test" );
+                git.addAndCommitFiles( new ChangeSummary( user, "second commit"), f );
+            }
+            catch ( Exception e )
+            {
+                e.printStackTrace();
+                failed = true;
+            }
+            finally
+            {
+                latch.countDown();
+            }
+        } );
+
+        latch.await();
+        if ( failed )
+        {
+            fail();
+        }
+
+    }
+
+    @BMRules( rules = { @BMRule( name = "init rendezvous", targetClass = "GitManager",
+                                 targetMethod = "<init>",
+                                 targetLocation = "ENTRY",
+                                 action = "createRendezvous($0, 2, true)" ),
             @BMRule( name = "addAndCommitPaths call", targetClass = "GitManager",
                      targetMethod = "addAndCommitPaths(ChangeSummary,Collection)",
                      targetLocation = "ENTRY",
