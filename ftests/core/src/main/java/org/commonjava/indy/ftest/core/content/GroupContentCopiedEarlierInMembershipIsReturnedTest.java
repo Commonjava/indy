@@ -2,6 +2,7 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -42,7 +43,7 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class GroupContentCopiedEarlierInMembershipIsReturnedTest
-        extends AbstractIndyFunctionalTest
+        extends AbstractContentManagementTest
 {
 
     private static final String REPO_X = "X";
@@ -89,29 +90,18 @@ public class GroupContentCopiedEarlierInMembershipIsReturnedTest
     public void run()
             throws IndyClientException, IOException
     {
-        assertContent( repoX, CONTENT_1 );
-        assertContent( groupA, CONTENT_1 );
-        assertContent( groupB, CONTENT_1 );
+        assertContent( repoX, PATH, CONTENT_1 );
+        assertContent( groupA, PATH, CONTENT_1 );
+        assertContent( groupB, PATH, CONTENT_1 );
 
         // now, copy the content into hosted repo Y.
         client.content().store( repoY.getKey(), PATH, new ByteArrayInputStream( content2 ) );
 
         // the content should be available in repoY.
-        assertContent( repoY, CONTENT_2 );
+        assertContent( repoY, PATH, CONTENT_2 );
 
         // the content should also be available in groupB.
-        assertContent( groupB, CONTENT_2 );
+        assertContent( groupB, PATH, CONTENT_2 );
     }
 
-    private void assertContent( ArtifactStore store, String expected )
-            throws IndyClientException, IOException
-    {
-        try(InputStream in = client.content().get( store.getKey(), PATH))
-        {
-            assertThat( "Content not found: " + PATH + " in store: " + store.getKey(), in, notNullValue() );
-
-            assertThat( "Content is wrong: " + PATH + " in store: " + store.getKey(), IOUtils.toString( in ),
-                        equalTo( expected ) );
-        }
-    }
 }

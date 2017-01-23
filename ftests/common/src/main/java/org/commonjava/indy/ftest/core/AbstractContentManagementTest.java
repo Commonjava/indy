@@ -17,10 +17,19 @@ package org.commonjava.indy.ftest.core;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
+import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -99,5 +108,27 @@ public class AbstractContentManagementTest
     {
         return true;
     }
+
+    protected void assertContent( ArtifactStore store, String path, String expected )
+            throws IndyClientException, IOException
+    {
+        try(InputStream in = client.content().get( store.getKey(), path))
+        {
+            assertThat( "Content not found: " + path + " in store: " + store.getKey(), in, notNullValue() );
+
+            assertThat( "Content is wrong: " + path + " in store: " + store.getKey(), IOUtils.toString( in ),
+                        equalTo( expected ) );
+        }
+    }
+
+    protected void assertNullContent( ArtifactStore store, String path )
+            throws IndyClientException, IOException
+    {
+        try(InputStream in = client.content().get( store.getKey(), path))
+        {
+            assertThat( "Content found: " + path + " in store: " + store.getKey(), in, nullValue() );
+        }
+    }
+
 
 }

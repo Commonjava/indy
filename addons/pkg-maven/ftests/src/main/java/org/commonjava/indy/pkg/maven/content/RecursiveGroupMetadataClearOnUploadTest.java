@@ -135,9 +135,9 @@ public class RecursiveGroupMetadataClearOnUploadTest
     public void run()
             throws Exception
     {
-        assertContent( hostedRepo, firstPassContent );
-        assertContent( groupA, firstPassContent );
-        assertContent( groupB, firstPassContent );
+        assertContent( hostedRepo, path, firstPassContent );
+        assertContent( groupA, path, firstPassContent );
+        assertContent( groupB, path, firstPassContent );
 
         client.content()
               .store( hostedRepo.getKey(), path, new ByteArrayInputStream( secondPassContent.getBytes( "UTF-8" ) ) );
@@ -146,37 +146,9 @@ public class RecursiveGroupMetadataClearOnUploadTest
 
         //        assertContent( hostedRepo, secondPassContent );
         //        assertContent( groupA, secondPassContent );
-        assertContent( groupB, secondPassContent );
+        assertContent( groupB, path, secondPassContent );
 
         Thread.currentThread().sleep( 4000 );
-    }
-
-    private void assertContent( ArtifactStore store, String expectedXml )
-            throws IndyClientException, IOException
-    {
-        InputStream stream = client.content().get( store.getKey(), path );
-
-        assertThat( stream, notNullValue() );
-
-        String downloaded = IOUtils.toString( stream );
-
-        logger.debug( "Comparing downloaded XML:\n\n{}\n\nTo expected XML:\n\n{}\n\n", downloaded, expectedXml );
-
-        try
-        {
-            XMLUnit.setIgnoreWhitespace( true );
-            XMLUnit.setIgnoreDiffBetweenTextAndCDATA( true );
-            XMLUnit.setIgnoreAttributeOrder( true );
-            XMLUnit.setIgnoreComments( true );
-
-            assertXMLEqual( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey(),
-                            downloaded, expectedXml );
-        }
-        catch ( SAXException e )
-        {
-            e.printStackTrace();
-            fail( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey() );
-        }
     }
 
     @Override

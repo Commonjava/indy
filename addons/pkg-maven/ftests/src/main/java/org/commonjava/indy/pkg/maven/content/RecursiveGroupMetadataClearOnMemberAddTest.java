@@ -174,17 +174,17 @@ public class RecursiveGroupMetadataClearOnMemberAddTest
     public void run()
             throws Exception
     {
-        assertContent( hostedX, HOSTED_X_CONTENT );
-        assertContent( groupA, HOSTED_X_CONTENT );
-        assertContent( groupB, HOSTED_X_CONTENT );
-        assertContent( groupC, HOSTED_X_CONTENT );
+        assertContent( hostedX, PATH, HOSTED_X_CONTENT );
+        assertContent( groupA, PATH, HOSTED_X_CONTENT );
+        assertContent( groupB, PATH, HOSTED_X_CONTENT );
+        assertContent( groupC, PATH, HOSTED_X_CONTENT );
 
         client.content()
               .store( hostedY.getKey(), PATH, new ByteArrayInputStream( HOSTED_Y_CONTENT.getBytes( "UTF-8" ) ) );
 
         waitForEventPropagation();
 
-        assertContent( hostedY, HOSTED_Y_CONTENT );
+        assertContent( hostedY, PATH, HOSTED_Y_CONTENT );
 
         groupA.addConstituent( hostedY );
         boolean updated = client.stores().update( groupA, "Add hosted Y" );
@@ -196,37 +196,9 @@ public class RecursiveGroupMetadataClearOnMemberAddTest
         // Order is important here...we want to try the most ambitious one first and move down to the simpler cases.
         // This will prevent us from inadvertently triggering metadata aggregation in a lower group that might not
         // happen otherwise.
-        assertContent( groupC, COMBINED_CONTENT );
-        assertContent( groupB, COMBINED_CONTENT );
-        assertContent( groupA, COMBINED_CONTENT );
-    }
-
-    private void assertContent( ArtifactStore store, String expectedXml )
-            throws IndyClientException, IOException
-    {
-        InputStream stream = client.content().get( store.getKey(), PATH );
-
-        assertThat( stream, notNullValue() );
-
-        String downloaded = IOUtils.toString( stream );
-
-        logger.debug( "Comparing downloaded XML:\n\n{}\n\nTo expected XML:\n\n{}\n\n", downloaded, expectedXml );
-
-        try
-        {
-            XMLUnit.setIgnoreWhitespace( true );
-            XMLUnit.setIgnoreDiffBetweenTextAndCDATA( true );
-            XMLUnit.setIgnoreAttributeOrder( true );
-            XMLUnit.setIgnoreComments( true );
-
-            assertXMLEqual( "Downloaded XML not equal to expected XML from: " + PATH + " in: " + store.getKey(),
-                            downloaded, expectedXml );
-        }
-        catch ( SAXException e )
-        {
-            e.printStackTrace();
-            fail( "Downloaded XML not equal to expected XML from: " + PATH + " in: " + store.getKey() );
-        }
+        assertContent( groupC, PATH, COMBINED_CONTENT );
+        assertContent( groupB, PATH, COMBINED_CONTENT );
+        assertContent( groupA, PATH, COMBINED_CONTENT );
     }
 
     @Override
