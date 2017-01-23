@@ -54,11 +54,17 @@ public class DataFileConfiguration
 
     public static final String DEFAULT_WORK_SUBDIR = "work";
 
-    public static final File DEFAULT_DATA_BASEDIR = new File( System.getProperty( "indy.home", DEFAULT_ROOT_DIR ),
-                                                              DEFAULT_DATA_SUBDIR );
+    private File getDefaultDataBasedir()
+    {
+        return new File( System.getProperty( "indy.home", DEFAULT_ROOT_DIR ),
+                DEFAULT_DATA_SUBDIR );
+    }
 
-    private static final File DEFAULT_WORK_BASEDIR = new File( System.getProperty( "indy.home", DEFAULT_ROOT_DIR ),
-                                                               DEFAULT_WORK_SUBDIR );
+    private File getDefaultWorkBasedir()
+    {
+        return new File( System.getProperty( "indy.home", DEFAULT_ROOT_DIR ),
+                DEFAULT_WORK_SUBDIR );
+    }
 
     private File dataBasedir;
 
@@ -82,7 +88,7 @@ public class DataFileConfiguration
 
     public File getDataBasedir()
     {
-        return dataBasedir == null ? DEFAULT_DATA_BASEDIR : dataBasedir;
+        return dataBasedir == null ? getDefaultDataBasedir() : dataBasedir;
     }
 
     @ConfigName( "data.dir" )
@@ -107,7 +113,7 @@ public class DataFileConfiguration
 
     public File getWorkBasedir()
     {
-        return workBasedir == null ? DEFAULT_WORK_BASEDIR : workBasedir;
+        return workBasedir == null ? getDefaultWorkBasedir() : workBasedir;
     }
 
     @ConfigName( "work.dir" )
