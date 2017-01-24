@@ -345,7 +345,15 @@ public class DefaultContentManager
         }
         catch ( IndyWorkflowException e )
         {
-            e.filterLocationErrors();
+            if ( group.equals( store.getKey().getType() ) )
+            {
+                logger.error("Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+                             e.getMessage() );
+            }
+            else
+            {
+                e.filterLocationErrors();
+            }
         }
 
         return item;

@@ -17,12 +17,14 @@ package org.commonjava.indy.ftest.core.store;
 
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class RemoteRepoInValidUrlTest
         extends AbstractStoreManagementTest
 {
     @Test( expected = IndyClientException.class )
+    @Ignore( "Will retest this after remote url validation rules back and perfected")
     public void run()
             throws Exception
     {
