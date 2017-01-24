@@ -19,7 +19,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
-import org.commonjava.indy.core.content.MergedContentAction;
+import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
