@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.diag.bind.jaxrs;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -40,6 +41,8 @@ import static org.commonjava.indy.util.ApplicationContent.application_zip;
  * REST resource to expose diagnostic retrieval options from {@link org.commonjava.indy.diag.data.DiagnosticsManager}
  */
 @ApplicationScoped
+@Api( value = "Diagnostics",
+      description = "Tools to aid users when something goes wrong on the server, and you don't have access to logs." )
 @Path( "/api/diag" )
 public class DiagnosticsResource
         implements IndyResources
