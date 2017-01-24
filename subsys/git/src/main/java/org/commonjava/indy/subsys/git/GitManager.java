@@ -66,6 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.join;
@@ -85,6 +87,8 @@ public class GitManager
     private final File rootDir;
 
     private final GitConfig config;
+
+    private final ReentrantLock lockObject = new ReentrantLock();
 
     public GitManager( final GitConfig config )
         throws GitSubsystemException
@@ -252,15 +256,14 @@ public class GitManager
     public GitManager addAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
         throws GitSubsystemException
     {
-        if ( !verifyChangesExist( paths ) )
-        {
-            logger.info( "No actual changes in:\n  {}\n\nSkipping commit.", join( paths, "\n  " ) );
-            return this;
-        }
+        lockAnd(me->{
+            if ( !verifyChangesExist( paths ) )
+            {
+                logger.info( "No actual changes in:\n  {}\n\nSkipping commit.", join( paths, "\n  " ) );
+                return this;
+            }
 
-        try
-        {
-            synchronized ( repo )
+            try
             {
                 final AddCommand add = git.add();
                 final CommitCommand commit = git.commit();
@@ -275,15 +278,17 @@ public class GitManager
 
                 commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
             }
-        }
-        catch ( final NoFilepatternException e )
-        {
-            throw new GitSubsystemException( "Cannot add to git: " + e.getMessage(), e );
-        }
-        catch ( final GitAPIException e )
-        {
-            throw new GitSubsystemException( "Cannot add to git: " + e.getMessage(), e );
-        }
+            catch ( final NoFilepatternException e )
+            {
+                throw new GitSubsystemException( "Cannot add to git: " + e.getMessage(), e );
+            }
+            catch ( final GitAPIException e )
+            {
+                throw new GitSubsystemException( "Cannot add to git: " + e.getMessage(), e );
+            }
+
+            return me;
+        });
 
         return this;
     }
@@ -291,64 +296,66 @@ public class GitManager
     private boolean verifyChangesExist( final Collection<String> paths )
         throws GitSubsystemException
     {
-        try
-        {
-            final DiffFormatter formatter = new DiffFormatter( System.out );
-            formatter.setRepository( repo );
-
-            // resolve the HEAD object
-            final ObjectId oid = repo.resolve( Constants.HEAD );
-            if ( oid == null )
-            {
-                // if there's no head, then these must be real changes...
-                return true;
-            }
-
-            // reset a new tree object to the HEAD
-            final RevWalk walk = new RevWalk( repo );
-            final RevCommit commit = walk.parseCommit( oid );
-            final RevTree treeWalk = walk.parseTree( commit );
-
-            // construct filters for the paths we're trying to add/commit
-            final List<TreeFilter> filters = new ArrayList<>();
-            for ( final String path : paths )
-            {
-                filters.add( PathFilter.create( path ) );
-            }
-
-            // we're interested in trees with an actual diff. This should improve walk performance.
-            filters.add( TreeFilter.ANY_DIFF );
-
-            // set the path filters from above
-            walk.setTreeFilter( AndTreeFilter.create( filters ) );
-
-            // setup the tree for doing the comparison vs. uncommitted files
-            final CanonicalTreeParser tree = new CanonicalTreeParser();
-            final ObjectReader oldReader = repo.newObjectReader();
+        return lockAnd(me->{
             try
             {
-                tree.reset( oldReader, treeWalk.getId() );
+                final DiffFormatter formatter = new DiffFormatter( System.out );
+                formatter.setRepository( repo );
+
+                // resolve the HEAD object
+                final ObjectId oid = repo.resolve( Constants.HEAD );
+                if ( oid == null )
+                {
+                    // if there's no head, then these must be real changes...
+                    return true;
+                }
+
+                // reset a new tree object to the HEAD
+                final RevWalk walk = new RevWalk( repo );
+                final RevCommit commit = walk.parseCommit( oid );
+                final RevTree treeWalk = walk.parseTree( commit );
+
+                // construct filters for the paths we're trying to add/commit
+                final List<TreeFilter> filters = new ArrayList<>();
+                for ( final String path : paths )
+                {
+                    filters.add( PathFilter.create( path ) );
+                }
+
+                // we're interested in trees with an actual diff. This should improve walk performance.
+                filters.add( TreeFilter.ANY_DIFF );
+
+                // set the path filters from above
+                walk.setTreeFilter( AndTreeFilter.create( filters ) );
+
+                // setup the tree for doing the comparison vs. uncommitted files
+                final CanonicalTreeParser tree = new CanonicalTreeParser();
+                final ObjectReader oldReader = repo.newObjectReader();
+                try
+                {
+                    tree.reset( oldReader, treeWalk.getId() );
+                }
+                finally
+                {
+                    oldReader.release();
+                }
+                walk.dispose();
+
+                // this iterator will actually scan the uncommitted files for diff'ing
+                final FileTreeIterator files = new FileTreeIterator( repo );
+
+                // do the scan.
+                final List<DiffEntry> entries = formatter.scan( tree, files );
+
+                // we're not interested in WHAT the differences are, only that there are differences.
+                return entries != null && !entries.isEmpty();
             }
-            finally
+            catch ( final IOException e )
             {
-                oldReader.release();
+                throw new GitSubsystemException( "Failed to scan for actual changes among: %s. Reason: %s", e, paths,
+                                                 e.getMessage() );
             }
-            walk.dispose();
-
-            // this iterator will actually scan the uncommitted files for diff'ing
-            final FileTreeIterator files = new FileTreeIterator( repo );
-
-            // do the scan.
-            final List<DiffEntry> entries = formatter.scan( tree, files );
-
-            // we're not interested in WHAT the differences are, only that there are differences.
-            return entries != null && !entries.isEmpty();
-        }
-        catch ( final IOException e )
-        {
-            throw new GitSubsystemException( "Failed to scan for actual changes among: %s. Reason: %s", e, paths,
-                                             e.getMessage() );
-        }
+        });
     }
 
     private String buildMessage( final ChangeSummary summary, final Collection<String> paths )
@@ -397,9 +404,8 @@ public class GitManager
     public GitManager deleteAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
         throws GitSubsystemException
     {
-        try
-        {
-            synchronized ( repo )
+        lockAnd(me->{
+            try
             {
                 RmCommand rm = git.rm();
                 CommitCommand commit = git.commit();
@@ -416,15 +422,17 @@ public class GitManager
 
                 commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
             }
-        }
-        catch ( final NoFilepatternException e )
-        {
-            throw new GitSubsystemException( "Cannot remove from git: " + e.getMessage(), e );
-        }
-        catch ( final GitAPIException e )
-        {
-            throw new GitSubsystemException( "Cannot remove from git: " + e.getMessage(), e );
-        }
+            catch ( final NoFilepatternException e )
+            {
+                throw new GitSubsystemException( "Cannot remove from git: " + e.getMessage(), e );
+            }
+            catch ( final GitAPIException e )
+            {
+                throw new GitSubsystemException( "Cannot remove from git: " + e.getMessage(), e );
+            }
+
+            return me;
+        });
 
         return this;
     }
@@ -432,93 +440,97 @@ public class GitManager
     public ChangeSummary getHeadCommit( final File f )
         throws GitSubsystemException
     {
-        try
-        {
-            final ObjectId oid = repo.resolve( "HEAD" );
+        return lockAnd(me->{
+            try
+            {
+                final ObjectId oid = repo.resolve( "HEAD" );
 
-            final PlotWalk pw = new PlotWalk( repo );
-            final RevCommit rc = pw.parseCommit( oid );
-            pw.markStart( rc );
+                final PlotWalk pw = new PlotWalk( repo );
+                final RevCommit rc = pw.parseCommit( oid );
+                pw.markStart( rc );
 
-            final String filepath = relativize( f );
+                final String filepath = relativize( f );
 
-            pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
+                pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
 
-            final PlotCommitList<PlotLane> cl = new PlotCommitList<>();
-            cl.source( pw );
-            cl.fillTo( 1 );
+                final PlotCommitList<PlotLane> cl = new PlotCommitList<>();
+                cl.source( pw );
+                cl.fillTo( 1 );
 
-            final PlotCommit<PlotLane> commit = cl.get( 0 );
+                final PlotCommit<PlotLane> commit = cl.get( 0 );
 
-            return toChangeSummary( commit );
-        }
-        catch ( RevisionSyntaxException | IOException e )
-        {
-            throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f, e.getMessage() );
-        }
+                return toChangeSummary( commit );
+            }
+            catch ( RevisionSyntaxException | IOException e )
+            {
+                throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f, e.getMessage() );
+            }
+        });
     }
 
     public List<ChangeSummary> getChangelog( final File f, final int start, final int length )
         throws GitSubsystemException
     {
-        if ( length == 0 )
-        {
-            return Collections.emptyList();
-        }
-
-        try
-        {
-            final ObjectId oid = repo.resolve( Constants.HEAD );
-
-            final PlotWalk pw = new PlotWalk( repo );
-            final RevCommit rc = pw.parseCommit( oid );
-            toChangeSummary( rc );
-            pw.markStart( rc );
-
-            final String filepath = relativize( f );
-            logger.info( "Getting changelog for: {} (start: {}, length: {})", filepath, start, length );
-
-            if ( !isEmpty( filepath ) && !filepath.equals( "/" ) )
+        return lockAnd(me->{
+            if ( length == 0 )
             {
-                pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
-            }
-            else
-            {
-                pw.setTreeFilter( TreeFilter.ANY_DIFF );
+                return Collections.emptyList();
             }
 
-            final List<ChangeSummary> changelogs = new ArrayList<ChangeSummary>();
-            int count = 0;
-            final int stop = length > 0 ? length + 1 : 0;
-            RevCommit commit = null;
-            while ( ( commit = pw.next() ) != null && ( stop < 1 || count < stop ) )
+            try
             {
-                if ( count < start )
+                final ObjectId oid = repo.resolve( Constants.HEAD );
+
+                final PlotWalk pw = new PlotWalk( repo );
+                final RevCommit rc = pw.parseCommit( oid );
+                toChangeSummary( rc );
+                pw.markStart( rc );
+
+                final String filepath = relativize( f );
+                logger.info( "Getting changelog for: {} (start: {}, length: {})", filepath, start, length );
+
+                if ( !isEmpty( filepath ) && !filepath.equals( "/" ) )
                 {
+                    pw.setTreeFilter( AndTreeFilter.create( PathFilter.create( filepath ), TreeFilter.ANY_DIFF ) );
+                }
+                else
+                {
+                    pw.setTreeFilter( TreeFilter.ANY_DIFF );
+                }
+
+                final List<ChangeSummary> changelogs = new ArrayList<ChangeSummary>();
+                int count = 0;
+                final int stop = length > 0 ? length + 1 : 0;
+                RevCommit commit = null;
+                while ( ( commit = pw.next() ) != null && ( stop < 1 || count < stop ) )
+                {
+                    if ( count < start )
+                    {
+                        count++;
+                        continue;
+                    }
+
+                    //                printFiles( commit );
+                    changelogs.add( toChangeSummary( commit ) );
                     count++;
-                    continue;
                 }
 
-                //                printFiles( commit );
-                changelogs.add( toChangeSummary( commit ) );
-                count++;
-            }
-
-            if ( length < -1 )
-            {
-                final int remove = ( -1 * length ) - 1;
-                for ( int i = 0; i < remove; i++ )
+                if ( length < -1 )
                 {
-                    changelogs.remove( changelogs.size() - 1 );
+                    final int remove = ( -1 * length ) - 1;
+                    for ( int i = 0; i < remove; i++ )
+                    {
+                        changelogs.remove( changelogs.size() - 1 );
+                    }
                 }
-            }
 
-            return changelogs;
-        }
-        catch ( RevisionSyntaxException | IOException e )
-        {
-            throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f, e.getMessage() );
-        }
+                return changelogs;
+            }
+            catch ( RevisionSyntaxException | IOException e )
+            {
+                throw new GitSubsystemException( "Failed to resolve HEAD commit for: %s. Reason: %s", e, f, e.getMessage() );
+            }
+        });
     }
 
     //    private void printFiles( final RevCommit commit )
@@ -570,18 +582,22 @@ public class GitManager
     public GitManager pullUpdates( final ConflictStrategy strategy )
         throws GitSubsystemException
     {
-        try
-        {
-            git.pull()
-               .setStrategy( strategy.mergeStrategy() )
-               .setRemoteBranchName( config.getRemoteBranchName() )
-               .setRebase( true )
-               .call();
-        }
-        catch ( final GitAPIException e )
-        {
-            throw new GitSubsystemException( "Cannot pull content updates via git: " + e.getMessage(), e );
-        }
+        lockAnd( me->{
+            try
+            {
+                git.pull()
+                   .setStrategy( strategy.mergeStrategy() )
+                   .setRemoteBranchName( config.getRemoteBranchName() )
+                   .setRebase( true )
+                   .call();
+            }
+            catch ( final GitAPIException e )
+            {
+                throw new GitSubsystemException( "Cannot pull content updates via git: " + e.getMessage(), e );
+            }
+
+            return me;
+        } );
 
         return this;
     }
@@ -589,15 +605,19 @@ public class GitManager
     public GitManager pushUpdates()
         throws GitSubsystemException
     {
-        try
-        {
-            git.push()
-               .call();
-        }
-        catch ( final GitAPIException e )
-        {
-            throw new GitSubsystemException( "Cannot push content updates via git: " + e.getMessage(), e );
-        }
+        lockAnd(me->{
+            try
+            {
+                git.push()
+                   .call();
+            }
+            catch ( final GitAPIException e )
+            {
+                throw new GitSubsystemException( "Cannot push content updates via git: " + e.getMessage(), e );
+            }
+
+            return me;
+        });
 
         return this;
     }
@@ -612,55 +632,94 @@ public class GitManager
     public GitManager commitModifiedFiles( final ChangeSummary changeSummary )
         throws GitSubsystemException
     {
-        Status status;
-        try
-        {
-            status = git.status()
-                        .call();
-        }
-        catch ( NoWorkTreeException | GitAPIException e )
-        {
-            throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir, e.getMessage() );
-        }
+        lockAnd((me)->{
+            Status status;
+            try
+            {
+                status = git.status()
+                            .call();
+            }
+            catch ( NoWorkTreeException | GitAPIException e )
+            {
+                throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir, e.getMessage() );
+            }
 
-        final Map<String, StageState> css = status.getConflictingStageState();
-        if ( !css.isEmpty() )
-        {
-            throw new GitSubsystemException( "%s contains conflicts. Cannot auto-commit.\n  %s", rootDir,
-                                             new JoinString( "\n  ", css.entrySet() ) );
-        }
+            final Map<String, StageState> css = status.getConflictingStageState();
+            if ( !css.isEmpty() )
+            {
+                throw new GitSubsystemException( "%s contains conflicts. Cannot auto-commit.\n  %s", rootDir,
+                                                 new JoinString( "\n  ", css.entrySet() ) );
+            }
 
-        final Set<String> toAdd = new HashSet<>();
-        final Set<String> modified = status.getModified();
-        if ( modified != null && !modified.isEmpty() )
-        {
-            toAdd.addAll( modified );
-        }
+            final Set<String> toAdd = new HashSet<>();
+            final Set<String> modified = status.getModified();
+            if ( modified != null && !modified.isEmpty() )
+            {
+                toAdd.addAll( modified );
+            }
 
-        final Set<String> untracked = status.getUntracked();
-        if ( untracked != null && !untracked.isEmpty() )
-        {
-            toAdd.addAll( untracked );
-        }
+            final Set<String> untracked = status.getUntracked();
+            if ( untracked != null && !untracked.isEmpty() )
+            {
+                toAdd.addAll( untracked );
+            }
 
-        final Set<String> untrackedFolders = status.getUntrackedFolders();
-        if ( untrackedFolders != null && !untrackedFolders.isEmpty() )
-        {
-            toAdd.addAll( untrackedFolders );
+            final Set<String> untrackedFolders = status.getUntrackedFolders();
+            if ( untrackedFolders != null && !untrackedFolders.isEmpty() )
+            {
+                toAdd.addAll( untrackedFolders );
 
-            //            for ( String folderPath : untrackedFolders )
-            //            {
-            //                File dir = new File( rootDir, folderPath );
-            //                Files.walkFileTree( null, null )
-            //            }
-        }
+                //            for ( String folderPath : untrackedFolders )
+                //            {
+                //                File dir = new File( rootDir, folderPath );
+                //                Files.walkFileTree( null, null )
+                //            }
+            }
 
-        if ( !toAdd.isEmpty() )
-        {
-            addAndCommitPaths( changeSummary, toAdd );
-        }
+            if ( !toAdd.isEmpty() )
+            {
+                addAndCommitPaths( changeSummary, toAdd );
+            }
+            return me;
+        });
 
         return this;
     }
 
+    private interface GitFunction<T>
+    {
+        T execute( GitManager me )
+                throws GitSubsystemException;
+    }
+
+    private <T> T lockAnd(GitFunction<T> operation)
+            throws GitSubsystemException
+    {
+        try
+        {
+            boolean locked = lockObject.tryLock( config.getLockMillis(), TimeUnit.MILLISECONDS );
+            if( locked )
+            {
+                try
+                {
+                    return operation.execute( this );
+                }
+                finally
+                {
+                    lockObject.unlock();
+                }
+            }
+            else
+            {
+                throw new GitSubsystemException( "Attempt to lock Git subsystem timed out" );
+            }
+        }
+        catch ( InterruptedException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Interrupted while waiting for Git sybsystem lock" );
+        }
+
+        return null;
+    }
 }
