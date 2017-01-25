@@ -521,6 +521,11 @@ public class ContentIndexObserver
                     // FIXME: We probably need to find some way to notify the system of what we're up to.
                     // However, doing this per file is WAY too expensive!
                     transfer.delete( false );
+                    if ( transfer.exists() )
+                    {
+                        Logger logger = LoggerFactory.getLogger( getClass() );
+                        logger.error( "\n\n\n\nDID NOT DELETE merged metadata file at: {}\n\n\n\n", transfer );
+                    }
                 }
             }
             catch ( IndyWorkflowException e )
