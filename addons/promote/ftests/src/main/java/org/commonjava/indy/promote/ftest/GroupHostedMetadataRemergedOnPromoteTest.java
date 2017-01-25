@@ -13,19 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.pkg.maven.content;
+package org.commonjava.indy.promote.ftest;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.promote.client.IndyPromoteClientModule;
+import org.commonjava.indy.promote.model.GroupPromoteRequest;
+import org.commonjava.indy.promote.model.GroupPromoteResult;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 
+import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -52,7 +69,7 @@ import static org.junit.Assert.assertThat;
  *     <li>Group G's metadata path P should reflect values in HostedRepository C's metadata path P</li>
  * </ul>
  */
-public class GroupHostedMetadataRemergedOnNewMemberTest
+public class GroupHostedMetadataRemergedOnPromoteTest
         extends AbstractContentManagementTest
 {
     private static final String GROUP_G_NAME= "G";
@@ -64,11 +81,10 @@ public class GroupHostedMetadataRemergedOnNewMemberTest
     private static final String B_VERSION = "1.1";
     private static final String C_VERSION = "1.2";
 
-    private static final String METADATA_PATH = "/org/foo/bar/maven-metadata.xml";
-    private static final String POM_PATH = "/org/foo/bar/%version%/bar-%version%.pom";
+    private static final String PATH = "/org/foo/bar/maven-metadata.xml";
 
     /* @formatter:off */
-    private static final String REPO_METADATA_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+    private static final String REPO_CONTENT_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
         "<metadata>\n" +
         "  <groupId>org.foo</groupId>\n" +
         "  <artifactId>bar</artifactId>\n" +
@@ -81,17 +97,6 @@ public class GroupHostedMetadataRemergedOnNewMemberTest
         "    <lastUpdated>20150722164334</lastUpdated>\n" +
         "  </versioning>\n" +
         "</metadata>\n";
-    /* @formatter:on */
-
-    /* @formatter:off */
-    private static final String REPO_POM_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<project>\n" +
-        "  <modelVersion>4.0.0</modelVersion>\n" +
-        "  <groupId>org.foo</groupId>\n" +
-        "  <artifactId>bar</artifactId>\n" +
-        "  <version>%version%</version>\n" +
-        "  <packaging>pom</packaging>\n" +
-        "</project>\n";
     /* @formatter:on */
 
     /* @formatter:off */
@@ -135,6 +140,8 @@ public class GroupHostedMetadataRemergedOnNewMemberTest
     private HostedRepository b;
     private HostedRepository c;
 
+    private final IndyPromoteClientModule promote = new IndyPromoteClientModule();
+
     @Before
     public void setupRepos()
             throws IndyClientException
@@ -147,13 +154,17 @@ public class GroupHostedMetadataRemergedOnNewMemberTest
 
         g = client.stores().create( new Group( GROUP_G_NAME, a.getKey(), b.getKey() ), message, Group.class );
 
-        deployContent( a, METADATA_PATH, REPO_METADATA_TEMPLATE, A_VERSION );
-        deployContent( b, METADATA_PATH, REPO_METADATA_TEMPLATE, B_VERSION );
-        deployContent( c, METADATA_PATH, REPO_METADATA_TEMPLATE, C_VERSION );
+        client.content()
+              .store( a.getKey(), PATH, new ByteArrayInputStream(
+                      REPO_CONTENT_TEMPLATE.replaceAll( "%version%", A_VERSION ).getBytes() ) );
 
-        deployContent( a, POM_PATH, REPO_POM_TEMPLATE, A_VERSION );
-        deployContent( b, POM_PATH, REPO_POM_TEMPLATE, B_VERSION );
-        deployContent( c, POM_PATH, REPO_POM_TEMPLATE, C_VERSION );
+        client.content()
+              .store( b.getKey(), PATH, new ByteArrayInputStream(
+                      REPO_CONTENT_TEMPLATE.replaceAll( "%version%", B_VERSION ).getBytes() ) );
+
+        client.content()
+              .store( c.getKey(), PATH, new ByteArrayInputStream(
+                      REPO_CONTENT_TEMPLATE.replaceAll( "%version%", C_VERSION ).getBytes() ) );
     }
 
     @Test
@@ -161,23 +172,22 @@ public class GroupHostedMetadataRemergedOnNewMemberTest
     public void run()
             throws Exception
     {
-        assertContent( g, METADATA_PATH, BEFORE_GROUP_CONTENT );
+        assertContent( g, PATH, BEFORE_GROUP_CONTENT );
 
-        g.addConstituent( c );
-        client.stores().update( g, "Adding hosted c to membership" );
+        GroupPromoteRequest request = new GroupPromoteRequest( c.getKey(), g.getName() );
+        GroupPromoteResult response = promote.promoteToGroup( request );
+
+        assertThat( response.succeeded(), equalTo( true ) );
 
         waitForEventPropagation();
 
-        assertContent( g, METADATA_PATH, AFTER_GROUP_CONTENT );
+        assertContent( g, PATH, AFTER_GROUP_CONTENT );
     }
 
-    private void deployContent( HostedRepository repo, String pathTemplate, String template, String version )
-            throws IndyClientException
+    @Override
+    protected Collection<IndyClientModule> getAdditionalClientModules()
     {
-        String path = pathTemplate.replaceAll( "%version%", version );
-        client.content()
-              .store( repo.getKey(), path, new ByteArrayInputStream(
-                      template.replaceAll( "%version%", version ).getBytes() ) );
+        return Collections.singleton( promote );
     }
 
     @Override
