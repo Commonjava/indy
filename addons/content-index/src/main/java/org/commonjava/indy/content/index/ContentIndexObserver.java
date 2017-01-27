@@ -100,7 +100,8 @@ public class ContentIndexObserver
         this.objectMapper = objectMapper;
     }
 
-    public void clearMergedPath( ArtifactStore originatingStore, Set<Group> groups, String path )
+    @Override
+    public void clearMergedPath( final ArtifactStore originatingStore, final Set<Group> groups, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Clearing merged path: {} from indexes of: {} (triggered by: {})", path, groups, originatingStore );
@@ -255,11 +256,11 @@ public class ContentIndexObserver
         if ( StoreType.group == key.getType() )
         {
             List<StoreKey> newMembers = ( (Group) store ).getConstituents();
-            logger.debug( "New members of: {} are: {}", store, newMembers );
+            logger.debug( "New members of: {} are: {}", key, newMembers );
 
             Group group = (Group) changeMap.get( store );
             List<StoreKey> oldMembers = group.getConstituents();
-            logger.debug( "Old members of: {} are: {}", group, oldMembers );
+            logger.debug( "Old members of: {} are: {}", key, oldMembers );
 
             int commonSize = Math.min( newMembers.size(), oldMembers.size() );
             int divergencePoint;
@@ -334,7 +335,10 @@ public class ContentIndexObserver
                 Set<Group> groups = storeDataManager.getGroupsAffectedBy( group.getKey() );
                 groups.add( group );
 
-                logger.debug( "Got affected groups: {}", groups );
+                if ( logger.isDebugEnabled() )
+                {
+                    logger.debug( "Got affected groups: {}", groups.stream().map( grp ->  grp.getKey() ).collect( Collectors.toSet() ) );
+                }
                 Set<String> paths = new HashSet<>();
                 affectedMembers.forEach( ( memberKey ) -> paths.addAll(
                         indexManager.getAllIndexedPathsForStore( memberKey )
