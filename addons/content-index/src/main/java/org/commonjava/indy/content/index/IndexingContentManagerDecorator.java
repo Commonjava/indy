@@ -168,6 +168,11 @@ public abstract class IndexingContentManagerDecorator
         }
 
         StoreType type = store.getKey().getType();
+
+        // NOTE: This will make the index cache non-disposable, which will mean that we have to use more reliable
+        // (slower) disk to store it...which will be BAD for performance.
+        // Ironically, this change will speed things up in the short term but slow them way down in the larger
+        // context.
 //        if ( StoreType.hosted == type )
 //        {
 //            // hosted repos are completely indexed, since the store() method maintains the index
@@ -176,6 +181,7 @@ public abstract class IndexingContentManagerDecorator
 //            return null;
 //        }
 //        else if ( StoreType.group == type )
+
         if ( StoreType.group == type )
         {
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
