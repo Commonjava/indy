@@ -369,7 +369,7 @@ public class ContentIndexManager
 //        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
 
         groups.forEach( (group)->{
-            logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
+            logger.trace( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
 
             // if we remove an indexed path, it SHOULD mean there was content. If not, we should delete the NFC entry.
             if ( !removeIndexedStorePath( path, group.getKey(), pathConsumer ) )

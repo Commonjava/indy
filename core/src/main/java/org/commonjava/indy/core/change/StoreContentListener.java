@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -100,11 +101,11 @@ public class StoreContentListener
         if ( StoreType.group == key.getType() )
         {
             List<StoreKey> newMembers = ( (Group) store ).getConstituents();
-            logger.debug( "New members of: {} are: {}", store, newMembers );
+            logger.trace( "New members of: {} are: {}", store.getKey(), newMembers );
 
             Group group = (Group) changeMap.get( store );
             List<StoreKey> oldMembers = group.getConstituents();
-            logger.debug( "Old members of: {} are: {}", group, oldMembers );
+            logger.trace( "Old members of: {} are: {}", group.getName(), oldMembers );
 
             int commonSize = Math.min( newMembers.size(), oldMembers.size() );
             int divergencePoint;
@@ -115,7 +116,7 @@ public class StoreContentListener
             boolean foundDivergence = false;
             for ( divergencePoint = 0; divergencePoint < commonSize; divergencePoint++ )
             {
-                logger.debug( "Checking for common member at index: {}", divergencePoint );
+                logger.trace( "Checking for common member at index: {}", divergencePoint );
                 if ( !oldMembers.get( divergencePoint ).equals( newMembers.get( divergencePoint ) ) )
                 {
                     foundDivergence = true;
@@ -149,7 +150,7 @@ public class StoreContentListener
                 }
             }
 
-            logger.debug( "group membership divergence point: {}", divergencePoint );
+            logger.trace( "Group membership divergence point: {}", divergencePoint );
 
             Set<StoreKey> affectedMembers = new HashSet<>();
             boolean removeMergableOnly = divergencePoint >= oldMembers.size();
@@ -173,19 +174,20 @@ public class StoreContentListener
                 }
             }
 
-            logger.debug( "Got members affected by membership divergence: {}", affectedMembers );
+            logger.debug( "Got members affected by membership update: {}", affectedMembers );
             if ( !affectedMembers.isEmpty() )
             {
                 Set<Group> groups = storeDataManager.getGroupsAffectedBy( group.getKey() );
                 groups.add( group );
 
-                logger.debug( "Got affected groups: {}", groups );
+                logger.debug( "Groups affected by this membership change: {}", groups.stream().map( g->g.getName() ).collect(
+                        Collectors.toSet() ) );
 
                 affectedMembers.parallelStream().forEach( ( memberKey ) -> {
                     logger.debug( "Listing all {}paths in: {}", ( removeMergableOnly ? "mergeable " : "" ), memberKey );
                     Set<String> paths = listPaths( memberKey, removeMergableOnly ? mergablePathStrings() : ( p ) -> true );
 
-                    logger.debug( "Got mergable transfers from diverged portion of membership: {}", paths );
+                    logger.debug( "Got mergable paths from diverged portion of membership: {}", paths );
 
                     clearPaths( paths, memberKey, groups, false );
                 } );
@@ -275,20 +277,20 @@ public class StoreContentListener
                         Transfer t = next.getChild( filename );
                         if ( t.isDirectory() )
                         {
-                            logger.debug( "Adding directory path for processing: {}", t.getPath() );
+                            logger.trace( "Adding directory path for processing: {}", t.getPath() );
                             toProcess.add( t );
                         }
                         else
                         {
-                            logger.debug( "Testing file path: {}", t.getPath() );
+                            logger.trace( "Testing file path: {}", t.getPath() );
                             if( pathFilter.test( t.getPath() ) )
                             {
-                                logger.debug( "Adding file path to results: {}", t.getPath() );
+                                logger.trace( "Adding file path to results: {}", t.getPath() );
                                 paths.add( t.getPath() );
                             }
                             else
                             {
-                                logger.debug( "Skipping file path: {}", t.getPath() );
+                                logger.trace( "Skipping file path: {}", t.getPath() );
                             }
                         }
                     } );
