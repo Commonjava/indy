@@ -42,6 +42,8 @@
       </encoder>
     </appender>
 
+  <logger name="org.commonjava.indy" level="TRACE"/>
+
   <root level="DEBUG">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />

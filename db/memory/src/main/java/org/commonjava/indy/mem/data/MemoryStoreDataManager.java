@@ -291,26 +291,31 @@ public class MemoryStoreDataManager
                                      final EventMetadata eventMetadata )
             throws IndyDataException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         ReentrantLock opLock = getOpLock( key );
         try
         {
+            logger.trace( "Delete operation starting: {}", key );
             opLock.lock();
 
             final ArtifactStore store = stores.get( key );
             if ( store == null )
             {
+                logger.warn( "No store found for: {}", key );
                 return;
             }
 
             preDelete( store, summary, true, eventMetadata );
 
             ArtifactStore removed = stores.remove( key );
+            logger.trace( "Removed store: {}", removed );
 
             postDelete( store, summary, true, eventMetadata );
         }
         finally
         {
             opLock.unlock();
+            logger.trace( "Delete operation complete: {}", key );
         }
     }
 

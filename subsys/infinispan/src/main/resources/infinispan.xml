@@ -6,7 +6,7 @@
 
   <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
     <local-cache name="koji-maven-version-metadata" >
-      <eviction size="100000" type="COUNT"/>
+      <eviction size="10000000" type="COUNT"/>
       <persistence passivation="false">
         <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/koji-maven-version-metadata">
           <write-behind/>
@@ -15,7 +15,7 @@
     </local-cache>
 
     <local-cache name="folo-in-progress" >
-      <eviction size="100000" type="COUNT"/>
+      <eviction size="10000000" type="COUNT"/>
       <persistence passivation="false">
         <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/folo-in-progress">
           <write-behind/>
@@ -24,7 +24,7 @@
     </local-cache>
 
     <local-cache name="folo-sealed">
-      <eviction size="100" type="COUNT"/>
+      <eviction size="1000" type="COUNT"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
@@ -35,7 +35,7 @@
     </local-cache>
     
     <local-cache name="content-index">
-      <eviction size="10000" type="COUNT"/>
+      <eviction size="10000000" type="COUNT"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index">
           <write-behind/>
@@ -48,7 +48,7 @@
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
-      <eviction size="1000" type="COUNT" strategy="LRU"/>
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>

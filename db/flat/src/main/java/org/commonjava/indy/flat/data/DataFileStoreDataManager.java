@@ -212,9 +212,12 @@ public class DataFileStoreDataManager
     private void delete( final StoreType type, final String name, final ChangeSummary summary )
         throws IndyDataException
     {
+        logger.trace( "Attempting to delete data file for store: {}:{}", type, name );
+
         final DataFile f = manager.getDataFile( INDY_STORE, type.singularEndpointName(), name + ".json" );
         try
         {
+            logger.trace( "Deleting file: {}", f );
             f.delete( summary );
         }
         catch ( final IOException e )
