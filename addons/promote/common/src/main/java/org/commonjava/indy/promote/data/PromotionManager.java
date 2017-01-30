@@ -437,23 +437,11 @@ public class PromotionManager
         final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
 
         List<String> errors = new ArrayList<>();
-        ArtifactStore sourceStore = null;
-        ArtifactStore targetStore = null;
         try
         {
-            sourceStore = storeManager.getArtifactStore( request.getSource() );
-            targetStore = storeManager.getArtifactStore( request.getTarget() );
-        }
-        catch ( final IndyDataException e )
-        {
-            String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(),
-                                        e.getMessage() );
-            errors.add( msg );
-            logger.error( msg, e );
-        }
+            ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
+            ArtifactStore targetStore = storeManager.getArtifactStore( request.getTarget() );
 
-        try
-        {
             if ( errors.isEmpty() )
             {
                 boolean locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
@@ -473,8 +461,7 @@ public class PromotionManager
                              targetStore, request.getTarget() );
 
                 final boolean purgeSource = request.isPurgeSource();
-                for ( final Transfer transfer : contents )
-                {
+                contents.forEach( (transfer)->{
                     try
                     {
                         final String path = transfer.getPath();
@@ -491,33 +478,32 @@ public class PromotionManager
                             // TODO: There's no guarantee that the pre-existing content is the same!
                             pending.remove( path );
                             skipped.add( path );
-
-                            continue;
                         }
-
-                        try (InputStream stream = transfer.openInputStream( true ))
+                        else
                         {
-                            contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                  new EventMetadata() );
-
-                            pending.remove( path );
-                            complete.add( path );
-
-                            stream.close();
-
-                            if ( purgeSource )
+                            try (InputStream stream = transfer.openInputStream( true ))
                             {
-                                contentManager.delete( sourceStore, path, new EventMetadata() );
+                                contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                      new EventMetadata() );
+
+                                pending.remove( path );
+                                complete.add( path );
+
+                                stream.close();
+
+                                if ( purgeSource )
+                                {
+                                    contentManager.delete( sourceStore, path, new EventMetadata() );
+                                }
+                            }
+                            catch ( final IOException e )
+                            {
+                                String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                            e.getMessage() );
+                                errors.add( msg );
+                                logger.error( msg, e );
                             }
                         }
-                        catch ( final IOException e )
-                        {
-                            String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                        e.getMessage() );
-                            errors.add( msg );
-                            logger.error( msg, e );
-                        }
-                        //                        }
                     }
                     catch ( final IndyWorkflowException e )
                     {
@@ -527,7 +513,7 @@ public class PromotionManager
                         errors.add( msg );
                         logger.error( msg, e );
                     }
-                }
+                } );
             }
 
         }
@@ -536,6 +522,13 @@ public class PromotionManager
             String error = String.format( "Interrupted waiting for promotion lock on target: %s", targetKey );
             errors.add( error );
             logger.warn( error );
+        }
+        catch ( final IndyDataException e )
+        {
+            String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(),
+                                        e.getMessage() );
+            errors.add( msg );
+            logger.error( msg, e );
         }
         finally
         {

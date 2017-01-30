@@ -23,7 +23,6 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.cache.Configuration;
@@ -43,8 +42,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConfig.ISPN_XML;
-
 /**
  * Created by jdcasey on 3/8/16.
  */
@@ -52,13 +49,12 @@ import static org.commonjava.indy.subsys.infinispan.conf.InfinispanSubsystemConf
 public class CacheProducer
         implements ShutdownAction
 {
+    private static final String ISPN_XML = "infinispan.xml";
+
     private EmbeddedCacheManager cacheManager;
 
     @Inject
     private IndyConfiguration indyConfiguration;
-
-    @Inject
-    private InfinispanSubsystemConfig ispnConfig;
 
     private Map<String, CacheHandle> caches = new ConcurrentHashMap<>();
 
@@ -78,11 +74,7 @@ public class CacheProducer
         new MarshallableTypeHints().getBufferSizePredictor( CacheHandle.class );
 
         File confDir = indyConfiguration.getIndyConfDir();
-        File ispnConf = ispnConfig.getInfinispanXml();
-        if ( ispnConf == null )
-        {
-            ispnConf = new File( confDir, ISPN_XML );
-        }
+        File ispnConf = new File( confDir, ISPN_XML );
 
         String configuration;
         if ( ispnConf.exists() )
