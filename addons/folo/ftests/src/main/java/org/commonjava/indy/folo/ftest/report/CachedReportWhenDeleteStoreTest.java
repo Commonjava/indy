@@ -60,11 +60,11 @@ public class CachedReportWhenDeleteStoreTest
     protected void doDeletion( final StoreKey storeKey, final String path )
             throws Exception
     {
-        client.module( IndyStoresClientModule.class )
+        client.stores()
               .delete( storeKey.getType(), storeKey.getName(), "remove central" );
         Thread.sleep( 1000L );
         assertThat( "central proxy repo should be deleted",
-                    client.module( IndyStoresClientModule.class ).exists( StoreType.remote, CENTRAL ),
+                    client.stores().exists( StoreType.remote, CENTRAL ),
                     equalTo( false ) );
     }
 }

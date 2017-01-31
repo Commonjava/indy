@@ -29,9 +29,12 @@ import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -72,6 +75,9 @@ public class DefaultStoreEventDispatcher
     {
         if ( preDelEvent != null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.trace( "Firing store pre-delete event for: {}", Arrays.asList( stores ) );
+
 //            executor.execute( () -> {
                 final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
                 for ( final ArtifactStore store : stores )
@@ -97,7 +103,12 @@ public class DefaultStoreEventDispatcher
     {
         if ( postDelEvent != null )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.trace( "Requesting execution of store post-delete event for: {}", Arrays.asList( stores ) );
+
             executor.execute( () -> {
+                logger.trace( "Firing store post-delete event for: {}", Arrays.asList( stores ) );
+
                 final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
                 for ( final ArtifactStore store : stores )
                 {

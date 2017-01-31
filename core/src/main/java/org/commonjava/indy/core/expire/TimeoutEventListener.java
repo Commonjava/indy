@@ -16,19 +16,19 @@
 package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.change.event.AbstractStoreDeleteEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -46,11 +46,13 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @ApplicationScoped
 public class TimeoutEventListener
+        implements StoreContentAction
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -58,7 +60,7 @@ public class TimeoutEventListener
     private ScheduleManager scheduleManager;
 
     @Inject
-    private ContentManager fileManager;
+    private ContentManager contentManager;
 
     @Inject
     private StoreDataManager storeManager;
@@ -94,27 +96,31 @@ public class TimeoutEventListener
 
         final StoreKey key = expiration.getKey();
         final String path = expiration.getPath();
-
-        boolean deleted = false;
         try
         {
-            final ArtifactStore store = storeManager.getArtifactStore( key );
+            ArtifactStore store = storeManager.getArtifactStore( key );
+            boolean deleted = contentManager.delete( store, path );
 
-            logger.info( "[EXPIRED; DELETE] {}:{}", key, path );
-            deleted = fileManager.delete( store, path, new EventMetadata() );
+            if ( !deleted )
+            {
+                logger.error("Failed to delete Transfer for: {} in: {} (for content timeout).", path, key );
+            }
+            else
+            {
+                deleteExpiration( key, path );
+            }
         }
-        catch ( final IndyWorkflowException | IndyDataException e )
+        catch ( IndyWorkflowException e )
         {
             logger.error(
-                    String.format( "Failed to delete expired file for: %s, %s. Reason: %s", key, path, e.getMessage() ),
-                    e );
-
-            return;
+                    String.format( "Failed to retrieve Transfer for: %s in: %s (for content timeout). Reason: %s", path,
+                                   key, e ), e );
         }
-
-        if ( deleted )
+        catch ( IndyDataException e )
         {
             scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
+            logger.error(
+                    String.format( "Failed to retrieve ArtifactStore for: %s (for content timeout). Reason: %s", key, e ), e );
         }
     }
 
@@ -229,15 +235,7 @@ public class TimeoutEventListener
         final StoreKey key = getKey( event );
         if ( key != null )
         {
-            try
-            {
-                scheduleManager.cancel( new StoreKeyMatcher( key, ScheduleManager.CONTENT_JOB_TYPE ),
-                                        event.getTransfer().getPath() );
-            }
-            catch ( final IndySchedulerException e )
-            {
-                logger.error( "Failed to cancel content-expiration timeout related to: " + event.getTransfer(), e );
-            }
+            deleteExpiration( key, event.getTransfer().getPath() );
         }
     }
 
@@ -278,36 +276,26 @@ public class TimeoutEventListener
         }
     }
 
-    public void onStoreDeletion( @Observes final AbstractStoreDeleteEvent event )
+    @Override
+    public void clearStoreContent( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups,
+                                   boolean clearOriginPath )
     {
-        for ( final Map.Entry<ArtifactStore, Transfer> storeRoot : event.getStoreRoots().entrySet() )
-        {
-            final StoreKey key = storeRoot.getKey().getKey();
-
-            final Transfer dir = storeRoot.getValue();
-
-            if ( dir.exists() && dir.isDirectory() )
+        paths.parallelStream().forEach( p->{
+            if ( clearOriginPath )
             {
-                try
-                {
-                    logger.info( "[STORE REMOVED; DELETE] {}", dir.getFullPath() );
-                    dir.delete();
-                    scheduleManager.cancelAll( new StoreKeyMatcher( key, ScheduleManager.CONTENT_JOB_TYPE ) );
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( String.format(
-                            "Failed to delete storage for deleted artifact store: %s (dir: %s). Error: %s", key, dir,
-                            e.getMessage() ), e );
-                }
-                catch ( final IndySchedulerException e )
-                {
-                    logger.error( String.format(
-                            "Failed to cancel file expirations for deleted artifact store: {} (dir: {}). Error: {}",
-                            key, dir, e.getMessage() ), e );
-                }
+                deleteExpiration( originKey, p );
             }
-        }
+
+            if ( affectedGroups != null && !affectedGroups.isEmpty() )
+            {
+                affectedGroups.forEach( g -> deleteExpiration( g.getKey(), p ) );
+            }
+        } );
+    }
+
+    private void deleteExpiration( StoreKey key, String path )
+    {
+        scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
     }
 
 }
