@@ -122,7 +122,7 @@ public class Group
     @Override
     public String toString()
     {
-        return String.format( "Group [constituents=%s, getName()=%s, getKey()=%s]", constituents, getName(), getKey() );
+        return String.format( "Group[%s]", getName() );
     }
 
     @Override
