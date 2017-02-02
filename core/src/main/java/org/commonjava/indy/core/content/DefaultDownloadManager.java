@@ -737,8 +737,11 @@ public class DefaultDownloadManager
                     transfer = null;
                 }
 
-                logger.info( "Using transfer: {}", transfer );
-                break;
+                if ( transfer != null )
+                {
+                    logger.info( "Using transfer: {}", transfer );
+                    break;
+                }
             }
         }
 
