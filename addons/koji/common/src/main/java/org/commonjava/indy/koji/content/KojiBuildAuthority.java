@@ -124,14 +124,15 @@ public class KojiBuildAuthority
 
         if ( authoritativeStore != null )
         {
-            KojiBuildArchiveCollection archiveCollection = seenBuildArchives.get(build.getId());
-            if ( archiveCollection == null ){
-                archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
+            KojiBuildArchiveCollection archiveCollection = seenBuildArchives.get( build.getId() );
+            if ( archiveCollection == null )
+            {
+                archiveCollection = kojiClient.listArchivesForBuild( build, session );
                 seenBuildArchives.put( build.getId(), archiveCollection );
             }
 
             // @formatter:off
-            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXCLUDED_FILE_ENDINGS.parallelStream()
+            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXCLUDED_FILE_ENDINGS.stream()
                                                                                                .filter( ending -> !archive.getFilename().endsWith( ending ) )
                                                                                                .findAny()
                                                                                                .isPresent();
