@@ -41,8 +41,7 @@ public class HostedRepository
     @Override
     public String toString()
     {
-        return String.format( "HostedRepository [allowSnapshots=%s, allowReleases=%s, key=%s, storage-directory=%s]",
-                              isAllowSnapshots(), isAllowReleases(), getKey(), getStorage() );
+        return String.format( "HostedRepository [%s]", getName() );
     }
 
     public int getSnapshotTimeoutSeconds()

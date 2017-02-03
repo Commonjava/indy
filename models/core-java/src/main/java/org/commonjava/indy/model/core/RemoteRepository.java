@@ -234,9 +234,8 @@ public class RemoteRepository
     public String toString()
     {
         return String.format(
-                "Repository [url=%s, allowSnapshots=%s, allowReleases=%s, timeoutSeconds=%s, cacheTimeoutSeconds=%s, metadataTimeoutSeconds=%s, host=%s, port=%s, user=%s, password=%s, getName()=%s, getKey()=%s]",
-                url, isAllowSnapshots(), isAllowReleases(), timeoutSeconds, cacheTimeoutSeconds, metadataTimeoutSeconds,
-                host, port, user, password, getName(), getKey() );
+                "RemoteRepository [%s, %s]",
+                getName(), url );
     }
 
     public boolean isPassthrough()
