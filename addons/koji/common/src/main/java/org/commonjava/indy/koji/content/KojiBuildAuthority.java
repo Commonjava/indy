@@ -65,7 +65,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 public class KojiBuildAuthority
 {
 
-    private static final List<String> EXLUDED_FILE_ENDINGS = Collections.unmodifiableList(
+    private static final List<String> EXCLUDED_FILE_ENDINGS = Collections.unmodifiableList(
             Arrays.asList( "scm-sources.zip", "patches.zip", "sources.jar", "javadoc.jar" ) );
 
     @Inject
@@ -106,8 +106,9 @@ public class KojiBuildAuthority
     public enum TypePriority
     {
         jar,
-        pom,
-        other;
+        other,
+        xml,
+        pom;
 
         public static TypePriority get( String type )
         {
@@ -145,10 +146,10 @@ public class KojiBuildAuthority
             }
 
             // @formatter:off
-            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXLUDED_FILE_ENDINGS.parallelStream()
-                                                                                              .filter( ending -> archive.getFilename().endsWith( ending ) )
-                                                                                              .findAny()
-                                                                                              .isPresent();
+            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXCLUDED_FILE_ENDINGS.parallelStream()
+                                                                                               .filter( ending -> !archive.getFilename().endsWith( ending ) )
+                                                                                               .findAny()
+                                                                                               .isPresent();
             List<KojiArchiveInfo> sortedArchives = archiveCollection.getArchives()
                                                                     .stream()
                                                                     // filter out excluded filename endings.
@@ -231,7 +232,7 @@ public class KojiBuildAuthority
                 {
                     try (InputStream in = md5.openInputStream( true ))
                     {
-                        return IOUtils.toString( in );
+                        return IOUtils.toString( in ).trim();
                     }
                     catch ( IOException e )
                     {
