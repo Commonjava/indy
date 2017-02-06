@@ -1,11 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <methodCall>
-  <methodName>getBuild</methodName>
-  <params>
-    <param>
-      <value>
-        <int>196927</int>
-      </value>
-    </param>
-  </params>
+  <methodName>logout</methodName>
 </methodCall>
