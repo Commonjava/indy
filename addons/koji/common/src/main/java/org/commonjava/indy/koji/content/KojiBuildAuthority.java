@@ -146,6 +146,11 @@ public class KojiBuildAuthority
                 seenBuildArchives.put( build.getId(), archiveCollection );
             }
 
+            if ( archiveCollection == null )
+            {
+                throw new KojiClientException( "Failed to retrieve archives for build: %s", build );
+            }
+
             // @formatter:off
             Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXCLUDED_FILE_ENDINGS.stream()
                                                                                                .filter( ending -> !archive.getFilename().endsWith( ending ) )
