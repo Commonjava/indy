@@ -1,29 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" ?>
 <methodCall>
-  <methodName>listArchives</methodName>
+  <methodName>getBuild</methodName>
   <params>
     <param>
       <value>
-        <struct>
-          <member>
-            <name>__starstar</name>
-            <value>
-              <boolean>1</boolean>
-            </value>
-          </member>
-          <member>
-            <name>buildID</name>
-            <value>
-              <int>422953</int>
-            </value>
-          </member>
-          <member>
-            <name>type</name>
-            <value>
-              <string>maven</string>
-            </value>
-          </member>
-        </struct>
+        <int>196927</int>
       </value>
     </param>
   </params>
