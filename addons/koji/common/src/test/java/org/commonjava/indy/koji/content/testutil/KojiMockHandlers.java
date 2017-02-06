@@ -23,14 +23,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.fail;
 
@@ -109,8 +107,8 @@ public final class KojiMockHandlers
                 XMLUnit.setIgnoreAttributeOrder( true );
                 XMLUnit.setIgnoreComments( true );
 
-                assertXMLEqual( "Requested XML not equal to expected XML from: " + requestPath, requestXml,
-                                expectedXml );
+                assertXMLEqual( "Requested XML not equal to expected XML from: " + requestPath, expectedXml,
+                                requestXml);
             }
             catch ( SAXException e )
             {
