@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <methodCall>
-  <methodName>getBuild</methodName>
+  <methodName>getMavenBuild</methodName>
   <params>
     <param>
       <value>
