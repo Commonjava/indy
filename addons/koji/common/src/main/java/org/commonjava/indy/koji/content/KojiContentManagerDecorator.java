@@ -21,6 +21,9 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
+import org.codehaus.plexus.interpolation.InterpolationException;
+import org.codehaus.plexus.interpolation.ObjectBasedValueSource;
+import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
@@ -95,6 +98,8 @@ public abstract class KojiContentManagerDecorator
     private static final String NVR = "koji-NVR";
 
     public static final String KOJI_ORIGIN = "koji";
+
+    public static final String KOJI_ORIGIN_BINARY = "koji-binary";
 
     private static final String KOJI_REPO_CREATOR_SCRIPT = "koji-repo-creator.groovy";
 
@@ -314,46 +319,38 @@ public abstract class KojiContentManagerDecorator
 
                 for ( KojiBuildInfo build : builds )
                 {
-                    if ( build.getTaskId() == null )
-                    {
-                        logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.",
-                                      build.getNvr() );
-                        // This is not a real build, it's a binary import.
-                        continue;
-                    }
-
-                    logger.info( "Trying build: {} with id: {}", build.getNvr(), build.getId() );
-                    List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
-                    logger.debug( "Build is in {} tags...", tags.size() );
-
                     boolean buildAllowed = false;
-                    for ( KojiTagInfo tag : tags )
+                    if ( isBinaryBuild(build) )
                     {
-                        // If the tags match patterns configured in whitelist, construct a new remote repo.
-                        if ( config.isTagAllowed( tag.getName() ) )
-                        {
-                            logger.info( "Koji tag is on whitelist: {}", tag.getName() );
-                            buildAllowed = true;
-                            break;
-                        }
-                        else
-                        {
-                            logger.debug( "Tag: {} is not in the whitelist.", tag.getName() );
-                        }
-                    }
-
-                    if ( buildAllowed )
-                    {
-                        // If the authoritative store is not configured, one or both systems is missing MD5 information,
-                        // or the artifact matches the one in the authoritative store, go ahead.
-                        if ( buildAuthority.isAuthorized( path, eventMetadata, artifactRef, build, session ) )
-                        {
-                            return consumer.execute( artifactRef, build, session );
-                        }
+                        // This is not a real build, it's a binary import.
+                        logger.info("Trying binary build: {} with id: {}", build.getNvr(), build.getId());
+                        buildAllowed = true;
                     }
                     else
                     {
-                        logger.debug( "No whitelisted tags found for: {}", build.getNvr() );
+                        logger.info("Trying build: {} with id: {}", build.getNvr(), build.getId());
+                        List<KojiTagInfo> tags = kojiClient.listTags(build.getId(), session);
+                        logger.debug("Build is in {} tags...", tags.size());
+
+                        for (KojiTagInfo tag : tags) {
+                            // If the tags match patterns configured in whitelist, construct a new remote repo.
+                            if (config.isTagAllowed(tag.getName())) {
+                                logger.info("Koji tag is on whitelist: {}", tag.getName());
+                                buildAllowed = true;
+                                break;
+                            } else {
+                                logger.debug("Tag: {} is not in the whitelist.", tag.getName());
+                            }
+                        }
+                    }
+                    if (buildAllowed) {
+                        // If the authoritative store is not configured, one or both systems is missing MD5 information,
+                        // or the artifact matches the one in the authoritative store, go ahead.
+                        if (buildAuthority.isAuthorized(path, eventMetadata, artifactRef, build, session)) {
+                            return consumer.execute(artifactRef, build, session);
+                        }
+                    } else {
+                        logger.debug("No whitelisted tags found for: {}", build.getNvr());
                     }
                 }
 
@@ -369,6 +366,10 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
+    private boolean isBinaryBuild( KojiBuildInfo build )
+    {
+        return build.getTaskId() == null;
+    }
 
     private RemoteRepository createRemoteRepository( ArtifactRef artifactRef, final KojiBuildInfo build,
                                                      final KojiSessionInfo session )
@@ -379,14 +380,24 @@ public abstract class KojiContentManagerDecorator
         {
             KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
 
-            String name = KOJI_ORIGIN + "-" + build.getNvr();
+            boolean isBinaryBuild = isBinaryBuild( build );
+            String name = getRepositoryName( build, isBinaryBuild );
 
             // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
             RemoteRepository remote = creator.createRemoteRepository( name, formatStorageUrl( build ),
                                                                       config.getDownloadTimeoutSeconds() );
 
             remote.setServerCertPem( config.getServerPemContent() );
-            remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
+
+            if ( isBinaryBuild )
+            {
+                remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN_BINARY );
+            }
+            else
+            {
+                remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
+            }
+
             // set pathMaskPatterns using build output paths
             Set<String> patterns = new HashSet<>();
             patterns.addAll( archiveCollection.getArchives()
@@ -426,6 +437,22 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
+    private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )
+    {
+        StringSearchInterpolator interpolator = new StringSearchInterpolator();
+        interpolator.addValueSource( new ObjectBasedValueSource( build ) );
+
+        try
+        {
+            return interpolator.interpolate( isBinaryBuild ?
+                    config.getBinayNamingFormat() : config.getNamingFormat() );
+        }
+        catch ( InterpolationException e )
+        {
+            throw new RuntimeException( "Cannot resolve expressions in Koji configuration.", e );
+        }
+    }
+
     private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group group )
             throws IndyWorkflowException
     {
@@ -436,7 +463,11 @@ public abstract class KojiContentManagerDecorator
         // the entry-point group.
         Group targetGroup = group;
 
-        String targetName = config.getTargetGroup( group.getName() );
+        boolean isBinaryBuild = KOJI_ORIGIN_BINARY.equals( buildRepo.getMetadata( ArtifactStore.METADATA_ORIGIN) );
+
+        String targetName = isBinaryBuild ? config.getTargetBinaryGroup( group.getName() )
+                : config.getTargetGroup( group.getName() );
+
         if ( targetName != null )
         {
             try

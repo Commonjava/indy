@@ -53,14 +53,14 @@ public class ProxyRemoteKojiContentTest
                 Collections.emptySet() ).connect();
 
         // would be slow the first time to get an artifact
-        long elapse = testGet( client, path );
+        long elapse = getContent( "build-x", client, path );
         logger.debug("Get (first) use " + elapse + " milliseconds");
 
         // the following get should have been cached and fast
-        elapse = testGet( client, path );
+        elapse = getContent( "build-x", client, path );
         logger.debug("Get (second) use " + elapse + " milliseconds");
 
-        // the remote store should have been added to public group
+        // the remote store should have been added to builds-untested group
         StoreListingDTO<RemoteRepository> repos = client.stores().listRemoteRepositories();
         for ( RemoteRepository repo : repos.getItems() ) {
             logger.debug("Repo " + repo.getName());
@@ -71,12 +71,34 @@ public class ProxyRemoteKojiContentTest
 
     }
 
-    private long testGet( Indy client, String path )
+    @Ignore
+    @Test
+    public void proxyBinaryRemoteKojiArtifact()
+            throws Exception
+    {
+        final String path = "org/apache/apache/18/apache-18.pom";
+        Indy client = new Indy( "http://localhost:8080/api", new IndyObjectMapper( Collections.emptySet() ),
+                Collections.emptySet() ).connect();
+
+        long elapse = getContent( "build-x", client, path );
+
+        // the remote store should have been added to brew-binaries group
+        StoreListingDTO<RemoteRepository> repos = client.stores().listRemoteRepositories();
+        for ( RemoteRepository repo : repos.getItems() ) {
+            logger.debug("Repo " + repo.getName());
+            if (repo.getName().startsWith(KOJI_ORIGIN)) {
+                logger.debug("Koji repo patterns: " + repo.getPathMaskPatterns());
+            }
+        }
+
+    }
+
+    private long getContent( String groupName, Indy client, String path )
             throws Exception
     {
         long t1 = System.currentTimeMillis();
         logger.debug("Start getting... (" + t1 + ")");
-        try (InputStream stream = client.content().get(group, "public", path)) {
+        try (InputStream stream = client.content().get(group, groupName, path)) {
             assertThat(stream, notNullValue());
         }
         long t2 = System.currentTimeMillis();

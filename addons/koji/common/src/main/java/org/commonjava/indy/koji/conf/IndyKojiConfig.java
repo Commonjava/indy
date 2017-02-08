@@ -58,6 +58,8 @@ public class IndyKojiConfig
 
     private static final String TARGET_KEY_PREFIX = "target.";
 
+    private static final String TARGET_BINARY_KEY_PREFIX = "target.binary.";
+
     private static final boolean DEFAULT_ENABLED = false;
 
     private static final Integer DEFAULT_DOWNLOAD_TIMEOUT_SECONDS = 600;
@@ -94,7 +96,13 @@ public class IndyKojiConfig
 
     private List<String> tagPatterns;
 
-    private Map<String, String> targetGroups;
+    private Map<String, String> targetGroups = new LinkedHashMap<>();
+
+    private Map<String, String> targetBinaryGroups = new LinkedHashMap<>();
+
+    private String namingFormat = "koji-${nvr}"; // default
+
+    private String binayNamingFormat = "koji-binary-${name}-${version}"; // default
 
     private Integer downloadTimeoutSeconds;
 
@@ -440,18 +448,33 @@ public class IndyKojiConfig
                 this.artifactAuthorityStore = value;
                 break;
             }
+            case "naming.format":
+            {
+                this.namingFormat = value;
+                break;
+            }
+            case "naming.format.binary":
+            {
+                this.binayNamingFormat = value;
+                break;
+            }
             default:
             {
                 if ( name.startsWith( TARGET_KEY_PREFIX ) && name.length() > TARGET_KEY_PREFIX.length() )
                 {
-                    if ( targetGroups == null )
+                    if ( name.startsWith( TARGET_BINARY_KEY_PREFIX )
+                            && name.length() > TARGET_BINARY_KEY_PREFIX.length() )
                     {
-                        targetGroups = new LinkedHashMap<>();
+                        String source = name.substring( TARGET_BINARY_KEY_PREFIX.length(), name.length() );
+                        logger.debug( "KOJI: Group {} targets binary group {}", source, value );
+                        targetBinaryGroups.put( source, value );
                     }
-
-                    String source = name.substring( "target.".length(), name.length() );
-                    logger.debug( "KOJI: Group {} targets group {}", source, value );
-                    targetGroups.put( source, value );
+                    else
+                    {
+                        String source = name.substring( TARGET_KEY_PREFIX.length(), name.length() );
+                        logger.debug( "KOJI: Group {} targets group {}", source, value );
+                        targetGroups.put( source, value );
+                    }
                 }
                 else
                 {
@@ -477,11 +500,6 @@ public class IndyKojiConfig
 
     public String getTargetGroup( String name )
     {
-        if ( targetGroups == null )
-        {
-            return null;
-        }
-
         for ( String key : targetGroups.keySet() )
         {
             if ( name.matches( key ) )
@@ -489,7 +507,18 @@ public class IndyKojiConfig
                 return targetGroups.get( key );
             }
         }
+        return null;
+    }
 
+    public String getTargetBinaryGroup ( String name )
+    {
+        for ( String key : targetBinaryGroups.keySet() )
+        {
+            if ( name.matches( key ) )
+            {
+                return targetBinaryGroups.get( key );
+            }
+        }
         return null;
     }
 
@@ -544,5 +573,13 @@ public class IndyKojiConfig
     public void setArtifactAuthorityStore( String artifactAuthorityStore )
     {
         this.artifactAuthorityStore = artifactAuthorityStore;
+    }
+
+    public String getNamingFormat() {
+        return namingFormat;
+    }
+
+    public String getBinayNamingFormat() {
+        return binayNamingFormat;
     }
 }
