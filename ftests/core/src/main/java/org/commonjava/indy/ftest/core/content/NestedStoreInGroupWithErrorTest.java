@@ -71,10 +71,6 @@ public class NestedStoreInGroupWithErrorTest
         {
             assertThat( IOUtils.toString( is ), equalTo( content ) );
         }
-        catch ( final IndyClientException e )
-        {
-            fail( "should not fail" );
-        }
     }
 
     @Override
