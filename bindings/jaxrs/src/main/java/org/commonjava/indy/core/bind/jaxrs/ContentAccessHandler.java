@@ -23,6 +23,7 @@ import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
@@ -195,7 +196,9 @@ public class ContentAccessHandler
 
                 if ( exists )
                 {
-                    HttpExchangeMetadata httpMetadata = contentController.getHttpMetadata( sk, path );
+                    HttpExchangeMetadata httpMetadata = item != null ?
+                            contentController.getHttpMetadata( item ) :
+                            contentController.getHttpMetadata( sk, path );
 
                     // TODO: For hosted repo, artifacts do not have metadata generated. Fall to get(). But we need a better fix later on.
                     if ( httpMetadata == null )
@@ -332,7 +335,7 @@ public class ContentAccessHandler
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
                         setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
-                                        contentController.getHttpMetadata( sk, path ) );
+                                        contentController.getHttpMetadata( item ) );
 
                         response = builder.build();
                     }

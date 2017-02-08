@@ -109,6 +109,13 @@ public class AbstractContentManagementTest
         return true;
     }
 
+    protected void assertExistence( ArtifactStore store, String path, boolean expected )
+            throws IndyClientException
+    {
+        assertThat( "Content should " + ( expected ? "" : "not " ) + "exist at: " + store.getKey() + ":" + path,
+                    client.content().exists( store.getKey(), path ), equalTo( expected ) );
+    }
+
     protected void assertContent( ArtifactStore store, String path, String expected )
             throws IndyClientException, IOException
     {

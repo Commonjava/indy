@@ -22,6 +22,7 @@ import org.apache.http.HttpRequest;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
@@ -37,6 +38,7 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -158,10 +160,19 @@ public class HttpConduitWrapper
         logger.debug( "Valid transfer found." );
         try(InputStream in = txfr.openInputStream( true, eventMetadata ))
         {
+            final HttpExchangeMetadata metadata = contentController.getHttpMetadata( txfr );
+
             writeStatus( ApplicationStatus.OK );
-            writeHeader( ApplicationHeader.content_length, Long.toString( txfr.length() ) );
+
+            String len =
+                    String.valueOf( metadata != null ? metadata.getContentLength() : Long.toString( txfr.length() ) );
+
+            String lastMod =
+                    metadata != null ? metadata.getLastModified() : HttpUtils.formatDateHeader( txfr.lastModified() );
+
+            writeHeader( ApplicationHeader.content_length, len );
             writeHeader( ApplicationHeader.content_type, contentController.getContentType( path ) );
-            writeHeader( ApplicationHeader.last_modified, HttpUtils.formatDateHeader( txfr.lastModified() ) );
+            writeHeader( ApplicationHeader.last_modified, lastMod );
 
             if ( writeBody )
             {
@@ -184,6 +195,11 @@ public class HttpConduitWrapper
                     while ( written < read );
                 }
             }
+        }
+        catch ( IndyWorkflowException e )
+        {
+            logger.error( String.format( "Failed to retrieve http-metadata.json file for: %s. Reason: %s", txfr,
+                                         e.getMessage() ), e );
         }
         finally
         {

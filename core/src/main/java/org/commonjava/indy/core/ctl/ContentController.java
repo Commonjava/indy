@@ -261,6 +261,11 @@ public class ContentController
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
+        if ( store.isDisabled() )
+        {
+            throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Store is disabled: {}", key );
+        }
+
         return store;
     }
 
