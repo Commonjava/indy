@@ -54,6 +54,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang.StringUtils.trimToEmpty;
 
 /**
  * Created by jdcasey on 1/4/17.
@@ -176,6 +177,11 @@ public class KojiBuildAuthority
             {
                 try
                 {
+                    if ( isNotBlank( archive.getArtifactId() ) && !isValidMavenArtifact( archive ) )
+                    {
+                        return false;
+                    }
+
                     String artifactPath = ArtifactPathUtils.formatArtifactPath( archive.asArtifact(), typeMapper );
                     String md5 = checksumArtifact( authoritativeStore, artifactPath, eventMetadata );
                     if ( isNotBlank( md5 ) )
@@ -204,6 +210,17 @@ public class KojiBuildAuthority
         }
 
         return true;
+    }
+
+    /**
+     * Checks if the given archive is a valid Maven artifact. If the archive is missing filename, artifactId or
+     * version, it is not considered a valid Maven artifact.
+     */
+    private boolean isValidMavenArtifact( final KojiArchiveInfo archive )
+    {
+        // trim to empty to avoid potential NPE
+        String filename = trimToEmpty( archive.getFilename() );
+        return filename.startsWith( archive.getArtifactId() + "-" + archive.getVersion() );
     }
 
     private ArtifactStore getAuthoritativeStore()
