@@ -699,7 +699,7 @@ public class DefaultContentManager
                 {
                     final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
 
-                    logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
+                    logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, store.getName(), allMembers );
 
                     return getTransfer( allMembers, path, op );
                 }

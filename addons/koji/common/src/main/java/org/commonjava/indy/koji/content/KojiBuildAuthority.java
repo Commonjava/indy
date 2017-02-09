@@ -201,7 +201,7 @@ public class KojiBuildAuthority
                         }
                     }
                 }
-                catch ( TransferException e )
+                catch ( Exception e )
                 {
                     Logger logger = LoggerFactory.getLogger( getClass() );
                     logger.error( "SHOULD NEVER HAPPEN: Failed to transform artifact to path: " + e.getMessage(), e );
