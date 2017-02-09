@@ -731,6 +731,7 @@ public class DefaultDownloadManager
                              op );
 
                 transfer = getStorageReference( store, path );
+                logger.debug( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
                 if ( transfer != null && !transfer.exists() && ( op == TransferOperation.DOWNLOAD
                         || op == TransferOperation.LISTING ) )
                 {
