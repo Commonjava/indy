@@ -329,20 +329,29 @@ public abstract class KojiContentManagerDecorator
                     else
                     {
                         logger.info("Trying build: {} with id: {}", build.getNvr(), build.getId());
-                        List<KojiTagInfo> tags = kojiClient.listTags(build.getId(), session);
-                        logger.debug("Build is in {} tags...", tags.size());
+                        if ( !config.isTagPatternsEnabled() )
+                        {
+                            buildAllowed = true;
+                            break;
+                        }
+                        else
+                        {
+                            List<KojiTagInfo> tags = kojiClient.listTags(build.getId(), session);
+                            logger.debug("Build is in {} tags...", tags.size());
 
-                        for (KojiTagInfo tag : tags) {
-                            // If the tags match patterns configured in whitelist, construct a new remote repo.
-                            if (config.isTagAllowed(tag.getName())) {
-                                logger.info("Koji tag is on whitelist: {}", tag.getName());
-                                buildAllowed = true;
-                                break;
-                            } else {
-                                logger.debug("Tag: {} is not in the whitelist.", tag.getName());
+                            for (KojiTagInfo tag : tags) {
+                                // If the tags match patterns configured in whitelist, construct a new remote repo.
+                                if (config.isTagAllowed(tag.getName())) {
+                                    logger.info("Koji tag is on whitelist: {}", tag.getName());
+                                    buildAllowed = true;
+                                    break;
+                                } else {
+                                    logger.debug("Tag: {} is not in the whitelist.", tag.getName());
+                                }
                             }
                         }
                     }
+
                     if (buildAllowed) {
                         // If the authoritative store is not configured, one or both systems is missing MD5 information,
                         // or the artifact matches the one in the authoritative store, go ahead.
