@@ -6,21 +6,11 @@
 
   <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
     <local-cache name="koji-maven-version-metadata" >
-      <eviction size="10000000" type="COUNT"/>
-      <persistence passivation="false">
-        <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/koji-maven-version-metadata">
-          <write-behind/>
-        </file-store>
-      </persistence>
+      <eviction strategy="LRU" size="10000000" type="COUNT"/>
     </local-cache>
 
     <local-cache name="folo-in-progress" >
-      <eviction size="10000000" type="COUNT"/>
-      <persistence passivation="false">
-        <file-store purge="false" read-only="false" fetch-state="true" path="${indy.work}/folo-in-progress">
-          <write-behind/>
-        </file-store>
-      </persistence>
+      <eviction strategy="LRU" size="10000000" type="COUNT"/>
     </local-cache>
 
     <local-cache name="folo-sealed">
@@ -35,15 +25,10 @@
     </local-cache>
     
     <local-cache name="content-index">
-      <eviction size="10000000" type="COUNT"/>
-      <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/content-index">
-          <write-behind/>
-        </file-store>
-      </persistence>
+      <eviction strategy="LRU" size="10000000" type="COUNT"/>
       <indexing index="LOCAL">
+        <property name="default.directory_provider">ram</property>
         <property name="hibernate.search.model_mapping">org.commonjava.indy.content.index.ContentIndexCacheProducer</property>
-        <property name="hibernate.search.default.indexBase">${indy.data}/content-index/search</property>
       </indexing>
     </local-cache>
 
