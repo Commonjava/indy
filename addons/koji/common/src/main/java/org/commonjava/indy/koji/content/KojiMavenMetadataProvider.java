@@ -214,26 +214,33 @@ public class KojiMavenMetadataProvider
                                 continue;
                             }
 
-                            logger.debug( "Checking for builds/tags of: {}", archive );
-                            List<KojiTagInfo> tags = seenBuildTags.get( archive.getBuildId() );
-                            if ( tags == null )
-                            {
-                                tags = kojiClient.listTags( archive.getBuildId(), session );
-                                seenBuildTags.put( archive.getBuildId(), tags );
-                            }
-
                             boolean buildAllowed = false;
-                            for ( KojiTagInfo tag : tags )
+                            if ( !kojiConfig.isTagPatternsEnabled() )
                             {
-                                if ( kojiConfig.isTagAllowed( tag.getName() ) )
+                                buildAllowed = true;
+                            }
+                            else
+                            {
+                                logger.debug( "Checking for builds/tags of: {}", archive );
+                                List<KojiTagInfo> tags = seenBuildTags.get( archive.getBuildId() );
+                                if ( tags == null )
                                 {
-                                    logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
-                                    buildAllowed = true;
-                                    break;
+                                    tags = kojiClient.listTags( archive.getBuildId(), session );
+                                    seenBuildTags.put( archive.getBuildId(), tags );
                                 }
-                                else
+
+                                for ( KojiTagInfo tag : tags )
                                 {
-                                    logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
+                                    if ( kojiConfig.isTagAllowed( tag.getName() ) )
+                                    {
+                                        logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
+                                        buildAllowed = true;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
+                                    }
                                 }
                             }
 

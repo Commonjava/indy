@@ -66,6 +66,8 @@ public class IndyKojiConfig
 
     public static final long DEFAULT_METADATA_TIMEOUT_SECONDS = 86400;
 
+    private static final boolean DEFAULT_TAG_PATTERNS_ENABLED = false;
+
     private Boolean enabled;
 
     private String url;
@@ -91,6 +93,8 @@ public class IndyKojiConfig
     private String proxyPassword;
 
     private String storageRootUrl;
+
+    private Boolean tagPatternsEnabled;
 
     private List<String> tagPatterns;
 
@@ -335,8 +339,28 @@ public class IndyKojiConfig
         return getEnabled();
     }
 
+    public Boolean getTagPatternsEnabled()
+    {
+        return tagPatternsEnabled == null ? DEFAULT_TAG_PATTERNS_ENABLED : tagPatternsEnabled;
+    }
+
+    public boolean isTagPatternsEnabled()
+    {
+        return getTagPatternsEnabled();
+    }
+
+    public void setTagPatternsEnabled( Boolean tagPatternsEnabled )
+    {
+        this.tagPatternsEnabled = tagPatternsEnabled;
+    }
+
     public boolean isTagAllowed( String name )
     {
+        if ( !isTagPatternsEnabled() )
+        {
+            return true;
+        }
+        
         Optional<String> result = tagPatterns.stream().filter( ( pattern ) -> name.matches( pattern ) ).findFirst();
 
         return result.isPresent();
@@ -352,7 +376,12 @@ public class IndyKojiConfig
         {
             case "enabled":
             {
-                this.enabled = Boolean.valueOf( value );
+                this.enabled = Boolean.valueOf( value.trim() );
+                break;
+            }
+            case "tag.patterns.enabled":
+            {
+                this.tagPatternsEnabled = Boolean.valueOf( value.trim() );
                 break;
             }
             case "tag.pattern":

@@ -322,23 +322,31 @@ public abstract class KojiContentManagerDecorator
                         continue;
                     }
 
-                    logger.info( "Trying build: {} with id: {}", build.getNvr(), build.getId() );
-                    List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
-                    logger.debug( "Build is in {} tags...", tags.size() );
-
                     boolean buildAllowed = false;
-                    for ( KojiTagInfo tag : tags )
+
+                    logger.info( "Trying build: {} with id: {}", build.getNvr(), build.getId() );
+                    if ( !config.isTagPatternsEnabled())
                     {
-                        // If the tags match patterns configured in whitelist, construct a new remote repo.
-                        if ( config.isTagAllowed( tag.getName() ) )
+                        buildAllowed = true;
+                    }
+                    else
+                    {
+                        List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
+                        logger.debug( "Build is in {} tags...", tags.size() );
+
+                        for ( KojiTagInfo tag : tags )
                         {
-                            logger.info( "Koji tag is on whitelist: {}", tag.getName() );
-                            buildAllowed = true;
-                            break;
-                        }
-                        else
-                        {
-                            logger.debug( "Tag: {} is not in the whitelist.", tag.getName() );
+                            // If the tags match patterns configured in whitelist, construct a new remote repo.
+                            if ( config.isTagAllowed( tag.getName() ) )
+                            {
+                                logger.info( "Koji tag is on whitelist: {}", tag.getName() );
+                                buildAllowed = true;
+                                break;
+                            }
+                            else
+                            {
+                                logger.debug( "Tag: {} is not in the whitelist.", tag.getName() );
+                            }
                         }
                     }
 

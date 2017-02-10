@@ -162,6 +162,41 @@ public class KojiMavenMetadataProviderTest
     }
 
     @Test
+    public void retrieveVersionMetadataWithTagWhitelist()
+            throws Exception
+    {
+        kojiConfig.setTagPatternsEnabled( true );
+        kojiConfig.setTagPatterns( Collections.singletonList( "jb-.+" ) );
+
+        initKojiClient( "whitelisted-tags-metadata-generate", false );
+
+        Metadata metadata =
+                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+
+        assertThat( metadata, notNullValue() );
+
+        StringWriter sw = new StringWriter();
+        new MetadataXpp3Writer().write( sw, metadata );
+        System.out.println( sw.toString() );
+
+        Versioning versioning = metadata.getVersioning();
+        assertThat( versioning, notNullValue() );
+
+        assertThat( versioning.getLatest(), equalTo( "2.4.0.redhat-1" ) );
+        assertThat( versioning.getRelease(), equalTo( "2.4.0.redhat-1" ) );
+
+        List<String> versions = versioning.getVersions();
+        assertThat( versions, notNullValue() );
+        assertThat( versions.size(), equalTo( 2 ) );
+
+        int idx = 0;
+        assertThat( versions.get( idx ), equalTo( "2.1-redhat-1" ) );
+        idx++;
+        assertThat( versions.get( idx ), equalTo( "2.4.0.redhat-1" ) );
+
+    }
+
+    @Test
     public void retrieveVersionMetadataWithVerification()
             throws Exception
     {
@@ -318,7 +353,6 @@ public class KojiMavenMetadataProviderTest
         kojiConfig.setStorageRootUrl( server.formatUrl( "kojiroot" ) );
         kojiConfig.setUrl( server.formatUrl( "koji" ) );
 
-        kojiConfig.setTagPatterns( Collections.singletonList( "jb-.+" ) );
         kojiConfig.setTargetGroups( Collections.singletonMap( "public", "public" ) );
     }
 
