@@ -349,7 +349,13 @@ public final class ProxyResponseWriter
 
         final String name = PROXY_REPO_PREFIX + url.getHost().replace( '.', '-' );
 
-        final String baseUrl = String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), url.getPort() );
+        int port= url.getPort();
+        if ( port < 1 )
+        {
+            port = url.getDefaultPort();
+        }
+
+        final String baseUrl = String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), port );
 
         RemoteRepository remote = storeManager.findRemoteRepository( baseUrl );
         if ( remote == null )
