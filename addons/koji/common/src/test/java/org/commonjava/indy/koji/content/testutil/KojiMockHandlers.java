@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.koji.content.testutil;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.test.http.expect.ExpectationHandler;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -29,6 +30,7 @@ import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.commonjava.indy.koji.content.testutil.MockScript.MOCK_SCRIPT_JSON;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.fail;
 
@@ -44,8 +46,13 @@ public final class KojiMockHandlers
     public static void configureKojiServer( ExpectationServer server, String urlBase, AtomicInteger exchangeCounter,
                                             String resourceBase, boolean verifyArtifacts, String verifyBasepath )
     {
-        try
+        try( InputStream scriptIn = Thread.currentThread().getContextClassLoader().getResourceAsStream( Paths.get(resourceBase, MOCK_SCRIPT_JSON).toString() ) )
         {
+            if ( scriptIn == null )
+            {
+                fail( "Cannot find script description file: " + MOCK_SCRIPT_JSON + " in: " + resourceBase );
+            }
+
             if ( verifyArtifacts )
             {
                 Properties checksums = new Properties();
@@ -66,9 +73,13 @@ public final class KojiMockHandlers
                 }
             }
 
-            server.expect( "POST", server.formatUrl( urlBase ), kojiMessageHandler( exchangeCounter, resourceBase ) );
+            ObjectMapper mapper = new ObjectMapper();
+
+            MockScript mockScript = mapper.readValue( scriptIn, MockScript.class );
+            mockScript.setCounter( exchangeCounter );
+            server.expect( "POST", server.formatUrl( urlBase ), kojiMessageHandler( mockScript, resourceBase ) );
             server.expect( "POST", server.formatUrl( urlBase, "ssllogin" ),
-                           kojiMessageHandler( exchangeCounter, resourceBase ) );
+                           kojiMessageHandler( mockScript, resourceBase ) );
         }
         catch ( Exception e )
         {
@@ -77,17 +88,22 @@ public final class KojiMockHandlers
         }
     }
 
-    private static ExpectationHandler kojiMessageHandler( AtomicInteger exchangeCounter, String resourceBase )
+    private static ExpectationHandler kojiMessageHandler( MockScript mockScript, String resourceBase )
     {
         return ( request, response ) -> {
-            int idx = exchangeCounter.getAndIncrement();
+            String nextBase = mockScript.getNextScriptBaseName();
+            if ( nextBase == null )
+            {
+                fail( "Cannot retrieve next base-name in mock script: "
+                              + mockScript.getHumanReadableScriptAttemptCount() + "/" + mockScript.getScriptCount() + " from: " + resourceBase );
+            }
 
-            String requestPath = Paths.get( resourceBase, String.format( "%02d-request.xml", idx ) ).toString();
-            String responsePath = Paths.get( resourceBase, String.format( "%02d-response.xml", idx ) ).toString();
+            String requestPath = Paths.get( resourceBase, String.format( "%s-request.xml", nextBase ) ).toString();
+            String responsePath = Paths.get( resourceBase, String.format( "%s-response.xml", nextBase ) ).toString();
 
             Logger logger = LoggerFactory.getLogger( KojiMockHandlers.class );
             logger.debug( "Verifying vs request XML resource: {}\nSending response XML resource: {}\nRequest index: {}",
-                          requestPath, responsePath, idx );
+                          requestPath, responsePath, mockScript.getHumanReadableScriptAttemptCount() );
 
             InputStream in = Thread.currentThread().getContextClassLoader().getResourceAsStream( requestPath );
             if ( in == null )
