@@ -33,7 +33,6 @@ import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
-import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
@@ -67,7 +66,7 @@ public class KojiBuildAuthority
 {
 
     private static final List<String> EXCLUDED_FILE_ENDINGS = Collections.unmodifiableList(
-            Arrays.asList( "scm-sources.zip", "patches.zip", "sources.jar", "javadoc.jar" ) );
+            Arrays.asList( "-sources.zip", "-patches.zip", "-sources.jar", "-javadoc.jar" ) );
 
     @Inject
     private IndyKojiConfig config;
