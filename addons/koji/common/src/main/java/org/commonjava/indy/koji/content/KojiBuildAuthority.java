@@ -138,9 +138,7 @@ public class KojiBuildAuthority
 
             // @formatter:off
             Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXCLUDED_FILE_ENDINGS.stream()
-                                                                                               .filter( ending -> !archive.getFilename().endsWith( ending ) )
-                                                                                               .findAny()
-                                                                                               .isPresent();
+                                                                                               .allMatch( ending -> !archive.getFilename().endsWith( ending ) );
             List<KojiArchiveInfo> sortedArchives = archiveCollection.getArchives()
                                                                     .stream()
                                                                     // filter out excluded filename endings.
