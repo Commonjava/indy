@@ -53,10 +53,8 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -307,8 +305,8 @@ public abstract class KojiContentManagerDecorator
             return kojiClient.withKojiSession( ( session ) -> {
                 List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( artifactRef, session );
 
-                Collections.sort( builds, ( build1, build2 ) -> build1.getCreationTime()
-                                                                      .compareTo( build2.getCreationTime() ) );
+                Collections.sort( builds, ( build1, build2 ) -> build2.getCreationTime()
+                                                                      .compareTo( build1.getCreationTime() ) );
 
                 logger.debug( "Got {} builds from koji. Looking for best match.", builds.size() );
 
@@ -385,7 +383,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
-            KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build.getId(), session );
+            KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build, session );
 
             String name = KOJI_ORIGIN + "-" + build.getNvr();
 
