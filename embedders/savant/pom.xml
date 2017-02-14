@@ -95,6 +95,10 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-relate-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-promote-jaxrs</artifactId>
     </dependency>
     <dependency>
@@ -180,6 +184,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-relate</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-httprox</artifactId>
       <scope>test</scope>
     </dependency>
@@ -223,6 +232,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
               </dependenciesToScan> 
             </configuration>
         </plugin>

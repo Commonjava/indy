@@ -61,8 +61,8 @@
 
 
     <!-- commonjava/redhat projects -->
-    <atlasVersion>0.17.0</atlasVersion>
-    <galleyVersion>0.13.6-SNAPSHOT</galleyVersion>
+    <atlasVersion>0.17.1-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.14.0-SNAPSHOT</galleyVersion>
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.9.3-SNAPSHOT</partylineVersion>
@@ -587,6 +587,24 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-implied-repos</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-relate-common</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-relate-common</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-relate</artifactId>
         <version>1.2.0-SNAPSHOT</version>
       </dependency>
       <dependency>

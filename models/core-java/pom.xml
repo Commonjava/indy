@@ -45,6 +45,10 @@
       <artifactId>atlas-bindings-jackson-identities</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.maven.atlas</groupId>
+      <artifactId>atlas-relationships-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
       <scope>test</scope>
