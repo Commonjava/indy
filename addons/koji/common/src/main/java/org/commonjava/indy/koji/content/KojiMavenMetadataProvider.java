@@ -181,38 +181,50 @@ public class KojiMavenMetadataProvider
 
                         // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
                         Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
-                        Map<Integer, List<KojiTagInfo>> seenBuildTags = new HashMap<>();
+                        Set<Integer> seenBuilds = new HashSet<>();
 
-                        List<KojiBuildArchiveCollection> collections =
-                                kojiClient.listArchivesForBuilds( ref, KojiBuildState.COMPLETE, session );
+                        List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
 
                         Set<SingleVersion> versions = new HashSet<>();
-                        for ( KojiBuildArchiveCollection buildCollection : collections )
+                        for ( KojiArchiveInfo archive : archives )
                         {
-                            KojiBuildInfo build = buildCollection.getBuildInfo();
+                            if ( !archive.getFilename().endsWith( ".pom" ) )
+                            {
+                                logger.debug( "Skipping non-POM: {}", archive.getFilename() );
+                                continue;
+                            }
+
+                            KojiBuildInfo build;
+                            if ( seenBuilds.contains( archive.getBuildId() ) )
+                            {
+                                logger.debug( "Skipping already seen build: {}", archive.getBuildId() );
+                                continue;
+                            }
+                            else
+                            {
+                                build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+                                seenBuilds.add( archive.getBuildId() );
+                            }
+
+                            if ( build == null )
+                            {
+                                logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(),
+                                              archive.getFilename() );
+                                continue;
+                            }
+
+                            if ( build.getBuildState() != KojiBuildState.COMPLETE )
+                            {
+                                logger.debug( "Build: {} is not completed. The state is {}. Skipping.",
+                                              build.getNvr(), build.getBuildState() );
+                                continue;
+                            }
+
                             if ( build.getTaskId() == null )
                             {
                                 logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.",
                                               build.getNvr() );
                                 // This is not a real build, it's a binary import.
-                                continue;
-                            }
-
-                            KojiArchiveInfo archive = null;
-                            for ( KojiArchiveInfo buildArchive : buildCollection.getArchives() )
-                            {
-                                if ( build.getGAV().asProjectRef().equals( ref )
-                                        && "pom".equals( buildArchive.getTypeName() ) )
-                                {
-                                    archive = buildArchive;
-                                    break;
-                                }
-                            }
-
-                            if ( archive == null )
-                            {
-                                logger.error( "Build {} was listed by listArchivesForBuilds but it does not contain a POM with GA: {}",
-                                              build, ref );
                                 continue;
                             }
 
@@ -223,14 +235,9 @@ public class KojiMavenMetadataProvider
                             }
                             else
                             {
-                                logger.debug( "Checking for builds/tags of build: {}", build );
-                                List<KojiTagInfo> tags = seenBuildTags.get( build.getId() );
-                                if ( tags == null )
-                                {
-                                    tags = kojiClient.listTags( build.getId(), session );
-                                    seenBuildTags.put( build.getId(), tags );
-                                }
+                                logger.debug( "Checking for builds/tags of: {}", archive );
 
+                                List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
                                 for ( KojiTagInfo tag : tags )
                                 {
                                     if ( kojiConfig.isTagAllowed( tag.getName() ) )
