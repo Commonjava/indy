@@ -50,6 +50,7 @@ import org.hamcrest.CoreMatchers;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -73,6 +74,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by jdcasey on 11/3/16.
  */
+@Ignore
 public class KojiMavenMetadataProviderTest
 {
     private static final String KOJI_BASEPATH = "koji";
