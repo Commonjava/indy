@@ -317,7 +317,6 @@ public abstract class KojiContentManagerDecorator
                     {
                         logger.debug( "Build: {} is not completed. The state is {}. Skipping.",
                                       build.getNvr(), build.getBuildState() );
-                        // This is not a real build, it's a binary import.
                         continue;
                     }
 
