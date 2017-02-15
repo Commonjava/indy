@@ -20,6 +20,7 @@ import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
@@ -96,6 +97,7 @@ public class KojiMavenMetadataProvider
         this.kojiConfig = kojiConfig;
     }
 
+    @Override
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {
@@ -179,8 +181,7 @@ public class KojiMavenMetadataProvider
 
                         // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
                         Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
-                        Map<Integer, KojiBuildInfo> seenBuilds = new HashMap<>();
-                        Map<Integer, List<KojiTagInfo>> seenBuildTags = new HashMap<>();
+                        Set<Integer> seenBuilds = new HashSet<>();
 
                         List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
 
@@ -193,16 +194,29 @@ public class KojiMavenMetadataProvider
                                 continue;
                             }
 
-                            KojiBuildInfo build = seenBuilds.get(archive.getBuildId());
-                            if( build == null ){
+                            KojiBuildInfo build;
+                            if ( seenBuilds.contains( archive.getBuildId() ) )
+                            {
+                                logger.debug( "Skipping already seen build: {}", archive.getBuildId() );
+                                continue;
+                            }
+                            else
+                            {
                                 build = kojiClient.getBuildInfo( archive.getBuildId(), session );
-                                seenBuilds.put( archive.getBuildId(), build );
+                                seenBuilds.add( archive.getBuildId() );
                             }
 
                             if ( build == null )
                             {
                                 logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(),
                                               archive.getFilename() );
+                                continue;
+                            }
+
+                            if ( build.getBuildState() != KojiBuildState.COMPLETE )
+                            {
+                                logger.debug( "Build: {} is not completed. The state is {}. Skipping.",
+                                              build.getNvr(), build.getBuildState() );
                                 continue;
                             }
 
@@ -222,13 +236,8 @@ public class KojiMavenMetadataProvider
                             else
                             {
                                 logger.debug( "Checking for builds/tags of: {}", archive );
-                                List<KojiTagInfo> tags = seenBuildTags.get( archive.getBuildId() );
-                                if ( tags == null )
-                                {
-                                    tags = kojiClient.listTags( archive.getBuildId(), session );
-                                    seenBuildTags.put( archive.getBuildId(), tags );
-                                }
 
+                                List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
                                 for ( KojiTagInfo tag : tags )
                                 {
                                     if ( kojiConfig.isTagAllowed( tag.getName() ) )

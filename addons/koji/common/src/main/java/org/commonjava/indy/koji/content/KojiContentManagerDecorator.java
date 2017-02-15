@@ -19,6 +19,7 @@ import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.codehaus.plexus.interpolation.InterpolationException;
@@ -317,6 +318,13 @@ public abstract class KojiContentManagerDecorator
 
                 for ( KojiBuildInfo build : builds )
                 {
+                    if ( build.getBuildState() != KojiBuildState.COMPLETE )
+                    {
+                        logger.debug( "Build: {} is not completed. The state is {}. Skipping.",
+                                      build.getNvr(), build.getBuildState() );
+                        continue;
+                    }
+
                     boolean buildAllowed = false;
                     if ( isBinaryBuild(build) )
                     {
