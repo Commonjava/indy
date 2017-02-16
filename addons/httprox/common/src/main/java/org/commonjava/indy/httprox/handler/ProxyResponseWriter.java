@@ -124,7 +124,7 @@ public final class ProxyResponseWriter
 
         // TODO: Can we handle this?
         final String oldThreadName = Thread.currentThread().getName();
-        Thread.currentThread().setName( httpRequest.getRequestLine().toString() );
+        Thread.currentThread().setName( "PROXY-" + httpRequest.getRequestLine().toString() );
         channel.getCloseSetter().set( ( sinkChannel ) ->
         {
             logger.debug("sink channel closing.");
