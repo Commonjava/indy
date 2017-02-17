@@ -161,9 +161,10 @@ public class KojiMavenMetadataProvider
             }
         }
 
+        boolean locked = false;
         try
         {
-            boolean locked = lock.tryLock( kojiConfig.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+            locked = lock.tryLock( kojiConfig.getLockTimeoutSeconds(), TimeUnit.SECONDS );
             if ( !locked )
             {
                 throw new IndyWorkflowException(
@@ -325,7 +326,10 @@ public class KojiMavenMetadataProvider
         }
         finally
         {
-            lock.unlock();
+            if ( locked )
+            {
+                lock.unlock();
+            }
         }
 
         logger.debug( "Returning null metadata result for unknown reason (path: '{}')", path );
