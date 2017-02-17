@@ -56,7 +56,7 @@ public class MavenMetadataMerger
     implements MetadataMerger
 {
 
-    public static final class SnapshotVersionComparator
+    private static final class SnapshotVersionComparator
             implements Comparator<SnapshotVersion>
     {
         @Override
@@ -229,12 +229,12 @@ public class MavenMetadataMerger
             }
 
             List<SingleVersion> versionObjects =
-                    versioning.getVersions().stream().map( v -> VersionUtils.createSingleVersion( v ) ).collect( Collectors.toList() );
+                    versioning.getVersions().stream().map( VersionUtils::createSingleVersion ).collect( Collectors.toList() );
 
             Collections.sort( versionObjects );
 
             versioning.setVersions(
-                    versionObjects.stream().map( sv -> sv.renderStandard() ).collect( Collectors.toList() ) );
+                    versionObjects.stream().map( SingleVersion::renderStandard ).collect( Collectors.toList() ) );
         }
 
         if ( merged )
