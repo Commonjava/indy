@@ -349,11 +349,12 @@ public class PromotionManager
             logger.error( error, e );
         }
 
+        boolean locked = false;
         try
         {
             if ( error == null )
             {
-                boolean locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+                locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
                 if ( !locked )
                 {
                     error = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
@@ -405,7 +406,10 @@ public class PromotionManager
         }
         finally
         {
-            lock.unlock();
+            if ( locked )
+            {
+                lock.unlock();
+            }
         }
 
         return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error, new ValidationResult() );
@@ -437,6 +441,7 @@ public class PromotionManager
         final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
 
         List<String> errors = new ArrayList<>();
+        boolean locked = false;
         try
         {
             ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
@@ -444,7 +449,7 @@ public class PromotionManager
 
             if ( errors.isEmpty() )
             {
-                boolean locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+                locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
                 if ( !locked )
                 {
                     String error= String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
@@ -532,7 +537,10 @@ public class PromotionManager
         }
         finally
         {
-            lock.unlock();
+            if ( locked )
+            {
+                lock.unlock();
+            }
         }
 
         String error = null;
