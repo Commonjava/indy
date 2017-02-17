@@ -161,18 +161,36 @@ public class HttpConduitWrapper
         try(InputStream in = txfr.openInputStream( true, eventMetadata ))
         {
             final HttpExchangeMetadata metadata = contentController.getHttpMetadata( txfr );
+            logger.trace( "Got HTTP metadata: {} for transfer: {}", metadata, txfr );
 
             writeStatus( ApplicationStatus.OK );
 
-            String len =
-                    String.valueOf( metadata != null ? metadata.getContentLength() : Long.toString( txfr.length() ) );
+            Long headerContentLength = metadata != null ? metadata.getContentLength() : null;
+            long bytes = metadata != null && headerContentLength != null ? metadata.getContentLength() : txfr.length();
+            if ( bytes < 1 )
+            {
+                bytes = txfr.length();
+            }
+
+            if ( bytes > 0 )
+            {
+                writeHeader( ApplicationHeader.content_length, String.valueOf( bytes ) );
+            }
 
             String lastMod =
-                    metadata != null ? metadata.getLastModified() : HttpUtils.formatDateHeader( txfr.lastModified() );
+                    metadata != null ? metadata.getLastModified() : null;
 
-            writeHeader( ApplicationHeader.content_length, len );
+            if ( lastMod == null )
+            {
+                lastMod = HttpUtils.formatDateHeader( txfr.lastModified() );
+            }
+
+            if ( lastMod != null )
+            {
+                writeHeader( ApplicationHeader.last_modified, lastMod );
+            }
+
             writeHeader( ApplicationHeader.content_type, contentController.getContentType( path ) );
-            writeHeader( ApplicationHeader.last_modified, lastMod );
 
             if ( writeBody )
             {
