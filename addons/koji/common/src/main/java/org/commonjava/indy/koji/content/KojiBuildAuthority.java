@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.lang.StringUtils.contains;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.trimToEmpty;
 
@@ -174,7 +175,13 @@ public class KojiBuildAuthority
             {
                 try
                 {
-                    if ( isNotBlank( archive.getArtifactId() ) && !isValidMavenArtifact( archive ) )
+                    if ( isMavenArtifact( archive ) )
+                    {
+                        // skip non-Maven artifacts
+                        continue;
+                    }
+
+                    if ( containsPlaceholders( archive ) )
                     {
                         return false;
                     }
@@ -210,14 +217,22 @@ public class KojiBuildAuthority
     }
 
     /**
-     * Checks if the given archive is a valid Maven artifact. If the archive is missing filename, artifactId or
-     * version, it is not considered a valid Maven artifact.
+     * Checks if the given archive is a Maven artifact, i.e. has artifactId and groupId set. If one of those is
+     * missing, it is not considered to be a Maven artifact.
      */
-    private boolean isValidMavenArtifact( final KojiArchiveInfo archive )
+    private boolean isMavenArtifact( final KojiArchiveInfo archive )
     {
-        // trim to empty to avoid potential NPE
-        String filename = trimToEmpty( archive.getFilename() );
-        return filename.startsWith( archive.getArtifactId() + "-" + archive.getVersion() );
+        return isNotBlank( archive.getArtifactId() ) && isNotBlank( archive.getGroupId() );
+    }
+
+    /**
+     * Checks if the given archive GAV contains unreplaced placeholders, e.g. "${parent.version}" in the version field.
+     */
+    private boolean containsPlaceholders( final KojiArchiveInfo archive )
+    {
+        return contains( trimToEmpty( archive.getArtifactId() ), "${" )
+                || contains( trimToEmpty( archive.getGroupId() ), "${" )
+                || contains( trimToEmpty( archive.getVersion() ), "${" );
     }
 
     private ArtifactStore getAuthoritativeStore()
