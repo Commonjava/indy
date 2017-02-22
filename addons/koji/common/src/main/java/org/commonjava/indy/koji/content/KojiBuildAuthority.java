@@ -140,8 +140,9 @@ public class KojiBuildAuthority
             }
 
             // @formatter:off
-            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> EXCLUDED_FILE_ENDINGS.stream()
+            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> ref.equals( archive.asGAV().asProjectRef() ) && EXCLUDED_FILE_ENDINGS.stream()
                                                                                                .allMatch( ending -> !archive.getFilename().endsWith( ending ) );
+
             List<KojiArchiveInfo> sortedArchives = archiveCollection.getArchives()
                                                                     .stream()
                                                                     // filter out excluded filename endings.
@@ -159,35 +160,30 @@ public class KojiBuildAuthority
             // @formatter:on
 
             for ( KojiArchiveInfo archive : sortedArchives ) {
-                if ( "pom".equals( archive.getExtension() ) && ref.equals( archive.asGAV().asProjectRef() ) )
-                {
-                    try {
-                        if (isNotBlank(archive.getArtifactId()) && !isValidMavenArtifact(archive)) {
-                            return false;
-                        }
-
-                        String artifactPath = ArtifactPathUtils.formatArtifactPath(archive.asArtifact(), typeMapper);
-                        String md5 = checksumArtifact(authoritativeStore, artifactPath, eventMetadata);
-                        if (isNotBlank(md5)) {
-                            //FIXME: not sure if all koji archives are using md5 as checksum type for maven build
-                            String kojiMd5 = archive.getChecksum();
-
-                            Logger logger = LoggerFactory.getLogger(getClass());
-                            logger.info(
-                                    "Checking checksum for {} (path: {}) in auth store {}, auth store checksum:{}, koji build check sum:{}",
-                                    ref, path, authoritativeStore, md5, kojiMd5);
-
-                            if (!md5.equals(kojiMd5)) {
-                                // if checksum is not the same, it means the artifact in koji is DIFFERENT from the one in the authoritative store. Reject this.
-                                return false;
-                            }
-                        }
-                    } catch (Exception e) {
-                        Logger logger = LoggerFactory.getLogger(getClass());
-                        logger.error("SHOULD NEVER HAPPEN: Failed to transform artifact to path: " + e.getMessage(), e);
+                try {
+                    if (isNotBlank(archive.getArtifactId()) && !isValidMavenArtifact(archive)) {
+                        return false;
                     }
 
-                    break;
+                    String artifactPath = ArtifactPathUtils.formatArtifactPath(archive.asArtifact(), typeMapper);
+                    String md5 = checksumArtifact(authoritativeStore, artifactPath, eventMetadata);
+                    if (isNotBlank(md5)) {
+                        //FIXME: not sure if all koji archives are using md5 as checksum type for maven build
+                        String kojiMd5 = archive.getChecksum();
+
+                        Logger logger = LoggerFactory.getLogger(getClass());
+                        logger.info(
+                                "Checking checksum for {} (path: {}) in auth store {}, auth store checksum:{}, koji build check sum:{}",
+                                ref, path, authoritativeStore, md5, kojiMd5);
+
+                        if (!md5.equals(kojiMd5)) {
+                            // if checksum is not the same, it means the artifact in koji is DIFFERENT from the one in the authoritative store. Reject this.
+                            return false;
+                        }
+                    }
+                } catch (Exception e) {
+                    Logger logger = LoggerFactory.getLogger(getClass());
+                    logger.error("SHOULD NEVER HAPPEN: Failed to transform artifact to path: " + e.getMessage(), e);
                 }
             }
         }
