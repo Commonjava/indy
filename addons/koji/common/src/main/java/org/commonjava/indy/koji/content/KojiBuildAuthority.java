@@ -7,6 +7,7 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ArtifactData;
 import org.commonjava.indy.content.ContentDigest;
@@ -15,8 +16,10 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier;
 import org.commonjava.maven.atlas.ident.ref.SimpleVersionlessArtifactRef;
@@ -73,7 +76,7 @@ public class KojiBuildAuthority
 
     @Inject
     private DirectContentAccess directContentAccess;
-
+    
     protected KojiBuildAuthority(){}
 
     public KojiBuildAuthority( IndyKojiConfig config, TypeMapper typeMapper, KojiClient kojiClient,
@@ -140,7 +143,8 @@ public class KojiBuildAuthority
             }
 
             // @formatter:off
-            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> ref.equals( archive.asGAV().asProjectRef() ) && EXCLUDED_FILE_ENDINGS.stream()
+            ProjectRef projectRef = ref.asProjectRef();
+            Predicate<KojiArchiveInfo> archiveInfoFilter = ( archive ) -> projectRef.equals( archive.asGAV().asProjectRef() ) && EXCLUDED_FILE_ENDINGS.stream()
                                                                                                .allMatch( ending -> !archive.getFilename().endsWith( ending ) );
 
             List<KojiArchiveInfo> sortedArchives = archiveCollection.getArchives()
