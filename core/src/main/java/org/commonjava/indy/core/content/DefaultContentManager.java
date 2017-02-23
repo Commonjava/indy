@@ -314,7 +314,7 @@ public class DefaultContentManager
         return false;
     }
 
-    private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
+    protected Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
