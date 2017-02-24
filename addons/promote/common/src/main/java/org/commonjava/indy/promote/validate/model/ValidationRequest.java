@@ -30,6 +30,8 @@ import org.commonjava.maven.galley.model.Transfer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -53,8 +55,13 @@ public class ValidationRequest
         this.tools = tools;
         this.sourceRepository = sourceRepository;
     }
-
     public synchronized Set<String> getSourcePaths()
+            throws PromotionValidationException
+    {
+        return getSourcePaths(false, false);
+    }
+
+    public synchronized Set<String> getSourcePaths( boolean includeMetadata, boolean includeChecksums )
             throws PromotionValidationException
     {
         if ( requestPaths == null )
@@ -93,6 +100,13 @@ public class ValidationRequest
                 }
             }
             requestPaths = paths;
+        }
+
+        if ( !includeMetadata || !includeChecksums )
+        {
+            Predicate<String> filter = ( path ) -> ( includeMetadata || !path.matches( ".+/maven-metadata\\.xml(\\.(md5|sha[0-9]+))?" ) )
+                    && ( includeChecksums || !path.matches( ".+\\.(md5|sha[0-9]+)" ) );
+            return requestPaths.stream().filter( filter ).collect( Collectors.toSet() );
         }
 
         return requestPaths;
