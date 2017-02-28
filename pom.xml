@@ -98,7 +98,7 @@
     <dockerNetwork>default</dockerNetwork>
 
     <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
-    <gogs-waitFor>Listen: http://0.0.0.0:3000</gogs-waitFor>
+    <gogs-waitFor>Gogs: Go Git Service</gogs-waitFor>
   </properties>
   
   <modules>
