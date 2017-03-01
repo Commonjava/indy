@@ -194,6 +194,12 @@ public class KojiMavenMetadataProvider
                                 logger.debug( "Skipping non-POM: {}", archive.getFilename() );
                                 continue;
                             }
+                            SingleVersion singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
+                            if ( versions.contains( singleVersion ) )
+                            {
+                                logger.debug( "Skipping already collected version: {}", archive.getVersion() );
+                                continue;
+                            }
 
                             KojiBuildInfo build;
                             if ( seenBuilds.contains( archive.getBuildId() ) )
@@ -262,7 +268,7 @@ public class KojiMavenMetadataProvider
                                 try
                                 {
                                     logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
-                                    versions.add( VersionUtils.createSingleVersion( archive.getVersion() ) );
+                                    versions.add( singleVersion );
                                 }
                                 catch ( InvalidVersionSpecificationException e )
                                 {
