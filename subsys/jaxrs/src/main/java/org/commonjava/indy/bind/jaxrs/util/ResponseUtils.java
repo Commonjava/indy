@@ -180,9 +180,13 @@ public final class ResponseUtils
 
             if ( includeContentLength && !lenSet )
             {
-                logger.debug( "Adding Content-Length header: {}", item.length() );
-
-                builder.header( ApplicationHeader.content_length.key(), item.length() );
+                if ( item.isWriteLocked() )
+                {
+                    logger.debug( "Item being written, not set header Content-Length" );
+                } else {
+                    logger.debug( "Adding Content-Length header: {}", item.length() );
+                    builder.header(ApplicationHeader.content_length.key(), item.length());
+                }
             }
         }
 
