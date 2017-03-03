@@ -1,0 +1,3 @@
+# avoid copied sources & test sources
+src/main/java
+src/test/java

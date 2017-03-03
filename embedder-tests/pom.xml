@@ -29,7 +29,7 @@
   <packaging>pom</packaging>
 
   <name>Indy :: Embedder-Tests :: Parent</name>
-  
+
   <modules>
     <module>savant</module>
     <module>rest-min</module>
@@ -104,6 +104,14 @@
       <properties>
         <skipITs>${quickITs}</skipITs>
       </properties>
+    </profile>
+    <profile>
+      <id>run-metrics</id>
+      <modules>
+        <module>savant</module>
+        <module>rest-min</module>
+        <module>savant-report</module>
+      </modules>
     </profile>
   </profiles>
 </project>

@@ -99,6 +99,10 @@
 
     <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
     <gogs-waitFor>Gogs: Go Git Service</gogs-waitFor>
+
+    <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
+    <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
+    <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
   </properties>
   
   <modules>
@@ -1203,8 +1207,20 @@
               <id>prepare</id>
               <goals>
                 <goal>prepare-agent</goal>
+              </goals>
+              <configuration>
+                <append>true</append>
+                <destFile>${jacoco.report.dir}/jacoco-ut.exec</destFile>
+              </configuration>
+            </execution>
+            <execution>
+              <id>prepare-it</id>
+              <goals>
                 <goal>prepare-agent-integration</goal>
               </goals>
+              <configuration>
+                <destFile>${jacoco.report.dir}/jacoco-it.exec</destFile>
+              </configuration>
             </execution>
             <execution>
               <id>merge</id>
@@ -1215,13 +1231,16 @@
               <configuration>
                 <fileSets>
                   <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">
-                    <directory>${project.build.directory}</directory>
+                    <directory>${jacoco.report.dir}</directory>
                     <includes>
                       <include>jacoco*.exec</include>
                     </includes>
+                    <excludes>
+                      <exclude>jacoco-merged.exec</exclude>
+                    </excludes>
                   </fileSet>
                 </fileSets>
-                <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+                <destFile>${jacoco.report.dir}/jacoco-merged.exec</destFile>
               </configuration>
             </execution>
             <execution>
@@ -1230,7 +1249,7 @@
                 <goal>report</goal>
               </goals>
               <configuration>
-                <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+                <dataFile>${jacoco.report.dir}/jacoco-merged.exec</dataFile>
               </configuration>
             </execution>
           </executions>
@@ -1292,6 +1311,7 @@
             <skipTests>${skipSurefire}</skipTests>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <forkCount>${test-forkCount}</forkCount>
+            <reportsDirectory>${junit.report.dir}</reportsDirectory>
           </configuration>
         </plugin>
         <plugin>
@@ -1306,6 +1326,7 @@
             <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <forkCount>${it-forkCount}</forkCount>
+            <reportsDirectory>${failsafe.report.dir}</reportsDirectory>
 <!--             <rerunFailingTestsCount>1</rerunFailingTestsCount> -->
             <includes>
               <include>**/*Test.java</include>
@@ -1414,6 +1435,39 @@
         <dockerNetwork>ci-network</dockerNetwork>
       </properties>
     </profile>
+    <profile>
+      <id>run-metrics</id>
+      <properties>
+        <jacoco.report.dir>${session.executionRootDirectory}/target</jacoco.report.dir>
+        <junit.report.dir>${session.executionRootDirectory}/target/surefire-reports</junit.report.dir>
+        <failsafe.report.dir>${session.executionRootDirectory}/target/failsafe-reports</failsafe.report.dir>
+      </properties>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
+
   
 </project>
