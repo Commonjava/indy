@@ -21,9 +21,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
-
 import java.util.List;
+import java.util.Map;
 
 /**
  * This component is useful for content generators, that need access to raw files used as inputs for generating other
@@ -79,6 +78,9 @@ public interface DirectContentAccess
             throws IndyWorkflowException;
 
     List<StoreResource> listRaw( ArtifactStore store, String parentPath )
+            throws IndyWorkflowException;
+
+    Map<String, List<StoreResource>> listRaw( ArtifactStore store, List<String> parentPathList )
             throws IndyWorkflowException;
 
 }

@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
@@ -235,7 +236,7 @@ public class MavenMetadataGenerator
             final List<StoreResource> firstLevelFiles = fileManager.listRaw( store, path );
 
             ArtifactPathInfo samplePomInfo = null;
-            nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
+            for ( final StoreResource topResource : firstLevelFiles )
             {
                 final String topPath = topResource.getPath();
                 if ( topPath.endsWith( ".pom" ) )
@@ -243,9 +244,19 @@ public class MavenMetadataGenerator
                     samplePomInfo = ArtifactPathInfo.parse( topPath );
                     break;
                 }
-                else if ( topPath.endsWith( "/" ) )
+            }
+
+            // if this dir does not contain a pom check if a subdir contain a pom
+            if ( samplePomInfo == null )
+            {
+                List<String> firstLevelDirs = firstLevelFiles.stream()
+                                                             .map( (res) -> res.getPath() )
+                                                             .filter( (subpath) -> subpath.endsWith( "/" ) )
+                                                             .collect( Collectors.toList() );
+                final Map<String, List<StoreResource>> secondLevelMap = fileManager.listRaw( store, firstLevelDirs );
+                nextTopResource: for ( final String topPath : firstLevelDirs )
                 {
-                    final List<StoreResource> secondLevelListing = fileManager.listRaw( store, topPath );
+                    final List<StoreResource> secondLevelListing = secondLevelMap.get( topPath );
                     for ( final StoreResource fileResource : secondLevelListing )
                     {
                         if ( fileResource.getPath()

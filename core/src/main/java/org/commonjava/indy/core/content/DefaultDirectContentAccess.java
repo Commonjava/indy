@@ -28,7 +28,14 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -40,21 +47,60 @@ public class DefaultDirectContentAccess
     @Inject
     private DownloadManager downloadManager;
 
+
     public DefaultDirectContentAccess(){}
 
-    public DefaultDirectContentAccess( DownloadManager downloadManager )
+    public DefaultDirectContentAccess( final DownloadManager downloadManager )
     {
         this.downloadManager = downloadManager;
     }
 
+
+    @Override
     public List<Transfer> retrieveAllRaw( final List<? extends ArtifactStore> stores, final String path,
                                           final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        final List<Transfer> txfrs = new ArrayList<Transfer>();
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        ExecutorService executor = Executors.newCachedThreadPool();
+        final Map<ArtifactStore, Future<Transfer>> futureMap = new HashMap<>();
         for ( final ArtifactStore store : stores )
         {
-            final Transfer txfr = retrieveRaw( store, path, eventMetadata );
+            logger.debug( "Requesting retrieval of {} in {}", path, store );
+            final Future<Transfer> txfrFuture = executor.submit( new Callable<Transfer>()
+            {
+                @Override
+                public Transfer call() throws IndyWorkflowException
+                {
+                    logger.trace( "Retrieving {} in {}", path, store );
+                    Transfer txfr = retrieveRaw( store, path, eventMetadata );
+                    logger.trace( "Transfer {} in {} retrieved", path, store );
+                    return txfr;
+                }
+            });
+            futureMap.put( store, txfrFuture );
+        }
+
+        final List<Transfer> txfrs = new ArrayList<>( stores.size() );
+        for ( ArtifactStore store : futureMap.keySet() )
+        {
+            Future<Transfer> txfrFuture = futureMap.get( store );
+            Transfer txfr;
+            try
+            {
+                logger.trace( "Waiting for transfer of {} in {}", path, store );
+                txfr = txfrFuture.get();
+                logger.debug( "Transfer {} in {} retrieved", path, store );
+            }
+            catch ( InterruptedException ex )
+            {
+                throw new IndyWorkflowException( "Retrieval of %s in %s was interrupted", ex, path, store );
+            }
+            catch ( ExecutionException ex )
+            {
+                throw new IndyWorkflowException( "Error retrieving %s from %s: %s", ex, path, store, ex );
+            }
+
             if ( txfr != null )
             {
                 txfrs.add( txfr );
@@ -64,6 +110,7 @@ public class DefaultDirectContentAccess
         return txfrs;
     }
 
+    @Override
     public Transfer retrieveRaw( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -109,6 +156,58 @@ public class DefaultDirectContentAccess
             throws IndyWorkflowException
     {
         return downloadManager.list( store, path );
+    }
+
+    @Override
+    public Map<String, List<StoreResource>> listRaw( ArtifactStore store,
+                                                     List<String> parentPathList ) throws IndyWorkflowException
+    {
+        ExecutorService executor = Executors.newCachedThreadPool();
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        final Map<String, Future<List<StoreResource>>> futureMap = new HashMap<>();
+        for ( final String path : parentPathList )
+        {
+            logger.debug( "Requesting listing of {} in {}", path, store );
+            final Future<List<StoreResource>> listFuture = executor.submit( new Callable<List<StoreResource>>()
+            {
+                @Override
+                public List<StoreResource> call() throws IndyWorkflowException
+                {
+                    logger.trace( "Starting listing of {} in {}", path, store );
+                    List<StoreResource> listRaw = listRaw( store, path );
+                    logger.trace( "Listing of {} in {} finished", path, store );
+                    return listRaw;
+                }
+            });
+            futureMap.put( path, listFuture );
+        }
+
+        final Map<String, List<StoreResource>> result = new HashMap<>();
+        for ( String path : futureMap.keySet() )
+        {
+            Future<List<StoreResource>> listFuture = futureMap.get( path );
+            try
+            {
+                logger.trace( "Waiting for listing of {} in {}", path, store );
+                List<StoreResource> listing = listFuture.get();
+                logger.debug( "Listing of {} in {} received", path, store );
+                if ( listing != null )
+                {
+                    result.put( path, listing );
+                }
+            }
+            catch ( InterruptedException ex )
+            {
+                throw new IndyWorkflowException( "Listing retrieval of %s in %s was interrupted", ex, path, store );
+            }
+            catch ( ExecutionException ex )
+            {
+                throw new IndyWorkflowException( "There was an error in listing retrieval of %s in %s: %s", ex, path,
+                                                 store, ex );
+            }
+        }
+
+        return result;
     }
 
 }
