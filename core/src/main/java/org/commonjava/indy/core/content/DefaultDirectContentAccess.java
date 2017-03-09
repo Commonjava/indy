@@ -57,9 +57,10 @@ public class DefaultDirectContentAccess
 
     public DefaultDirectContentAccess(){}
 
-    public DefaultDirectContentAccess( final DownloadManager downloadManager )
+    public DefaultDirectContentAccess( final DownloadManager downloadManager, ExecutorService executorService )
     {
         this.downloadManager = downloadManager;
+        this.executorService = executorService;
     }
 
 
