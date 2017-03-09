@@ -12,6 +12,8 @@
   <artifactId>indy-embedder-test-savant-report</artifactId>
   <description>Embedder-test-savant report for sonar(ftests)</description>
 
+  <name>Indy :: Embedder-Tests :: Sonar Report</name>
+
   <properties>
     <test.reports.dir>${project.build.directory}/test-reports</test.reports.dir>
     <sonar.skip>true</sonar.skip>
