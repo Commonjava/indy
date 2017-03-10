@@ -327,7 +327,8 @@ public class KojiMavenMetadataProviderTest
         DownloadManager downloadManager = new DefaultDownloadManager( storeDataManager, galley.getTransferManager(),
                                                                       new IndyLocationExpander( storeDataManager ) );
 
-        DirectContentAccess directContentAccess = new DefaultDirectContentAccess( downloadManager );
+        DirectContentAccess directContentAccess = new DefaultDirectContentAccess( downloadManager,
+                                                                                  Executors.newCachedThreadPool() );
 
         KojiBuildAuthority buildAuthority =
                 new KojiBuildAuthority( kojiConfig, new StandardTypeMapper(), kojiClient, storeDataManager,

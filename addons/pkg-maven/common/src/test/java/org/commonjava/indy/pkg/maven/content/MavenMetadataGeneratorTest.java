@@ -55,6 +55,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -90,7 +91,8 @@ public class MavenMetadataGeneratorTest
         final MavenMetadataMerger merger = new MavenMetadataMerger( Collections.emptyList() );
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
-        DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads );
+        DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads,
+                                                                                   Executors.newCachedThreadPool() );
 
         generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper, new MemoryNotFoundCache() );
 
@@ -107,7 +109,7 @@ public class MavenMetadataGeneratorTest
 
         final Transfer transfer =
             generator.generateFileContent( stores.getArtifactStore( resource.getStoreKey() ),
-                                           ( (ConcreteResource) resource.getChild( "maven-metadata.xml" ) ).getPath(),
+                                           resource.getChild( "maven-metadata.xml" ).getPath(),
                                            emd );
 
         assertThat( transfer, notNullValue() );
@@ -179,7 +181,7 @@ public class MavenMetadataGeneratorTest
         throws Exception
     {
         final StoreResource resource = setupVersionsStructureWith2Versions();
-        final ConcreteResource metadataFile = (ConcreteResource) resource.getChild( "maven-metadata.xml" );
+        final ConcreteResource metadataFile = resource.getChild( "maven-metadata.xml" );
 
         final Transfer transfer =
             generator.generateFileContent( stores.getArtifactStore( resource.getStoreKey() ), metadataFile.getPath(),
@@ -251,13 +253,13 @@ public class MavenMetadataGeneratorTest
                .registerListing( resource,
                                  new TestListing( new ListingResult( resource, new String[] { "1.0/", "1.1/" } ) ) );
 
-        ConcreteResource versionDir = ( (ConcreteResource) resource.getChild( "1.0/" ) );
+        ConcreteResource versionDir = ( resource.getChild( "1.0/" ) );
         fixture.getTransport()
                .registerListing( versionDir,
                                  new TestListing( new ListingResult( versionDir, new String[] { "artifact-1.0.jar",
                                      "artifact-1.0.pom" } ) ) );
 
-        versionDir = ( (ConcreteResource) resource.getChild( "1.1/" ) );
+        versionDir = ( resource.getChild( "1.1/" ) );
         fixture.getTransport()
                .registerListing( versionDir,
                                  new TestListing( new ListingResult( versionDir, new String[] { "artifact-1.1.jar",
