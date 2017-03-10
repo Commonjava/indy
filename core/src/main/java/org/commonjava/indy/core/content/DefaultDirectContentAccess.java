@@ -38,6 +38,7 @@ import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -70,21 +71,19 @@ public class DefaultDirectContentAccess
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        CompletionService<Transfer> executor = new ExecutorCompletionService<>( executorService );
+        Map<ArtifactStore, Future<Transfer>> futures = new HashMap<>();
         for ( final ArtifactStore store : stores )
         {
             logger.debug( "Requesting retrieval of {} in {}", path, store );
-            executor.submit( new Callable<Transfer>()
-            {
-                @Override
-                public Transfer call() throws IndyWorkflowException
-                {
-                    logger.trace( "Retrieving {} in {}", path, store );
-                    Transfer txfr = retrieveRaw( store, path, eventMetadata );
-                    logger.trace( "Transfer {} in {} retrieved", path, store );
-                    return txfr;
-                }
-            });
+
+            Future<Transfer> future = executorService.submit( ()->{
+                logger.trace( "Retrieving {} in {}", path, store );
+                Transfer txfr = retrieveRaw( store, path, eventMetadata );
+                logger.trace( "Transfer {} in {} retrieved", path, store );
+                return txfr;
+            } );
+
+            futures.put( store, future );
         }
 
         final List<Transfer> txfrs = new ArrayList<>( stores.size() );
@@ -94,7 +93,8 @@ public class DefaultDirectContentAccess
             try
             {
                 logger.trace( "Waiting for transfer of {} in {}", path, store );
-                txfr = executor.take().get();
+                Future<Transfer> future = futures.get( store );
+                txfr = future.get();
                 logger.debug( "Transfer {} in {} retrieved", path, store );
             }
             catch ( InterruptedException ex )
@@ -168,21 +168,19 @@ public class DefaultDirectContentAccess
                                                      List<String> parentPathList ) throws IndyWorkflowException
     {
         CompletionService<List<StoreResource>> executor = new ExecutorCompletionService<>( executorService );
+        Map<String, Future<List<StoreResource>>> futures = new HashMap<>();
         Logger logger = LoggerFactory.getLogger( getClass() );
         for ( final String path : parentPathList )
         {
             logger.debug( "Requesting listing of {} in {}", path, store );
-            executor.submit( new Callable<List<StoreResource>>()
-            {
-                @Override
-                public List<StoreResource> call() throws IndyWorkflowException
-                {
-                    logger.trace( "Starting listing of {} in {}", path, store );
-                    List<StoreResource> listRaw = listRaw( store, path );
-                    logger.trace( "Listing of {} in {} finished", path, store );
-                    return listRaw;
-                }
+            Future<List<StoreResource>> future = executor.submit( ()->{
+                logger.trace( "Starting listing of {} in {}", path, store );
+                List<StoreResource> listRaw = listRaw( store, path );
+                logger.trace( "Listing of {} in {} finished", path, store );
+                return listRaw;
             });
+
+            futures.put( path, future );
         }
 
         final Map<String, List<StoreResource>> result = new HashMap<>();
@@ -191,7 +189,8 @@ public class DefaultDirectContentAccess
             try
             {
                 logger.trace( "Waiting for listing of {} in {}", path, store );
-                List<StoreResource> listing = executor.take().get();
+                Future<List<StoreResource>> future = futures.get( path );
+                List<StoreResource> listing = future.get();
                 logger.debug( "Listing of {} in {} received", path, store );
                 if ( listing != null )
                 {
