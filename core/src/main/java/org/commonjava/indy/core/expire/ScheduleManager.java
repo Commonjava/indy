@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.core.expire;
 
+import static org.commonjava.indy.core.change.StoreEnablementManager.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -365,6 +367,42 @@ public class ScheduleManager
 
             scheduleContentExpiration( key, path, timeout );
         }
+    }
+
+    public synchronized void rescheduleDisableTimeout( final ArtifactStore store )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
+        int timeout = TIMEOUT_NEVER_DISABLE;
+        if ( store.getDisableTimeout() >= TIMEOUT_NOT_REENABLE )
+        {
+            timeout = store.getDisableTimeout();
+        }
+
+        // No need to cancel as the job will be cancelled immediately after the re-enable in StoreEnablementManager
+//        final Set<ScheduleKey> canceled =
+//                cancelAllBefore( new StoreKeyMatcher( store.getKey(), DISABLE_TIMEOUT ),
+//                                 timeout );
+//        logger.info( "Cancel disable timeout for stores:{}", canceled );
+
+        if ( timeout > TIMEOUT_NOT_REENABLE && store.isDisabled() )
+        {
+            final StoreKey sk = store.getKey();
+            logger.debug( "Set/Reschedule disable timeout for store:{}", sk );
+            scheduleForStore( sk, DISABLE_TIMEOUT,
+                              sk.toString() + "-" + DISABLE_TIMEOUT, sk, timeout );
+        }
+        else if ( timeout <= TIMEOUT_NEVER_DISABLE )
+        {
+            logger.debug( "Disable-timeout set to {}, will never disable the repo", timeout );
+            store.setDisabled( false );
+        }
+        // case ZERO: will not consider any disable timeout way, just use the normal default way
     }
 
     private HostedRepository findDeployPoint( final Group group )

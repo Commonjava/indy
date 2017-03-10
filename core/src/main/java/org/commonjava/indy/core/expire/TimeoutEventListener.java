@@ -118,7 +118,7 @@ public class TimeoutEventListener
         }
         catch ( IndyDataException e )
         {
-            scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
+            scheduleManager.deleteJob( ScheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
             logger.error(
                     String.format( "Failed to retrieve ArtifactStore for: %s (for content timeout). Reason: %s", key, e ), e );
         }
@@ -242,34 +242,47 @@ public class TimeoutEventListener
     public void onStoreUpdate( @Observes final ArtifactStorePostUpdateEvent event )
     {
         final ArtifactStoreUpdateType eventType = event.getType();
-        if ( eventType == ArtifactStoreUpdateType.UPDATE )
+        if ( eventType == ArtifactStoreUpdateType.UPDATE || eventType == ArtifactStoreUpdateType.ADD )
         {
             for ( final ArtifactStore store : event )
             {
-                final StoreKey key = store.getKey();
-                final StoreType type = key.getType();
-                if ( type == StoreType.hosted )
+
+                try
                 {
-                    logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: {}", store.getKey() );
-                    try
-                    {
-                        scheduleManager.rescheduleSnapshotTimeouts( (HostedRepository) store );
-                    }
-                    catch ( final IndySchedulerException e )
-                    {
-                        logger.error( "Failed to update snapshot timeouts in: " + store.getKey(), e );
-                    }
+                    scheduleManager.rescheduleDisableTimeout( store );
                 }
-                else if ( type == StoreType.remote )
+                catch ( IndySchedulerException e )
                 {
-                    logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: {}", store.getKey() );
-                    try
+                    logger.error( "Failed to update disable timeouts in: " + store.getKey(), e );
+                }
+
+                if ( eventType == ArtifactStoreUpdateType.UPDATE )
+                {
+                    final StoreKey key = store.getKey();
+                    final StoreType type = key.getType();
+                    if ( type == StoreType.hosted )
                     {
-                        scheduleManager.rescheduleProxyTimeouts( (RemoteRepository) store );
+                        logger.info( "[ADJUST TIMEOUTS] Adjusting snapshot expirations in: {}", store.getKey() );
+                        try
+                        {
+                            scheduleManager.rescheduleSnapshotTimeouts( (HostedRepository) store );
+                        }
+                        catch ( final IndySchedulerException e )
+                        {
+                            logger.error( "Failed to update snapshot timeouts in: " + store.getKey(), e );
+                        }
                     }
-                    catch ( final IndySchedulerException e )
+                    else if ( type == StoreType.remote )
                     {
-                        logger.error( "Failed to update proxy-cache timeouts in: " + store.getKey(), e );
+                        logger.info( "[ADJUST TIMEOUTS] Adjusting proxied-file expirations in: {}", store.getKey() );
+                        try
+                        {
+                            scheduleManager.rescheduleProxyTimeouts( (RemoteRepository) store );
+                        }
+                        catch ( final IndySchedulerException e )
+                        {
+                            logger.error( "Failed to update proxy-cache timeouts in: " + store.getKey(), e );
+                        }
                     }
                 }
             }
@@ -295,7 +308,7 @@ public class TimeoutEventListener
 
     private void deleteExpiration( StoreKey key, String path )
     {
-        scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
+        scheduleManager.deleteJob( ScheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
     }
 
 }

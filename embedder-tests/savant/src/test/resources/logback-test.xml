@@ -26,9 +26,9 @@
   </appender>
   
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${indy.home}/var/log/indy/indy.log</file>
+    <file>target/var/log/indy/indy.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <fileNamePattern>${indy.home}/var/log/indy/indy.%i.log</fileNamePattern>
+      <fileNamePattern>target/var/log/indy/indy.%i.log</fileNamePattern>
 
         <maxHistory>20</maxHistory>
       </rollingPolicy>
