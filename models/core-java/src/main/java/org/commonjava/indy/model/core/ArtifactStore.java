@@ -58,6 +58,10 @@ public abstract class ArtifactStore
 
     private boolean disabled;
 
+    @ApiModelProperty( required = false, dataType = "int", value = "A int value for time with seconds to make repo re-enabled after this time" )
+    @JsonProperty( "disable_timeout" )
+    private int disableTimeout;
+
     @JsonProperty( "path_style" )
     private PathStyle pathStyle;
 
@@ -144,6 +148,16 @@ public abstract class ArtifactStore
         this.disabled = disabled;
     }
 
+    public int getDisableTimeout()
+    {
+        return disableTimeout;
+    }
+
+    public void setDisableTimeout( int disableTimeout )
+    {
+        this.disableTimeout = disableTimeout;
+    }
+
     public void setMetadata( final Map<String, String> metadata )
     {
         this.metadata = metadata;
@@ -163,7 +177,7 @@ public abstract class ArtifactStore
 
         if ( metadata == null )
         {
-            metadata = new HashMap<String, String>();
+            metadata = new HashMap<>();
         }
 
         return metadata.put( key, value );
@@ -183,7 +197,7 @@ public abstract class ArtifactStore
 
         if ( transientMetadata == null )
         {
-            transientMetadata = new HashMap<String, String>();
+            transientMetadata = new HashMap<>();
         }
 
         return transientMetadata.put( key, value );

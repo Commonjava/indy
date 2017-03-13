@@ -46,6 +46,10 @@ public class StoreEnablementManager
 
     public static final String DISABLE_TIMEOUT = "Disable-Timeout";
 
+    public static final int TIMEOUT_NEVER_DISABLE = -1;
+
+    public static final int TIMEOUT_NOT_REENABLE = 0;
+
     @Inject
     private StoreDataManager storeDataManager;
 
