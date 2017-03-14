@@ -128,7 +128,11 @@ public class TrackedContentEntry
     @Override
     public int compareTo( final TrackedContentEntry other )
     {
-        int comp = storeKey.compareTo( other.getStoreKey() );
+        int comp = trackingKey.getId().compareTo( other.getTrackingKey().getId() );
+        if ( comp == 0 )
+        {
+            comp = storeKey.compareTo( other.getStoreKey() );
+        }
         if ( comp == 0 )
         {
             comp = accessChannel.compareTo( other.getAccessChannel() );
@@ -136,6 +140,10 @@ public class TrackedContentEntry
         if ( comp == 0 )
         {
             comp = path.compareTo( other.getPath() );
+        }
+        if ( comp == 0 )
+        {
+            comp = effect.compareTo( other.getEffect() );
         }
 
         return comp;
@@ -146,6 +154,7 @@ public class TrackedContentEntry
     {
         final int prime = 31;
         int result = 1;
+        result = prime * result + ( ( trackingKey == null ) ? 0 : trackingKey.hashCode() );
         result = prime * result + ( ( path == null ) ? 0 : path.hashCode() );
         result = prime * result + ( ( storeKey == null ) ? 0 : storeKey.hashCode() );
         result = prime * result + ( ( accessChannel == null ) ? 0 : accessChannel.hashCode() );
@@ -169,6 +178,17 @@ public class TrackedContentEntry
             return false;
         }
         final TrackedContentEntry other = (TrackedContentEntry) obj;
+        if ( trackingKey == null )
+        {
+            if ( other.trackingKey != null )
+            {
+                return false;
+            }
+        }
+        else if ( !trackingKey.equals( other.trackingKey ) )
+        {
+            return false;
+        }
         if ( path == null )
         {
             if ( other.path != null )
