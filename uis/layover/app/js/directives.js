@@ -85,6 +85,24 @@ directives.directive('apDurationHint', ['$timeout',function(timer) {
   };
 }]);
 
+directives.directive('apDisableTimeoutHint', ['$timeout',function(timer) {
+  return {
+    restrict: 'E',
+    link: function(scope, element, attributes){
+      var run=function(){
+        var suggestion = element.text();
+        if ( suggestion == '' ){
+          suggestion = "Integer time in seconds which is used for repo automatically re-enable when set disable by errors, positive value means time in seconds, -1 means never disable, empty or 0 means use default timeout. ";
+        }
+
+        element.html('<span class="hint">(' + suggestion + ')</span>');
+      };
+
+      timer(run, 0);
+    }
+  };
+}]);
+
 directives.directive('apGroupConstituent', ['$timeout', function(timer) {
   return {
     restrict: 'A',
