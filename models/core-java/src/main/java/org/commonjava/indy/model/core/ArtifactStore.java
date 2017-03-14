@@ -58,7 +58,7 @@ public abstract class ArtifactStore
 
     private boolean disabled;
 
-    @ApiModelProperty( required = false, dataType = "int", value = "A int value for time with seconds to make repo re-enabled after this time" )
+    @ApiModelProperty( required = false, dataType = "int", value = "Integer time in seconds which is used for repo automatically re-enable when set disable by errors, positive value means time in seconds, -1 means never disable, empty or 0 means use default timeout." )
     @JsonProperty( "disable_timeout" )
     private int disableTimeout;
 

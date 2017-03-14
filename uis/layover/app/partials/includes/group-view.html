@@ -27,6 +27,13 @@
 		<label>Enabled?</label>
 		<span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
 	</div>
+	<div class="sub-fields">
+		<div class="detail-field">
+			<label>Disable Timeout:</label>
+			<span>{{store.disable_timeout}}</span>
+			<ap-disable-timeout-hint></ap-disable-timeout-hint>
+		</div>
+	</div>
 	<div class="detail-field">
 		<label>Local URL:</label>
 		<span><a ng-if="!raw.demo" ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></span>

@@ -37,6 +37,14 @@
           <span class="hint">If set to readonly, all uploading and deleting operations to this repo are prohibited</span>
         </div>
 
+        <div class="sub-fields">
+          <div class="detail-field">
+            <label>Disable Timeout:</label>
+            <input type="text" ng-model="store.disable_timeout" />
+            <ap-disable-timeout-hint></ap-disable-timeout-hint>
+          </div>
+        </div>
+
         <div class="detail-field">
           <label>Storage Directory:</label>
           <span><input type="text" ng-model="store.storage" size="50"/></span>
