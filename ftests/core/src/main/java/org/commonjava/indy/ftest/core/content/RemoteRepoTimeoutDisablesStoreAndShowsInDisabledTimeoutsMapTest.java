@@ -37,74 +37,38 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
-        extends AbstractContentManagementTest
+        extends AbstractRemoteRepoTimeoutTest
 {
 
-    public class DelayInputStream
-        extends InputStream
-    {
-        @Override
-        public int read()
-            throws IOException
-        {
-            try
-            {
-                Thread.sleep( 5000 );
-            }
-            catch ( final InterruptedException e )
-            {
-            }
-
-            return 0;
-        }
-    }
-
-    @Rule
-    public ExpectationServer server = new ExpectationServer();
-
     @Test
-    public void run()
-        throws Exception
+    public void runTest()
+            throws Exception
     {
-        final String repo1 = "repo1";
-        final String path = "org/foo/bar/maven-metadata.xml";
-
-        server.expect( server.formatUrl( repo1, path ), 200, new DelayInputStream() );
-
-        RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
-        remote1.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( 1 ) );
-
-        remote1 = client.stores()
-                        .create( remote1, "adding remote", RemoteRepository.class );
-
-        try(InputStream is = client.content().get( remote, repo1, path ))
-        {
-        }
-        catch ( final IndyClientException e )
-        {
-            assertThat( e.getStatusCode(), equalTo( HttpStatus.SC_BAD_GATEWAY ) );
-        }
-
-        Thread.sleep( 1000 );
-
-        RemoteRepository result = client.stores().load( remote, repo1, RemoteRepository.class );
-        assertThat( result.isDisabled(), equalTo( true ) );
-
-        Map<StoreKey, Date> storeTimeouts = client.schedules().getDisabledStoreTimeouts();
-        Date timeout = storeTimeouts.get( new StoreKey( remote, repo1 ) );
-        assertThat( timeout, notNullValue() );
-        assertThat( timeout.after( new Date() ), equalTo( true ) );
+        super.run();
     }
 
     @Override
-    protected boolean createStandardTestStructures()
-    {
-        return false;
-    }
-
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
+    }
+
+    @Override
+    protected void setRemoteTimeout( RemoteRepository remoteRepo )
+    {
+        remoteRepo.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( 1 ) );
+    }
+
+    @Override
+    protected void assertResult( RemoteRepository remoteRepo )
+            throws Exception
+    {
+        assertThat( remoteRepo.isDisabled(), equalTo( true ) );
+
+        Map<StoreKey, Date> storeTimeouts = client.schedules().getDisabledStoreTimeouts();
+        Date timeout = storeTimeouts.get( new StoreKey( remote, remoteRepo.getName() ) );
+        assertThat( timeout, notNullValue() );
+        assertThat( timeout.after( new Date() ), equalTo( true ) );
     }
 }

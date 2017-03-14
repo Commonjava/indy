@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2013 Red Hat, Inc. (jdcasey@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,16 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.core.change.StoreEnablementManager;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,10 +35,11 @@ import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-public class RemoteRepoTimeoutDisablesStoreTest
+public class RemoteRepoTimeoutNeverDisableTest
         extends AbstractRemoteRepoTimeoutTest
 {
 
+    @Category( TimingDependent.class )
     @Test
     public void runTest()
             throws Exception
@@ -46,12 +51,19 @@ public class RemoteRepoTimeoutDisablesStoreTest
     protected void setRemoteTimeout( RemoteRepository remoteRepo )
     {
         remoteRepo.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( 1 ) );
+        remoteRepo.setDisableTimeout( StoreEnablementManager.TIMEOUT_NEVER_DISABLE );
     }
 
     @Override
     protected void assertResult( RemoteRepository remoteRepo )
             throws Exception
     {
-        assertThat( remoteRepo.isDisabled(), equalTo( true ) );
+        assertThat( remoteRepo.isDisabled(), equalTo( false ) );
+
+        Thread.sleep( 2000 );
+
+        RemoteRepository result = client.stores().load( remote, remoteRepo.getName(), RemoteRepository.class );
+        assertThat( result.isDisabled(), equalTo( false ) );
     }
+
 }
