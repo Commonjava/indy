@@ -32,6 +32,14 @@
           <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
         </div>
 
+        <div class="sub-fields">
+          <div class="detail-field">
+            <label>Disable Timeout:</label>
+            <input type="text" ng-model="store.disable_timeout" />
+            <ap-disable-timeout-hint></ap-disable-timeout-hint>
+          </div>
+        </div>
+
         <div class="detail-field">
           <label>Storage Directory:</label>
           <span><input type="text" ng-model="store.storage" size="50"/></span>

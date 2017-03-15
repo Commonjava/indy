@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.core.expire;
 
+import static org.commonjava.indy.core.change.StoreEnablementManager.*;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -365,6 +367,52 @@ public class ScheduleManager
 
             scheduleContentExpiration( key, path, timeout );
         }
+    }
+
+    public synchronized void rescheduleDisableTimeout( final StoreKey key )
+            throws IndySchedulerException
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return;
+        }
+
+        ArtifactStore store = null;
+        try
+        {
+            store = dataManager.getArtifactStore( key );
+        }
+        catch ( final IndyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve store for: %s. Reason: %s", key, e.getMessage() ), e );
+        }
+
+        if ( store == null )
+        {
+            return;
+        }
+
+        int timeout = store.getDisableTimeout();
+        if ( timeout == TIMEOUT_USE_DEFAULT )
+        {
+            // case TIMEOUT_USE_DEFAULT: will use default timeout configuration
+            timeout = config.getStoreDisableTimeoutSeconds();
+        }
+
+        // No need to cancel as the job will be cancelled immediately after the re-enable in StoreEnablementManager
+//        final Set<ScheduleKey> canceled =
+//                cancelAllBefore( new StoreKeyMatcher( store.getKey(), DISABLE_TIMEOUT ),
+//                                 timeout );
+//        logger.info( "Cancel disable timeout for stores:{}", canceled );
+
+        if ( timeout > TIMEOUT_USE_DEFAULT && store.isDisabled() )
+        {
+            final StoreKey sk = store.getKey();
+            logger.debug( "Set/Reschedule disable timeout for store:{}", sk );
+            scheduleForStore( sk, DISABLE_TIMEOUT, DISABLE_TIMEOUT, sk, timeout );
+        }
+        // Will never consider the TIMEOUT_NEVER_DISABLE case here, will consider this in the calling object(StoreEnablementManager)
     }
 
     private HostedRepository findDeployPoint( final Group group )
