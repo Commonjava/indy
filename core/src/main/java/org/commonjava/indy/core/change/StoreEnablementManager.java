@@ -75,19 +75,14 @@ public class StoreEnablementManager
         {
             if ( event.isDisabling() )
             {
-                String toStr = store.getMetadata( DISABLE_TIMEOUT );
-                if ( isNotEmpty( toStr ) )
+                try
                 {
-                    int timeout = Integer.parseInt( toStr );
-                    try
-                    {
-                        setReEnablementTimeout( store.getKey() );
-                    }
-                    catch ( IndySchedulerException e )
-                    {
-                        Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
-                    }
+                    setReEnablementTimeout( store.getKey() );
+                }
+                catch ( IndySchedulerException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
                 }
             }
             else
@@ -149,7 +144,15 @@ public class StoreEnablementManager
         try
         {
             ArtifactStore store = storeDataManager.getArtifactStore( key );
-            store.setDisabled( true );
+            if ( store.getDisableTimeout() <= TIMEOUT_NEVER_DISABLE )
+            {
+                logger.debug( "Disable-timeout set to {}, will never disable the repo", store.getDisableTimeout() );
+                store.setDisabled( false );
+            }
+            else
+            {
+                store.setDisabled( true );
+            }
 
             storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
                     "Disabling %s due to error: %s\n\nStack Trace:\n  %s", key, error,

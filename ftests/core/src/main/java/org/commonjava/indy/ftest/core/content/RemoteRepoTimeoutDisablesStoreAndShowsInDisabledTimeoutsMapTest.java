@@ -15,19 +15,13 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.apache.http.HttpStatus;
-import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -36,6 +30,27 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>{@link RemoteRepository} is set with "connection-timeout" with 1s</li>
+ *     <li>{@link RemoteRepository} is not set with any disable timeout</li>
+ *     <li>The remote proxy gives a connection timeout error for repo</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Request repo for artifact and got timeout error</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The remote repo will be set to disable when got the error</li>
+ *     <li>There will be a schedule timeout in scheduler for this repo</li>
+ * </ul>
+ */
 public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
         extends AbstractRemoteRepoTimeoutTest
 {
