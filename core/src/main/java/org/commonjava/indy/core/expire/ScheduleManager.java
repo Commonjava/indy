@@ -412,12 +412,7 @@ public class ScheduleManager
             logger.debug( "Set/Reschedule disable timeout for store:{}", sk );
             scheduleForStore( sk, DISABLE_TIMEOUT, DISABLE_TIMEOUT, sk, timeout );
         }
-        else if ( timeout <= TIMEOUT_NEVER_DISABLE )
-        {
-            logger.debug( "Disable-timeout set to {}, will never disable the repo", timeout );
-            store.setDisabled( false );
-        }
-
+        // Will never consider the TIMEOUT_NEVER_DISABLE case here, will consider this in the calling object(StoreEnablementManager)
     }
 
     private HostedRepository findDeployPoint( final Group group )

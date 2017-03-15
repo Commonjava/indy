@@ -15,22 +15,33 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.apache.http.HttpStatus;
-import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>{@link RemoteRepository} is set with "connection-timeout" with 1s</li>
+ *     <li>{@link RemoteRepository} is not set with any disable timeout</li>
+ *     <li>The remote proxy gives a connection timeout error for repo</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Request repo for artifact and got timeout error</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The remote repo will be set to disable when got the error</li>
+ * </ul>
+ */
 public class RemoteRepoTimeoutDisablesStoreTest
         extends AbstractRemoteRepoTimeoutTest
 {
