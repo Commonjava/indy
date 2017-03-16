@@ -37,6 +37,7 @@
     <module>keycloak</module>
     <module>jaxrs</module>
     <module>infinispan</module>
+    <module>metrics</module>
   </modules>
   
 </project>
