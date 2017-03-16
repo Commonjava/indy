@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.Collections;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 public class ResolveDepViaSkimmedRepoInGroupTest
@@ -56,6 +57,8 @@ public class ResolveDepViaSkimmedRepoInGroupTest
         waitForEventPropagation();
 
         stream = client.content().get( StoreType.group, PUBLIC, simplePomRef.path );
+
+        assertNotNull("Stream of content should not be null", stream );
 
         downloaded = IOUtils.toString( stream );
         IOUtils.closeQuietly( stream );

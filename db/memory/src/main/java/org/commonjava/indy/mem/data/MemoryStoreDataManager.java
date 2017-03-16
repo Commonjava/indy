@@ -29,6 +29,7 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.util.UrlInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,6 +50,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -354,11 +357,69 @@ public class MemoryStoreDataManager
     @Override
     public RemoteRepository findRemoteRepository( final String url )
     {
+
         List<Map.Entry<StoreKey, ArtifactStore>> copy = new ArrayList<>( stores.entrySet() );
 
+        /*
+           This filter do these things:
+             * First compare ip, if ip same, and the path(without last slash) same too, the repo is found
+             * If ip not same, then compare the url without scheme and last slash (if has) to find the repo
+         */
+        Predicate<Map.Entry<StoreKey, ArtifactStore>> findingRepoFilter = e -> {
+            if ( ( remote == e.getValue().getKey().getType() ) )
+            {
+                final UrlInfo urlInfo = new UrlInfo( url );
+                final String targetUrl = ( (RemoteRepository) e.getValue() ).getUrl();
+                final UrlInfo targetUrlInfo = new UrlInfo( targetUrl );
+                final String ipForUrl;
+                final String ipForTargetUrl;
+                try
+                {
+                    ipForUrl = urlInfo.getIpForUrl();
+                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                }
+                catch ( UnknownHostException ue )
+                {
+                    logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                    return false;
+                }
+
+                if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl ) )
+                {
+                    if ( urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
+                    {
+                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                      e.getValue().getKey() );
+                        return true;
+                    }
+                }
+                else
+                {
+                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                                  e.getValue().getKey(), ipForTargetUrl );
+                    try
+                    {
+                        if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
+                                    .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() ) )
+                        {
+                            logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                                          e.getValue().getKey() );
+                            return true;
+                        }
+                    }
+                    catch ( IllegalArgumentException error )
+                    {
+                        logger.error( "Failed to find repository for: '{}'. Reason: {}", error, url,
+                                      error.getMessage() );
+                    }
+                }
+            }
+
+            return false;
+        };
+
         Optional<RemoteRepository> found = copy.stream()
-                                               .filter( e -> ( ( remote == e.getValue().getKey().getType() )
-                                                       && ( (RemoteRepository) e.getValue() ).getUrl().equals( url ) ) )
+                                               .filter( findingRepoFilter )
                                                .map( ( e ) -> (RemoteRepository) e.getValue() )
                                                .findFirst();
         return found.isPresent() ? found.get() : null;
@@ -368,7 +429,7 @@ public class MemoryStoreDataManager
     public List<ArtifactStore> getAllArtifactStores()
             throws IndyDataException
     {
-        return new ArrayList<ArtifactStore>( stores.values() );
+        return new ArrayList<>( stores.values() );
     }
 
     @Override
@@ -541,7 +602,7 @@ public class MemoryStoreDataManager
             return Collections.emptyList();
         }
 
-        final List<ArtifactStore> result = new ArrayList<ArtifactStore>();
+        final List<ArtifactStore> result = new ArrayList<>();
         recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups, enabledOnly );
 
         return result;
@@ -600,7 +661,7 @@ public class MemoryStoreDataManager
 
         return copy.stream()
                    .filter( ( entry ) -> Arrays.binarySearch( storeTypes, entry.getKey().getType() ) > -1 )
-                   .map( ( entry ) -> entry.getValue() )
+                   .map( Map.Entry::getValue )
                    .collect( Collectors.toList() );
     }
 
