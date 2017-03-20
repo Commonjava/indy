@@ -15,74 +15,57 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Factory;
-import org.hibernate.search.annotations.Store;
-import org.hibernate.search.cfg.Environment;
-import org.hibernate.search.cfg.SearchMapping;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.Index;
-import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
-import org.infinispan.configuration.cache.StoreConfiguration;
-import org.infinispan.query.spi.SearchManagerImplementor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import java.lang.annotation.ElementType;
-import java.util.Properties;
 
 public class ContentIndexCacheProducer
 {
     @Inject
     private CacheProducer cacheProducer;
 
-    @Inject
-    private DataFileConfiguration config;
+//    @Inject
+//    private DataFileConfiguration config;
 
-    @PostConstruct
-    public void initIndexing(){
-        registerTransformer();
-    }
+//    @PostConstruct
+//    public void initIndexing(){
+//        registerTransformer();
+//    }
 
-    @Factory
-    public SearchMapping getSearchMapping()
-    {
-        final SearchMapping mapping = new SearchMapping();
-        mapping.entity( IndexedStorePath.class ).indexed().indexName( "indexedStorePath" )
-               .property( "storeType", ElementType.METHOD ).field()
-               .name( "storeType" ).store( Store.YES ).analyze( Analyze.NO )
-               .property( "storeName", ElementType.METHOD ).field()
-               .name( "storeName" ).store( Store.YES ).analyze( Analyze.NO )
-               .property( "originStoreType", ElementType.METHOD ).field()
-               .name( "originStoreType" ).store( Store.YES ).analyze( Analyze.NO )
-               .property( "originStoreName", ElementType.METHOD ).field()
-               .name( "originStoreName" ).store( Store.YES ).analyze( Analyze.NO )
-               .property( "path", ElementType.METHOD ).field()
-               .name( "path" ).store( Store.YES ).analyze( Analyze.NO );
+//    @Factory
+//    public SearchMapping getSearchMapping()
+//    {
+//        final SearchMapping mapping = new SearchMapping();
+//        mapping.entity( IndexedStorePath.class ).indexed().indexName( "indexedStorePath" )
+//               .property( "storeType", ElementType.METHOD ).field()
+//               .name( "storeType" ).store( Store.YES ).analyze( Analyze.NO )
+//               .property( "storeName", ElementType.METHOD ).field()
+//               .name( "storeName" ).store( Store.YES ).analyze( Analyze.NO )
+//               .property( "originStoreType", ElementType.METHOD ).field()
+//               .name( "originStoreType" ).store( Store.YES ).analyze( Analyze.NO )
+//               .property( "originStoreName", ElementType.METHOD ).field()
+//               .name( "originStoreName" ).store( Store.YES ).analyze( Analyze.NO )
+//               .property( "path", ElementType.METHOD ).field()
+//               .name( "path" ).store( Store.YES ).analyze( Analyze.NO );
+//
+//        return mapping;
+//    }
 
-        return mapping;
-    }
-
-    private void registerTransformer(){
-        final CacheHandle<IndexedStorePath, IndexedStorePath> handler =
-                cacheProducer.getCache( "content-index", IndexedStorePath.class, IndexedStorePath.class );
-
-        handler.execute( cache->{
-            final SearchManagerImplementor searchManager =
-                    (SearchManagerImplementor) org.infinispan.query.Search.getSearchManager( cache );
-
-            searchManager.registerKeyTransformer( IndexedStorePath.class, IndexedStorePathTransformer.class );
-            return null;
-        } );
-    }
+//    private void registerTransformer(){
+//        final CacheHandle<IndexedStorePath, IndexedStorePath> handler =
+//                cacheProducer.getCache( "content-index", IndexedStorePath.class, IndexedStorePath.class );
+//
+//        handler.execute( cache->{
+//            final SearchManagerImplementor searchManager =
+//                    (SearchManagerImplementor) org.infinispan.query.Search.getSearchManager( cache );
+//
+//            searchManager.registerKeyTransformer( IndexedStorePath.class, IndexedStorePathTransformer.class );
+//            return null;
+//        } );
+//    }
 
     @ContentIndexCache
     @Produces

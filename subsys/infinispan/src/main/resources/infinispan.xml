@@ -6,11 +6,10 @@
 
   <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
     <local-cache name="koji-maven-version-metadata" >
-      <eviction strategy="LRU" size="10000000" type="COUNT"/>
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
 
     <local-cache name="folo-in-progress" >
-      <eviction strategy="LRU" size="10000000" type="COUNT"/>
     </local-cache>
 
     <local-cache name="folo-sealed">
@@ -25,15 +24,15 @@
     </local-cache>
     
     <local-cache name="content-index">
-      <eviction strategy="LRU" size="10000000" type="COUNT"/>
-      <indexing index="LOCAL">
-        <property name="default.directory_provider">ram</property>
-        <property name="hibernate.search.model_mapping">org.commonjava.indy.content.index.ContentIndexCacheProducer</property>
-      </indexing>
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
+      <!--<indexing index="LOCAL">-->
+        <!--<property name="default.directory_provider">ram</property>-->
+        <!--<property name="hibernate.search.model_mapping">org.commonjava.indy.content.index.ContentIndexCacheProducer</property>-->
+      <!--</indexing>-->
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
-      <eviction size="10000000" type="COUNT" strategy="LRU"/>
+      <eviction size="200000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
