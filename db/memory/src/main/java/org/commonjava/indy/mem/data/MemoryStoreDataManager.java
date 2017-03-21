@@ -365,52 +365,66 @@ public class MemoryStoreDataManager
              * First compare ip, if ip same, and the path(without last slash) same too, the repo is found
              * If ip not same, then compare the url without scheme and last slash (if has) to find the repo
          */
+        UrlInfo temp = null;
+        try
+        {
+            temp = new UrlInfo( url );
+        }
+        catch ( IllegalArgumentException error )
+        {
+            logger.error( "Failed to find repository for: '{}'. Reason: {}", error, url, error.getMessage() );
+        }
+        final UrlInfo urlInfo = temp;
         Predicate<Map.Entry<StoreKey, ArtifactStore>> findingRepoFilter = e -> {
-            if ( ( remote == e.getValue().getKey().getType() ) )
+            if ( ( remote == e.getValue().getKey().getType() ) && urlInfo != null )
             {
-                final UrlInfo urlInfo = new UrlInfo( url );
                 final String targetUrl = ( (RemoteRepository) e.getValue() ).getUrl();
-                final UrlInfo targetUrlInfo = new UrlInfo( targetUrl );
-                final String ipForUrl;
-                final String ipForTargetUrl;
+                UrlInfo targetUrlInfo = null;
                 try
                 {
-                    ipForUrl = urlInfo.getIpForUrl();
-                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                    targetUrlInfo = new UrlInfo( targetUrl );
                 }
-                catch ( UnknownHostException ue )
+                catch ( IllegalArgumentException error )
                 {
-                    logger.warn( "Failed to filter remote: ip fetch error.", ue );
-                    return false;
+                    logger.error( "Failed to find repository for: '{}'. Reason: {}", error, targetUrl, error.getMessage() );
                 }
 
-                if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl ) )
+                if (  targetUrlInfo != null )
                 {
-                    if ( urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
-                    {
-                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
-                                      e.getValue().getKey() );
-                        return true;
-                    }
-                }
-                else
-                {
-                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
-                                  e.getValue().getKey(), ipForTargetUrl );
+                    String ipForUrl = null;
+                    String ipForTargetUrl = null;
                     try
                     {
-                        if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
-                                    .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() ) )
+                        ipForUrl = urlInfo.getIpForUrl();
+                        ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                        if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl ) )
                         {
-                            logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
-                                          e.getValue().getKey() );
-                            return true;
+                            if ( urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
+                            {
+                                logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                              e.getValue().getKey() );
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
                         }
                     }
-                    catch ( IllegalArgumentException error )
+                    catch ( UnknownHostException ue )
                     {
-                        logger.error( "Failed to find repository for: '{}'. Reason: {}", error, url,
-                                      error.getMessage() );
+                        logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                    }
+
+                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                                  e.getValue().getKey(), ipForTargetUrl );
+
+                    if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
+                                .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() ) )
+                    {
+                        logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                                      e.getValue().getKey() );
+                        return true;
                     }
                 }
             }
@@ -418,10 +432,8 @@ public class MemoryStoreDataManager
             return false;
         };
 
-        Optional<RemoteRepository> found = copy.stream()
-                                               .filter( findingRepoFilter )
-                                               .map( ( e ) -> (RemoteRepository) e.getValue() )
-                                               .findFirst();
+        Optional<RemoteRepository> found =
+                copy.stream().filter( findingRepoFilter ).map( ( e ) -> (RemoteRepository) e.getValue() ).findFirst();
         return found.isPresent() ? found.get() : null;
     }
 
