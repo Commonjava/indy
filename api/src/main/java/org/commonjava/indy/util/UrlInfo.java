@@ -15,8 +15,10 @@
  */
 package org.commonjava.indy.util;
 
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 public final class UrlInfo
 {
@@ -31,6 +33,10 @@ public final class UrlInfo
     private int port;
 
     private final String rawUrl;
+
+    private final String fileWithNoLastSlash;
+
+    private final String urlWithNoSchemeAndLastSlash;
 
     public UrlInfo( final String u )
     {
@@ -86,6 +92,22 @@ public final class UrlInfo
         {
             port = url.getPort();
         }
+
+        if ( url.getFile().endsWith( "/" ) )
+        {
+            final StringBuilder fileWithSlash = new StringBuilder( url.getFile() );
+            int index = fileWithSlash.lastIndexOf( "/" );
+            fileWithNoLastSlash = fileWithSlash.deleteCharAt( index ).toString();
+
+            final StringBuilder urlWithSlash = new StringBuilder( url.getAuthority() + url.getFile() );
+            index = urlWithSlash.lastIndexOf( "/" );
+            urlWithNoSchemeAndLastSlash = urlWithSlash.deleteCharAt( index ).toString();
+        }
+        else
+        {
+            fileWithNoLastSlash = url.getFile();
+            urlWithNoSchemeAndLastSlash = url.getAuthority() + url.getFile();
+        }
     }
 
     public String getRawUrl()
@@ -117,5 +139,27 @@ public final class UrlInfo
     {
         return port;
     }
+
+    public String getUrlWithNoSchemeAndLastSlash(){
+        return urlWithNoSchemeAndLastSlash;
+    }
+
+    public String getFileWithNoLastSlash()
+    {
+        return fileWithNoLastSlash;
+    }
+
+    public String getIpForUrl() throws UnknownHostException{
+        InetAddress address = InetAddress.getByName( getHost() );
+
+        String ip = null;
+        if ( address != null )
+        {
+            ip = address.getHostAddress();
+        }
+        return ip;
+    }
+
+
 
 }
