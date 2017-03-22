@@ -3,6 +3,7 @@ package org.commonjava.indy.metrics.jaxrs.interceptor;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import org.commonjava.indy.IndyMetricsManager;
+import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
@@ -31,12 +32,13 @@ public class MetricsInterceptor
     IndyMetricsManager util;
 
     @Inject
+    @IndyMetricsNamed
     IndyMetricsConfig config;
 
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        if ( !config.isEnabled() )
+        if ( !config.isMetricsEnabled() )
             return context.proceed();
         logger.info( "call in MeterHandler.operation" );
         IndyMetrics metrics = context.getMethod().getAnnotation( IndyMetrics.class );
@@ -70,6 +72,7 @@ public class MetricsInterceptor
             if ( timers != null )
             {
                 timers.forEach( Timer.Context::stop );
+
             }
             Stream.of( measures.meters() ).forEach( ( named ) ->
                                                     {

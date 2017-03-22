@@ -3,6 +3,7 @@ package org.commonjava.indy;
 import com.codahale.metrics.*;
 import com.codahale.metrics.health.HealthCheck;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
@@ -18,7 +19,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import java.util.concurrent.TimeUnit;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -42,13 +42,14 @@ public class IndyMetricsManager
     ReporterIntializer reporter;
 
     @Inject
+    @IndyMetricsNamed
     IndyMetricsConfig config;
 
     @PostConstruct
     public void initMetric()
     {
 
-        if ( !config.isEnabled() )
+        if ( !config.isMetricsEnabled() )
             return;
         IndyJVMInstrumentation.init( metricRegistry );
         IndyHealthCheckRegistrySet healthCheckRegistrySet = new IndyHealthCheckRegistrySet();

@@ -11,6 +11,9 @@ import javax.enterprise.inject.Produces;
 public class IndyProducer
 {
 
+//    @Inject
+//    IndyMetricsConfig indyMetricsConfig;
+
     @ApplicationScoped
     @Produces
     public MetricRegistry getMetricRegistry()
@@ -18,4 +21,12 @@ public class IndyProducer
         return new MetricRegistry();
     }
 
+
+//    @Dependent
+//    @Produces
+//    @IndyMetricsNamed
+////    @Default
+//    public  IndyMetricsConfig getIndyMetrcisConfig(){
+//        return indyMetricsConfig;
+//    }
 }

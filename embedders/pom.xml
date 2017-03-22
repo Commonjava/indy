@@ -185,6 +185,11 @@
       <artifactId>indy-ftests-pkg-maven</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!--<dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-metrics</artifactId>
+    </dependency>-->
   </dependencies>
   
   <build>
@@ -262,6 +267,7 @@
               <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
               <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
               <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
+              <!--<dependency>org.commonjava.indy:indy-ftests-metrics</dependency>-->
             </dependenciesToScan>
           </configuration>
           <executions>

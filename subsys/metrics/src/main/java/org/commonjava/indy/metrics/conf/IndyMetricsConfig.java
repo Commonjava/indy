@@ -5,6 +5,8 @@ import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.inject.Singleton;
 import java.io.InputStream;
 
 /**
@@ -12,6 +14,7 @@ import java.io.InputStream;
  */
 @SectionName( IndyMetricsConfig.SECTION )
 @ApplicationScoped
+//@Singleton
 public class IndyMetricsConfig
                 implements IndyConfigInfo
 {
@@ -37,6 +40,7 @@ public class IndyMetricsConfig
     public final static int INDY_METRICS_REPORTER_GRPHITEREPORTER_DEFAULT_PERIOD = 30;
 
     public final static String INDY_METRICS_ISENABLED = "enabled";
+    public final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
 
     private String reporter;
 
@@ -52,17 +56,29 @@ public class IndyMetricsConfig
 
     private int grphiterHealthcheckPeriod;
 
-    private boolean enabled;
+    private boolean metricsEnabled;
+    private boolean reporterEnabled;
 
-    public boolean isEnabled()
+    public boolean isReporterEnabled()
     {
-        return enabled;
+        return reporterEnabled;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ISENABLED )
+    public void setReporterEnabled( boolean reporterEnabled )
+    {
+        this.reporterEnabled = reporterEnabled;
+    }
+
+    public boolean isMetricsEnabled()
+    {
+        return metricsEnabled;
     }
 
     @ConfigName( IndyMetricsConfig.INDY_METRICS_ISENABLED )
-    public void setEnabled( boolean enable )
+    public void setMetricsEnabled( boolean metricsEnabled )
     {
-        this.enabled = enabled;
+        this.metricsEnabled = metricsEnabled;
     }
 
     public String getReporter()
