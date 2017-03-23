@@ -64,7 +64,7 @@ public class Propagate404NotFoundTest
         }
 
         final RemoteRepository remoteRepo = this.client.stores()
-                       .load( StoreType.remote, "httprox_127-0-0-1", RemoteRepository.class );
+                       .load( StoreType.remote, "httprox_127-0-0-1_" + server.getPort(), RemoteRepository.class );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );

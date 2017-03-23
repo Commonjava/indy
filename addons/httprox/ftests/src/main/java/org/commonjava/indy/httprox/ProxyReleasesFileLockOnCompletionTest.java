@@ -16,7 +16,6 @@
 package org.commonjava.indy.httprox;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -26,7 +25,6 @@ import org.commonjava.indy.model.core.StoreType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.stream.Stream;
@@ -83,7 +81,7 @@ public class ProxyReleasesFileLockOnCompletionTest
         } );
 
         final RemoteRepository remoteRepo = this.client.stores()
-                       .load( StoreType.remote, "httprox_127-0-0-1", RemoteRepository.class );
+                       .load( StoreType.remote, "httprox_127-0-0-1_" + server.getPort(), RemoteRepository.class );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
