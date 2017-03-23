@@ -61,6 +61,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-relate</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-promote</artifactId>
       <scope>test</scope>
     </dependency>
@@ -112,6 +117,7 @@
               <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
               <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
             </dependenciesToScan> 
           </configuration>
       </plugin>

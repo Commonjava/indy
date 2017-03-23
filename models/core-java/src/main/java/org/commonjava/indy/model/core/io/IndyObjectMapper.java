@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.atlas.graph.jackson.ProjectRelationshipSerializerModule;
 import org.commonjava.maven.atlas.ident.jackson.ProjectVersionRefSerializerModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,7 @@ public class IndyObjectMapper
         final Set<Module> mods = new HashSet<Module>();
         mods.add( ApiSerializerModule.INSTANCE );
         mods.add( ProjectVersionRefSerializerModule.INSTANCE );
+        mods.add( ProjectRelationshipSerializerModule.INSTANCE );
         mods.addAll( Arrays.asList( additionalModules ) );
         this.ctorModules = mods;
         this.ctorModuleSets = null;
@@ -79,7 +81,8 @@ public class IndyObjectMapper
         final Set<Module> mods = new HashSet<Module>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
-        for ( final Module module : mods )
+        mods.add( new ProjectRelationshipSerializerModule() );
+        for ( final Module module : modules )
         {
             mods.add( module );
         }
@@ -94,7 +97,8 @@ public class IndyObjectMapper
         final Set<Module> mods = new HashSet<Module>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
-        for ( final Module module : mods )
+        mods.add( new ProjectRelationshipSerializerModule() );
+        for ( final Module module : modules )
         {
             mods.add( module );
         }

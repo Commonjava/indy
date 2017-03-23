@@ -246,6 +246,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-promote</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-relate</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -336,6 +340,7 @@
                 indy-ftests-httprox,
                 indy-ftests-implied-repos,
                 indy-ftests-koji,
+                indy-ftests-relate,
                 indy-ftests-promote
               </excludeArtifactIds>
               <classifier>sources</classifier>
@@ -369,6 +374,7 @@
                 indy-ftests-httprox,
                 indy-ftests-implied-repos,
                 indy-ftests-koji,
+                indy-ftests-relate,
                 indy-ftests-promote
               </excludeArtifactIds>
               <includes>**/*.class</includes>
@@ -433,6 +439,7 @@
                 indy-ftests-httprox,
                 indy-ftests-implied-repos,
                 indy-ftests-koji,
+                indy-ftests-relate,
                 indy-ftests-promote
               </includeArtifactIds>
               <classifier>sources</classifier>
@@ -460,6 +467,7 @@
                 indy-ftests-httprox,
                 indy-ftests-implied-repos,
                 indy-ftests-koji,
+                indy-ftests-relate,
                 indy-ftests-promote
               </includeArtifactIds>
               <includes>**/*.class</includes>
