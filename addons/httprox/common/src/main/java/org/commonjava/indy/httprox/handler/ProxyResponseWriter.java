@@ -346,14 +346,13 @@ public final class ProxyResponseWriter
     private RemoteRepository getRepository( final URL url )
                     throws IndyDataException
     {
-
-        final String name = PROXY_REPO_PREFIX + url.getHost().replace( '.', '-' );
-
-        int port= url.getPort();
+        int port = url.getPort();
         if ( port < 1 )
         {
             port = url.getDefaultPort();
         }
+
+        String name = PROXY_REPO_PREFIX + url.getHost().replace( '.', '-' ) + '_' + port;
 
         final String baseUrl = String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), port );
 
@@ -362,6 +361,14 @@ public final class ProxyResponseWriter
         {
             logger.debug( "Looking for remote repo with name: {}", name );
             remote = storeManager.getRemoteRepository( name );
+            // if repo with this name already exists, it has a different url, so we need to use a different name
+            int i = 1;
+            while ( remote != null )
+            {
+                name = PROXY_REPO_PREFIX + url.getHost().replace( '.', '-' ) + "_" + i++;
+                logger.debug( "Looking for remote repo with name: {}", name );
+                remote = storeManager.getRemoteRepository( name );
+            }
         }
 
         if ( remote == null )
