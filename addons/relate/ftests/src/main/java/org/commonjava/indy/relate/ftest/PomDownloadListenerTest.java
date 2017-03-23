@@ -18,6 +18,25 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Created by ruhan on 2/17/17.
+ *
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>{@link RemoteRepository} A proxy an upstream server</li>
+ *     <li>Path P points to a POM file in {@link RemoteRepository} A</li>
+ *     <li>Path R points to the Rel file of the target POM</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Path R is requested from {@link RemoteRepository} A</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>{@link RemoteRepository} A returns notNull (exists) for Path R</li>
+ * </ul>
  */
 public class PomDownloadListenerTest
                 extends AbstractIndyFunctionalTest
