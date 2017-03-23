@@ -21,16 +21,12 @@ import static org.junit.Assert.assertThat;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.List;
-
 import org.apache.commons.io.IOUtils;
-import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.message.BasicNameValuePair;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -75,7 +71,7 @@ public class AutoCreateRepoAndRetrievePomTest
         }
 
         final RemoteRepository remoteRepo = this.client.stores()
-                       .load( StoreType.remote, "httprox_127-0-0-1", RemoteRepository.class );
+                       .load( StoreType.remote, "httprox_127-0-0-1_" + server.getPort(), RemoteRepository.class );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
