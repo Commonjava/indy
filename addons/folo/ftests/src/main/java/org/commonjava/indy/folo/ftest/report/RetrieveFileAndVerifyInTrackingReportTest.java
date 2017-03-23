@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Random;
 import java.util.Set;
 
 import org.apache.commons.codec.digest.DigestUtils;
@@ -48,6 +49,8 @@ public class RetrieveFileAndVerifyInTrackingReportTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
+    private static final int SIZE = 10 * 1024 * 1024; // 10MB
+
     @Test
     public void run()
         throws Exception
@@ -56,7 +59,13 @@ public class RetrieveFileAndVerifyInTrackingReportTest
         final String repoId = "repo";
         final String path = "/path/to/foo.class";
 
-        final InputStream stream = new ByteArrayInputStream( ( "This is a test: " + System.nanoTime() ).getBytes() );
+//        byte[] data = ( "This is a test: " + System.nanoTime() ).getBytes();
+
+        Random rand = new Random();
+        byte[] data = new byte[SIZE];
+        rand.nextBytes( data );
+
+        final InputStream stream = new ByteArrayInputStream( data );
 
         server.expect( server.formatUrl( repoId, path ), 200, stream );
 
@@ -73,11 +82,12 @@ public class RetrieveFileAndVerifyInTrackingReportTest
 
         final byte[] bytes = baos.toByteArray();
 
-        final String md5 = md5Hex( bytes );
-        final String sha256 = sha256Hex( bytes );
+        final String md5 = md5Hex( data );
+        final String sha256 = sha256Hex( data );
 
         assertThat( md5, equalTo( DigestUtils.md5Hex( bytes ) ) );
         assertThat( sha256, equalTo( DigestUtils.sha256Hex( bytes ) ) );
+        assertThat( bytes.length, equalTo( (long) data.length ) );
 
         assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
                     equalTo( true ) );
@@ -104,6 +114,7 @@ public class RetrieveFileAndVerifyInTrackingReportTest
         assertThat( entry.getOriginUrl(), equalTo( server.formatUrl( repoId, path ) ) );
         assertThat( entry.getMd5(), equalTo( md5 ) );
         assertThat( entry.getSha256(), equalTo( sha256 ) );
+        assertThat( entry.getSize(), equalTo( (long) data.length ) );
     }
 
     @Override
