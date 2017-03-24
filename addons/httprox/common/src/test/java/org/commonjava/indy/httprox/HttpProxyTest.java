@@ -200,7 +200,7 @@ public class HttpProxyTest
         }
 
         final RemoteRepository remoteRepo = (RemoteRepository) storeManager.getArtifactStore(
-                new StoreKey( StoreType.remote, "httprox_127-0-0-1" ) );
+                new StoreKey( StoreType.remote, "httprox_127-0-0-1_" + server.getPort() ) );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
@@ -231,7 +231,7 @@ public class HttpProxyTest
         }
 
         final RemoteRepository remoteRepo = (RemoteRepository) storeManager.getArtifactStore(
-                new StoreKey( StoreType.remote, "httprox_127-0-0-1" ) );
+                new StoreKey( StoreType.remote, "httprox_127-0-0-1_" + server.getPort() ) );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
