@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,8 +49,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.apache.commons.codec.digest.DigestUtils.shaHex;
+import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -64,9 +67,9 @@ public class StoreFileAndVerifyInTracking_SingleReportBurnInTest
 
     private static final int MEGABYTE = (int) Math.pow( 1024, 2 );
 
-    private static final int MIN_SIZE = 1024;
+    private static final int MIN_SIZE = 20* 1024;
 
-    private static final int COUNT = 100;
+    private static final int COUNT = 10;
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
@@ -75,13 +78,19 @@ public class StoreFileAndVerifyInTracking_SingleReportBurnInTest
 
     private Random rand = new Random();
 
+    private ExecutorService executor = Executors.newFixedThreadPool(24);
+
     private ExecutorCompletionService<FileEntry> fileWriteService =
-            new ExecutorCompletionService<FileEntry>( Executors.newFixedThreadPool(24) );
+            new ExecutorCompletionService<FileEntry>( executor );
+
+    private ExecutorCompletionService<FileEntry> uploadService =
+            new ExecutorCompletionService<FileEntry>( executor );
 
     private static final class FileEntry
     {
         private File file;
         private String path;
+        private Map<String, String> checksums = new HashMap<>();
     }
 
     @Override
@@ -112,7 +121,8 @@ public class StoreFileAndVerifyInTracking_SingleReportBurnInTest
         final String trackingId = newName();
 
         writeFiles();
-        Map<String, File> catalog = uploadFiles( trackingId );
+        uploadFiles( trackingId );
+        Map<String, FileEntry> catalog = mapUploads();
 
         IndyFoloAdminClientModule adminModule = client.module( IndyFoloAdminClientModule.class );
 
@@ -132,57 +142,73 @@ public class StoreFileAndVerifyInTracking_SingleReportBurnInTest
         assertThat( uploads.size(), equalTo( COUNT ) );
 
         assertUploads( uploads, catalog );
+
+        fail( "Test DOES NOT reproduce error" );
     }
 
-    private Map<String, File> uploadFiles( String trackingId )
+    private Map<String, FileEntry> mapUploads()
             throws InterruptedException, ExecutionException
     {
-        Map<String, File> catalog = new HashMap<>();
-        for ( int i = 0; i < COUNT; i++ )
+        Map<String, FileEntry> catalog = new HashMap<>();
+        for(int i=0; i<COUNT; i++)
         {
-            FileEntry fileEntry = fileWriteService.take().get();
-            File file = fileEntry.file;
-            String path = fileEntry.path;
-            try
-            {
-                try (InputStream stream = new FileInputStream( file ))
-                {
-                    logger.info( "\n\nStoring {}/{} ({} bytes) to:\n    {}\n\n\n", i+1,
-                                 COUNT, file.length(), path );
-                    client.module( IndyFoloContentClientModule.class ).store( trackingId, hosted, STORE, path, stream );
-                }
-
-                catalog.put( path, file );
-            }
-            catch ( IOException e )
-            {
-                fail( "Failed to read temp data file: " + file );
-            }
-            catch ( IndyClientException e )
-            {
-                fail( "Failed to upload temp data file: " + file );
-            }
+            FileEntry entry = uploadService.take().get();
+            catalog.put( entry.path, entry );
         }
-
         return catalog;
     }
 
-    private void assertUploads( Set<TrackedContentEntryDTO> uploads, Map<String, File> catalog )
+    private void uploadFiles( String trackingId )
+            throws InterruptedException, ExecutionException
+    {
+        for ( int i = 0; i < COUNT; i++ )
+        {
+            FileEntry fileEntry = fileWriteService.take().get();
+            final int idx = i+1;
+            uploadService.submit( ()->{
+                File file = fileEntry.file;
+                String path = fileEntry.path;
+                try
+                {
+                    try (InputStream stream = new FileInputStream( file ))
+                    {
+                        logger.info( "\n\nStoring {}/{} ({} bytes) to:\n    {}\n\n\n", idx,
+                                     COUNT, file.length(), path );
+                        client.module( IndyFoloContentClientModule.class ).store( trackingId, hosted, STORE, path, stream );
+                    }
+                }
+                catch ( IOException e )
+                {
+                    fail( "Failed to read temp data file: " + file );
+                }
+                catch ( IndyClientException e )
+                {
+                    fail( "Failed to upload temp data file: " + file );
+                }
+
+                return fileEntry;
+            } );
+        }
+    }
+
+    private void assertUploads( Set<TrackedContentEntryDTO> uploads, Map<String, FileEntry> catalog )
     {
         AtomicInteger count=new AtomicInteger( 0 );
-        uploads.parallelStream().forEach( (entry)->{
-            logger.info( "\n\n\nVerifying entry {}/{}:\n    {}\n\n\n", count.incrementAndGet(), uploads.size(),
-                         entry == null ? "INVALID" : entry.getPath() );
+        List<String> messages = new ArrayList<>();
+        uploads.stream().forEach( (upload)->{
+            logger.info( "\n\n\nVerifying upload {}/{}:\n    {}\n\n\n", count.incrementAndGet(), uploads.size(),
+                         upload == null ? "INVALID" : upload.getPath() );
 
-            assertThat( entry, notNullValue() );
+            assertThat( upload, notNullValue() );
 
-            String path = entry.getPath();
+            String path = upload.getPath();
             if ( path.startsWith( "/" ) && path.length() > 0 )
             {
                 path = path.substring( 1 );
             }
 
-            File dataFile = catalog.get( path );
+            FileEntry entry = catalog.get( path );
+            File dataFile = entry.file;
             byte[] data = new byte[0];
             try
             {
@@ -193,24 +219,47 @@ public class StoreFileAndVerifyInTracking_SingleReportBurnInTest
                 fail( "Cannot read temp data file: " + dataFile + " for path: " + path );
             }
 
-            assertThat( path + " has wrong host key", entry.getStoreKey(), equalTo( new StoreKey( hosted, STORE ) ) );
-            assertThat( path + " has wrong local URL", entry.getLocalUrl(),
-                        equalTo( UrlUtils.buildUrl( client.getBaseUrl(), hosted.singularEndpointName(), STORE, path ) ) );
+            checkEqual( path + " has wrong host key", upload.getStoreKey(), new StoreKey( hosted, STORE ) , messages);
+            checkEqual( path + " has wrong local URL", upload.getLocalUrl(),
+                        UrlUtils.buildUrl( client.getBaseUrl(), hosted.singularEndpointName(), STORE, path ), messages );
 
-            assertThat( path + " has non-empty origin URL (uploads should NOT have these)", entry.getOriginUrl(), nullValue() );
+            checkEqual( path + " has non-empty origin URL (uploads should NOT have these)", upload.getOriginUrl(), nullValue() , messages);
+
+            String calcMd5 = null;
+            String calcSha1 = null;
+            String calcSha256 = null;
+
             try
             {
-                assertThat( path + " has wrong MD5", entry.getMd5(), equalTo( md5Hex( data ) ) );
-                assertThat( path + " has wrong SHA1", entry.getSha1(), equalTo( shaHex( data ) ) );
-                assertThat( path + " has wrong SHA256", entry.getSha256(), equalTo( sha256Hex( data ) ) );
+                calcMd5 = md5Hex( data );
+                calcSha1 = shaHex( data );
+                calcSha256 = sha256Hex( data );
             }
             catch ( Exception e )
             {
                 fail( "Failed to compute hashes for: " + path );
             }
 
-            assertThat( path + " has wrong size", entry.getSize(), equalTo( (long) data.length ) );
+            checkEqual( path + ": mismatched calculated vs tracking MD5", upload.getMd5(), calcMd5 , messages);
+            checkEqual( path + ": mismatched calculated vs tracking SHA1", upload.getSha1(), calcSha1 , messages);
+            checkEqual( path + ": mismatched calculated vs tracking SHA256", upload.getSha256(), calcSha256 , messages);
+
+            checkEqual( path + " has wrong size", upload.getSize(), (long) data.length , messages);
+
         } );
+
+        if ( !messages.isEmpty() )
+        {
+            fail( join( messages, "\n\n" ) );
+        }
+    }
+
+    private void checkEqual( String messageBase, Object first, Object second, List<String> messages )
+    {
+        if ( first != second && first != null && !first.equals( second ) )
+        {
+            messages.add( String.format( "%s\n    Expected: %s\n    Actual: %s", messageBase, first, second ) );
+        }
     }
 
     private void writeFiles()
@@ -221,7 +270,7 @@ public class StoreFileAndVerifyInTracking_SingleReportBurnInTest
         {
             final int idx = f;
             fileWriteService.submit( ()->{
-                int size = rand.nextInt( 90 * MEGABYTE ) + MIN_SIZE;
+                int size = rand.nextInt( 10 * MEGABYTE ) + MIN_SIZE;
 
                 byte[] data = new byte[size];
                 rand.nextBytes( data );
