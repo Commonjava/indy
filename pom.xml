@@ -103,6 +103,8 @@
     <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
+
+    <metrics.version>3.1.0</metrics.version>
   </properties>
   
   <modules>
@@ -726,7 +728,11 @@
         <type>tar.gz</type>
       </dependency>
 
-
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-metrics</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+      </dependency>
       <!-- DO NOT REMOVE: append::depMgmt -->
 
 
@@ -788,7 +794,37 @@
         <version>1.0.0</version>
       </dependency>
 
-      
+      <!-- START: metrics support-->
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-core</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-jvm</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-healthchecks</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-graphite</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-servlets</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.dropwizard.metrics</groupId>
+        <artifactId>metrics-json</artifactId>
+        <version>${metrics.version}</version>
+      </dependency>
       <!-- START: JAX-RS support -->
       <dependency>
           <groupId>io.undertow</groupId>
