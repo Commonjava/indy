@@ -24,8 +24,10 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
+import org.commonjava.indy.folo.ctl.FoloConstants;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.dto.TrackingIdsDTO;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +46,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
@@ -215,6 +221,39 @@ public class FoloAdminResource
         catch ( FoloContentException e )
         {
             response = formatResponse( e );
+        }
+
+        return response;
+    }
+
+    @ApiOperation(
+            "Retrieve folo report tracking ids for folo records." )
+    @ApiResponses( { @ApiResponse( code = 200, response = List.class, message = "folo tracking ids with sealed or in_progress" ),
+                           @ApiResponse( code = 404, message = "No ids found for type" ) } )
+    @Path( "/report/ids/{type}" )
+    @GET
+    public Response getRecordIds( @ApiParam( "Report type, should be in_progress|sealed|all" ) final @PathParam( "type" ) String type )
+    {
+        Response response;
+        Set<FoloConstants.TRACKING_TYPE> types = new HashSet<>();
+
+        if ( "in_progress".equals( type ) || "all".equals( type ) )
+        {
+            types.add( FoloConstants.TRACKING_TYPE.IN_PROGRESS );
+        }
+        if ( "sealed".equals( type ) || "all".equals( type ) )
+        {
+            types.add( FoloConstants.TRACKING_TYPE.SEALED );
+        }
+
+        TrackingIdsDTO ids = controller.getTrackingIds( types );
+        if ( ids != null )
+        {
+            response = formatOkResponseWithJsonEntity( ids, objectMapper );
+        }
+        else
+        {
+            response = Response.status( Status.NOT_FOUND ).build();
         }
 
         return response;

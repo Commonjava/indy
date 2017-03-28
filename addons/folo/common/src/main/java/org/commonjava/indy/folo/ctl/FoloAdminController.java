@@ -22,6 +22,7 @@ import org.commonjava.indy.folo.data.FoloFiler;
 import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
+import org.commonjava.indy.folo.dto.TrackingIdsDTO;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
@@ -46,6 +47,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -259,6 +261,32 @@ public class FoloAdminController
     public boolean hasRecord( final String id )
     {
         return recordManager.hasRecord( new TrackingKey( id ) );
+    }
+
+    public TrackingIdsDTO getTrackingIds( final Set<FoloConstants.TRACKING_TYPE> types )
+    {
+
+        Set<String> inProgress = null;
+        if ( types.contains( FoloConstants.TRACKING_TYPE.IN_PROGRESS ) )
+        {
+            inProgress = recordManager.getInProgressTrackingKey()
+                                      .stream()
+                                      .map( TrackingKey::getId )
+                                      .collect( Collectors.toSet() );
+        }
+        Set<String> sealed = null;
+        if ( types.contains( FoloConstants.TRACKING_TYPE.SEALED ) )
+        {
+            sealed = recordManager.getSealedTrackingKey()
+                                  .stream()
+                                  .map( TrackingKey::getId )
+                                  .collect( Collectors.toSet() );
+        }
+        if ( ( inProgress != null && !inProgress.isEmpty() ) || ( sealed != null && !sealed.isEmpty() ) )
+        {
+            return new TrackingIdsDTO( inProgress, sealed );
+        }
+        return null;
     }
 
 }

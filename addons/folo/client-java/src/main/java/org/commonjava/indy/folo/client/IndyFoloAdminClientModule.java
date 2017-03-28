@@ -26,6 +26,7 @@ import org.commonjava.indy.client.core.IndyResponseErrorDetails;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.dto.TrackingIdsDTO;
 import org.commonjava.indy.folo.model.TrackedContentRecord;
 import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
@@ -82,6 +83,12 @@ public class IndyFoloAdminClientModule
         throws IndyClientException
     {
         http.delete( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ) );
+    }
+
+    public TrackingIdsDTO getTrackingIds( final String trackingType )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( "/folo/admin/report/ids", trackingType ), TrackingIdsDTO.class );
     }
 
     @Deprecated
