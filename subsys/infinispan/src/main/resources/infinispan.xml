@@ -13,7 +13,7 @@
     </local-cache>
 
     <local-cache name="folo-sealed">
-      <eviction size="1000" type="COUNT"/>
+      <eviction size="1000" type="COUNT" strategy="LRU"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
