@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class FoloRecordCache
@@ -161,6 +162,19 @@ public class FoloRecordCache
             sealedRecordCache.put( trackingKey, created );
             return created;
         });
+    }
+
+    public Set<TrackingKey> getInProgressTrackingKey()
+    {
+        return inProgressRecordCache.execute( Cache::keySet )
+                                    .stream()
+                                    .map( TrackedContentEntry::getTrackingKey )
+                                    .collect( Collectors.toSet() );
+    }
+
+    public Set<TrackingKey> getSealedTrackingKey()
+    {
+        return sealedRecordCache.execute( Cache::keySet );
     }
 
     private <R> R inProgressByTrackingKey( final TrackingKey key, final BiFunction<QueryBuilder, CacheHandle<TrackedContentEntry, TrackedContentEntry>, R> operation )
