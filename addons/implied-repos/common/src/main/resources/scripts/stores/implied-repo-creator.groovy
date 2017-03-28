@@ -16,6 +16,8 @@ class RepoCreator implements ImpliedRepositoryCreator
         rr.setAllowSnapshots( repo.isSnapshotsEnabled() );
         rr.setAllowReleases( repo.isReleasesEnabled() );
 
+        rr.setPathMaskPatterns(['^((?!-redhat-[0-9]+).)*$'].toSet());
+
         rr.setDescription( "Implicitly created repo for: " + repo.getName() + " (" + repo.getId()
                 + ") from repository declaration in POM: " + implyingGAV );
 
