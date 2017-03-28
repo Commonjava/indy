@@ -22,4 +22,10 @@ public class FoloConstants
 
     public static final String ACCESS_CHANNEL = "access-channel";
 
+    public enum TRACKING_TYPE
+    {
+        IN_PROGRESS,
+        SEALED
+    }
+
 }
