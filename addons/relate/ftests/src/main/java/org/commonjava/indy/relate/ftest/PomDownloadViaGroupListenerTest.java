@@ -3,6 +3,7 @@ package org.commonjava.indy.relate.ftest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -10,9 +11,9 @@ import org.junit.Test;
 
 import java.io.InputStream;
 
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -20,26 +21,26 @@ import static org.junit.Assert.assertThat;
  *
  * <b>GIVEN:</b>
  * <ul>
- *     <li>{@link RemoteRepository} A proxy an upstream server</li>
- *     <li>Path P in {@link RemoteRepository} A points to an POM file in upstream</li>
- *     <li>Path R in {@link RemoteRepository} A points to the Rel file of the target POM</li>
+ *     <li>{@link Group} A contains {@link RemoteRepository} B which proxy an upstream server</li>
+ *     <li>Path P points to a POM file in {@link RemoteRepository} B</li>
+ *     <li>Path R points to the Rel file of the target POM</li>
  * </ul>
  *
  * <br/>
  * <b>WHEN:</b>
  * <ul>
- *     <li>Path R is requested from {@link RemoteRepository} A before Path P is requested</li>
- *     <li>Path P is requested from {@link RemoteRepository} A</li>
+ *     <li>Path R is requested from {@link Group} A</li>
+ *     <li>Path P is requested from {@link Group} A</li>
  * </ul>
  *
  * <br/>
  * <b>THEN:</b>
  * <ul>
- *     <li>{@link RemoteRepository} A returns notNull (exists) for Path R</li>
- *     <li>{@link RemoteRepository} A returns notNull (exists) for Path P</li>
+ *     <li>{@link Group} A returns notNull (exists) for Path R</li>
+ *     <li>{@link Group} A returns notNull (exists) for Path P</li>
  * </ul>
  */
-public class RelDownloadBeforePomTest
+public class PomDownloadViaGroupListenerTest
                 extends AbstractIndyFunctionalTest
 {
     private static final String path = "org/foo/bar/1/bar-1.pom";
@@ -56,21 +57,33 @@ public class RelDownloadBeforePomTest
     public void run() throws Exception
     {
         final String repo1 = "repo1";
+        final String group1 = "group1";
 
         server.expect( server.formatUrl( repo1, path ), 200, content );
 
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
         client.stores().create( remote1, "adding remote", RemoteRepository.class );
 
-        // Download .rel before even touching POM
-        InputStream rel = client.content().get( remote, repo1, pathRel );
-        assertThat( rel, notNullValue() );
-        String s = IOUtils.toString( rel );
-        logger.debug( ">>> " + s );
-        assertThat( StringUtils.isNotEmpty( s ), equalTo( true ) );
+        client.stores().create( new Group( group1, remote1.getKey() ), "adding group", Group.class );
 
-        // check POM is downloaded
-        boolean exists = client.content().exists( remote, repo1, path, true );
+        InputStream is = client.content().get( group, group1, path );
+        String s = IOUtils.toString( is );
+        assertThat( s, equalTo( content ) );
+
+        waitForEventPropagation();
+
+        // Check .rel exist on group1
+        boolean exists = client.content().exists( group, group1, pathRel, true );
         assertThat( exists, equalTo( true ) );
+
+        // Check .rel exist on remote1
+        exists = client.content().exists( remote, repo1, pathRel, true );
+        assertThat( exists, equalTo( true ) );
+
+        // Check .rel content is not empty
+        InputStream ris = client.content().get( group, group1, pathRel );
+        String rel = IOUtils.toString( ris );
+        logger.debug( ">>> " + rel );
+        assertThat( StringUtils.isNotEmpty( rel ), equalTo( true ) );
     }
 }

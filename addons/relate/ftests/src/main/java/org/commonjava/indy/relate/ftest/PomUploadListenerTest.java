@@ -14,6 +14,25 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Created by ruhan on 2/17/17.
+ *
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>{@link HostedRepository} A</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Path P points to a POM file and the POM is uploaded to {@link HostedRepository} A</li>
+ *     <li>Path R points to the Rel file of the target POM</li>
+ *     <li>Path R is requested from {@link HostedRepository} A</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>{@link HostedRepository} A returns notNull (exists) for Path R</li>
+ * </ul>
  */
 public class PomUploadListenerTest
                 extends AbstractIndyFunctionalTest
