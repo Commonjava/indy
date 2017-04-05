@@ -94,7 +94,10 @@
       <artifactId>indy-ftests-pkg-maven</artifactId>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-metrics</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.jboss.logging</groupId>
       <artifactId>jboss-logging</artifactId>

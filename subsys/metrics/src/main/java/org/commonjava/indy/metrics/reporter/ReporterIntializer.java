@@ -4,17 +4,12 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
+import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
-import org.commonjava.indy.metrics.filter.HealthCheckMetricFilter;
-import org.commonjava.indy.metrics.filter.JVMMetricFilter;
-import org.commonjava.indy.metrics.filter.SimpleMetricFilter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.File;
-import java.io.FileInputStream;
 import java.net.InetSocketAddress;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,13 +18,18 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class ReporterIntializer
 {
-
     @Inject
+                    @IndyMetricsNamed
     IndyMetricsConfig config;
 
     public void initReporter( MetricRegistry metrics ) throws Exception
     {
 
+        if ( !config.isReporterEnabled() )
+        {
+            initConsoleReporter( metrics, config );
+            return;
+        }
         String reporter = config.getReporter();
         if ( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER.equals( reporter ) )
         {
@@ -56,7 +56,14 @@ public class ReporterIntializer
                                                           .prefixedWith( config.getGrphiterPrefix() )
                                                           .convertRatesTo( TimeUnit.SECONDS )
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                                          .filter( new SimpleMetricFilter() )
+                                                          .filter( ( name, metric ) ->
+                                                                   {
+                                                                       if ( name.contains( "org.commonjava.indy" ) )
+                                                                       {
+                                                                           return true;
+                                                                       }
+                                                                       return false;
+                                                                   } )
                                                           .build( graphite );
         reporter.start( config.getGrphiterSimplePriod(), TimeUnit.SECONDS );
     }
@@ -69,7 +76,15 @@ public class ReporterIntializer
                                                           .prefixedWith( config.getGrphiterPrefix() )
                                                           .convertRatesTo( TimeUnit.SECONDS )
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                                          .filter( new JVMMetricFilter() )
+                                                          .filter( ( name, metric ) ->
+                                                                   {
+                                                                       if ( !name.contains( "org.commonjava.indy" )
+                                                                                       && name.contains( "jvm" ) )
+                                                                       {
+                                                                           return true;
+                                                                       }
+                                                                       return false;
+                                                                   } )
                                                           .build( graphite );
         reporter.start( config.getGrphiterJVMPriod(), TimeUnit.SECONDS );
     }
@@ -82,7 +97,16 @@ public class ReporterIntializer
                                                           .prefixedWith( config.getGrphiterPrefix() )
                                                           .convertRatesTo( TimeUnit.SECONDS )
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                                          .filter( new HealthCheckMetricFilter() )
+                                                          .filter( ( name, metric ) ->
+                                                                   {
+                                                                       if ( !name.contains( "org.commonjava.indy" )
+                                                                                       && name.contains(
+                                                                                       "healthcheck" ) )
+                                                                       {
+                                                                           return true;
+                                                                       }
+                                                                       return false;
+                                                                   } )
                                                           .build( graphite );
         reporter.start( config.getGrphiterHealthcheckPeriod(), TimeUnit.SECONDS );
     }
