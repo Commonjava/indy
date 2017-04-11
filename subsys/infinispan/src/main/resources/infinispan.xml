@@ -10,6 +10,7 @@
     </local-cache>
 
     <local-cache name="folo-in-progress" >
+      <eviction size="1000" type="COUNT" strategy="LRU"/>
     </local-cache>
 
     <local-cache name="folo-sealed">
