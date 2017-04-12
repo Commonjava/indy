@@ -78,6 +78,56 @@
             </authConfig>
             <images>
               <image>
+                <name>${docker-appliance-keycloak}</name>
+                <alias>keycloak-test-appliance</alias>
+                <build>
+                  <from>jboss/keycloak:1.9.8.Final</from>
+                  <tags>
+                    <tag>latest</tag>
+                  </tags>
+                  <volumes>
+                    <volume>/data</volume>
+                  </volumes>
+                  <ports>
+                    <port>8080</port>
+                  </ports>
+                  <runCmds>
+                    <run>/opt/jboss/keycloak/bin/add-user-keycloak.sh --user admin --password admin</run>
+                  </runCmds>
+                  <cmd>
+                    <exec>
+                      <arg>-b</arg>
+                      <arg>0.0.0.0</arg>
+                      <arg>-Dkeycloak.import=/data/import-realm.json</arg>
+                    </exec>
+                  </cmd>
+                </build>
+                <run>
+                  <ports>
+                    <port>keycloak.port:8080</port>
+                  </ports>
+                  <log>
+                    <file>${project.build.directory}/keycloak.log</file>
+                  </log>
+                  <network>
+                    <mode>${dockerNetworkMode}</mode>
+                    <name>${dockerNetwork}</name>
+                    <alias>keycloak-test-appliance</alias>
+                  </network>
+                  <volumes>
+                    <bind>
+                      <volume>../../test/docker/keycloak-test-appliance/src/main/data:/data</volume>
+                    </bind>
+                  </volumes>
+                  <wait>
+                    <http>
+                      <url>http://localhost:${keycloak.port}/auth</url>
+                    </http>
+                    <time>10000</time>
+                  </wait>
+                </run>
+              </image>
+              <image>
                 <name>${docker-appliance-gogs}</name>
                 <alias>gogs-test-appliance</alias>
                 <run>

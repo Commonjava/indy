@@ -1,0 +1,71 @@
+{
+    "realm": "indy",
+    "enabled": true,
+    "sslRequired": "external",
+    "registrationAllowed": true,
+    "roles": {
+        "realm": [
+            {
+                "name": "admin",
+                "description": "indy's admin role",
+                "scopeParamRequired": false,
+                "composite": false
+            },
+            {
+                "name": "user",
+                "description": "indy's normal user role",
+                "scopeParamRequired": false,
+                "composite": false
+            }
+        ]
+    },
+    "users": [
+        {
+            "username": "indy-admin",
+            "enabled": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "indy-admin"
+                }
+            ],
+            "realmRoles": [
+                "admin"
+            ]
+        },
+        {
+            "username": "joe",
+            "enabled": true,
+            "credentials": [
+                {
+                    "type": "password",
+                    "value": "joe"
+                }
+            ],
+            "realmRoles": [
+                "user"
+            ]
+        }
+    ],
+    "clients": [
+        {
+            "clientId": "indy",
+            "directAccessGrantsEnabled": true,
+            "enabled": true,
+            "fullScopeAllowed": true,
+            "redirectUris": [
+                "http://indy.local:8081/index.html"
+            ]
+        },
+        {
+            "clientId": "indy-ui",
+            "directAccessGrantsEnabled": true,
+            "enabled": true,
+            "fullScopeAllowed": true,
+            "publicClient": true,
+            "redirectUris": [
+                "http://indy.local:8081/index.html"
+            ]
+        }
+    ]
+}
