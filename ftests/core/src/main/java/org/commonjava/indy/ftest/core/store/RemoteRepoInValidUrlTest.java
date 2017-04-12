@@ -17,11 +17,13 @@ package org.commonjava.indy.ftest.core.store;
 
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class RemoteRepoInValidUrlTest
         extends AbstractStoreManagementTest
 {
+    @Ignore( "Disabling validating decorator around StoreDataManager until we can be more certain it's correct and stable for all use cases" )
     @Test( expected = IndyClientException.class )
     public void run()
             throws Exception
