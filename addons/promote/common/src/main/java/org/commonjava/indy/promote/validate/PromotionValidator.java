@@ -128,9 +128,10 @@ public class PromotionValidator
                     {
                         try
                         {
+                            final String changeSum = String.format( "Removes the temp remote repo [%s] after promote operation.", store );
                             storeDataMgr.deleteArtifactStore( store.getKey(),
                                                               new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                 "remove the temp remote repo" ),
+                                                                                 changeSum ),
                                                               new EventMetadata().set( ContentManager.SUPPRESS_EVENTS,
                                                                                        true ) );
 
