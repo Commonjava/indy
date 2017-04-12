@@ -70,6 +70,8 @@ public class RepositoryPathMaskMetadataTest
             "  <groupId>org.bar</groupId>\n" +
             "  <artifactId>bar-project</artifactId>\n" +
             "  <versioning>\n" +
+            "    <latest>2.0</latest>\n" +
+            "    <release>2.0</release>\n" +
             "    <versions>\n" +
             "      <version>1.0</version>\n" +
             "      <version>2.0</version>\n" +
