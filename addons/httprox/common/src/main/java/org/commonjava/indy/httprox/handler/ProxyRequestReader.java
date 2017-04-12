@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestFactory;
@@ -93,6 +94,12 @@ public final class ProxyRequestReader
 
                     writer.setHttpRequest( request );
                     sendResponse = true;
+                }
+                catch ( ConnectionClosedException e )
+                {
+                    logger.warn("Client closed connection. Aborting proxy request.");
+                    sendResponse = false;
+                    channel.resumeReads();
                 }
                 catch ( HttpException e )
                 {
