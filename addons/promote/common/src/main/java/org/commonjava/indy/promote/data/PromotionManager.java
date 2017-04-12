@@ -25,6 +25,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
@@ -44,6 +45,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +85,8 @@ public class PromotionManager
 
     private Map<StoreKey, ReentrantLock> byPathTargetLocks = new WeakHashMap<>();
 
+    private Map<String, StoreKey> targetGroupKeyMap = new HashMap<>( 1 );
+
     protected PromotionManager()
     {
     }
@@ -108,52 +112,71 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        Group target;
-        try
+        synchronized ( getTargetKey( request.getTargetGroup() ) )
         {
-            target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
-        }
-        catch ( IndyDataException e )
-        {
-            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
-                                          e.getMessage() );
-        }
-
-        if ( target == null )
-        {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
-            logger.warn( error );
-
-            return new GroupPromoteResult( request, error );
-        }
-
-        ValidationResult validation = new ValidationResult();
-        logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
-                     request.getTargetGroup() );
-
-        validator.validate( request, validation, baseUrl );
-        if ( validation.isValid() )
-        {
-            if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
+            Group target;
+            try
             {
-                // give the preUpdate event a different object to compare vs. the original group.
-                target = target.copyOf();
+                target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
+                                              e.getMessage() );
+            }
 
-                target.addConstituent( request.getSource() );
-                try
+            if ( target == null )
+            {
+                String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+                logger.warn( error );
+
+                return new GroupPromoteResult( request, error );
+            }
+
+            ValidationResult validation = new ValidationResult();
+            logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
+                         request.getTargetGroup() );
+
+            validator.validate( request, validation, baseUrl );
+            if ( validation.isValid() )
+            {
+                if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
                 {
-                    storeManager.storeArtifactStore( target, new ChangeSummary( user, "Promoting " + request.getSource()
-                            + " into membership of group: " + target.getKey() ), false, new EventMetadata() );
-                }
-                catch ( IndyDataException e )
-                {
-                    throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
-                                                  target.getKey(), request.getSource(), e.getMessage() );
+                    // give the preUpdate event a different object to compare vs. the original group.
+                    target = target.copyOf();
+
+                    target.addConstituent( request.getSource() );
+                    try
+                    {
+                        storeManager.storeArtifactStore( target, new ChangeSummary( user, "Promoting " + request.getSource()
+                                + " into membership of group: " + target.getKey() ), false, new EventMetadata() );
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
+                                                      target.getKey(), request.getSource(), e.getMessage() );
+                    }
                 }
             }
-        }
 
-        return new GroupPromoteResult( request, validation );
+            return new GroupPromoteResult( request, validation );
+        }
+    }
+
+    /**
+     * Provides target group store key for a given group name. This is meant to provide the same instance of the key
+     * for a name to be able to synchronize promotion requests based on this instance.
+     *
+     * @param targetName the target group name
+     * @return the group store key
+     */
+    private synchronized StoreKey getTargetKey( final String targetName )
+    {
+        if ( !targetGroupKeyMap.containsKey( targetName ) )
+        {
+            targetGroupKeyMap.put( targetName, new StoreKey( StoreType.group, targetName ) );
+        }
+        return targetGroupKeyMap.get( targetName );
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )
@@ -220,7 +243,7 @@ public class PromotionManager
      *
      * @param request The request containing source and target store keys, and an optional list of paths to promotePaths
      *
-     * @return The result, including the source and target store keys used, the paths completed (promoted successfully), the pending paths (those that 
+     * @return The result, including the source and target store keys used, the paths completed (promoted successfully), the pending paths (those that
      * weren't processed due to some error...or null), and a nullable error explaining what (if anything) went wrong with the promotion.
      *
      * @throws PromotionException
@@ -275,7 +298,7 @@ public class PromotionManager
      *
      * @param result The result to resumePathsPromote
      *
-     * @return The same result, with any successful path promotions moved from the pending to completed paths list, and the error cleared (or set to a 
+     * @return The same result, with any successful path promotions moved from the pending to completed paths list, and the error cleared (or set to a
      * new error)
      *
      * @throws PromotionException
@@ -293,13 +316,13 @@ public class PromotionManager
 
     /**
      * Attempt to rollbackPathsPromote a previously failing {@link PathsPromoteResult}. This is meant to handle cases where an unrecoverable error
-     * occurs on the server side, and promotion can NOT proceed afterward. All paths in the completed paths set are deleted from the target, if 
+     * occurs on the server side, and promotion can NOT proceed afterward. All paths in the completed paths set are deleted from the target, if
      * possible. The output {@link PathsPromoteResult} contains the previous content, with any successfully removed target paths moved back from the
      * completed-paths list to the pending-paths list. If an error occurs during rollbackPathsPromote, the error field will be set...otherwise, it will be null.
      *
      * @param result The result to rollbackPathsPromote
      *
-     * @return The same result, with any successful deletions moved from the completed to pending paths list, and the error cleared (or set to a 
+     * @return The same result, with any successful deletions moved from the completed to pending paths list, and the error cleared (or set to a
      * new error)
      *
      * @throws PromotionException
