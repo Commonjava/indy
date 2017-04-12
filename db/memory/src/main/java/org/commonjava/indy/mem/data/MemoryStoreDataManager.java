@@ -295,7 +295,7 @@ public class MemoryStoreDataManager
         ReentrantLock opLock = getOpLock( key );
         try
         {
-            logger.trace( "Delete operation starting: {}", key );
+            logger.info( "DELETE operation starting for store: {}", key );
             opLock.lock();
 
             final ArtifactStore store = stores.get( key );
@@ -308,7 +308,7 @@ public class MemoryStoreDataManager
             preDelete( store, summary, true, eventMetadata );
 
             ArtifactStore removed = stores.remove( key );
-            logger.trace( "Removed store: {}", removed );
+            logger.info( "REMOVED store: {}", removed );
 
             postDelete( store, summary, true, eventMetadata );
         }
