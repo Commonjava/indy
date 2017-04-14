@@ -23,6 +23,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.jgit.api.errors.NoFilepatternException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
@@ -426,7 +427,7 @@ public class GitManager
             {
                 throw new GitSubsystemException( "Cannot remove from git: " + e.getMessage(), e );
             }
-            catch ( final GitAPIException e )
+            catch ( final JGitInternalException | GitAPIException e )
             {
                 throw new GitSubsystemException( "Cannot remove from git: " + e.getMessage(), e );
             }
@@ -695,31 +696,14 @@ public class GitManager
     private <T> T lockAnd(GitFunction<T> operation)
             throws GitSubsystemException
     {
+        lockObject.lock();
         try
         {
-            boolean locked = lockObject.tryLock( config.getLockMillis(), TimeUnit.MILLISECONDS );
-            if( locked )
-            {
-                try
-                {
-                    return operation.execute( this );
-                }
-                finally
-                {
-                    lockObject.unlock();
-                }
-            }
-            else
-            {
-                throw new GitSubsystemException( "Attempt to lock Git subsystem timed out" );
-            }
+            return operation.execute( this );
         }
-        catch ( InterruptedException e )
+        finally
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "Interrupted while waiting for Git sybsystem lock" );
+            lockObject.unlock();
         }
-
-        return null;
     }
 }
