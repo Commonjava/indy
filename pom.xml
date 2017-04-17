@@ -62,7 +62,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>0.17.1-SNAPSHOT</atlasVersion>
-    <galleyVersion>0.14.0-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.13.6</galleyVersion>
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.9.3-SNAPSHOT</partylineVersion>
@@ -99,6 +99,7 @@
 
     <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
     <gogs-waitFor>Gogs: Go Git Service</gogs-waitFor>
+    <docker-appliance-keycloak>${dockerRegistry}/${dockerUser}/keycloak-test-appliance</docker-appliance-keycloak>
 
     <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
