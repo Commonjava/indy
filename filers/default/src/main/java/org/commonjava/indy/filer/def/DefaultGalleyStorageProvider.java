@@ -27,6 +27,7 @@ import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory
 import org.commonjava.maven.galley.cache.routes.RoutingCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
+import org.commonjava.maven.galley.io.NoCacheTransferDecorator;
 import org.commonjava.maven.galley.io.TransferDecoratorPipeline;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
@@ -136,7 +137,8 @@ public class DefaultGalleyStorageProvider
                                                    specialPathManager, true, true, contentMetadataConsumer,
                                                    new Md5GeneratorFactory(), new Sha1GeneratorFactory(),
                                                    new Sha256GeneratorFactory() ),
-                new ContentsFilteringTransferDecorator() );
+                new ContentsFilteringTransferDecorator(),
+                new NoCacheTransferDecorator( specialPathManager ) );
 
         final File storeRoot = config.getStorageRootDirectory();
 

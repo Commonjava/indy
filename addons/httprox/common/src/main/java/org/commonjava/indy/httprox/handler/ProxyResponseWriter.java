@@ -46,6 +46,7 @@ import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URL;
 
@@ -55,6 +56,7 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_REPO_PREFIX;
+import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 
 public final class ProxyResponseWriter
                 implements ChannelListener<ConduitStreamSinkChannel>
@@ -170,7 +172,6 @@ public final class ProxyResponseWriter
                             final URL url = new URL( requestLine.getUri() );
                             final RemoteRepository repo = getRepository( url );
                             transfer( http, repo, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
-
                             break;
                         }
                         case OPTIONS_METHOD:
@@ -339,6 +340,8 @@ public final class ProxyResponseWriter
         {
             logger.debug( "NOT TRACKING non-body request: {} in {}", path, repo );
         }
+
+        eventMetadata.setPackageType( PKG_TYPE_GENERIC_HTTP );
 
         return eventMetadata;
     }
