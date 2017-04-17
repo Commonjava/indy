@@ -80,28 +80,6 @@
               <image>
                 <name>${docker-appliance-keycloak}</name>
                 <alias>keycloak-test-appliance</alias>
-                <build>
-                  <from>jboss/keycloak:1.9.8.Final</from>
-                  <tags>
-                    <tag>latest</tag>
-                  </tags>
-                  <volumes>
-                    <volume>/data</volume>
-                  </volumes>
-                  <ports>
-                    <port>8080</port>
-                  </ports>
-                  <runCmds>
-                    <run>/opt/jboss/keycloak/bin/add-user-keycloak.sh --user admin --password admin</run>
-                  </runCmds>
-                  <cmd>
-                    <exec>
-                      <arg>-b</arg>
-                      <arg>0.0.0.0</arg>
-                      <arg>-Dkeycloak.import=/data/import-realm.json</arg>
-                    </exec>
-                  </cmd>
-                </build>
                 <run>
                   <ports>
                     <port>keycloak.port:8080</port>
