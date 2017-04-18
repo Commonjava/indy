@@ -34,6 +34,11 @@
       </div>
     </div>
     <div class="detail-field">
+      <span>{{store.readonly | checkmark}}</span>
+      <label>Readonly?</label>
+      <span class="hint" ng-if="store.readonly">All uploading and deleting operations to this repo are prohibited as it is set to readonly</span>
+    </div>
+    <div class="detail-field">
         <label>Local URL:</label>
     <span><a ng-if="!raw.demo" ng-href="{{raw.storeHref}}" target="_new">{{raw.storeHref}}</a></span>
     <span ng-if="raw.demo">{{raw.storeHref}}</span>
