@@ -832,6 +832,23 @@
         <artifactId>metrics-json</artifactId>
         <version>${metrics.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>io.github.hengyunabc</groupId>
+        <artifactId>zabbix-api</artifactId>
+        <version>0.0.2</version>
+      </dependency>
+      <dependency>
+        <groupId>io.github.hengyunabc</groupId>
+        <artifactId>zabbix-sender</artifactId>
+        <version>0.0.4</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <version>1.10</version>
+      </dependency>
       <!-- START: JAX-RS support -->
       <dependency>
           <groupId>io.undertow</groupId>

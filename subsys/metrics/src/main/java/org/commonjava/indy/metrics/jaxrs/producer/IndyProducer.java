@@ -1,18 +1,17 @@
 package org.commonjava.indy.metrics.jaxrs.producer;
 
 import com.codahale.metrics.MetricRegistry;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 /**
  * Created by xiabai on 2/27/17.
  */
 public class IndyProducer
 {
-
-//    @Inject
-//    IndyMetricsConfig indyMetricsConfig;
 
     @ApplicationScoped
     @Produces
@@ -22,11 +21,7 @@ public class IndyProducer
     }
 
 
-//    @Dependent
-//    @Produces
-//    @IndyMetricsNamed
-////    @Default
-//    public  IndyMetricsConfig getIndyMetrcisConfig(){
-//        return indyMetricsConfig;
-//    }
+
+
+
 }

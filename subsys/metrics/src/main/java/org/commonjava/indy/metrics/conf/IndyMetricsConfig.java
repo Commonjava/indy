@@ -14,7 +14,6 @@ import java.io.InputStream;
  */
 @SectionName( IndyMetricsConfig.SECTION )
 @ApplicationScoped
-//@Singleton
 public class IndyMetricsConfig
                 implements IndyConfigInfo
 {
@@ -22,11 +21,9 @@ public class IndyMetricsConfig
 
     public final static String INDY_METRICS_REPORTER = "reporter";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER = "graphite.reporter";
+    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME = "graphite.hostname";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME = "graphite.reporter.hostname";
-
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT = "graphite.reporter.port";
+    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT = "graphite.port";
 
     public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX = "graphite.reporter.prefix";
 
@@ -40,7 +37,158 @@ public class IndyMetricsConfig
     public final static int INDY_METRICS_REPORTER_GRPHITEREPORTER_DEFAULT_PERIOD = 30;
 
     public final static String INDY_METRICS_ISENABLED = "enabled";
+
     public final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL = "zabbix.api.url";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT = "zabbix.reporter.host";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST = "zabbix.reporter.port";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_USER = "zabbix.user";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD = "zabbix.pwd";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME = "zabbix.indy.host";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX = "zabbix.reporter.prefix";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD = "zabbix.reporter.simple.period";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD = "zabbix.reporter.jvm.period";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD =
+                    "zabbix.reporter.healthcheck.period";
+
+    private String zabbixPrefix;
+
+    private int zabbixSimplePriod;
+
+    private int zabbixJVMPriod;
+
+    private int zabbixHealthcheckPeriod;
+
+    public String getZabbixPrefix()
+    {
+        return zabbixPrefix;
+    }
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX )
+    public void setZabbixPrefix( String zabbixPrefix )
+    {
+        this.zabbixPrefix = zabbixPrefix;
+    }
+
+    public int getZabbixSimplePriod()
+    {
+        return zabbixSimplePriod;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD )
+    public void setZabbixSimplePriod( int zabbixSimplePriod )
+    {
+        this.zabbixSimplePriod = zabbixSimplePriod;
+    }
+
+    public int getZabbixJVMPriod()
+    {
+        return zabbixJVMPriod;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD )
+    public void setZabbixJVMPriod( int zabbixJVMPriod )
+    {
+        this.zabbixJVMPriod = zabbixJVMPriod;
+    }
+
+    public int getZabbixHealthcheckPeriod()
+    {
+        return zabbixHealthcheckPeriod;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD )
+    public void setZabbixHealthcheckPeriod( int zabbixHealthcheckPeriod )
+    {
+        this.zabbixHealthcheckPeriod = zabbixHealthcheckPeriod;
+    }
+
+    private String zabbixApiHostUrl;
+
+    private String zabbixHost;
+
+    private int zabbixPort;
+
+    private String zabbixUser;
+
+    private String zabbixPwd;
+
+    private String zabbixLocalHostName;
+
+    public String getZabbixApiHostUrl()
+    {
+        return zabbixApiHostUrl;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL )
+    public void setZabbixApiHostUrl( String zabbixApiHostUrl )
+    {
+        this.zabbixApiHostUrl = zabbixApiHostUrl;
+    }
+
+    public String getZabbixHost()
+    {
+        return zabbixHost;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST )
+    public void setZabbixHost( String zabbixHost )
+    {
+        this.zabbixHost = zabbixHost;
+    }
+
+    public int getZabbixPort()
+    {
+        return zabbixPort;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT )
+    public void setZabbixPort( int zabbixPort )
+    {
+        this.zabbixPort = zabbixPort;
+    }
+
+    public String getZabbixUser()
+    {
+        return zabbixUser;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_USER )
+    public void setZabbixUser( String zabbixUser )
+    {
+        this.zabbixUser = zabbixUser;
+    }
+
+    public String getZabbixPwd()
+    {
+        return zabbixPwd;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD )
+    public void setZabbixPwd( String zabbixPwd )
+    {
+        this.zabbixPwd = zabbixPwd;
+    }
+
+    public String getZabbixLocalHostName()
+    {
+        return zabbixLocalHostName;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME )
+    public void setZabbixLocalHostName( String zabbixLocalHostName )
+    {
+        this.zabbixLocalHostName = zabbixLocalHostName;
+    }
 
     private String reporter;
 
@@ -57,6 +205,7 @@ public class IndyMetricsConfig
     private int grphiterHealthcheckPeriod;
 
     private boolean metricsEnabled;
+
     private boolean reporterEnabled;
 
     public boolean isReporterEnabled()
