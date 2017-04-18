@@ -250,4 +250,14 @@ public interface StoreDataManager
      * Return the set of {@link Group}s that contain the given {@link StoreKey}s either directly or indirectly.
      */
     Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys );
+
+    /**
+     * Check if store is a readonly hosted repository. Return true only when store is a readonly {@link HostedRepository}
+     */
+    boolean checkHostedReadonly( ArtifactStore store );
+
+    /**
+     * Check if store is a readonly hosted repository. Return true only when store is a readonly {@link HostedRepository}
+     */
+    boolean checkHostedReadonly( StoreKey storeKey );
 }

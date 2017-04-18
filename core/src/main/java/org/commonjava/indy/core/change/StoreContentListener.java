@@ -214,9 +214,10 @@ public class StoreContentListener
     private void clearPaths( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups, boolean deleteOriginPath )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
+        final boolean isReadonlyHosted = storeDataManager.checkHostedReadonly( originKey );
         paths.parallelStream()
                  .forEach( p -> {
-                     if ( deleteOriginPath )
+                     if ( deleteOriginPath && isReadonlyHosted )
                      {
                          try
                          {

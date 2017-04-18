@@ -23,12 +23,14 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.inject.IndyData;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -305,6 +307,13 @@ public class MemoryStoreDataManager
                 return;
             }
 
+            if ( checkHostedReadonly( store ) )
+            {
+                throw new IndyDataException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
+                                             "The store {} is readonly. If you want to delete this store, please modify it to non-readonly",
+                                             store.getKey() );
+            }
+
             preDelete( store, summary, true, eventMetadata );
 
             ArtifactStore removed = stores.remove( key );
@@ -317,6 +326,25 @@ public class MemoryStoreDataManager
             opLock.unlock();
             logger.trace( "Delete operation complete: {}", key );
         }
+    }
+
+    @Override
+    public boolean checkHostedReadonly( final ArtifactStore store )
+    {
+        if ( store != null && store.getKey().getType() == StoreType.hosted )
+        {
+            if ( ( (HostedRepository) store ).isReadonly() )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean checkHostedReadonly( final StoreKey storeKey )
+    {
+        return checkHostedReadonly( stores.get( storeKey ) );
     }
 
     @Override
