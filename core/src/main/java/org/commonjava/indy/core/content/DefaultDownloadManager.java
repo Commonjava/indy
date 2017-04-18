@@ -551,6 +551,13 @@ public class DefaultDownloadManager
                                              "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
+        if ( storeManager.checkHostedReadonly( store ) )
+        {
+            throw new IndyWorkflowException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
+                                             "The store {} is readonly. If you want to store any content to this store, please modify it to non-readonly",
+                                             store.getKey() );
+        }
+
         if ( store instanceof HostedRepository )
         {
             final HostedRepository deploy = (HostedRepository) store;
@@ -654,12 +661,16 @@ public class DefaultDownloadManager
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         final ContentQuality quality = getQuality( path );
 
         HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
         {
+            if ( storeManager.checkHostedReadonly( store ) )
+            {
+                logger.info( "The store {} is readonly, store operation not allowed" );
+                continue;
+            }
             if ( storeIsSuitableFor( store, quality, op ) )
             {
                 selected = (HostedRepository) store;
@@ -861,6 +872,12 @@ public class DefaultDownloadManager
         boolean result = false;
         for ( final ArtifactStore store : stores )
         {
+            if ( storeManager.checkHostedReadonly( store ) )
+            {
+                logger.info( "The store {} is readonly, store operation not allowed" );
+                continue;
+            }
+
             result = delete( store, path, new EventMetadata() ) || result;
         }
 
@@ -881,6 +898,13 @@ public class DefaultDownloadManager
         if ( store.getKey().getType() == StoreType.group )
         {
             return false;
+        }
+
+        if ( storeManager.checkHostedReadonly( store ) )
+        {
+            throw new IndyWorkflowException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
+                                             "The store {} is readonly. If you want to store any content to this store, please modify it to non-readonly",
+                                             store.getKey() );
         }
 
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );

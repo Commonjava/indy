@@ -219,4 +219,16 @@ public class TestValidRemoteStoreDataManager
     {
         return delegate.getGroupsAffectedBy( keys );
     }
+
+    @Override
+    public boolean checkHostedReadonly( ArtifactStore store )
+    {
+        return delegate.checkHostedReadonly( store );
+    }
+
+    @Override
+    public boolean checkHostedReadonly( StoreKey storeKey )
+    {
+        return delegate.checkHostedReadonly( storeKey );
+    }
 }
