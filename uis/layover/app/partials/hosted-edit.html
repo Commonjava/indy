@@ -31,6 +31,11 @@
           <label>Enabled?</label>
           <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
         </div>
+        <div class="detail-field">
+          <input type="checkbox" ng-model="store.readonly" />
+          <label>Readonly?</label>
+          <span class="hint">If set to readonly, all uploading and deleting operations to this repo are prohibited</span>
+        </div>
 
         <div class="detail-field">
           <label>Storage Directory:</label>
