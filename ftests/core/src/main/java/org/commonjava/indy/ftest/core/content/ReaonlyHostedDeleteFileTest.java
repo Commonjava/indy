@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -29,6 +28,22 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if files can be deleted in a readonly hosted repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a non-readonly hosted repo and stores file in it</li>
+ *      <li>updates the hosted repo to non-readonly</li>
+ *      <li>deletes the file in hosted repo once</li>
+ *      <li>updates the hosted repo to non-readonly</li>
+ *      <li>deletes file again</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the file can not be deleted with 405 error first time</li>
+ *     <li>the file can be deleted successfully with no error second time</li>
+ * </ul>
+ */
 public class ReaonlyHostedDeleteFileTest
         extends AbstractContentManagementTest
 {

@@ -254,10 +254,10 @@ public interface StoreDataManager
     /**
      * Check if store is a readonly hosted repository. Return true only when store is a readonly {@link HostedRepository}
      */
-    boolean checkHostedReadonly( ArtifactStore store );
+    boolean isReadonly( ArtifactStore store );
 
     /**
      * Check if store is a readonly hosted repository. Return true only when store is a readonly {@link HostedRepository}
      */
-    boolean checkHostedReadonly( StoreKey storeKey );
+    boolean isReadonly( StoreKey storeKey );
 }

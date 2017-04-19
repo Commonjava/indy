@@ -23,7 +23,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
-import org.commonjava.indy.inject.IndyData;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -56,6 +55,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
 @Alternative
@@ -310,7 +310,7 @@ public class MemoryStoreDataManager
                 return;
             }
 
-            if ( checkHostedReadonly( store ) )
+            if ( isReadonly( store ) )
             {
                 throw new IndyDataException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
                                              "The store {} is readonly. If you want to delete this store, please modify it to non-readonly",
@@ -332,22 +332,26 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public boolean checkHostedReadonly( final ArtifactStore store )
+    public boolean isReadonly( final ArtifactStore store )
     {
-        if ( store != null && store.getKey().getType() == StoreType.hosted )
+
+        if ( store != null )
         {
-            if ( ( (HostedRepository) store ).isReadonly() )
+            if ( store.getKey().getType() == hosted && ( (HostedRepository) store ).isReadonly() )
             {
                 return true;
             }
+            //TODO: currently we only support to check hosted readonly here, to make the hosted has ability to prevent from
+            //      unexpected removing of both files and repo itself. This method may be expand to other repos like remote
+            //      or group in the future to support some other functions, like remote repo's "deploy-through"
         }
         return false;
     }
 
     @Override
-    public boolean checkHostedReadonly( final StoreKey storeKey )
+    public boolean isReadonly( final StoreKey storeKey )
     {
-        return checkHostedReadonly( stores.get( storeKey ) );
+        return isReadonly( stores.get( storeKey ) );
     }
 
     @Override

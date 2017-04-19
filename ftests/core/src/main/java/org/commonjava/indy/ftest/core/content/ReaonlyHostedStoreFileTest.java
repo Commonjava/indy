@@ -30,6 +30,21 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if files can be stored in a readonly hosted repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a readonly hosted repo</li>
+ *      <li>stores file in hosted repo once</li>
+ *      <li>updates the hosted repo to non-readonly</li>
+ *      <li>stores file again</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the file can not be stored with 405 error first time</li>
+ *     <li>the file can be stored successfully with no error second time</li>
+ * </ul>
+ */
 public class ReaonlyHostedStoreFileTest
         extends AbstractContentManagementTest
 {
