@@ -442,7 +442,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        Transfer target = null;
+        Transfer target;
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
