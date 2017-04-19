@@ -26,7 +26,6 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -551,7 +550,7 @@ public class DefaultDownloadManager
                                              "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
-        if ( storeManager.checkHostedReadonly( store ) )
+        if ( storeManager.isReadonly( store ) )
         {
             throw new IndyWorkflowException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
                                              "The store {} is readonly. If you want to store any content to this store, please modify it to non-readonly",
@@ -666,7 +665,7 @@ public class DefaultDownloadManager
         HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
         {
-            if ( storeManager.checkHostedReadonly( store ) )
+            if ( storeManager.isReadonly( store ) )
             {
                 logger.info( "The store {} is readonly, store operation not allowed" );
                 continue;
@@ -872,7 +871,7 @@ public class DefaultDownloadManager
         boolean result = false;
         for ( final ArtifactStore store : stores )
         {
-            if ( storeManager.checkHostedReadonly( store ) )
+            if ( storeManager.isReadonly( store ) )
             {
                 logger.info( "The store {} is readonly, store operation not allowed" );
                 continue;
@@ -900,7 +899,7 @@ public class DefaultDownloadManager
             return false;
         }
 
-        if ( storeManager.checkHostedReadonly( store ) )
+        if ( storeManager.isReadonly( store ) )
         {
             throw new IndyWorkflowException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
                                              "The store {} is readonly. If you want to store any content to this store, please modify it to non-readonly",

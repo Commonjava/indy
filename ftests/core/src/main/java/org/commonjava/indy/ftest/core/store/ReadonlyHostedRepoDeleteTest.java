@@ -24,6 +24,21 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if the readonly hosted repo can be deleted
+ * when: <br />
+ * <ul>
+ *      <li>creates readonly hosted repo</li>
+ *      <li>deletes this readonly hosted repo once</li>
+ *      <li>updates the hosted repo to non-readonly</li>
+ *      <li>deletes it again</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the hosted repo can not be deleted with 405 error first time</li>
+ *     <li>the hosted repo can be deleted successfully with no error second time</li>
+ * </ul>
+ */
 public class ReadonlyHostedRepoDeleteTest
     extends AbstractStoreManagementTest
 {

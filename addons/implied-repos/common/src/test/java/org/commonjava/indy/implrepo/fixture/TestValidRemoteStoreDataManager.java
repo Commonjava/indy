@@ -221,14 +221,14 @@ public class TestValidRemoteStoreDataManager
     }
 
     @Override
-    public boolean checkHostedReadonly( ArtifactStore store )
+    public boolean isReadonly( ArtifactStore store )
     {
-        return delegate.checkHostedReadonly( store );
+        return delegate.isReadonly( store );
     }
 
     @Override
-    public boolean checkHostedReadonly( StoreKey storeKey )
+    public boolean isReadonly( StoreKey storeKey )
     {
-        return delegate.checkHostedReadonly( storeKey );
+        return delegate.isReadonly( storeKey );
     }
 }
