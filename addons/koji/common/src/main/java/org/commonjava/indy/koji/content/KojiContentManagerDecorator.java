@@ -338,7 +338,6 @@ public abstract class KojiContentManagerDecorator
                         if ( !config.isTagPatternsEnabled() )
                         {
                             buildAllowed = true;
-                            break;
                         }
                         else
                         {
