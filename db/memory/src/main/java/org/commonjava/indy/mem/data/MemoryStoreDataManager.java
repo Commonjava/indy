@@ -30,6 +30,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.UrlInfo;
+import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
 @Alternative
@@ -308,6 +310,13 @@ public class MemoryStoreDataManager
                 return;
             }
 
+            if ( isReadonly( store ) )
+            {
+                throw new IndyDataException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
+                                             "The store {} is readonly. If you want to delete this store, please modify it to non-readonly",
+                                             store.getKey() );
+            }
+
             preDelete( store, summary, true, eventMetadata );
 
             ArtifactStore removed = stores.remove( key );
@@ -320,6 +329,29 @@ public class MemoryStoreDataManager
             opLock.unlock();
             logger.trace( "Delete operation complete: {}", key );
         }
+    }
+
+    @Override
+    public boolean isReadonly( final ArtifactStore store )
+    {
+
+        if ( store != null )
+        {
+            if ( store.getKey().getType() == hosted && ( (HostedRepository) store ).isReadonly() )
+            {
+                return true;
+            }
+            //TODO: currently we only support to check hosted readonly here, to make the hosted has ability to prevent from
+            //      unexpected removing of both files and repo itself. This method may be expand to other repos like remote
+            //      or group in the future to support some other functions, like remote repo's "deploy-through"
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isReadonly( final StoreKey storeKey )
+    {
+        return isReadonly( stores.get( storeKey ) );
     }
 
     @Override

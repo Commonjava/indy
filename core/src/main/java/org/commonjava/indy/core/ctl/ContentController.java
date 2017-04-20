@@ -144,9 +144,8 @@ public class ContentController
         throws IndyWorkflowException
     {
         final ArtifactStore store = getStore( key );
-        final Transfer item = contentManager.retrieve( store, path, eventMetadata );
 
-        return item;
+        return contentManager.retrieve( store, path, eventMetadata );
     }
 
     public String getContentType( final String path )
@@ -180,9 +179,8 @@ public class ContentController
         final ArtifactStore store = getStore( key );
 
         logger.info( "Storing: {} in: {} with event metadata: {}", path, store, eventMetadata );
-        final Transfer item = contentManager.store( store, path, stream, TransferOperation.UPLOAD, eventMetadata );
 
-        return item;
+        return contentManager.store( store, path, stream, TransferOperation.UPLOAD, eventMetadata );
     }
 
     public void rescan( final StoreKey key )
@@ -245,7 +243,7 @@ public class ContentController
     private ArtifactStore getStore( final StoreKey key )
         throws IndyWorkflowException
     {
-        ArtifactStore store = null;
+        ArtifactStore store;
         try
         {
             store = storeManager.getArtifactStore( key );
@@ -302,7 +300,7 @@ public class ContentController
             }
         }
 
-        final Map<String, Set<String>> listingUrls = new TreeMap<String, Set<String>>();
+        final Map<String, Set<String>> listingUrls = new TreeMap<>();
 
         final String storeUrl =
             uriFormatter.formatAbsolutePathTo( serviceUrl, key.getType()
@@ -341,7 +339,7 @@ public class ContentController
                     Set<String> sources = listingUrls.get( localUrl );
                     if ( sources == null )
                     {
-                        sources = new HashSet<String>();
+                        sources = new HashSet<>();
                         listingUrls.put( localUrl, sources );
                     }
 
@@ -350,7 +348,7 @@ public class ContentController
             }
         }
 
-        final List<String> sources = new ArrayList<String>();
+        final List<String> sources = new ArrayList<>();
         if ( listed != null )
         {
             for ( final ConcreteResource res : listed )
@@ -392,7 +390,7 @@ public class ContentController
                                                                   .singularEndpointName(), key.getName(), parentPath );
         }
 
-        final Map<String, Object> params = new HashMap<String, Object>();
+        final Map<String, Object> params = new HashMap<>();
         params.put( "items", listingUrls );
         params.put( "parentUrl", parentUrl );
         params.put( "parentPath", parentPath );
@@ -440,7 +438,7 @@ public class ContentController
             {
                 reader = new BufferedReader( new InputStreamReader( new ByteArrayInputStream( head ) ) );
 
-                String line = null;
+                String line;
                 int count = 0;
                 while ( ( line = reader.readLine() ) != null && count < MAX_PEEK_COUNT )
                 {
