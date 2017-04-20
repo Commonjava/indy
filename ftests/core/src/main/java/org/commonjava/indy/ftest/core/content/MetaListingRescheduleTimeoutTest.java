@@ -34,9 +34,19 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+
 /**
- * Test if the special ".listing.txt" metadata content re-schedule mechanism is working. When metadata is re-requested during the timeout interval,
- * the timeout for this content should NOT be re-scheduled.
+ * This case test if the ".listing.txt" metadata re-schedule is working.
+ * when: <br />
+ * <ul>
+ *      <li>creates a remote repo with two pom artifacts and a ".listing.txt" source</li>
+ *      <li>set metadata timeout for remote</li>
+ *      <li>request the content after a short period during the schedule</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the metadata schedule should not be reset which let the .listing wait for long time to be deleted</li>
+ * </ul>
  */
 public class MetaListingRescheduleTimeoutTest
         extends AbstractContentManagementTest
@@ -100,14 +110,14 @@ public class MetaListingRescheduleTimeoutTest
         File listingMetaFile = new File( listingMetaFilePath );
         assertThat( "metadata doesn't exist", listingMetaFile.exists(), equalTo( true ) );
 
-        // wait for first 2.5s
+        // wait for first time
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
         client.content().get( remote, repoId, repoRootPath ).close();
 
-        // will wait another 2.5s
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        // will wait second time for a longer period
+        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS * getTestTimeoutMultiplier() );
 
 //        logger.info( "Checking whether metadata file {} has been deleted...", listingMetaFile );
         // as rescheduled, the artifact should not be deleted
@@ -119,5 +129,11 @@ public class MetaListingRescheduleTimeoutTest
     protected boolean createStandardTestStructures()
     {
         return false;
+    }
+
+    @Override
+    protected int getTestTimeoutMultiplier()
+    {
+        return super.getTestTimeoutMultiplier() * 2;
     }
 }
