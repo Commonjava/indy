@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,9 +27,11 @@ import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory
 import org.commonjava.maven.galley.cache.routes.RoutingCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
+import org.commonjava.maven.galley.io.TransferDecoratorPipeline;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
+import org.commonjava.maven.galley.io.checksum.TransferMetadataConsumer;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -47,6 +49,8 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.Collections;
@@ -70,7 +74,7 @@ public class DefaultGalleyStorageProvider
 
     @NFSOwnerCache
     @Inject
-    private CacheHandle<String,String> nfsOwnerCache;
+    private CacheHandle<String, String> nfsOwnerCache;
 
     @Inject
     private SpecialPathManager specialPathManager;
@@ -79,6 +83,9 @@ public class DefaultGalleyStorageProvider
     @WeftManaged
     @Inject
     private ExecutorService fastLocalExecutors;
+
+    @Inject
+    private TransferMetadataConsumer contentMetadataConsumer;
 
     private TransportManagerConfig transportManagerConfig;
 
@@ -94,6 +101,7 @@ public class DefaultGalleyStorageProvider
 
     /**
      * @param storageRoot
+     *
      * @deprecated - Use {@link #DefaultGalleyStorageProvider(File, File)} instead
      */
     @Deprecated
@@ -109,7 +117,6 @@ public class DefaultGalleyStorageProvider
         setup();
     }
 
-
     @PostConstruct
     public void setup()
     {
@@ -124,11 +131,12 @@ public class DefaultGalleyStorageProvider
 
         specialPathManager.registerSpecialPathInfo( infoSpi );
 
-        transferDecorator = new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
-                                                               specialPathManager, new Md5GeneratorFactory(),
-                                                               new Sha1GeneratorFactory(),
-                                                               new Sha256GeneratorFactory() );
-        transferDecorator = new ContentsFilteringTransferDecorator( transferDecorator );
+        transferDecorator = new TransferDecoratorPipeline(
+                new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
+                                                   specialPathManager, true, true, contentMetadataConsumer,
+                                                   new Md5GeneratorFactory(), new Sha1GeneratorFactory(),
+                                                   new Sha256GeneratorFactory() ),
+                new ContentsFilteringTransferDecorator() );
 
         final File storeRoot = config.getStorageRootDirectory();
 
@@ -150,16 +158,23 @@ public class DefaultGalleyStorageProvider
                                                            new CacheInstanceAdapter( nfsOwnerCache ),
                                                            fastLocalExecutors );
 
-                cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) -> {
-                    if ( resource != null )
-                    {
-                        final Location loc = resource.getLocation();
+                cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) ->
+                                                                        {
+                                                                            if ( resource != null )
+                                                                            {
+                                                                                final Location loc =
+                                                                                        resource.getLocation();
 
-                        // looking for KeyedLocation and StoreType.hosted should be faster than regex on the URI.
-                        return ( (loc instanceof KeyedLocation) && hosted == ((KeyedLocation)loc).getKey().getType());
-                    }
-                    return false;
-                }, fastLocalFac, cacheProviderFactory );
+                                                                                // looking for KeyedLocation and StoreType.hosted should be faster than regex on the URI.
+                                                                                return (
+                                                                                        ( loc instanceof KeyedLocation )
+                                                                                                && hosted
+                                                                                                == ( (KeyedLocation) loc )
+                                                                                                .getKey()
+                                                                                                .getType() );
+                                                                            }
+                                                                            return false;
+                                                                        }, fastLocalFac, cacheProviderFactory );
             }
             else
             {
@@ -186,7 +201,6 @@ public class DefaultGalleyStorageProvider
     {
         return transferDecorator;
     }
-
 
     @Produces
     @Default
