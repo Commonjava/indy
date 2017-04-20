@@ -34,6 +34,8 @@ public class IndyDataException
 
     private String formattedMessage;
 
+    private int status;
+
     public IndyDataException( final String message, final Throwable cause, final Object... params )
     {
         super( message, cause );
@@ -44,6 +46,25 @@ public class IndyDataException
     {
         super( message );
         this.params = params;
+    }
+
+    public IndyDataException( final int status, final String message, final Throwable cause, final Object... params )
+    {
+        super( message, cause );
+        this.params = params;
+        this.status = status;
+    }
+
+    public IndyDataException( final int status, final String message, final Object... params )
+    {
+        super( message );
+        this.params = params;
+        this.status = status;
+    }
+
+    public int getStatus()
+    {
+        return status;
     }
 
     @Override

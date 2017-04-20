@@ -16,6 +16,7 @@
 package org.commonjava.indy.model.core;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 @ApiModel( description = "Hosts artifact content on the local system", parent = ArtifactStore.class )
 public class HostedRepository
@@ -27,6 +28,10 @@ public class HostedRepository
     private String storage;
 
     private int snapshotTimeoutSeconds;
+
+    // if readonly, default is not
+    @ApiModelProperty( required = false, dataType = "boolean", value = "identify if the hoste repo is readonly" )
+    private boolean readonly = false;
 
     HostedRepository()
     {
@@ -62,6 +67,16 @@ public class HostedRepository
     public void setStorage( final String storage )
     {
         this.storage = storage;
+    }
+
+    public boolean isReadonly()
+    {
+        return readonly;
+    }
+
+    public void setReadonly( boolean readonly )
+    {
+        this.readonly = readonly;
     }
 
     @Override

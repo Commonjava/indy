@@ -116,8 +116,12 @@ public class AdminController
         }
         catch ( final IndyDataException e )
         {
-            throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
+            int status = ApplicationStatus.SERVER_ERROR.code();
+            if ( e.getStatus() > 0 )
+            {
+                status = e.getStatus();
+            }
+            throw new IndyWorkflowException( status, "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
         }
     }
 
