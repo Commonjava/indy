@@ -47,7 +47,6 @@ import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
 import javax.inject.Inject;
@@ -119,11 +118,9 @@ public abstract class KojiContentManagerDecorator
     @Inject
     private KojiBuildAuthority buildAuthority;
 
-    private KojiRepositoryCreator creator;
-
-    @PostConstruct
-    public void init()
+    public KojiRepositoryCreator createRepoCreator()
     {
+        KojiRepositoryCreator creator = null;
         try
         {
             creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
@@ -136,6 +133,7 @@ public abstract class KojiContentManagerDecorator
                                          e.getMessage() ), e );
             config.setEnabled( false );
         }
+        return creator;
     }
 
     @Override
@@ -396,6 +394,12 @@ public abstract class KojiContentManagerDecorator
             String name = KOJI_ORIGIN + "-" + build.getNvr();
 
             // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
+            final KojiRepositoryCreator creator = createRepoCreator();
+
+            if ( creator == null )
+            {
+                throw new KojiClientException( "Cannot proceed without a valid KojiRepositoryCreator instance." );
+            }
             RemoteRepository remote = creator.createRemoteRepository( name, formatStorageUrl( build ),
                                                                       config.getDownloadTimeoutSeconds() );
 
