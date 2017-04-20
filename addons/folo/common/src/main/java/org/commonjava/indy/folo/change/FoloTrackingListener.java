@@ -16,10 +16,7 @@
 package org.commonjava.indy.folo.change;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.ArtifactData;
-import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentDigester;
-import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -37,6 +34,8 @@ import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
+import org.commonjava.maven.galley.io.checksum.ContentDigest;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -195,9 +194,9 @@ public class FoloTrackingListener
                 }
 
 
-                ArtifactData artifactData =
+                TransferMetadata artifactData =
                         contentDigester.digest( affectedStore, path, ContentDigest.MD5, ContentDigest.SHA_1,
-                                               ContentDigest.SHA_256 );
+                                                ContentDigest.SHA_256 );
                 Map<ContentDigest, String> digests = artifactData.getDigests();
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate
                 //      of it, this step will be done in REST layer. Will think better way in the future.
