@@ -94,7 +94,7 @@ public class ContentControllerTest
                 new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander() );
 
         final DirectContentAccess dca =
-                new DefaultDirectContentAccess( fileManager, Executors.newSingleThreadExecutor() );
+                new DefaultDirectContentAccess( fileManager );
 
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, fileManager, new IndyObjectMapper( true ),

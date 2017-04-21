@@ -166,7 +166,7 @@ public class HttpProxyTest
                                             new MockInstance<>( new MockContentAdvisor() ) );
 
         DirectContentAccess dca =
-                new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+                new DefaultDirectContentAccess( downloadManager );
 
         ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
                 "content-metadata", contentMetadata ) );

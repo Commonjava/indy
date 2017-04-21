@@ -335,7 +335,7 @@ public class KojiMavenMetadataProviderTest
         DirectContentAccess directContentAccess = new DefaultDirectContentAccess( downloadManager );
 
         DirectContentAccess dca =
-                new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+                new DefaultDirectContentAccess( downloadManager );
 
         ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
                 "content-metadata", contentMetadata ) );
