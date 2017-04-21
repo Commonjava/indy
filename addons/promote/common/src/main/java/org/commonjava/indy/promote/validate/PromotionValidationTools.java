@@ -16,7 +16,6 @@
 package org.commonjava.indy.promote.validate;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
@@ -38,6 +37,7 @@ import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.maven.GalleyMavenException;
 import org.commonjava.maven.galley.maven.model.view.MavenPomView;
 import org.commonjava.maven.galley.maven.model.view.meta.MavenMetadataView;
