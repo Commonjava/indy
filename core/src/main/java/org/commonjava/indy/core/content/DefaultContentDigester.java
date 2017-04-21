@@ -8,6 +8,8 @@ import org.commonjava.indy.core.inject.ContentMetadataCache;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -23,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.commons.codec.binary.Hex.encodeHexString;
+import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**
  * Created by jdcasey on 1/4/17.
@@ -54,10 +57,17 @@ public class DefaultContentDigester
     }
 
     @Override
-    public synchronized void accept( final Transfer transfer, final TransferMetadata transferData )
+    public synchronized void addMetadata( final Transfer transfer, final TransferMetadata transferData )
     {
         KeyedLocation kl = (KeyedLocation) transfer.getLocation();
         metadataCache.put( kl.getKey() + "#" + transfer.getPath(), transferData );
+    }
+
+    @Override
+    public synchronized void removeMetadata( final Transfer transfer )
+    {
+        KeyedLocation kl = (KeyedLocation) transfer.getLocation();
+        metadataCache.remove( kl.getKey() + "#" + transfer.getPath() );
     }
 
     @Override
@@ -67,64 +77,40 @@ public class DefaultContentDigester
         return metadataCache.get( kl.getKey() + "#" + transfer.getPath() );
     }
 
-    public TransferMetadata digest( final StoreKey key, final String path, final ContentDigest... types )
+    public TransferMetadata digest( final StoreKey key, final String path, final EventMetadata eventMetadata,
+                                    final ContentDigest... types )
             throws IndyWorkflowException
     {
-        final Transfer txfr = directContentAccess.getTransfer( key, path );
-        if ( txfr == null || !txfr.exists() )
+        final Transfer transfer = directContentAccess.getTransfer( key, path );
+        if ( transfer == null || !transfer.exists() )
         {
             return new TransferMetadata( Collections.emptyMap(), 0L );
         }
 
-        TransferMetadata meta = getContentMetadata( txfr );
+        TransferMetadata meta = getContentMetadata( transfer );
         if ( meta != null )
         {
             return meta;
         }
 
-        InputStream stream = null;
-        try
+        EventMetadata forcedEventMetadata = new EventMetadata( eventMetadata ).set( FORCE_CHECKSUM, Boolean.TRUE );
+        try(InputStream stream = transfer.openInputStream( false, forcedEventMetadata ) )
         {
-            long artifactSize = 0L;
-            // TODO: Compute it as the file is uploaded/downloaded into cache.
-            stream = txfr.openInputStream( false );
-
-            final Map<ContentDigest, MessageDigest> digests = new HashMap<>();
-            for ( final ContentDigest digest : types )
-            {
-                digests.put( digest, MessageDigest.getInstance( digest.digestName() ) );
-            }
-
-            final byte[] buf = new byte[16384];
+            // depend on ChecksummingTransferDecorator to calculate / store metadata as this gets read, using
+            // the FORCE_CHECKSUM metadata key to control its generation.
             int read = -1;
+            byte[] buf = new byte[16];
             while ( ( read = stream.read( buf ) ) > -1 )
             {
-                for ( final MessageDigest digest : digests.values() )
-                {
-                    digest.update( buf, 0, read );
-                }
-                artifactSize += read;
+                // NOP
             }
-
-            final Map<ContentDigest, String> digestResultMap = new HashMap<>();
-            for ( final Map.Entry<ContentDigest, MessageDigest> entry : digests.entrySet() )
-            {
-                digestResultMap.put( entry.getKey(), encodeHexString( entry.getValue().digest() ) );
-            }
-
-            meta = new TransferMetadata( digestResultMap, artifactSize );
-            accept( txfr, meta );
-
-            return meta;
         }
-        catch ( IOException | NoSuchAlgorithmException e )
+        catch ( IOException e )
         {
             throw new IndyWorkflowException( "Failed to calculate checksums (MD5, SHA-256, etc.) for: %s. Reason: %s",
-                                             e, txfr, e.getMessage() );
+                                             e, transfer, e.getMessage() );
         }
-        finally
-        {
-            IOUtils.closeQuietly( stream );
-        }
+
+        return getContentMetadata( transfer );
     }
 }

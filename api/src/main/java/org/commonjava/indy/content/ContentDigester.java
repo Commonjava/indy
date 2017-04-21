@@ -2,6 +2,7 @@ package org.commonjava.indy.content;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.io.checksum.TransferMetadataConsumer;
@@ -19,6 +20,7 @@ public interface ContentDigester
 
     TransferMetadata getContentMetadata( Transfer transfer );
 
-    TransferMetadata digest( final StoreKey key, final String path, final ContentDigest... types )
+    TransferMetadata digest( final StoreKey affectedStore, final String s, final EventMetadata eventMetadata,
+                             final ContentDigest... types )
             throws IndyWorkflowException;
 }
