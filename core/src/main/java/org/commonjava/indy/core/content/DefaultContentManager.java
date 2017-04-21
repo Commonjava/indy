@@ -18,8 +18,6 @@ package org.commonjava.indy.core.content;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.ArtifactData;
-import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
@@ -658,13 +656,6 @@ public class DefaultContentManager
         }
 
         return dedupeListing( listed );
-    }
-
-    @Override
-    public ArtifactData digest( final StoreKey key, final String path, final ContentDigest... types )
-            throws IndyWorkflowException
-    {
-        return contentDigester.digest( key, path, types );
     }
 
     @Override

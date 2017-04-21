@@ -24,6 +24,7 @@ import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.data.IndyDataException;
@@ -39,6 +40,7 @@ import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
@@ -47,9 +49,12 @@ import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.hamcrest.CoreMatchers;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -329,17 +334,38 @@ public class KojiMavenMetadataProviderTest
 
         DirectContentAccess directContentAccess = new DefaultDirectContentAccess( downloadManager );
 
+        DirectContentAccess dca =
+                new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+                "content-metadata", contentMetadata ) );
+
         KojiBuildAuthority buildAuthority =
                 new KojiBuildAuthority( kojiConfig, new StandardTypeMapper(), kojiClient, storeDataManager,
-                                        new ContentDigester( downloadManager ), directContentAccess );
+                                        contentDigester, directContentAccess );
 
         provider = new KojiMavenMetadataProvider( this.cache, kojiClient, buildAuthority, kojiConfig );
     }
 
+    private static DefaultCacheManager cacheManager;
+
+    private static Cache<String, TransferMetadata> contentMetadata;
+
+    @BeforeClass
+    public static void setupClass()
+    {
+        cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+
+        contentMetadata = cacheManager.getCache( "content-metadata", true );
+
+    }
+
     @Before
     public void setup()
-            throws Throwable
+            throws Exception
     {
+        contentMetadata.clear();
+
         Thread.currentThread().setName( named.getMethodName() );
         cacheMgr = new DefaultCacheManager();
         String mdCacheName = "koji-maven-metadata";

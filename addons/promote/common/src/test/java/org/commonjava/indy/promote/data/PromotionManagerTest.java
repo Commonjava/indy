@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,12 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
+import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -37,21 +40,26 @@ import org.commonjava.indy.promote.validate.PromoteValidationsManager;
 import org.commonjava.indy.promote.validate.PromotionValidationTools;
 import org.commonjava.indy.promote.validate.PromotionValidator;
 import org.commonjava.indy.promote.validate.ValidationRuleParser;
-import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.test.fixture.core.MockContentAdvisor;
 import org.commonjava.indy.test.fixture.core.MockInstance;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -100,21 +108,43 @@ public class PromotionManagerTest
 
     private static final String FAKE_BASE_URL = "";
 
+    private static DefaultCacheManager cacheManager;
+
+    private static Cache<String, TransferMetadata> contentMetadata;
+
+    @BeforeClass
+    public static void setupClass()
+    {
+        cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+
+        contentMetadata = cacheManager.getCache( "content-metadata", true );
+
+    }
+
     @Before
     public void setup()
             throws Exception
     {
+        contentMetadata.clear();
+
         galleyParts = new GalleyMavenFixture( true, temp );
         galleyParts.initMissingComponents();
 
         storeManager = new MemoryStoreDataManager( true );
 
         downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
-                                                      new IndyLocationExpander( storeManager ), new MockInstance<>(new MockContentAdvisor()  ));
+                                                      new IndyLocationExpander( storeManager ),
+                                                      new MockInstance<>( new MockContentAdvisor() ) );
 
-        ContentDigester contentDigester = new ContentDigester( downloadManager );
+        DirectContentAccess dca =
+                new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+                "content-metadata", contentMetadata ) );
+
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
-                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(), contentDigester, Collections.<ContentGenerator>emptySet() );
+                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
+                                                    contentDigester, Collections.<ContentGenerator>emptySet() );
 
         dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
         validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
@@ -128,8 +158,7 @@ public class PromotionManagerTest
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager(),
-                                                                          contentDigester ),
-                                            storeManager );
+                                                                          contentDigester ), storeManager );
 
         PromoteConfig config = new PromoteConfig();
 
@@ -169,7 +198,8 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         PathsPromoteResult result =
-                manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ), FAKE_BASE_URL );
+                manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ),
+                                      FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source1.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -194,7 +224,8 @@ public class PromotionManagerTest
             assertThat( value, equalTo( originalString ) );
         }
 
-        result = manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ), FAKE_BASE_URL );
+        result = manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ),
+                                       FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source1.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -227,33 +258,40 @@ public class PromotionManagerTest
         Random rand = new Random();
         final HostedRepository[] sources = { new HostedRepository( "source1" ), new HostedRepository( "source2" ) };
         final String[] paths = { "/path/path1", "/path/path2", "/path3", "/path/path/4" };
-        Stream.of( sources ).forEach( ( source ) -> {
-            try
-            {
-                storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                                 new EventMetadata() );
+        Stream.of( sources ).forEach( ( source ) ->
+                                      {
+                                          try
+                                          {
+                                              storeManager.storeArtifactStore( source, new ChangeSummary(
+                                                      ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
 
-                Stream.of( paths ).forEach( ( path ) -> {
-                    byte[] buf = new byte[1024 * 1024 * 2];
-                    rand.nextBytes( buf );
-                    try
-                    {
-                        contentManager.store( source, path, new ByteArrayInputStream( buf ), TransferOperation.UPLOAD,
-                                              new EventMetadata() );
-                    }
-                    catch ( IndyWorkflowException e )
-                    {
-                        e.printStackTrace();
-                        Assert.fail( "failed to store generated file to: " + source + path );
-                    }
-                } );
-            }
-            catch ( IndyDataException e )
-            {
-                e.printStackTrace();
-                Assert.fail( "failed to store hosted repository: " + source );
-            }
-        } );
+                                              Stream.of( paths ).forEach( ( path ) ->
+                                                                          {
+                                                                              byte[] buf = new byte[1024 * 1024 * 2];
+                                                                              rand.nextBytes( buf );
+                                                                              try
+                                                                              {
+                                                                                  contentManager.store( source, path,
+                                                                                                        new ByteArrayInputStream(
+                                                                                                                buf ),
+                                                                                                        TransferOperation.UPLOAD,
+                                                                                                        new EventMetadata() );
+                                                                              }
+                                                                              catch ( IndyWorkflowException e )
+                                                                              {
+                                                                                  e.printStackTrace();
+                                                                                  Assert.fail(
+                                                                                          "failed to store generated file to: "
+                                                                                                  + source + path );
+                                                                              }
+                                                                          } );
+                                          }
+                                          catch ( IndyDataException e )
+                                          {
+                                              e.printStackTrace();
+                                              Assert.fail( "failed to store hosted repository: " + source );
+                                          }
+                                      } );
 
         final HostedRepository target = new HostedRepository( "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
@@ -263,34 +301,40 @@ public class PromotionManagerTest
         CountDownLatch cdl = new CountDownLatch( 2 );
 
         AtomicInteger counter = new AtomicInteger( 0 );
-        Stream.of( sources ).forEach( ( source ) -> {
-            int idx = counter.getAndIncrement();
-            executor.execute( () -> {
-                try
-                {
-                    results[idx] =
-                            manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey(), paths ), FAKE_BASE_URL );
-                }
-                catch ( Exception e )
-                {
-                    e.printStackTrace();
-                    Assert.fail( "Promotion from source: " + source + " failed." );
-                }
-                finally
-                {
-                    cdl.countDown();
-                }
-            } );
+        Stream.of( sources ).forEach( ( source ) ->
+                                      {
+                                          int idx = counter.getAndIncrement();
+                                          executor.execute( () ->
+                                                            {
+                                                                try
+                                                                {
+                                                                    results[idx] = manager.promotePaths(
+                                                                            new PathsPromoteRequest( source.getKey(),
+                                                                                                     target.getKey(),
+                                                                                                     paths ),
+                                                                            FAKE_BASE_URL );
+                                                                }
+                                                                catch ( Exception e )
+                                                                {
+                                                                    e.printStackTrace();
+                                                                    Assert.fail( "Promotion from source: " + source
+                                                                                         + " failed." );
+                                                                }
+                                                                finally
+                                                                {
+                                                                    cdl.countDown();
+                                                                }
+                                                            } );
 
-            try
-            {
-                Thread.sleep( 25 );
-            }
-            catch ( InterruptedException e )
-            {
-                Assert.fail( "Test interrupted" );
-            }
-        } );
+                                          try
+                                          {
+                                              Thread.sleep( 25 );
+                                          }
+                                          catch ( InterruptedException e )
+                                          {
+                                              Assert.fail( "Test interrupted" );
+                                          }
+                                      } );
 
         assertThat( "Promotions failed to finish.", cdl.await( 30, TimeUnit.SECONDS ), equalTo( true ) );
 
@@ -311,35 +355,39 @@ public class PromotionManagerTest
 
         assertThat( result.getError(), nullValue() );
 
-        Stream.of( paths ).forEach( ( path ) -> {
-            HostedRepository src = sources[0];
-            Transfer sourceRef = downloadManager.getStorageReference( src, path );
-            Transfer targetRef = downloadManager.getStorageReference( target, path );
-            assertThat( targetRef.exists(), equalTo( true ) );
-            try (InputStream sourceIn = sourceRef.openInputStream();
-                 InputStream targetIn = targetRef.openInputStream())
-            {
-                int s = -1, t = -1;
-                while ( ( s = sourceIn.read() ) == ( t = targetIn.read() ) )
-                {
-                    if ( s == -1 )
-                    {
-                        break;
-                    }
-                }
+        Stream.of( paths ).forEach( ( path ) ->
+                                    {
+                                        HostedRepository src = sources[0];
+                                        Transfer sourceRef = downloadManager.getStorageReference( src, path );
+                                        Transfer targetRef = downloadManager.getStorageReference( target, path );
+                                        assertThat( targetRef.exists(), equalTo( true ) );
+                                        try (InputStream sourceIn = sourceRef.openInputStream();
+                                             InputStream targetIn = targetRef.openInputStream())
+                                        {
+                                            int s = -1, t = -1;
+                                            while ( ( s = sourceIn.read() ) == ( t = targetIn.read() ) )
+                                            {
+                                                if ( s == -1 )
+                                                {
+                                                    break;
+                                                }
+                                            }
 
-                if ( s != -1 && s != t )
-                {
-                    Assert.fail( path + " doesn't match between source: " + src + " and target: " + target );
-                }
-            }
-            catch ( IOException e )
-            {
-                e.printStackTrace();
-                Assert.fail( "Failed to compare contents of: " + path + " between source: " + src + " and target: "
-                                     + target );
-            }
-        } );
+                                            if ( s != -1 && s != t )
+                                            {
+                                                Assert.fail(
+                                                        path + " doesn't match between source: " + src + " and target: "
+                                                                + target );
+                                            }
+                                        }
+                                        catch ( IOException e )
+                                        {
+                                            e.printStackTrace();
+                                            Assert.fail(
+                                                    "Failed to compare contents of: " + path + " between source: " + src
+                                                            + " and target: " + target );
+                                        }
+                                    } );
 
         // second one should be completely skipped.
         result = results[1];
@@ -422,7 +470,8 @@ public class PromotionManagerTest
                                          new EventMetadata() );
 
         final PathsPromoteResult result =
-                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ), FAKE_BASE_URL );
+                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ),
+                                      FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
@@ -512,7 +561,8 @@ public class PromotionManagerTest
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
                                          new EventMetadata() );
 
-        PathsPromoteResult result = manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ), FAKE_BASE_URL );
+        PathsPromoteResult result =
+                manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ), FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );
