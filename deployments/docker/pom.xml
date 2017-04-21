@@ -92,16 +92,11 @@
                     <name>${dockerNetwork}</name>
                     <alias>keycloak-test-appliance</alias>
                   </network>
-                  <volumes>
-                    <bind>
-                      <volume>../../test/docker/keycloak-test-appliance/src/main/data:/data</volume>
-                    </bind>
-                  </volumes>
                   <wait>
                     <http>
                       <url>http://localhost:${keycloak.port}/auth</url>
                     </http>
-                    <time>10000</time>
+                    <time>${dockerStartTimeout}</time>
                   </wait>
                 </run>
               </image>

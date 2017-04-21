@@ -15,9 +15,11 @@
 #
 
 FROM jboss/keycloak:1.9.8.Final
-VOLUME /data
+ADD data /data
+
 EXPOSE 8080
 RUN /opt/jboss/keycloak/bin/add-user-keycloak.sh --user admin --password admin
+
 CMD ["-b", "0.0.0.0", "-Dkeycloak.import=/data/import-realm.json"]
 
 
