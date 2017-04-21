@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -102,7 +102,7 @@ public class FoloTrackingListener
 
             recordManager.recordArtifact(
                     createEntry( trackingKey, keyedLocation.getKey(), accessChannel, transfer.getPath(),
-                                 StoreEffect.DOWNLOAD ));
+                                 StoreEffect.DOWNLOAD, event.getEventMetadata() ) );
         }
         catch ( final FoloContentException | IndyWorkflowException e )
         {
@@ -164,8 +164,9 @@ public class FoloTrackingListener
             logger.debug( "Tracking report: {} += {} in {} ({})", trackingKey, transfer.getPath(),
                           keyedLocation.getKey(), effect );
 
-            recordManager.recordArtifact( createEntry( trackingKey, keyedLocation.getKey(), accessChannel,
-                                                       transfer.getPath(), effect ));
+            recordManager.recordArtifact(
+                    createEntry( trackingKey, keyedLocation.getKey(), accessChannel, transfer.getPath(), effect,
+                                 event.getEventMetadata() ) );
         }
         catch ( final FoloContentException | IndyWorkflowException e )
         {
@@ -175,7 +176,8 @@ public class FoloTrackingListener
 
     private TrackedContentEntry createEntry( final TrackingKey trackingKey, final StoreKey affectedStore,
                                              final AccessChannel accessChannel, final String path,
-                                             final StoreEffect effect ) throws IndyWorkflowException
+                                             final StoreEffect effect, final EventMetadata eventMetadata )
+            throws IndyWorkflowException
     {
         TrackedContentEntry entry = null;
         final Transfer txfr = downloadManager.getStorageReference( affectedStore, path );
@@ -193,16 +195,17 @@ public class FoloTrackingListener
                     }
                 }
 
-
                 TransferMetadata artifactData =
-                        contentDigester.digest( affectedStore, path, ContentDigest.MD5, ContentDigest.SHA_1,
+                        contentDigester.digest( affectedStore, path, eventMetadata, ContentDigest.MD5, ContentDigest.SHA_1,
                                                 ContentDigest.SHA_256 );
+
                 Map<ContentDigest, String> digests = artifactData.getDigests();
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate
                 //      of it, this step will be done in REST layer. Will think better way in the future.
                 entry = new TrackedContentEntry( trackingKey, affectedStore, accessChannel, remoteUrl, path, effect,
                                                  artifactData.getSize(), digests.get( ContentDigest.MD5 ),
-                                                 digests.get( ContentDigest.SHA_1 ), digests.get( ContentDigest.SHA_256 ) );
+                                                 digests.get( ContentDigest.SHA_1 ),
+                                                 digests.get( ContentDigest.SHA_256 ) );
             }
             catch ( final IndyDataException e )
             {

@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -67,6 +67,7 @@ import java.util.stream.Stream;
 
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrapper;
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrappers;
+import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -159,8 +160,9 @@ public class PromotionValidationTools
         else
         {
             List<StoreKey> extras = Stream.of( verifyStores.split( "\\s*,\\s*" ) )
-                  .map( StoreKey::fromString )
-                  .filter( item -> item != null ).collect( Collectors.toList());
+                                          .map( StoreKey::fromString )
+                                          .filter( item -> item != null )
+                                          .collect( Collectors.toList() );
 
             if ( extras.isEmpty() )
             {
@@ -197,7 +199,8 @@ public class PromotionValidationTools
     }
 
     public Set<ProjectRelationship<?, ?>> getRelationshipsForPom( final String path, final ModelProcessorConfig config,
-                                                                  final ValidationRequest request, final StoreKey... extraLocations )
+                                                                  final ValidationRequest request,
+                                                                  final StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -308,7 +311,8 @@ public class PromotionValidationTools
         return metadataReader.getMetadata( ref, locations, eventMetadata );
     }
 
-    public MavenMetadataView readMetadata( final ProjectRef ref, final List<Transfer> transfers, final EventMetadata eventMetadata )
+    public MavenMetadataView readMetadata( final ProjectRef ref, final List<Transfer> transfers,
+                                           final EventMetadata eventMetadata )
             throws GalleyMavenException
     {
         return metadataReader.readMetadata( ref, transfers, eventMetadata );
@@ -321,27 +325,29 @@ public class PromotionValidationTools
         return pomReader.read( ref, pom, locations, activeProfileLocations );
     }
 
-    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final boolean cache,
-                              final EventMetadata eventMetadata, final String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
+                              final boolean cache, final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, cache, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final boolean cache,
-                              final String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
+                              final boolean cache, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, cache, activeProfileIds );
     }
 
-    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final String... activeProfileIds )
+    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer,
+                                      final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.readLocalPom( ref, transfer, activeProfileIds );
     }
 
-    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
+                              final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, activeProfileIds );
@@ -354,15 +360,15 @@ public class PromotionValidationTools
         return pomReader.readLocalPom( ref, transfer, cache, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final EventMetadata eventMetadata,
-                                      final String... activeProfileIds )
+    public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer,
+                                      final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.readLocalPom( ref, transfer, eventMetadata, activeProfileIds );
     }
 
-    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations, final EventMetadata eventMetadata,
-                              final String... activeProfileIds )
+    public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
+                              final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
     {
         return pomReader.read( ref, locations, eventMetadata, activeProfileIds );
@@ -416,7 +422,8 @@ public class PromotionValidationTools
         return readOnlyWrapper( contentManager.retrieve( store, path ) );
     }
 
-    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+    public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
+                                       final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return readOnlyWrappers( contentManager.retrieveAll( stores, path, eventMetadata ) );
@@ -428,7 +435,8 @@ public class PromotionValidationTools
         return readOnlyWrappers( contentManager.retrieveAll( stores, path ) );
     }
 
-    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+    public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
+                                   final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return readOnlyWrapper( contentManager.retrieveFirst( stores, path, eventMetadata ) );
@@ -478,7 +486,9 @@ public class PromotionValidationTools
     public Map<ContentDigest, String> digest( final StoreKey key, final String path, final ContentDigest... types )
             throws IndyWorkflowException
     {
-        return contentDigester.digest( key, path, types ).getDigests();
+        // FIXME: We need some way to know the pacakge type here!!
+        return contentDigester.digest( key, path, new EventMetadata( "maven" ).set( FORCE_CHECKSUM, Boolean.TRUE ),
+                                       types ).getDigests();
     }
 
     public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )

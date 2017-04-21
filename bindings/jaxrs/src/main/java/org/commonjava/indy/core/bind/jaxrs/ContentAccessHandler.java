@@ -260,7 +260,7 @@ public class ContentAccessHandler
         Response response = null;
 
         logger.info(
-                "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser accept header is: '{}'\nStandard accept header for that is: '{}'",
+                "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
                 path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
         if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
