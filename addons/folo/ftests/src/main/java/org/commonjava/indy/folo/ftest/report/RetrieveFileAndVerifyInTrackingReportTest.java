@@ -79,6 +79,8 @@ public class RetrieveFileAndVerifyInTrackingReportTest
         assertThat( md5, equalTo( DigestUtils.md5Hex( bytes ) ) );
         assertThat( sha256, equalTo( DigestUtils.sha256Hex( bytes ) ) );
 
+        waitForEventPropagation();
+
         assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
                     equalTo( true ) );
 
