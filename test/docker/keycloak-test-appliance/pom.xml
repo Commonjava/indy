@@ -42,25 +42,23 @@
               <build>
                 <!--<dockerFileDir>${project.basedir}/src/main/docker</dockerFileDir>-->
                 <from>jboss/keycloak:1.9.8.Final</from>
+                <assembly>
+                  <mode>dir</mode>
+                  <basedir>/data</basedir>
+                  <inline>
+                    <fileSets>
+                      <fileSet>
+                        <directory>src/main/data</directory>
+                        <outputDirectory>/</outputDirectory>
+                        <useDefaultExcludes>false</useDefaultExcludes>
+                      </fileSet>
+                    </fileSets>
+                  </inline>
+                </assembly>
+
                 <tags>
                   <tag>latest</tag>
                 </tags>
-                <volumes>
-                  <volume>/data</volume>
-                </volumes>
-                <ports>
-                  <port>8080</port>
-                </ports>
-                <runCmds>
-                  <run>/opt/jboss/keycloak/bin/add-user-keycloak.sh --user admin --password admin</run>
-                </runCmds>
-                <cmd>
-                  <exec>
-                  <arg>-b</arg>
-                  <arg>0.0.0.0</arg>
-                  <arg>-Dkeycloak.import=/data/import-realm.json</arg>  
-                  </exec>
-                </cmd>
               </build>
               <run>
                 <ports>
@@ -74,16 +72,11 @@
                   <name>${dockerNetwork}</name>
                   <alias>keycloak-test-appliance</alias>
                 </network>
-                <volumes>
-                  <bind>
-                    <volume>${project.basedir}/src/main/data:/data</volume>
-                  </bind>
-                </volumes>
                 <wait>
                   <http>
                     <url>http://localhost:${keycloak.port}/auth</url>
                   </http>
-                  <time>10000</time>
+                  <time>${dockerStartTimeout}</time>
                 </wait>
               </run>
             </image>

@@ -55,7 +55,7 @@ public class AcceptInfoParser
             final String[] parts = accept.split( "\\s*,\\s*" );
             if ( parts.length == 1 )
             {
-                logger.info( "adding atomic accept header: '{}'", accept );
+                logger.info( "adding atomic addMetadata header: '{}'", accept );
                 raw.add( accept );
             }
             else
