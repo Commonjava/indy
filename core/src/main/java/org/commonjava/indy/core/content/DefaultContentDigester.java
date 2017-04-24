@@ -13,6 +13,8 @@ import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -45,6 +47,8 @@ public class DefaultContentDigester
     @ContentMetadataCache
     private CacheHandle<String, TransferMetadata> metadataCache;
 
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     protected DefaultContentDigester()
     {
     }
@@ -59,22 +63,42 @@ public class DefaultContentDigester
     @Override
     public synchronized void addMetadata( final Transfer transfer, final TransferMetadata transferData )
     {
+        String cacheKey = generateCacheKey( transfer );
+        logger.trace( "Adding TransferMetadata for: {}\n{}", cacheKey, transferData );
+        metadataCache.put( cacheKey, transferData );
+    }
+
+    private String generateCacheKey( final Transfer transfer )
+    {
         KeyedLocation kl = (KeyedLocation) transfer.getLocation();
-        metadataCache.put( kl.getKey() + "#" + transfer.getPath(), transferData );
+        return kl.getKey() + "#" + transfer.getPath();
     }
 
     @Override
     public synchronized void removeMetadata( final Transfer transfer )
     {
-        KeyedLocation kl = (KeyedLocation) transfer.getLocation();
-        metadataCache.remove( kl.getKey() + "#" + transfer.getPath() );
+        String cacheKey = generateCacheKey( transfer );
+        TransferMetadata meta = metadataCache.remove( cacheKey );
+        logger.trace( "Removing TransferMetadata for: {}\n{}", cacheKey, meta );
     }
 
     @Override
     public synchronized TransferMetadata getContentMetadata( final Transfer transfer )
     {
-        KeyedLocation kl = (KeyedLocation) transfer.getLocation();
-        return metadataCache.get( kl.getKey() + "#" + transfer.getPath() );
+        String cacheKey = generateCacheKey( transfer );
+        logger.trace( "Getting TransferMetadata for: {}", cacheKey );
+
+        TransferMetadata metadata = metadataCache.get( cacheKey );
+
+        if ( metadata != null )
+        {
+            logger.trace( "[CACHE HIT] Returning content metadata for: {}\n\n{}\n\n", cacheKey, metadata );
+        }
+        else
+        {
+            logger.trace( "[CACHE MISS] Cannot find content metadata for: {}!", cacheKey );
+        }
+        return metadata;
     }
 
     public TransferMetadata digest( final StoreKey key, final String path, final EventMetadata eventMetadata,
