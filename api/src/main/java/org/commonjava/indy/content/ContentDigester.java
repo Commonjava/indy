@@ -61,12 +61,9 @@ public class ContentDigester
             return new ArtifactData( Collections.emptyMap(), 0L);
         }
 
-        InputStream stream = null;
-        try
+        try (InputStream stream = txfr.openInputStream( false ))
         {
             long artifactSize = 0L;
-            // TODO: Compute it as the file is uploaded/downloaded into cache.
-            stream = txfr.openInputStream( false );
 
             final Map<ContentDigest, MessageDigest> digests = new HashMap<>();
             for ( final ContentDigest digest : types )
@@ -108,10 +105,6 @@ public class ContentDigester
         {
             throw new IndyWorkflowException( "Failed to calculate checksums (MD5, SHA-256) for: %s. Reason: %s", e,
                                              txfr, e.getMessage() );
-        }
-        finally
-        {
-            IOUtils.closeQuietly( stream );
         }
     }
 }

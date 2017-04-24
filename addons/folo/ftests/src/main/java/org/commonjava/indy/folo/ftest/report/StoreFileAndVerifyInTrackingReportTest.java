@@ -23,6 +23,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Random;
 import java.util.Set;
 
 import org.commonjava.indy.client.core.util.UrlUtils;
@@ -32,6 +33,7 @@ import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.StoreKey;
+import org.jgroups.protocols.SIZE;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -40,13 +42,19 @@ public class StoreFileAndVerifyInTrackingReportTest
     extends AbstractTrackingReportTest
 {
 
+    private static final int SIZE = 10 * 1024 * 1024; // 10MB
+
     @Test
     public void run()
         throws Exception
     {
         final String trackingId = newName();
 
-        final InputStream stream = new ByteArrayInputStream( ( "This is a test: " + System.nanoTime() ).getBytes() );
+        Random rand = new Random();
+        byte[] data = new byte[SIZE];
+        rand.nextBytes( data );
+
+        final InputStream stream = new ByteArrayInputStream( data );
 
         final String path = "/path/to/foo.class";
         client.module( IndyFoloContentClientModule.class )
@@ -76,5 +84,8 @@ public class StoreFileAndVerifyInTrackingReportTest
         assertThat( entry.getLocalUrl(),
                     equalTo( UrlUtils.buildUrl( client.getBaseUrl(), hosted.singularEndpointName(), STORE, path ) ) );
         assertThat( entry.getOriginUrl(), nullValue() );
+        assertThat( entry.getMd5(), equalTo( md5Hex( data ) ) );
+        assertThat( entry.getSha256(), equalTo( sha256Hex( data ) ) );
+        assertThat( entry.getSize(), equalTo( (long) data.length ) );
     }
 }
