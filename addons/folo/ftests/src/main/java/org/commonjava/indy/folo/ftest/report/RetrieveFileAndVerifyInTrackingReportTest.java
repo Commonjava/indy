@@ -56,7 +56,7 @@ public class RetrieveFileAndVerifyInTrackingReportTest
         final String repoId = "repo";
         final String path = "/path/to/foo.class";
 
-        final InputStream stream = new ByteArrayInputStream( ( "This is a test: " + System.nanoTime() ).getBytes() );
+        final InputStream stream = new ByteArrayInputStream( "This is a test with the same content each time.".getBytes() );
 
         server.expect( server.formatUrl( repoId, path ), 200, stream );
 
@@ -78,6 +78,8 @@ public class RetrieveFileAndVerifyInTrackingReportTest
 
         assertThat( md5, equalTo( DigestUtils.md5Hex( bytes ) ) );
         assertThat( sha256, equalTo( DigestUtils.sha256Hex( bytes ) ) );
+
+        waitForEventPropagation();
 
         assertThat( client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId ),
                     equalTo( true ) );

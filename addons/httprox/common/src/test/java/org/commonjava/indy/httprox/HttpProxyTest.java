@@ -34,8 +34,11 @@ import org.commonjava.indy.boot.BootOptions;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
+import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
@@ -48,6 +51,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
@@ -57,6 +61,7 @@ import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.parse.PomPeek;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
@@ -66,8 +71,12 @@ import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 import org.commonjava.maven.galley.transport.htcli.util.HttpUtil;
 import org.commonjava.test.http.expect.ExpectationServer;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,6 +88,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Executors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -111,10 +121,25 @@ public class HttpProxyTest
 
     private MemoryStoreDataManager storeManager;
 
+    private static DefaultCacheManager cacheManager;
+
+    private static Cache<String, TransferMetadata> contentMetadata;
+
+    @BeforeClass
+    public static void setupClass()
+    {
+        cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+
+        contentMetadata = cacheManager.getCache( "content-metadata", true );
+
+    }
+
     @Before
     public void setup()
             throws Exception
     {
+        contentMetadata.clear();
+
         core.initGalley();
 
         final TransportManager transports =
@@ -139,9 +164,16 @@ public class HttpProxyTest
         final DownloadManager downloadManager =
                 new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(),
                                             new MockInstance<>( new MockContentAdvisor() ) );
+
+        DirectContentAccess dca =
+                new DefaultDirectContentAccess( downloadManager );
+
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+                "content-metadata", contentMetadata ) );
+
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, downloadManager, mapper, new SpecialPathManagerImpl(),
-                                           new MemoryNotFoundCache(), new ContentDigester( downloadManager ), Collections.<ContentGenerator>emptySet() );
+                                           new MemoryNotFoundCache(), contentDigester, Collections.<ContentGenerator>emptySet() );
 
         DataFileManager dfm = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), dfm );

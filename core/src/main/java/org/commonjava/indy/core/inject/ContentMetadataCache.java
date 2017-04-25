@@ -13,32 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.content;
+package org.commonjava.indy.core.inject;
 
-import java.util.Map;
+import javax.inject.Qualifier;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Author: Michal Szynkiewicz, michal.l.szynkiewicz@gmail.com
- * Date: 8/19/16
- * Time: 1:15 PM
+ * Qualifier used to supply "content-metadata" cache in infinispan.xml.
  */
-public class ArtifactData {
-    private final Map<ContentDigest, String> digests;
-    private final Long size;
-
-    public ArtifactData( Map<ContentDigest, String> digests, Long size )
-    {
-        this.digests = digests;
-        this.size = size;
-    }
-
-    public Map<ContentDigest, String> getDigests()
-    {
-        return digests;
-    }
-
-    public Long getSize()
-    {
-        return size;
-    }
+@Qualifier
+@Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
+@Retention( RetentionPolicy.RUNTIME)
+@Documented
+public @interface ContentMetadataCache
+{
 }

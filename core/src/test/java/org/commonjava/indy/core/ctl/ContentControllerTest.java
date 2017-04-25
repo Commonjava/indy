@@ -20,30 +20,41 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
+import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
+import java.util.concurrent.Executors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -56,20 +67,40 @@ public class ContentControllerTest
 
     private ContentController content;
 
+    private static DefaultCacheManager cacheManager;
+
+    private static Cache<String, TransferMetadata> contentMetadata;
+
+    @BeforeClass
+    public static void setupClass()
+    {
+        cacheManager =
+                new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+
+        contentMetadata = cacheManager.getCache( "content-metadata", true );
+
+    }
+
     @Before
     public void setup()
             throws Exception
     {
+        contentMetadata.clear();
+
         fixture.initMissingComponents();
 
         final StoreDataManager storeManager = new MemoryStoreDataManager( true );
         final DownloadManager fileManager =
                 new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander() );
 
+        final DirectContentAccess dca =
+                new DefaultDirectContentAccess( fileManager );
+
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, fileManager, new IndyObjectMapper( true ),
                                            new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
-                                           new ContentDigester( fileManager ),
+                                           new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+                                                   "content-metadata", contentMetadata ) ),
                                            Collections.<ContentGenerator>emptySet() );
 
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager(

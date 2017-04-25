@@ -210,13 +210,6 @@ public interface ContentManager
     List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
         throws IndyWorkflowException;
 
-    /**
-     * @deprecated Use {@link ContentDigester} instead.
-     */
-    @Deprecated
-    ArtifactData digest( StoreKey key, String path, ContentDigest... types )
-        throws IndyWorkflowException;
-
     HttpExchangeMetadata getHttpMetadata( Transfer txfr )
         throws IndyWorkflowException;
 

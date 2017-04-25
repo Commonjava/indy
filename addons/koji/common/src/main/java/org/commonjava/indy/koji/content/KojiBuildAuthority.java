@@ -23,8 +23,6 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.ArtifactData;
-import org.commonjava.indy.content.ContentDigest;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.data.IndyDataException;
@@ -34,6 +32,9 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
+import org.commonjava.maven.galley.io.checksum.ContentDigest;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.Transfer;
@@ -52,9 +53,11 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang.StringUtils.contains;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.trimToEmpty;
+import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**
  * Created by jdcasey on 1/4/17.
@@ -277,7 +280,9 @@ public class KojiBuildAuthority
                 }
                 else
                 {
-                    final ArtifactData artifactData = contentDigester.digest( store.getKey(), path, ContentDigest.MD5 );
+                    EventMetadata forcedEventMetadata = new EventMetadata( eventMetadata ).set(FORCE_CHECKSUM, TRUE);
+                    final TransferMetadata artifactData = contentDigester.digest( store.getKey(), path, forcedEventMetadata,
+                                                                                  ContentDigest.MD5 );
                     if ( artifactData != null )
                     {
                         return artifactData.getDigests().get( ContentDigest.MD5 );

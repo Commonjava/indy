@@ -110,7 +110,7 @@ public class ProxyAcceptHandler
         }
         catch ( IOException e )
         {
-            logger.error( "Failed to accept httprox connection: " + e.getMessage(), e );
+            logger.error( "Failed to addMetadata httprox connection: " + e.getMessage(), e );
             return;
         }
 
