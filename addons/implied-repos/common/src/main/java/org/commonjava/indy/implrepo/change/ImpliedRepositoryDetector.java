@@ -20,6 +20,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.CoreEventManagerConstants;
+import org.commonjava.indy.data.ArtifactStoreValidator;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.implrepo.ImpliedReposException;
@@ -96,15 +97,20 @@ public class ImpliedRepositoryDetector
 
     private ImpliedRepositoryCreator creator;
 
+    @Inject
+    private ArtifactStoreValidator remoteValidator;
+
     protected ImpliedRepositoryDetector(){}
 
     public ImpliedRepositoryDetector( final MavenPomReader pomReader, final StoreDataManager storeManager,
-                                      final ImpliedRepoMetadataManager metadataManager, final ScriptEngine scriptEngine,
+                                      final ImpliedRepoMetadataManager metadataManager,
+                                      final ArtifactStoreValidator remoteValidator, final ScriptEngine scriptEngine,
                                       final ExecutorService executor, final ImpliedRepoConfig config )
     {
         this.pomReader = pomReader;
         this.storeManager = storeManager;
         this.metadataManager = metadataManager;
+        this.remoteValidator = remoteValidator;
         this.scriptEngine = scriptEngine;
         this.config = config;
         this.executor = executor;
@@ -375,6 +381,12 @@ public class ImpliedRepositoryDetector
                     }
 
                     rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
+
+                    if ( !remoteValidator.isValid( rr ) )
+                    {
+                        logger.warn( "Implied repository to: {} is invalid! Repository created was: {}", repo.getUrl(), rr );
+                        continue;
+                    }
 
                     final String changelog = String.format(
                             "Adding remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",

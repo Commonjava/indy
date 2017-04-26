@@ -45,6 +45,10 @@
       <artifactId>junit</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-transport-httpclient</artifactId>
     </dependency>
