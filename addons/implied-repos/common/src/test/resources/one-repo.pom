@@ -25,7 +25,7 @@
   <repositories>
     <repository>
       <id>repo-one</id>
-      <url>http://www.bar.com/repo</url>
+      <url>${baseurl}/repo</url>
     </repository>
   </repositories>
 </project>
