@@ -52,6 +52,11 @@
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-test-harness-maven</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>http-testserver</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>
