@@ -30,7 +30,6 @@ import java.io.InputStream;
 public class HttproxConfig
     implements IndyConfigInfo
 {
-
     private static final int DEFAULT_PORT = 8081;
 
     private static final boolean DEFAULT_ENABLED = false;
@@ -50,6 +49,8 @@ public class HttproxConfig
     private Integer port;
 
     private String trackingType;
+
+    private String noCachePatterns; // if multiple patterns, split by comma
 
     public TrackingType getTrackingType()
     {
@@ -125,5 +126,16 @@ public class HttproxConfig
         return Thread.currentThread()
                      .getContextClassLoader()
                      .getResourceAsStream( "default-httprox.conf" );
+    }
+
+    public String getNoCachePatterns()
+    {
+        return noCachePatterns;
+    }
+
+    @ConfigName( "nocache.patterns" )
+    public void setNoCachePatterns( String noCachePatterns )
+    {
+        this.noCachePatterns = noCachePatterns;
     }
 }
