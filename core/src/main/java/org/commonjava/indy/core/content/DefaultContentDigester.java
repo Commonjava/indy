@@ -63,9 +63,18 @@ public class DefaultContentDigester
     @Override
     public synchronized void addMetadata( final Transfer transfer, final TransferMetadata transferData )
     {
+        if ( transferData != null )
+        {
+            String cacheKey = generateCacheKey( transfer );
+            logger.trace( "Adding TransferMetadata for: {}\n{}", cacheKey, transferData );
+            metadataCache.put( cacheKey, transferData );
+        }
+    }
+
+    public synchronized boolean needsMetadataFor( final Transfer transfer )
+    {
         String cacheKey = generateCacheKey( transfer );
-        logger.trace( "Adding TransferMetadata for: {}\n{}", cacheKey, transferData );
-        metadataCache.put( cacheKey, transferData );
+        return metadataCache.containsKey( cacheKey );
     }
 
     private String generateCacheKey( final Transfer transfer )
@@ -117,23 +126,25 @@ public class DefaultContentDigester
             return meta;
         }
 
+        String cacheKey = generateCacheKey( transfer );
+        logger.debug( "TransferMetadata missing for: {}. Re-reading with FORCE_CHECKSUM now to calculate it.",
+                      cacheKey );
+
+        // FIXME: This IS NOT WORKING! It results in NPE for callers assuming a non-null TransferMetadata response.
         EventMetadata forcedEventMetadata = new EventMetadata( eventMetadata ).set( FORCE_CHECKSUM, Boolean.TRUE );
         try(InputStream stream = transfer.openInputStream( false, forcedEventMetadata ) )
         {
             // depend on ChecksummingTransferDecorator to calculate / store metadata as this gets read, using
             // the FORCE_CHECKSUM metadata key to control its generation.
-            int read = -1;
-            byte[] buf = new byte[16];
-            while ( ( read = stream.read( buf ) ) > -1 )
-            {
-                // NOP
-            }
+            IOUtils.toByteArray( stream );
         }
         catch ( IOException e )
         {
             throw new IndyWorkflowException( "Failed to calculate checksums (MD5, SHA-256, etc.) for: %s. Reason: %s",
                                              e, transfer, e.getMessage() );
         }
+
+        logger.debug( "Retrying TransferMetadata retrieval from cache for: {} after recalculating", cacheKey );
 
         return getContentMetadata( transfer );
     }
