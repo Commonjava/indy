@@ -202,8 +202,7 @@ public class FoloTrackingListener
                 }
 
                 TransferMetadata artifactData =
-                        contentDigester.digest( affectedStore, path, eventMetadata, ContentDigest.MD5, ContentDigest.SHA_1,
-                                                ContentDigest.SHA_256 );
+                        contentDigester.digest( affectedStore, path, eventMetadata );
 
                 Map<ContentDigest, String> digests = artifactData.getDigests();
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate

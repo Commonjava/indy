@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.model.core;
 
+import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
+import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_MAVEN;
+
 /**
  * Enumeration to distinguish between different access channels to stores.
  *
@@ -24,8 +27,20 @@ public enum AccessChannel
 {
 
     /** Used when the store is accessed via httprox addon. */
-    GENERIC_PROXY,
+    GENERIC_PROXY(PKG_TYPE_GENERIC_HTTP),
     /** Used when the store is accessed via regular Maven repo. */
-    MAVEN_REPO
+    MAVEN_REPO(PKG_TYPE_MAVEN);
+
+    private final String packageType;
+
+    AccessChannel(String packageType)
+    {
+        this.packageType = packageType;
+    }
+
+    public String packageType()
+    {
+        return packageType;
+    }
 
 }
