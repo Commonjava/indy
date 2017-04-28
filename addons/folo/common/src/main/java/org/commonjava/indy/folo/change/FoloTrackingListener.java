@@ -114,6 +114,12 @@ public class FoloTrackingListener
     {
         logger.debug( "FILE STORAGE: {}", event );
 
+        if ( TransferOperation.UPLOAD != event.getType() )
+        {
+            logger.debug( "Not a file upload from client; skipping tracking of storage" );
+            return;
+        }
+
         EventMetadata metadata = event.getEventMetadata();
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
