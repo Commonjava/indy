@@ -1,15 +1,19 @@
 package org.commonjava.indy.metrics.reporter;
 
 import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.metrics.zabbix.reporter.IndyZabbixReporter;
+import org.commonjava.indy.metrics.zabbix.sender.IndyZabbixSender;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -18,8 +22,20 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class ReporterIntializer
 {
+    private final static String FILTER_SIMPLE = "org.commonjava.indy";
+
+    private final static String FILTER_JVM = "jvm";
+
+    private final static String FILTER_HEALTHCHECK = "healthcheck";
+
+    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER = "graphite";
+
+    public final static String INDY_METRICS_REPORTER_CONSOLEREPORTER = "console";
+
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER = "zabbix";
+
     @Inject
-                    @IndyMetricsNamed
+    @IndyMetricsNamed
     IndyMetricsConfig config;
 
     public void initReporter( MetricRegistry metrics ) throws Exception
@@ -30,14 +46,24 @@ public class ReporterIntializer
             initConsoleReporter( metrics, config );
             return;
         }
-        String reporter = config.getReporter();
-        if ( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER.equals( reporter ) )
+        if ( this.isExistReporter( INDY_METRICS_REPORTER_GRPHITEREPORTER ) )
         {
             initGraphiteReporterForSimpleMetric( metrics, config );
             initGraphiteReporterForJVMMetric( metrics, config );
             initGraphiteReporterForHealthCheckMetric( metrics, config );
         }
 
+        if ( this.isExistReporter( INDY_METRICS_REPORTER_ZABBIXREPORTER ) )
+        {
+            this.initZabbixReporterForHealthCheckMetric( metrics, config );
+            this.initZabbixReporterForJVMMetric( metrics, config );
+            this.initZabbixReporterForSimpleMetric( metrics, config );
+        }
+
+        if ( this.isExistReporter( INDY_METRICS_REPORTER_CONSOLEREPORTER ) )
+        {
+            initConsoleReporter( metrics, config );
+        }
     }
 
     private void initConsoleReporter( MetricRegistry metrics, IndyMetricsConfig config )
@@ -58,7 +84,7 @@ public class ReporterIntializer
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
                                                           .filter( ( name, metric ) ->
                                                                    {
-                                                                       if ( name.contains( "org.commonjava.indy" ) )
+                                                                       if ( name.contains( FILTER_SIMPLE ) )
                                                                        {
                                                                            return true;
                                                                        }
@@ -78,8 +104,8 @@ public class ReporterIntializer
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
                                                           .filter( ( name, metric ) ->
                                                                    {
-                                                                       if ( !name.contains( "org.commonjava.indy" )
-                                                                                       && name.contains( "jvm" ) )
+                                                                       if ( !name.contains( FILTER_SIMPLE )
+                                                                                       && name.contains( FILTER_JVM ) )
                                                                        {
                                                                            return true;
                                                                        }
@@ -99,9 +125,9 @@ public class ReporterIntializer
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
                                                           .filter( ( name, metric ) ->
                                                                    {
-                                                                       if ( !name.contains( "org.commonjava.indy" )
+                                                                       if ( !name.contains( FILTER_SIMPLE )
                                                                                        && name.contains(
-                                                                                       "healthcheck" ) )
+                                                                                       FILTER_HEALTHCHECK ) )
                                                                        {
                                                                            return true;
                                                                        }
@@ -109,5 +135,83 @@ public class ReporterIntializer
                                                                    } )
                                                           .build( graphite );
         reporter.start( config.getGrphiterHealthcheckPeriod(), TimeUnit.SECONDS );
+    }
+
+    private boolean isExistReporter( String reporter )
+    {
+        return config.getReporter().contains( reporter );
+
+    }
+
+    private void initZabbixReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config )
+    {
+        IndyZabbixReporter reporter = initZabbixReporter( metrics, config ).filter( ( name, metric ) ->
+                                                                                    {
+                                                                                        if ( name.contains(
+                                                                                                        FILTER_SIMPLE ) )
+                                                                                        {
+                                                                                            return true;
+                                                                                        }
+                                                                                        return false;
+                                                                                    } ).build( initZabbixSender() );
+
+        reporter.start( config.getZabbixSimplePriod(), TimeUnit.SECONDS );
+    }
+
+    private void initZabbixReporterForJVMMetric( MetricRegistry metrics, IndyMetricsConfig config )
+    {
+        IndyZabbixReporter reporter = initZabbixReporter( metrics, config ).filter( ( name, metric ) ->
+                                                                                    {
+                                                                                        if ( !name.contains(
+                                                                                                        FILTER_SIMPLE )
+                                                                                                        && name.contains(
+                                                                                                        FILTER_JVM ) )
+                                                                                        {
+                                                                                            return true;
+                                                                                        }
+                                                                                        return false;
+                                                                                    } ).build( initZabbixSender() );
+
+        reporter.start( config.getZabbixJVMPriod(), TimeUnit.SECONDS );
+    }
+
+    private void initZabbixReporterForHealthCheckMetric( MetricRegistry metrics, IndyMetricsConfig config )
+    {
+        IndyZabbixReporter reporter = initZabbixReporter( metrics, config ).filter( ( name, metric ) ->
+                                                                                    {
+                                                                                        if ( !name.contains(
+                                                                                                        FILTER_SIMPLE )
+                                                                                                        && name.contains(
+                                                                                                        FILTER_HEALTHCHECK ) )
+                                                                                        {
+                                                                                            return true;
+                                                                                        }
+                                                                                        return false;
+                                                                                    } ).build( initZabbixSender() );
+
+        reporter.start( config.getZabbixHealthcheckPeriod(), TimeUnit.SECONDS );
+    }
+
+    private IndyZabbixReporter.Builder initZabbixReporter( MetricRegistry metrics, IndyMetricsConfig config )
+    {
+        return IndyZabbixReporter.forRegistry( metrics )
+                                 .prefix( config.getZabbixPrefix() )
+                                 .convertRatesTo( TimeUnit.SECONDS )
+                                 .convertDurationsTo( TimeUnit.MILLISECONDS )
+                                 .hostName( config.getZabbixLocalHostName() );
+    }
+
+    private IndyZabbixSender initZabbixSender()
+    {
+        final IndyZabbixSender zabbixSender = IndyZabbixSender.create()
+                                                              .zabbixHost( config.getZabbixHost() )
+                                                              .zabbixPort( config.getZabbixPort() )
+                                                              .zabbixHostUrl( config.getZabbixApiHostUrl() )
+                                                              .zabbixUserName( config.getZabbixUser() )
+                                                              .zabbixUserPwd( config.getZabbixPwd() )
+                                                              .hostName( config.getZabbixLocalHostName() )
+                                                              .bCreateNotExistZabbixSender( true )
+                                                              .build();
+        return zabbixSender;
     }
 }
