@@ -16,6 +16,7 @@
 package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
@@ -100,6 +101,11 @@ public class FoloRecordCache
             qb.build().list().forEach( item -> ch.execute( cache -> cache.remove( item ) ) );
             return false;
         } );
+    }
+
+    public synchronized void replaceTrackingRecord( final TrackedContent record )
+    {
+        sealedRecordCache.put( record.getKey(), record );
     }
 
     public synchronized boolean hasRecord( final TrackingKey key )

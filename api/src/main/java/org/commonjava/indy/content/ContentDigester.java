@@ -20,7 +20,6 @@ public interface ContentDigester
 
     TransferMetadata getContentMetadata( Transfer transfer );
 
-    TransferMetadata digest( final StoreKey affectedStore, final String s, final EventMetadata eventMetadata,
-                             final ContentDigest... types )
+    TransferMetadata digest( final StoreKey affectedStore, final String s, final EventMetadata eventMetadata )
             throws IndyWorkflowException;
 }
