@@ -24,6 +24,7 @@ import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
+import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
@@ -323,6 +324,13 @@ public class FoloAdminController
         StoreKey affectedStore = entry.getStoreKey();
         String path = entry.getPath();
         AccessChannel channel = entry.getAccessChannel();
+
+        Transfer transfer = contentManager.getTransfer( affectedStore, path, entry.getEffect() == StoreEffect.UPLOAD ?
+                TransferOperation.UPLOAD :
+                TransferOperation.DOWNLOAD );
+
+        contentDigester.removeMetadata( transfer );
+
         TransferMetadata artifactData =
                 contentDigester.digest( affectedStore, path, new EventMetadata( channel.packageType() ) );
 
