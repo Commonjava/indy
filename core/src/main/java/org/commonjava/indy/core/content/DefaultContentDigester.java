@@ -110,8 +110,7 @@ public class DefaultContentDigester
         return metadata;
     }
 
-    public TransferMetadata digest( final StoreKey key, final String path, final EventMetadata eventMetadata,
-                                    final ContentDigest... types )
+    public TransferMetadata digest( final StoreKey key, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         final Transfer transfer = directContentAccess.getTransfer( key, path );

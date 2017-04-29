@@ -483,12 +483,11 @@ public class PromotionValidationTools
         return contentManager.list( stores, path );
     }
 
-    public Map<ContentDigest, String> digest( final StoreKey key, final String path, final ContentDigest... types )
+    public Map<ContentDigest, String> digest( final StoreKey key, final String path, String packageType )
             throws IndyWorkflowException
     {
-        // FIXME: We need some way to know the pacakge type here!!
-        return contentDigester.digest( key, path, new EventMetadata( "maven" ).set( FORCE_CHECKSUM, Boolean.TRUE ),
-                                       types ).getDigests();
+        return contentDigester.digest( key, path, new EventMetadata( packageType ).set( FORCE_CHECKSUM, Boolean.TRUE ) )
+                              .getDigests();
     }
 
     public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )

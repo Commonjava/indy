@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -49,15 +49,13 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
 
-@Api( value = "FOLO Tracking Record Access",
-      description = "Manages FOLO tracking records." )
+@Api( value = "FOLO Tracking Record Access", description = "Manages FOLO tracking records." )
 @Path( "/api/folo/admin" )
 @ApplicationScoped
 public class FoloAdminResource
@@ -74,6 +72,41 @@ public class FoloAdminResource
 
     @Inject
     private ContentController contentController;
+
+    @ApiOperation( "Recalculate sizes and checksums for every file listed in a tracking record." )
+    @ApiResponses(
+            { @ApiResponse( code = 200, response = TrackedContentDTO.class, message = "Recalculated tracking report" ),
+                    @ApiResponse( code = 404, message = "No such tracking record can be found" ) } )
+    @GET
+    @Path( "/{id}/record/recalculate" )
+    public Response recalculateRecord( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) String id,
+                                       @Context final UriInfo uriInfo )
+    {
+        Response response;
+        try
+        {
+            final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
+            final TrackedContentDTO report = controller.recalculateRecord( id, baseUrl );
+
+            if ( report == null )
+            {
+                response = Response.status( Status.NOT_FOUND ).build();
+            }
+            else
+            {
+                response = formatOkResponseWithJsonEntity( report, objectMapper );
+            }
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error(
+                    String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ), e );
+
+            response = formatResponse( e );
+        }
+
+        return response;
+    }
 
     @ApiOperation(
             "Retrieve the content referenced in a tracking record as a ZIP-compressed Maven repository directory." )
@@ -92,7 +125,7 @@ public class FoloAdminResource
             //            final Response.ResponseBuilder builder = Response.ok( zip );
             //            return setInfoHeaders( builder, zip, false, application_zip ).build();
         }
-        catch ( IndyWorkflowException e)
+        catch ( IndyWorkflowException e )
         {
             throwError( e );
         }
@@ -112,11 +145,7 @@ public class FoloAdminResource
         Response response;
         try
         {
-            //            final String baseUrl = uriInfo.getAbsolutePathBuilder()
             final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
-            //                                          .path( ContentAccessHandler.class )
-            //                                          .build( st.singularEndpointName(), name )
-            //                                          .toString();
 
             final TrackedContentDTO report = controller.renderReport( id, baseUrl );
 
@@ -150,9 +179,6 @@ public class FoloAdminResource
                                 @Context final UriInfo uriInfo )
     {
         Response.ResponseBuilder rb = Response.created( uriInfo.getRequestUri() );
-        // [jdcasey] I think there are still use cases where this makes sense...un-deprecating it.
-        //                                              .entity( "Tracking records no longer require initialization." );
-        //        ResponseUtils.markDeprecated( rb, "NONE" );
         return rb.build();
     }
 
@@ -165,7 +191,8 @@ public class FoloAdminResource
     public Response sealRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
                                 @Context final UriInfo uriInfo )
     {
-        TrackedContentDTO record = controller.seal( id );
+        final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
+        TrackedContentDTO record = controller.seal( id, baseUrl );
         if ( record == null )
         {
             return Response.status( Status.NOT_FOUND ).build();
@@ -182,12 +209,14 @@ public class FoloAdminResource
                                          response = TrackedContentDTO.class ), } )
     @Path( "/{id}/record" )
     @GET
-    public Response getRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id )
+    public Response getRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
+                               @Context final UriInfo uriInfo )
     {
         Response response;
         try
         {
-            final TrackedContentDTO record = controller.getRecord( id );
+            final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
+            final TrackedContentDTO record = controller.getRecord( id, baseUrl );
             if ( record == null )
             {
                 response = Response.status( Status.NOT_FOUND ).build();
@@ -226,13 +255,14 @@ public class FoloAdminResource
         return response;
     }
 
-    @ApiOperation(
-            "Retrieve folo report tracking ids for folo records." )
-    @ApiResponses( { @ApiResponse( code = 200, response = List.class, message = "folo tracking ids with sealed or in_progress" ),
+    @ApiOperation( "Retrieve folo report tracking ids for folo records." )
+    @ApiResponses( { @ApiResponse( code = 200, response = List.class,
+                                   message = "folo tracking ids with sealed or in_progress" ),
                            @ApiResponse( code = 404, message = "No ids found for type" ) } )
     @Path( "/report/ids/{type}" )
     @GET
-    public Response getRecordIds( @ApiParam( "Report type, should be in_progress|sealed|all" ) final @PathParam( "type" ) String type )
+    public Response getRecordIds(
+            @ApiParam( "Report type, should be in_progress|sealed|all" ) final @PathParam( "type" ) String type )
     {
         Response response;
         Set<FoloConstants.TRACKING_TYPE> types = new HashSet<>();

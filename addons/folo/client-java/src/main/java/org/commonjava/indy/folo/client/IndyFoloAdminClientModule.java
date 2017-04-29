@@ -79,6 +79,12 @@ public class IndyFoloAdminClientModule
         return http.get( UrlUtils.buildUrl( "/folo/admin", trackingId, "record" ), TrackedContentDTO.class );
     }
 
+    public TrackedContentDTO recalculateTrackingRecord( final String trackingId )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( "/folo/admin", trackingId, "record/recalculate" ), TrackedContentDTO.class );
+    }
+
     public void clearTrackingRecord( final String trackingId )
         throws IndyClientException
     {
