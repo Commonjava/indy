@@ -281,8 +281,7 @@ public class KojiBuildAuthority
                 else
                 {
                     EventMetadata forcedEventMetadata = new EventMetadata( eventMetadata ).set(FORCE_CHECKSUM, TRUE);
-                    final TransferMetadata artifactData = contentDigester.digest( store.getKey(), path, forcedEventMetadata,
-                                                                                  ContentDigest.MD5 );
+                    final TransferMetadata artifactData = contentDigester.digest( store.getKey(), path, forcedEventMetadata );
                     if ( artifactData != null )
                     {
                         return artifactData.getDigests().get( ContentDigest.MD5 );
