@@ -10,9 +10,11 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.Snapshot;
 import com.codahale.metrics.Timer;
-import io.github.hengyunabc.zabbix.sender.DataObject;
-import io.github.hengyunabc.zabbix.sender.SenderResult;
+import org.commonjava.indy.metrics.exception.IndyMetricsException;
+import org.commonjava.indy.metrics.zabbix.sender.DataObject;
 import org.commonjava.indy.metrics.zabbix.sender.IndyZabbixSender;
+import org.commonjava.indy.metrics.zabbix.sender.SenderResult;
+import org.commonjava.indy.subsys.http.IndyHttpException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -136,7 +138,7 @@ public class IndyZabbixReporter
 
         public Builder prefix( String prefix )
         {
-            this.prefix = prefix+".";
+            this.prefix = prefix + ".";
             return this;
         }
 
@@ -152,11 +154,12 @@ public class IndyZabbixReporter
             return this;
         }
 
-        public Builder zabbixSender(IndyZabbixSender indyZabbixSender)
+        public Builder zabbixSender( IndyZabbixSender indyZabbixSender )
         {
             this.indyZabbixSender = indyZabbixSender;
             return this;
         }
+
         /**
          * Builds a {@link IndyZabbixReporter} with the given properties.
          *
@@ -183,7 +186,6 @@ public class IndyZabbixReporter
         this.hostName = hostName;
         this.prefix = prefix;
         this.suffix = suffix;
-        this.indyZabbixSender.setHostName( hostName );
     }
 
     private DataObject toDataObject( String key, String keySuffix, Object value, long clock )
@@ -304,7 +306,18 @@ public class IndyZabbixReporter
         }
         catch ( IOException e )
         {
-            logger.error( "report metris to zabbix error!" );
+            logger.error( "report metrics to zabbix error! " + e );
+            e.printStackTrace();
+        }
+        catch ( IndyMetricsException e )
+        {
+            logger.error( "Indy metrics config error " + e );
+            e.printStackTrace();
+        }
+        catch ( IndyHttpException e )
+        {
+            logger.error( "Indy http client error " + e );
+            e.printStackTrace();
         }
     }
 

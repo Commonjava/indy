@@ -42,9 +42,9 @@ public class IndyMetricsConfig
 
     public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL = "zabbix.api.url";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT = "zabbix.sender.host";
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT = "zabbix.sender.port";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST = "zabbix.sender.port";
+    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST = "zabbix.sender.host";
 
     public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_USER = "zabbix.user";
 

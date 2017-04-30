@@ -106,6 +106,7 @@
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
 
     <metrics.version>3.1.0</metrics.version>
+    <jackson-version>2.4.1</jackson-version>
   </properties>
   
   <modules>
@@ -739,6 +740,16 @@
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-metrics</artifactId>
         <version>1.2.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-core</artifactId>
+        <version>${jackson-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>${jackson-version}</version>
       </dependency>
       <!-- DO NOT REMOVE: append::depMgmt -->
 
