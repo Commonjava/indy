@@ -1,35 +1,29 @@
 package org.commonjava.indy.metrics.zabbix.sender;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import io.github.hengyunabc.zabbix.api.DefaultZabbixApi;
-import io.github.hengyunabc.zabbix.api.Request;
-import io.github.hengyunabc.zabbix.api.RequestBuilder;
-import io.github.hengyunabc.zabbix.api.ZabbixApi;
-import io.github.hengyunabc.zabbix.sender.DataObject;
-import io.github.hengyunabc.zabbix.sender.SenderResult;
-import io.github.hengyunabc.zabbix.sender.ZabbixSender;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.commonjava.indy.IndyException;
+import org.commonjava.indy.metrics.exception.IndyMetricsException;
+import org.commonjava.indy.metrics.zabbix.api.IndyZabbixApi;
+import org.commonjava.indy.metrics.zabbix.api.ZabbixApi;
+import org.commonjava.indy.metrics.zabbix.cache.ZabbixCacheStorage;
+import org.commonjava.indy.subsys.http.IndyHttpException;
+import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by xiabai on 4/11/17.
+ * Created by xiabai on 4/1/17.
  */
 public class IndyZabbixSender
 {
     private static final Logger logger = LoggerFactory.getLogger( IndyZabbixSender.class );
+
+    private ZabbixSender sender;
 
     private boolean bCreateNotExistHostGroup = true;
 
@@ -37,9 +31,7 @@ public class IndyZabbixSender
 
     private boolean bCreateNotExistItem = true;
 
-    private boolean bCreateNotExistZabbixSender = true;
-
-    private ZabbixSender zabbixSender;
+    private boolean bCreateNotExistZabbixApi = true;
 
     private ZabbixApi zabbixApi;
 
@@ -59,22 +51,9 @@ public class IndyZabbixSender
 
     private String zabbixUserPwd;
 
-    private String zabbixHost;
+    private ZabbixCacheStorage zabbixCacheStorage;
 
-    private int zabbixPort;
-
-    // name, hostGroupId
-    private Map<String, String> hostGroupCache;
-
-    // name, hostId
-    private Map<String, String> hostCache;
-
-    // name, itemId
-    private Map<String, String> itemCache;
-
-    private PoolingHttpClientConnectionManager connManager;
-
-    private RequestConfig requestConfig;
+    private IndyHttpProvider indyHttpProvider;
 
     private static final String regEx = "^-?[0-9]+$";
 
@@ -95,8 +74,6 @@ public class IndyZabbixSender
 
         boolean bCreateNotExistZabbixSender = true;
 
-        ZabbixSender zabbixSender;
-
         ZabbixApi zabbixApi;
 
         String zabbixHostUrl;
@@ -115,13 +92,35 @@ public class IndyZabbixSender
 
         String zabbixUserPwd;
 
-        private String zabbixHost;
+        String zabbixHost;
 
-        private int zabbixPort;
+        int zabbixPort;
+
+        ZabbixCacheStorage zabbixCacheStorage;
+
+        IndyHttpProvider indyHttpProvider;
+
+        public Builder metricsZabbixCache( ZabbixCacheStorage zabbixCacheStorage )
+        {
+            this.zabbixCacheStorage = zabbixCacheStorage;
+            return this;
+        }
+
+        public Builder indyHttpProvider( IndyHttpProvider indyHttpProvider )
+        {
+            this.indyHttpProvider = indyHttpProvider;
+            return this;
+        }
 
         public Builder zabbixHost( String zabbixHost )
         {
             this.zabbixHost = zabbixHost;
+            return this;
+        }
+
+        public Builder hostName( String hostName )
+        {
+            this.hostName = hostName;
             return this;
         }
 
@@ -155,12 +154,6 @@ public class IndyZabbixSender
             return this;
         }
 
-        public Builder zabbixSender( ZabbixSender zabbixSender )
-        {
-            this.zabbixSender = zabbixSender;
-            return this;
-        }
-
         public Builder zabbixApi( ZabbixApi zabbixApi )
         {
             this.zabbixApi = zabbixApi;
@@ -191,12 +184,6 @@ public class IndyZabbixSender
             return this;
         }
 
-        public Builder hostName( String hostName )
-        {
-            this.hostName = hostName;
-            return this;
-        }
-
         public Builder zabbixUserName( String zabbixUserName )
         {
             this.zabbixUserName = zabbixUserName;
@@ -218,26 +205,25 @@ public class IndyZabbixSender
         public IndyZabbixSender build()
         {
             return new IndyZabbixSender( this.bCreateNotExistHostGroup, this.bCreateNotExistHost,
-                                         this.bCreateNotExistItem, this.bCreateNotExistZabbixSender, this.zabbixSender,
-                                         this.zabbixApi, this.zabbixHostUrl, this.hostGroup, this.group, this.clock,
-                                         this.hostName, this.ip, this.zabbixUserName, this.zabbixUserPwd,
-                                         this.zabbixPort, this.zabbixHost );
+                                         this.bCreateNotExistItem, this.bCreateNotExistZabbixSender, this.zabbixApi,
+                                         this.zabbixHostUrl, this.hostGroup, this.group, this.clock, this.hostName,
+                                         this.ip, this.zabbixUserName, this.zabbixUserPwd, this.zabbixHost,
+                                         this.zabbixPort, this.indyHttpProvider, this.zabbixCacheStorage );
         }
 
     }
 
-    private IndyZabbixSender( boolean bCreateNotExistHostGroup, boolean bCreateNotExistHost,
-                              boolean bCreateNotExistItem, boolean bCreateNotExistZabbixSender,
-                              ZabbixSender zabbixSender, ZabbixApi zabbixApi, String zabbixHostUrl, String hostGroup,
-                              String group, long clock, String hostName, String ip, String zabbixUserName,
-                              String zabbixUserPwd, int zabbixPort, String zabbixHost )
+    public IndyZabbixSender( boolean bCreateNotExistHostGroup, boolean bCreateNotExistHost, boolean bCreateNotExistItem,
+                             boolean bCreateNotExistZabbixApi, ZabbixApi zabbixApi, String zabbixHostUrl,
+                             String hostGroup, String group, long clock, String hostName, String ip,
+                             String zabbixUserName, String zabbixUserPwd, String zabbixHost, int zabbixPort,
+                             IndyHttpProvider indyHttpProvider, ZabbixCacheStorage zabbixCacheStorage )
     {
 
         this.bCreateNotExistHostGroup = bCreateNotExistHostGroup;
         this.bCreateNotExistHost = bCreateNotExistHost;
         this.bCreateNotExistItem = bCreateNotExistItem;
-        this.bCreateNotExistZabbixSender = bCreateNotExistZabbixSender;
-        this.zabbixSender = zabbixSender;
+        this.bCreateNotExistZabbixApi = bCreateNotExistZabbixApi;
         this.zabbixApi = zabbixApi;
         this.zabbixHostUrl = zabbixHostUrl;
         this.hostGroup = hostGroup;
@@ -247,136 +233,62 @@ public class IndyZabbixSender
         this.ip = ip;
         this.zabbixUserName = zabbixUserName;
         this.zabbixUserPwd = zabbixUserPwd;
-        this.zabbixPort = zabbixPort;
-        this.zabbixHost = zabbixHost;
-
-        hostGroupCache = new ConcurrentHashMap<String, String>();
-
-        hostCache = new ConcurrentHashMap<String, String>();
-
-        itemCache = new ConcurrentHashMap<String, String>();
-        this.zabbixSender = new ZabbixSender( zabbixHost,  zabbixPort );
+        this.indyHttpProvider = indyHttpProvider;
+        this.zabbixCacheStorage = zabbixCacheStorage;
+        this.sender = new ZabbixSender( zabbixHost, zabbixPort );
     }
 
-    void checkHostGroup( String hostGroup )
+    String checkHostGroup( String hostGroup ) throws IOException, IndyHttpException, IndyMetricsException
     {
-        if ( hostGroupCache.get( hostGroup ) == null )
+        if ( zabbixCacheStorage.getHostGroup( hostGroup ) == null )
         {
-            this.zabbixApiInit();
             try
             {
-                JSONArray result = getHostGroup( hostGroup );
-                if ( !result.isEmpty() )
-                { // host group exists.
-                    String groupid = result.getJSONObject( 0 ).getString( "groupid" );
-                    hostGroupCache.put( hostGroup, groupid );
+                this.zabbixApiInit();
+                String groupid = zabbixApi.getHostgroup( hostGroup );
+                if ( groupid == null )
+                {
+                    groupid = zabbixApi.hostgroupCreate( hostGroup );
+                    zabbixCacheStorage.putHostGroup( hostGroup, groupid );
                 }
-                else
-                {// host group not exists, create it.
-                    String hostGroupId = createHostGroup( hostGroup );
-                    hostGroupCache.put( hostGroup, hostGroupId );
-                }
+                zabbixCacheStorage.putHostGroup( hostGroup, groupid );
+                return groupid;
             }
             finally
             {
                 this.destroy();
             }
         }
+        return null;
     }
 
-    private String createHostGroup( String hostGroup )
-    {
-        Request createRequest = RequestBuilder.newBuilder()
-                                              .method( "hostgroup.create" )
-                                              .paramEntry( "name", hostGroup )
-                                              .build();
-        JSONObject createResponse = zabbixApi.call( createRequest );
-        return createResponse.getJSONObject( "result" ).getJSONArray( "groupids" ).getString( 0 );
-    }
-
-    private JSONArray getHostGroup( String hostGroup )
-    {
-        JSONObject filter = new JSONObject();
-        filter.put( "name", new String[] { hostGroup } );
-        Request getRequest =
-                        RequestBuilder.newBuilder().method( "hostgroup.get" ).paramEntry( "filter", filter ).build();
-        JSONObject getResponse = zabbixApi.call( getRequest );
-        return getResponse.getJSONArray( "result" );
-    }
-
-    void checkHost( String host, String ip )
+    String checkHost( String host, String ip ) throws IOException, IndyHttpException, IndyMetricsException
     {
         try
         {
-            if ( hostCache.get( host ) == null )
+            if ( zabbixCacheStorage.getHost( host ) == null )
             {
                 this.zabbixApiInit();
-                logger.info( "call in hostCache.get( host ) == null " + host + ":" + ip );
-                JSONArray result = getHost( host );
-                if ( !result.isEmpty() )
-                { // host exists.
-                    String hostid = result.getJSONObject( 0 ).getString( "hostid" );
-                    hostCache.put( host, hostid );
+                String hostid = zabbixApi.getHost( host );
+                if ( hostid != null )
+                {
+                    zabbixCacheStorage.putHost( host, hostid );
 
-                    logger.info( "!result.isEmpty() " + hostid );
                 }
                 else
-                {
-                    String hostId = createHost( host, ip );
-                    hostCache.put( host, hostId );
+                {// host not exists, create it.
+
+                    hostid = zabbixApi.hostCreate( host, zabbixCacheStorage.getHostGroup( hostGroup ), ip );
+                    zabbixCacheStorage.putHost( host, hostid );
                 }
+                return hostid;
             }
         }
         finally
         {
             this.destroy();
         }
-    }
-
-    private String createHost( String host, String ip )
-    {
-        // host not exists, create it.
-        JSONArray groups = new JSONArray();
-        JSONObject group = new JSONObject();
-        group.put( "groupid", hostGroupCache.get( hostGroup ) );
-        groups.add( group );
-
-        // "interfaces": [
-        // {
-        // "type": 1,
-        // "main": 1,
-        // "useip": 1,
-        // "ip": "192.168.3.1",
-        // "dns": "",
-        // "port": "10050"
-        // }
-        // ],
-
-        JSONObject interface1 = new JSONObject();
-        interface1.put( "type", 1 );
-        interface1.put( "main", 1 );
-        interface1.put( "useip", 1 );
-        interface1.put( "ip", ip );
-        interface1.put( "dns", "" );
-        interface1.put( "port", "10051" );
-
-        Request request = RequestBuilder.newBuilder()
-                                        .method( "host.create" )
-                                        .paramEntry( "host", host )
-                                        .paramEntry( "groups", groups )
-                                        .paramEntry( "interfaces", new Object[] { interface1 } )
-                                        .build();
-        JSONObject response = zabbixApi.call( request );
-        return response.getJSONObject( "result" ).getJSONArray( "hostids" ).getString( 0 );
-    }
-
-    private JSONArray getHost( String host )
-    {
-        JSONObject filter = new JSONObject();
-        filter.put( "host", new String[] { host } );
-        Request getRequest = RequestBuilder.newBuilder().method( "host.get" ).paramEntry( "filter", filter ).build();
-        JSONObject getResponse = zabbixApi.call( getRequest );
-        return getResponse.getJSONArray( "result" );
+        return null;
     }
 
     private String itemCacheKey( String host, String item )
@@ -384,76 +296,48 @@ public class IndyZabbixSender
         return host + ":" + item;
     }
 
-    void checkItem( String host, String item, int vauleType )
+    String checkItem( String host, String item, int valueType ) throws IOException, IndyHttpException, IndyMetricsException
     {
+
         try
         {
-            if ( itemCache.get( itemCacheKey( host, item ) ) == null )
+            if ( zabbixCacheStorage.getItem( itemCacheKey( host, item ) ) == null )
             {
                 this.zabbixApiInit();
-                JSONArray result = getItem( host, item );
-                if ( result.isEmpty() )
+
+                String itemid = zabbixApi.getItem( host, item, zabbixCacheStorage.getHost( host ) );
+                if ( itemid == null )
                 {
-                    String itemId = createItem( host, item, vauleType );
-                    itemCache.put( itemCacheKey( host, item ), itemId );
+                    itemid = zabbixApi.createItem( host, item, zabbixCacheStorage.getHost( host ), valueType );
+                    zabbixCacheStorage.putItem( itemCacheKey( host, item ), itemid );
                 }
                 else
                 {
-                    // put into cache
-                    itemCache.put( itemCacheKey( host, item ), item );
+                    // put into metricsZabbixCache
+                    zabbixCacheStorage.putItem( itemCacheKey( host, item ), itemid );
                 }
+                return itemid;
             }
         }
         finally
         {
             this.destroy();
         }
+
+        return null;
     }
 
-    private String createItem( String host, String item, int vauleType )
-    {
-        // create item
-        int type = 2; // trapper
-        int value_type = vauleType; // float
-        int delay = 30;
-        Request request = RequestBuilder.newBuilder()
-                                        .method( "item.create" )
-                                        .paramEntry( "name", item )
-                                        .paramEntry( "key_", item )
-                                        .paramEntry( "hostid", hostCache.get( host ) )
-                                        .paramEntry( "type", type )
-                                        .paramEntry( "value_type", value_type )
-                                        .paramEntry( "delay", delay )
-                                        .build();
-
-        JSONObject response = zabbixApi.call( request );
-        return response.getJSONObject( "result" ).getJSONArray( "itemids" ).getString( 0 );
-    }
-
-    private JSONArray getItem( String host, String item )
-    {
-        JSONObject search = new JSONObject();
-        search.put( "key_", item );
-        Request getRequest = RequestBuilder.newBuilder()
-                                           .method( "item.get" )
-                                           .paramEntry( "hostids", hostCache.get( host ) )
-                                           .paramEntry( "search", search )
-                                           .build();
-        JSONObject getResponse = zabbixApi.call( getRequest );
-        return getResponse.getJSONArray( "result" );
-    }
-
-    public SenderResult send( DataObject dataObject ) throws IOException
+    public SenderResult send( DataObject dataObject ) throws IOException, IndyException
     {
         return this.send( dataObject, System.currentTimeMillis() / 1000L );
     }
 
-    public SenderResult send( DataObject dataObject, long clock ) throws IOException
+    public SenderResult send( DataObject dataObject, long clock ) throws IOException, IndyException
     {
         return this.send( Collections.singletonList( dataObject ), clock );
     }
 
-    public SenderResult send( List<DataObject> dataObjectList ) throws IOException
+    public SenderResult send( List<DataObject> dataObjectList ) throws IOException, IndyException
     {
         return this.send( dataObjectList, System.currentTimeMillis() / 1000L );
     }
@@ -466,15 +350,32 @@ public class IndyZabbixSender
      * @return
      * @throws IOException
      */
-    public SenderResult send( List<DataObject> dataObjectList, long clock ) throws IOException
+    public SenderResult send( List<DataObject> dataObjectList, long clock )
+                    throws IOException, IndyHttpException, IndyMetricsException
     {
         if ( bCreateNotExistHostGroup )
         {
-            checkHostGroup( hostGroup );
+            try
+            {
+                checkHostGroup( hostGroup );
+            }
+            catch ( IndyHttpException e )
+            {
+                logger.error( "Check HostGroup of Zabbix is error:" + e.getMessage() );
+                throw e;
+            }
         }
         if ( bCreateNotExistHost )
         {
-            checkHost( hostName, ip );
+            try
+            {
+                checkHost( hostName, ip );
+            }
+            catch ( IndyHttpException e )
+            {
+                logger.error( "Check Host of Zabbix is error:" + e.getMessage() );
+                throw e;
+            }
         }
 
         if ( bCreateNotExistItem )
@@ -488,86 +389,67 @@ public class IndyZabbixSender
                 {
                     vauleType = 4;
                 }
-                checkItem( hostName, key, vauleType );
+                try
+                {
+                    checkItem( hostName, key, vauleType );
+                }
+                catch ( IndyHttpException e )
+                {
+                    logger.error( "Check Item of Zabbix is error:" + e.getMessage() );
+                    throw e;
+                }
             }
         }
 
         try
         {
-            SenderResult senderResult = zabbixSender.send( dataObjectList, clock );
+            SenderResult senderResult = sender.send( dataObjectList, clock );
             if ( !senderResult.success() )
             {
                 logger.error( "send data to zabbix server error! senderResult:" + senderResult );
             }
             return senderResult;
         }
-        catch ( Throwable e )
+        catch ( IOException e )
         {
             logger.error( "send data to zabbix server error!", e );
+            throw e;
         }
-        return null;
     }
 
     public void destroy()
     {
-        if ( bCreateNotExistZabbixSender )
+        if ( bCreateNotExistZabbixApi )
         {
             return;
         }
-        try
-        {
-            if ( zabbixApi != null )
-                zabbixApi.destroy();
-        }
-        catch ( Throwable throwable )
-        {
-            throwable.printStackTrace();
-            logger.error( throwable.getLocalizedMessage());
-        }
+        if ( zabbixApi != null )
+            zabbixApi.destroy();
     }
 
-    private void zabbixApiInit()
+    private void zabbixApiInit() throws IndyMetricsException, IOException, IndyHttpException
     {
-        if ( !bCreateNotExistZabbixSender )
+        if ( !bCreateNotExistZabbixApi )
         {
             return;
         }
         if ( this.zabbixHostUrl == null || "".equals( this.zabbixHostUrl ) )
         {
-            throw new RuntimeException( "can not find Zabbix's Host" );
+            throw new IndyMetricsException( "can not find Zabbix's Host" );
         }
 
-        requestConfig = RequestConfig.custom()
-                                     .setConnectTimeout( 5 * 1000 )
-                                     .setConnectionRequestTimeout( 5 * 1000 )
-                                     .setSocketTimeout( 5 * 1000 )
-                                     .build();
-        connManager = new PoolingHttpClientConnectionManager();
-        CloseableHttpClient httpclient = HttpClients.custom()
-                                                    .setConnectionManager( connManager )
-                                                    .setDefaultRequestConfig( requestConfig )
-                                                    .build();
-        zabbixApi = new DefaultZabbixApi( this.zabbixHostUrl, httpclient );
+        zabbixApi = new IndyZabbixApi( this.zabbixHostUrl, indyHttpProvider.createClient() );
 
         zabbixApi.init();
 
         if ( this.zabbixUserName == null || "".equals( this.zabbixUserName ) || this.zabbixUserPwd == null || "".equals(
                         this.zabbixUserPwd ) )
         {
-            throw new RuntimeException( "can not find Zabbix's username or password" );
+            throw new IndyMetricsException( "can not find Zabbix's username or password" );
         }
         boolean login = zabbixApi.login( this.zabbixUserName, this.zabbixUserPwd );
 
-    }
-
-    public ZabbixSender getZabbixSender()
-    {
-        return zabbixSender;
-    }
-
-    public void setZabbixSender( ZabbixSender zabbixSender )
-    {
-        this.zabbixSender = zabbixSender;
+        logger.info( "User:" + this.zabbixUserName + " login is " + login );
     }
 
     public ZabbixApi getZabbixApi()
@@ -620,36 +502,6 @@ public class IndyZabbixSender
         this.group = group;
     }
 
-    public boolean isbCreateNotExistHostGroup()
-    {
-        return bCreateNotExistHostGroup;
-    }
-
-    public void setbCreateNotExistHostGroup( boolean bCreateNotExistHostGroup )
-    {
-        this.bCreateNotExistHostGroup = bCreateNotExistHostGroup;
-    }
-
-    public boolean isbCreateNotExistZabbixSender()
-    {
-        return bCreateNotExistZabbixSender;
-    }
-
-    public void setbCreateNotExistZabbixSender( boolean bCreateNotExistZabbixSender )
-    {
-        this.bCreateNotExistZabbixSender = bCreateNotExistZabbixSender;
-    }
-
-    public String getZabbixHostUrl()
-    {
-        return zabbixHostUrl;
-    }
-
-    public void setZabbixHostUrl( String zabbixHostUrl )
-    {
-        this.zabbixHostUrl = zabbixHostUrl;
-    }
-
     public long getClock()
     {
         return clock;
@@ -680,6 +532,26 @@ public class IndyZabbixSender
         this.ip = ip;
     }
 
+    public boolean isbCreateNotExistHostGroup()
+    {
+        return bCreateNotExistHostGroup;
+    }
+
+    public void setbCreateNotExistHostGroup( boolean bCreateNotExistHostGroup )
+    {
+        this.bCreateNotExistHostGroup = bCreateNotExistHostGroup;
+    }
+
+    public String getZabbixHostUrl()
+    {
+        return zabbixHostUrl;
+    }
+
+    public void setZabbixHostUrl( String zabbixHostUrl )
+    {
+        this.zabbixHostUrl = zabbixHostUrl;
+    }
+
     public String getZabbixUserName()
     {
         return zabbixUserName;
@@ -698,6 +570,16 @@ public class IndyZabbixSender
     public void setZabbixUserPwd( String zabbixUserPwd )
     {
         this.zabbixUserPwd = zabbixUserPwd;
+    }
+
+    public boolean isbCreateNotExistZabbixApi()
+    {
+        return bCreateNotExistZabbixApi;
+    }
+
+    public void setbCreateNotExistZabbixApi( boolean bCreateNotExistZabbixApi )
+    {
+        this.bCreateNotExistZabbixApi = bCreateNotExistZabbixApi;
     }
 
 }
