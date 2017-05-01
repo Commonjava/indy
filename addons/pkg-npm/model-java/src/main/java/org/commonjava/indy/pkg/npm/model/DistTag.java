@@ -1,0 +1,77 @@
+/**
+ * Copyright (C) 2017 Red Hat, Inc. (jdcasey@commonjava.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.commonjava.indy.pkg.npm.model;
+
+import io.swagger.annotations.ApiModel;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@ApiModel( description = "Package distribution tags, which can be used to provide an alias instead of version numbers. Different tags for multi project development streams, e.g., stable, beta, dev, canary, latest by default.")
+public class DistTag
+{
+    private static final String LATEST = "latest";
+    private static final String STABLE = "stable";
+    private static final String BETA = "beta";
+    private static final String DEV = "dev";
+
+    private Map<String, String> tagsMap = new HashMap<String, String>();
+
+    public String getLatest() {
+        return tagsMap.get(LATEST);
+    }
+
+    public void setLatest(String latest) {
+        tagsMap.put(LATEST, latest);
+    }
+
+    public String getStable() {
+        return tagsMap.get(STABLE);
+    }
+
+    public void setStable(String stable) {
+        tagsMap.put(STABLE,stable);
+    }
+
+    public String getBeta() {
+        return tagsMap.get(BETA);
+    }
+
+    public void setBeta(String beta) {
+        tagsMap.put(BETA,beta);
+    }
+
+    public String getDev() {
+        return tagsMap.get(DEV);
+    }
+
+    public void setDev(String dev) {
+        tagsMap.put(DEV,dev);
+    }
+
+    public Map<String, String> getTagsMap() {
+        return tagsMap;
+    }
+
+    public String getTag(String tag) {
+        return tagsMap.get(tag);
+    }
+
+    public void putTag(String tag, String value) {
+        tagsMap.put(tag, value);
+    }
+}

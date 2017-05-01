@@ -44,6 +44,7 @@
     <module>pkg-maven</module>
     <module>diagnostics</module>
     <module>relate</module>
+    <module>pkg-npm</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>
