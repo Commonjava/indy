@@ -273,7 +273,7 @@
               </goals>
               <configuration>
                 <skip>${skipMainFTests}</skip>
-                <excludedGroups>org.commonjava.indy.ftest.core.category.TimingDependent</excludedGroups>
+                <excludedGroups>org.commonjava.indy.ftest.core.category.TimingDependent, org.commonjava.indy.ftest.core.category.BytemanTest</excludedGroups>
               </configuration>
             </execution>
             <execution>
@@ -285,7 +285,7 @@
               <configuration>
                 <skip>${skipTimingFTests}</skip>
                 <forkCount>1</forkCount>
-                <groups>org.commonjava.indy.ftest.core.category.TimingDependent</groups>
+                <groups>org.commonjava.indy.ftest.core.category.TimingDependent, org.commonjava.indy.ftest.core.category.BytemanTest</groups>
               </configuration>
             </execution>
           </executions>

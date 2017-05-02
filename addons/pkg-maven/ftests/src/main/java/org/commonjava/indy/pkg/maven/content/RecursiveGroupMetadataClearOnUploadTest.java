@@ -18,7 +18,9 @@ package org.commonjava.indy.pkg.maven.content;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.category.BytemanTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -61,6 +63,7 @@ import static org.junit.Assert.fail;
  */
 @RunWith( BMUnitRunner.class )
 @BMUnitConfig( debug = true )
+@Category( BytemanTest.class )
 public class RecursiveGroupMetadataClearOnUploadTest
         extends AbstractContentManagementTest
 {
