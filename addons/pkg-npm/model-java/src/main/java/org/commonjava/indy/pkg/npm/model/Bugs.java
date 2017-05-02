@@ -13,44 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.commonjava.indy.pkg.npm.model;
 
-public class UserInfo
+import io.swagger.annotations.ApiModelProperty;
+
+public class Bugs
 {
-    private final String name;
 
-    private final String email;
-
+    @ApiModelProperty( value = "Url to the project's issue tracker." )
     private final String url;
 
-    protected UserInfo()
+    @ApiModelProperty( value = "The email address to which issues should be reported." )
+    private final String email;
+
+    protected Bugs()
     {
-        this.name = null;
-        this.email = null;
         this.url = null;
+        this.email = null;
     }
 
-    public UserInfo( final String name, final String email, final String url )
+    public Bugs( final String url, final String email )
     {
-        this.name = name;
-        this.email = email;
         this.url = url;
-    }
-
-    public String getName()
-    {
-        return name;
-    }
-
-    public String getEmail()
-    {
-        return email;
+        this.email = email;
     }
 
     public String getUrl()
     {
         return url;
+    }
+
+    public String getEmail()
+    {
+        return email;
     }
 
 }

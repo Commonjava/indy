@@ -13,44 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.commonjava.indy.pkg.npm.model;
 
-public class UserInfo
+public class NpmOperationalInternal
 {
-    private final String name;
 
-    private final String email;
+    private final String host;
 
-    private final String url;
+    private final String tmp;
 
-    protected UserInfo()
+    protected NpmOperationalInternal()
     {
-        this.name = null;
-        this.email = null;
-        this.url = null;
+        this.host = null;
+        this.tmp = null;
     }
 
-    public UserInfo( final String name, final String email, final String url )
+    public NpmOperationalInternal( final String host, final String tmp )
     {
-        this.name = name;
-        this.email = email;
-        this.url = url;
+        this.host = host;
+        this.tmp = tmp;
     }
 
-    public String getName()
+    public String getHost()
     {
-        return name;
+        return host;
     }
 
-    public String getEmail()
+    public String getTmp()
     {
-        return email;
+        return tmp;
     }
-
-    public String getUrl()
-    {
-        return url;
-    }
-
 }

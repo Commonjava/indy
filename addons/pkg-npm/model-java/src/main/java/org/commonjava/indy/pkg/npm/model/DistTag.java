@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2017 Red Hat, Inc. (yma@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import io.swagger.annotations.ApiModel;
 import java.util.HashMap;
 import java.util.Map;
 
-@ApiModel( description = "Package distribution tags, which can be used to provide an alias instead of version numbers. Different tags for multi project development streams, e.g., stable, beta, dev, canary, latest by default.")
+@ApiModel( description = "Package distribution tags, which can be used to provide an alias instead of version numbers, different tags are for the multi project development streams." )
 public class DistTag
 {
     private static final String LATEST = "latest";
@@ -29,7 +29,13 @@ public class DistTag
     private static final String BETA = "beta";
     private static final String DEV = "dev";
 
+    private static final String CANARY = "canary";
+
     private Map<String, String> tagsMap = new HashMap<String, String>();
+
+    protected DistTag()
+    {
+    }
 
     public String getLatest() {
         return tagsMap.get(LATEST);
@@ -63,7 +69,18 @@ public class DistTag
         tagsMap.put(DEV,dev);
     }
 
-    public Map<String, String> getTagsMap() {
+    public String getCanary()
+    {
+        return tagsMap.get( CANARY );
+    }
+
+    public void setCanary( String canary )
+    {
+        tagsMap.put( CANARY, canary );
+    }
+
+    public Map<String, String> fetchTagsMap()
+    {
         return tagsMap;
     }
 

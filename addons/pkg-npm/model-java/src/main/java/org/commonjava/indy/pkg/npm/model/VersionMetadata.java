@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2017 Red Hat, Inc. (yma@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,14 +53,15 @@ public class VersionMetadata
 
     private List<UserInfo> maintainers;
 
-    @ApiModelProperty( required = false, dataType = "Map", value = "Specify the place where your code lives, keys are 'type' and 'url', 'type' values are 'git', 'svn', etc." )
-    private Map<String, String> repository;
+    @ApiModelProperty( required = false, dataType = "Repository", value = "Specify the place where your code lives." )
+    private Repository repository;
 
-    @ApiModelProperty( required = false, dataType = "Map", value = "The 'url' to your project's issue tracker and / or the 'email' address to which issues should be reported." )
-    private Map<String, String> bugs;
+    @ApiModelProperty( required = false, dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
+    private Bugs bugs;
 
-    @ApiModelProperty( required = false, dataType = "List", value = "Keys are 'type' and 'url', which are now deprecated. Instead, use SPDX expressions." )
-    private List<Map<String, String>> licenses;
+    @Deprecated
+    @ApiModelProperty( value = "These styles are now deprecated. Instead, use SPDX expressions." )
+    private List<License> licenses;
 
     private String license;
 
@@ -70,17 +71,16 @@ public class VersionMetadata
 
     private Map<String, String> jsdomVersions;
 
-    @ApiModelProperty( required = false, dataType = "Map", value = "Key 'prepare' script will be run before publishing." )
+    @ApiModelProperty( required = false, dataType = "Map", allowableValues = "prepare:<script>, build:<script>, start:<script>, test:<script>, precommit:<script>, commitmsg:<script>, etc." )
     private Map<String, String> scripts;
 
-    private Map<String, String> dist;
+    private Dist dist;
 
-    private Map<String, String> directories;
+    private Directories directories;
 
-    private Map<String, Object> commitplease;
+    private Commitplease commitplease;
 
-    @ApiModelProperty( required = false, dataType = "Map", value = "Specify the version of node that your stuff works on." )
-    private Map<String, String> engines;
+    private Engines engines;
 
     @JsonProperty( "_engineSupported" )
     private Boolean engineSupported;
@@ -113,18 +113,22 @@ public class VersionMetadata
     private UserInfo npmUser;
 
     @JsonProperty( "_npmJsonOpts" )
-    private Map<String, Object> npmJsonOpts;
+    private NpmJsonOpts npmJsonOpts;
 
     @JsonProperty( "_npmOperationalInternal" )
-    private Map<String, String> npmOperationalInternal;
+    private NpmOperationalInternal npmOperationalInternal;
 
     @JsonProperty( "_defaultsLoaded" )
     private Boolean defaultsLoaded;
 
-    public static VersionMetadata fromString( final String id )
+    public VersionMetadata()
     {
-        //TODO
-        return null;
+    }
+
+    public VersionMetadata( String name, String version )
+    {
+        this.name = name;
+        this.version = version;
     }
 
     public String getName()
@@ -237,32 +241,32 @@ public class VersionMetadata
         this.maintainers = maintainers;
     }
 
-    public Map<String, String> getRepository()
+    public Repository getRepository()
     {
         return repository;
     }
 
-    public void setRepository( Map<String, String> repository )
+    public void setRepository( Repository repository )
     {
         this.repository = repository;
     }
 
-    public Map<String, String> getBugs()
+    public Bugs getBugs()
     {
         return bugs;
     }
 
-    public void setBugs( Map<String, String> bugs )
+    public void setBugs( Bugs bugs )
     {
         this.bugs = bugs;
     }
 
-    public List<Map<String, String>> getLicenses()
+    public List<License> getLicenses()
     {
         return licenses;
     }
 
-    public void setLicenses( List<Map<String, String>> licenses )
+    public void setLicenses( List<License> licenses )
     {
         this.licenses = licenses;
     }
@@ -317,42 +321,42 @@ public class VersionMetadata
         this.scripts = scripts;
     }
 
-    public Map<String, String> getDist()
+    public Dist getDist()
     {
         return dist;
     }
 
-    public void setDist( Map<String, String> dist )
+    public void setDist( Dist dist )
     {
         this.dist = dist;
     }
 
-    public Map<String, String> getDirectories()
+    public Directories getDirectories()
     {
         return directories;
     }
 
-    public void setDirectories( Map<String, String> directories )
+    public void setDirectories( Directories directories )
     {
         this.directories = directories;
     }
 
-    public Map<String, Object> getCommitplease()
+    public Commitplease getCommitplease()
     {
         return commitplease;
     }
 
-    public void setCommitplease( Map<String, Object> commitplease )
+    public void setCommitplease( Commitplease commitplease )
     {
         this.commitplease = commitplease;
     }
 
-    public Map<String, String> getEngines()
+    public Engines getEngines()
     {
         return engines;
     }
 
-    public void setEngines( Map<String, String> engines )
+    public void setEngines( Engines engines )
     {
         this.engines = engines;
     }
@@ -467,22 +471,22 @@ public class VersionMetadata
         this.npmUser = npmUser;
     }
 
-    public Map<String, Object> getNpmJsonOpts()
+    public NpmJsonOpts getNpmJsonOpts()
     {
         return npmJsonOpts;
     }
 
-    public void setNpmJsonOpts( Map<String, Object> npmJsonOpts )
+    public void setNpmJsonOpts( NpmJsonOpts npmJsonOpts )
     {
         this.npmJsonOpts = npmJsonOpts;
     }
 
-    public Map<String, String> getNpmOperationalInternal()
+    public NpmOperationalInternal getNpmOperationalInternal()
     {
         return npmOperationalInternal;
     }
 
-    public void setNpmOperationalInternal( Map<String, String> npmOperationalInternal )
+    public void setNpmOperationalInternal( NpmOperationalInternal npmOperationalInternal )
     {
         this.npmOperationalInternal = npmOperationalInternal;
     }
@@ -501,12 +505,5 @@ public class VersionMetadata
     public int compareTo( VersionMetadata o )
     {
         return 0;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format( "\"%s\":{\"name\":%s,\"description\":%s,\"url\":%s}", version, name, description, url );
-        //TODO
     }
 }

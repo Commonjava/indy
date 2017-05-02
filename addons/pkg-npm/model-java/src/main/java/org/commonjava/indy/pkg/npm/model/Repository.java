@@ -13,39 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.commonjava.indy.pkg.npm.model;
 
-public class UserInfo
-{
-    private final String name;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
-    private final String email;
+@ApiModel( description = "The place where your code lives." )
+public class Repository
+{
+    @ApiModelProperty( allowableValues = "svn, git, etc." )
+    private final String type;
 
     private final String url;
 
-    protected UserInfo()
+    protected Repository()
     {
-        this.name = null;
-        this.email = null;
+        this.type = null;
         this.url = null;
     }
 
-    public UserInfo( final String name, final String email, final String url )
+    public Repository( final String type, final String url )
     {
-        this.name = name;
-        this.email = email;
+        this.type = type;
         this.url = url;
     }
 
-    public String getName()
+    public String getType()
     {
-        return name;
-    }
-
-    public String getEmail()
-    {
-        return email;
+        return type;
     }
 
     public String getUrl()

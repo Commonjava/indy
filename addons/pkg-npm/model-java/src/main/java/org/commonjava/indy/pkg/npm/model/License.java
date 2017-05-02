@@ -13,44 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.commonjava.indy.pkg.npm.model;
 
-public class UserInfo
-{
-    private final String name;
+import io.swagger.annotations.ApiModel;
 
-    private final String email;
+@ApiModel( description = "These styles are now deprecated. Instead, use SPDX expressions." )
+public class License
+{
+    private final String type;
 
     private final String url;
 
-    protected UserInfo()
+    protected License()
     {
-        this.name = null;
-        this.email = null;
+        this.type = null;
         this.url = null;
     }
 
-    public UserInfo( final String name, final String email, final String url )
+    public License( final String type, final String url )
     {
-        this.name = name;
-        this.email = email;
+        this.type = type;
         this.url = url;
     }
 
-    public String getName()
+    public String getType()
     {
-        return name;
-    }
-
-    public String getEmail()
-    {
-        return email;
+        return type;
     }
 
     public String getUrl()
     {
         return url;
     }
-
 }

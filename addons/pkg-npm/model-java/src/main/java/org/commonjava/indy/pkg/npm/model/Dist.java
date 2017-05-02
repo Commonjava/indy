@@ -13,44 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.commonjava.indy.pkg.npm.model;
 
-public class UserInfo
+public class Dist
 {
-    private final String name;
 
-    private final String email;
+    private final String shasum;
 
-    private final String url;
+    private final String tarball;
 
-    protected UserInfo()
+    protected Dist()
     {
-        this.name = null;
-        this.email = null;
-        this.url = null;
+        this.shasum = null;
+        this.tarball = null;
     }
 
-    public UserInfo( final String name, final String email, final String url )
+    public Dist( final String shasum, final String tarball )
     {
-        this.name = name;
-        this.email = email;
-        this.url = url;
+        this.shasum = shasum;
+        this.tarball = tarball;
     }
 
-    public String getName()
+    public String getShasum()
     {
-        return name;
+        return shasum;
     }
 
-    public String getEmail()
+    public String getTarball()
     {
-        return email;
+        return tarball;
     }
-
-    public String getUrl()
-    {
-        return url;
-    }
-
 }

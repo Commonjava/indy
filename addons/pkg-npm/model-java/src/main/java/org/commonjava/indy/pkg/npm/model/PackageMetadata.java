@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2017 Red Hat, Inc. (jdcasey@commonjava.org)
+ * Copyright (C) 2017 Red Hat, Inc. (yma@commonjava.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,17 +43,18 @@ public class PackageMetadata
     @JsonProperty( "dist-tags" )
     private DistTag distTags;
 
-    @ApiModelProperty( required = true, dataType = "Map", value = "The name and version together form an identifier that is assumed to be completely unique." )
     private Map<String, VersionMetadata> versions;
 
     private List<UserInfo> maintainers;
+
+    private Map<String, String> time;
 
     private UserInfo author;
 
     private Map<String, Boolean> users;
 
-    @ApiModelProperty( required = false, dataType = "Map", value = "Specify the place where your code lives, keys are 'type' and 'url', 'type' values are 'git', 'svn', etc." )
-    private Map<String, String> repository;
+    @ApiModelProperty( required = false, dataType = "Repository", value = "Specify the place where your code lives." )
+    private Repository repository;
 
     private String readme;
 
@@ -63,18 +64,21 @@ public class PackageMetadata
 
     private List<String> keywords;
 
-    @ApiModelProperty( required = false, dataType = "Map", value = "The 'url' to your project's issue tracker and / or the 'email' address to which issues should be reported." )
-    private Map<String, String> bugs;
+    @ApiModelProperty( required = false, dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
+    private Bugs bugs;
 
     private String license;
 
     @JsonProperty( "_attachments" )
-    private List<String> attachments;
+    private Object attachments;
 
-    public static PackageMetadata fromString( final String id )
+    public PackageMetadata()
     {
-        //TODO
-        return null;
+    }
+
+    public PackageMetadata( String name )
+    {
+        this.name = name;
     }
 
     public String getId()
@@ -147,6 +151,16 @@ public class PackageMetadata
         this.maintainers = maintainers;
     }
 
+    public Map<String, String> getTime()
+    {
+        return time;
+    }
+
+    public void setTime( Map<String, String> time )
+    {
+        this.time = time;
+    }
+
     public UserInfo getAuthor()
     {
         return author;
@@ -167,12 +181,12 @@ public class PackageMetadata
         this.users = users;
     }
 
-    public Map<String, String> getRepository()
+    public Repository getRepository()
     {
         return repository;
     }
 
-    public void setRepository( Map<String, String> repository )
+    public void setRepository( Repository repository )
     {
         this.repository = repository;
     }
@@ -217,12 +231,12 @@ public class PackageMetadata
         this.keywords = keywords;
     }
 
-    public Map<String, String> getBugs()
+    public Bugs getBugs()
     {
         return bugs;
     }
 
-    public void setBugs( Map<String, String> bugs )
+    public void setBugs( Bugs bugs )
     {
         this.bugs = bugs;
     }
@@ -237,12 +251,12 @@ public class PackageMetadata
         this.license = license;
     }
 
-    public List<String> getAttachments()
+    public Object getAttachments()
     {
         return attachments;
     }
 
-    public void setAttachments( List<String> attachments )
+    public void setAttachments( Object attachments )
     {
         this.attachments = attachments;
     }
@@ -251,12 +265,5 @@ public class PackageMetadata
     public int compareTo( PackageMetadata o )
     {
         return 0;
-    }
-
-    @Override
-    public String toString()
-    {
-        return String.format( "\"_id\":%s,\"_rev\":%s,\"name\":%s}", id, rev, name );
-        //TODO
     }
 }

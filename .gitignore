@@ -13,12 +13,15 @@ uis/layover/node_modules/
 .classpath
 .project
 .settings
-*.DS_Store
+
 # idea
 .idea
 *.iml
 *.iws
 *.ipr
+
+# mac
+*.DS_Store
 
 # temp ISPN indexing generates
 embedders/savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
