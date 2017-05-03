@@ -49,7 +49,7 @@ public class ResourceManagementFilter
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.rest.inbound" );
+    private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.topic.rest.inbound" );
 
     @Override
     public void init( final FilterConfig filterConfig )
