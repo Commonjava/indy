@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,21 +24,6 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import javax.servlet.DispatcherType;
-import javax.servlet.Servlet;
-import javax.ws.rs.core.Application;
-
 import org.commonjava.indy.bind.jaxrs.ui.UIServlet;
 import org.commonjava.indy.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
@@ -49,9 +34,22 @@ import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
+import javax.servlet.DispatcherType;
+import javax.servlet.Servlet;
+import javax.ws.rs.core.Application;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 @ApplicationScoped
 public class IndyDeployment
-    extends Application
+        extends Application
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -86,9 +84,10 @@ public class IndyDeployment
     {
     }
 
-    public IndyDeployment( final Set<Class<? extends IndyResources>> resourceClasses, final Set<Class<? extends RestProvider>> restProviders,
-                            final Set<IndyDeploymentProvider> deploymentProviders, final UIServlet ui,
-                            final ResourceManagementFilter resourceManagementFilter, final IndyVersioning versioning )
+    public IndyDeployment( final Set<Class<? extends IndyResources>> resourceClasses,
+                           final Set<Class<? extends RestProvider>> restProviders,
+                           final Set<IndyDeploymentProvider> deploymentProviders, final UIServlet ui,
+                           final ResourceManagementFilter resourceManagementFilter, final IndyVersioning versioning )
     {
         this.resourceClasses = resourceClasses;
         this.deploymentProviders = deploymentProviders;
@@ -120,7 +119,7 @@ public class IndyDeployment
             deploymentProviders.add( fac );
         }
     }
-    
+
     public DeploymentInfo getDeployment( final String contextRoot )
     {
         final ResteasyDeployment deployment = new ResteasyDeployment();
@@ -135,7 +134,8 @@ public class IndyDeployment
                                                     .addMapping( "/api/*" )
                                                     .addMapping( "/api-docs*" )
                                                     .addMapping( "/api-docs/*" )
-                .addMapping( "/swagger.json" ).addMapping( "/swagger.yaml" );
+                                                    .addMapping( "/swagger.json" )
+                                                    .addMapping( "/swagger.yaml" );
 
         final BeanConfig beanConfig = new BeanConfig();
         beanConfig.setResourcePackage( "org.commonjava.indy" );
@@ -146,19 +146,21 @@ public class IndyDeployment
         beanConfig.setVersion( versioning.getApiVersion() );
 
         final FilterInfo resourceManagementFilter =
-            Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
-                             new ImmediateInstanceFactory<ResourceManagementFilter>( this.resourceManagementFilter ) );
-        final DeploymentInfo di =
-            new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
-                                //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
-                                .setContextPath( contextRoot )
-                                .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
-                                .addServlet( resteasyServlet )
-                                .addFilter( resourceManagementFilter )
-                                .addFilterUrlMapping( resourceManagementFilter.getName(), "/api/*", DispatcherType.REQUEST )
-                                .setDeploymentName( "Indy" )
-                                .setClassLoader( ClassLoader.getSystemClassLoader() )
-                                .addOuterHandlerChainWrapper( new HeaderDebugger.Wrapper() );
+                Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
+                                 new ImmediateInstanceFactory<ResourceManagementFilter>(
+                                         this.resourceManagementFilter ) );
+        final DeploymentInfo di = new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
+                                                      //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
+                                                      .setContextPath( contextRoot )
+                                                      .addServletContextAttribute( ResteasyDeployment.class.getName(),
+                                                                                   deployment )
+                                                      .addServlet( resteasyServlet )
+                                                      .addFilter( resourceManagementFilter )
+                                                      .addFilterUrlMapping( resourceManagementFilter.getName(),
+                                                                            "/api/*", DispatcherType.REQUEST )
+                                                      .setDeploymentName( "Indy" )
+                                                      .setClassLoader( ClassLoader.getSystemClassLoader() )
+                                                      .addOuterHandlerChainWrapper( new HeaderDebugger.Wrapper() );
 
         if ( deploymentProviders != null )
         {
@@ -184,7 +186,8 @@ public class IndyDeployment
         classes.addAll( providerClasses );
         classes.addAll( resourceClasses );
         classes.addAll( Arrays.asList( ApiListingResource.class, SwaggerSerializers.class ) );
-        classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class ) );
+        classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class,
+                                       UnhandledRuntimeExceptionHandler.class ) );
         return classes;
     }
 
