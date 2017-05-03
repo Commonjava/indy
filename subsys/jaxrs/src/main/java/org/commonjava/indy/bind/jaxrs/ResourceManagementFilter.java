@@ -47,6 +47,8 @@ public class ResourceManagementFilter
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.rest.inbound" );
+
     @Override
     public void init( final FilterConfig filterConfig )
             throws ServletException
@@ -66,6 +68,7 @@ public class ResourceManagementFilter
 
         final HttpServletRequest hsr = (HttpServletRequest) request;
         String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
+        String qs = hsr.getQueryString();
         try
         {
             ThreadContext.clearContext();
@@ -79,12 +82,14 @@ public class ResourceManagementFilter
             logger.info( "START request: {} (from: {})", tn, clientAddr );
 
             Thread.currentThread().setName( tn );
+
+            restLogger.info( "START {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
+
             chain.doFilter( request, response );
         }
         finally
         {
             logger.debug( "Cleaning up resources for thread: {}", Thread.currentThread().getName() );
-            Thread.currentThread().setName( name );
             try
             {
                 cacheProvider.cleanupCurrentThread();
@@ -94,6 +99,9 @@ public class ResourceManagementFilter
                 logger.error( "Failed to cleanup resources", e );
             }
 
+            restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
+
+            Thread.currentThread().setName( name );
             ThreadContext.clearContext();
 
             logger.info( "END request: {} (from: {})", tn, clientAddr );

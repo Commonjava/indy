@@ -125,18 +125,8 @@ public class IndyDeployment
     {
         final ResteasyDeployment deployment = new ResteasyDeployment();
 
-        //        deployment.getActualResourceClasses()
-        //                  .addAll( resourceClasses );
-        //
-        //        deployment.getActualProviderClasses()
-        //                  .addAll( providerClasses );
-
         deployment.setApplication( this );
         deployment.setInjectorFactoryClass( CdiInjectorFactoryImpl.class.getName() );
-        //        deployment.setResourceClasses( Arrays.asList( ApiListingResourceJSON.class.getName() ) );
-        //        deployment.setProviderClasses( Arrays.asList( JacksonJsonProvider.class.getName(),
-        //                                                      ApiDeclarationProvider.class.getName(),
-        //                                                      ResourceListingProvider.class.getName() ) );
 
         final ServletInfo resteasyServlet = Servlets.servlet( "REST", HttpServlet30Dispatcher.class )
                                                     .setAsyncSupported( true )
@@ -155,21 +145,17 @@ public class IndyDeployment
         beanConfig.setScan( true );
         beanConfig.setVersion( versioning.getApiVersion() );
 
-//        final FilterInfo secFilter = Servlets.filter( "Security", SecurityFilter.class );
-
-        final FilterInfo nameFilter =
-            Servlets.filter( "Naming", ResourceManagementFilter.class,
-                             new ImmediateInstanceFactory<ResourceManagementFilter>( resourceManagementFilter ) );
+        final FilterInfo resourceManagementFilter =
+            Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
+                             new ImmediateInstanceFactory<ResourceManagementFilter>( this.resourceManagementFilter ) );
         final DeploymentInfo di =
             new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
                                 //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
                                 .setContextPath( contextRoot )
                                 .addServletContextAttribute( ResteasyDeployment.class.getName(), deployment )
                                 .addServlet( resteasyServlet )
-//                                .addFilter( secFilter )
-//                                .addFilterUrlMapping( secFilter.getName(), "/api/*", DispatcherType.REQUEST )
-                                .addFilter( nameFilter )
-                                .addFilterUrlMapping( nameFilter.getName(), "/api/*", DispatcherType.REQUEST )
+                                .addFilter( resourceManagementFilter )
+                                .addFilterUrlMapping( resourceManagementFilter.getName(), "/api/*", DispatcherType.REQUEST )
                                 .setDeploymentName( "Indy" )
                                 .setClassLoader( ClassLoader.getSystemClassLoader() )
                                 .addOuterHandlerChainWrapper( new HeaderDebugger.Wrapper() );
@@ -177,31 +163,6 @@ public class IndyDeployment
         if ( deploymentProviders != null )
         {
             DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders );
-            //            for ( final IndyDeploymentProvider deploymentFactory : deploymentProviders )
-            //            {
-            //                logger.info( "Adding deployments from: {}" + deploymentFactory.getClass()
-            //                                                                              .getName() );
-            //                final DeploymentInfo info = deploymentFactory.getDeploymentInfo();
-            //                final Map<String, ServletInfo> servletInfos = info.getServlets();
-            //                if ( servletInfos != null )
-            //                {
-            //                    for ( final Map.Entry<String, ServletInfo> si : servletInfos.entrySet() )
-            //                    {
-            //                        di.addServlet( si.getValue() );
-            //                    }
-            //                }
-            //
-            //                final Map<String, FilterInfo> filterInfos = info.getFilters();
-            //                if ( filterInfos != null )
-            //                {
-            //                    for ( final Map.Entry<String, FilterInfo> fi : filterInfos.entrySet() )
-            //                    {
-            //                        di.addFilter( fi.getValue() );
-            //                    }
-            //                }
-            //
-            //                // TODO: More comprehensive merge...
-            //            }
         }
 
         // Add UI servlet at the end so its mappings don't obscure any from add-ons.
