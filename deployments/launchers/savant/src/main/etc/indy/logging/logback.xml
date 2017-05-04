@@ -24,40 +24,62 @@
       <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-  
+
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-      <file>${indy.home}/var/log/indy/indy.log</file>
-      <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-        <fileNamePattern>${indy.home}/var/log/indy/indy.%i.log</fileNamePattern>
+    <file>${indy.home}/var/log/indy/indy.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <fileNamePattern>${indy.home}/var/log/indy/indy.%i.log</fileNamePattern>
 
-        <maxHistory>20</maxHistory>
-      </rollingPolicy>
+      <maxHistory>20</maxHistory>
+    </rollingPolicy>
 
-      <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-          <maxFileSize>100MB</maxFileSize>
-      </triggeringPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>100MB</maxFileSize>
+    </triggeringPolicy>
 
-      <encoder>
-        <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-      </encoder>
-    </appender>
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- This appender is used for the operation tracking, like delete or http request path tracking -->
+  <appender name="OPT-TRACK" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${indy.home}/var/log/indy/indy-opt-track.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <fileNamePattern>${indy.home}/var/log/indy/indy-opt-track.%i.log</fileNamePattern>
+
+      <maxHistory>20</maxHistory>
+    </rollingPolicy>
+
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>100MB</maxFileSize>
+    </triggeringPolicy>
+
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %C{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
 
   <logger name="org.jboss" level="ERROR"/>
   <!-- <logger name="org.jboss.resteasy" level="DEBUG"/> -->
-  
+
   <!--
   <logger name="org.commonjava" level="DEBUG" />
   -->
-  
+
   <logger name="org.commonjava" level="WARN" />
   <logger name="org.commonjava.indy.action.IndyLifecycleManager" level="INFO" />
   <logger name="org.commonjava.indy.subsys.infinispan.CacheProducer" level="INFO" />
 
   <!-- <logger name="org.commonjava.maven.galley.transport" level="DEBUG" /> -->
 
+  <logger name="org.commonjava.opt.track.Logger" level="INFO">
+    <appender-ref ref="OPT-TRACK" />
+  </logger>
+
   <root level="INFO">
     <!-- <appender-ref ref="STDOUT" /> -->
     <appender-ref ref="FILE" />
   </root>
-  
+
 </configuration>

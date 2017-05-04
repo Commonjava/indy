@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
@@ -85,8 +84,6 @@ public class ReplicationController
     @Inject
     private ScriptEngine scriptEngine;
 
-    private ReplicationRepositoryCreator creator;
-
     protected ReplicationController()
     {
     }
@@ -98,12 +95,11 @@ public class ReplicationController
         this.http = http;
         this.scriptEngine = scriptEngine;
         this.serializer = serializer;
-        init();
     }
 
-    @PostConstruct
-    public void init()
+    public ReplicationRepositoryCreator createRepoCreator()
     {
+        ReplicationRepositoryCreator creator = null;
         try
         {
             creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
@@ -116,11 +112,15 @@ public class ReplicationController
             logger.error( String.format( "Cannot create ReplicationRepositoryCreator instance: %s. Disabling replication support.",
                                          e.getMessage() ), e );
         }
+        return creator;
     }
 
     public Set<StoreKey> replicate( final ReplicationDTO dto, final String user )
         throws IndyWorkflowException
     {
+
+        final ReplicationRepositoryCreator creator = createRepoCreator();
+
         if ( creator == null )
         {
             throw new IndyWorkflowException( 500, "Cannot replicate; ReplicationRepositoryCreator could not be instantiated." );

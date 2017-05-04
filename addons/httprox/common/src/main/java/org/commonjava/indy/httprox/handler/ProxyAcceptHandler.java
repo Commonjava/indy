@@ -30,7 +30,6 @@ import org.xnio.channels.AcceptingChannel;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSourceChannel;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.io.IOException;
 
@@ -62,8 +61,6 @@ public class ProxyAcceptHandler
     @Inject
     private ScriptEngine scriptEngine;
 
-    private ProxyRepositoryCreator creator;
-
     protected ProxyAcceptHandler()
     {
     }
@@ -78,12 +75,11 @@ public class ProxyAcceptHandler
         this.proxyAuthenticator = proxyAuthenticator;
         this.cacheProvider = cacheProvider;
         this.scriptEngine = scriptEngine;
-        init();
     }
 
-    @PostConstruct
-    public void init()
+    public ProxyRepositoryCreator createRepoCreator()
     {
+        ProxyRepositoryCreator creator = null;
         try
         {
             creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
@@ -96,6 +92,7 @@ public class ProxyAcceptHandler
                                          e.getMessage() ), e );
             config.setEnabled( false );
         }
+        return creator;
     }
 
     @Override
@@ -123,6 +120,8 @@ public class ProxyAcceptHandler
 
         final ConduitStreamSourceChannel source = accepted.getSourceChannel();
         final ConduitStreamSinkChannel sink = accepted.getSinkChannel();
+
+        final ProxyRepositoryCreator creator = createRepoCreator();
 
         final ProxyResponseWriter writer =
                 new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator, cacheProvider,
