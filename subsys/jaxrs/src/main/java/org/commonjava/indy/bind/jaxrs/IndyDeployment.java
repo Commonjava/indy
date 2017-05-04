@@ -186,8 +186,8 @@ public class IndyDeployment
         classes.addAll( providerClasses );
         classes.addAll( resourceClasses );
         classes.addAll( Arrays.asList( ApiListingResource.class, SwaggerSerializers.class ) );
-        classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class,
-                                       UnhandledRuntimeExceptionHandler.class ) );
+        classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class ) );
+//        classes.add( UnhandledRuntimeExceptionHandler.class );
         return classes;
     }
 
