@@ -22,7 +22,8 @@ import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
-import org.commonjava.indy.ftest.core.category.EventDependent;
+import org.commonjava.indy.ftest.core.category.BytemanTest;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -47,7 +48,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith( BMUnitRunner.class )
 @BMUnitConfig( debug = true )
-@Category( EventDependent.class )
+@Category( BytemanTest.class )
 public class RecalculateMissingChecksumForTrackingRecordTest
         extends AbstractTrackingReportTest
 {

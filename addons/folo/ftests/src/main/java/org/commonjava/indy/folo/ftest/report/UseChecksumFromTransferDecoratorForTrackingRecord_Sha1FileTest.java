@@ -23,8 +23,6 @@ import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.ftest.core.category.BytemanTest;
-import org.commonjava.indy.ftest.core.category.EventDependent;
-import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -50,7 +48,7 @@ import static org.junit.Assert.assertThat;
 @RunWith( BMUnitRunner.class )
 @BMUnitConfig( debug = true )
 @Category( BytemanTest.class )
-public class UseChecksumFromTransferDecoratorForTrackingRecordTest
+public class UseChecksumFromTransferDecoratorForTrackingRecord_Sha1FileTest
         extends AbstractTrackingReportTest
 {
 
@@ -73,10 +71,10 @@ public class UseChecksumFromTransferDecoratorForTrackingRecordTest
     {
         final String trackingId = newName();
         final String repoId = "repo";
-        final String path = "/path/to/foo.class";
+        final String path = "/org/bar/foo/1/foo-1.pom.sha1";
 
         final InputStream stream =
-                new ByteArrayInputStream( "This is a test with the same content each time.".getBytes() );
+                new ByteArrayInputStream( DigestUtils.md5( "This is a test with the same content each time." ) );
 
         server.expect( server.formatUrl( repoId, path ), 200, stream );
 
