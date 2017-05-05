@@ -17,6 +17,7 @@ package org.commonjava.indy.filer.def;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -28,6 +29,7 @@ import org.commonjava.maven.galley.cache.routes.RoutingCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.TransferDecoratorPipeline;
+import org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
@@ -48,15 +50,20 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
+import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 
 @ApplicationScoped
 public class DefaultGalleyStorageProvider
@@ -87,6 +94,9 @@ public class DefaultGalleyStorageProvider
     @Inject
     private TransferMetadataConsumer contentMetadataConsumer;
 
+    @Inject
+    private Instance<IndyChecksumAdvisor> checksumAdvisors;
+
     private TransportManagerConfig transportManagerConfig;
 
     private TransferDecorator transferDecorator;
@@ -97,18 +107,6 @@ public class DefaultGalleyStorageProvider
 
     public DefaultGalleyStorageProvider()
     {
-    }
-
-    /**
-     * @param storageRoot
-     *
-     * @deprecated - Use {@link #DefaultGalleyStorageProvider(File, File)} instead
-     */
-    @Deprecated
-    public DefaultGalleyStorageProvider( final File storageRoot )
-    {
-        this.config = new DefaultStorageProviderConfiguration( storageRoot );
-        setup();
     }
 
     public DefaultGalleyStorageProvider( final File storageRoot, final File nfsStorageRoot )
@@ -131,9 +129,70 @@ public class DefaultGalleyStorageProvider
 
         specialPathManager.registerSpecialPathInfo( infoSpi );
 
+        ChecksummingDecoratorAdvisor readAdvisor = (transfer, op, eventMetadata)->{
+            ChecksummingDecoratorAdvisor.ChecksumAdvice result = NO_DECORATE;
+            if ( checksumAdvisors != null )
+            {
+                for ( IndyChecksumAdvisor advisor : checksumAdvisors )
+                {
+                    Optional<ChecksummingDecoratorAdvisor.ChecksumAdvice> advice =
+                            advisor.getChecksumReadAdvice( transfer, op, eventMetadata );
+
+                    if ( advice.isPresent() )
+                    {
+                        ChecksummingDecoratorAdvisor.ChecksumAdvice checksumAdvice = advice.get();
+
+                        if ( checksumAdvice.ordinal() > result.ordinal() )
+                        {
+                            result = checksumAdvice;
+                            if ( checksumAdvice == CALCULATE_AND_WRITE )
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            logger.debug( "Advising {} for {} of: {}", result, op, transfer );
+            return result;
+        };
+
+        ChecksummingDecoratorAdvisor writeAdvisor = (transfer, op, eventMetadata)->{
+            ChecksummingDecoratorAdvisor.ChecksumAdvice result = NO_DECORATE;
+            if ( TransferOperation.GENERATE == op )
+            {
+                result = CALCULATE_AND_WRITE;
+            }
+            else if ( checksumAdvisors != null )
+            {
+                for ( IndyChecksumAdvisor advisor : checksumAdvisors )
+                {
+                    Optional<ChecksummingDecoratorAdvisor.ChecksumAdvice> advice =
+                            advisor.getChecksumWriteAdvice( transfer, op, eventMetadata );
+
+                    if ( advice.isPresent() )
+                    {
+                        ChecksummingDecoratorAdvisor.ChecksumAdvice checksumAdvice = advice.get();
+                        if ( checksumAdvice.ordinal() > result.ordinal() )
+                        {
+                            result = checksumAdvice;
+                            if ( checksumAdvice == CALCULATE_AND_WRITE )
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            logger.debug( "Advising {} for {} of: {}", result, op, transfer );
+            return result;
+        };
+
         transferDecorator = new TransferDecoratorPipeline(
-                new ChecksummingTransferDecorator( Collections.singleton( TransferOperation.GENERATE ),
-                                                   specialPathManager, true, true, contentMetadataConsumer,
+                new ChecksummingTransferDecorator( readAdvisor, writeAdvisor,
+                                                   specialPathManager, contentMetadataConsumer,
                                                    new Md5GeneratorFactory(), new Sha1GeneratorFactory(),
                                                    new Sha256GeneratorFactory() ),
                 new ContentsFilteringTransferDecorator() );
