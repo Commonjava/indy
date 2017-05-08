@@ -322,6 +322,13 @@ public class DefaultContentManager
             return null;
         }
 
+        if ( store.isDisabled() )
+        {
+            logger.info( "Content not available in repository layer due to store disabled for {}, path is {}", store,
+                         path );
+            return null;
+        }
+
         Transfer item = null;
         try
         {
