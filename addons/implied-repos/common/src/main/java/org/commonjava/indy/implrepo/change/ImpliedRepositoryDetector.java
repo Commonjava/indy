@@ -47,7 +47,6 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.net.MalformedURLException;
@@ -95,8 +94,6 @@ public class ImpliedRepositoryDetector
     @Inject
     private Executor executor;
 
-    private ImpliedRepositoryCreator creator;
-
     @Inject
     private ArtifactStoreValidator remoteValidator;
 
@@ -114,12 +111,11 @@ public class ImpliedRepositoryDetector
         this.scriptEngine = scriptEngine;
         this.config = config;
         this.executor = executor;
-        init();
     }
 
-    @PostConstruct
-    public void init()
+    public ImpliedRepositoryCreator createRepoCreator()
     {
+        ImpliedRepositoryCreator creator = null;
         try
         {
             creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
@@ -134,6 +130,8 @@ public class ImpliedRepositoryDetector
                     e.getMessage() ), e );
             config.setEnabled( false );
         }
+
+        return creator;
     }
 
     public void detectRepos( @Observes final FileStorageEvent event )
@@ -261,9 +259,9 @@ public class ImpliedRepositoryDetector
         try
         {
             final Set<Group> groups = storeManager.getGroupsContaining( key );
-            logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );
             if ( groups != null )
             {
+                logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );
                 final String message = String.format( "Adding repositories implied by: %s\n\n  %s", key,
                                                       StringUtils.join( job.implied, "\n  " ) );
 
@@ -321,13 +319,15 @@ public class ImpliedRepositoryDetector
 
     private void addImpliedRepositories( final ImplicationsJob job )
     {
-        job.implied = new ArrayList<ArtifactStore>();
+        job.implied = new ArrayList<>();
 
         logger.debug( "Retrieving repository/pluginRepository declarations from:\n  {}",
                       new JoinString( "\n  ", job.pomView.getDocRefStack() ) );
 
         final List<List<RepositoryView>> repoLists =
                 Arrays.asList( job.pomView.getNonProfileRepositories(), job.pomView.getAllPluginRepositories() );
+
+        final ImpliedRepositoryCreator creator = createRepoCreator();
 
         if ( creator == null )
         {
