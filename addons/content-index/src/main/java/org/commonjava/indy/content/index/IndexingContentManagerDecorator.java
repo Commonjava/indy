@@ -257,6 +257,25 @@ public abstract class IndexingContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Looking for indexed path: {} in: {} (entry point: {})", path, storeKey, topKey );
 
+        try
+        {
+            ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+            if ( store.isDisabled() )
+            {
+                logger.info( "Content not available in index caching layer due to store disabled for {} in group {}",
+                             storeKey, topKey );
+                return null;
+            }
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error(
+                    String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s", storeKey, topKey,
+                                   e.getMessage() ), e );
+            //FIXME: Should this be null?
+            return null;
+        }
+
         IndexedStorePath storePath = indexManager.getIndexedStorePath( storeKey, path );
 
         if ( storePath != null )
