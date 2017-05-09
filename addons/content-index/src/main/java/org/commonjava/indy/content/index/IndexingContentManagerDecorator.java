@@ -272,7 +272,7 @@ public abstract class IndexingContentManagerDecorator
             logger.error(
                     String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s", storeKey, topKey,
                                    e.getMessage() ), e );
-            //FIXME: Should this be null?
+            //TODO: Need further check if it is suitable to throw a IndyWorkflowException here.
             return null;
         }
 
