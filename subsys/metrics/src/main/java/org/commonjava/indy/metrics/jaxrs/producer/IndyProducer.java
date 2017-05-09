@@ -20,8 +20,4 @@ public class IndyProducer
         return new MetricRegistry();
     }
 
-
-
-
-
 }

@@ -1,19 +1,19 @@
 package org.commonjava.indy.metrics.reporter;
 
 import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.MetricFilter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.metrics.zabbix.cache.ZabbixCacheStorage;
 import org.commonjava.indy.metrics.zabbix.reporter.IndyZabbixReporter;
 import org.commonjava.indy.metrics.zabbix.sender.IndyZabbixSender;
+import org.commonjava.indy.subsys.http.IndyHttpProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,6 +33,12 @@ public class ReporterIntializer
     public final static String INDY_METRICS_REPORTER_CONSOLEREPORTER = "console";
 
     public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER = "zabbix";
+
+    @Inject
+    IndyHttpProvider indyHttpProvider;
+
+    @Inject
+    ZabbixCacheStorage cache;
 
     @Inject
     @IndyMetricsNamed
@@ -211,6 +217,8 @@ public class ReporterIntializer
                                                               .zabbixUserPwd( config.getZabbixPwd() )
                                                               .hostName( config.getZabbixLocalHostName() )
                                                               .bCreateNotExistZabbixSender( true )
+                                                              .indyHttpProvider( indyHttpProvider )
+                                                              .metricsZabbixCache( cache )
                                                               .build();
         return zabbixSender;
     }
