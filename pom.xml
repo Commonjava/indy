@@ -701,15 +701,6 @@
         <scope>test</scope>
       </dependency>
 
-
-      <!-- NPM support -->
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-pkg-npm-model-java</artifactId>
-        <version>1.3.0-SNAPSHOT</version>
-      </dependency>
-      <!-- NPM support -->
-
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-jaxrs</artifactId>
