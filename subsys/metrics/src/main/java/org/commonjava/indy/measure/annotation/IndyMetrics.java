@@ -18,8 +18,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface IndyMetrics
 {
 
-    @Nonbinding Class c() default Void.class;
-
     @Nonbinding Measure measure() default @Measure();
 
     @Nonbinding Measure exceptions() default @Measure();

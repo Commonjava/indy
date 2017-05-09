@@ -16,8 +16,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Measure
 {
 
-    @Nonbinding Class c() default Void.class;
-
     MetricNamed[] meters() default {};
 
     MetricNamed[] timers() default {};

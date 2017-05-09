@@ -27,7 +27,7 @@ import java.util.Random;
 @Produces( "application/json" )
 @Consumes( "application/json" )
 public class MetricsTestResource
-                implements IndyResources
+        implements IndyResources
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -38,7 +38,7 @@ public class MetricsTestResource
     @Path( "/metricRegistry/timer" )
     public Response getTimerCount()
     {
-        Timer timer = metricRegistry.timer( MetricRegistry.name( MetricsTestResource.class, "testTimerRequest" ) );
+        Timer timer = metricRegistry.timer( "testTimerRequest" );
         return Response.ok( timer.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 
@@ -49,8 +49,7 @@ public class MetricsTestResource
         Meter meter = null;
         try
         {
-            meter = metricRegistry.meter(
-                            MetricRegistry.name( MetricsTestResource.class, "testTimerRequestWithException" ) );
+            meter = metricRegistry.meter("testTimerRequestWithException" );
         }
         catch ( Throwable t )
         {
@@ -63,7 +62,7 @@ public class MetricsTestResource
     @Path( "/metricRegistry/meter" )
     public Response getMeterCount()
     {
-        Meter meter = metricRegistry.meter( MetricRegistry.name( MetricsTestResource.class, "testMeterRequest" ) );
+        Meter meter = metricRegistry.meter( "testMeterRequest" );
         return Response.ok( meter.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 
@@ -71,19 +70,21 @@ public class MetricsTestResource
     @Path( "/metricRegistry/meter/exception" )
     public Response getMeterCountWithException()
     {
-        Meter meter = metricRegistry.meter(
-                        MetricRegistry.name( MetricsTestResource.class, "testMeterRequestException" ) );
+        Meter meter =
+                metricRegistry.meter( "testMeterRequestException" );
         return Response.ok( meter.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 
     @GET
     @Path( "/timer/{isException :[a-zA-Z]+}" )
-    @IndyMetrics( c = MetricsTestResource.class, measure = @Measure( timers = @MetricNamed( name = "testTimerRequest" ) ), exceptions = @Measure( meters = @MetricNamed( name = "testTimerRequestWithException" ) ) )
-    public Response getTimer( @PathParam( "isException" ) String isException ) throws Exception
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = "testTimerRequest" ) ),
+                  exceptions = @Measure( meters = @MetricNamed( name = "testTimerRequestWithException" ) ) )
+    public Response getTimer( @PathParam( "isException" ) String isException )
+            throws Exception
     {
         if ( isException.equals( "true" ) )
         {
-            throw new Exception( "MetricsTest has a exception" );
+            throw new Exception( "EXPECTED: MetricsTest has a exception" );
         }
         logger.info( "call in method : MetricsTest" );
         Random random = new Random();
@@ -93,13 +94,15 @@ public class MetricsTestResource
 
     @GET
     @Path( "/meter/{isException :[a-zA-Z]+}" )
-    @IndyMetrics( c = MetricsTestResource.class, measure = @Measure( meters = @MetricNamed( name = "testMeterRequest" ) ), exceptions = @Measure( meters = @MetricNamed( name = "testMeterRequestException" ) ) )
-    public Response getMeter( @PathParam( "isException" ) String isException ) throws Exception
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name = "testMeterRequest" ) ),
+                  exceptions = @Measure( meters = @MetricNamed( name = "testMeterRequestException" ) ) )
+    public Response getMeter( @PathParam( "isException" ) String isException )
+            throws Exception
     {
         logger.info( "call in method : getMeter" );
         if ( isException.equals( "true" ) )
         {
-            throw new Exception( "getMeter has a exception" );
+            throw new Exception( "EXPECTED: getMeter has a exception" );
         }
         Thread.sleep( 100 );
         return Response.ok( " " + "\"Meter :well done\"", MediaType.APPLICATION_JSON ).build();

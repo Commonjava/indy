@@ -40,16 +40,18 @@ public class MetricsInterceptor
     {
         if ( !config.isMetricsEnabled() )
             return context.proceed();
-        logger.info( "call in MeterHandler.operation" );
+
         IndyMetrics metrics = context.getMethod().getAnnotation( IndyMetrics.class );
         if ( metrics == null )
         {
             return context.proceed();
         }
 
+        logger.debug( "Gathering metrics for: {}", context.getContextData() );
+
         Measure measures = metrics.measure();
         List<Timer.Context> timers = Stream.of( measures.timers() )
-                                           .map( named -> util.getTimer( metrics, measures, named ).time() )
+                                           .map( named -> util.getTimer( named ).time() )
                                            .collect( Collectors.toList() );
 
         try
@@ -61,7 +63,7 @@ public class MetricsInterceptor
             Measure me = metrics.exceptions();
             Stream.of( me.meters() ).forEach( ( named ) ->
                                               {
-                                                  Meter requests = util.getMeter( metrics, me, named );
+                                                  Meter requests = util.getMeter( named );
                                                   requests.mark();
                                               } );
 
@@ -76,7 +78,7 @@ public class MetricsInterceptor
             }
             Stream.of( measures.meters() ).forEach( ( named ) ->
                                                     {
-                                                        Meter requests = util.getMeter( metrics, measures, named );
+                                                        Meter requests = util.getMeter( named );
                                                         requests.mark();
                                                     } );
         }

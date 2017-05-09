@@ -15,7 +15,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention( RUNTIME )
 public @interface MetricNamed
 {
-    @Nonbinding Class c() default Void.class;
-
     String name();
 }
