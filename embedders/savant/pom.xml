@@ -233,6 +233,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               </dependenciesToScan> 
             </configuration>
         </plugin>

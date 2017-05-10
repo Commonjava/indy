@@ -72,6 +72,5 @@ public class IndyMetricsTest
     protected void initTestConfig( CoreServerFixture fixture ) throws IOException
     {
         writeConfigFile( "conf.d/metrics.conf", "\n"+readTestResource( "default-test-metrics.conf" ) );
-        writeConfigFile( "default-metrics.conf", "\n"+readTestResource( "default-test-metrics.conf" ) );
     }
 }

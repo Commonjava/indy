@@ -1,14 +1,14 @@
 package org.commonjava.indy;
 
-import com.codahale.metrics.*;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
-import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
-import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
-import org.commonjava.indy.metrics.healthcheck.IndyHealthCheckRegistrySet;
+import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
+import org.commonjava.indy.metrics.healthcheck.IndyHealthCheckRegistrySet;
 import org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
 import org.slf4j.Logger;
@@ -19,8 +19,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-
-import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Created by xiabai on 2/27/17.
@@ -71,34 +69,16 @@ public class IndyMetricsManager
         }
     }
 
-    public Timer getTimer( IndyMetrics metrics, Measure measures, MetricNamed named )
+    public Timer getTimer( MetricNamed named )
     {
         logger.info( "call in IndyMetricsManager.getTimer" );
-        Class<?> c = getClass( metrics, measures, named );
-        return this.metricRegistry.timer( name( c, named.name() ) );
+        return this.metricRegistry.timer( named.name() );
     }
 
-    public Meter getMeter( IndyMetrics metrics, Measure measures, MetricNamed named )
+    public Meter getMeter( MetricNamed named )
     {
         logger.info( "call in IndyMetricsManager.getMeter" );
-        Class<?> c = getClass( metrics, measures, named );
-        return metricRegistry.meter( name( c, named.name() ) );
-    }
-
-    private Class<?> getClass( IndyMetrics metrics, Measure measures, MetricNamed named )
-    {
-        Class<?> c = named.c();
-        if ( Void.class.equals( c ) )
-        {
-            c = measures.c();
-        }
-
-        if ( Void.class.equals( c ) )
-        {
-            c = metrics.c();
-        }
-
-        return c;
+        return metricRegistry.meter( named.name() );
     }
 
 }
