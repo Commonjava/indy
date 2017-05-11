@@ -26,6 +26,14 @@ public class AutoProxCalculatorModule
     extends IndyClientModule
 {
 
+    public AutoProxCalculation calculateRuleOutput( final String packageType, final StoreType type, final String name )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( "autoprox/eval", packageType, type.singularEndpointName(), name ),
+                         AutoProxCalculation.class );
+    }
+
+    @Deprecated
     public AutoProxCalculation calculateRuleOutput( final StoreType type, final String name )
         throws IndyClientException
     {
@@ -36,7 +44,7 @@ public class AutoProxCalculatorModule
     public AutoProxCalculation calculateRuleOutput( final StoreKey key )
         throws IndyClientException
     {
-        return http.get( UrlUtils.buildUrl( "autoprox/eval", key.getType()
+        return http.get( UrlUtils.buildUrl( "autoprox/eval", key.getPackageType(), key.getType()
                                                                 .singularEndpointName(), key.getName() ),
                          AutoProxCalculation.class );
     }

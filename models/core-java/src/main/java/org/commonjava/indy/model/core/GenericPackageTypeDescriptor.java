@@ -15,9 +15,17 @@ public class GenericPackageTypeDescriptor
 {
     public static final String GENERIC_PKG_KEY = PKG_TYPE_GENERIC_HTTP;
 
+    public static final String GENERIC_CONTENT_REST_BASE_PATH = "/api/content/generic";
+
     @Override
     public String getKey()
     {
         return GENERIC_PKG_KEY;
+    }
+
+    @Override
+    public String getContentRestBasePath()
+    {
+        return GENERIC_CONTENT_REST_BASE_PATH;
     }
 }

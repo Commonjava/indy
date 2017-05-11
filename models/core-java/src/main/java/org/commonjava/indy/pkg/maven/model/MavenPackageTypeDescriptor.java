@@ -17,9 +17,17 @@ public class MavenPackageTypeDescriptor
 {
     public static final String MAVEN_PKG_KEY = PKG_TYPE_MAVEN;
 
+    public static final String MAVEN_CONTENT_REST_BASE_PATH = "/api/content/maven";
+
     @Override
     public String getKey()
     {
         return MAVEN_PKG_KEY;
+    }
+
+    @Override
+    public String getContentRestBasePath()
+    {
+        return MAVEN_CONTENT_REST_BASE_PATH;
     }
 }

@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 @Alternative
 @Named
 public class IndyObjectMapper
@@ -189,17 +191,41 @@ public class IndyObjectMapper
         final JsonNode tree = readTree( json );
 
         final JsonNode keyNode = tree.get( ArtifactStore.KEY_ATTR );
-        final StoreKey key = StoreKey.fromString( keyNode.textValue() );
+        StoreKey key;
+        try
+        {
+            key = StoreKey.fromString( keyNode.textValue() );
+        }
+        catch ( IllegalArgumentException e )
+        {
+            throw new IndySerializationException(
+                    "Cannot patch store JSON. StoreKey 'key' attribute has invalid packageType (first segment)!", null,
+                    e );
+        }
+
         if ( key == null )
         {
             throw new IndySerializationException( "Cannot patch store JSON. No StoreKey 'key' attribute found!", null );
         }
+        else
+        {
+            key = new StoreKey( MAVEN_PKG_KEY, key.getType(), key.getName() );
+            ( (ObjectNode) tree ).put( ArtifactStore.KEY_ATTR, key.toString() );
+        }
 
-        final JsonNode field = tree.get( ArtifactStore.TYPE_ATTR );
+        JsonNode field = tree.get( ArtifactStore.TYPE_ATTR );
         if ( field == null )
         {
             ( (ObjectNode) tree ).put( ArtifactStore.TYPE_ATTR, key.getType()
                                                                    .singularEndpointName() );
+
+            return writeValueAsString( tree );
+        }
+
+        field = tree.get( ArtifactStore.PKG_TYPE_ATTR );
+        if ( field == null )
+        {
+            ( (ObjectNode) tree ).put( ArtifactStore.PKG_TYPE_ATTR, key.getPackageType() );
 
             return writeValueAsString( tree );
         }

@@ -16,6 +16,7 @@
 package org.commonjava.indy.setback.data;
 
 import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -82,7 +83,7 @@ public class SetBackSettingsManagerTest
     public void settingsForSingleRemoteRepository_NoGroups()
         throws Exception
     {
-        final RemoteRepository remote = new RemoteRepository( "test", "http://foo.bar/" );
+        final RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY,  "test", "http://foo.bar/" );
         remote.setDescription( "Test Repository" );
 
         store( remote );
@@ -98,7 +99,7 @@ public class SetBackSettingsManagerTest
     public void settingsForSingleRemoteRepository_GenerateDeleteAndProveNonExistent()
         throws Exception
     {
-        final RemoteRepository remote = new RemoteRepository( "test", "http://foo.bar/" );
+        final RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY,  "test", "http://foo.bar/" );
         remote.setDescription( "Test Repository" );
 
         store( remote );
@@ -121,14 +122,14 @@ public class SetBackSettingsManagerTest
     public void settingsForGroup_SingleMemberRemote()
         throws Exception
     {
-        final RemoteRepository remote = new RemoteRepository( "test", "http://foo.bar/" );
+        final RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY,  "test", "http://foo.bar/" );
         remote.setDescription( "Test Repository" );
 
         store( remote );
 
         final StoreKey remoteKey = remote.getKey();
 
-        final Group group = new Group( "test-group", remoteKey );
+        final Group group = new Group( MAVEN_PKG_KEY,  "test-group", remoteKey );
         store( group );
 
         assertThat( readSettings( group.getKey(), false ), equalTo( null ) );
@@ -144,15 +145,15 @@ public class SetBackSettingsManagerTest
     public void settingsForGroup_OneRemoteOneHosted_HostedOmittedButAddedInComment()
         throws Exception
     {
-        final RemoteRepository remote = new RemoteRepository( "test", "http://foo.bar/" );
+        final RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY,  "test", "http://foo.bar/" );
         remote.setDescription( "Test Repository" );
 
-        final HostedRepository hosted = new HostedRepository( "test-hosted" );
+        final HostedRepository hosted = new HostedRepository( MAVEN_PKG_KEY,  "test-hosted" );
 
         store( remote );
         store( hosted );
 
-        final Group group = new Group( "test-group", remote.getKey(), hosted.getKey() );
+        final Group group = new Group( MAVEN_PKG_KEY,  "test-group", remote.getKey(), hosted.getKey() );
         store( group );
 
         System.out.println( "Group members:\n  " + join( group.getConstituents(), "\n  " ) );
@@ -181,14 +182,14 @@ public class SetBackSettingsManagerTest
     public void settingsForSingleRemoteRepository_GenerateSpawnsGroupGeneration()
         throws Exception
     {
-        final RemoteRepository remote = new RemoteRepository( "test", "http://foo.bar/" );
+        final RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY,  "test", "http://foo.bar/" );
         remote.setDescription( "Test Repository" );
 
         store( remote );
 
         final StoreKey key = remote.getKey();
 
-        final Group group = new Group( "test-group", key );
+        final Group group = new Group( MAVEN_PKG_KEY,  "test-group", key );
         store( group );
 
         assertThat( readSettings( group.getKey(), false ), equalTo( null ) );
@@ -207,7 +208,7 @@ public class SetBackSettingsManagerTest
     private void store( final ArtifactStore store )
         throws Exception
     {
-        storeManager.storeArtifactStore( store, summary, new EventMetadata() );
+        storeManager.storeArtifactStore( store, summary, false, true, new EventMetadata() );
     }
 
     private List<String> readSettings( final StoreKey key, final boolean expectExistence )

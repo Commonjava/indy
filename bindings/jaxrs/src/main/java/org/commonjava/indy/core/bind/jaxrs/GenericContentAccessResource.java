@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.pkg.maven.jaxrs;
+package org.commonjava.indy.core.bind.jaxrs;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,9 +21,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
-import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
-import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +40,14 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_CONTENT_REST_BASE_PATH;
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_CONTENT_REST_BASE_PATH;
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Api( value = "Maven Content Access and Storage",
       description = "Handles retrieval and management of Maven artifact content. This is the main point of access for Maven/Gradle users." )
-@Path( "/api/content/maven/{type: (hosted|group|remote)}/{name}" )
-public class MavenContentAccessResource
+@Path( "/api/content/generic/{type: (hosted|group|remote)}/{name}" )
+public class GenericContentAccessResource
         implements PackageContentAccessResource
 {
 
@@ -58,17 +56,17 @@ public class MavenContentAccessResource
     @Inject
     private ContentAccessHandler handler;
 
-    public MavenContentAccessResource()
+    public GenericContentAccessResource()
     {
     }
 
-    public MavenContentAccessResource( final ContentAccessHandler handler )
+    public GenericContentAccessResource( final ContentAccessHandler handler )
     {
         this.handler = handler;
     }
 
     @Override
-    @ApiOperation( "Store Maven artifact content under the given artifact store (type/name) and path." )
+    @ApiOperation( "Store content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ), @ApiResponse( code = 400,
                                                                                                             message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
     @PUT
@@ -79,15 +77,15 @@ public class MavenContentAccessResource
             final @PathParam( "path" ) String path, final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request )
     {
-        return handler.doCreate( MAVEN_PKG_KEY, type, name, path, request,
+        return handler.doCreate( GENERIC_PKG_KEY, type, name, path, request,
                                  new EventMetadata(), () -> uriInfo.getBaseUriBuilder()
                                                                    .path( getClass() )
                                                                    .path( path )
-                                                                   .build( MAVEN_PKG_KEY, type, name ) );
+                                                                   .build( GENERIC_PKG_KEY, type, name ) );
     }
 
     @Override
-    @ApiOperation( "Delete Maven artifact content under the given artifact store (type/name) and path." )
+    @ApiOperation( "Delete content under the given store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                            @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
@@ -97,11 +95,11 @@ public class MavenContentAccessResource
                     String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "path" ) String path )
     {
-        return handler.doDelete( MAVEN_PKG_KEY, type, name, path, new EventMetadata() );
+        return handler.doDelete( GENERIC_PKG_KEY, type, name, path, new EventMetadata() );
     }
 
     @Override
-    @ApiOperation( "Store Maven artifact content under the given artifact store (type/name) and path." )
+    @ApiOperation( "Store content under the given store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ), @ApiResponse( code = 200,
                                                                                                      message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
     @HEAD
@@ -112,8 +110,8 @@ public class MavenContentAccessResource
             final @PathParam( "path" ) String path, @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly,
             @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( MAVEN_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doHead( MAVEN_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
+        final String baseUri = uriInfo.getBaseUriBuilder().path( GENERIC_CONTENT_REST_BASE_PATH ).build().toString();
+        return handler.doHead( GENERIC_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
                                new EventMetadata() );
     }
 
@@ -131,9 +129,9 @@ public class MavenContentAccessResource
             final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
             @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( MAVEN_CONTENT_REST_BASE_PATH ).build().toString();
+        final String baseUri = uriInfo.getBaseUriBuilder().path( GENERIC_CONTENT_REST_BASE_PATH ).build().toString();
 
-        return handler.doGet( MAVEN_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
+        return handler.doGet( GENERIC_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
     }
 
     @Override
@@ -147,9 +145,9 @@ public class MavenContentAccessResource
                     String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
             @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( MAVEN_CONTENT_REST_BASE_PATH ).build().toString();
+        final String baseUri = uriInfo.getBaseUriBuilder().path( GENERIC_CONTENT_REST_BASE_PATH ).build().toString();
 
-        return handler.doGet( MAVEN_PKG_KEY, type, name, "", baseUri, request, new EventMetadata() );
+        return handler.doGet( GENERIC_PKG_KEY, type, name, "", baseUri, request, new EventMetadata() );
     }
 
 }

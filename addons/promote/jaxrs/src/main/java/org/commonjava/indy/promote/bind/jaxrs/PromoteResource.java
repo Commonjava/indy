@@ -27,7 +27,8 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
-import org.commonjava.indy.core.bind.jaxrs.ContentAccessResource;
+import org.commonjava.indy.model.core.PackageTypeDescriptor;
+import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.data.PromotionManager;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -90,9 +91,12 @@ public class PromoteResource
         Response response = null;
         try
         {
+            PackageTypeDescriptor packageTypeDescriptor =
+                    PackageTypes.getPackageTypeDescriptor( request.getSource().getPackageType() );
+
             String user = securityManager.getUser( securityContext, servletRequest );
             final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( ContentAccessResource.class )
+                                          .path( packageTypeDescriptor.getContentRestBasePath() )
                                           .build( request.getSource().getType().singularEndpointName(),
                                                   request.getSource().getName() )
                                           .toString();
@@ -165,8 +169,11 @@ public class PromoteResource
 
         try
         {
+            PackageTypeDescriptor packageTypeDescriptor =
+                    PackageTypes.getPackageTypeDescriptor( req.getSource().getPackageType() );
+
             final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( ContentAccessResource.class )
+                                          .path( packageTypeDescriptor.getContentRestBasePath() )
                                           .build( req.getSource().getType().singularEndpointName(),
                                                   req.getSource().getName() )
                                           .toString();

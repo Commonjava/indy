@@ -40,6 +40,7 @@ import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
@@ -71,6 +72,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.commonjava.indy.koji.content.testutil.KojiMockHandlers.configureKojiServer;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -113,7 +115,7 @@ public class KojiMavenMetadataProviderTest
         initKojiClient( "metadata-with-import-generate", false );
 
         Metadata metadata =
-                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+                provider.getMetadata( new StoreKey( MAVEN_PKG_KEY,  group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
 
         assertThat( metadata, notNullValue() );
 
@@ -143,7 +145,7 @@ public class KojiMavenMetadataProviderTest
         initKojiClient( "simple-metadata-generate", false );
 
         Metadata metadata =
-                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+                provider.getMetadata( new StoreKey( MAVEN_PKG_KEY,  group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
 
         assertThat( metadata, notNullValue() );
 
@@ -178,7 +180,7 @@ public class KojiMavenMetadataProviderTest
         initKojiClient( "whitelisted-tags-metadata-generate", false );
 
         Metadata metadata =
-                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+                provider.getMetadata( new StoreKey( MAVEN_PKG_KEY,  group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
 
         assertThat( metadata, notNullValue() );
 
@@ -210,7 +212,7 @@ public class KojiMavenMetadataProviderTest
         initKojiClient( "simple-metadata-verify", true );
 
         Metadata metadata =
-                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+                provider.getMetadata( new StoreKey( MAVEN_PKG_KEY,  group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
 
         assertThat( metadata, notNullValue() );
 
@@ -242,7 +244,7 @@ public class KojiMavenMetadataProviderTest
         initKojiClient( "no-metadata-generate", false );
 
         Metadata metadata =
-                provider.getMetadata( new StoreKey( group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
+                provider.getMetadata( new StoreKey( MAVEN_PKG_KEY,  group, "public" ), "commons-io/commons-io/maven-metadata.xml" );
 
         assertThat( metadata, nullValue() );
     }
@@ -253,7 +255,7 @@ public class KojiMavenMetadataProviderTest
     {
         initKojiClient( "simple-metadata-generate", false );
 
-        StoreKey sk = new StoreKey( group, "public" );
+        StoreKey sk = new StoreKey( MAVEN_PKG_KEY,  group, "public" );
         String path = "commons-io/commons-io/maven-metadata.xml";
 
         Metadata metadata = provider.getMetadata( sk, path );
@@ -312,12 +314,13 @@ public class KojiMavenMetadataProviderTest
 
         if ( verifyArtifacts )
         {
-            RemoteRepository verifyRepo = new RemoteRepository( VERIFY_REPO, server.formatUrl( VERIFY_BASEPATH ) );
+            RemoteRepository verifyRepo = new RemoteRepository( MAVEN_PKG_KEY,  VERIFY_REPO, server.formatUrl( VERIFY_BASEPATH ) );
 
             storeDataManager.storeArtifactStore( verifyRepo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                "Adding verification repo" ) );
+                                                                                "Adding verification repo" ), false,
+                                                 true, new EventMetadata() );
 
-            kojiConfig.setArtifactAuthorityStore( new StoreKey( remote, VERIFY_REPO ).toString() );
+            kojiConfig.setArtifactAuthorityStore( new StoreKey( MAVEN_PKG_KEY,  remote, VERIFY_REPO ).toString() );
         }
 
         String resourceBase = "koji-metadata/" + exchangeName;

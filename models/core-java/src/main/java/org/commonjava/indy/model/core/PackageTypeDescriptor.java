@@ -15,4 +15,13 @@ import java.util.Map;
 public interface PackageTypeDescriptor
 {
     String getKey();
+
+    /**
+     * The base-path for accessing content of this package type. For example, for 'maven' it should be:
+     * <pre>
+     *     /api/maven/
+     * </pre>
+     * @return
+     */
+    String getContentRestBasePath();
 }
