@@ -368,7 +368,13 @@ public class RemoteRepository
     @Override
     public RemoteRepository copyOf()
     {
-        RemoteRepository repo = new RemoteRepository( getName(), getUrl() );
+        return copyOf( getPackageType(), getName() );
+    }
+
+    @Override
+    public RemoteRepository copyOf( String packageType, String name )
+    {
+        RemoteRepository repo = new RemoteRepository( getPackageType(), name, getUrl() );
         repo.setServerTrustPolicy( getServerTrustPolicy() );
         repo.setKeyPassword( getKeyPassword() );
         repo.setKeyCertPem( getKeyCertPem() );
@@ -384,10 +390,11 @@ public class RemoteRepository
         repo.setProxyPassword( getProxyPassword() );
         repo.setProxyUser( getProxyUser() );
         repo.setTimeoutSeconds( getTimeoutSeconds() );
+        repo.setUser( getUser() );
+        repo.setPassword( getPassword() );
 
         copyRestrictions( repo );
         copyBase( repo );
-
         return repo;
     }
 }

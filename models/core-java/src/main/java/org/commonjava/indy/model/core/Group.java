@@ -143,7 +143,13 @@ public class Group
     @Override
     public Group copyOf()
     {
-        Group g = new Group( getPackageType(), getName(), new ArrayList<>( getConstituents() ) );
+        return copyOf( getPackageType(), getName() );
+    }
+
+    @Override
+    public Group copyOf( final String packageType, final String name )
+    {
+        Group g = new Group( packageType, name, new ArrayList<>( getConstituents() ) );
         copyBase( g );
 
         return g;

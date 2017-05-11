@@ -216,7 +216,7 @@ public class FoloTrackingListener
                 String remoteUrl = null;
                 if ( StoreType.remote == affectedStore.getType() )
                 {
-                    final RemoteRepository repo = storeManager.getRemoteRepository( affectedStore.getName() );
+                    final RemoteRepository repo = (RemoteRepository) storeManager.getArtifactStore( affectedStore );
                     if ( repo != null )
                     {
                         remoteUrl = UrlUtils.buildUrl( repo.getUrl(), path );

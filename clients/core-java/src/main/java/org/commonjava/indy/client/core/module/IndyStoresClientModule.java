@@ -22,12 +22,15 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public class IndyStoresClientModule
     extends IndyClientModule
@@ -66,10 +69,17 @@ public class IndyStoresClientModule
                          store );
     }
 
-    public <T extends ArtifactStore> T load( final StoreType type, final String name, final Class<T> cls )
+    @Deprecated
+    public <T extends ArtifactStore> T load( StoreType type, String name, final Class<T> cls )
+            throws IndyClientException
+    {
+        return load( new StoreKey( MAVEN_PKG_KEY, type, name ), cls );
+    }
+
+    public <T extends ArtifactStore> T load( StoreKey key, final Class<T> cls )
         throws IndyClientException
     {
-        return http.get( UrlUtils.buildUrl( "admin", type.singularEndpointName(), name ), cls );
+        return http.get( UrlUtils.buildUrl( "admin", key.getPackageType(), key.getType().singularEndpointName(), key.getName() ), cls );
     }
 
     public StoreListingDTO<HostedRepository> listHostedRepositories()

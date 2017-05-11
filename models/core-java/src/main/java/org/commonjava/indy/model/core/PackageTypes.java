@@ -47,4 +47,9 @@ public class PackageTypes
     {
         return PACKAGE_TYPES.containsKey( packageType );
     }
+
+    public static PackageTypeDescriptor getPackageTypeDescriptor( final String packageType )
+    {
+        return PACKAGE_TYPES.get( packageType );
+    }
 }

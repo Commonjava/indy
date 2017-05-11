@@ -37,6 +37,8 @@ public abstract class ArtifactStore
     implements Serializable
 {
 
+    public static final String PKG_TYPE_ATTR = "packageType";
+
     public static final String TYPE_ATTR = "type";
 
     public static final String KEY_ATTR = "key";
@@ -95,6 +97,8 @@ public abstract class ArtifactStore
     }
 
     public abstract ArtifactStore copyOf();
+
+    public abstract ArtifactStore copyOf( String packageType, String name );
 
     @Override
     public int hashCode()
@@ -207,6 +211,8 @@ public abstract class ArtifactStore
         store.setDisabled( isDisabled() );
         store.setMetadata( getMetadata() );
         store.setTransientMetadata( getTransientMetadata() );
+        store.setPathStyle( getPathStyle() );
+        store.setDisableTimeout( getDisableTimeout() );
     }
 
     protected void setTransientMetadata( Map<String, String> transientMetadata )

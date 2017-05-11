@@ -40,29 +40,29 @@ public class TestAutoProxFactory
     }
 
     @Override
-    public RemoteRepository createRemoteRepository( final String packageType, final String named )
+    public RemoteRepository createRemoteRepository( final StoreKey key )
         throws AutoProxRuleException
     {
-        return new RemoteRepository( packageType, named, http.formatUrl( "target", named ) );
+        return new RemoteRepository( key.getPackageType(), key.getName(), http.formatUrl( "target", key.getName() ) );
     }
 
     @Override
-    public HostedRepository createHostedRepository( final String packageType, final String named )
+    public HostedRepository createHostedRepository( final StoreKey key )
     {
-        return new HostedRepository( packageType, named );
+        return new HostedRepository( key.getPackageType(), key.getName() );
     }
 
     @Override
-    public Group createGroup( final String packageType, final String named )
+    public Group createGroup( final StoreKey key )
     {
         final List<StoreKey> constituents = new ArrayList<StoreKey>();
 
-        constituents.add( new StoreKey( packageType, StoreType.hosted, named ) );
-        constituents.add( new StoreKey( packageType, StoreType.remote, named ) );
-        constituents.add( new StoreKey( packageType, StoreType.remote, "first" ) );
-        constituents.add( new StoreKey( packageType, StoreType.remote, "second" ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.hosted, key.getName() ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, "first" ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, "second" ) );
 
-        return new Group( packageType, named, constituents );
+        return new Group( key.getPackageType(), key.getName(), constituents );
     }
 
     @Override
@@ -72,7 +72,7 @@ public class TestAutoProxFactory
     }
 
     @Override
-    public boolean matches( final String packageType, final String name )
+    public boolean matches( final StoreKey key )
     {
         return true;
     }
@@ -84,10 +84,10 @@ public class TestAutoProxFactory
     }
 
     @Override
-    public RemoteRepository createValidationRemote( final String packageType, final String name )
+    public RemoteRepository createValidationRemote( final StoreKey key )
         throws AutoProxRuleException, MalformedURLException
     {
-        return createRemoteRepository( packageType, name );
+        return createRemoteRepository( key );
     }
 
 }

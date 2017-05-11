@@ -71,6 +71,7 @@ public abstract class AbstractRepository
     {
         repo.setAllowReleases( isAllowReleases() );
         repo.setAllowSnapshots( isAllowSnapshots() );
+        repo.setPathMaskPatterns( getPathMaskPatterns() );
     }
 
 }

@@ -77,6 +77,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -177,12 +178,12 @@ public class PromotionManagerTest
     public void promoteAllByPath_CollidingPaths_VerifySecondSkipped()
             throws Exception
     {
-        final HostedRepository source1 = new HostedRepository( "source1" );
-        final HostedRepository source2 = new HostedRepository( "source2" );
+        final HostedRepository source1 = new HostedRepository( MAVEN_PKG_KEY,  "source1" );
+        final HostedRepository source2 = new HostedRepository( MAVEN_PKG_KEY,  "source2" );
         storeManager.storeArtifactStore( source1, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
         storeManager.storeArtifactStore( source2, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         String originalString = "This is a test";
 
@@ -193,9 +194,9 @@ public class PromotionManagerTest
         contentManager.store( source2, path, new ByteArrayInputStream( "This is another test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         PathsPromoteResult result =
                 manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ),
@@ -256,14 +257,15 @@ public class PromotionManagerTest
             throws Exception
     {
         Random rand = new Random();
-        final HostedRepository[] sources = { new HostedRepository( "source1" ), new HostedRepository( "source2" ) };
+        final HostedRepository[] sources = { new HostedRepository( MAVEN_PKG_KEY,  "source1" ), new HostedRepository( MAVEN_PKG_KEY,  "source2" ) };
         final String[] paths = { "/path/path1", "/path/path2", "/path3", "/path/path/4" };
         Stream.of( sources ).forEach( ( source ) ->
                                       {
                                           try
                                           {
                                               storeManager.storeArtifactStore( source, new ChangeSummary(
-                                                      ChangeSummary.SYSTEM_USER, "test setup" ), new EventMetadata() );
+                                                                                       ChangeSummary.SYSTEM_USER, "test setup" ), false, true,
+                                                                               new EventMetadata() );
 
                                               Stream.of( paths ).forEach( ( path ) ->
                                                                           {
@@ -293,9 +295,9 @@ public class PromotionManagerTest
                                           }
                                       } );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         PathsPromoteResult[] results = new PathsPromoteResult[2];
         CountDownLatch cdl = new CountDownLatch( 2 );
@@ -411,9 +413,9 @@ public class PromotionManagerTest
     public void promoteAllByPath_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
             throws Exception
     {
-        final HostedRepository source = new HostedRepository( "source" );
+        final HostedRepository source = new HostedRepository( MAVEN_PKG_KEY,  "source" );
         storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -423,9 +425,9 @@ public class PromotionManagerTest
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final PathsPromoteResult result =
                 manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ), FAKE_BASE_URL );
@@ -453,9 +455,9 @@ public class PromotionManagerTest
     public void promoteAllByPath_PushTwoArtifactsToHostedRepo_DryRun_VerifyPendingPathsPopulated()
             throws Exception
     {
-        final HostedRepository source = new HostedRepository( "source" );
+        final HostedRepository source = new HostedRepository( MAVEN_PKG_KEY,  "source" );
         storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -465,9 +467,9 @@ public class PromotionManagerTest
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final PathsPromoteResult result =
                 manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ).setDryRun( true ),
@@ -496,9 +498,9 @@ public class PromotionManagerTest
     public void promoteAllByPath_PurgeSource_PushTwoArtifactsToHostedRepo_VerifyCopiedToOtherHostedRepo()
             throws Exception
     {
-        final HostedRepository source = new HostedRepository( "source" );
+        final HostedRepository source = new HostedRepository( MAVEN_PKG_KEY,  "source" );
         storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -508,9 +510,9 @@ public class PromotionManagerTest
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final PathsPromoteResult result = manager.promotePaths(
                 new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ), FAKE_BASE_URL );
@@ -545,9 +547,9 @@ public class PromotionManagerTest
     public void rollback_PushTwoArtifactsToHostedRepo_PromoteSuccessThenRollback()
             throws Exception
     {
-        final HostedRepository source = new HostedRepository( "source" );
+        final HostedRepository source = new HostedRepository( MAVEN_PKG_KEY,  "source" );
         storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -557,9 +559,9 @@ public class PromotionManagerTest
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         PathsPromoteResult result =
                 manager.promotePaths( new PathsPromoteRequest( source.getKey(), target.getKey() ), FAKE_BASE_URL );
@@ -601,9 +603,9 @@ public class PromotionManagerTest
     public void rollback_PurgeSource_PushTwoArtifactsToHostedRepo_PromoteSuccessThenRollback_VerifyContentInSource()
             throws Exception
     {
-        final HostedRepository source = new HostedRepository( "source" );
+        final HostedRepository source = new HostedRepository( MAVEN_PKG_KEY,  "source" );
         storeManager.storeArtifactStore( source, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         final String first = "/first/path";
         final String second = "/second/path";
@@ -613,9 +615,9 @@ public class PromotionManagerTest
         contentManager.store( source, second, new ByteArrayInputStream( "This is a test".getBytes() ),
                               TransferOperation.UPLOAD, new EventMetadata() );
 
-        final HostedRepository target = new HostedRepository( "target" );
+        final HostedRepository target = new HostedRepository( MAVEN_PKG_KEY,  "target" );
         storeManager.storeArtifactStore( target, new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" ),
-                                         new EventMetadata() );
+                                         false, true, new EventMetadata() );
 
         PathsPromoteResult result = manager.promotePaths(
                 new PathsPromoteRequest( source.getKey(), target.getKey() ).setPurgeSource( true ), FAKE_BASE_URL );

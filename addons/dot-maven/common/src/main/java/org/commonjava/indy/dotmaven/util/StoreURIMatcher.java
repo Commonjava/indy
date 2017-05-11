@@ -15,7 +15,10 @@
  */
 package org.commonjava.indy.dotmaven.util;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,16 +30,16 @@ public final class StoreURIMatcher
     implements URIMatcher
 {
     // @formatter:off
-    private static final String STORE_TYPE_PATTERN = "\\/?storage(\\/(hosted|group|remote)(\\/([^/]+)(\\/(.+))?)?)?";
+    private static final String STORE_TYPE_PATTERN = "\\/?storage(\\/([^/]+)(\\/(hosted|group|remote)(\\/([^/]+)(\\/(.+))?)?)?)?";
     // @formatter:on
 
-    private static final int STORE_TYPE_GRP = 2;
+    private static final int STORE_PKG_TYPE_GRP = 2;
 
-    private static final int STORE_NAME_GRP = 4;
+    private static final int STORE_TYPE_GRP = 4;
 
-    private static final int STORE_PATH_GRP = 6;
+    private static final int STORE_NAME_GRP = 6;
 
-    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    private static final int STORE_PATH_GRP = 8;
 
     private final Matcher matcher;
 
@@ -83,43 +86,66 @@ public final class StoreURIMatcher
             return null;
         }
 
-        final String typePart = matcher.group( STORE_TYPE_GRP );
-        //        logger.info( "Type part of name is: '{}'", typePart );
+        final String packageType = getPackageType();
 
-        final StoreType type = StoreType.get( typePart );
-        //        logger.info( "StoreType is: {}", type );
+        if ( packageType == null )
+        {
+            return null;
+        }
+
+        final StoreType type = getStoreType();
 
         if ( type == null )
         {
             return null;
         }
 
-        final String name = matcher.group( STORE_NAME_GRP );
-        //        logger.info( "Store part of name is: '{}'", name );
+        String name = getStoreName();
+        if ( name == null )
+        {
+            return null;
+        }
 
-        return new StoreKey( type, name );
+        return new StoreKey( packageType, type, name );
+    }
+
+    public String getPackageType()
+    {
+        if ( matcher.matches() )
+        {
+            String pkg = matcher.group( STORE_PKG_TYPE_GRP );
+            return isBlank( pkg ) ? null : pkg;
+        }
+
+        return null;
     }
 
     @Override
     public StoreType getStoreType()
     {
-        if ( !matches() )
+        if ( matcher.matches() )
         {
-            return null;
+            final String typePart = matcher.group( STORE_TYPE_GRP );
+            //        logger.info( "Type part of name is: '{}'", typePart );
+
+            if ( isNotBlank( typePart ) )
+            {
+                return StoreType.get( typePart );
+            }
         }
 
-        final String typePart = matcher.group( STORE_TYPE_GRP );
-        //        logger.info( "Type part of name is: '{}'", typePart );
+        return null;
+    }
 
-        if ( isEmpty( typePart ) )
+    public String getStoreName()
+    {
+        if ( matcher.matches() )
         {
-            return null;
+            String name = matcher.group( STORE_NAME_GRP );
+            return isBlank( name ) ? null : name;
         }
 
-        final StoreType type = StoreType.get( typePart );
-        //        logger.info( "StoreType is: {}", type );
-
-        return type;
+        return null;
     }
 
     public String getStorePath()
@@ -140,19 +166,24 @@ public final class StoreURIMatcher
         return matcher.matches();
     }
 
+    public boolean hasPackageType()
+    {
+        return getPackageType() != null;
+    }
+
     public boolean hasStoreType()
     {
-        return matches() && matcher.group( STORE_TYPE_GRP ) != null;
+        return getStoreType() != null ;
     }
 
     public boolean hasStoreName()
     {
-        return matches() && matcher.group( STORE_NAME_GRP ) != null;
+        return getStoreName() != null;
     }
 
     public boolean hasStorePath()
     {
-        return matches() && matcher.group( STORE_PATH_GRP ) != null;
+        return getStorePath() != null;
     }
 
     @Override

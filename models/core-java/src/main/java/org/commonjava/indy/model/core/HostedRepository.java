@@ -91,7 +91,16 @@ public class HostedRepository
     @Override
     public HostedRepository copyOf()
     {
-        HostedRepository repo = new HostedRepository( getName() );
+        return copyOf( getPackageType(), getName() );
+    }
+
+    @Override
+    public HostedRepository copyOf( final String packageType, final String name )
+    {
+        HostedRepository repo = new HostedRepository( packageType, name );
+        repo.setStorage( getStorage() );
+        repo.setSnapshotTimeoutSeconds( getSnapshotTimeoutSeconds() );
+        repo.setReadonly( isReadonly() );
         copyRestrictions( repo );
         copyBase( repo );
 

@@ -21,6 +21,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.event.EventMetadata;
 
 import javax.inject.Inject;
@@ -43,10 +44,10 @@ public class KojiOriginMigrationAction
     public boolean migrate()
             throws IndyLifecycleException
     {
-        List<HostedRepository> hostedRepositories;
+        List<RemoteRepository> repos;
         try
         {
-            hostedRepositories = storeDataManager.query().noPackageType().getAllHostedRepositories();
+            repos = storeDataManager.query().noPackageType().getAllRemoteRepositories();
         }
         catch ( IndyDataException e )
         {
@@ -54,8 +55,8 @@ public class KojiOriginMigrationAction
                                               e.getMessage() );
         }
 
-        List<HostedRepository> toStore = new ArrayList<>();
-        hostedRepositories.forEach( (repo)->{
+        List<RemoteRepository> toStore = new ArrayList<>();
+        repos.forEach( (repo)->{
             if ( repo.getDescription() != null && repo.getDescription().contains( "Koji build" ) )
             {
                 repo.setMetadata( METADATA_ORIGIN, KOJI_ORIGIN );
@@ -63,13 +64,13 @@ public class KojiOriginMigrationAction
             }
         } );
 
-        for ( HostedRepository repo : toStore )
+        final ChangeSummary changeSummary =
+                new ChangeSummary( ChangeSummary.SYSTEM_USER, "Adding Koji origin metadata" );
+
+        for ( RemoteRepository repo : toStore )
         {
             try
             {
-                final ChangeSummary changeSummary =
-                        new ChangeSummary( ChangeSummary.SYSTEM_USER, "Adding Koji origin metadata" );
-
                 storeDataManager.storeArtifactStore( repo, changeSummary, false, true, new EventMetadata() );
             }
             catch ( IndyDataException e )
