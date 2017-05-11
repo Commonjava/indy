@@ -15,14 +15,6 @@
  */
 package org.commonjava.indy.autoprox.data;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.decorator.Decorator;
-import javax.decorator.Delegate;
-import javax.enterprise.inject.Any;
-import javax.inject.Inject;
-
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -41,6 +33,12 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.decorator.Decorator;
+import javax.decorator.Delegate;
+import javax.enterprise.inject.Any;
+import javax.inject.Inject;
+import java.util.ArrayList;
 
 @Decorator
 public abstract class AutoProxDataManagerDecorator
@@ -77,18 +75,11 @@ public abstract class AutoProxDataManagerDecorator
         return dataManager;
     }
 
-    @Override
-    public Group getGroup( final String packageType, final String name )
+    private Group getGroup( final StoreKey key, final StoreKey impliedBy )
             throws IndyDataException
     {
-        return getGroup( packageType, name, null );
-    }
-
-    private Group getGroup( final String packageType, final String name, final StoreKey impliedBy )
-            throws IndyDataException
-    {
-        logger.debug( "DECORATED (getGroup: {})", name );
-        Group g = dataManager.getGroup( packageType, name );
+        logger.debug( "DECORATED (getGroup: {})", key );
+        Group g = (Group) dataManager.getArtifactStore( key );
 
         if ( !catalog.isEnabled() )
         {
@@ -99,32 +90,32 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "AutoProx decorator active" );
         if ( g == null )
         {
-            logger.debug( "AutoProx: creating repository for: {}", name );
-            if ( !checkValidity( name ) )
+            logger.debug( "AutoProx: creating repository for: {}", key );
+            if ( !checkValidity( key ) )
             {
                 return null;
             }
 
             try
             {
-                g = catalog.createGroup( name );
+                g = catalog.createGroup( key );
             }
             catch ( final AutoProxRuleException e )
             {
                 throw new IndyDataException(
-                        "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s", e, name,
+                        "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s", e, key,
                         e.getMessage() );
             }
 
             if ( g != null )
             {
                 logger.info( "Validating group: {}", g );
-                for ( final StoreKey key : new ArrayList<>( g.getConstituents() ) )
+                for ( final StoreKey memberKey : new ArrayList<>( g.getConstituents() ) )
                 {
-                    final ArtifactStore store = getArtifactStore( key, impliedBy == null ? g.getKey() : impliedBy );
+                    final ArtifactStore store = getArtifactStore( memberKey, impliedBy == null ? g.getKey() : impliedBy );
                     if ( store == null )
                     {
-                        g.removeConstituent( key );
+                        g.removeConstituent( memberKey );
                     }
                 }
 
@@ -133,14 +124,15 @@ public abstract class AutoProxDataManagerDecorator
                     return null;
                 }
 
-                final Group group = g;
-                dataManager.storeArtifactStore( group, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                          "AUTOPROX: Creating group for: '" + name
+                final EventMetadata eventMetadata =
+                        new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, AutoProxConstants.STORE_ORIGIN )
+                                           .set( AutoProxConstants.ORIGINATING_STORE,
+                                                 impliedBy == null ? g.getKey() : impliedBy );
+
+                dataManager.storeArtifactStore( g, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                          "AUTOPROX: Creating group for: '" + key
                                                                                   + "'" ),
-                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
-                                                                         AutoProxConstants.STORE_ORIGIN )
-                                                                   .set( AutoProxConstants.ORIGINATING_STORE,
-                                                                         impliedBy == null ? g.getKey() : impliedBy ) );
+                                                false, true, eventMetadata );
             }
         }
 
@@ -148,7 +140,7 @@ public abstract class AutoProxDataManagerDecorator
     }
 
     /**
-     * Validates the remote connection, produced from rule-set for given name,
+     * Validates the remote connection, produced from rule-set for given key,
      * for a remote repo or group containing a remote. If:
      *
      * <ul>
@@ -164,21 +156,21 @@ public abstract class AutoProxDataManagerDecorator
      * </ul>
      * @throws IndyDataException if the selected rule encounters an error while creating the new group/repository instance(s).
      */
-    private boolean checkValidity( final String name )
+    private boolean checkValidity( final StoreKey key )
             throws IndyDataException
     {
-        if ( catalog.isValidationEnabled( name ) )
+        if ( catalog.isValidationEnabled( key ) )
         {
             try
             {
-                final RemoteRepository validationRepo = catalog.createValidationRemote( name );
+                final RemoteRepository validationRepo = catalog.createValidationRemote( key );
                 if ( validationRepo == null )
                 {
-                    logger.info( "No validation repository was created: assuming {} is valid.", name );
+                    logger.info( "No validation repository was created: assuming {} is valid.", key );
                     return true;
                 }
 
-                String path = catalog.getRemoteValidationPath( name );
+                String path = catalog.getRemoteValidationPath( key );
                 if ( path == null )
                 {
                     path = PathUtils.ROOT;
@@ -204,7 +196,7 @@ public abstract class AutoProxDataManagerDecorator
             catch ( final AutoProxRuleException e )
             {
                 throw new IndyDataException(
-                        "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s", e, name,
+                        "[AUTOPROX] Failed to create new group from factory matching: '%s'. Reason: %s", e, key,
                         e.getMessage() );
             }
         }
@@ -212,18 +204,11 @@ public abstract class AutoProxDataManagerDecorator
         return true;
     }
 
-    @Override
-    public RemoteRepository getRemoteRepository( final String name )
+    private RemoteRepository getRemoteRepository( final StoreKey key, final StoreKey impliedBy )
             throws IndyDataException
     {
-        return getRemoteRepository( name, null );
-    }
-
-    private RemoteRepository getRemoteRepository( final String name, final StoreKey impliedBy )
-            throws IndyDataException
-    {
-        logger.debug( "DECORATED (getRemoteRepository: {})", name );
-        RemoteRepository repo = dataManager.getRemoteRepository( name );
+        logger.debug( "DECORATED (getRemoteRepository: {})", key );
+        RemoteRepository repo = (RemoteRepository) dataManager.getArtifactStore( key );
         if ( !catalog.isEnabled() )
         {
             logger.debug( "AutoProx decorator disabled; returning: {}", repo );
@@ -233,53 +218,44 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "AutoProx decorator active" );
         if ( repo == null )
         {
-            logger.info( "AutoProx: creating repository for: {}", name );
+            logger.info( "AutoProx: creating repository for: {}", key );
 
             try
             {
-                repo = catalog.createRemoteRepository( name );
+                repo = catalog.createRemoteRepository( key );
                 if ( repo != null )
                 {
-                    if ( !checkValidity( name ) )
+                    if ( !checkValidity( key ) )
                     {
                         return null;
                     }
 
-                    final RemoteRepository remote = repo;
-                    dataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                    final EventMetadata eventMetadata =
+                            new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, AutoProxConstants.STORE_ORIGIN )
+                                               .set( AutoProxConstants.ORIGINATING_STORE,
+                                                     impliedBy == null ? repo.getKey() : impliedBy );
+
+                    dataManager.storeArtifactStore( repo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                                "AUTOPROX: Creating remote repository for: '"
-                                                                                       + name + "'" ),
-                                                    new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
-                                                                             AutoProxConstants.STORE_ORIGIN )
-                                                                       .set( AutoProxConstants.ORIGINATING_STORE,
-                                                                             impliedBy == null ?
-                                                                                     repo.getKey() :
-                                                                                     impliedBy ) );
+                                                                                       + key + "'" ),
+                                                    false, true, eventMetadata );
                 }
             }
             catch ( final AutoProxRuleException e )
             {
                 throw new IndyDataException(
                         "[AUTOPROX] Failed to create new remote repository from factory matching: '%s'. Reason: %s", e,
-                        name, e.getMessage() );
+                        key, e.getMessage() );
             }
         }
 
         return repo;
     }
 
-    @Override
-    public HostedRepository getHostedRepository( final String name )
+    private HostedRepository getHostedRepository( final StoreKey key, final StoreKey impliedBy )
             throws IndyDataException
     {
-        return getHostedRepository( name, null );
-    }
-
-    private HostedRepository getHostedRepository( final String name, final StoreKey impliedBy )
-            throws IndyDataException
-    {
-        logger.debug( "DECORATED (getHostedRepository: {})", name );
-        HostedRepository repo = dataManager.getHostedRepository( name );
+        HostedRepository repo = (HostedRepository) dataManager.getArtifactStore( key );
         if ( !catalog.isEnabled() )
         {
             logger.debug( "AutoProx decorator disabled; returning: {}", repo );
@@ -289,31 +265,32 @@ public abstract class AutoProxDataManagerDecorator
         logger.debug( "AutoProx decorator active" );
         if ( repo == null )
         {
-            logger.info( "AutoProx: creating repository for: {}", name );
+            logger.info( "AutoProx: creating repository for: {}", key );
 
             try
             {
-                repo = catalog.createHostedRepository( name );
+                repo = catalog.createHostedRepository( key );
             }
             catch ( final AutoProxRuleException e )
             {
                 throw new IndyDataException(
                         "[AUTOPROX] Failed to create new hosted repository from factory matching: '%s'. Reason: %s", e,
-                        name, e.getMessage() );
+                        key, e.getMessage() );
             }
 
             if ( repo != null )
             {
-                final HostedRepository hosted = repo;
-                dataManager.storeArtifactStore( hosted, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                           "AUTOPROX: Creating remote repository for: '"
-                                                                                   + name + "'" ),
-                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
-                                                                         AutoProxConstants.STORE_ORIGIN )
-                                                                   .set( AutoProxConstants.ORIGINATING_STORE,
-                                                                         impliedBy == null ?
-                                                                                 repo.getKey() :
-                                                                                 impliedBy ) );
+                final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                       "AUTOPROX: Creating hosted repository for: '"
+                                                                               + key + "'" );
+
+                final EventMetadata eventMetadata =
+                        new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, AutoProxConstants.STORE_ORIGIN )
+                                           .set( AutoProxConstants.ORIGINATING_STORE,
+                                                 impliedBy == null ? repo.getKey() : impliedBy );
+
+                dataManager.storeArtifactStore( repo, changeSummary, false, true,
+                                                eventMetadata );
             }
         }
 
@@ -335,81 +312,19 @@ public abstract class AutoProxDataManagerDecorator
             return null;
         }
 
+        logger.debug( "DECORATED (getArtifactStore: {})", key );
         if ( key.getType() == StoreType.group )
         {
-            return getGroup( key.getName(), impliedBy );
+            return getGroup( key, impliedBy );
         }
         else if ( key.getType() == StoreType.remote )
         {
-            return getRemoteRepository( key.getName(), impliedBy );
+            return getRemoteRepository( key, impliedBy );
         }
         else
         {
-            return getHostedRepository( key.getName(), impliedBy );
+            return getHostedRepository( key, impliedBy );
         }
-    }
-
-    @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName, final boolean enabledOnly )
-            throws IndyDataException
-    {
-        getGroup( groupName );
-        return dataManager.getOrderedConcreteStoresInGroup( groupName, enabledOnly );
-    }
-
-    @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName, final boolean enabledOnly )
-            throws IndyDataException
-    {
-        getGroup( groupName );
-        return dataManager.getOrderedStoresInGroup( groupName, enabledOnly );
-    }
-
-    @Override
-    public boolean hasRemoteRepository( final String name )
-    {
-        try
-        {
-            return getRemoteRepository( name ) != null;
-        }
-        catch ( final IndyDataException e )
-        {
-            logger.error( String.format( "Failed to retrieve/create remote: %s. Reason: %s", name, e.getMessage() ),
-                          e );
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean hasHostedRepository( final String name )
-    {
-        try
-        {
-            return getHostedRepository( name ) != null;
-        }
-        catch ( final IndyDataException e )
-        {
-            logger.error( String.format( "Failed to retrieve/create hosted: %s. Reason: %s", name, e.getMessage() ),
-                          e );
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean hasGroup( final String name )
-    {
-        try
-        {
-            return getGroup( name ) != null;
-        }
-        catch ( final IndyDataException e )
-        {
-            logger.error( String.format( "Failed to retrieve/create group: %s. Reason: %s", name, e.getMessage() ), e );
-        }
-
-        return false;
     }
 
     @Override

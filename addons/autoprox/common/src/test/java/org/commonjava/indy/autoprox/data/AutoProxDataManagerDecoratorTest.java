@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.autoprox.data;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -30,7 +31,9 @@ import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.fixture.TestAutoProxFactory;
 import org.commonjava.indy.autoprox.fixture.TestAutoProxyDataManager;
 import org.commonjava.indy.autoprox.util.ScriptRuleParser;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -76,7 +79,9 @@ public class AutoProxDataManagerDecoratorTest
 
     private AutoProxCatalogManager catalog;
 
-    private StoreDataManager proxyManager;
+    private StoreDataManager storeDataManager;
+
+    private ArtifactStoreQuery<ArtifactStore> storeQuery;
 
     private ScriptRuleParser ruleParser;
 
@@ -109,10 +114,12 @@ public class AutoProxDataManagerDecoratorTest
         final AutoProxConfig indyConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
 
         catalog = new AutoProxCatalogManager( dataFiles, indyConfig, ruleParser );
-        proxyManager = new TestAutoProxyDataManager( catalog, galley.getTransferManager() );
+        storeDataManager = new TestAutoProxyDataManager( catalog, galley.getTransferManager() );
 
-        proxyManager.install();
-        proxyManager.clear( summary );
+        storeDataManager.install();
+        storeDataManager.clear( summary );
+
+        storeQuery = storeDataManager.query().packageType( MAVEN_PKG_KEY );
 
         System.setProperty( "baseUrl", http.getBaseUri() );
     }
@@ -138,10 +145,42 @@ public class AutoProxDataManagerDecoratorTest
         logger.info( "DONE: SETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS\n\n" );
 
         catalog.setEnabled( false );
-        assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
+        assertThat( storeQuery.getRemoteRepository( "test" ), nullValue() );
         catalog.setEnabled( true );
 
-        final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
+        final RemoteRepository repo = storeQuery.getRemoteRepository( "test" );
+
+        assertThat( repo, notNullValue() );
+        assertThat( repo.getName(), equalTo( "test" ) );
+        assertThat( repo.getUrl(), equalTo( testUrl ) );
+    }
+
+    @Test
+    public void repositoryCreatedFromDeprecatedRule()
+            throws Exception
+    {
+        final URL u =
+                Thread.currentThread().getContextClassLoader().getResource( "data/autoprox/simple-deprecated-factory.groovy" );
+
+        final File f = new File( u.getPath() );
+
+        final File scriptFile = new File( autoproxDataDir, f.getName() );
+        FileUtils.copyFile( f, scriptFile );
+
+        System.out.println( "Parsing rules for: " + name.getMethodName() );
+        catalog.parseRules();
+
+        final String testUrl = http.formatUrl( "target", "test" );
+
+        logger.info( "\n\nSETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS" );
+        http.expect( testUrl + "/", 200, "" );
+        logger.info( "DONE: SETTING UP / VERIFYING REMOTE SERVER EXPECTATIONS\n\n" );
+
+        catalog.setEnabled( false );
+        assertThat( storeQuery.getRemoteRepository( "test" ), nullValue() );
+        catalog.setEnabled( true );
+
+        final RemoteRepository repo = storeQuery.getRemoteRepository( "test" );
 
         assertThat( repo, notNullValue() );
         assertThat( repo.getName(), equalTo( "test" ) );
@@ -165,10 +204,10 @@ public class AutoProxDataManagerDecoratorTest
         http.expect( testUrl, 200, "" );
 
         catalog.setEnabled( false );
-        assertThat( proxyManager.getRemoteRepository( "foo" ), nullValue() );
+        assertThat( storeQuery.getRemoteRepository( "foo" ), nullValue() );
         catalog.setEnabled( true );
 
-        final RemoteRepository repo = proxyManager.getRemoteRepository( "foo" );
+        final RemoteRepository repo = storeQuery.getRemoteRepository( "foo" );
 
         assertThat( repo, nullValue() );
     }
@@ -184,10 +223,10 @@ public class AutoProxDataManagerDecoratorTest
         http.expect( testUrl + "/", 200, "" );
 
         catalog.setEnabled( false );
-        assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
+        assertThat( storeQuery.getRemoteRepository( "test" ), nullValue() );
         catalog.setEnabled( true );
 
-        final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
+        final RemoteRepository repo = storeQuery.getRemoteRepository( "test" );
 
         assertThat( repo, notNullValue() );
         assertThat( repo.getName(), equalTo( "test" ) );
@@ -213,10 +252,10 @@ public class AutoProxDataManagerDecoratorTest
         http.expect( http.formatUrl( "target", "second/" ), 200, "" );
 
         catalog.setEnabled( false );
-        assertThat( proxyManager.getGroup( "test" ), nullValue() );
+        assertThat( storeQuery.getGroup( "test" ), nullValue() );
         catalog.setEnabled( true );
 
-        final Group group = proxyManager.getGroup( "test" );
+        final Group group = storeQuery.getGroup( "test" );
 
         assertThat( group, notNullValue() );
         assertThat( group.getName(), equalTo( "test" ) );
@@ -263,10 +302,10 @@ public class AutoProxDataManagerDecoratorTest
         http.expect( testUrl, 404, "" );
 
         catalog.setEnabled( false );
-        assertThat( proxyManager.getRemoteRepository( "test" ), nullValue() );
+        assertThat( storeQuery.getRemoteRepository( "test" ), nullValue() );
         catalog.setEnabled( true );
 
-        final RemoteRepository repo = proxyManager.getRemoteRepository( "test" );
+        final RemoteRepository repo = storeQuery.getRemoteRepository( "test" );
 
         assertThat( repo, nullValue() );
 
@@ -282,10 +321,10 @@ public class AutoProxDataManagerDecoratorTest
         http.expect( testUrl, 404, "" );
 
         catalog.setEnabled( false );
-        assertThat( proxyManager.getGroup( "test" ), nullValue() );
+        assertThat( storeQuery.getGroup( "test" ), nullValue() );
         catalog.setEnabled( true );
 
-        final Group group = proxyManager.getGroup( "test" );
+        final Group group = storeQuery.getGroup( "test" );
 
         assertThat( group, nullValue() );
     }

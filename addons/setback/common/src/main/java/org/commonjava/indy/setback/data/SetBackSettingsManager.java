@@ -192,7 +192,7 @@ public class SetBackSettingsManager
         Set<Group> groups;
         try
         {
-            groups = storeManager.getGroupsContaining( store.getKey() );
+            groups = storeManager.query().getGroupsContaining( store.getKey() );
         }
         catch ( final IndyDataException e )
         {
@@ -228,7 +228,7 @@ public class SetBackSettingsManager
         List<ArtifactStore> concreteStores;
         try
         {
-            concreteStores = storeManager.getOrderedConcreteStoresInGroup( group.getName(), false );
+            concreteStores = storeManager.query().packageType( group.getPackageType() ).getOrderedConcreteStoresInGroup( group.getName() );
         }
         catch ( final IndyDataException e )
         {

@@ -437,9 +437,11 @@ public abstract class KojiContentManagerDecorator
             remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
             remote.setMetadata( NVR, build.getNvr() );
 
-            storeDataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                            "Creating remote repository for Koji build: "
-                                                                                    + build.getNvr() ) );
+            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                   "Creating remote repository for Koji build: " + build
+                                                                           .getNvr() );
+
+            storeDataManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
 
             logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
 
@@ -498,7 +500,7 @@ public abstract class KojiContentManagerDecorator
         {
             try
             {
-                targetGroup = storeDataManager.getGroup( targetName );
+                targetGroup = storeDataManager.query().packageType( group.getPackageType() ).getGroup( targetName );
             }
             catch ( IndyDataException e )
             {
@@ -514,10 +516,11 @@ public abstract class KojiContentManagerDecorator
         targetGroup.addConstituent( buildRepo );
         try
         {
-            storeDataManager.storeArtifactStore( targetGroup, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                 "Adding remote repository for Koji build: "
-                                                                                         + buildRepo.getMetadata(
-                                                                                         NVR ) ) );
+            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                   "Adding remote repository for Koji build: "
+                                                                           + buildRepo.getMetadata( NVR ) );
+
+            storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
         }
         catch ( IndyDataException e )
         {

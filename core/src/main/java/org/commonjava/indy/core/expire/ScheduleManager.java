@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.core.expire;
 
-import static org.commonjava.indy.core.change.StoreEnablementManager.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -72,6 +70,9 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
+
+import static org.commonjava.indy.core.change.StoreEnablementManager.DISABLE_TIMEOUT;
+import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE_DEFAULT;
 
 /**
  * A ScheduleManager is used to do the schedule time out jobs for the {@link ArtifactStore} to do some time-related jobs, like
@@ -422,11 +423,11 @@ public class ScheduleManager
         {
             if ( StoreType.hosted == key.getType() )
             {
-                return dataManager.getHostedRepository( key.getName() );
+                return (HostedRepository) dataManager.getArtifactStore( key );
             }
             else if ( StoreType.group == key.getType() )
             {
-                final Group grp = dataManager.getGroup( key.getName() );
+                final Group grp = (Group) dataManager.getArtifactStore( key );
                 final HostedRepository dp = findDeployPoint( grp );
                 if ( dp != null )
                 {
