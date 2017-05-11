@@ -3,6 +3,7 @@ package org.commonjava.indy.relate.util;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.util.LocationUtils;
@@ -109,8 +110,8 @@ public class RelateGenerationManager
             ProjectVersionRef ref = artPathInfo.getProjectId();
 
             // get all groups that this store is a member of
-            Set<ArtifactStore> stores = (Set) storeManager.getGroupsContaining( store.getKey() );
-            stores.add( store );
+            Set<Group> stores = storeManager.query().getGroupsContaining( store.getKey() );
+            stores.add( (Group) store );
             List<? extends Location> supplementalLocations =
                             LocationUtils.toLocations( stores.toArray( new ArtifactStore[0] ) );
 

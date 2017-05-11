@@ -14,27 +14,29 @@
  * limitations under the License.
  */
 
-import org.commonjava.indy.autoprox.data.*;
+import org.commonjava.indy.autoprox.data.*
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+
 import java.net.MalformedURLException;
 import org.commonjava.indy.model.core.*;
 
 class SonatypeRule extends AbstractAutoProxRule
 {
-    boolean matches( String named ){
-        named.startsWith( "ST-" )
+    boolean matches( StoreKey key ){
+        MavenPackageTypeDescriptor.MAVEN_PKG_KEY.equals(key.getPackageType()) && key.getName().startsWith( "ST-" )
     }
 
-    RemoteRepository createRemoteRepository( String packageType, String named )
+    RemoteRepository createRemoteRepository( StoreKey key )
         throws MalformedURLException
     {
-        def match = (named =~ /ST-(.+)/)[0]
-        new RemoteRepository( packageType, name: named, url: "http://oss.sonatype.org/content/repositories/${match[1]}/" )
+        def match = (key.getName() =~ /ST-(.+)/)[0]
+        new RemoteRepository( key.getPackageType(), name: key.getName(), url: "http://oss.sonatype.org/content/repositories/${match[1]}/" )
     }
 
-    Group createGroup( String packageType, String named )
+    Group createGroup( StoreKey key )
     {
-        Group g = new Group( packageType, named );
-        g.addConstituent( new StoreKey( StoreType.remote, named ) )
+        Group g = new Group( key.getPackageType(), key.getName() );
+        g.addConstituent( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) )
 /*        g.addConstituent( new StoreKey( StoreType.hosted, named ) )*/
         
         g

@@ -4,33 +4,33 @@ import org.commonjava.indy.autoprox.data.*;
 class TestFactory extends AbstractAutoProxRule
 {
 
-    RemoteRepository createRemoteRepository( final String packageType, final String named )
+    RemoteRepository createRemoteRepository( final StoreKey key )
         throws MalformedURLException
     {
         String baseUrl = System.getProperty( "baseUrl" );
-        new RemoteRepository( packageType, named, baseUrl + "/target/" + named );
+        new RemoteRepository( key.getPackageType(), key.getName(), baseUrl + "/target/" + key.getName() );
     }
 
-    HostedRepository createHostedRepository( final String packageType, final String named )
+    HostedRepository createHostedRepository( final StoreKey key )
     {
-        new HostedRepository( packageType, named );
+        new HostedRepository( key.getPackageType(), key.getName() );
     }
 
-    Group createGroup( String packageType, final String named )
+    Group createGroup( StoreKey key )
     {
         List<StoreKey> constituents = new ArrayList<StoreKey>();
         
-        constituents.add( new StoreKey( packageType, StoreType.hosted, named ) );
-        constituents.add( new StoreKey( packageType, StoreType.remote, named ) );
-        constituents.add( new StoreKey( packageType, StoreType.remote, "first" ) );
-        constituents.add( new StoreKey( packageType, StoreType.remote, "second" ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.hosted, key.getName() ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, "first" ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, "second" ) );
         
-        new Group( packageType, named, constituents );
+        new Group( key.getPackageType(), key.getName(), constituents );
     }
 
-    boolean matches( final String packageType, final String name )
+    boolean matches( final StoreKey key )
     {
-        "test".equals( name );
+        "test".equals( key.getName() );
     }
     
 }

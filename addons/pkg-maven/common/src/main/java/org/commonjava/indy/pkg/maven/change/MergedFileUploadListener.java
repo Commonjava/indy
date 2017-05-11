@@ -82,7 +82,7 @@ public class MergedFileUploadListener
 
         try
         {
-            final Set<? extends Group> groups = dataManager.getGroupsContaining( key );
+            final Set<Group> groups = dataManager.query().getGroupsContaining( key );
 
             if ( groups != null )
             {

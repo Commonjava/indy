@@ -24,25 +24,25 @@ import org.slf4j.LoggerFactory;
 
 class JBossOrgRule extends AbstractAutoProxRule
 {
-    boolean matches( String packageType, String named ) {
-        MavenPackageTypeDescriptor.MAVEN_PKG_KEY.equals(packageType) && named.startsWith("JB-")
+    boolean matches( StoreKey key ) {
+        MavenPackageTypeDescriptor.MAVEN_PKG_KEY.equals(key.getPackageType()) && key.getName().startsWith("JB-")
     }
 
-    RemoteRepository createRemoteRepository( String packageType, String named )
+    RemoteRepository createRemoteRepository( StoreKey key )
         throws MalformedURLException
     {
-        def match = (named =~ /JB-(.+)/)[0]
-        return new RemoteRepository( packageType, name: named, url: "https://repository.jboss.org/nexus/content/repositories/${match[1]}/" )
+        def match = (key.getName() =~ /JB-(.+)/)[0]
+        return new RemoteRepository( key.getPackageType(), name: key.getName(), url: "https://repository.jboss.org/nexus/content/repositories/${match[1]}/" )
     }
 
-    Group createGroup( String packageType, String named )
+    Group createGroup( StoreKey key )
     {
-        Group g = new Group( packageType, named );
-        g.addConstituent( new StoreKey( StoreType.remote, named ) )
+        Group g = new Group( key.getPackageType(), key.getName() );
+        g.addConstituent( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) )
 /*        g.addConstituent( new StoreKey( StoreType.hosted, named ) )*/
         
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Created group: {}", g )
+        logger.debug( "Created group: {}", g )
 
         return g
     }

@@ -26,21 +26,21 @@ class RedHatRule extends AbstractAutoProxRule
         MavenPackageTypeDescriptor.MAVEN_PKG_KEY.equals( packageType ) && name.startsWith( "RH-" )
     }
 
-    RemoteRepository createRemoteRepository( String packageType, String named )
+    RemoteRepository createRemoteRepository( StoreKey key )
         throws MalformedURLException
     {
         if ( named == "RH-all" || named == "RH-techpreview" ){
-          new RemoteRepository( packageType, name: named, url: "http://maven.repository.redhat.com/techpreview/all/" )
+          new RemoteRepository( key.getPackageType(), name: key.getName(), url: "http://maven.repository.redhat.com/techpreview/all/" )
         }
         else if ( named == "RH-earlyaccess" ){
-          new RemoteRepository( packageType, name: named, url: "http://maven.repository.redhat.com/earlyaccess/all/" )
+          new RemoteRepository( key.getPackageType(), name: key.getName(), url: "http://maven.repository.redhat.com/earlyaccess/all/" )
         }
     }
 
-    Group createGroup( String packageType, String named )
+    Group createGroup( StoreKey key )
     {
-        Group g = new Group( packageType, named );
-        g.addConstituent( new StoreKey( StoreType.remote, named ) )
+        Group g = new Group( key.getPackageType(), key.getName() );
+        g.addConstituent( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) )
         
         g
     }

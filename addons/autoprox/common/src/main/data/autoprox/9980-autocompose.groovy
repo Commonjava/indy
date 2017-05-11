@@ -20,17 +20,17 @@ import org.commonjava.indy.model.core.*;
 
 class ComplexGroupsRule extends AbstractAutoProxRule
 {
-    boolean matches( String name ){
-        name =~ /.+\+.+/
+    boolean matches( StoreKey key ){
+        key.getName() =~ /.+\+.+/
     }
 
-    Group createGroup( String packageType, String named )
+    Group createGroup( StoreKey key )
     {
-        String[] parts = named.split("\\+")
+        String[] parts = key.getName().split("\\+")
         
         Group g = null
         if ( parts.length > 1 ){
-            g = new Group( packageType, named )
+            g = new Group( key.getPackageType(), key.getName() )
             parts.each{
               int idx = it.indexOf('_')
               
@@ -44,7 +44,7 @@ class ComplexGroupsRule extends AbstractAutoProxRule
                 name = it.substring(idx+1)
               }
               
-              g.addConstituent( new StoreKey( StoreType.get( type ), name ) );
+              g.addConstituent( new StoreKey( key.getPackageType(), StoreType.get( type ), key.getName() ) );
             }
         }
         

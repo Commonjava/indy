@@ -14,29 +14,29 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
- * Provides a convenient delegating implementation of {@link StoreDataManagerQuery}, which can be extended to wrap
+ * Provides a convenient delegating implementation of {@link ArtifactStoreQuery}, which can be extended to wrap
  * particular methods with extra logic.
  *
  * Created by jdcasey on 5/11/17.
  */
-public class DelegatingStoreDataManagerQuery<T extends ArtifactStore>
-    implements StoreDataManagerQuery<T>
+public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
+        implements ArtifactStoreQuery<T>
 {
 
-    private StoreDataManagerQuery<T> delegate;
+    private ArtifactStoreQuery<T> delegate;
 
-    protected DelegatingStoreDataManagerQuery( StoreDataManagerQuery delegate )
+    protected DelegatingArtifactStoreQuery( ArtifactStoreQuery delegate )
     {
         this.delegate = delegate;
     }
 
-    protected final StoreDataManagerQuery<T> delegate()
+    protected final ArtifactStoreQuery<T> delegate()
     {
         return delegate;
     }
 
     @Override
-    public StoreDataManagerQuery<T> packageType( final String packageType )
+    public ArtifactStoreQuery<T> packageType( final String packageType )
             throws IndyDataException
     {
         delegate.packageType( packageType );
@@ -44,28 +44,28 @@ public class DelegatingStoreDataManagerQuery<T extends ArtifactStore>
     }
 
     @Override
-    public <C extends ArtifactStore> StoreDataManagerQuery<C> storeType( final Class<C> storeCls )
+    public <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( final Class<C> storeCls )
     {
         delegate.storeType( storeCls );
-        return (StoreDataManagerQuery<C>) this;
+        return (ArtifactStoreQuery<C>) this;
     }
 
     @Override
-    public StoreDataManagerQuery<T> storeTypes( final StoreType... types )
+    public ArtifactStoreQuery<T> storeTypes( final StoreType... types )
     {
         delegate.storeTypes( types );
         return this;
     }
 
     @Override
-    public StoreDataManagerQuery<T> concreteStores()
+    public ArtifactStoreQuery<T> concreteStores()
     {
         delegate.concreteStores();
         return this;
     }
 
     @Override
-    public StoreDataManagerQuery<T> enabledState( final Boolean enabled )
+    public ArtifactStoreQuery<T> enabledState( final Boolean enabled )
     {
         delegate.enabledState( enabled );
         return this;
@@ -198,7 +198,7 @@ public class DelegatingStoreDataManagerQuery<T extends ArtifactStore>
     }
 
     @Override
-    public StoreDataManagerQuery<T> noPackageType()
+    public ArtifactStoreQuery<T> noPackageType()
     {
         delegate.noPackageType();
         return this;

@@ -17,6 +17,8 @@ package org.commonjava.indy.core.content;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -29,6 +31,7 @@ import org.commonjava.indy.content.AbstractContentGenerator;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -108,15 +111,29 @@ public abstract class AbstractMergedContentGenerator
     protected abstract String getMergedMetadataName();
 
     protected void clearAllMerged( final ArtifactStore store, final String path )
+            throws IndyWorkflowException
     {
-        final Set<Group> groups = storeManager.getGroupsAffectedBy( store.getKey() );
+        final Set<Group> groups = new HashSet<>();
+
         if ( StoreType.group == store.getKey()
                                      .getType() )
         {
             groups.add( (Group) store );
         }
 
-        groups.parallelStream().forEach( group -> clearMergedFile( group, path ) );
+        try
+        {
+            groups.addAll(
+                    storeManager.query().packageType( store.getPackageType() ).getGroupsAffectedBy( store.getKey() ) );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( String.format( "Failed to retrieve groups affected by: %s. Reason: %s", store.getKey(),
+                                         e.getMessage() ), e );
+
+        }
+
+        groups.stream().forEach( group -> clearMergedFile( group, path ) );
 
         if ( mergedContentActions != null )
         {

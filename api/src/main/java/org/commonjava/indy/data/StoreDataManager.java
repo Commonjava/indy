@@ -36,7 +36,7 @@ public interface StoreDataManager
 
     String EVENT_ORIGIN = "event-origin";
 
-    StoreDataManagerQuery<ArtifactStore> query();
+    ArtifactStoreQuery<ArtifactStore> query();
 
     /**
      * Return true if the system contains a {@link ArtifactStore} with the given key (combination of {@link StoreType} and name); false otherwise.

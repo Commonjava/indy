@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 
 public interface AutoProxRule
 {
@@ -28,14 +29,14 @@ public interface AutoProxRule
 
     boolean isValidationEnabled();
 
-    boolean matches( String packageType, String name );
+    boolean matches( StoreKey key );
 
-    RemoteRepository createRemoteRepository( String packageType, String named )
+    RemoteRepository createRemoteRepository( StoreKey key )
         throws AutoProxRuleException, MalformedURLException;
 
-    HostedRepository createHostedRepository( String packageType, String named );
+    HostedRepository createHostedRepository( StoreKey key );
 
-    Group createGroup( String packageType, String named );
+    Group createGroup( StoreKey key );
 
     String getRemoteValidationPath();
 
@@ -43,7 +44,7 @@ public interface AutoProxRule
      * MAY be null IF the remotes/groups don't require validation.
      * Otherwise, this repository should supply any credentials/configuration needed to validate the remote URL.
      */
-    RemoteRepository createValidationRemote( String packageType, String name )
+    RemoteRepository createValidationRemote( StoreKey key )
         throws AutoProxRuleException, MalformedURLException;
 
 }

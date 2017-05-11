@@ -15,9 +15,6 @@
  */
 package org.commonjava.indy.core.data;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.MigrationAction;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -32,11 +29,16 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 @Named( "Store-Initialization" )
 public class StoreDataSetupAction
     implements MigrationAction
 {
-    public static final String DEFAULT_SETUP = "default-setup";
+    private static final String DEFAULT_SETUP = "default-setup";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -67,36 +69,48 @@ public class StoreDataSetupAction
             logger.info( "Verfiying that Indy basic stores are installed..." );
             storeManager.install();
 
-            if ( !storeManager.hasRemoteRepository( "central" ) )
+            if ( !storeManager.query()
+                              .packageType( MAVEN_PKG_KEY )
+                              .storeType( RemoteRepository.class )
+                              .containsByName( "central" ) )
             {
                 final RemoteRepository central =
-                    new RemoteRepository( "central", "http://repo.maven.apache.org/maven2/" );
+                        new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2/" );
                 central.setCacheTimeoutSeconds( 86400 );
                 storeManager.storeArtifactStore( central, summary, true, true,
-                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, DEFAULT_SETUP ) );
+                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                          DEFAULT_SETUP ) );
                 changed = true;
             }
 
-            if ( !storeManager.hasHostedRepository( "local-deployments" ) )
+            if ( !storeManager.query()
+                              .packageType( MAVEN_PKG_KEY )
+                              .storeType( HostedRepository.class )
+                              .containsByName( "local-deployments" ) )
             {
-                final HostedRepository local = new HostedRepository( "local-deployments" );
+                final HostedRepository local = new HostedRepository( MAVEN_PKG_KEY, "local-deployments" );
                 local.setAllowReleases( true );
                 local.setAllowSnapshots( true );
                 local.setSnapshotTimeoutSeconds( 86400 );
 
                 storeManager.storeArtifactStore( local, summary, true, true,
-                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, DEFAULT_SETUP ) );
+                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                          DEFAULT_SETUP ) );
                 changed = true;
             }
 
-            if ( !storeManager.hasGroup( "public" ) )
+            if ( !storeManager.query()
+                              .packageType( MAVEN_PKG_KEY )
+                              .storeType( Group.class )
+                              .containsByName( "public" ) )
             {
-                final Group pub = new Group( "public" );
-                pub.addConstituent( new StoreKey( StoreType.remote, "central" ) );
-                pub.addConstituent( new StoreKey( StoreType.hosted, "local-deployments" ) );
+                final Group pub = new Group( MAVEN_PKG_KEY, "public" );
+                pub.addConstituent( new StoreKey( MAVEN_PKG_KEY, StoreType.remote, "central" ) );
+                pub.addConstituent( new StoreKey( MAVEN_PKG_KEY, StoreType.hosted, "local-deployments" ) );
 
                 storeManager.storeArtifactStore( pub, summary, true, true,
-                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, DEFAULT_SETUP ) );
+                                                 new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                          DEFAULT_SETUP ) );
                 changed = true;
             }
         }

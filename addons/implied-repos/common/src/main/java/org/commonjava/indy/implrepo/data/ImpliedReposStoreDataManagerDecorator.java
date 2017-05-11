@@ -15,27 +15,14 @@
  */
 package org.commonjava.indy.implrepo.data;
 
-import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.StoreDataManagerQuery;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
 
 /**
  * Wrap methods that retrieve stores for a group, or groups containing a store. Check if the store(s) in question are
@@ -57,7 +44,7 @@ public abstract class ImpliedReposStoreDataManagerDecorator
     @Inject
     private ImpliedRepoConfig config;
 
-    public StoreDataManagerQuery<ArtifactStore> query()
+    public ArtifactStoreQuery<ArtifactStore> query()
     {
         return new ImpliedReposQueryDelegate( delegate.query(), this, config );
     }

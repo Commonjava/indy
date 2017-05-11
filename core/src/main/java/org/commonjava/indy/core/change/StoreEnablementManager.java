@@ -38,8 +38,6 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
 
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
-
 @ApplicationScoped
 public class StoreEnablementManager
 {
@@ -153,9 +151,11 @@ public class StoreEnablementManager
                 store.setDisabled( true );
             }
 
-            storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
+            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
                     "Disabling %s due to error: %s\n\nStack Trace:\n  %s", key, error,
-                    StringUtils.join( error.getStackTrace(), "\n  " ) ) ), new EventMetadata() );
+                    StringUtils.join( error.getStackTrace(), "\n  " ) ) );
+
+            storeDataManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
 
             logger.warn( "{} has been disabled due to store-level error: {}\n Will re-enable in {} seconds.", key,
                          error, config.getStoreDisableTimeoutSeconds() );
@@ -204,7 +204,7 @@ public class StoreEnablementManager
 
                         storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                                        "Re-enabling " + key ),
-                                                             new EventMetadata() );
+                                                             false, true, new EventMetadata() );
 
                         cancelReEnablementTimeout( key );
                     }

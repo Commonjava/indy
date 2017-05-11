@@ -2,7 +2,7 @@ package org.commonjava.indy.mem.data;
 
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.StoreDataManagerQuery;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +47,8 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
  * Created by jdcasey on 5/10/17.
  */
 // TODO: Eventually, it should probably be an error if packageType isn't set explicitly
-public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
-        implements org.commonjava.indy.data.StoreDataManagerQuery<T>
+public class MemoryArtifactStoreQuery<T extends ArtifactStore>
+        implements ArtifactStoreQuery<T>
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -60,13 +61,13 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
 
     private Boolean enabled;
 
-    public MemoryStoreDataManagerQuery( StoreDataManager dataManager )
+    public MemoryArtifactStoreQuery( StoreDataManager dataManager )
     {
         this.dataManager = dataManager;
     }
 
-    private MemoryStoreDataManagerQuery( final StoreDataManager dataManager, final String packageType,
-                                         final Boolean enabled, final Class<T> storeCls )
+    private MemoryArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
+                                      final Boolean enabled, final Class<T> storeCls )
     {
         this.dataManager = dataManager;
         this.packageType = packageType;
@@ -75,7 +76,7 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
     }
 
     @Override
-    public MemoryStoreDataManagerQuery<T> packageType( String packageType )
+    public MemoryArtifactStoreQuery<T> packageType( String packageType )
             throws IndyDataException
     {
         if ( !PackageTypes.contains( packageType ) )
@@ -89,7 +90,7 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
     }
 
     @Override
-    public <C extends ArtifactStore> MemoryStoreDataManagerQuery<C> storeType( Class<C> storeCls )
+    public <C extends ArtifactStore> MemoryArtifactStoreQuery<C> storeType( Class<C> storeCls )
     {
         if ( RemoteRepository.class.equals( storeCls ) )
         {
@@ -104,24 +105,24 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
             this.types = Collections.singleton( group );
         }
 
-        return (MemoryStoreDataManagerQuery<C>) this;
+        return (MemoryArtifactStoreQuery<C>) this;
     }
 
     @Override
-    public MemoryStoreDataManagerQuery<T> storeTypes( StoreType... types )
+    public MemoryArtifactStoreQuery<T> storeTypes( StoreType... types )
     {
         this.types = new HashSet<>( Arrays.asList( types ) );
         return this;
     }
 
     @Override
-    public StoreDataManagerQuery<T> concreteStores()
+    public ArtifactStoreQuery<T> concreteStores()
     {
         return storeTypes( remote, hosted );
     }
 
     @Override
-    public StoreDataManagerQuery<T> enabledState( Boolean enabled )
+    public ArtifactStoreQuery<T> enabledState( Boolean enabled )
     {
         this.enabled = enabled;
         return this;
@@ -190,7 +191,8 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
     public Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException
     {
-        return new MemoryStoreDataManagerQuery<Group>( dataManager, packageType, enabled, Group.class ).stream(
+        return new MemoryArtifactStoreQuery<Group>( dataManager, storeKey.getPackageType(), enabled,
+                                                    Group.class ).stream(
                 store -> ( (Group) store ).getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
 
@@ -216,7 +218,7 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
         final UrlInfo urlInfo = temp;
 
         /* @formatter:off */
-        return new MemoryStoreDataManagerQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
+        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
                 store -> {
                     if ( ( remote == store.getType() ) && urlInfo != null )
                     {
@@ -280,14 +282,20 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, dataManager.getArtifactStoresByKey(), false, true );
+        Map<StoreKey, ArtifactStore> stores = new HashMap<>();
+        stream().forEach( s -> stores.put( s.getKey(), s ) );
+
+        return getGroupOrdering( groupName, stores, false, true );
     }
 
     @Override
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, dataManager.getArtifactStoresByKey(), true, false );
+        Map<StoreKey, ArtifactStore> stores = new HashMap<>();
+        stream().forEach( s -> stores.put( s.getKey(), s ) );
+
+        return getGroupOrdering( groupName, stores, true, false );
     }
 
     @Override
@@ -304,14 +312,19 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Getting groups affected by: {}", keys );
 
-        Set<ArtifactStore> all = dataManager.getAllArtifactStores();
-
         List<StoreKey> toProcess = new ArrayList<>();
-        toProcess.addAll( keys.parallelStream().collect( Collectors.toSet() ) );
+        toProcess.addAll( keys.stream().collect( Collectors.toSet() ) );
+
+        Set<Group> groups = new HashSet<>();
+        if ( toProcess.isEmpty() )
+        {
+            return groups;
+        }
 
         Set<StoreKey> processed = new HashSet<>();
 
-        Set<Group> groups = new HashSet<>();
+        Set<Group> all = new MemoryArtifactStoreQuery<Group>( dataManager, toProcess.get( 0 ).getPackageType(), null,
+                                                              Group.class ).stream().collect( Collectors.toSet() );
 
         while ( !toProcess.isEmpty() )
         {
@@ -349,23 +362,23 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
     public List<RemoteRepository> getAllRemoteRepositories()
             throws IndyDataException
     {
-        return new MemoryStoreDataManagerQuery<RemoteRepository>( dataManager, packageType, enabled,
-                                                                  RemoteRepository.class ).getAll();
+        return new MemoryArtifactStoreQuery<RemoteRepository>( dataManager, packageType, enabled,
+                                                               RemoteRepository.class ).getAll();
     }
 
     @Override
     public List<HostedRepository> getAllHostedRepositories()
             throws IndyDataException
     {
-        return new MemoryStoreDataManagerQuery<HostedRepository>( dataManager, packageType, enabled,
-                                                                  HostedRepository.class ).getAll();
+        return new MemoryArtifactStoreQuery<HostedRepository>( dataManager, packageType, enabled,
+                                                               HostedRepository.class ).getAll();
     }
 
     @Override
     public List<Group> getAllGroups()
             throws IndyDataException
     {
-        return new MemoryStoreDataManagerQuery<Group>( dataManager, packageType, enabled, Group.class ).getAll();
+        return new MemoryArtifactStoreQuery<Group>( dataManager, packageType, enabled, Group.class ).getAll();
     }
 
     @Override
@@ -390,7 +403,7 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
     }
 
     @Override
-    public MemoryStoreDataManagerQuery<T> noPackageType()
+    public MemoryArtifactStoreQuery<T> noPackageType()
     {
         packageType = null;
         return this;

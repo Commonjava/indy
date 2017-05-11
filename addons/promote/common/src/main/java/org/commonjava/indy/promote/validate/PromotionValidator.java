@@ -191,8 +191,10 @@ public class PromotionValidator
             store = tempRemote;
             try
             {
-                storeDataMgr.storeArtifactStore( tempRemote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                "create temp remote repository" ) );
+                final ChangeSummary changeSummary =
+                        new ChangeSummary( ChangeSummary.SYSTEM_USER, "create temp remote repository" );
+
+                storeDataMgr.storeArtifactStore( tempRemote, changeSummary, false, true, new EventMetadata() );
             }
             catch ( IndyDataException e )
             {

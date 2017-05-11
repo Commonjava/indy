@@ -21,7 +21,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -46,7 +46,7 @@ public class KojiOriginMigrationAction
         List<HostedRepository> hostedRepositories;
         try
         {
-            hostedRepositories = storeDataManager.getAllHostedRepositories();
+            hostedRepositories = storeDataManager.query().noPackageType().getAllHostedRepositories();
         }
         catch ( IndyDataException e )
         {
@@ -67,8 +67,10 @@ public class KojiOriginMigrationAction
         {
             try
             {
-                storeDataManager.storeArtifactStore( repo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                              "Adding Koji origin metadata" ) );
+                final ChangeSummary changeSummary =
+                        new ChangeSummary( ChangeSummary.SYSTEM_USER, "Adding Koji origin metadata" );
+
+                storeDataManager.storeArtifactStore( repo, changeSummary, false, true, new EventMetadata() );
             }
             catch ( IndyDataException e )
             {

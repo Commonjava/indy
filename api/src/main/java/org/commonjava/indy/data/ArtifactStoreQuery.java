@@ -26,18 +26,18 @@ import java.util.stream.Stream;
  * <p>
  * Created by jdcasey on 5/10/17.
  */
-public interface StoreDataManagerQuery<T extends ArtifactStore>
+public interface ArtifactStoreQuery<T extends ArtifactStore>
 {
-    StoreDataManagerQuery<T> packageType( String packageType )
+    ArtifactStoreQuery<T> packageType( String packageType )
             throws IndyDataException;
 
-    <C extends ArtifactStore> StoreDataManagerQuery<C> storeType( Class<C> storeCls );
+    <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( Class<C> storeCls );
 
-    StoreDataManagerQuery<T> storeTypes( StoreType... types );
+    ArtifactStoreQuery<T> storeTypes( StoreType... types );
 
-    StoreDataManagerQuery<T> concreteStores();
+    ArtifactStoreQuery<T> concreteStores();
 
-    StoreDataManagerQuery<T> enabledState( Boolean enabled );
+    ArtifactStoreQuery<T> enabledState( Boolean enabled );
 
     List<T> getAll()
             throws IndyDataException;
@@ -93,5 +93,5 @@ public interface StoreDataManagerQuery<T extends ArtifactStore>
     Group getGroup( String name )
             throws IndyDataException;
 
-    StoreDataManagerQuery<T> noPackageType();
+    ArtifactStoreQuery<T> noPackageType();
 }

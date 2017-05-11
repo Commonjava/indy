@@ -1,9 +1,9 @@
 package org.commonjava.indy.implrepo.data;
 
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.data.DelegatingStoreDataManagerQuery;
+import org.commonjava.indy.data.DelegatingArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.data.StoreDataManagerQuery;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -24,13 +24,13 @@ import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
  * Created by jdcasey on 5/11/17.
  */
 public class ImpliedReposQueryDelegate
-        extends DelegatingStoreDataManagerQuery<ArtifactStore>
+        extends DelegatingArtifactStoreQuery<ArtifactStore>
 {
     private final ImpliedReposStoreDataManagerDecorator dataManager;
 
     private final ImpliedRepoConfig config;
 
-    public ImpliedReposQueryDelegate( final StoreDataManagerQuery<ArtifactStore> query,
+    public ImpliedReposQueryDelegate( final ArtifactStoreQuery<ArtifactStore> query,
                                       final ImpliedReposStoreDataManagerDecorator dataManager,
                                       final ImpliedRepoConfig config )
     {

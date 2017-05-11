@@ -22,7 +22,7 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.StoreDataManagerQuery;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -83,9 +83,9 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    public StoreDataManagerQuery<ArtifactStore> query()
+    public ArtifactStoreQuery<ArtifactStore> query()
     {
-        return new MemoryStoreDataManagerQuery<>( this );
+        return new MemoryArtifactStoreQuery<>( this );
     }
 
     @Override
