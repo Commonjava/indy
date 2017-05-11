@@ -207,7 +207,7 @@ public class ContentController
     {
         try
         {
-            final List<ArtifactStore> stores = storeManager.getAllConcreteArtifactStores();
+            final List<ArtifactStore> stores = storeManager.query().concreteStores().getAll();
             contentManager.rescanAll( stores, eventMetadata );
         }
         catch ( final IndyDataException e )
@@ -229,7 +229,7 @@ public class ContentController
     {
         try
         {
-            final List<ArtifactStore> stores = storeManager.getAllConcreteArtifactStores();
+            final List<ArtifactStore> stores = storeManager.query().concreteStores().getAll();
             contentManager.deleteAll( stores, path, eventMetadata );
         }
         catch ( final IndyDataException e )

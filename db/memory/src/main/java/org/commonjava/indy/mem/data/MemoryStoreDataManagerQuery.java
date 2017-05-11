@@ -38,11 +38,11 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
  * any data manager implementation. Separating these methods out and providing a single {@link StoreDataManager#query()}
  * method to provide access to an instance of this class drastically simplifies the task of implementing a new type of
  * data manager.
- *
+ * <p>
  * This class is intended to function as a fluent api. It does keep state on packageType, storeType(s), and
  * enabled / disabled selection. However, methods that pertain to specific types of ArtifactStore (indicated by their
  * names) DO NOT change the internal state of the query instance on which they are called.
- *
+ * <p>
  * Created by jdcasey on 5/10/17.
  */
 // TODO: Eventually, it should probably be an error if packageType isn't set explicitly
@@ -65,8 +65,8 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
         this.dataManager = dataManager;
     }
 
-    private MemoryStoreDataManagerQuery( final StoreDataManager dataManager, final String packageType, final Boolean enabled,
-                                         final Class<T> storeCls )
+    private MemoryStoreDataManagerQuery( final StoreDataManager dataManager, final String packageType,
+                                         final Boolean enabled, final Class<T> storeCls )
     {
         this.dataManager = dataManager;
         this.packageType = packageType;
@@ -345,11 +345,67 @@ public class MemoryStoreDataManagerQuery<T extends ArtifactStore>
         return groups;
     }
 
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories()
+            throws IndyDataException
+    {
+        return new MemoryStoreDataManagerQuery<RemoteRepository>( dataManager, packageType, enabled,
+                                                                  RemoteRepository.class ).getAll();
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories()
+            throws IndyDataException
+    {
+        return new MemoryStoreDataManagerQuery<HostedRepository>( dataManager, packageType, enabled,
+                                                                  HostedRepository.class ).getAll();
+    }
+
+    @Override
+    public List<Group> getAllGroups()
+            throws IndyDataException
+    {
+        return new MemoryStoreDataManagerQuery<Group>( dataManager, packageType, enabled, Group.class ).getAll();
+    }
+
+    @Override
+    public RemoteRepository getRemoteRepository( final String name )
+            throws IndyDataException
+    {
+        return (RemoteRepository) dataManager.getArtifactStore( new StoreKey( packageType, remote, name ) );
+    }
+
+    @Override
+    public HostedRepository getHostedRepository( final String name )
+            throws IndyDataException
+    {
+        return (HostedRepository) dataManager.getArtifactStore( new StoreKey( packageType, hosted, name ) );
+    }
+
+    @Override
+    public Group getGroup( final String name )
+            throws IndyDataException
+    {
+        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
+    }
+
+    @Override
+    public MemoryStoreDataManagerQuery<T> noPackageType()
+    {
+        packageType = null;
+        return this;
+    }
+
     private List<ArtifactStore> getGroupOrdering( final String groupName, final Map<StoreKey, ArtifactStore> stores,
                                                   final boolean includeGroups, final boolean recurseGroups )
             throws IndyDataException
     {
-        final Group master = (Group) stores.get( new StoreKey( StoreType.group, groupName ) );
+        if ( packageType == null )
+        {
+            throw new IndyDataException( "packageType must be set on the query before calling this method!" );
+        }
+
+        final Group master = (Group) stores.get( new StoreKey( packageType, StoreType.group, groupName ) );
         if ( master == null )
         {
             return Collections.emptyList();

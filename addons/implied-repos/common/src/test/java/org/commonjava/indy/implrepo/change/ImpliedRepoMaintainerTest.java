@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.implrepo.change;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -62,14 +63,14 @@ public class ImpliedRepoMaintainerTest
     public void addImpliedRepoWhenRepoAddedToGroup()
         throws Exception
     {
-        final Group g = new Group( "test" );
-        storeDataManager.storeArtifactStore( g, summary, new EventMetadata() );
+        final Group g = new Group( MAVEN_PKG_KEY, "test" );
+        storeDataManager.storeArtifactStore( g, summary, false, true, new EventMetadata() );
 
-        final RemoteRepository repo1 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo1, summary, new EventMetadata() );
+        final RemoteRepository repo1 = new RemoteRepository( MAVEN_PKG_KEY, "one", "http://www.foo.com/repo" );
+        storeDataManager.storeArtifactStore( repo1, summary, false, true, new EventMetadata() );
 
-        final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo2, summary, new EventMetadata() );
+        final RemoteRepository repo2 = new RemoteRepository( MAVEN_PKG_KEY, "one", "http://www.foo.com/repo" );
+        storeDataManager.storeArtifactStore( repo2, summary, false, true, new EventMetadata() );
 
         metadataManager.addImpliedMetadata( repo1, Collections.singletonList( repo2 ) );
 
@@ -87,14 +88,14 @@ public class ImpliedRepoMaintainerTest
     public void dontRemoveImpliedRepoWhenRepoRemovedFromGroup()
         throws Exception
     {
-        final Group g = new Group( "test" );
-        storeDataManager.storeArtifactStore( g, summary, new EventMetadata() );
+        final Group g = new Group( MAVEN_PKG_KEY, "test" );
+        storeDataManager.storeArtifactStore( g, summary, false, true, new EventMetadata() );
 
-        final RemoteRepository repo1 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo1, summary, new EventMetadata() );
+        final RemoteRepository repo1 = new RemoteRepository( MAVEN_PKG_KEY, "one", "http://www.foo.com/repo" );
+        storeDataManager.storeArtifactStore( repo1, summary, false, true, new EventMetadata() );
 
-        final RemoteRepository repo2 = new RemoteRepository( "one", "http://www.foo.com/repo" );
-        storeDataManager.storeArtifactStore( repo2, summary, new EventMetadata() );
+        final RemoteRepository repo2 = new RemoteRepository( MAVEN_PKG_KEY, "one", "http://www.foo.com/repo" );
+        storeDataManager.storeArtifactStore( repo2, summary, false, true, new EventMetadata() );
 
         metadataManager.addImpliedMetadata( repo1, Collections.singletonList( repo2 ) );
 

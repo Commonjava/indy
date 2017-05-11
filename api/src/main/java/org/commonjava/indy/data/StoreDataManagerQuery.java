@@ -2,6 +2,7 @@ package org.commonjava.indy.data;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -73,4 +74,24 @@ public interface StoreDataManagerQuery<T extends ArtifactStore>
 
     Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException;
+
+    List<RemoteRepository> getAllRemoteRepositories()
+            throws IndyDataException;
+
+    List<HostedRepository> getAllHostedRepositories()
+            throws IndyDataException;
+
+    List<Group> getAllGroups()
+            throws IndyDataException;
+
+    RemoteRepository getRemoteRepository( String name )
+            throws IndyDataException;
+
+    HostedRepository getHostedRepository( String name )
+            throws IndyDataException;
+
+    Group getGroup( String name )
+            throws IndyDataException;
+
+    StoreDataManagerQuery<T> noPackageType();
 }

@@ -131,14 +131,14 @@ public class StoreWithTypeMigrationAction
         {
             data.reload();
 
-            final List<HostedRepository> hosted = data.getAllHostedRepositories();
+            final List<HostedRepository> hosted = data.query().noPackageType().getAllHostedRepositories();
             for ( final HostedRepository repo : hosted )
             {
                 data.storeArtifactStore( repo, summary, false, true,
                                          new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, STORE_TYPE_MIGRATION ) );
             }
 
-            final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
+            final List<RemoteRepository> remotes = data.query().noPackageType().getAllRemoteRepositories();
             for ( final RemoteRepository repo : remotes )
             {
                 data.storeArtifactStore( repo, summary, false, true,
