@@ -70,7 +70,7 @@ public class AdminController
             final ChangeSummary summary = new ChangeSummary( user, changelog );
 
             logger.info( "Persisting artifact store: {} using: {}", store, storeManager );
-            return storeManager.storeArtifactStore( store, summary, skipExisting, new EventMetadata() );
+            return storeManager.storeArtifactStore( store, summary, skipExisting, true, new EventMetadata() );
         }
         catch ( final IndyDataException e )
         {
@@ -79,12 +79,13 @@ public class AdminController
         }
     }
 
+    // TODO: packageType?
     public List<? extends ArtifactStore> getAllOfType( final StoreType type )
         throws IndyWorkflowException
     {
         try
         {
-            return storeManager.getAllArtifactStores( type );
+            return storeManager.query().storeTypes( type ).getAll();
         }
         catch ( final IndyDataException e )
         {

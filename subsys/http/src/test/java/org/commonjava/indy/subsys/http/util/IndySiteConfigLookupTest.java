@@ -53,7 +53,7 @@ public class IndySiteConfigLookupTest
 
         MemoryStoreDataManager storeData = new MemoryStoreDataManager(true);
         storeData.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER, "This is a test" ), false,
-                                      true, new EventMetadata() );
+                                      false, new EventMetadata() );
 
         IndySiteConfigLookup lookup = new IndySiteConfigLookup( storeData );
         SiteConfig siteConfig = lookup.lookup( "remote:test" );

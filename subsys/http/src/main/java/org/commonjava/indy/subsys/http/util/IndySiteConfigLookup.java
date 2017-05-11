@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import java.rmi.Remote;
 
 /**
  * Created by jdcasey on 11/9/15.
@@ -91,7 +92,7 @@ public class IndySiteConfigLookup
         StoreKey key = StoreKey.fromString( siteId );
         try
         {
-            final RemoteRepository repository = storeDataManager.getRemoteRepository( key.getName() );
+            final RemoteRepository repository = (RemoteRepository) storeDataManager.getArtifactStore( key );
             return toSiteConfig( repository );
         }
         catch ( IndyDataException e )

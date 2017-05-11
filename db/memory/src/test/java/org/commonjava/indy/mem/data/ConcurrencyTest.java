@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -82,7 +83,7 @@ public class ConcurrencyTest
         dispatcher.setDataManager( dataManager );
 
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test init" );
-        dataManager.storeArtifactStore( repo, summary );
+        dataManager.storeArtifactStore( repo, summary, false, false, new EventMetadata() );
 
         for ( int i = 0; i < 2; i++ )
         {
@@ -92,7 +93,7 @@ public class ConcurrencyTest
                 group.addConstituent( repo );
             }
 
-            dataManager.storeArtifactStore( group, summary );
+            dataManager.storeArtifactStore( group, summary, false, false, new EventMetadata() );
         }
 
         for ( int i = 0; i < count.get(); i++ )
@@ -131,10 +132,10 @@ public class ConcurrencyTest
         dispatcher.setDataManager( dataManager );
 
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test init" );
-        dataManager.storeArtifactStore( repo, summary );
+        dataManager.storeArtifactStore( repo, summary, false, false, new EventMetadata() );
 
-        dataManager.deleteArtifactStore( repo.getKey(),
-                                         new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test deletion" ) );
+        dataManager.deleteArtifactStore( repo.getKey(), new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test deletion" ),
+                                         new EventMetadata() );
 
         Future<String> future = completionService.take();
         assertThat( future.get(), nullValue() );
@@ -176,7 +177,7 @@ public class ConcurrencyTest
                     logger.debug( "Grabbing groups containing: {}", repo.getKey() );
                     try
                     {
-                        if (!dataManager.getGroupsContaining( repo.getKey() ).isEmpty())
+                        if (!dataManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( repo.getKey() ).isEmpty())
                         {
                             return null;
                         }
@@ -221,7 +222,7 @@ public class ConcurrencyTest
                 logger.debug( "Grabbing all artifact stores" );
                 try
                 {
-                    dataManager.getAllArtifactStores( StoreType.group );
+                    dataManager.query().packageType( MAVEN_PKG_KEY ).getAllGroups();
                     return null;
                 }
                 catch ( IndyDataException e )

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.flat.data;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -64,8 +65,8 @@ public class DataFileStoreDataManagerTest
             throws Exception
     {
         final String name = "foo";
-        final boolean success = mgr.storeArtifactStore( new RemoteRepository( name, "http://www.foo.com/" ),
-                                                        new ChangeSummary( "test-user", "init" ), new EventMetadata() );
+        final boolean success = mgr.storeArtifactStore( new RemoteRepository( MAVEN_PKG_KEY, name, "http://www.foo.com/" ),
+                                                        new ChangeSummary( "test-user", "init" ), false, true, new EventMetadata() );
 
         assertThat( success, equalTo( true ) );
 
