@@ -11,7 +11,6 @@ import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_MAVEN
  * Created by jdcasey on 5/10/17.
  */
 // FIXME: Move to indy-pkg-maven-model-java module as soon as we can stop defaulting package type in StoreKey to 'maven'
-@Service( PackageTypeDescriptor.class )
 public class MavenPackageTypeDescriptor
         implements PackageTypeDescriptor
 {

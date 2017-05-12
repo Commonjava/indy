@@ -16,6 +16,7 @@
 package org.commonjava.indy.autoprox.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
@@ -68,6 +69,13 @@ public abstract class AutoProxDataManagerDecorator
         this.dataManager = dataManager;
         this.catalog = catalog;
         this.transferManager = transferManager;
+    }
+
+    @Override
+    public ArtifactStoreQuery<ArtifactStore> query()
+    {
+        logger.debug( "Rewrapping query for data manager: {}", this );
+        return dataManager.query().rewrap( this );
     }
 
     protected final StoreDataManager getDelegate()

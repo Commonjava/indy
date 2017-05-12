@@ -36,6 +36,13 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+    {
+        delegate.rewrap( manager );
+        return this;
+    }
+
+    @Override
     public ArtifactStoreQuery<T> packageType( final String packageType )
             throws IndyDataException
     {

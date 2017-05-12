@@ -47,6 +47,8 @@ public class IndyObjectMapper
 
     private static final long serialVersionUID = 1L;
 
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Inject
     private Instance<Module> injectedModules;
 
@@ -203,31 +205,40 @@ public class IndyObjectMapper
                     e );
         }
 
+        boolean changed = false;
         if ( key == null )
         {
             throw new IndySerializationException( "Cannot patch store JSON. No StoreKey 'key' attribute found!", null );
         }
-        else
+        else if ( !keyNode.textValue().equals( key.toString() ) )
         {
-            key = new StoreKey( MAVEN_PKG_KEY, key.getType(), key.getName() );
+            logger.trace( "Patching key field in JSON for: {}", key );
             ( (ObjectNode) tree ).put( ArtifactStore.KEY_ATTR, key.toString() );
+            changed = true;
         }
 
         JsonNode field = tree.get( ArtifactStore.TYPE_ATTR );
         if ( field == null )
         {
+            logger.trace( "Patching type field in JSON for: {}", key );
             ( (ObjectNode) tree ).put( ArtifactStore.TYPE_ATTR, key.getType()
                                                                    .singularEndpointName() );
-
-            return writeValueAsString( tree );
+            changed = true;
         }
 
         field = tree.get( ArtifactStore.PKG_TYPE_ATTR );
         if ( field == null )
         {
+            logger.trace( "Patching packageType field in JSON for: {}", key );
             ( (ObjectNode) tree ).put( ArtifactStore.PKG_TYPE_ATTR, key.getPackageType() );
+            changed = true;
+        }
 
-            return writeValueAsString( tree );
+        if ( changed )
+        {
+            String patched = writeValueAsString( tree );
+            logger.trace( "PATCHED store definition:\n\n{}\n\n", patched );
+            return patched;
         }
 
         return json;

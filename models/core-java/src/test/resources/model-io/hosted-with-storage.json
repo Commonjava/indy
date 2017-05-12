@@ -3,6 +3,6 @@
   "allow_releases":true,
   "snapshotTimeoutSeconds":86400,
   "type": "hosted",
-  "key":"hosted:local-deployments",
+  "key":"maven:hosted:local-deployments",
   "storage":"/tmp/local-deployments"
 }

@@ -30,6 +30,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.junit.Assert.*;
 
 public class RouteSelectorPerfTest
@@ -37,7 +38,7 @@ public class RouteSelectorPerfTest
     final RouteSelector nonCompiledOne = ( resource ) -> {
         if ( resource != null )
         {
-            String pattern = "^indy:hosted:.*$";
+            String pattern = "^indy:maven:hosted:.*$";
             final Location loc = resource.getLocation();
             if ( loc != null )
             {
@@ -50,7 +51,7 @@ public class RouteSelectorPerfTest
 
     final RouteSelector compiledOne = new RouteSelector()
     {
-        final Pattern localPattern = Pattern.compile( "^indy:hosted:.*$" );
+        final Pattern localPattern = Pattern.compile( "^indy:maven:hosted:.*$" );
 
         @Override
         public boolean isDisposable( ConcreteResource resource )
@@ -75,10 +76,10 @@ public class RouteSelectorPerfTest
     @Before
     public void setUp()
     {
-        hostedResource = new ConcreteResource( new CacheOnlyLocation( new HostedRepository( "hosted" ) ),
+        hostedResource = new ConcreteResource( new CacheOnlyLocation( new HostedRepository( MAVEN_PKG_KEY, "hosted" ) ),
                                                String.format( "/path/to/my/hosted/%s", "index.html" ) );
         remoteResource =
-                new ConcreteResource( new RepositoryLocation( new RemoteRepository( "remote", "http://foo.bar/" ) ),
+                new ConcreteResource( new RepositoryLocation( new RemoteRepository( MAVEN_PKG_KEY, "remote", "http://foo.bar/" ) ),
                                       String.format( "/path/to/my/remote/%s", "index.html" ) );
     }
 

@@ -76,6 +76,13 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+    {
+        this.dataManager = manager;
+        return this;
+    }
+
+    @Override
     public MemoryArtifactStoreQuery<T> packageType( String packageType )
             throws IndyDataException
     {

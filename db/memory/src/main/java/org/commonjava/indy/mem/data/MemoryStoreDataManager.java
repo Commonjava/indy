@@ -85,6 +85,7 @@ public class MemoryStoreDataManager
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
     {
+        logger.debug( "Creating query for data manager: {}", this );
         return new MemoryArtifactStoreQuery<>( this );
     }
 
