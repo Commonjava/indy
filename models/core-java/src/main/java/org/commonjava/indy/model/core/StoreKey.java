@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public final class StoreKey
     implements Serializable, Comparable<StoreKey>
@@ -61,7 +62,7 @@ public final class StoreKey
     @Deprecated
     public StoreKey( final StoreType type, final String name )
     {
-        this.packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+        this.packageType = MAVEN_PKG_KEY;
         this.type = type;
         this.name = name;
     }
@@ -150,13 +151,15 @@ public final class StoreKey
         // FIXME: We need to get to a point where it's safe for this to be an error and not default to maven.
         if ( parts.length < 3 || isBlank(parts[0]) )
         {
-            packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+            packageType = MAVEN_PKG_KEY;
+            type = StoreType.get(parts[0]);
+            name = parts[1];
         }
-
-        if ( parts.length < 2 || isBlank( parts[1] ) )
+        else if ( parts.length < 2 )
         {
-            name = id;
+            packageType = MAVEN_PKG_KEY;
             type = StoreType.remote;
+            name = id;
         }
         else
         {
@@ -167,7 +170,7 @@ public final class StoreKey
 
         if ( type == null )
         {
-            return null;
+            throw new IllegalArgumentException( "Invalid StoreType: " + parts[1] );
         }
 
         // logger.info( "parsed store-key with type: '{}' and name: '{}'", type, name );

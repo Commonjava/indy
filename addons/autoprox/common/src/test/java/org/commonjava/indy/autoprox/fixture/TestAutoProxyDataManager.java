@@ -107,12 +107,6 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public ArtifactStoreQuery<ArtifactStore> query()
-    {
-        return delegate.query();
-    }
-
-    @Override
     public boolean hasArtifactStore( final StoreKey key )
     {
         return delegate.hasArtifactStore( key );

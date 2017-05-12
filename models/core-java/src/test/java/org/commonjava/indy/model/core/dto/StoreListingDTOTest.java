@@ -37,7 +37,7 @@ public class StoreListingDTOTest
         final String json = "{\n" + 
             "  \"items\" : [ {\n" + 
             "    \"type\": \"hosted\",\n" + 
-            "    \"key\" : \"hosted:eSPeEZPG\",\n" + 
+            "    \"key\" : \"maven:hosted:eSPeEZPG\",\n" +
             "    \"snapshotTimeoutSeconds\" : 0,\n" + 
             "    \"name\" : \"eSPeEZPG\",\n" + 
             "    \"doctype\" : \"hosted\",\n" + 
@@ -45,7 +45,7 @@ public class StoreListingDTOTest
             "    \"allow_releases\" : true\n" + 
             "  }, {\n" + 
             "    \"type\": \"hosted\",\n" + 
-            "    \"key\" : \"hosted:qI3Cq2OZ\",\n" + 
+            "    \"key\" : \"maven:hosted:qI3Cq2OZ\",\n" +
             "    \"snapshotTimeoutSeconds\" : 0,\n" + 
             "    \"name\" : \"qI3Cq2OZ\",\n" + 
             "    \"doctype\" : \"hosted\",\n" + 
@@ -53,7 +53,7 @@ public class StoreListingDTOTest
             "    \"allow_releases\" : true\n" + 
             "  }, {\n" + 
             "    \"type\": \"hosted\",\n" + 
-            "    \"key\" : \"hosted:local-deployments\",\n" + 
+            "    \"key\" : \"maven:hosted:local-deployments\",\n" +
             "    \"snapshotTimeoutSeconds\" : 86400,\n" + 
             "    \"name\" : \"local-deployments\",\n" + 
             "    \"doctype\" : \"hosted\",\n" + 
@@ -61,7 +61,7 @@ public class StoreListingDTOTest
             "    \"allow_releases\" : true\n" + 
             "  }, {\n" + 
             "    \"type\": \"hosted\",\n" + 
-            "    \"key\" : \"hosted:AFhJnQLW\",\n" + 
+            "    \"key\" : \"maven:hosted:AFhJnQLW\",\n" +
             "    \"snapshotTimeoutSeconds\" : 0,\n" + 
             "    \"name\" : \"AFhJnQLW\",\n" + 
             "    \"doctype\" : \"hosted\",\n" + 

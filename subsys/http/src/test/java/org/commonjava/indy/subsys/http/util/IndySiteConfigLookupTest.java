@@ -35,6 +35,7 @@ import java.util.Map;
 
 import static org.commonjava.indy.subsys.http.conf.IndyHttpConfig.DEFAULT_SITE;
 import static org.commonjava.util.jhttpc.auth.AttributePasswordManager.PASSWORD_PREFIX;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -47,7 +48,7 @@ public class IndySiteConfigLookupTest
     public void checkServerCertPemIsConfigured()
             throws IndyDataException
     {
-        RemoteRepository remote = new RemoteRepository( "test", "http://test.com/repo" );
+        RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY, "test", "http://test.com/repo" );
         remote.setServerCertPem( "AAAAFFFFFSDADFADSFASDFASDFASDFASDFASDFsa" );
         remote.setServerTrustPolicy( "self-signed" );
 

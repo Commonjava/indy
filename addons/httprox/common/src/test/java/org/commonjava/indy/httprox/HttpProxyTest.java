@@ -45,6 +45,7 @@ import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.handler.ProxyAcceptHandler;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
+import org.commonjava.indy.model.core.GenericPackageTypeDescriptor;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -90,6 +91,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -232,7 +234,7 @@ public class HttpProxyTest
         }
 
         final RemoteRepository remoteRepo = (RemoteRepository) storeManager.getArtifactStore(
-                new StoreKey( StoreType.remote, "httprox_127-0-0-1_" + server.getPort() ) );
+                new StoreKey( GENERIC_PKG_KEY, StoreType.remote, "httprox_127-0-0-1_" + server.getPort() ) );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
@@ -263,7 +265,7 @@ public class HttpProxyTest
         }
 
         final RemoteRepository remoteRepo = (RemoteRepository) storeManager.getArtifactStore(
-                new StoreKey( StoreType.remote, "httprox_127-0-0-1_" + server.getPort() ) );
+                new StoreKey( GENERIC_PKG_KEY, StoreType.remote, "httprox_127-0-0-1_" + server.getPort() ) );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
@@ -296,7 +298,7 @@ public class HttpProxyTest
         }
 
         final RemoteRepository remoteRepo = (RemoteRepository) storeManager.getArtifactStore(
-                new StoreKey( StoreType.remote, "httprox_127-0-0-1" ) );
+                new StoreKey( GENERIC_PKG_KEY, StoreType.remote, "httprox_127-0-0-1" ) );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );

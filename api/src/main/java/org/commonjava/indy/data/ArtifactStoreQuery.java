@@ -28,6 +28,8 @@ import java.util.stream.Stream;
  */
 public interface ArtifactStoreQuery<T extends ArtifactStore>
 {
+    ArtifactStoreQuery<T> rewrap( StoreDataManager manager );
+
     ArtifactStoreQuery<T> packageType( String packageType )
             throws IndyDataException;
 

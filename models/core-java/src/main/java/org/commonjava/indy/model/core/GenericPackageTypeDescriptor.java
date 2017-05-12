@@ -9,7 +9,6 @@ import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENER
  *
  * Created by jdcasey on 5/10/17.
  */
-@Service( PackageTypeDescriptor.class )
 public class GenericPackageTypeDescriptor
     implements PackageTypeDescriptor
 {
