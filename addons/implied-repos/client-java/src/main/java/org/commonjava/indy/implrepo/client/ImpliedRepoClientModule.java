@@ -58,7 +58,7 @@ public class ImpliedRepoClientModule
             throws IndyClientException
     {
         final ArtifactStore store = getClient().stores()
-                                               .load( type, name, ArtifactStore.class );
+                                               .load( key, ArtifactStore.class );
         if ( store == null )
         {
             return null;
@@ -80,11 +80,18 @@ public class ImpliedRepoClientModule
         }
     }
 
+    @Deprecated
     public List<StoreKey> getStoresImplying( final StoreType type, final String name )
+            throws IndyClientException
+    {
+        return getStoresImplying( new StoreKey( MAVEN_PKG_KEY, type, name ) );
+    }
+
+    public List<StoreKey> getStoresImplying( final StoreKey key )
         throws IndyClientException
     {
         final ArtifactStore store = getClient().stores()
-                                               .load( type, name, ArtifactStore.class );
+                                               .load( key, ArtifactStore.class );
         if ( store == null )
         {
             return null;

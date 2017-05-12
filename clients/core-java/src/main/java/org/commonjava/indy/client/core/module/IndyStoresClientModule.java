@@ -35,35 +35,53 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 public class IndyStoresClientModule
     extends IndyClientModule
 {
+    public static final String ALL_PACKAGE_TYPES = "_all";
+
+    public static final String STORE_BASEPATH = "admin/stores";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public <T extends ArtifactStore> T create( final T value, final String changelog, final Class<T> type )
         throws IndyClientException
     {
         value.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
-        return http.postWithResponse( UrlUtils.buildUrl( "admin", value.getKey()
+        return http.postWithResponse( UrlUtils.buildUrl( STORE_BASEPATH, value.getKey()
                                                                        .getType()
                                                                        .singularEndpointName() ),
                                       value, type );
     }
 
+    @Deprecated
     public boolean exists( final StoreType type, final String name )
         throws IndyClientException
     {
-        return http.exists( UrlUtils.buildUrl( "admin", type.singularEndpointName(), name ) );
+        return http.exists( UrlUtils.buildUrl( STORE_BASEPATH, type.singularEndpointName(), name ) );
     }
 
+    public boolean exists( final StoreKey key )
+            throws IndyClientException
+    {
+        return http.exists( UrlUtils.buildUrl( STORE_BASEPATH, key.getPackageType(), key.getType().singularEndpointName(), key.getName() ) );
+    }
+
+    @Deprecated
     public void delete( final StoreType type, final String name, final String changelog )
         throws IndyClientException
     {
-        http.deleteWithChangelog( UrlUtils.buildUrl( "admin", type.singularEndpointName(), name ), changelog );
+        http.deleteWithChangelog( UrlUtils.buildUrl( STORE_BASEPATH, type.singularEndpointName(), name ), changelog );
+    }
+
+    public void delete( final StoreKey key, final String changelog )
+            throws IndyClientException
+    {
+        http.deleteWithChangelog( UrlUtils.buildUrl( STORE_BASEPATH, key.getPackageType(), key.getType().singularEndpointName(), key.getName() ), changelog );
     }
 
     public boolean update( final ArtifactStore store, final String changelog )
         throws IndyClientException
     {
         store.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
-        return http.put( UrlUtils.buildUrl( "admin", store.getKey()
+        return http.put( UrlUtils.buildUrl( STORE_BASEPATH, store.getKey()
                                                                            .getType()
                                                                            .singularEndpointName(), store.getName() ),
                          store );
@@ -79,13 +97,13 @@ public class IndyStoresClientModule
     public <T extends ArtifactStore> T load( StoreKey key, final Class<T> cls )
         throws IndyClientException
     {
-        return http.get( UrlUtils.buildUrl( "admin", key.getPackageType(), key.getType().singularEndpointName(), key.getName() ), cls );
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, key.getPackageType(), key.getType().singularEndpointName(), key.getName() ), cls );
     }
 
     public StoreListingDTO<HostedRepository> listHostedRepositories()
         throws IndyClientException
     {
-        return http.get( UrlUtils.buildUrl( "admin", StoreType.hosted.singularEndpointName() ),
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, ALL_PACKAGE_TYPES, StoreType.hosted.singularEndpointName() ),
                          new TypeReference<StoreListingDTO<HostedRepository>>()
                          {
                          } );
@@ -94,7 +112,7 @@ public class IndyStoresClientModule
     public StoreListingDTO<RemoteRepository> listRemoteRepositories()
         throws IndyClientException
     {
-        return http.get( UrlUtils.buildUrl( "admin", StoreType.remote.singularEndpointName() ),
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, ALL_PACKAGE_TYPES, StoreType.remote.singularEndpointName() ),
                          new TypeReference<StoreListingDTO<RemoteRepository>>()
                          {
                          } );
@@ -103,10 +121,37 @@ public class IndyStoresClientModule
     public StoreListingDTO<Group> listGroups()
         throws IndyClientException
     {
-        return http.get( UrlUtils.buildUrl( "admin", StoreType.group.singularEndpointName() ),
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, ALL_PACKAGE_TYPES, StoreType.group.singularEndpointName() ),
                          new TypeReference<StoreListingDTO<Group>>()
                          {
                          } );
     }
 
+
+    public StoreListingDTO<HostedRepository> listHostedRepositories( String packageType )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, packageType, StoreType.hosted.singularEndpointName() ),
+                         new TypeReference<StoreListingDTO<HostedRepository>>()
+                         {
+                         } );
+    }
+
+    public StoreListingDTO<RemoteRepository> listRemoteRepositories( String packageType )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, packageType, StoreType.remote.singularEndpointName() ),
+                         new TypeReference<StoreListingDTO<RemoteRepository>>()
+                         {
+                         } );
+    }
+
+    public StoreListingDTO<Group> listGroups( String packageType )
+            throws IndyClientException
+    {
+        return http.get( UrlUtils.buildUrl( STORE_BASEPATH, packageType, StoreType.group.singularEndpointName() ),
+                         new TypeReference<StoreListingDTO<Group>>()
+                         {
+                         } );
+    }
 }

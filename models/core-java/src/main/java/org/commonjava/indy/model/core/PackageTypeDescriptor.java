@@ -19,9 +19,19 @@ public interface PackageTypeDescriptor
     /**
      * The base-path for accessing content of this package type. For example, for 'maven' it should be:
      * <pre>
-     *     /api/maven/
+     *     /api/content/maven
      * </pre>
      * @return
      */
     String getContentRestBasePath();
+
+    /**
+     * The base-path for accessing {@link ArtifactStore} definitions with this packageType. For example, for 'maven' it
+     * should be:
+     * <pre>
+     *     /api/admin/maven
+     * </pre>
+     * @return
+     */
+    String getAdminRestBasePath();
 }
