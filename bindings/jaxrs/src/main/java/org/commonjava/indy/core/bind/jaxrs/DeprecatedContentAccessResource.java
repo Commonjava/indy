@@ -46,7 +46,7 @@ import java.util.function.Supplier;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 
-@Api( value = "Content Access and Storage",
+@Api( value = "DEPRECATED: Content Access and Storage",
       description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
 @Path( "/api/{type: (hosted|group|remote)}/{name}" )
 public class DeprecatedContentAccessResource

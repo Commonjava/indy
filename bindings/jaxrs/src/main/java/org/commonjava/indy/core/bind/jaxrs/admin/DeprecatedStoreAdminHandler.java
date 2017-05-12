@@ -15,39 +15,6 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.noContent;
-import static javax.ws.rs.core.Response.notModified;
-import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatCreatedResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
-import static org.commonjava.indy.util.ApplicationContent.application_json;
-
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -65,14 +32,50 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
-@Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
-public class StoreAdminHandler
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static javax.ws.rs.core.Response.Status.CONFLICT;
+import static javax.ws.rs.core.Response.noContent;
+import static javax.ws.rs.core.Response.notModified;
+import static javax.ws.rs.core.Response.ok;
+import static javax.ws.rs.core.Response.status;
+import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatCreatedResponseWithJsonEntity;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
+import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
+import static org.commonjava.indy.util.ApplicationContent.application_json;
+
+@Api( description = "DEPRECATED: Resource for accessing and managing artifact store definitions", value = "Store Administration" )
+@Path( "/api/admin/{type: (hosted|group|remote)}" )
+public class DeprecatedStoreAdminHandler
     implements IndyResources
 {
 
@@ -87,7 +90,7 @@ public class StoreAdminHandler
     @Inject
     private SecurityManager securityManager;
 
-    public StoreAdminHandler()
+    public DeprecatedStoreAdminHandler()
     {
         logger.info( "\n\n\n\nStarted StoreAdminHandler\n\n\n\n" );
     }
@@ -100,29 +103,31 @@ public class StoreAdminHandler
 
     @ApiOperation( "Check if a given store exists" )
     @ApiResponses( { @ApiResponse( code = 200, message = "The store exists" ),
-                           @ApiResponse( code = 404, message = "The store doesn't exist" ) } )
+        @ApiResponse( code = 404, message = "The store doesn't exist" ) } )
     @Path( "/{name}" )
     @HEAD
-    public Response exists( final @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true )
-                            @PathParam( "type" ) String type,
+    public Response exists( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             @ApiParam( required = true ) @PathParam( "name" ) final String name )
     {
+        String altPath = Paths.get(MavenPackageTypeDescriptor.MAVEN_ADMIN_REST_BASE_PATH, type, name).toString();
+
         Response response;
         final StoreType st = StoreType.get( type );
 
-        logger.info( "Checking for existence of: {}:{}:{}", packageType, st, name );
+        logger.info( "Checking for existence of: {}:{}", st, name );
 
-        if ( adminController.exists( new StoreKey( packageType, st, name ) ) )
+        if ( adminController.exists( new StoreKey( st, name ) ) )
         {
 
             logger.info( "returning OK" );
-            response = Response.ok().build();
+            response = markDeprecated( Response.ok(), altPath )
+                               .build();
         }
         else
         {
             logger.info( "Returning NOT FOUND" );
-            response = Response.status( Status.NOT_FOUND ).build();
+            response = markDeprecated( Response.status( Status.NOT_FOUND ), altPath )
+                               .build();
         }
         return response;
     }
@@ -134,12 +139,14 @@ public class StoreAdminHandler
     @POST
     @Consumes( ApplicationContent.application_json )
     @Produces( ApplicationContent.application_json )
-    public Response create( final @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response create( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @Context UriInfo uriInfo,
                             final @Context HttpServletRequest request,
                             final @Context SecurityContext securityContext )
     {
+        String altPath = Paths.get(MavenPackageTypeDescriptor.MAVEN_ADMIN_REST_BASE_PATH, type).toString();
+        Consumer<Response.ResponseBuilder> modifier = ( rb)->markDeprecated( rb, altPath);
+
         final StoreType st = StoreType.get( type );
 
         Response response = null;
@@ -155,7 +162,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = formatResponse( e, message, modifier );
         }
 
         if ( response != null )
@@ -174,7 +181,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = formatResponse( e, message, modifier );
         }
 
         if ( response != null )
@@ -192,24 +199,23 @@ public class StoreAdminHandler
             {
                 final URI uri = uriInfo.getBaseUriBuilder()
                                        .path( getClass() )
-                                       .path( store.getPackageType() )
-                                       .path( store.getType().singularEndpointName() )
-                                       .build( store.getName() );
+                                       .path( store.getName() )
+                                       .build( store.getKey().getType().singularEndpointName() );
 
-                response = formatCreatedResponseWithJsonEntity( uri, store, objectMapper );
+                response = formatCreatedResponseWithJsonEntity( uri, store, objectMapper, modifier );
             }
             else
             {
-                response = status( CONFLICT )
+                response = markDeprecated( status( CONFLICT )
                                    .entity( "{\"error\": \"Store already exists.\"}" )
-                                   .type( application_json )
+                                   .type( application_json ), altPath )
                                    .build();
             }
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = formatResponse( e, modifier );
         }
         return response;
     }
@@ -225,12 +231,14 @@ public class StoreAdminHandler
     @Path( "/{name}" )
     @PUT
     @Consumes( ApplicationContent.application_json )
-    public Response store( final @PathParam( "packageType" ) String packageType,
-                           final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response store( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
                            final @Context HttpServletRequest request,
                            final @Context SecurityContext securityContext )
     {
+        String altPath = Paths.get(MavenPackageTypeDescriptor.MAVEN_ADMIN_REST_BASE_PATH, type, name).toString();
+        Consumer<Response.ResponseBuilder> modifier = ( rb)->markDeprecated( rb, altPath);
+
         final StoreType st = StoreType.get( type );
 
         Response response = null;
@@ -246,7 +254,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = formatResponse( e, message, modifier );
         }
 
         if ( response != null )
@@ -265,7 +273,7 @@ public class StoreAdminHandler
                                                           .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = formatResponse( e, message, modifier );
         }
 
         if ( response != null )
@@ -273,12 +281,13 @@ public class StoreAdminHandler
             return response;
         }
 
-        if ( !packageType.equals(store.getPackageType()) || st != store.getType() || !name.equals( store.getName() ) )
+        if ( !name.equals( store.getName() ) )
         {
-            response = Response.status( Status.BAD_REQUEST )
-                               .entity( String.format( "Store in URL path is: '%s' but in JSON it is: '%s'",
-                                                       new StoreKey( packageType, st, name ), store.getKey() ) )
-                               .build();
+            response =
+                markDeprecated( Response.status( Status.BAD_REQUEST )
+                        .entity( String.format( "Store in URL path is: '%s' but in JSON it is: '%s'", name,
+                                                store.getName() ) ), altPath )
+                        .build();
         }
 
         try
@@ -288,52 +297,49 @@ public class StoreAdminHandler
             logger.info( "Storing: {}", store );
             if ( adminController.store( store, user, false ) )
             {
-                response = ok().build();
+                response = markDeprecated( ok(), altPath ).build();
             }
             else
             {
                 logger.warn( "{} NOT modified!", store );
-                response = notModified().build();
+                response = markDeprecated( notModified(), altPath ).build();
             }
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = formatResponse( e, modifier );
         }
 
         return response;
     }
 
     @ApiOperation( "Retrieve the definitions of all artifact stores of a given type on the system" )
-    @ApiResponses(
-            { @ApiResponse( code = 200, response = StoreListingDTO.class, message = "The store definitions" ), } )
+    @ApiResponses( { @ApiResponse( code = 200, response = StoreListingDTO.class, message = "The store definitions" ), } )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response getAll( final @ApiParam(
-            "Filter only stores that support the package type (eg. maven, npm). NOTE: '_all' returns all." )
-                            @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true )
-                            @PathParam( "type" ) String type )
+    public Response getAll( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type )
     {
+        String altPath = Paths.get(MavenPackageTypeDescriptor.MAVEN_ADMIN_REST_BASE_PATH, type).toString();
+        Consumer<Response.ResponseBuilder> modifier = ( rb)->markDeprecated( rb, altPath);
 
         final StoreType st = StoreType.get( type );
 
         Response response;
         try
         {
-            final List<ArtifactStore> stores = adminController.getAllOfType( packageType, st );
+            final List<ArtifactStore> stores = adminController.getAllOfType( st );
 
             logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
 
             final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( stores );
 
-            response = formatOkResponseWithJsonEntity( dto, objectMapper );
+            response = formatOkResponseWithJsonEntity( dto, objectMapper, modifier );
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = formatResponse( e, modifier );
         }
 
         return response;
@@ -345,12 +351,14 @@ public class StoreAdminHandler
     @Path( "/{name}" )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response get( final @PathParam( "packageType" ) String packageType,
-                         final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response get( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                          final @ApiParam( required = true ) @PathParam( "name" ) String name )
     {
+        String altPath = Paths.get(MavenPackageTypeDescriptor.MAVEN_ADMIN_REST_BASE_PATH, type, name).toString();
+        Consumer<Response.ResponseBuilder> modifier = ( rb)->markDeprecated( rb, altPath);
+
         final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( packageType, st, name );
+        final StoreKey key = new StoreKey( st, name );
 
         Response response;
         try
@@ -360,18 +368,18 @@ public class StoreAdminHandler
 
             if ( store == null )
             {
-                response = Response.status( Status.NOT_FOUND )
+                response = markDeprecated( Response.status( Status.NOT_FOUND ), altPath )
                                    .build();
             }
             else
             {
-                response = formatOkResponseWithJsonEntity( store, objectMapper );
+                response = formatOkResponseWithJsonEntity( store, objectMapper, modifier );
             }
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = formatResponse( e, modifier );
         }
         return response;
     }
@@ -380,14 +388,16 @@ public class StoreAdminHandler
     @ApiResponses( { @ApiResponse( code = 204, response = ArtifactStore.class, message = "The store was deleted (or didn't exist in the first place)" ), } )
     @Path( "/{name}" )
     @DELETE
-    public Response delete( final @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response delete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @ApiParam( required = true ) @PathParam( "name" ) String name,
                             @Context final HttpServletRequest request,
                             final @Context SecurityContext securityContext )
     {
+        String altPath = Paths.get(MavenPackageTypeDescriptor.MAVEN_ADMIN_REST_BASE_PATH, type, name).toString();
+        Consumer<Response.ResponseBuilder> modifier = ( rb)->markDeprecated( rb, altPath);
+
         final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( packageType, st, name );
+        final StoreKey key = new StoreKey( st, name );
 
         logger.info( "Deleting: {}", key );
         Response response;
@@ -418,12 +428,12 @@ public class StoreAdminHandler
 
             adminController.delete( key, user, summary );
 
-            response = noContent().build();
+            response = markDeprecated( noContent(), altPath ).build();
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = formatResponse( e, modifier );
         }
         return response;
     }

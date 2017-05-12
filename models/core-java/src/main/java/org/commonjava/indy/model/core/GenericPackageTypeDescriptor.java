@@ -17,6 +17,8 @@ public class GenericPackageTypeDescriptor
 
     public static final String GENERIC_CONTENT_REST_BASE_PATH = "/api/content/generic";
 
+    public static final String GENERIC_ADMIN_REST_BASE_PATH = "/api/admin/stores/generic";
+
     @Override
     public String getKey()
     {
@@ -27,5 +29,11 @@ public class GenericPackageTypeDescriptor
     public String getContentRestBasePath()
     {
         return GENERIC_CONTENT_REST_BASE_PATH;
+    }
+
+    @Override
+    public String getAdminRestBasePath()
+    {
+        return GENERIC_ADMIN_REST_BASE_PATH;
     }
 }

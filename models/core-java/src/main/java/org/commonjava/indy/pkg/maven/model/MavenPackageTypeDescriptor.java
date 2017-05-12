@@ -19,6 +19,8 @@ public class MavenPackageTypeDescriptor
 
     public static final String MAVEN_CONTENT_REST_BASE_PATH = "/api/content/maven";
 
+    public static final String MAVEN_ADMIN_REST_BASE_PATH = "/api/admin/stores/maven";
+
     @Override
     public String getKey()
     {
@@ -29,5 +31,11 @@ public class MavenPackageTypeDescriptor
     public String getContentRestBasePath()
     {
         return MAVEN_CONTENT_REST_BASE_PATH;
+    }
+
+    @Override
+    public String getAdminRestBasePath()
+    {
+        return MAVEN_ADMIN_REST_BASE_PATH;
     }
 }

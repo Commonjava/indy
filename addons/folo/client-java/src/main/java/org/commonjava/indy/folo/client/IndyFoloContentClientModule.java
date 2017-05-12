@@ -25,7 +25,10 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.client.core.util.UrlUtils;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public class IndyFoloContentClientModule
     extends IndyClientModule
@@ -33,39 +36,78 @@ public class IndyFoloContentClientModule
 
     private static final String TRACKING_PATH = "/folo/track";
 
+    public String trackingUrl( final String id, final StoreKey key )
+    {
+        return UrlUtils.buildUrl( http.getBaseUrl(), TRACKING_PATH, id, key.getPackageType(),
+                                  key.getType().singularEndpointName(), key.getName() );
+    }
+
+    @Deprecated
     public String trackingUrl( final String id, final StoreType type, final String name )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), TRACKING_PATH, id, type.singularEndpointName(), name );
+        return trackingUrl( id, new StoreKey( MAVEN_PKG_KEY, type, name ) );
     }
 
-    public boolean exists( final String trackingId, final StoreType type, final String name, final String path )
+    public boolean exists( final String trackingId, final StoreKey key, final String path )
         throws IndyClientException
     {
-        return http.exists( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ) );
+        return http.exists( UrlUtils.buildUrl( TRACKING_PATH, trackingId, key.getPackageType(),
+                                               key.getType().singularEndpointName(), key.getName(), path ) );
     }
 
+    @Deprecated
+    public boolean exists( final String trackingId, final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return exists( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path );
+    }
+
+    public PathInfo store( final String trackingId, final StoreKey key, final String path, final InputStream stream )
+            throws IndyClientException
+    {
+        http.putWithStream( UrlUtils.buildUrl( TRACKING_PATH, trackingId, key.getPackageType(),
+                                               key.getType().singularEndpointName(), key.getName(), path ), stream );
+
+        return getInfo( trackingId, key, path );
+    }
+
+    @Deprecated
     public PathInfo store( final String trackingId, final StoreType type, final String name, final String path,
                            final InputStream stream )
         throws IndyClientException
     {
-        http.putWithStream( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ),
-                            stream );
-        return getInfo( trackingId, type, name, path );
+        return store( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path, stream );
     }
 
-    public PathInfo getInfo( final String trackingId, final StoreType type, final String name, final String path )
+    public PathInfo getInfo( final String trackingId, final StoreKey key, final String path )
         throws IndyClientException
     {
-        final Map<String, String> headers =
-            http.head( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ) );
+        final Map<String, String> headers = http.head(
+                UrlUtils.buildUrl( TRACKING_PATH, trackingId, key.getPackageType(),
+                                   key.getType().singularEndpointName(), key.getName(), path ) );
+
         return new PathInfo( headers );
     }
 
+    @Deprecated
+    public PathInfo getInfo( final String trackingId, final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return getInfo( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path );
+    }
+
     public InputStream get( final String trackingId, final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return get( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path );
+    }
+
+    public InputStream get( final String trackingId, final StoreKey key, final String path )
         throws IndyClientException
     {
-        final HttpResources resources =
-            http.getRaw( UrlUtils.buildUrl( TRACKING_PATH, trackingId, type.singularEndpointName(), name, path ) );
+        final HttpResources resources = http.getRaw( UrlUtils.buildUrl( TRACKING_PATH, trackingId, key.getPackageType(),
+                                                                        key.getType().singularEndpointName(),
+                                                                        key.getName(), path ) );
 
         if ( resources.getStatusCode() != 200 )
         {
@@ -88,24 +130,39 @@ public class IndyFoloContentClientModule
         }
     }
 
+    public String contentUrl( final String trackingId, final StoreKey key, final String... path )
+    {
+        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( trackingId, key, path ) );
+    }
+
+    @Deprecated
     public String contentUrl( final String trackingId, final StoreType type, final String name, final String... path )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( trackingId, type, name, path ) );
+        return UrlUtils.buildUrl( http.getBaseUrl(),
+                                  aggregatePathParts( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path ) );
     }
 
+    public String contentPath( final String trackingId, final StoreKey key, final String... path )
+    {
+        return UrlUtils.buildUrl( null, aggregatePathParts( trackingId, key, path ) );
+    }
+
+    @Deprecated
     public String contentPath( final String trackingId, final StoreType type, final String name, final String... path )
     {
-        return UrlUtils.buildUrl( null, aggregatePathParts( trackingId, type, name, path ) );
+        return UrlUtils.buildUrl( null, aggregatePathParts( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path ) );
     }
 
-    private String[] aggregatePathParts( final String trackingId, final StoreType type, final String name,
+    private String[] aggregatePathParts( final String trackingId, final StoreKey key,
                                          final String... path )
     {
-        final String[] parts = new String[path.length + 3];
-        parts[0] = trackingId;
-        parts[1] = type.singularEndpointName();
-        parts[2] = name;
-        System.arraycopy( path, 0, parts, 2, path.length );
+        final String[] parts = new String[path.length + 4];
+        int i=0;
+        parts[i++] = trackingId;
+        parts[i++] = key.getPackageType();
+        parts[i++] = key.getType().singularEndpointName();
+        parts[i++] = key.getName();
+        System.arraycopy( path, 0, parts, 4, path.length );
 
         return parts;
     }

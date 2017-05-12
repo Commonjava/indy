@@ -43,15 +43,9 @@ public class IndyContentClientModule
     @Deprecated
     public String contentUrl( final StoreType type, final String name, final String... path )
     {
-        return contentUrl( MAVEN_PKG_KEY, type, name, path );
+        return contentUrl( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
     
-    public String contentUrl( final String packageType, final StoreType type, final String name, final String... path )
-    {
-        validatePackageType( packageType );
-        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( packageType, type, name, path ) );
-    }
-
     public String contentUrl( final StoreKey key, final String... path )
     {
         return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( key, path ) );
@@ -60,16 +54,9 @@ public class IndyContentClientModule
     @Deprecated
     public String contentPath( final StoreType type, final String name, final String... path )
     {
-        return contentPath( MAVEN_PKG_KEY, type, name, path );
+        return contentPath( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
     
-    public String contentPath( final String packageType, final StoreType type, final String name, final String... path )
-    {
-        validatePackageType( packageType );
-
-        return UrlUtils.buildUrl( null, aggregatePathParts( packageType, type, name, path ) );
-    }
-
     public String contentPath( final StoreKey key, final String... path )
     {
         return UrlUtils.buildUrl( null, aggregatePathParts( key, path ) );
@@ -78,29 +65,20 @@ public class IndyContentClientModule
     public DirectoryListingDTO listContents( final StoreKey key, final String path )
             throws IndyClientException
     {
-        return listContents( key.getPackageType(), key.getType(), key.getName(), path );
-    }
-
-    @Deprecated
-    public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
-            throws IndyClientException
-    {
-        return listContents( MAVEN_PKG_KEY, type, name, path );
-    }
-
-    public DirectoryListingDTO listContents( final String packageType, final StoreType type, final String name,
-                                             final String path )
-            throws IndyClientException
-    {
-        validatePackageType( packageType );
-
         String p = path;
         if ( !path.endsWith( "/" ) )
         {
             p += "/";
         }
 
-        return http.get( contentPath( packageType, type, name, p ), DirectoryListingDTO.class );
+        return http.get( contentPath( key, p ), DirectoryListingDTO.class );
+    }
+
+    @Deprecated
+    public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return listContents( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
 
     public void delete( final StoreKey key, final String path )
@@ -113,17 +91,9 @@ public class IndyContentClientModule
     public void delete( final StoreType type, final String name, final String path )
             throws IndyClientException
     {
-        delete( MAVEN_PKG_KEY, type, name, path );
+        delete( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
     
-    public void delete( final String packageType, final StoreType type, final String name, final String path )
-        throws IndyClientException
-    {
-        validatePackageType( packageType );
-
-        http.delete( contentPath( packageType, type, name, path ) );
-    }
-
     public boolean exists( final StoreKey key, final String path )
             throws IndyClientException
     {
@@ -142,33 +112,14 @@ public class IndyContentClientModule
     public boolean exists( final StoreType type, final String name, final String path )
             throws IndyClientException
     {
-        return exists( MAVEN_PKG_KEY, type, name, path );
+        return exists( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
     
-    public boolean exists( final String packageType, final StoreType type, final String name, final String path )
-        throws IndyClientException
-    {
-        validatePackageType( packageType );
-
-        return http.exists( contentPath( packageType, type, name, path ) );
-    }
-
     @Deprecated
     public Boolean exists( StoreType type, String name, String path, boolean cacheOnly )
             throws IndyClientException
     {
-        return exists( MAVEN_PKG_KEY, type, name, path, cacheOnly );
-    }
-
-    public Boolean exists( final String packageType, final StoreType type, final String name, final String path,
-                           final boolean cacheOnly )
-            throws IndyClientException
-    {
-        validatePackageType( packageType );
-
-        return http.exists( contentPath( packageType, type, name, path ),
-                            () -> Collections.<String, String>singletonMap( IndyContentConstants.CHECK_CACHE_ONLY,
-                                                                            Boolean.toString( cacheOnly ) ) );
+        return exists( new StoreKey( MAVEN_PKG_KEY, type, name ), path, cacheOnly );
     }
 
     public void store( final StoreKey key, final String path, final InputStream stream )
@@ -181,16 +132,7 @@ public class IndyContentClientModule
     public void store( final StoreType type, final String name, final String path, final InputStream stream )
             throws IndyClientException
     {
-        store( MAVEN_PKG_KEY, type, name, path, stream );
-    }
-
-    public void store( final String packageType, final StoreType type, final String name, final String path,
-                       final InputStream stream )
-            throws IndyClientException
-    {
-        validatePackageType( packageType );
-
-        http.putWithStream( contentPath( packageType, type, name, path ), stream );
+        store( new StoreKey( MAVEN_PKG_KEY, type, name ), path, stream );
     }
 
     public PathInfo getInfo( final StoreKey key, final String path )
@@ -204,37 +146,13 @@ public class IndyContentClientModule
     public PathInfo getInfo( final StoreType type, final String name, final String path )
             throws IndyClientException
     {
-        return getInfo( MAVEN_PKG_KEY, type, name, path );
+        return getInfo( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
     
-    public PathInfo getInfo( final String packageType, final StoreType type, final String name, final String path )
-            throws IndyClientException
-    {
-        validatePackageType( packageType );
-
-        final Map<String, String> headers = http.head( contentPath( packageType, type, name, path ) );
-        return new PathInfo( headers );
-    }
-
     public InputStream get( final StoreKey key, final String path )
             throws IndyClientException
     {
-        return get( key.getPackageType(), key.getType(), key.getName(), path );
-    }
-
-    @Deprecated
-    public InputStream get( final StoreType type, final String name, final String path )
-            throws IndyClientException
-    {
-        return get( MAVEN_PKG_KEY, type, name, path );
-    }
-    
-    public InputStream get( final String packageType, final StoreType type, final String name, final String path )
-        throws IndyClientException
-    {
-        validatePackageType( packageType );
-
-        final HttpResources resources = http.getRaw( contentPath( packageType, type, name, path ) );
+        final HttpResources resources = http.getRaw( contentPath( key, path ) );
 
         if ( resources.getStatusCode() != 200 )
         {
@@ -245,7 +163,7 @@ public class IndyContentClientModule
             }
 
             throw new IndyClientException( resources.getStatusCode(), "Response returned status: %s.",
-                                            resources.getStatusLine() );
+                                           resources.getStatusLine() );
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -258,34 +176,26 @@ public class IndyContentClientModule
         {
             IOUtils.closeQuietly( resources );
             throw new IndyClientException( "Failed to open response content stream: %s", e,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
     }
 
+    @Deprecated
+    public InputStream get( final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return get( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
+    }
+    
     private String[] aggregatePathParts( final StoreKey key, final String... path )
     {
-        return aggregatePathParts( key.getPackageType(), key.getType(), key.getName(), path );
-    }
-
-    private String[] aggregatePathParts( final String packageType, final StoreType type, final String name, final String... path )
-    {
-        validatePackageType( packageType );
-
-        final String[] parts = new String[path.length + 2];
-        parts[0] = type.singularEndpointName();
-        parts[1] = name;
-        System.arraycopy( path, 0, parts, 2, path.length );
+        final String[] parts = new String[path.length + 3];
+        parts[0] = key.getPackageType();
+        parts[1] = key.getType().singularEndpointName();
+        parts[2] = key.getName();
+        System.arraycopy( path, 0, parts, 3, path.length );
 
         return parts;
-    }
-
-    private void validatePackageType( final String packageType )
-    {
-        if ( !PackageTypes.contains( packageType ) )
-        {
-            throw new IllegalArgumentException( "Unsupported package type: " + packageType + ". Valid values are: "
-                                                        + PackageTypes.getPackageTypes() );
-        }
     }
 
 }
