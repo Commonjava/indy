@@ -34,11 +34,14 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public class IndyContentClientModule
     extends IndyClientModule
 {
+
+    private static final String CONTENT_BASE = "content";
 
     @Deprecated
     public String contentUrl( final StoreType type, final String name, final String... path )
@@ -48,7 +51,7 @@ public class IndyContentClientModule
     
     public String contentUrl( final StoreKey key, final String... path )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( key, path ) );
+        return buildUrl( http.getBaseUrl(), aggregatePathParts( key, path ) );
     }
 
     @Deprecated
@@ -59,7 +62,7 @@ public class IndyContentClientModule
     
     public String contentPath( final StoreKey key, final String... path )
     {
-        return UrlUtils.buildUrl( null, aggregatePathParts( key, path ) );
+        return buildUrl( null, aggregatePathParts( key, path ) );
     }
 
     public DirectoryListingDTO listContents( final StoreKey key, final String path )
@@ -189,11 +192,13 @@ public class IndyContentClientModule
     
     private String[] aggregatePathParts( final StoreKey key, final String... path )
     {
-        final String[] parts = new String[path.length + 3];
-        parts[0] = key.getPackageType();
-        parts[1] = key.getType().singularEndpointName();
-        parts[2] = key.getName();
-        System.arraycopy( path, 0, parts, 3, path.length );
+        final String[] parts = new String[path.length + 4];
+        int i=0;
+        parts[i++] = CONTENT_BASE;
+        parts[i++] = key.getPackageType();
+        parts[i++] = key.getType().singularEndpointName();
+        parts[i++] = key.getName();
+        System.arraycopy( path, 0, parts, 4, path.length );
 
         return parts;
     }

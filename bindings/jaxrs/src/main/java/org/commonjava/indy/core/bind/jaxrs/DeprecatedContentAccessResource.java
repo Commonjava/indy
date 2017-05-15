@@ -25,6 +25,7 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -49,6 +50,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 @Api( value = "DEPRECATED: Content Access and Storage",
       description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
 @Path( "/api/{type: (hosted|group|remote)}/{name}" )
+@ApplicationScoped
 public class DeprecatedContentAccessResource
         implements IndyResources
 {

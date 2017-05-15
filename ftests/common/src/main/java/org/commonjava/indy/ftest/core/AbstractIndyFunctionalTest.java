@@ -86,32 +86,41 @@ public abstract class AbstractIndyFunctionalTest
     public void start()
             throws Throwable
     {
-        final long start = System.currentTimeMillis();
-        TimerTask task = new TimerTask()
+        try
         {
-            @Override
-            public void run()
+            final long start = System.currentTimeMillis();
+            TimerTask task = new TimerTask()
             {
-                long time = System.currentTimeMillis();
-                System.out.printf( "\n\n\nDate: %s\nElapsed: %s\n\n\n", new Date( time ),
-                                   Duration.between( Instant.ofEpochMilli( start ), Instant.ofEpochMilli( time ) ) );
+                @Override
+                public void run()
+                {
+                    long time = System.currentTimeMillis();
+                    System.out.printf( "\n\n\nDate: %s\nElapsed: %s\n\n\n", new Date( time ),
+                                       Duration.between( Instant.ofEpochMilli( start ),
+                                                         Instant.ofEpochMilli( time ) ) );
+                }
+            };
+
+            new Timer().scheduleAtFixedRate( task, 0, 5000 );
+
+            Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
+
+            fixture = newServerFixture();
+            fixture.start();
+
+            if ( !fixture.isStarted() )
+            {
+                final BootStatus status = fixture.getBootStatus();
+                throw new IllegalStateException( "server fixture failed to boot.", status.getError() );
             }
-        };
 
-        new Timer().scheduleAtFixedRate( task, 0, 5000 );
-
-        Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
-
-        fixture = newServerFixture();
-        fixture.start();
-
-        if ( !fixture.isStarted() )
-        {
-            final BootStatus status = fixture.getBootStatus();
-            throw new IllegalStateException( "server fixture failed to boot.", status.getError() );
+            client = createIndyClient();
         }
-
-        client = createIndyClient();
+        catch ( Throwable t )
+        {
+            logger.error( "Error initializing test", t );
+            throw t;
+        }
     }
 
     protected Indy createIndyClient()

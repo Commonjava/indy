@@ -54,7 +54,7 @@ public class ScheduleKey
 
     public static ScheduleKey fromGroupWithName( final String group, final String name )
     {
-        final String[] splits = group.split( ":" );
+        final String[] splits = group.split( "#" );
         return new ScheduleKey( StoreKey.fromString( splits[0] ), splits[1], name );
     }
 
@@ -89,7 +89,7 @@ public class ScheduleKey
 
     public String toStringKey()
     {
-        return ( storeKey != null ? storeKey.toString() : "" ) + ":" + type + ":" + name;
+        return ( storeKey != null ? storeKey.toString() : "" ) + "#" + type + "#" + name;
     }
 
     public String toString()

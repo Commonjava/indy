@@ -17,6 +17,7 @@ package org.commonjava.indy.autoprox.ftest.content;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
@@ -24,6 +25,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -48,13 +51,13 @@ public class AutoproxDisabledAllowExistingUsageTest
         String path = "path/to/test.txt";
 
         String named = "other";
-        client.stores().create( new RemoteRepository( named, http.formatUrl( named ) ),
+        client.stores().create( new RemoteRepository( MAVEN_PKG_KEY, named, http.formatUrl( named ) ),
                                 "Adding pre-existing remote repo", RemoteRepository.class );
 
         String content = "This is a test";
         http.expect( http.formatUrl( named, path ), 200, content );
 
-        InputStream stream = client.content().get( StoreType.remote, named, path );
+        InputStream stream = client.content().get( new StoreKey( MAVEN_PKG_KEY, remote, named ), path );
         assertThat( stream, notNullValue() );
 
         String result = IOUtils.toString( stream );

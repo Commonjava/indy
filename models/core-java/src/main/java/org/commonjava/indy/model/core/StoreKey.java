@@ -16,8 +16,11 @@
 package org.commonjava.indy.model.core;
 
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
@@ -142,7 +145,12 @@ public final class StoreKey
 
     public static StoreKey fromString( final String id )
     {
+        Logger logger = LoggerFactory.getLogger( StoreKey.class );
+        logger.debug( "Parsing raw string: '{}' to StoreKey", id );
+
         String[] parts = id.split(":");
+
+        logger.debug( "Got {} parts: {}", parts.length, Arrays.asList( parts ) );
 
         String packageType = null;
         String name;

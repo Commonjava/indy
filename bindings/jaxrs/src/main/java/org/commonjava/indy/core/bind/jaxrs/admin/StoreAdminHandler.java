@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -72,6 +73,7 @@ import org.slf4j.LoggerFactory;
 
 @Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
+@ApplicationScoped
 public class StoreAdminHandler
     implements IndyResources
 {
@@ -191,7 +193,7 @@ public class StoreAdminHandler
             if ( adminController.store( store, user, false ) )
             {
                 final URI uri = uriInfo.getBaseUriBuilder()
-                                       .path( getClass() )
+                                       .path( "/api/admin/stores" )
                                        .path( store.getPackageType() )
                                        .path( store.getType().singularEndpointName() )
                                        .build( store.getName() );

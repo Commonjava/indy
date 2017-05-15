@@ -29,6 +29,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.maven.galley.maven.model.view.MavenPomView.ALL_PROFILES;
 
 /**
@@ -111,7 +112,11 @@ public class RelateGenerationManager
 
             // get all groups that this store is a member of
             Set<Group> stores = storeManager.query().getGroupsContaining( store.getKey() );
-            stores.add( (Group) store );
+            if ( group == store.getType() )
+            {
+                stores.add( (Group) store );
+            }
+
             List<? extends Location> supplementalLocations =
                             LocationUtils.toLocations( stores.toArray( new ArtifactStore[0] ) );
 

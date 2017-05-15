@@ -3,7 +3,6 @@ package org.commonjava.indy.filer.def.migrate;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.MigrationAction;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
@@ -70,10 +69,8 @@ public class PackageTypedStorageMigrationAction
 
             if ( old.exists() )
             {
-                logger.info(
-                        "Attempting to migrate existing storage from old directory structure: {} "
-                                + "to package-typed structure: {}",
-                        old, migrated );
+                logger.info( "Attempting to migrate existing storage from old directory structure: {} "
+                                     + "to package-typed structure: {}", old, migrated );
 
                 try
                 {
@@ -91,8 +88,7 @@ public class PackageTypedStorageMigrationAction
                 }
                 catch ( IOException e )
                 {
-                    throw new IndyLifecycleException( "Failed to migrate: %s to: %s. Reason: %s", e, old,
-                                                      migrated );
+                    throw new IndyLifecycleException( "Failed to migrate: %s to: %s. Reason: %s", e, old, migrated );
                 }
             }
 
@@ -110,9 +106,9 @@ public class PackageTypedStorageMigrationAction
         if ( !unmigratedNfs.isEmpty() )
         {
             StringBuilder sb = new StringBuilder();
-            sb.append("ERROR: Un-migrated directories detected on NFS storage!!!!");
-            sb.append("\n\nThese directories still use the old <type>/<name> directory format. Indy now supports");
-            sb.append("\nmultiple package types, and the storage format has changed accordingly. The new format is:");
+            sb.append( "ERROR: Un-migrated directories detected on NFS storage!!!!" );
+            sb.append( "\n\nThese directories still use the old <type>/<name> directory format. Indy now supports" );
+            sb.append( "\nmultiple package types, and the storage format has changed accordingly. The new format is:" );
             sb.append( "\n\n    <package-type>/<type>/<name>" );
             sb.append( "\n\nPlease migrate these NFS directories manually. For Maven repositories:" );
             sb.append( "\n\n    maven/<type>/<name>" );
@@ -134,15 +130,15 @@ public class PackageTypedStorageMigrationAction
     private File deprecatedStoragePath( File rootDir, ArtifactStore store )
     {
         return rootDir.toPath()
-                      .resolve( Paths.get( store.getType().singularEndpointName(), store.getName() ) )
+                      .resolve( Paths.get( store.getType().singularEndpointName() + "-" + store.getName() ) )
                       .toFile();
     }
 
     private File packageTypedStoragePath( File rootDir, ArtifactStore store )
     {
         return rootDir.toPath()
-                      .resolve( Paths.get( store.getPackageType(), store.getType().singularEndpointName(),
-                                           store.getName() ) )
+                      .resolve( Paths.get( store.getPackageType(),
+                                           store.getType().singularEndpointName() + "-" + store.getName() ) )
                       .toFile();
     }
 
