@@ -14,8 +14,6 @@ public class SenderRequest
 {
     static final byte header[] = { 'Z', 'B', 'X', 'D', '\1' };
 
-
-
     private static final Logger logger = LoggerFactory.getLogger( SenderRequest.class );
 
     /**
@@ -88,5 +86,20 @@ public class SenderRequest
         this.data = data;
     }
 
+    @Override
+    public String toString()
+    {
+        try
+        {
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString( this );
+
+        }
+        catch ( JsonProcessingException e )
+        {
+            logger.error( e.getMessage() );
+        }
+        return super.toString();
+    }
 }
 

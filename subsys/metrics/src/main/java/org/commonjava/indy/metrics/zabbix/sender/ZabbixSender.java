@@ -113,6 +113,7 @@ public class ZabbixSender
             // header('ZBXD\1') + len + 0
             // 5 + 4 + 4
             String jsonString = new String( responseData, 13, readCount - 13, Charset.forName( "UTF-8"));
+            logger.info( "jsonString : " +jsonString );
             ObjectMapper mapper = new ObjectMapper();
             JsonNode json =  mapper.readTree( jsonString );
 

@@ -66,5 +66,9 @@
             <groupId>org.commonjava.indy</groupId>
             <artifactId>indy-subsys-flatfile</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.commonjava.util</groupId>
+            <artifactId>http-testserver</artifactId>
+        </dependency>
     </dependencies>
 </project>

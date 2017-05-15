@@ -12,6 +12,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,14 +112,14 @@ public class IndyZabbixApi
      */
     public String getHost( String name ) throws IOException
     {
-        ObjectMapper mapper = new ObjectMapper(  );
+        ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonNode = mapper.createObjectNode();
         ArrayNode arrayNode = mapper.createArrayNode();
         arrayNode.add( name );
-        jsonNode.put( "host", arrayNode);
+        jsonNode.put( "host", arrayNode );
         Request request = RequestBuilder.newBuilder().method( "host.get" ).paramEntry( "filter", jsonNode ).build();
         JsonNode response = call( request );
-        if (response.get( "result" ).isNull() || response.get( "result" ).get( 0 ) ==null)
+        if ( response.get( "result" ).isNull() || response.get( "result" ).get( 0 ) == null )
         {
             return null;
         }
@@ -171,7 +172,6 @@ public class IndyZabbixApi
         return response.get( "result" ).get( "hostids" ).get( 0 ).asText();
     }
 
-
     /**
      *
      * @param name
@@ -179,14 +179,15 @@ public class IndyZabbixApi
      */
     public String getHostgroup( String name ) throws IOException
     {
-        ObjectMapper mapper = new ObjectMapper(  );
+        ObjectMapper mapper = new ObjectMapper();
         ObjectNode jsonNode = mapper.createObjectNode();
         ArrayNode arrayNode = mapper.createArrayNode();
         arrayNode.add( name );
-        jsonNode.put( "name", arrayNode);
-        Request request = RequestBuilder.newBuilder().method( "hostgroup.get" ).paramEntry( "filter", jsonNode ).build();
+        jsonNode.put( "name", arrayNode );
+        Request request =
+                        RequestBuilder.newBuilder().method( "hostgroup.get" ).paramEntry( "filter", jsonNode ).build();
         JsonNode response = call( request );
-        if (response.get( "result" ).isNull() || response.get( "result" ).get( 0 ) ==null)
+        if ( response.get( "result" ).isNull() || response.get( "result" ).get( 0 ) == null )
         {
             return null;
         }
@@ -213,21 +214,22 @@ public class IndyZabbixApi
             request.setAuth( this.auth );
         }
         ObjectMapper mapper = new ObjectMapper();
-            HttpUriRequest httpRequest = org.apache.http.client.methods.RequestBuilder.post()
-                                                                                      .setUri( uri )
-                                                                                      .addHeader( "Content-Type",
-                                                                                                  "application/json" )
-                                                                                      .setEntity( new StringEntity(
-                                                                                                      mapper.writeValueAsString(
-                                                                                                                      request ),
-                                                                                                      ContentType.APPLICATION_JSON ) )
-                                                                                      .build();
-            CloseableHttpResponse response = httpClient.execute( httpRequest );
-            HttpEntity entity = response.getEntity();
-            return mapper.readTree( entity.getContent() );
+        HttpUriRequest httpRequest = org.apache.http.client.methods.RequestBuilder.post()
+                                                                                  .setUri( uri )
+                                                                                  .addHeader( "Content-Type",
+                                                                                              "application/json" )
+                                                                                  .setEntity( new StringEntity(
+                                                                                                  mapper.writeValueAsString(
+                                                                                                                  request ),
+                                                                                                  ContentType.APPLICATION_JSON ) )
+                                                                                  .build();
+        CloseableHttpResponse response = httpClient.execute( httpRequest );
+        String result = EntityUtils.toString( response.getEntity() );
+        logger.info( result );
+        return mapper.readTree( result );
     }
 
-    public String createItem( String host, String item, String hostid ,int valueType) throws IOException
+    public String createItem( String host, String item, String hostid, int valueType ) throws IOException
     {
         // create item
         int type = 2; // trapper
@@ -260,7 +262,7 @@ public class IndyZabbixApi
                                            .paramEntry( "search", search )
                                            .build();
         JsonNode response = call( getRequest );
-        if (response.get( "result" ).isNull() || response.get( "result" ).get( 0 ) ==null)
+        if ( response.get( "result" ).isNull() || response.get( "result" ).get( 0 ) == null )
         {
             return null;
         }
