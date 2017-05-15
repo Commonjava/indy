@@ -53,4 +53,29 @@ public class UserInfo
         return url;
     }
 
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( !( o instanceof UserInfo ) )
+        {
+            return false;
+        }
+
+        UserInfo that = (UserInfo) o;
+
+        if ( !getName().equals( that.getName() ) )
+        {
+            return false;
+        }
+        if ( !getEmail().equals( that.getEmail() ) )
+        {
+            return false;
+        }
+
+        return getUrl().equals( that.getUrl() );
+    }
 }
