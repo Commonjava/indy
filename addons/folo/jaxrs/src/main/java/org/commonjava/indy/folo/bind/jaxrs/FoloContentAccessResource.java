@@ -96,7 +96,7 @@ public class FoloContentAccessResource
         return handler.doCreate( packageType, type, name, path, request, metadata, () -> uriInfo.getBaseUriBuilder()
                                                                                    .path( getClass() )
                                                                                    .path( path )
-                                                                                   .build( id, type, name ) );
+                                                                                   .build( id, packageType, type, name ) );
     }
 
     @ApiOperation( "Store and track file/artifact content under the given artifact store (type/name) and path." )

@@ -38,6 +38,7 @@ import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -75,6 +76,7 @@ import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 @Api( description = "DEPRECATED: Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/{type: (hosted|group|remote)}" )
+@ApplicationScoped
 public class DeprecatedStoreAdminHandler
     implements IndyResources
 {

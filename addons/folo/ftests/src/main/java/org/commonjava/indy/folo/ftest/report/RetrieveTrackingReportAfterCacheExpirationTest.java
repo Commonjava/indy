@@ -115,7 +115,7 @@ public class RetrieveTrackingReportAfterCacheExpirationTest
         assertThat( entry.getStoreKey(), equalTo( new StoreKey( remote, repoId ) ) );
         assertThat( entry.getPath(), equalTo( path ) );
         assertThat( entry.getLocalUrl(),
-                    equalTo( UrlUtils.buildUrl( client.getBaseUrl(), remote.singularEndpointName(), repoId, path ) ) );
+                    equalTo( client.content().contentUrl( remote, repoId, path ) ) );
         assertThat( entry.getOriginUrl(), equalTo( server.formatUrl( repoId, path ) ) );
         assertThat( entry.getMd5(), equalTo( md5 ) );
         assertThat( entry.getSha256(), equalTo( sha256 ) );

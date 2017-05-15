@@ -691,6 +691,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-pkg-maven-jaxrs</artifactId>
+        <version>1.2.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-pkg-maven</artifactId>
         <version>1.2.0-SNAPSHOT</version>
         <scope>test</scope>

@@ -45,8 +45,7 @@ public class IndyStoresClientModule
         throws IndyClientException
     {
         value.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
-        return http.postWithResponse( UrlUtils.buildUrl( STORE_BASEPATH, value.getKey()
-                                                                       .getType()
+        return http.postWithResponse( UrlUtils.buildUrl( STORE_BASEPATH, value.getPackageType(), value.getType()
                                                                        .singularEndpointName() ),
                                       value, type );
     }
@@ -55,7 +54,7 @@ public class IndyStoresClientModule
     public boolean exists( final StoreType type, final String name )
         throws IndyClientException
     {
-        return http.exists( UrlUtils.buildUrl( STORE_BASEPATH, type.singularEndpointName(), name ) );
+        return exists( new StoreKey( MAVEN_PKG_KEY, type, name ) );
     }
 
     public boolean exists( final StoreKey key )
@@ -68,7 +67,7 @@ public class IndyStoresClientModule
     public void delete( final StoreType type, final String name, final String changelog )
         throws IndyClientException
     {
-        http.deleteWithChangelog( UrlUtils.buildUrl( STORE_BASEPATH, type.singularEndpointName(), name ), changelog );
+        delete( new StoreKey( MAVEN_PKG_KEY, type, name ), changelog );
     }
 
     public void delete( final StoreKey key, final String changelog )
@@ -81,8 +80,7 @@ public class IndyStoresClientModule
         throws IndyClientException
     {
         store.setMetadata( ArtifactStore.METADATA_CHANGELOG, changelog );
-        return http.put( UrlUtils.buildUrl( STORE_BASEPATH, store.getKey()
-                                                                           .getType()
+        return http.put( UrlUtils.buildUrl( STORE_BASEPATH, store.getPackageType(), store.getType()
                                                                            .singularEndpointName(), store.getName() ),
                          store );
     }

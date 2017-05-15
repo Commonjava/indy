@@ -618,12 +618,12 @@ public class ScheduleManager
 
     public static String groupNameSuffix( final String jobType )
     {
-        return ":" + jobType;
+        return "#" + jobType;
     }
 
     public static StoreKey storeKeyFrom( final String group )
     {
-        final String[] parts = group.split( ":" );
+        final String[] parts = group.split( "#" );
         if ( parts.length > 1 )
         {
             final StoreType type = StoreType.get( parts[0] );

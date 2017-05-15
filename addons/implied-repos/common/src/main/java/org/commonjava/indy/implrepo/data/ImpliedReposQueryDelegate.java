@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator.IMPLIED_REPO_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
@@ -110,10 +111,9 @@ public class ImpliedReposQueryDelegate
             return delegateGroups;
         }
 
-        Set<Group> result = new HashSet<>();
-        delegateGroups.stream()
+        Set<Group> result = delegateGroups.stream()
                       .filter( ( group ) -> config.isEnabledForGroup( group.getName() ) )
-                      .forEach( ( group ) -> result.add( group ) );
+                      .collect( Collectors.toSet());
 
         return result;
     }

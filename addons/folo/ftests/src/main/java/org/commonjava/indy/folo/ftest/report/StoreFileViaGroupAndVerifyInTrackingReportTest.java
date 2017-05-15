@@ -74,7 +74,7 @@ public class StoreFileViaGroupAndVerifyInTrackingReportTest
         assertThat( entry.getStoreKey(), equalTo( new StoreKey( hosted, STORE ) ) );
         assertThat( entry.getPath(), equalTo( path ) );
         assertThat( entry.getLocalUrl(),
-                    equalTo( UrlUtils.buildUrl( client.getBaseUrl(), hosted.singularEndpointName(), STORE, path ) ) );
+                    equalTo( client.content().contentUrl( hosted, STORE, path ) ) );
         assertThat( entry.getOriginUrl(), nullValue() );
     }
 }

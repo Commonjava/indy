@@ -156,20 +156,38 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
         /* @formatter:off */
         return dataManager.streamArtifactStores().filter( ( store ) ->
         {
-          if ( enabled != null && enabled == store.isDisabled() )
-          {
-              return false;
-          }
+            logger.debug( "Checking whether {} is included in stream...", store.getKey() );
 
-          if ( packageType != null && !packageType.equals(
-                  store.getPackageType() ) )
-          {
-              return false;
-          }
+            // Tricky condition here: The flag in the store we're checking is true when DISABLED, while the
+            // condition we're checking against in this query is true when it's ENABLED. If the two flags equal on another
+            // that actually means they DISAGREE about the state vs. desired state of the store.
+            if ( enabled != null && enabled == store.isDisabled() )
+            {
+                logger.debug( "Rejected. Store is {}, and we're only looking for enabled state of: {}", store.isDisabled(), enabled );
+                return false;
+            }
 
-          return !(types != null && !types.contains( store.getType() )) && (filter == null || filter.test( store ) );
+            if ( packageType != null && !packageType.equals( store.getPackageType() ) )
+            {
+                logger.debug( "Rejected. Store package type is: {}, and we're only looking for package type of: {}", store.getPackageType(), packageType );
+                return false;
+            }
 
-          } ).map( store -> (T) store );
+            if ( types != null && !types.contains( store.getType() ) )
+            {
+                logger.debug( "Rejected. Store is of type: {}, and we're only looking for: {}", store.getType(), types );
+                return false;
+            }
+
+            if ( filter != null && !filter.test( store ))
+            {
+                logger.debug( "Rejected. Additional filtering failed for store: {}", store.getKey() );
+                return false;
+            }
+
+            logger.debug( "Store accepted for stream: {}", store.getKey() );
+            return true;
+        } ).map( store -> (T) store );
         /* @formatter:on */
     }
 

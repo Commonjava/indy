@@ -25,6 +25,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -47,6 +48,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 @Api( value = "Maven Content Access and Storage",
       description = "Handles retrieval and management of Maven artifact content. This is the main point of access for Maven/Gradle users." )
 @Path( "/api/content/generic/{type: (hosted|group|remote)}/{name}" )
+@ApplicationScoped
 public class GenericContentAccessResource
         implements PackageContentAccessResource
 {
