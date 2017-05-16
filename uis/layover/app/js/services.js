@@ -20,6 +20,15 @@
 
 var indyServices = angular.module('indy.services', ['ngResource']);
 
+indyServices.factory('PackageTypeSvc', ['$resource', '$http',
+  function($resource, $http){
+    return {
+          resource: $resource(appPath( '/api/stats/package-type/keys' ), {}, {
+            query: {method:'GET', params:{}, isArray:true},
+          }),
+    };
+  }]);
+
 indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
   return {
     promptForChangelog: function(scope, confirmLabel, callback){
@@ -47,17 +56,17 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       }
     },
     
-    addControlHrefs: function(scope, storeType, storeName, mode, location){
+    addControlHrefs: function(scope, packageType, storeType, storeName, mode, location){
       scope.back = function(){
-        location.path('/' + storeType);
+        location.path('/' + packageType + '/' + storeType);
       }
       
       scope.edit = function(){
-        location.path('/' + storeType + '/edit/' + storeName);
+        location.path('/' + packageType + '/' + storeType + '/edit/' + storeName);
       }
       
       scope.createNew = function(){
-        location.path('/' + storeType + '/new');
+        location.path('/' + packageType + '/' + storeType + '/new');
       }
     },
     
@@ -83,7 +92,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
           }
 
           if ( !scope.raw.new ){
-            storeService.resource.update({name: scope.raw.name}, scope.store, function(){
+            storeService.resource.update({packageType: scope.raw.packageType, name: scope.raw.name}, scope.store, function(){
               location.path( StoreUtilSvc.detailPath(scope.store.key) );
             });
           }
@@ -109,7 +118,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
           }
 
           if ( !scope.raw.new ){
-            storeService.resource.update({name: scope.raw.name}, scope.store, function(){
+            storeService.resource.update({packageType: scope.raw.packageType, name: scope.raw.name}, scope.store, function(){
               location.path( StoreUtilSvc.detailPath(scope.store.key) );
             });
           }
@@ -127,13 +136,17 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
           }
 
           if ( scope.mode == 'edit' ){
-            storeService.resource.update({name: scope.raw.name}, scope.store, function(){
+            alert("Saving " + scope.raw.packageType + "/" + scope.raw.name );
+            storeService.resource.update({packageType: scope.raw.packageType, name: scope.raw.name}, scope.store, function(){
               location.path( StoreUtilSvc.detailPath(scope.store.key) );
             });
           }
           else if ( scope.mode == 'new' ){
-            scope.store.key = StoreUtilSvc.formatKey(storeType, scope.raw.name);
-            storeService.resource.create({}, scope.store, function(){
+            scope.store.key = StoreUtilSvc.formatKey(scope.raw.packageType, storeType, scope.raw.name);
+            scope.store.packageType = scope.raw.packageType;
+            scope.store.name = scope.raw.name;
+
+            storeService.resource.create({packageType: scope.store.packageType}, scope.store, function(){
               location.path( StoreUtilSvc.detailPath(scope.store.key) );
             });
           }
@@ -145,7 +158,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         self.promptForChangelog(scope, 'Delete', function(changelog){
           console.log("deleting with changelog: " + changelog);
           
-          storeService.remove(scope.raw.name, changelog, {
+          storeService.remove(scope.raw.packageType, scope.raw.name, changelog, {
             success: function(data,status){
               location.path( '/' + storeType );
             },
@@ -179,22 +192,29 @@ indyServices.factory('StoreUtilSvc', function(){
       }
     },
     
-    formatKey: function(type, name){
-      return type + ':' + name;
+    formatKey: function(packageType, type, name){
+      return packageType + ":" + type + ':' + name;
     },
     
     keyLabel: function(key){
       var parts = key.split(':');
-      return parts[1] + " (" + parts[0] + ")";
+      return parts[2] + " (" + parts[1] + "; " + parts[0] + ")";
     },
 
     nameFromKey: function(key){
 //      alert("Parsing name from:\n" + JSON.stringify(key, undefined, 2));
-      return key.substring(key.indexOf(':')+1);
+      var parts = key.split(':');
+      return parts[parts.length-1];
     },
 
     typeFromKey: function(key){
-        return key.substring(0, key.indexOf(':'));
+        var parts = key.split(':');
+        return parts[1];
+      },
+
+    packageTypeFromKey: function(key){
+        var parts = key.split(':');
+        return parts[0];
       },
 
     storeHref: function(key){
@@ -214,22 +234,22 @@ indyServices.factory('StoreUtilSvc', function(){
       var proto = window.location.protocol;
 
       // TODO: In-UI browser that allows simple searching
-      return proto + "//" + hostAndPort + basepath + 'api/' + parts[0] + '/' + parts[1] + '/';
+      return proto + "//" + hostAndPort + basepath + 'api/content/' + parts[0] + '/' + parts[1] + '/' + parts[2];
     },
 
     detailPath: function(key){
       var parts = key.split(':');
-      return "/" + parts[0] + "/view/" + parts[1];
+      return "/" + parts[1] + '/' + parts[0] + "/view/" + parts[2];
     },
 
     detailHref: function(key){
       var parts = key.split(':');
-      return "#/" + parts[0] + "/view/" + parts[1];
+      return "#/" + parts[1] + '/' + parts[0] + "/view/" + parts[2];
     },
 
     editHref: function(key){
       var parts = key.split(':');
-      return "#/" + parts[0] + "/edit/" + parts[1];
+      return "#/" + parts[1] + '/' + parts[0] + "/edit/" + parts[2];
     },
     
     hostedOptionLegend: function(){
@@ -341,6 +361,7 @@ indyServices.factory('StoreUtilSvc', function(){
       return out;
     },
 
+    // Sort by: type (group, remote, hosted), packageType, name
     sortEndpoints: function(endpoints){
       var typeOrder = ['group', 'remote', 'hosted'];
       return endpoints.sort(function(a, b){
@@ -349,6 +370,13 @@ indyServices.factory('StoreUtilSvc', function(){
 
         if ( ta != tb ){
           return ta < tb ? -1 : 1;
+        }
+
+        if ( a.packageType < b.packageType ){
+          return -1;
+        }
+        else if ( b.packageType < a.packageType ){
+          return 1;
         }
 
         if ( a.name < b.name ){
@@ -361,7 +389,8 @@ indyServices.factory('StoreUtilSvc', function(){
         return 0;
       });
     },
-    
+
+    // Sort by: type (group, remote, hosted), packageType, name
     sortByEmbeddedKey: function(items){
       if ( items == undefined ){
         return items;
@@ -372,17 +401,24 @@ indyServices.factory('StoreUtilSvc', function(){
         var ap = a.key.split(':');
         var bp = b.key.split(':');
         
-        var ati = typeOrder.indexOf(ap[0]);
-        var bti = typeOrder.indexOf(bp[0]);
+        var ati = typeOrder.indexOf(ap[1]);
+        var bti = typeOrder.indexOf(bp[1]);
 
         if ( ati != bti ){
           return ati < bti ? -1 : 1;
         }
 
-        if ( ap[1] < bp[1] ){
+        if ( ap[0] < bp[0] ){
           return -1;
         }
-        else if ( bp[1] < ap[1] ){
+        else if ( bp[0] < ap[0] ){
+          return 1;
+        }
+
+        if ( ap[2] < bp[2] ){
+          return -1;
+        }
+        else if ( bp[2] < ap[2] ){
           return 1;
         }
 
@@ -405,13 +441,13 @@ indyServices.factory('StoreUtilSvc', function(){
 indyServices.factory('RemoteSvc', ['$resource', '$http',
   function($resource, $http){
     return {
-      resource: $resource(appPath( '/api/admin/remote/:name' ), {}, {
-        query: {method:'GET', params:{name:''}, isArray:false},
-        update: {method: 'PUT'},
-        create: {method: 'POST'},
+      resource: $resource(appPath( '/api/admin/stores/:packageType/remote/:name' ), {}, {
+        query: {method:'GET', params:{packageType: '_all', name:''}, isArray:false},
+        update: {method: 'PUT', params:{packageType: 'unknown'}},
+        create: {method: 'POST', params:{packageType:'unknown'}},
       }),
-      remove: function( name, changelog, functions ){
-        $http.delete('/api/admin/remote/' + name, {
+      remove: function( packageType, name, changelog, functions ){
+        $http.delete('/api/admin/stores/' + packageType + '/remote/' + name, {
           headers:{
           'CHANGELOG': changelog,
           }
@@ -423,13 +459,13 @@ indyServices.factory('RemoteSvc', ['$resource', '$http',
 indyServices.factory('HostedSvc', ['$resource', '$http',
   function($resource, $http){
     return {
-      resource: $resource(appPath( '/api/admin/hosted/:name' ), {}, {
-        query: {method:'GET', params:{name:''}, isArray:false},
-        update: {method: 'PUT'},
-        create: {method: 'POST'},
+      resource: $resource(appPath( '/api/admin/stores/:packageType/hosted/:name' ), {}, {
+        query: {method:'GET', params:{packageType: '_all', name:''}, isArray:false},
+        update: {method: 'PUT', params:{packageType: 'unknown'}},
+        create: {method: 'POST', params:{packageType:'unknown'}},
       }),
-      remove: function( name, changelog, functions ){
-        $http.delete('/api/admin/hosted/' + name, {
+      remove: function( packageType, name, changelog, functions ){
+        $http.delete('/api/admin/stores/' + packageType + '/hosted/' + name, {
           headers:{
           'CHANGELOG': changelog,
           }
@@ -441,13 +477,13 @@ indyServices.factory('HostedSvc', ['$resource', '$http',
 indyServices.factory('GroupSvc', ['$resource', '$http',
   function($resource, $http){
     return {
-      resource: $resource(appPath( '/api/admin/group/:name' ), {}, {
-        query: {method:'GET', params:{name:''}, isArray:false},
-        update: {method: 'PUT'},
-        create: {method: 'POST'},
+      resource: $resource(appPath( '/api/admin/stores/:packageType/group/:name' ), {}, {
+        query: {method:'GET', params:{packageType: '_all', name:''}, isArray:false},
+        update: {method: 'PUT', params:{packageType: 'unknown'}},
+        create: {method: 'POST', params:{packageType:'unknown'}},
       }),
-      remove: function( name, changelog, functions ){
-        $http.delete('/api/admin/group/' + name, {
+      remove: function( packageType, name, changelog, functions ){
+        $http.delete('/api/admin/stores/' + packageType + '/group/' + name, {
           headers:{
           'CHANGELOG': changelog,
           }
@@ -459,10 +495,10 @@ indyServices.factory('GroupSvc', ['$resource', '$http',
 indyServices.factory('NfcSvc', ['$resource',
   function($resource) {
     return {
-      resource: $resource(appPath('/api/nfc/:type/:name/:path'), {}, {
-        query : { method : 'GET', params : { type: '', name: '', path: '' }, isArray : false },
+      resource: $resource(appPath('/api/nfc/:packageType/:type/:name/:path'), {}, {
+        query : { method : 'GET', params : { packageType: '', type: '', name: '', path: '' }, isArray : false },
         get : { method : 'GET', params : { path: '' }, isArray : false },
-        deleteAll: {method: 'DELETE', params: {type:'', name:'', path:''}},
+        deleteAll: {method: 'DELETE', params: {packageType: '', type:'', name:'', path:''}},
         delete: {method: 'DELETE'},
       }),
     };
@@ -472,7 +508,7 @@ indyServices.factory('StoreDisableSvc', ['$resource',
   function($resource) {
     var self = this;
     var obj = {};
-    obj.storeTimeouts = $resource(appPath('/api/admin/schedule/store/:type/:name/disable-timeout'), {}, {
+    obj.storeTimeouts = $resource(appPath('/api/admin/schedule/store/:packageType/:type/:name/disable-timeout'), {}, {
         query: { method : 'GET', params: {}, isArray : false }
     });
 
@@ -487,7 +523,7 @@ indyServices.factory('StoreDisableSvc', ['$resource',
           raw.enabled = !disabled;
           if ( disabled ){
             var type = StoreUtilSvc.typeFromKey(store.key);
-            obj.storeTimeouts.query({type: type, name: raw.name},
+            obj.storeTimeouts.query({packageType: raw.packageType, type: type, name: raw.name},
               function(exp){
                 console.log("Got expiration: " + JSON.stringify(exp) + " for: " + type + " with name: " + raw.name);
                 raw.disableExpiration = exp.expiration;
@@ -508,7 +544,7 @@ indyServices.factory('StoreDisableSvc', ['$resource',
               for(var i=0; i<listing.items.length; i++){
                 var item = listing.items[i];
                 var parts = item.group.split(':');
-                var key = parts[0] + ':' + parts[1];
+                var key = parts[0] + ':' + parts[1] + ':' + parts[2];
                 console.log("DISABLED: " + key + " (until: " + item.expiration + ")");
                 scope.disabledMap[key] = item.expiration;
               }

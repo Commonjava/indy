@@ -50,9 +50,9 @@
       <div class="store-listing">
         <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="listing-item list-item store-listing-item listing-item-start">
           <div class="fieldset-caption">
-              <a href="#/hosted/view/{{storeUtils.nameFromKey(store.key)}}">
-                  <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.name}}</span>
-                  <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.name}}</span>
+              <a href="#/hosted/{{store.packagetype}}/view/{{store.name}}">
+                  <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.packageType}}-{{store.name}}</span>
+                  <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.packageType}}-{{store.name}}</span>
               </a>
           </div>
           <div class="fieldset">
