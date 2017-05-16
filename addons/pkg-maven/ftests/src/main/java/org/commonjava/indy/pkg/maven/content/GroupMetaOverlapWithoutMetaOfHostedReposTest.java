@@ -31,9 +31,11 @@ import org.junit.experimental.categories.Category;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -161,10 +163,10 @@ public class GroupMetaOverlapWithoutMetaOfHostedReposTest
 
         waitForEventPropagation();
 
-        final String gpLevelMetaFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
-                               g.getName(), path );
-        assertThat( "group metadata should not be removed after merging", new File( gpLevelMetaFilePath ).exists(),
+        File gpLevelMetaFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+                                          group.singularEndpointName() + "-" + g.getName(), path ).toFile();
+
+        assertThat( "group metadata should not be removed after merging", gpLevelMetaFile.exists(),
                     equalTo( true ) );
 
         stream = client.content().get( group, g.getName(), path );

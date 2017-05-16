@@ -26,6 +26,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -111,11 +112,9 @@ public class RelateGenerationManager
             ProjectVersionRef ref = artPathInfo.getProjectId();
 
             // get all groups that this store is a member of
-            Set<Group> stores = storeManager.query().getGroupsContaining( store.getKey() );
-            if ( group == store.getType() )
-            {
-                stores.add( (Group) store );
-            }
+            Set<ArtifactStore> stores = new HashSet<>();
+            stores.add( store );
+            stores.addAll( storeManager.query().getGroupsContaining( store.getKey() ) );
 
             List<? extends Location> supplementalLocations =
                             LocationUtils.toLocations( stores.toArray( new ArtifactStore[0] ) );

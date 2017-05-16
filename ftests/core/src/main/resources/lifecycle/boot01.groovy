@@ -3,6 +3,7 @@ import org.commonjava.indy.action.IndyLifecycleException
 import org.commonjava.indy.audit.ChangeSummary
 import org.commonjava.indy.data.StoreDataManager
 import org.commonjava.indy.model.core.HostedRepository
+import org.commonjava.maven.galley.event.EventMetadata
 
 import javax.inject.Inject
 
@@ -25,7 +26,7 @@ class BootAction01 implements BootupAction {
 
         // Create hosted repo
         storeDataManager.storeArtifactStore(new HostedRepository( "test" ),
-                new ChangeSummary("user", "Create test repo."))
+                new ChangeSummary("user", "Create test repo."), false, true, new EventMetadata())
     }
 
     @Override

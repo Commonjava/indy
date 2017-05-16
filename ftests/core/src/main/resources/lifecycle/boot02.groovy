@@ -1,3 +1,5 @@
+import org.commonjava.indy.model.core.StoreKey
+import org.commonjava.indy.model.core.StoreType
 import org.junit.Assert
 import org.commonjava.indy.action.BootupAction
 import org.commonjava.indy.action.IndyLifecycleException
@@ -23,7 +25,7 @@ class BootAction02 implements BootupAction {
         println ("Boot " + getId())
 
         // Hosted repo is created in boot01.groovy
-        Assert.assertNotNull(storeDataManager.getHostedRepository("test"))
+        Assert.assertNotNull(storeDataManager.getArtifactStore(new StoreKey(StoreType.hosted, "test")))
     }
 
     @Override

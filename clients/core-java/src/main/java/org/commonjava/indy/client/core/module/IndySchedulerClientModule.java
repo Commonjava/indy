@@ -25,6 +25,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,16 +80,17 @@ public class IndySchedulerClientModule
 
         Map<StoreKey, Date> result = new HashMap<>();
         expSet.forEach( ( exp ) -> {
-            logger.debug( "Mapping expiration for group: {}", exp.getGroup() );
-            String[] parts = exp.getGroup().split( "\\s*[-:]\\s*" );
+            logger.debug( "Mapping expiration for group: {} (parts: {})", exp.getGroup(),
+                          Arrays.asList( exp.getGroup().split( "\\s*#\\s*" ) ) );
+
+            String[] parts = exp.getGroup().split( "\\s*#\\s*" );
             if ( parts.length < 2 )
             {
                 logger.warn( "Skipping invalid store-disabled timeout group: '{}'", exp.getGroup() );
             }
             else
             {
-                StoreType type = StoreType.get( parts[0] );
-                StoreKey key = new StoreKey( type, parts[1] );
+                StoreKey key = StoreKey.fromString( parts[0] );
                 logger.debug( "{} -> {}", key, exp.getExpiration() );
 
                 result.put( key, exp.getExpiration() );

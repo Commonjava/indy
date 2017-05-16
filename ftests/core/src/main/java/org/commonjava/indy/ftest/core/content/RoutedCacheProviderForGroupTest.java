@@ -25,9 +25,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -47,7 +49,9 @@ public class RoutedCacheProviderForGroupTest
         final HostedRepository hostedRepo1 = this.client.stores()
                                                        .create( new HostedRepository( hostedName1 ), "create group",
                                                                 HostedRepository.class );
-        final File nfsStorage1 = new File( fixture.getBootOptions().getIndyHome() + NFS_BASE + "/hosted-" + hostedName1 + path );
+
+        final File nfsStorage1 = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE, MAVEN_PKG_KEY,
+                                            hosted.singularEndpointName() + "-" + hostedName1, path ).toFile();
 
 
         final String gname = newName();
