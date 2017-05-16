@@ -20,7 +20,10 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
+import java.util.TreeSet;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -37,6 +40,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.StatsController;
+import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.dto.EndpointViewListing;
 import org.commonjava.indy.model.spi.AddOnListing;
 import org.commonjava.indy.stats.IndyVersioning;
@@ -104,6 +108,26 @@ public class StatsHandler
     public Response getIndyVersion()
     {
         return formatOkResponseWithJsonEntity( statsController.getVersionInfo(), objectMapper );
+    }
+
+    @ApiOperation( "Retrieve a mapping of the package type names to descriptors (eg. maven, npm, generic-http, etc) available on the system." )
+    @ApiResponse( code = 200, response = Map.class, message = "The package type listing of packageType => details" )
+    @Path( "/package-type/map" )
+    @GET
+    @Produces( ApplicationContent.application_json )
+    public Response getPackageTypeMap()
+    {
+        return Response.ok( PackageTypes.getPackageTypeDescriptorMap() ).build();
+    }
+
+    @ApiOperation( "Retrieve a list of the package type names (eg. maven, npm, generic-http, etc) available on the system." )
+    @ApiResponse( code = 200, response = Map.class, message = "The package type listing" )
+    @Path( "/package-type/keys" )
+    @GET
+    @Produces( ApplicationContent.application_json )
+    public Response getPackageTypeNames()
+    {
+        return Response.ok( new TreeSet<>( PackageTypes.getPackageTypes() ) ).build();
     }
 
     @ApiOperation( "Retrieve a listing of the artifact stores available on the system. This is especially useful for setting up a network of Indy instances that reference one another" )

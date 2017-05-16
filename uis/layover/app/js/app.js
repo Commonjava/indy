@@ -39,23 +39,23 @@ indy.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$filt
   indy.provide = $provide;
   
   $routeProvider.when('/remote', {templateUrl: 'partials/remote-list.html'});
-  $routeProvider.when('/remote/view/:name', {templateUrl: 'partials/remote-detail.html'});
+  $routeProvider.when('/remote/:packageType/view/:name', {templateUrl: 'partials/remote-detail.html'});
   $routeProvider.when('/remote/new', {templateUrl: 'partials/remote-edit.html'});
-  $routeProvider.when('/remote/edit/:name', {templateUrl: 'partials/remote-edit.html'});
+  $routeProvider.when('/remote/:packageType/edit/:name', {templateUrl: 'partials/remote-edit.html'});
 
   $routeProvider.when('/hosted', {templateUrl: 'partials/hosted-list.html'});
-  $routeProvider.when('/hosted/view/:name', {templateUrl: 'partials/hosted-detail.html'});
+  $routeProvider.when('/hosted/:packageType/view/:name', {templateUrl: 'partials/hosted-detail.html'});
   $routeProvider.when('/hosted/new', {templateUrl: 'partials/hosted-edit.html'});
-  $routeProvider.when('/hosted/edit/:name', {templateUrl: 'partials/hosted-edit.html'});
+  $routeProvider.when('/hosted/:packageType/edit/:name', {templateUrl: 'partials/hosted-edit.html'});
 
   $routeProvider.when('/group', {templateUrl: 'partials/group-list.html'});
-  $routeProvider.when('/group/view/:name', {templateUrl: 'partials/group-detail.html'});
+  $routeProvider.when('/group/:packageType/view/:name', {templateUrl: 'partials/group-detail.html'});
   $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html'});
-  $routeProvider.when('/group/edit/:name', {templateUrl: 'partials/group-edit.html'});
+  $routeProvider.when('/group/:packageType/edit/:name', {templateUrl: 'partials/group-edit.html'});
   
   $routeProvider.when('/nfc', {templateUrl: 'partials/nfc.html'});
   $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html'});
-  $routeProvider.when('/nfc/view/:type/:name', {templateUrl: 'partials/nfc.html'});
+  $routeProvider.when('/nfc/view/:packageType/:type/:name', {templateUrl: 'partials/nfc.html'});
 
   $routeProvider.when('/rest-api', {templateUrl: 'partials/rest-api.html'})
   
