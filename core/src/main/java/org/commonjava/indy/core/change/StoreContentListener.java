@@ -294,15 +294,15 @@ public class StoreContentListener
                         }
                         else
                         {
-                            logger.debug( "Testing file path: {}", t.getPath() );
+                            logger.trace( "Testing file path: {}", t.getPath() );
                             if( pathFilter.test( t.getPath() ) )
                             {
-                                logger.debug( "Adding file path to results: {}", t.getPath() );
+                                logger.trace( "Adding file path to results: {}", t.getPath() );
                                 paths.add( t.getPath() );
                             }
                             else
                             {
-                                logger.debug( "Skipping file path: {}", t.getPath() );
+                                logger.trace( "Skipping file path: {}", t.getPath() );
                             }
                         }
                     } );

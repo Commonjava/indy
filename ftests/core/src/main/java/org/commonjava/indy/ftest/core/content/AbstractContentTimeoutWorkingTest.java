@@ -23,9 +23,11 @@ import org.junit.Before;
 import org.junit.Rule;
 
 import java.io.File;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -77,11 +79,12 @@ public abstract class AbstractContentTimeoutWorkingTest
         assertThat( "doesn't exist", result.exists(), equalTo( true ) );
 
         client.content().get(remote, repoId, pomPath).close(); // force storage
-        String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
-                                     remote.name(), repoId, pomPath );
 
-        pomFile = new File( pomFilePath );
-        assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
+        pomFile =
+                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
+                           pomPath ).toFile();
+
+        assertThat( "pom doesn't exist: " + pomFile, this.pomFile.exists(), equalTo( true ) );
 
     }
 

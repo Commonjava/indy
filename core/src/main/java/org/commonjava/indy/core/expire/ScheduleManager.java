@@ -644,14 +644,17 @@ public class ScheduleManager
             return false;
         }
 
-        final ScheduleKey cacheKey = ScheduleKey.fromGroupWithName( group, name );
-        if ( scheduleCache.containsKey( cacheKey ) )
-        {
-            removeCache( cacheKey );
-            return true;
-        }
-
-        return false;
+        // We're responding to a cache expiration...the following isn't necessary, because it already expired.
+        // In fact, this leads to circularity if the notification is processed synchronously.
+//        final ScheduleKey cacheKey = ScheduleKey.fromGroupWithName( group, name );
+//        if ( scheduleCache.containsKey( cacheKey ) )
+//        {
+//            removeCache( cacheKey );
+//            return true;
+//        }
+//
+//        return false;
+        return true;
     }
 
     @Override

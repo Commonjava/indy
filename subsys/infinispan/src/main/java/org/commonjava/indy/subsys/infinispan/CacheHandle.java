@@ -94,7 +94,7 @@ public class CacheHandle<K,V>
 
     public boolean containsKey( K key )
     {
-        return execute( cache -> cache.containsKey( key ) );
+        return execute( cache -> !stopped && cache.containsKey( key ) );
     }
 
     public V put( K key, V value )

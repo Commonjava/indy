@@ -38,6 +38,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-pkg-maven-jaxrs</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-test-fixtures-core</artifactId>
       <scope>compile</scope>
     </dependency>

@@ -103,7 +103,7 @@ public class StoreFileAndRecalculateTrackingEntryTest
         assertThat( entry.getStoreKey(), equalTo( new StoreKey( hosted, STORE ) ) );
         assertThat( entry.getPath(), equalTo( path ) );
         assertThat( entry.getLocalUrl(),
-                    equalTo( UrlUtils.buildUrl( client.getBaseUrl(), hosted.singularEndpointName(), STORE, path ) ) );
+                    equalTo( client.content().contentUrl( hosted, STORE, path ) ) );
         assertThat( entry.getMd5(), equalTo( md5Hex( newData ) ) );
         assertThat( entry.getOriginUrl(), nullValue() );
 

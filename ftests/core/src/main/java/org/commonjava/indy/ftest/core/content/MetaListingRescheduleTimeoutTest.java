@@ -27,9 +27,11 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -104,11 +106,12 @@ public class MetaListingRescheduleTimeoutTest
         content.close();
 
         final String listingMetaPath = "org/foo/bar/.listing.txt";
-        String listingMetaFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
-                               remote.name(), repoId, listingMetaPath );
-        File listingMetaFile = new File( listingMetaFilePath );
-        assertThat( "metadata doesn't exist", listingMetaFile.exists(), equalTo( true ) );
+
+        File listingMetaFile =
+                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
+                           listingMetaPath ).toFile();
+
+        assertThat( "metadata doesn't exist: " + listingMetaFile, listingMetaFile.exists(), equalTo( true ) );
 
         // wait for first time
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );

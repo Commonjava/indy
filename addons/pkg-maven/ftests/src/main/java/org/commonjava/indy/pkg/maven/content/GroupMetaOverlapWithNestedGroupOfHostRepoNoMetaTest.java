@@ -34,6 +34,7 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -176,8 +177,9 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoNoMetaTest
 
         // the top group should not reflect the meta file deprecation and expiration
         final String gpLevelMetaFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
-                               topGroup.getName(), path );
+                String.format( "%s/var/lib/indy/storage/%s/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+                               MAVEN_PKG_KEY, group.name(), topGroup.getName(), path );
+
         assertThat( "group metadata should not be removed after merging", new File( gpLevelMetaFilePath ).exists(),
                     equalTo( true ) );
 
