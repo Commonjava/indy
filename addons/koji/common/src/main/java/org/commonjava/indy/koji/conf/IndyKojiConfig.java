@@ -70,6 +70,8 @@ public class IndyKojiConfig
 
     private static final boolean DEFAULT_TAG_PATTERNS_ENABLED = false;
 
+    private static final boolean DEFAULT_PROXY_BINARY_BUILDS = false;
+
     private Boolean enabled;
 
     private String url;
@@ -97,6 +99,8 @@ public class IndyKojiConfig
     private String storageRootUrl;
 
     private Boolean tagPatternsEnabled;
+
+    private Boolean proxyBinaryBuilds;
 
     private List<String> tagPatterns;
 
@@ -362,13 +366,28 @@ public class IndyKojiConfig
         this.tagPatternsEnabled = tagPatternsEnabled;
     }
 
+    public Boolean getProxyBinaryBuilds()
+    {
+        return proxyBinaryBuilds == null ? DEFAULT_PROXY_BINARY_BUILDS : proxyBinaryBuilds;
+    }
+
+    public boolean isProxyBinaryBuilds()
+    {
+        return getProxyBinaryBuilds();
+    }
+
+    public void setProxyBinaryBuilds( Boolean proxyBinaryBuilds )
+    {
+        this.proxyBinaryBuilds = proxyBinaryBuilds;
+    }
+
     public boolean isTagAllowed( String name )
     {
         if ( !isTagPatternsEnabled() )
         {
             return true;
         }
-        
+
         Optional<String> result = tagPatterns.stream().filter( ( pattern ) -> name.matches( pattern ) ).findFirst();
 
         return result.isPresent();
@@ -390,6 +409,11 @@ public class IndyKojiConfig
             case "tag.patterns.enabled":
             {
                 this.tagPatternsEnabled = Boolean.valueOf( value.trim() );
+                break;
+            }
+            case "proxy.binary.builds":
+            {
+                this.proxyBinaryBuilds = Boolean.valueOf( value.trim() );
                 break;
             }
             case "tag.pattern":
