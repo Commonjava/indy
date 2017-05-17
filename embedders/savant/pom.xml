@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.embed</groupId>
     <artifactId>indy-embedders</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.2.0-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-embedder-savant</artifactId>
@@ -233,6 +233,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               </dependenciesToScan> 
             </configuration>
         </plugin>

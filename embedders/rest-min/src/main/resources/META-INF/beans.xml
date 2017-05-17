@@ -18,7 +18,11 @@
     <stereotype>org.commonjava.indy.inject.Production</stereotype>
     <class>org.commonjava.indy.flat.data.DataFileStoreDataManager</class>
   </alternatives>
-  
+
+  <interceptors>
+    <class>org.commonjava.indy.metrics.jaxrs.interceptor.MetricsInterceptor</class>
+  </interceptors>
+
   <decorators>
   </decorators>
       

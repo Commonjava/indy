@@ -20,6 +20,10 @@
     <class>org.commonjava.indy.flat.data.DataFileStoreDataManager</class>
   </alternatives>
 
+  <interceptors>
+    <class>org.commonjava.indy.metrics.jaxrs.interceptor.MetricsInterceptor</class>
+  </interceptors>
+
   <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->
   <decorators>
     <!-- ContentManager decorators -->

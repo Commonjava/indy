@@ -327,8 +327,15 @@ public abstract class KojiContentManagerDecorator
                     if ( isBinaryBuild(build) )
                     {
                         // This is not a real build, it's a binary import.
-                        logger.info("Trying binary build: {} with id: {}", build.getNvr(), build.getId());
-                        buildAllowed = true;
+                        if ( config.isProxyBinaryBuilds() )
+                        {
+                            logger.info("Trying binary build: {} with id: {}", build.getNvr(), build.getId());
+                            buildAllowed = true;
+                        }
+                        else
+                        {
+                            logger.debug("Skipping binary build: {} with id: {}", build.getNvr(), build.getId());
+                        }
                     }
                     else
                     {
