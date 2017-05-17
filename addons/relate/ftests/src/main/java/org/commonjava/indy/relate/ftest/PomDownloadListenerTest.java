@@ -14,6 +14,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -61,9 +62,13 @@ public class PomDownloadListenerTest
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
         client.stores().create( remote1, "adding remote", RemoteRepository.class );
 
-        InputStream is = client.content().get( remote, repo1, path );
-        String s = IOUtils.toString( is );
-        assertThat( s, equalTo( content ) );
+        try(InputStream is = client.content().get( remote, repo1, path ))
+        {
+            assertThat( is, notNullValue() );
+
+            String s = IOUtils.toString( is );
+            assertThat( s, equalTo( content ) );
+        }
 
         waitForEventPropagation();
 

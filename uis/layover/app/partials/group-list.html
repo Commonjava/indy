@@ -40,9 +40,9 @@
       <div class="store-listing">
         <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
 					<div class="fieldset-caption">
-					    <a href="#/group/view/{{store.name}}">
-                            <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.name}}</span>
-                            <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.name}}</span>
+					    <a href="#/group/{{store.packageType}}/view/{{store.name}}">
+                            <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.packageType}}-{{store.name}}</span>
+                            <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.packageType}}-{{store.name}}</span>
                         </a>
 					</div>
 					<div class="fieldset">
@@ -66,7 +66,7 @@
                 </div>
 					      <ol ng-if="store.display" class="content-panel item-expanded subsection">
 					        <li ng-repeat="item in store.constituents">
-					          <a href="#/{{item.type}}/view/{{item.name}}">
+					          <a href="#/{{item.type}}/{{item.packageType}}/view/{{item.name}}">
                                   <span class="enabled-store" ng-if="!isDisabled(item.key)">{{item.key}}</span>
                                   <span class="disabled-store" ng-if="isDisabled(item.key)">{{item.key}}</span>
                               </a>

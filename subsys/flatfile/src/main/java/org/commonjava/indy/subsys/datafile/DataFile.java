@@ -182,10 +182,15 @@ public final class DataFile
 
     public DataFile[] listFiles( final FileFilter fileFilter )
     {
+        if ( !file.exists())
+        {
+            return new DataFile[0];
+        }
+
         final File[] files = file.listFiles( fileFilter );
         if ( files == null )
         {
-            return null;
+            return new DataFile[0];
         }
 
         final DataFile[] ffiles = new DataFile[files.length];

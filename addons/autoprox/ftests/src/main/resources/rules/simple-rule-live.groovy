@@ -4,37 +4,37 @@ import org.commonjava.indy.autoprox.data.*;
 class SimpleLiveRule extends AbstractAutoProxRule
 {
 
-    RemoteRepository createRemoteRepository( final String named )
+    RemoteRepository createRemoteRepository( final StoreKey key )
         throws MalformedURLException
     {
         String baseUrl = System.getProperty( "baseUrl" );
-        new RemoteRepository( named, "@baseUri@/" + named );
+        new RemoteRepository( key.getName(), "@baseUri@/" + key.getName() );
     }
 
-    HostedRepository createHostedRepository( final String named )
+    HostedRepository createHostedRepository( final StoreKey key )
     {
-        HostedRepository r = new HostedRepository( named );
+        HostedRepository r = new HostedRepository( key.getPackageType(), key.getName() );
         r.setAllowSnapshots(true);
         r.setAllowReleases(true);
         
         r
     }
 
-    Group createGroup( final String named )
+    Group createGroup( final StoreKey key )
     {
         List<StoreKey> constituents = new ArrayList<StoreKey>();
         
-        constituents.add( new StoreKey( StoreType.hosted, named ) );
-        constituents.add( new StoreKey( StoreType.remote, named ) );
-        constituents.add( new StoreKey( StoreType.remote, "test-first" ) );
-        constituents.add( new StoreKey( StoreType.remote, "test-second" ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.hosted, key.getName() ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, "test-first" ) );
+        constituents.add( new StoreKey( key.getPackageType(), StoreType.remote, "test-second" ) );
         
-        new Group( named, constituents );
+        new Group( key.getPackageType(), key.getName(), constituents );
     }
 
-    boolean matches( final String name )
+    boolean matches( final StoreKey key )
     {
-        name.startsWith( "test" );
+        key.getName().startsWith( "test" );
     }
     
 }

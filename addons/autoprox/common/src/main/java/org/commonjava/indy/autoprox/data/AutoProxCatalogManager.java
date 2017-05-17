@@ -24,6 +24,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
@@ -178,7 +179,7 @@ public class AutoProxCatalogManager
         this.enabled = enabled;
     }
 
-    public RuleMapping getRuleMappingMatching( final String name )
+    public RuleMapping getRuleMappingMatching( final StoreKey key )
     {
         if ( !checkEnabled() )
         {
@@ -189,31 +190,31 @@ public class AutoProxCatalogManager
         //                                                      .getStackTrace(), "\n  " ) );
         for ( final RuleMapping mapping : getRuleMappings() )
         {
-            logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );
-            if ( mapping.matchesName( name ) )
+            logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), key );
+            if ( mapping.matches( key ) )
             {
                 logger.info( "Using rule: '{}'", mapping.getScriptName() );
                 return mapping;
             }
         }
 
-        logger.info( "No AutoProx rule found for: '{}'", name );
+        logger.info( "No AutoProx rule found for: '{}'", key );
 
         return null;
     }
 
-    public AutoProxRule getRuleMatching( final String name )
+    public AutoProxRule getRuleMatching( final StoreKey key )
     {
         if ( !checkEnabled() )
         {
             return null;
         }
 
-        final RuleMapping mapping = getRuleMappingMatching( name );
+        final RuleMapping mapping = getRuleMappingMatching( key );
         return mapping == null ? null : mapping.getRule();
     }
 
-    public RemoteRepository createRemoteRepository( final String name )
+    public RemoteRepository createRemoteRepository( final StoreKey key )
             throws AutoProxRuleException
     {
         if ( !checkEnabled() )
@@ -221,12 +222,12 @@ public class AutoProxCatalogManager
             throw new AutoProxRuleException( "AutoProx is disabled" );
         }
 
-        final AutoProxRule rule = getRuleMatching( name );
+        final AutoProxRule rule = getRuleMatching( key );
         try
         {
             if ( rule != null )
             {
-                RemoteRepository repo = rule.createRemoteRepository( name );
+                RemoteRepository repo = rule.createRemoteRepository( key );
                 repo.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
                 return repo;
             }
@@ -235,16 +236,16 @@ public class AutoProxCatalogManager
         }
         catch ( final MalformedURLException e )
         {
-            throw new AutoProxRuleException( "Invalid URL genenerated for: '%s'. Reason: %s", e, name, e.getMessage() );
+            throw new AutoProxRuleException( "Invalid URL genenerated for: '%s'. Reason: %s", e, key, e.getMessage() );
         }
         catch ( final Exception e )
         {
-            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, key,
                                              e.getMessage() );
         }
     }
 
-    public HostedRepository createHostedRepository( final String name )
+    public HostedRepository createHostedRepository( final StoreKey key )
             throws AutoProxRuleException
     {
         if ( !checkEnabled() )
@@ -252,12 +253,12 @@ public class AutoProxCatalogManager
             throw new AutoProxRuleException( "AutoProx is disabled" );
         }
 
-        final AutoProxRule rule = getRuleMatching( name );
+        final AutoProxRule rule = getRuleMatching( key );
         try
         {
             if ( rule != null )
             {
-                HostedRepository repo = rule.createHostedRepository( name );
+                HostedRepository repo = rule.createHostedRepository( key );
                 repo.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
                 return repo;
             }
@@ -266,12 +267,12 @@ public class AutoProxCatalogManager
         }
         catch ( final Exception e )
         {
-            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, key,
                                              e.getMessage() );
         }
     }
 
-    public Group createGroup( final String name )
+    public Group createGroup( final StoreKey key )
             throws AutoProxRuleException
     {
         if ( !checkEnabled() )
@@ -279,12 +280,12 @@ public class AutoProxCatalogManager
             throw new AutoProxRuleException( "AutoProx is disabled" );
         }
 
-        final AutoProxRule rule = getRuleMatching( name );
+        final AutoProxRule rule = getRuleMatching( key );
         try
         {
             if ( rule != null )
             {
-                Group group = rule.createGroup( name );
+                Group group = rule.createGroup( key );
                 group.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
                 return group;
             }
@@ -293,12 +294,12 @@ public class AutoProxCatalogManager
         }
         catch ( final Exception e )
         {
-            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, key,
                                              e.getMessage() );
         }
     }
 
-    public String getRemoteValidationPath( final String name )
+    public String getRemoteValidationPath( final StoreKey key )
             throws AutoProxRuleException
     {
         if ( !checkEnabled() )
@@ -306,19 +307,19 @@ public class AutoProxCatalogManager
             throw new AutoProxRuleException( "AutoProx is disabled" );
         }
 
-        final AutoProxRule rule = getRuleMatching( name );
+        final AutoProxRule rule = getRuleMatching( key );
         try
         {
             return rule == null ? null : rule.getRemoteValidationPath();
         }
         catch ( final Exception e )
         {
-            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, key,
                                              e.getMessage() );
         }
     }
 
-    public RemoteRepository createValidationRemote( final String name )
+    public RemoteRepository createValidationRemote( final StoreKey key )
             throws AutoProxRuleException
     {
         if ( !checkEnabled() )
@@ -326,30 +327,30 @@ public class AutoProxCatalogManager
             throw new AutoProxRuleException( "AutoProx is disabled" );
         }
 
-        final AutoProxRule rule = getRuleMatching( name );
+        final AutoProxRule rule = getRuleMatching( key );
         try
         {
-            return rule == null || !rule.isValidationEnabled() ? null : rule.createValidationRemote( name );
+            return rule == null || !rule.isValidationEnabled() ? null : rule.createValidationRemote( key );
         }
         catch ( final MalformedURLException e )
         {
-            throw new AutoProxRuleException( "Invalid URL genenerated for: '%s'. Reason: %s", e, name, e.getMessage() );
+            throw new AutoProxRuleException( "Invalid URL genenerated for: '%s'. Reason: %s", e, key, e.getMessage() );
         }
         catch ( final Exception e )
         {
-            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, name,
+            throw new AutoProxRuleException( "Failed to create remote repository for: %s. Reason: %s", e, key,
                                              e.getMessage() );
         }
     }
 
-    public boolean isValidationEnabled( final String name )
+    public boolean isValidationEnabled( final StoreKey key )
     {
         if ( !checkEnabled() )
         {
             return false;
         }
 
-        final AutoProxRule rule = getRuleMatching( name );
+        final AutoProxRule rule = getRuleMatching( key );
         return rule != null && rule.isValidationEnabled();
     }
 

@@ -32,7 +32,10 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
+
+import static org.commonjava.indy.model.core.StoreType.*;
 
 @ApplicationScoped
 public class AutoProxCalculatorController
@@ -44,83 +47,65 @@ public class AutoProxCalculatorController
     @Inject
     private StoreDataManager dataManager;
 
-    public AutoProxCalculation evalRemoteRepository( final String name )
+    public AutoProxCalculation eval( final StoreKey key )
         throws IndyWorkflowException
     {
         try
         {
-            final RemoteRepository store = catalog.createRemoteRepository( name );
-            if ( store != null )
+            if ( remote == key.getType() )
             {
-                final RuleMapping mapping = catalog.getRuleMappingMatching( name );
+                final RemoteRepository store = catalog.createRemoteRepository( key );
+                if ( store != null )
+                {
+                    final RuleMapping mapping = catalog.getRuleMappingMatching( key );
 
-                return new AutoProxCalculation( store, mapping.getScriptName() );
+                    return new AutoProxCalculation( store, mapping.getScriptName() );
+                }
             }
-        }
-        catch ( final AutoProxRuleException e )
-        {
-            throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to evaluate: '{}'. Reason: {}",
-                                              e, name, e.getMessage() );
-        }
-
-        return null;
-    }
-
-    public AutoProxCalculation evalHostedRepository( final String name )
-        throws IndyWorkflowException
-    {
-        try
-        {
-            final HostedRepository store = catalog.createHostedRepository( name );
-            if ( store != null )
+            else if ( hosted == key.getType() )
             {
-                final RuleMapping mapping = catalog.getRuleMappingMatching( name );
+                final HostedRepository store = catalog.createHostedRepository( key );
+                if ( store != null )
+                {
+                    final RuleMapping mapping = catalog.getRuleMappingMatching( key );
 
-                return new AutoProxCalculation( store, mapping.getScriptName() );
-            }
-        }
-        catch ( final AutoProxRuleException e )
-        {
-            throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
-                                              "Failed to evaluate: '{}'. Reason: {}",
-                                              e, name, e.getMessage() );
-        }
-
-        return null;
-    }
-
-    // FIXME: catalog setEnable() use is NOT threadsafe!!!
-    public AutoProxCalculation evalGroup( final String name )
-        throws IndyWorkflowException
-    {
-        catalog.setEnabled( false );
-        try
-        {
-            final Group store = catalog.createGroup( name );
-            if ( store == null )
-            {
-                return null;
+                    return new AutoProxCalculation( store, mapping.getScriptName() );
+                }
             }
             else
             {
-                final RuleMapping mapping = catalog.getRuleMappingMatching( name );
-                final List<ArtifactStore> supplemental = new ArrayList<ArtifactStore>();
-                evalSupplementalStores( store, supplemental );
+                // FIXME: catalog setEnable() use is NOT threadsafe!!!
+                catalog.setEnabled( false );
+                try
+                {
+                    final Group store = catalog.createGroup( key );
+                    if ( store == null )
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        final RuleMapping mapping = catalog.getRuleMappingMatching( key );
+                        final List<ArtifactStore> supplemental = new ArrayList<>();
+                        evalSupplementalStores( store, supplemental );
 
-                return new AutoProxCalculation( store, supplemental, mapping.getScriptName() );
+                        return new AutoProxCalculation( store, supplemental, mapping.getScriptName() );
+                    }
+                }
+                finally
+                {
+                    catalog.setEnabled( true );
+                }
             }
         }
         catch ( final AutoProxRuleException e )
         {
             throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to evaluate: '{}'. Reason: {}",
-                                              e, name, e.getMessage() );
+                                              e, key, e.getMessage() );
         }
-        finally
-        {
-            catalog.setEnabled( true );
-        }
+
+        return null;
     }
 
     private void evalSupplementalStores( final Group store, final List<ArtifactStore> supplemental )
@@ -136,7 +121,7 @@ public class AutoProxCalculatorController
                 {
                     case group:
                     {
-                        final Group g = catalog.createGroup( name );
+                        final Group g = catalog.createGroup( key );
                         if ( g != null )
                         {
                             supplemental.add( g );
@@ -146,7 +131,7 @@ public class AutoProxCalculatorController
                     }
                     case remote:
                     {
-                        final RemoteRepository r = catalog.createRemoteRepository( name );
+                        final RemoteRepository r = catalog.createRemoteRepository( key );
                         if ( r != null )
                         {
                             supplemental.add( r );
@@ -155,7 +140,7 @@ public class AutoProxCalculatorController
                     }
                     default:
                     {
-                        final HostedRepository h = catalog.createHostedRepository( name );
+                        final HostedRepository h = catalog.createHostedRepository( key );
                         if ( h != null )
                         {
                             supplemental.add( h );

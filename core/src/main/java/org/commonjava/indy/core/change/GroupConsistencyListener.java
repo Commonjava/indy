@@ -22,7 +22,6 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.util.ChangeSynchronizer;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,22 +39,22 @@ public class GroupConsistencyListener
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private StoreDataManager proxyDataManager;
+    private StoreDataManager storeDataManager;
 
     private void processChanged( final ArtifactStore store )
     {
         final StoreKey key = store.getKey();
         try
         {
-            final Set<Group> groups = proxyDataManager.getGroupsContaining( key );
+            final Set<Group> groups = storeDataManager.query().getGroupsContaining( key );
             for ( final Group group : groups )
             {
                 logger.debug( "Removing {} from membership of group: {}", key, group.getKey() );
 
                 Group g = group.copyOf();
                 g.removeConstituent( key );
-                proxyDataManager.storeArtifactStore( g, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                       "Auto-update groups containing: " + key
+                storeDataManager.storeArtifactStore( g, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                           "Auto-update groups containing: " + key
                                                                                    + " (to maintain consistency)" ),
                                                      false, false,
                                                      new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,

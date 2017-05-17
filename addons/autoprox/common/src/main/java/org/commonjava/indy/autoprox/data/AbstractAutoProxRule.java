@@ -20,6 +20,9 @@ import java.net.MalformedURLException;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
+
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public abstract class AbstractAutoProxRule
     implements AutoProxRule
@@ -31,23 +34,54 @@ public abstract class AbstractAutoProxRule
         return true;
     }
 
+    @Deprecated
+    public boolean matches( String named )
+    {
+        return false;
+    }
+
     @Override
+    public boolean matches( StoreKey key )
+    {
+        return matches( key.getName() );
+    }
+
+    @Deprecated
     public RemoteRepository createRemoteRepository( final String named )
-        throws AutoProxRuleException, MalformedURLException
+            throws AutoProxRuleException, MalformedURLException
     {
         return null;
     }
 
     @Override
+    public RemoteRepository createRemoteRepository( final StoreKey key )
+        throws AutoProxRuleException, MalformedURLException
+    {
+        return createRemoteRepository( key.getName() );
+    }
+
+    @Deprecated
     public HostedRepository createHostedRepository( final String named )
     {
         return null;
     }
 
     @Override
+    public HostedRepository createHostedRepository( final StoreKey key )
+    {
+        return createHostedRepository( key.getName() );
+    }
+
+    @Deprecated
     public Group createGroup( final String named )
     {
         return null;
+    }
+
+    @Override
+    public Group createGroup( final StoreKey key )
+    {
+        return createGroup( key.getName() );
     }
 
     @Override
@@ -56,22 +90,17 @@ public abstract class AbstractAutoProxRule
         return null;
     }
 
-    /**
-     * Use {@link AutoProxRule#createValidationRemote()} instead.
-     */
-    @Override
-    @Deprecated
-    public RemoteRepository createGroupValidationRemote( final String name )
-        throws AutoProxRuleException, MalformedURLException
+    public RemoteRepository createValidationRemote( final String name )
+            throws AutoProxRuleException, MalformedURLException
     {
         return createRemoteRepository( name );
     }
 
     @Override
-    public RemoteRepository createValidationRemote( final String name )
+    public RemoteRepository createValidationRemote( StoreKey key )
         throws AutoProxRuleException, MalformedURLException
     {
-        return createRemoteRepository( name );
+        return createValidationRemote( key.getName() );
     }
 
 }

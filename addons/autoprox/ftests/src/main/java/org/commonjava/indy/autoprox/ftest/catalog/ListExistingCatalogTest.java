@@ -29,9 +29,18 @@ public class ListExistingCatalogTest
     public void listDefaultCatalog()
         throws Exception
     {
-        final CatalogDTO catalog = module.getCatalog();
+        try
+        {
+            final CatalogDTO catalog = module.getCatalog();
 
-        assertThat( catalog.isEnabled(), equalTo( true ) );
+            assertThat( catalog.isEnabled(), equalTo( true ) );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Test error", e );
+
+            throw e;
+        }
     }
 
 }

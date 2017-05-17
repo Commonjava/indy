@@ -177,6 +177,7 @@ public class ReplicationController
                                 data.storeArtifactStore( repo, new ChangeSummary( user,
                                                                                      "REPLICATION: Proxying remote indy repository: "
                                                                                       + view.getResourceUri() ),
+                                                         true, true,
                                                          new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                                   REPLICATION_ORIGIN ) );
                                 replicated.add( repo.getKey() );
@@ -208,6 +209,7 @@ public class ReplicationController
                                 data.storeArtifactStore( store, new ChangeSummary( user,
                                                                                    "REPLICATION: Mirroring remote indy store: "
                                                                                        + store.getKey() ),
+                                                         true, true,
                                                          new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                                   REPLICATION_ORIGIN ) );
                                 replicated.add( store.getKey() );

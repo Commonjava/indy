@@ -23,6 +23,15 @@
       <div class="fieldset-caption">Basics</div>
       <div class="fieldset">
           <div class="detail-field">
+            <label>Package Type:</label>
+            <span ng-if="!editMode">
+              <select ng-model="raw.packageType">
+                <option ng-repeat="option in packageTypes" value="{{option}}">{{option}}</option>
+              </select>
+            </span>
+            <span ng-if="editMode" class="key">{{raw.packageType}}</span>
+          </div>
+          <div class="detail-field">
             <label>Name:</label>
             <span ng-if="!editMode"><input type="text" ng-model="raw.name" size="25" /></span>
             <span ng-if="editMode" class="key">{{raw.name}}</span>

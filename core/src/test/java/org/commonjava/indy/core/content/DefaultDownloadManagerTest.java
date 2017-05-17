@@ -10,13 +10,11 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
-import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
-import org.commonjava.maven.galley.internal.TransferManagerImpl;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.maven.galley.transport.NoOpLocationExpander;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,6 +23,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.util.Arrays;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -60,11 +59,11 @@ public class DefaultDownloadManagerTest
             throws IndyDataException, IndyWorkflowException
     {
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test setup" );
-        HostedRepository hosted1 = new HostedRepository( "one" );
-        HostedRepository hosted2 = new HostedRepository( "two" );
+        HostedRepository hosted1 = new HostedRepository( MAVEN_PKG_KEY, "one" );
+        HostedRepository hosted2 = new HostedRepository( MAVEN_PKG_KEY, "two" );
 
-        storeManager.storeArtifactStore( hosted1, summary );
-        storeManager.storeArtifactStore( hosted2, summary );
+        storeManager.storeArtifactStore( hosted1, summary, false, true, new EventMetadata() );
+        storeManager.storeArtifactStore( hosted2, summary, false, true, new EventMetadata() );
 
         String path = "/some/path.txt";
 

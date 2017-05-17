@@ -17,11 +17,14 @@ package org.commonjava.indy.autoprox.fixture;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.autoprox.data.AutoProxCatalogManager;
 import org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
@@ -48,66 +51,23 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public List<ArtifactStore> getAllArtifactStores()
+    public Set<ArtifactStore> getAllArtifactStores()
         throws IndyDataException
     {
         return delegate.getAllArtifactStores();
     }
 
     @Override
-    public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
-        throws IndyDataException
+    public Stream<ArtifactStore> streamArtifactStores()
+            throws IndyDataException
     {
-        return delegate.getAllArtifactStores( type );
+        return delegate.streamArtifactStores();
     }
 
     @Override
-    public List<Group> getAllGroups()
-        throws IndyDataException
+    public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
-        return delegate.getAllGroups();
-    }
-
-    @Override
-    public List<RemoteRepository> getAllRemoteRepositories()
-        throws IndyDataException
-    {
-        return delegate.getAllRemoteRepositories();
-    }
-
-    @Override
-    public List<HostedRepository> getAllHostedRepositories()
-        throws IndyDataException
-    {
-        return delegate.getAllHostedRepositories();
-    }
-
-    @Override
-    public List<ArtifactStore> getAllConcreteArtifactStores()
-        throws IndyDataException
-    {
-        return delegate.getAllConcreteArtifactStores();
-    }
-
-    @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName, final boolean enabledOnly )
-        throws IndyDataException
-    {
-        return delegate.getOrderedConcreteStoresInGroup( groupName, enabledOnly );
-    }
-
-    @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName, final boolean enabledOnly )
-        throws IndyDataException
-    {
-        return delegate.getOrderedStoresInGroup( groupName, enabledOnly );
-    }
-
-    @Override
-    public Set<Group> getGroupsContaining( final StoreKey repo )
-        throws IndyDataException
-    {
-        return delegate.getGroupsContaining( repo );
+        return delegate.getArtifactStoresByKey();
     }
 
     @Override
@@ -125,54 +85,11 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary )
-        throws IndyDataException
-    {
-        return storeArtifactStore( key, summary, new EventMetadata() );
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore key , final ChangeSummary summary , final EventMetadata eventMetadata  )
-        throws IndyDataException
-    {
-        return delegate.storeArtifactStore( key, summary, new EventMetadata() );
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary, final boolean skipIfExists )
-        throws IndyDataException
-    {
-        return storeArtifactStore( key, summary, skipIfExists, new EventMetadata() );
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore key , final ChangeSummary summary , final boolean skipIfExists , final EventMetadata eventMetadata  )
-        throws IndyDataException
-    {
-        return delegate.storeArtifactStore( key, summary, skipIfExists, new EventMetadata() );
-    }
-
-    @Override
-    public boolean storeArtifactStore( final ArtifactStore key, final ChangeSummary summary,
-                                       final boolean skipIfExists, final boolean fireEvents )
-        throws IndyDataException
-    {
-        return storeArtifactStore( key, summary, skipIfExists, fireEvents, new EventMetadata() );
-    }
-
-    @Override
     public boolean storeArtifactStore( final ArtifactStore key , final ChangeSummary summary ,
                                        final boolean skipIfExists , final boolean fireEvents , final EventMetadata eventMetadata  )
         throws IndyDataException
     {
         return delegate.storeArtifactStore( key, summary, skipIfExists, fireEvents, new EventMetadata() );
-    }
-
-    @Override
-    public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary )
-        throws IndyDataException
-    {
-        deleteArtifactStore( key, summary, new EventMetadata() );
     }
 
     @Override
@@ -190,51 +107,15 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean hasRemoteRepository( final String name )
-    {
-        return delegate.hasRemoteRepository( name );
-    }
-
-    @Override
-    public boolean hasGroup( final String name )
-    {
-        return delegate.hasGroup( name );
-    }
-
-    @Override
-    public boolean hasHostedRepository( final String name )
-    {
-        return delegate.hasHostedRepository( name );
-    }
-
-    @Override
     public boolean hasArtifactStore( final StoreKey key )
     {
         return delegate.hasArtifactStore( key );
     }
 
     @Override
-    public RemoteRepository findRemoteRepository( final String url )
-    {
-        return delegate.findRemoteRepository( url );
-    }
-
-    @Override
     public boolean isStarted()
     {
         return delegate.isStarted();
-    }
-
-    @Override
-    public Set<Group> getGroupsAffectedBy( StoreKey... keys )
-    {
-        return delegate.getGroupsAffectedBy( keys );
-    }
-
-    @Override
-    public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
-    {
-        return delegate.getGroupsAffectedBy( keys );
     }
 
     @Override
@@ -248,4 +129,6 @@ public class TestAutoProxyDataManager
     {
         return delegate.isReadonly( storeKey );
     }
+
+
 }

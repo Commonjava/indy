@@ -21,6 +21,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -47,7 +48,7 @@ public class ImpliedReposOriginMigrationAction
         List<RemoteRepository> remoteRepositories;
         try
         {
-            remoteRepositories = storeDataManager.getAllRemoteRepositories();
+            remoteRepositories = storeDataManager.query().getAllRemoteRepositories();
         }
         catch ( IndyDataException e )
         {
@@ -69,7 +70,8 @@ public class ImpliedReposOriginMigrationAction
             try
             {
                 storeDataManager.storeArtifactStore( repo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                              "Adding implied-repository origin metadata" ) );
+                                                                              "Adding implied-repository origin metadata" ),
+                                                     false, true, new EventMetadata() );
             }
             catch ( IndyDataException e )
             {

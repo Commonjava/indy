@@ -34,10 +34,13 @@ import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extends AbstractIndyFunctionalTest
 {
+    private static final String TARGET_NAME = "target";
+
     protected HostedRepository source;
 
     protected T target;
@@ -67,11 +70,11 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
         source = client.stores().create( shr, "creating test source", HostedRepository.class );
         if ( Group.class.equals( targetCls ) )
         {
-            target = (T) client.stores().create( new Group( "target" ), "creating test target", Group.class );
+            target = (T) client.stores().create( new Group( TARGET_NAME ), "creating test target", Group.class );
         }
         else if ( HostedRepository.class.equals( targetCls ) )
         {
-            HostedRepository hr = new HostedRepository( "target" );
+            HostedRepository hr = new HostedRepository( TARGET_NAME );
             hr.setAllowSnapshots( true );
 
             target = (T) client.stores().create( hr, "creating test target", HostedRepository.class );
@@ -138,7 +141,11 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
 
         ValidationRuleSet rs = getRuleSet();
         String json = new ObjectMapper().writeValueAsString( rs );
-        writeDataFile( "promote/rule-sets/" + name.getMethodName() + ".json", json );
+
+        String rulesetPath = "promote/rule-sets/" + name.getMethodName() + ".json";
+
+        logger.info( "Writing rule-set to: {}\nContents:\n\n{}\n\n", rulesetPath, json );
+        writeDataFile( rulesetPath, json );
 
         super.initTestData( fixture );
     }
@@ -147,7 +154,7 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
     {
         ValidationRuleSet ruleSet = new ValidationRuleSet();
         ruleSet.setName( "test" );
-        ruleSet.setStoreKeyPattern( "group:target" );
+        ruleSet.setStoreKeyPattern( new StoreKey( group, TARGET_NAME ).toString() );
         ruleSet.setRuleNames( Collections.singletonList( getRuleScriptFile() ) );
 
         return ruleSet;

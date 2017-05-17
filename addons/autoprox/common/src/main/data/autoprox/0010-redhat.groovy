@@ -14,31 +14,33 @@
  * limitations under the License.
  */
 
-import org.commonjava.indy.autoprox.data.*;
+import org.commonjava.indy.autoprox.data.*
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+
 import java.net.MalformedURLException;
 import org.commonjava.indy.model.core.*;
 
 class RedHatRule extends AbstractAutoProxRule
 {
-    boolean matches( String name ){
-        name.startsWith( "RH-" )
+    boolean matches( String packageType, String name ){
+        MavenPackageTypeDescriptor.MAVEN_PKG_KEY.equals( packageType ) && name.startsWith( "RH-" )
     }
 
-    RemoteRepository createRemoteRepository( String named )
+    RemoteRepository createRemoteRepository( StoreKey key )
         throws MalformedURLException
     {
         if ( named == "RH-all" || named == "RH-techpreview" ){
-          new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/techpreview/all/" )
+          new RemoteRepository( key.getPackageType(), name: key.getName(), url: "http://maven.repository.redhat.com/techpreview/all/" )
         }
         else if ( named == "RH-earlyaccess" ){
-          new RemoteRepository( name: named, url: "http://maven.repository.redhat.com/earlyaccess/all/" )
+          new RemoteRepository( key.getPackageType(), name: key.getName(), url: "http://maven.repository.redhat.com/earlyaccess/all/" )
         }
     }
 
-    Group createGroup( String named )
+    Group createGroup( StoreKey key )
     {
-        Group g = new Group( named );
-        g.addConstituent( new StoreKey( StoreType.remote, named ) )
+        Group g = new Group( key.getPackageType(), key.getName() );
+        g.addConstituent( new StoreKey( key.getPackageType(), StoreType.remote, key.getName() ) )
         
         g
     }

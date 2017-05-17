@@ -37,6 +37,8 @@ public abstract class ArtifactStore
     implements Serializable
 {
 
+    public static final String PKG_TYPE_ATTR = "packageType";
+
     public static final String TYPE_ATTR = "type";
 
     public static final String KEY_ATTR = "key";
@@ -69,29 +71,24 @@ public abstract class ArtifactStore
     {
     }
 
-    protected ArtifactStore( final String name )
+    protected ArtifactStore( final String packageType, final StoreType type, final String name )
     {
-        this.key = initKey( name );
+        this.key = StoreKey.dedupe( new StoreKey( packageType, type, name ) );
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.commonjava.web.maven.proxy.model.ArtifactStore#getName()
-     */
     public String getName()
     {
         return key.getName();
     }
 
-    protected void setName( final String name )
+    public StoreType getType()
     {
-        this.key = initKey( name );
+        return key.getType();
     }
 
-    @Deprecated
-    public StoreType getDoctype()
+    public String getPackageType()
     {
-        return getKey().getType();
+        return key.getPackageType();
     }
 
     public synchronized StoreKey getKey()
@@ -99,9 +96,9 @@ public abstract class ArtifactStore
         return key;
     }
 
-    protected abstract StoreKey initKey( String name );
-
     public abstract ArtifactStore copyOf();
+
+    public abstract ArtifactStore copyOf( String packageType, String name );
 
     @Override
     public int hashCode()
@@ -214,6 +211,8 @@ public abstract class ArtifactStore
         store.setDisabled( isDisabled() );
         store.setMetadata( getMetadata() );
         store.setTransientMetadata( getTransientMetadata() );
+        store.setPathStyle( getPathStyle() );
+        store.setDisableTimeout( getDisableTimeout() );
     }
 
     protected void setTransientMetadata( Map<String, String> transientMetadata )

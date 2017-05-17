@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -241,8 +242,8 @@ public class MavenMetadataGeneratorTest
     private StoreResource setupVersionsStructureWith2Versions()
         throws Exception
     {
-        final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store, summary, new EventMetadata() );
+        final RemoteRepository store = new RemoteRepository( MAVEN_PKG_KEY,  "testrepo", "http://foo.bar" );
+        stores.storeArtifactStore( store, summary, false, true, new EventMetadata() );
 
         final String path = "org/group/artifact";
 
@@ -271,8 +272,8 @@ public class MavenMetadataGeneratorTest
     private StoreResource setupSnapshotDirWith2Snapshots()
         throws Exception
     {
-        final RemoteRepository store = new RemoteRepository( "testrepo", "http://foo.bar" );
-        stores.storeArtifactStore( store, summary, new EventMetadata() );
+        final RemoteRepository store = new RemoteRepository( MAVEN_PKG_KEY,  "testrepo", "http://foo.bar" );
+        stores.storeArtifactStore( store, summary, false, true, new EventMetadata() );
 
         final String path = "org/group/artifact/1.0-SNAPSHOT";
 

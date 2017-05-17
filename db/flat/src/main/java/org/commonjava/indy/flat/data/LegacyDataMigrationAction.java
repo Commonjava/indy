@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,38 +15,67 @@
  */
 package org.commonjava.indy.flat.data;
 
-import java.util.List;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.MigrationAction;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFile;
+import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.commonjava.indy.flat.data.DataFileStoreDataManager.INDY_STORE;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 @Named( "legacy-storedb-migration" )
 public class LegacyDataMigrationAction
-    implements MigrationAction
+        implements MigrationAction
 {
-
-    private static final String LEGACY_HOSTED_REPO_PREFIX = "deploy_point";
-
-    private static final String LEGACY_REMOTE_REPO_PREFIX = "repository";
 
     public static final String LEGACY_MIGRATION = "legacy-migration";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private StoreDataManager data;
+    private DataFileManager dataFileManager;
+
+    @Inject
+    private StoreDataManager storeDataManager;
+
+    @Inject
+    private IndyObjectMapper objectMapper;
+
+    protected LegacyDataMigrationAction(){}
+
+    public LegacyDataMigrationAction( final DataFileManager dataFileManager,
+                                      final DataFileStoreDataManager dataFileStoreDataManager,
+                                      final IndyObjectMapper mapper )
+    {
+        this.dataFileManager = dataFileManager;
+        storeDataManager = dataFileStoreDataManager;
+        objectMapper = mapper;
+    }
 
     @Override
     public String getId()
@@ -56,23 +85,26 @@ public class LegacyDataMigrationAction
 
     @Override
     public boolean migrate()
+            throws IndyLifecycleException
     {
-        if ( !( data instanceof DataFileStoreDataManager ) )
+        if ( !( storeDataManager instanceof DataFileStoreDataManager ) )
         {
-            return true;
+            logger.info( "Store manager: {} is not based on DataFile's. Skipping migration.",
+                         storeDataManager.getClass().getName() );
+            return false;
         }
 
-        final DataFileStoreDataManager data = (DataFileStoreDataManager) this.data;
+        final DataFile basedir = dataFileManager.getDataFile( INDY_STORE );
 
-        final DataFile basedir = data.getFileManager()
-                                     .getDataFile( DataFileStoreDataManager.INDY_STORE );
         final ChangeSummary summary =
-            new ChangeSummary( ChangeSummary.SYSTEM_USER, "Migrating legacy store definitions." );
+                new ChangeSummary( ChangeSummary.SYSTEM_USER, "Migrating legacy store definitions." );
 
         if ( !basedir.exists() )
         {
             return false;
         }
+
+        StoreType[] storeTypes = StoreType.values();
 
         final String[] dirs = basedir.list();
         if ( dirs == null || dirs.length < 1 )
@@ -80,54 +112,81 @@ public class LegacyDataMigrationAction
             return false;
         }
 
+        Map<String, String> migrationCandidates = new HashMap<>();
+
+        //noinspection ConstantConditions
+        Stream.of( storeTypes )
+              .forEach( type -> {
+                  File[] files = basedir.getDetachedFile()
+                                        .toPath()
+                                        .resolve( type.singularEndpointName() )
+                                        .toFile()
+                                        .listFiles( ( dir, fname ) -> fname.endsWith( ".json" ) );
+                  if ( files != null )
+                  {
+                      Stream.of( files )
+                            .forEach( ( f ) ->
+                                      {
+                                          String src = Paths.get( type.singularEndpointName(), f.getName() )
+                                                            .toString();
+
+                                          String target =
+                                                  Paths.get( MAVEN_PKG_KEY, type.singularEndpointName(),
+                                                             f.getName() ).toString();
+
+                                          migrationCandidates.put( src, target );
+                                      } );
+                  }
+              } );
+
         boolean changed = false;
-        for ( final String name : dirs )
+        for ( Map.Entry<String, String> entry : migrationCandidates.entrySet() )
         {
-            final DataFile dir = basedir.getChild( name );
-            String newName = null;
-            if ( name.startsWith( LEGACY_HOSTED_REPO_PREFIX ) )
+            DataFile src = dataFileManager.getDataFile( INDY_STORE, entry.getKey() );
+            DataFile target = dataFileManager.getDataFile( INDY_STORE, entry.getValue() );
+            if ( target.exists() )
             {
-                newName = StoreType.hosted.singularEndpointName() + name.substring( LEGACY_HOSTED_REPO_PREFIX.length() );
-            }
-            else if ( name.startsWith( LEGACY_REMOTE_REPO_PREFIX ) )
-            {
-                newName = StoreType.remote.singularEndpointName() + name.substring( LEGACY_REMOTE_REPO_PREFIX.length() );
+                continue;
             }
 
-            if ( newName != null )
+            DataFile targetDir = target.getParent();
+            if ( !targetDir.exists() && !targetDir.mkdirs() )
             {
-                logger.info( "Migrating storage: '{}' to '{}'", name, newName );
+                throw new IndyLifecycleException( "Cannot make directory: %s.", targetDir.getPath() );
+            }
+            else if ( !targetDir.isDirectory() )
+            {
+                throw new IndyLifecycleException( "Not a directory: %s.", targetDir.getPath() );
+            }
 
-                final DataFile newDir = basedir.getChild( newName );
-                dir.renameTo( newDir, summary );
+            try
+            {
+                logger.info( "Migrating definition {}", src.getPath() );
+                final String json = src.readString();
 
+                final String migrated = objectMapper.patchLegacyStoreJson( json );
+                target.writeString( migrated, summary );
                 changed = true;
             }
+            catch ( final IOException e )
+            {
+                throw new IndyLifecycleException(
+                        "Failed to migrate artifact-store definition from: %s to: %s. Reason: %s", e, src, target,
+                        e.getMessage(), e );
+            }
         }
 
-        try
+        if ( changed )
         {
-            data.reload();
-
-            final List<HostedRepository> hosted = data.getAllHostedRepositories();
-            for ( final HostedRepository repo : hosted )
+            try
             {
-                data.storeArtifactStore( repo, summary, false, true,
-                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LEGACY_MIGRATION ) );
+                storeDataManager.reload();
             }
-
-            final List<RemoteRepository> remotes = data.getAllRemoteRepositories();
-            for ( final RemoteRepository repo : remotes )
+            catch ( IndyDataException e )
             {
-                data.storeArtifactStore( repo, summary, false, true,
-                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LEGACY_MIGRATION ) );
+                throw new IndyLifecycleException( "Failed to reload migrated store definitions: %s", e,
+                                                  e.getMessage() );
             }
-
-            data.reload();
-        }
-        catch ( final IndyDataException e )
-        {
-            throw new RuntimeException( "Failed to reload artifact-store definitions: " + e.getMessage(), e );
         }
 
         return changed;
@@ -136,7 +195,7 @@ public class LegacyDataMigrationAction
     @Override
     public int getMigrationPriority()
     {
-        return 85;
+        return 99;
     }
 
 }

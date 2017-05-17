@@ -151,7 +151,7 @@ public class StatsController
         {
             final StoreKey key = store.getKey();
             final String resourceUri =
-                uriFormatter.formatAbsolutePathTo( baseUri, key.getType()
+                uriFormatter.formatAbsolutePathTo( baseUri, "content", key.getPackageType(), key.getType()
                                                                .singularEndpointName(), key.getName() );
 
             final EndpointView point = new EndpointView( store, resourceUri );

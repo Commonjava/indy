@@ -22,11 +22,16 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.handler.ProxyAcceptHandler;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.GenericPackageTypeDescriptor;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.maven.galley.event.EventMetadata;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 
 /**
  * Created by jdcasey on 9/19/16.
@@ -41,10 +46,10 @@ public class HttProxOriginMigrationAction
     public boolean migrate()
             throws IndyLifecycleException
     {
-        List<HostedRepository> hostedRepositories;
+        List<RemoteRepository> repos;
         try
         {
-            hostedRepositories = storeDataManager.getAllHostedRepositories();
+            repos = storeDataManager.query().noPackageType().getAllRemoteRepositories();
         }
         catch ( IndyDataException e )
         {
@@ -52,21 +57,24 @@ public class HttProxOriginMigrationAction
                                               e.getMessage() );
         }
 
-        List<HostedRepository> toStore = new ArrayList<>();
-        hostedRepositories.forEach( (repo)->{
+        List<RemoteRepository> toStore = new ArrayList<>();
+        repos.forEach( (repo)->{
             if ( repo.getDescription() != null && repo.getDescription().contains( "HTTProx proxy" ) )
             {
                 repo.setMetadata( ArtifactStore.METADATA_ORIGIN, ProxyAcceptHandler.HTTPROX_ORIGIN );
-                toStore.add( repo );
+                RemoteRepository store = repo.copyOf( GENERIC_PKG_KEY, repo.getName() );
+                toStore.add( store );
             }
         } );
 
-        for ( HostedRepository repo : toStore )
+        final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                         "Adding HttProx origin metadata" );
+
+        for ( RemoteRepository repo : toStore )
         {
             try
             {
-                storeDataManager.storeArtifactStore( repo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                              "Adding HttProx origin metadata" ) );
+                storeDataManager.storeArtifactStore( repo, changeSummary, false, true, new EventMetadata() );
             }
             catch ( IndyDataException e )
             {

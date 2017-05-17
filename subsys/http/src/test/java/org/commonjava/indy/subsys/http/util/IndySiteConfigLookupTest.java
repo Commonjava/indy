@@ -19,9 +19,11 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.junit.Test;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -34,12 +36,13 @@ public class IndySiteConfigLookupTest
     public void checkServerCertPemIsConfigured()
             throws IndyDataException
     {
-        RemoteRepository remote = new RemoteRepository( "test", "http://test.com/repo" );
+        RemoteRepository remote = new RemoteRepository( MAVEN_PKG_KEY, "test", "http://test.com/repo" );
         remote.setServerCertPem( "AAAAFFFFFSDADFADSFASDFASDFASDFASDFASDFsa" );
         remote.setServerTrustPolicy( "self-signed" );
 
         MemoryStoreDataManager storeData = new MemoryStoreDataManager(true);
-        storeData.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER, "This is a test" ) );
+        storeData.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER, "This is a test" ), false,
+                                      false, new EventMetadata() );
 
         IndySiteConfigLookup lookup = new IndySiteConfigLookup( storeData );
         SiteConfig siteConfig = lookup.lookup( "remote:test" );

@@ -16,6 +16,7 @@
 package org.commonjava.indy.dotmaven.store.sub;
 
 import static org.commonjava.indy.dotmaven.util.NameUtils.formatSettingsResourceName;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -132,7 +133,7 @@ public class SettingsSubStore
             List<? extends ArtifactStore> all;
             try
             {
-                all = indy.getAllArtifactStores( type );
+                all = indy.query().packageType( MAVEN_PKG_KEY ).storeTypes( type ).getAll();
             }
             catch ( final IndyDataException e )
             {

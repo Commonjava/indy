@@ -56,6 +56,7 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
             var item = listing.items[i];
             item.detailHref = StoreUtilSvc.detailHref(item.key);
             item.storeHref = StoreUtilSvc.storeHref(item.key);
+            item.packageType = StoreUtilSvc.packageTypeFromKey(item.key);
             item.name = StoreUtilSvc.nameFromKey(item.key);
             item.remoteOptions = StoreUtilSvc.remoteOptions(item);
             item.description = StoreUtilSvc.defaultDescription(item.description);
@@ -66,8 +67,10 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
     $scope.orderProp = 'key';
   }]);
 
-indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
+indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', 'PackageTypeSvc', function($scope, $routeParams, $location, RemoteSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc, PackageTypeSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
+  $scope.editMode = ($scope.mode == 'edit');
+  $scope.packageTypes = PackageTypeSvc.resource.query();
   $scope.storeUtils = StoreUtilSvc;
 
   $scope.raw = {
@@ -79,7 +82,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
   $scope.controls = function( store ){
     $scope.store = store;
     
-    ControlSvc.addControlHrefs($scope, 'remote', $scope.raw.name, $scope.mode, $location);
+    ControlSvc.addControlHrefs($scope, 'remote', $scope.raw.packageType, $scope.raw.name, $scope.mode, $location);
     ControlSvc.addStoreControls($scope, $location, 'remote', RemoteSvc, StoreUtilSvc, {
       save: function(scope){
         if ( scope.is_passthrough ){
@@ -96,34 +99,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
     });
   };
 
-  if ( $scope.mode == 'edit' ){
-    RemoteSvc.resource.get({name: $routeParams.name}, function(store){
-      $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
-      $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
-      $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
-      $scope.raw.timeout_seconds = StoreUtilSvc.secondsToDuration(store.timeout_seconds);
-      $scope.raw.metadata_timeout_seconds = StoreUtilSvc.secondsToDuration(store.metadata_timeout_seconds);
-
-      var useX509 = store.server_certificate_pem !== undefined;
-      useX509 = store.key_certificate_pem !== undefined || useX509;
-
-      $scope.raw.use_x509 = useX509;
-
-      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
-      console.log("EDIT: After calling setEnableAttributes, raw.enabled == " + $scope.raw.enabled);
-
-      var useProxy = store.proxy_host !== undefined;
-      $scope.raw.use_proxy = useProxy;
-
-      var useAuth = useProxy && store.proxy_user !== undefined;
-      useAuth = store.user !== undefined || useAuth;
-
-      $scope.raw.use_auth = useAuth;
-      
-      $scope.controls( store );
-    });
-  }
-  else if ($scope.mode == 'new'){
+  if ($scope.mode == 'new'){
     $scope.raw.new = true;
     $scope.store = {
       url: '',
@@ -136,8 +112,9 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
     $scope.controls( $scope.store );
   }
   else{
-    RemoteSvc.resource.get({name: $routeParams.name}, function(store){
+    RemoteSvc.resource.get({packageType: $routeParams.packageType, name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.packageType = StoreUtilSvc.packageTypeFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
 
@@ -180,6 +157,7 @@ indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc',
             var item = listing.items[i];
             item.detailHref = StoreUtilSvc.detailHref(item.key);
             item.storeHref = StoreUtilSvc.storeHref(item.key);
+            item.packageType = StoreUtilSvc.packageTypeFromKey(item.key);
             item.name = StoreUtilSvc.nameFromKey(item.key);
             item.hostedOptions = StoreUtilSvc.hostedOptions(item);
             item.description = StoreUtilSvc.defaultDescription(item.description);
@@ -191,8 +169,10 @@ indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc',
     $scope.orderProp = 'key';
   }]);
 
-indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
+indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', 'PackageTypeSvc', function($scope, $routeParams, $location, HostedSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc, PackageTypeSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
+  $scope.editMode = ($scope.mode == 'edit');
+  $scope.packageTypes = PackageTypeSvc.resource.query();
   $scope.storeUtils = StoreUtilSvc;
 
   $scope.raw = {
@@ -224,17 +204,7 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
     });
   };
 
-  if ( $scope.mode == 'edit' ){
-    HostedSvc.resource.get({name: $routeParams.name}, function(store){
-      $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
-      $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
-      
-      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
-
-      $scope.controls( store );
-    });
-  }
-  else if($scope.mode == 'new'){
+  if($scope.mode == 'new'){
     $scope.raw.new = true;
     $scope.store = {
       allow_releases: true,
@@ -245,11 +215,13 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
     $scope.controls( $scope.store );
   }
   else{
-    HostedSvc.resource.get({name: $routeParams.name}, function(store){
+    HostedSvc.resource.get({packageType: $routeParams.packageType, name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.packageType = StoreUtilSvc.packageTypeFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
-      
+      $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
+
       StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
 
       $scope.controls(store);
@@ -269,6 +241,7 @@ indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupS
             item.detailHref = StoreUtilSvc.detailHref(item.key);
             item.storeHref = StoreUtilSvc.storeHref(item.key);
             item.type = StoreUtilSvc.typeFromKey( item.key );
+            item.packageType = StoreUtilSvc.packageTypeFromKey(item.key);
             item.name = StoreUtilSvc.nameFromKey(item.key);
             item.description = StoreUtilSvc.defaultDescription(item.description);
 
@@ -285,6 +258,7 @@ indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupS
                   detailHref: StoreUtilSvc.detailHref(key),
                   storeHref: StoreUtilSvc.storeHref(key),
                   type: StoreUtilSvc.typeFromKey( key ),
+                  packageType: StoreUtilSvc.packageTypeFromKey(key),
                   name: StoreUtilSvc.nameFromKey(key),
               }
               item.constituents[j] = c;
@@ -312,8 +286,10 @@ indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupS
     $scope.orderProp = 'key';
   }]);
 
-indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', 'StoreDisableSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc, StoreDisableSvc) {
+indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'AllEndpointsSvc', 'StoreDisableSvc', 'PackageTypeSvc', function($scope, $routeParams, $location, GroupSvc, StoreUtilSvc, ControlSvc, AllEndpointsSvc, StoreDisableSvc, PackageTypeSvc) {
   $scope.mode = StoreUtilSvc.resourceMode();
+  $scope.editMode = ($scope.mode == 'edit');
+  $scope.packageTypes = PackageTypeSvc.resource.query();
   $scope.storeUtils = StoreUtilSvc;
 
   StoreDisableSvc.setDisabledMap($scope);
@@ -335,30 +311,18 @@ indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', '
     ControlSvc.addStoreControls($scope, $location, 'group', GroupSvc, StoreUtilSvc);
   };
 
-  if ( $scope.mode == 'edit' ){
-    GroupSvc.resource.get({name: $routeParams.name}, function(store){
-      $scope.raw.name = $scope.storeUtils.nameFromKey(store.key);
-      
-      StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
-
-      if ( !store.constituents ){
-        store.constituents = [];
-      }
-      
-      $scope.controls(store);
-    });
-  }
-  else if ($scope.mode == 'new'){
+  if ($scope.mode == 'new'){
     $scope.raw.new = true;
     $scope.store = {
       constituents: [],
     };
-    
+
     $scope.controls($scope.store);
   }
   else{
     GroupSvc.resource.get({name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
+      $scope.raw.packageType = StoreUtilSvc.packageTypeFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
 
@@ -397,9 +361,10 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
 // alert( "Clear all NFC entries for: " + key );
     
     var name=StoreUtilSvc.nameFromKey(key);
+    var packageType = StoreUtilSvc.packageTypeFromKey(key);
     var type = StoreUtilSvc.typeFromKey(key);
     
-    NfcSvc.resource.delete({name: name, type: type},
+    NfcSvc.resource.delete({name: name, type: type, packageType: packageType},
       function(){
         $scope.message = {type: 'OK', message: 'Cleared NFC for ' + key + "'"};
 // alert( "NFC for " + key + " has been cleared!");
@@ -420,9 +385,10 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
 // alert( "Clear all NFC entries for: " + key + ", path: " + path );
     
     var name=StoreUtilSvc.nameFromKey(key);
+    var packageType = StoreUtilSvc.packageTypeFromKey(key);
     var type = StoreUtilSvc.typeFromKey(key);
     
-    NfcSvc.resource.delete({name: name, type: type, path: path},
+    NfcSvc.resource.delete({name: name, type: type, path: path, packageType: packageType},
       function(){
         $scope.message = {type: 'OK', message: 'Cleared NFC for ' + key + "', path: " + path};
 // alert( "NFC for: " + key + ", path: " + path + " has been cleared!" );
@@ -457,7 +423,7 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
   AllEndpointsSvc.resource.query(function(listing){
     var available = [];
     listing.items.each(function(item){
-      item.key = StoreUtilSvc.formatKey(item.type, item.name);
+      item.key = StoreUtilSvc.formatKey(item.packageType, item.type, item.name);
       item.label = StoreUtilSvc.keyLabel(item.key);
       available.push(item);
     });
@@ -481,15 +447,16 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
     });
   }
   else{
+    var routePackageType = $routeParams.packageType;
     var routeType = $routeParams.type;
     var routeName = $routeParams.name;
     
     if ( routeType !== undefined && routeName !== undefined ){
-      $scope.currentKey = StoreUtilSvc.formatKey(routeType, routeName);
+      $scope.currentKey = StoreUtilSvc.formatKey(routePackageType, routeType, routeName);
       
 // alert( "showing NFC entries for: " + $scope.currentKey);
       
-      NfcSvc.resource.get({type:routeType, name:routeName}, function(nfc){
+      NfcSvc.resource.get({packageType: routePackageType, type:routeType, name:routeName}, function(nfc){
         if ( nfc.sections !== undefined ){
           nfc.sections.each(function(section){
             section.label = StoreUtilSvc.keyLabel(section.key);

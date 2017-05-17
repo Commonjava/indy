@@ -148,8 +148,10 @@ public class PromotionManager
                     target.addConstituent( request.getSource() );
                     try
                     {
-                        storeManager.storeArtifactStore( target, new ChangeSummary( user, "Promoting " + request.getSource()
-                                + " into membership of group: " + target.getKey() ), false, new EventMetadata() );
+                        final ChangeSummary changeSummary = new ChangeSummary( user, "Promoting " + request.getSource()
+                                + " into membership of group: " + target.getKey() );
+
+                        storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
                     }
                     catch ( IndyDataException e )
                     {
@@ -219,8 +221,10 @@ public class PromotionManager
             target.removeConstituent( request.getSource() );
             try
             {
-                storeManager.storeArtifactStore( target, new ChangeSummary( user, "Removing " + request.getSource()
-                        + " from membership of group: " + target.getKey() ), false, new EventMetadata() );
+                final ChangeSummary changeSummary = new ChangeSummary( user, "Removing " + request.getSource()
+                        + " from membership of group: " + target.getKey() );
+
+                storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
             }
             catch ( IndyDataException e )
             {

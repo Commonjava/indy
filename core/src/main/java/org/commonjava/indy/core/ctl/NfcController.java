@@ -34,6 +34,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -87,7 +88,7 @@ public class NfcController
             List<ArtifactStore> stores;
             try
             {
-                stores = storeManager.getOrderedConcreteStoresInGroup( key.getName(), false );
+                stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
             }
             catch ( final IndyDataException e )
             {
@@ -153,7 +154,7 @@ public class NfcController
             {
                 case group:
                 {
-                    final List<ArtifactStore> stores = storeManager.getOrderedConcreteStoresInGroup( key.getName(), false );
+                    final List<ArtifactStore> stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
                     for ( final ArtifactStore store : stores )
                     {
                         clear( store, path );
@@ -162,8 +163,11 @@ public class NfcController
                 }
                 default:
                 {
-                    final ArtifactStore store = storeManager.getRemoteRepository( key.getName() );
-                    clear( store, path );
+                    storeManager.query()
+                                .packageType( key.getPackageType() )
+                                .concreteStores()
+                                .stream( s -> s.getName().equals( key.getName() ) )
+                                .forEach( store -> clear( store, path ) );
                     break;
                 }
             }

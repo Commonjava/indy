@@ -16,6 +16,8 @@
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
@@ -37,6 +39,8 @@ import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Paths;
+
 @Api( value="Maintenance", description = "Basic repository maintenance functions" )
 @Path( "/api/admin/maint" )
 public class MaintenanceHandler
@@ -48,21 +52,54 @@ public class MaintenanceHandler
     @Inject
     private ContentController contentController;
 
-    @ApiOperation( "Rescan all content in the specified repository to re-initialize metadata, capture missing index keys, etc." )
+    @ApiOperation( "[Deprecated] Rescan all content in the specified repository to re-initialize metadata, capture missing index keys, etc." )
     @ApiResponse( code = 200, message = "Rescan was started successfully. (NOTE: There currently is no way to determine when rescanning is complete.)" )
     @Path( "/rescan/{type: (hosted|group|remote)}/{name}" )
     @GET
-    public Response rescan( @ApiParam( value = "The type of store / repository", allowableValues = "hosted,group,remote", required=true ) final @PathParam( "type" ) String type,
+    @Deprecated
+    public Response deprecatedRescan( @ApiParam( value = "The type of store / repository", allowableValues = "hosted,group,remote", required=true ) final @PathParam( "type" ) String type,
                             @ApiParam( "The name of the store / repository" ) @PathParam( "name" ) final String name )
     {
-        final StoreKey key = getKey( type, name );
+        final StoreType storeType = StoreType.get( type );
+
+        String altPath = Paths.get( "/api/admin/maint", MAVEN_PKG_KEY, type, name).toString();
+        final StoreKey key = new StoreKey( storeType, name );
 
         Response response;
         try
         {
             contentController.rescan( key );
-            response = Response.ok()
+            response = markDeprecated( Response.ok(), altPath )
                                .build();
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( String.format( "Failed to rescan: %s. Reason: %s", key, e.getMessage() ), e );
+            response = formatResponse( e, rb->markDeprecated( rb, altPath ) );
+        }
+        return response;
+    }
+
+    @ApiOperation(
+            "Rescan all content in the specified repository to re-initialize metadata, capture missing index keys, etc." )
+    @ApiResponse( code = 200,
+                  message = "Rescan was started successfully. (NOTE: There currently is no way to determine when rescanning is complete.)" )
+    @Path( "/rescan/{packageType}/{type: (hosted|group|remote)}/{name}" )
+    @GET
+    public Response rescan( @ApiParam( value = "The package type (eg. maven, npm, generic-http)", required = true )
+                            @PathParam( "packageType" ) final String packageType,
+                            @ApiParam( value = "The type of store / repository",
+                                       allowableValues = "hosted,group,remote", required = true ) final @PathParam(
+                                    "type" ) String type,
+                            @ApiParam( "The name of the store / repository" ) @PathParam( "name" ) final String name )
+    {
+        final StoreKey key = new StoreKey( packageType, StoreType.get( type ), name );
+
+        Response response;
+        try
+        {
+            contentController.rescan( key );
+            response = Response.ok().build();
         }
         catch ( final IndyWorkflowException e )
         {
@@ -133,12 +170,6 @@ public class MaintenanceHandler
             response = formatResponse( e );
         }
         return response;
-    }
-
-    private StoreKey getKey( final String type, final String store )
-    {
-        final StoreType storeType = StoreType.get( type );
-        return new StoreKey( storeType, store );
     }
 
 }

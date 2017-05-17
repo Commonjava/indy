@@ -31,6 +31,8 @@ import org.commonjava.indy.subsys.datafile.DataFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 @Named( "set-back-initializer" )
 public class SetBackSettingsInitializer
     implements StartupAction
@@ -75,7 +77,7 @@ public class SetBackSettingsInitializer
 
         try
         {
-            final List<ArtifactStore> stores = storeManager.getAllArtifactStores();
+            final List<ArtifactStore> stores = storeManager.query().packageType( MAVEN_PKG_KEY ).getAll();
 
             for ( final ArtifactStore store : stores )
             {

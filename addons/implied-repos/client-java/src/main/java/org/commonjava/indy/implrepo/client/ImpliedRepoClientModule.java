@@ -30,6 +30,8 @@ import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 public class ImpliedRepoClientModule
     extends IndyClientModule
 {
@@ -45,11 +47,18 @@ public class ImpliedRepoClientModule
         this.metadataManager = new ImpliedRepoMetadataManager( getObjectMapper() );
     }
 
+    @Deprecated
     public List<StoreKey> getStoresImpliedBy( final StoreType type, final String name )
         throws IndyClientException
     {
+        return getStoresImpliedBy( new StoreKey( MAVEN_PKG_KEY, type, name ) );
+    }
+
+    public List<StoreKey> getStoresImpliedBy( final StoreKey key )
+            throws IndyClientException
+    {
         final ArtifactStore store = getClient().stores()
-                                               .load( type, name, ArtifactStore.class );
+                                               .load( key, ArtifactStore.class );
         if ( store == null )
         {
             return null;
@@ -71,11 +80,18 @@ public class ImpliedRepoClientModule
         }
     }
 
+    @Deprecated
     public List<StoreKey> getStoresImplying( final StoreType type, final String name )
+            throws IndyClientException
+    {
+        return getStoresImplying( new StoreKey( MAVEN_PKG_KEY, type, name ) );
+    }
+
+    public List<StoreKey> getStoresImplying( final StoreKey key )
         throws IndyClientException
     {
         final ArtifactStore store = getClient().stores()
-                                               .load( type, name, ArtifactStore.class );
+                                               .load( key, ArtifactStore.class );
         if ( store == null )
         {
             return null;

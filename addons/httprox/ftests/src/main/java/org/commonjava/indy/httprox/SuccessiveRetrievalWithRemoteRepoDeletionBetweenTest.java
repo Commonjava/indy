@@ -24,6 +24,7 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -84,7 +86,9 @@ public class SuccessiveRetrievalWithRemoteRepoDeletionBetweenTest
 
             try
             {
-                client.stores().delete( StoreType.remote, REMOTE_NAME, "Deleting for pass: " + currentTry );
+                client.stores()
+                      .delete( new StoreKey( GENERIC_PKG_KEY, StoreType.remote, REMOTE_NAME ),
+                               "Deleting for pass: " + currentTry );
             }
             catch ( IndyClientException e )
             {
@@ -93,7 +97,8 @@ public class SuccessiveRetrievalWithRemoteRepoDeletionBetweenTest
         } );
 
         final RemoteRepository remoteRepo = this.client.stores()
-                                                       .load( StoreType.remote, REMOTE_NAME, RemoteRepository.class );
+                                                       .load( new StoreKey( GENERIC_PKG_KEY, StoreType.remote,
+                                                                            REMOTE_NAME ), RemoteRepository.class );
 
         assertThat( remoteRepo, nullValue() );
     }

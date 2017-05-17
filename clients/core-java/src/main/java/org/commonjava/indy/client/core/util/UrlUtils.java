@@ -15,10 +15,15 @@
  */
 package org.commonjava.indy.client.core.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+
+import static org.apache.commons.lang.StringUtils.join;
 
 public final class UrlUtils
 {
@@ -34,6 +39,12 @@ public final class UrlUtils
 
     public static String buildUrl( final String baseUrl, final Supplier<Map<String, String>> paramSupplier, final String... parts )
     {
+        Logger logger = LoggerFactory.getLogger( UrlUtils.class );
+        if ( logger.isDebugEnabled() )
+        {
+            logger.debug( "Creating url from base: '{}' and parts: {}", baseUrl, join( parts, ", " ) );
+        }
+
         if ( parts == null || parts.length < 1 )
         {
             return baseUrl;

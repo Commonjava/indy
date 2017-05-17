@@ -29,7 +29,8 @@ public enum ApplicationHeader
     authorization( "Authorization" ),
     proxy_authenticate( "Proxy-Authenticate" ),
     proxy_authorization( "Proxy-Authorization" ),
-    cache_control( "Cache-Control" );
+    cache_control( "Cache-Control" ),
+    content_disposition( "Content-Disposition" );
 
     private final String key;
 

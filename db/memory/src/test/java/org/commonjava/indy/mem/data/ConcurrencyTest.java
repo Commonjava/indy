@@ -21,16 +21,18 @@ import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.mem.data.fixture.ThreadDumper;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,11 +43,12 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * Created by jdcasey on 10/21/16.
@@ -54,6 +57,9 @@ import static org.junit.Assert.fail;
 @BMUnitConfig( debug = true )
 public class ConcurrencyTest
 {
+
+    @Rule
+    public TestRule timeout = ThreadDumper.timeoutRule( 10, TimeUnit.SECONDS );
 
     @BMRules( rules = { @BMRule( name = "init rendezvous", targetClass = "MemoryStoreDataManager",
                                  targetMethod = "<init>",
@@ -70,7 +76,7 @@ public class ConcurrencyTest
         ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>( executor );
         AtomicInteger count = new AtomicInteger( 0 );
 
-        RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+        RemoteRepository repo = new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2" );
 
         TestUpdatingEventDispatcher dispatcher =
                 new TestUpdatingEventDispatcher( repo, completionService, count );
@@ -82,17 +88,17 @@ public class ConcurrencyTest
         dispatcher.setDataManager( dataManager );
 
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test init" );
-        dataManager.storeArtifactStore( repo, summary );
+        dataManager.storeArtifactStore( repo, summary, false, false, new EventMetadata() );
 
         for ( int i = 0; i < 2; i++ )
         {
-            Group group = new Group( "group" + i );
+            Group group = new Group( MAVEN_PKG_KEY, "group" + i );
             if ( i % 2 == 0 )
             {
                 group.addConstituent( repo );
             }
 
-            dataManager.storeArtifactStore( group, summary );
+            dataManager.storeArtifactStore( group, summary, false, false, new EventMetadata() );
         }
 
         for ( int i = 0; i < count.get(); i++ )
@@ -109,9 +115,9 @@ public class ConcurrencyTest
             @BMRule( name = "delete call", targetClass = "MemoryStoreDataManager",
                      targetMethod = "deleteArtifactStore",
                      targetLocation = "EXIT", action = "rendezvous($0); debug(Thread.currentThread().getName() + \": deletion thread proceeding.\")" ),
-            @BMRule( name = "getAll call", targetClass = "MemoryStoreDataManager",
-                     targetMethod = "getAll",
-                     targetLocation = "ENTRY", action = "rendezvous($0); debug(Thread.currentThread().getName() + \": getAll thread proceeding.\")" ), } )
+            @BMRule( name = "streamArtifactStores call", targetClass = "MemoryStoreDataManager",
+                     targetMethod = "streamArtifactStores",
+                     targetLocation = "ENTRY", action = "rendezvous($0); debug(Thread.currentThread().getName() + \": streamArtifactStores() thread proceeding.\")" ), } )
     @Test
     public void deadlockOnListAllDuringDelete()
             throws IndyDataException, InterruptedException, ExecutionException
@@ -119,7 +125,7 @@ public class ConcurrencyTest
         ExecutorService executor = Executors.newFixedThreadPool( 2 );
         ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>( executor );
 
-        RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+        RemoteRepository repo = new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2" );
 
         TestDeletingEventDispatcher dispatcher =
                 new TestDeletingEventDispatcher( completionService );
@@ -131,10 +137,10 @@ public class ConcurrencyTest
         dispatcher.setDataManager( dataManager );
 
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test init" );
-        dataManager.storeArtifactStore( repo, summary );
+        dataManager.storeArtifactStore( repo, summary, false, false, new EventMetadata() );
 
-        dataManager.deleteArtifactStore( repo.getKey(),
-                                         new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test deletion" ) );
+        dataManager.deleteArtifactStore( repo.getKey(), new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test deletion" ),
+                                         new EventMetadata() );
 
         Future<String> future = completionService.take();
         assertThat( future.get(), nullValue() );
@@ -176,7 +182,7 @@ public class ConcurrencyTest
                     logger.debug( "Grabbing groups containing: {}", repo.getKey() );
                     try
                     {
-                        if (!dataManager.getGroupsContaining( repo.getKey() ).isEmpty())
+                        if (!dataManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( repo.getKey() ).isEmpty())
                         {
                             return null;
                         }
@@ -221,7 +227,7 @@ public class ConcurrencyTest
                 logger.debug( "Grabbing all artifact stores" );
                 try
                 {
-                    dataManager.getAllArtifactStores( StoreType.group );
+                    dataManager.query().packageType( MAVEN_PKG_KEY ).getAllGroups();
                     return null;
                 }
                 catch ( IndyDataException e )

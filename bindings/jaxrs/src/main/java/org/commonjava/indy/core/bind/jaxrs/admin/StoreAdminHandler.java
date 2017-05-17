@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -71,7 +72,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
-@Path( "/api/admin/{type: (hosted|group|remote)}" )
+@Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
+@ApplicationScoped
 public class StoreAdminHandler
     implements IndyResources
 {
@@ -100,29 +102,29 @@ public class StoreAdminHandler
 
     @ApiOperation( "Check if a given store exists" )
     @ApiResponses( { @ApiResponse( code = 200, message = "The store exists" ),
-        @ApiResponse( code = 404, message = "The store doesn't exist" ) } )
+                           @ApiResponse( code = 404, message = "The store doesn't exist" ) } )
     @Path( "/{name}" )
     @HEAD
-    public Response exists( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response exists( final @PathParam( "packageType" ) String packageType,
+                            final @ApiParam( allowableValues = "hosted,group,remote", required = true )
+                            @PathParam( "type" ) String type,
                             @ApiParam( required = true ) @PathParam( "name" ) final String name )
     {
         Response response;
         final StoreType st = StoreType.get( type );
 
-        logger.info( "Checking for existence of: {}:{}", st, name );
+        logger.info( "Checking for existence of: {}:{}:{}", packageType, st, name );
 
-        if ( adminController.exists( new StoreKey( st, name ) ) )
+        if ( adminController.exists( new StoreKey( packageType, st, name ) ) )
         {
 
             logger.info( "returning OK" );
-            response = Response.ok()
-                               .build();
+            response = Response.ok().build();
         }
         else
         {
             logger.info( "Returning NOT FOUND" );
-            response = Response.status( Status.NOT_FOUND )
-                               .build();
+            response = Response.status( Status.NOT_FOUND ).build();
         }
         return response;
     }
@@ -134,7 +136,8 @@ public class StoreAdminHandler
     @POST
     @Consumes( ApplicationContent.application_json )
     @Produces( ApplicationContent.application_json )
-    public Response create( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response create( final @PathParam( "packageType" ) String packageType,
+                            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @Context UriInfo uriInfo,
                             final @Context HttpServletRequest request,
                             final @Context SecurityContext securityContext )
@@ -190,9 +193,10 @@ public class StoreAdminHandler
             if ( adminController.store( store, user, false ) )
             {
                 final URI uri = uriInfo.getBaseUriBuilder()
-                                       .path( getClass() )
-                                       .path( store.getName() )
-                                       .build( store.getKey().getType().singularEndpointName() );
+                                       .path( "/api/admin/stores" )
+                                       .path( store.getPackageType() )
+                                       .path( store.getType().singularEndpointName() )
+                                       .build( store.getName() );
 
                 response = formatCreatedResponseWithJsonEntity( uri, store, objectMapper );
             }
@@ -223,7 +227,8 @@ public class StoreAdminHandler
     @Path( "/{name}" )
     @PUT
     @Consumes( ApplicationContent.application_json )
-    public Response store( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response store( final @PathParam( "packageType" ) String packageType,
+                           final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
                            final @Context HttpServletRequest request,
                            final @Context SecurityContext securityContext )
@@ -270,13 +275,12 @@ public class StoreAdminHandler
             return response;
         }
 
-        if ( !name.equals( store.getName() ) )
+        if ( !packageType.equals(store.getPackageType()) || st != store.getType() || !name.equals( store.getName() ) )
         {
-            response =
-                Response.status( Status.BAD_REQUEST )
-                        .entity( String.format( "Store in URL path is: '%s' but in JSON it is: '%s'", name,
-                                                store.getName() ) )
-                        .build();
+            response = Response.status( Status.BAD_REQUEST )
+                               .entity( String.format( "Store in URL path is: '%s' but in JSON it is: '%s'",
+                                                       new StoreKey( packageType, st, name ), store.getKey() ) )
+                               .build();
         }
 
         try
@@ -304,22 +308,27 @@ public class StoreAdminHandler
     }
 
     @ApiOperation( "Retrieve the definitions of all artifact stores of a given type on the system" )
-    @ApiResponses( { @ApiResponse( code = 200, response = StoreListingDTO.class, message = "The store definitions" ), } )
+    @ApiResponses(
+            { @ApiResponse( code = 200, response = StoreListingDTO.class, message = "The store definitions" ), } )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response getAll( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type )
+    public Response getAll( final @ApiParam(
+            "Filter only stores that support the package type (eg. maven, npm). NOTE: '_all' returns all." )
+                            @PathParam( "packageType" ) String packageType,
+                            final @ApiParam( allowableValues = "hosted,group,remote", required = true )
+                            @PathParam( "type" ) String type )
     {
+
         final StoreType st = StoreType.get( type );
 
         Response response;
         try
         {
-            @SuppressWarnings( "unchecked" )
-            final List<ArtifactStore> stores = (List<ArtifactStore>) adminController.getAllOfType( st );
+            final List<ArtifactStore> stores = adminController.getAllOfType( packageType, st );
 
             logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
 
-            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<ArtifactStore>( stores );
+            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( stores );
 
             response = formatOkResponseWithJsonEntity( dto, objectMapper );
         }
@@ -338,11 +347,12 @@ public class StoreAdminHandler
     @Path( "/{name}" )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response get( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response get( final @PathParam( "packageType" ) String packageType,
+                         final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                          final @ApiParam( required = true ) @PathParam( "name" ) String name )
     {
         final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( st, name );
+        final StoreKey key = new StoreKey( packageType, st, name );
 
         Response response;
         try
@@ -372,13 +382,14 @@ public class StoreAdminHandler
     @ApiResponses( { @ApiResponse( code = 204, response = ArtifactStore.class, message = "The store was deleted (or didn't exist in the first place)" ), } )
     @Path( "/{name}" )
     @DELETE
-    public Response delete( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+    public Response delete( final @PathParam( "packageType" ) String packageType,
+                            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                             final @ApiParam( required = true ) @PathParam( "name" ) String name,
                             @Context final HttpServletRequest request,
                             final @Context SecurityContext securityContext )
     {
         final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( st, name );
+        final StoreKey key = new StoreKey( packageType, st, name );
 
         logger.info( "Deleting: {}", key );
         Response response;
