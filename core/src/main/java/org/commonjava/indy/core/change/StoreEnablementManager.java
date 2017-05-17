@@ -47,6 +47,10 @@ public class StoreEnablementManager
 
     public static final String DISABLE_TIMEOUT = "Disable-Timeout";
 
+    public static final int TIMEOUT_NEVER_DISABLE = -1;
+
+    public static final int TIMEOUT_USE_DEFAULT = 0;
+
     @Inject
     private StoreDataManager storeDataManager;
 
@@ -71,19 +75,14 @@ public class StoreEnablementManager
         {
             if ( event.isDisabling() )
             {
-                String toStr = store.getMetadata( DISABLE_TIMEOUT );
-                if ( isNotEmpty( toStr ) )
+                try
                 {
-                    int timeout = Integer.parseInt( toStr );
-                    try
-                    {
-                        setReEnablementTimeout( store.getKey(), timeout );
-                    }
-                    catch ( IndySchedulerException e )
-                    {
-                        Logger logger = LoggerFactory.getLogger( getClass() );
-                        logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
-                    }
+                    setReEnablementTimeout( store.getKey() );
+                }
+                catch ( IndySchedulerException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
                 }
             }
             else
@@ -145,7 +144,15 @@ public class StoreEnablementManager
         try
         {
             ArtifactStore store = storeDataManager.getArtifactStore( key );
-            store.setDisabled( true );
+            if ( store.getDisableTimeout() <= TIMEOUT_NEVER_DISABLE )
+            {
+                logger.debug( "Disable-timeout set to {}, will never disable the repo", store.getDisableTimeout() );
+                store.setDisabled( false );
+            }
+            else
+            {
+                store.setDisabled( true );
+            }
 
             storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
                     "Disabling %s due to error: %s\n\nStack Trace:\n  %s", key, error,
@@ -155,7 +162,7 @@ public class StoreEnablementManager
                          error, config.getStoreDisableTimeoutSeconds() );
 
             // TODO: How is it this doesn't duplicate the event handler method onStoreUpdate()...we're updating the store just above here.
-            setReEnablementTimeout( key, config.getStoreDisableTimeoutSeconds() );
+            setReEnablementTimeout( key );
         }
         catch ( IndyDataException e )
         {
@@ -224,14 +231,13 @@ public class StoreEnablementManager
         scheduleManager.deleteJob( ScheduleManager.groupName( key, DISABLE_TIMEOUT ), DISABLE_TIMEOUT );
     }
 
-    private void setReEnablementTimeout( StoreKey key, int timeoutSeconds )
+    private void setReEnablementTimeout( StoreKey key )
             throws IndySchedulerException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.warn( "Disabling: {} for {} seconds.", key, timeoutSeconds );
+        logger.warn( "Reschedule enabling for: {}", key );
 
-        scheduleManager.scheduleForStore( key, DISABLE_TIMEOUT, DISABLE_TIMEOUT, key,
-                                          timeoutSeconds, 99999 );
+        scheduleManager.rescheduleDisableTimeout(key);
     }
 
 }
