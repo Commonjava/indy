@@ -29,7 +29,10 @@ import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.experimental.categories.Category;
 
 @Category( EventDependent.class )
@@ -43,6 +46,9 @@ public class AbstractFoloContentManagementTest
 
     protected static final String PUBLIC = "public";
 
+    @Rule
+    public ExpectationServer centralServer = new ExpectationServer();
+
     @Before
     public void before()
         throws Exception
@@ -53,19 +59,16 @@ public class AbstractFoloContentManagementTest
                        .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
 
         RemoteRepository central = null;
-        if ( !client.stores()
+        if ( client.stores()
                     .exists( remote, CENTRAL ) )
         {
-            central =
-                client.stores()
-                      .create( new RemoteRepository( CENTRAL, "http://repo.maven.apache.org/maven2/" ), changelog,
-                               RemoteRepository.class );
+            client.stores().delete( new StoreKey( remote, CENTRAL ), "removing existing remote:central definition" );
         }
-        else
-        {
-            central = client.stores()
-                            .load( remote, CENTRAL, RemoteRepository.class );
-        }
+
+        central =
+            client.stores()
+                  .create( new RemoteRepository( CENTRAL, centralServer.getBaseUri() ), changelog,
+                           RemoteRepository.class );
 
         Group g;
         if ( client.stores()
