@@ -62,7 +62,7 @@ public class AbstractFoloContentManagementTest
         if ( client.stores()
                     .exists( remote, CENTRAL ) )
         {
-            client.stores().delete( new StoreKey( remote, CENTRAL ), "removing existing remote:central definition" );
+            client.stores().delete( remote, CENTRAL, "removing existing remote:central definition" );
         }
 
         central =
