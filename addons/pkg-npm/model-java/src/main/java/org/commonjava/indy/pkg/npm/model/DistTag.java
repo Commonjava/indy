@@ -24,16 +24,19 @@ import java.util.Map;
 @ApiModel( description = "Package distribution tags, which can be used to provide an alias instead of version numbers, different tags are for the multi project development streams." )
 public class DistTag
 {
-    private static final String LATEST = "latest";
-    private static final String STABLE = "stable";
-    private static final String BETA = "beta";
-    private static final String DEV = "dev";
+    public static final String LATEST = "latest";
+
+    public static final String STABLE = "stable";
+
+    public static final String BETA = "beta";
+
+    public static final String DEV = "dev";
 
     private static final String CANARY = "canary";
 
     private Map<String, String> tagsMap = new HashMap<String, String>();
 
-    protected DistTag()
+    public DistTag()
     {
     }
 

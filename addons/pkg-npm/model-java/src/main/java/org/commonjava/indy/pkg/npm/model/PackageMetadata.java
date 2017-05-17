@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -58,17 +57,17 @@ public class PackageMetadata
     private String description;
 
     @JsonProperty( "dist-tags" )
-    private DistTag distTags;
+    private DistTag distTags = new DistTag();
 
-    private Map<String, VersionMetadata> versions = new HashMap<String, VersionMetadata>();
+    private Map<String, VersionMetadata> versions = new LinkedHashMap<String, VersionMetadata>();
 
-    private List<UserInfo> maintainers;
+    private List<UserInfo> maintainers = new ArrayList<>();
 
     private Map<String, String> time = new LinkedHashMap<String, String>();
 
     private UserInfo author;
 
-    private Map<String, Boolean> users = new HashMap<String, Boolean>();
+    private Map<String, Boolean> users = new LinkedHashMap<String, Boolean>();
 
     @ApiModelProperty( required = false, dataType = "Repository", value = "Specify the place where your code lives." )
     private Repository repository;
@@ -79,7 +78,7 @@ public class PackageMetadata
 
     private String homepage;
 
-    private List<String> keywords;
+    private List<String> keywords = new ArrayList<>();
 
     @ApiModelProperty( required = false, dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
     private Bugs bugs;
@@ -367,17 +366,15 @@ public class PackageMetadata
             UserInfo m = (UserInfo) maintainer.next();
             boolean s = false;
             Iterator snapshot = maintainers.iterator();
-
             while ( snapshot.hasNext() )
             {
                 UserInfo preExisting = (UserInfo) snapshot.next();
-                if ( preExisting.equals( m ) )
+                if ( preExisting.getName().equals( m.getName() ) )
                 {
                     s = true;
                     break;
                 }
             }
-
             if ( !s )
             {
                 this.addMaintainers( new UserInfo( m.getName(), m.getEmail(), m.getUrl() ) );
@@ -437,7 +434,7 @@ public class PackageMetadata
                         Date preDate = sdf.parse( time.get( v ) );
                         Date sourceDate = sdf.parse( value );
                         int compare = sourceDate.compareTo( preDate );
-                        if ( compare > 1 )
+                        if ( compare > 0 )
                         {
                             time.put( v, value );
                             added = true;
@@ -560,7 +557,6 @@ public class PackageMetadata
                     break;
                 }
             }
-
             if ( !s )
             {
                 versions.put( v, value );

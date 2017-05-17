@@ -31,6 +31,20 @@ public class UserInfo
         this.url = null;
     }
 
+    public UserInfo( final String name )
+    {
+        this.name = name;
+        this.email = null;
+        this.url = null;
+    }
+
+    public UserInfo( final String name, final String email )
+    {
+        this.name = name;
+        this.email = email;
+        this.url = null;
+    }
+
     public UserInfo( final String name, final String email, final String url )
     {
         this.name = name;
@@ -51,31 +65,5 @@ public class UserInfo
     public String getUrl()
     {
         return url;
-    }
-
-    @Override
-    public boolean equals( Object o )
-    {
-        if ( this == o )
-        {
-            return true;
-        }
-        if ( !( o instanceof UserInfo ) )
-        {
-            return false;
-        }
-
-        UserInfo that = (UserInfo) o;
-
-        if ( !getName().equals( that.getName() ) )
-        {
-            return false;
-        }
-        if ( !getEmail().equals( that.getEmail() ) )
-        {
-            return false;
-        }
-
-        return getUrl().equals( that.getUrl() );
     }
 }
