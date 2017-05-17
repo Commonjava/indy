@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,8 +53,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -306,28 +308,47 @@ public class FoloAdminController
         TrackingKey trackingKey = new TrackingKey( id );
         TrackedContent record = recordManager.get( trackingKey );
 
-        Set<TrackedContentEntry> recalculatedUploads = new HashSet<>();
-        for ( TrackedContentEntry entry : record.getUploads() )
-        {
-            if ( config.isGroupContentTracked() || entry.getStoreKey().getType() != group )
-            {
-                recalculatedUploads.add( recalculate( entry ) );
-            }
-        }
+        AtomicBoolean failed = new AtomicBoolean( false );
+        Set<TrackedContentEntry> recalculatedUploads = recalculateEntrySet( record.getUploads(), id, failed );
+        Set<TrackedContentEntry> recalculatedDownloads = recalculateEntrySet( record.getDownloads(), id, failed );
 
-        Set<TrackedContentEntry> recalculatedDownloads = new HashSet<>();
-        for ( TrackedContentEntry entry : record.getDownloads() )
+        if ( failed.get() )
         {
-            if ( config.isGroupContentTracked() || entry.getStoreKey().getType() != group )
-            {
-                recalculatedUploads.add( recalculate( entry ) );
-            }
+            throw new IndyWorkflowException(
+                    "Failed to recalculate tracking record: %s. See Indy logs for more information", id );
         }
 
         TrackedContent recalculated = new TrackedContent( record.getKey(), recalculatedUploads, recalculatedDownloads );
         recordManager.replaceTrackingRecord( recalculated );
 
         return constructContentDTO( recalculated, baseUrl );
+    }
+
+    private Set<TrackedContentEntry> recalculateEntrySet( final Set<TrackedContentEntry> entries,
+                                                          final String id, final AtomicBoolean failed )
+    {
+        if ( entries == null )
+        {
+            return null;
+        }
+
+        return entries.parallelStream().map( ( entry ) ->
+                                      {
+                                          try
+                                          {
+                                              return recalculate( entry );
+                                          }
+                                          catch ( IndyWorkflowException e )
+                                          {
+                                              logger.error( String.format(
+                                                      "Tracking record: %s : Failed to recalculate: %s/%s (%s). Reason: %s",
+                                                      id, entry.getStoreKey(), entry.getPath(), entry.getEffect(), e.getMessage() ), e );
+
+                                              failed.set( true );
+                                          }
+                                          return null;
+                                      } ).filter( Objects::nonNull ).collect( Collectors.toSet() );
+
     }
 
     private TrackedContentEntry recalculate( final TrackedContentEntry entry )
