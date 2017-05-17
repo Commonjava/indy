@@ -45,6 +45,10 @@ public class DownloadFromTrackedAndRetrieveInRepoZipTest
     {
         final String trackingId = newName();
         String path = "org/commonjava/commonjava/2/commonjava-2.pom";
+        centralServer.expect( centralServer.formatUrl( path ), 200, Thread.currentThread()
+                                                                          .getContextClassLoader()
+                                                                          .getResourceAsStream(
+                                                                                  "folo-content/commonjava-2.pom" ) );
 
         InputStream result =
                 client.module( IndyFoloContentClientModule.class ).get( trackingId, remote, CENTRAL, path );

@@ -18,6 +18,7 @@ package org.commonjava.indy.folo.ctl;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.data.FoloFiler;
 import org.commonjava.indy.folo.data.FoloRecordCache;
@@ -60,12 +61,16 @@ import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
 public class FoloAdminController
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private FoloConfig config;
 
     @Inject
     private FoloRecordCache recordManager;
@@ -83,9 +88,10 @@ public class FoloAdminController
     {
     }
 
-    public FoloAdminController( final FoloRecordCache recordManager, final FoloFiler filer,
+    public FoloAdminController( final FoloConfig config, final FoloRecordCache recordManager, final FoloFiler filer,
                                 final ContentManager contentManager, final ContentDigester contentDigester )
     {
+        this.config = config;
         this.recordManager = recordManager;
         this.filer = filer;
         this.contentManager = contentManager;
@@ -303,13 +309,19 @@ public class FoloAdminController
         Set<TrackedContentEntry> recalculatedUploads = new HashSet<>();
         for ( TrackedContentEntry entry : record.getUploads() )
         {
-            recalculatedUploads.add( recalculate( entry ) );
+            if ( config.isGroupContentTracked() || entry.getStoreKey().getType() != group )
+            {
+                recalculatedUploads.add( recalculate( entry ) );
+            }
         }
 
         Set<TrackedContentEntry> recalculatedDownloads = new HashSet<>();
         for ( TrackedContentEntry entry : record.getDownloads() )
         {
-            recalculatedDownloads.add( recalculate( entry ) );
+            if ( config.isGroupContentTracked() || entry.getStoreKey().getType() != group )
+            {
+                recalculatedUploads.add( recalculate( entry ) );
+            }
         }
 
         TrackedContent recalculated = new TrackedContent( record.getKey(), recalculatedUploads, recalculatedDownloads );
