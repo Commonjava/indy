@@ -482,7 +482,7 @@ public class ScheduleManager
         {
             final StoreKey sk = store.getKey();
             logger.debug( "Set/Reschedule disable timeout for store:{}", sk );
-            scheduleForStore( sk, DISABLE_TIMEOUT, DISABLE_TIMEOUT, sk, timeout );
+            scheduleForStore( sk, DISABLE_TIMEOUT, DISABLE_TIMEOUT, sk, timeout, timeout );
         }
         // Will never consider the TIMEOUT_NEVER_DISABLE case here, will consider this in the calling object(StoreEnablementManager)
     }
