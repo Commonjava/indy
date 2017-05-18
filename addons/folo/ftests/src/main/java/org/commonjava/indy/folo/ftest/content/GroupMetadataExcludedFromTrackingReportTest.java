@@ -15,39 +15,56 @@
  */
 package org.commonjava.indy.folo.ftest.content;
 
+import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
+import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
+import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
+import org.junit.Test;
+
+import java.io.InputStream;
+import java.util.Set;
+
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.InputStream;
-
-import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
-import org.junit.Test;
-
-public class DownloadFromTrackedRemoteRepoTest
+public class GroupMetadataExcludedFromTrackingReportTest
     extends AbstractFoloContentManagementTest
 {
 
     @Test
-    public void downloadFileFromRemoteRepository()
+    public void run()
         throws Exception
     {
         final String trackingId = newName();
-        final String path = "org/commonjava/commonjava/2/commonjava-2.pom";
+
+        final String path = "org/commonjava/commonjava/maven-metadata.xml";
         centralServer.expect( centralServer.formatUrl( path ), 200, Thread.currentThread()
                                                                           .getContextClassLoader()
                                                                           .getResourceAsStream(
-                                                                                  "folo-content/commonjava-2.pom" ) );
+                                                                                  "folo-content/commonjava-version-metadata.xml" ) );
 
+        client.module( IndyFoloAdminClientModule.class ).initReport( trackingId );
         final InputStream result = client.module( IndyFoloContentClientModule.class )
-                                         .get( trackingId, remote, CENTRAL, path );
+                                         .get( trackingId, group, PUBLIC, path );
+
         assertThat( result, notNullValue() );
 
         final String pom = IOUtils.toString( result );
         result.close();
-        assertThat( pom.contains( "<groupId>org.commonjava</groupId>" ), equalTo( true ) );
+        assertThat( pom.contains( "<version>2</version>" ), equalTo( true ) );
+
+        boolean sealed = client.module( IndyFoloAdminClientModule.class ).sealTrackingRecord( trackingId );
+        assertThat( sealed, equalTo( true ) );
+
+        TrackedContentDTO trackingReport =
+                client.module( IndyFoloAdminClientModule.class ).getTrackingReport( trackingId );
+
+        Set<TrackedContentEntryDTO> downloads = trackingReport.getDownloads();
+        assertThat( downloads == null || downloads.isEmpty(), equalTo( true ) );
     }
 
 }

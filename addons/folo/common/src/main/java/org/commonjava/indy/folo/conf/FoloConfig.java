@@ -29,28 +29,26 @@ public class FoloConfig
     implements IndyConfigInfo
 {
 
-    public static final int DEFAULT_CACHE_TIMEOUT_SECONDS = 120;
-
-    private Integer cacheTimeoutSeconds;
+    private Boolean trackGroupContent;
 
     public FoloConfig()
     {
     }
 
-    public FoloConfig( final Integer cacheTimeoutSeconds )
+    public boolean isGroupContentTracked()
     {
-        this.cacheTimeoutSeconds = cacheTimeoutSeconds;
+        return Boolean.TRUE.equals( trackGroupContent );
     }
 
-    public Integer getCacheTimeoutSeconds()
+    @ConfigName( "track.group.content" )
+    public void setTrackGroupContent( final Boolean trackGroupContent )
     {
-        return cacheTimeoutSeconds == null ? DEFAULT_CACHE_TIMEOUT_SECONDS : cacheTimeoutSeconds;
+        this.trackGroupContent = trackGroupContent;
     }
 
-    @ConfigName( "cache.timeout.seconds" )
-    public void setCacheTimeoutSeconds( final Integer cacheTimeoutSeconds )
+    public Boolean getTrackGroupContent()
     {
-        this.cacheTimeoutSeconds = cacheTimeoutSeconds;
+        return trackGroupContent;
     }
 
     @Override

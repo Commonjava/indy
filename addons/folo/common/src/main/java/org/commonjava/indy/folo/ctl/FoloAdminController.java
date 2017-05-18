@@ -18,6 +18,7 @@ package org.commonjava.indy.folo.ctl;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.data.FoloFiler;
 import org.commonjava.indy.folo.data.FoloRecordCache;
@@ -52,20 +53,26 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
 public class FoloAdminController
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private FoloConfig config;
 
     @Inject
     private FoloRecordCache recordManager;
@@ -83,9 +90,10 @@ public class FoloAdminController
     {
     }
 
-    public FoloAdminController( final FoloRecordCache recordManager, final FoloFiler filer,
+    public FoloAdminController( final FoloConfig config, final FoloRecordCache recordManager, final FoloFiler filer,
                                 final ContentManager contentManager, final ContentDigester contentDigester )
     {
+        this.config = config;
         this.recordManager = recordManager;
         this.filer = filer;
         this.contentManager = contentManager;
@@ -300,22 +308,47 @@ public class FoloAdminController
         TrackingKey trackingKey = new TrackingKey( id );
         TrackedContent record = recordManager.get( trackingKey );
 
-        Set<TrackedContentEntry> recalculatedUploads = new HashSet<>();
-        for ( TrackedContentEntry entry : record.getUploads() )
-        {
-            recalculatedUploads.add( recalculate( entry ) );
-        }
+        AtomicBoolean failed = new AtomicBoolean( false );
+        Set<TrackedContentEntry> recalculatedUploads = recalculateEntrySet( record.getUploads(), id, failed );
+        Set<TrackedContentEntry> recalculatedDownloads = recalculateEntrySet( record.getDownloads(), id, failed );
 
-        Set<TrackedContentEntry> recalculatedDownloads = new HashSet<>();
-        for ( TrackedContentEntry entry : record.getDownloads() )
+        if ( failed.get() )
         {
-            recalculatedDownloads.add( recalculate( entry ) );
+            throw new IndyWorkflowException(
+                    "Failed to recalculate tracking record: %s. See Indy logs for more information", id );
         }
 
         TrackedContent recalculated = new TrackedContent( record.getKey(), recalculatedUploads, recalculatedDownloads );
         recordManager.replaceTrackingRecord( recalculated );
 
         return constructContentDTO( recalculated, baseUrl );
+    }
+
+    private Set<TrackedContentEntry> recalculateEntrySet( final Set<TrackedContentEntry> entries,
+                                                          final String id, final AtomicBoolean failed )
+    {
+        if ( entries == null )
+        {
+            return null;
+        }
+
+        return entries.parallelStream().map( ( entry ) ->
+                                      {
+                                          try
+                                          {
+                                              return recalculate( entry );
+                                          }
+                                          catch ( IndyWorkflowException e )
+                                          {
+                                              logger.error( String.format(
+                                                      "Tracking record: %s : Failed to recalculate: %s/%s (%s). Reason: %s",
+                                                      id, entry.getStoreKey(), entry.getPath(), entry.getEffect(), e.getMessage() ), e );
+
+                                              failed.set( true );
+                                          }
+                                          return null;
+                                      } ).filter( Objects::nonNull ).collect( Collectors.toSet() );
+
     }
 
     private TrackedContentEntry recalculate( final TrackedContentEntry entry )
