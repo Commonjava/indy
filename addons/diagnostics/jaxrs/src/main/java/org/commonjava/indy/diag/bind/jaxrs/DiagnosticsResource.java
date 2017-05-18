@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.diag.data.DiagnosticsManager;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +31,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 
@@ -57,7 +59,7 @@ public class DiagnosticsResource
     @GET
     @Path( "/bundle" )
     @Produces(application_zip)
-    public File getBundle()
+    public Response getBundle()
     {
         try
         {
@@ -65,7 +67,10 @@ public class DiagnosticsResource
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.info( "Returning diagnostic bundle: {}", bundle );
 
-            return bundle;
+            return Response.ok( bundle )
+                           .header( ApplicationHeader.content_disposition.key(),
+                                    "attachment; filename=indy-diagnostic-bundle-" + System.currentTimeMillis()
+                                            + ".zip" ).build();
         }
         catch ( IOException e )
         {
