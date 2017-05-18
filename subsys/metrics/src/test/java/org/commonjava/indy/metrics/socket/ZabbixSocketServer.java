@@ -1,8 +1,12 @@
 package org.commonjava.indy.metrics.socket;
 
+import org.commonjava.test.http.util.PortFinder;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static org.commonjava.test.http.util.PortFinder.findOpenPort;
 
 /**
  * Created by xiabai on 5/9/17.
@@ -11,6 +15,8 @@ public class ZabbixSocketServer
                 implements Runnable
 {
     private ConcurrentHashMap<String, Expectation> expections = new ConcurrentHashMap<String, Expectation>();
+
+    private int port;
 
     public boolean isStartFlag()
     {
@@ -34,13 +40,24 @@ public class ZabbixSocketServer
         expections.put( method, expectation );
     }
 
+    public int getPort()
+    {
+        return port;
+    }
+
     public void run()
     {
         ServerSocket listener = null;
         try
         {
             int clientNumber = 0;
-            listener = new ServerSocket( 9999 );
+            listener = new ServerSocket( findOpenPort( 16 ) );
+            this.port = listener.getLocalPort();
+
+            synchronized ( this )
+            {
+                notifyAll();
+            }
 
             while ( startFlag )
             {

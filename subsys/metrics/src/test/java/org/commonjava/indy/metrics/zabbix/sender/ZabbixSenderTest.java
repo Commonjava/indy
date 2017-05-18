@@ -8,6 +8,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+
+import static org.junit.Assert.fail;
 
 /**
  * Created by xiabai on 5/9/17.
@@ -29,10 +32,7 @@ public class ZabbixSenderTest
         dataObject.setValue( "123" );
         SenderRequest sr = new SenderRequest();
         sr.setRequest( "dataSend" );
-        sr.setData( new ArrayList()
-        {{
-            add( dataObject );
-        }} );
+        sr.setData( new ArrayList<>( Collections.singletonList( dataObject ) ) );
         SenderResult senderResult = new SenderResult();
         senderResult.setFailed( 0 );
         senderResult.setProcessed( 1 );
@@ -43,6 +43,11 @@ public class ZabbixSenderTest
         socketServer.setExpection( "sender data", expectation );
         Thread t = new Thread( socketServer );
         t.start();
+
+        synchronized ( socketServer )
+        {
+            socketServer.wait();
+        }
     }
 
     @After
@@ -55,7 +60,7 @@ public class ZabbixSenderTest
     public void dataSend() throws Exception
     {
 
-        ZabbixSender sender = new ZabbixSender( "localhost", 9999 );
+        ZabbixSender sender = new ZabbixSender( "localhost", socketServer.getPort() );
         try
         {
 
@@ -64,8 +69,8 @@ public class ZabbixSenderTest
         }
         catch ( IOException e )
         {
-            org.junit.Assert.assertFalse( true );
             e.printStackTrace();
+            fail( "Error trying to send/receive data" );
         }
     }
 }
