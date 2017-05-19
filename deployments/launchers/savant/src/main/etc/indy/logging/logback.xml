@@ -30,7 +30,7 @@
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <fileNamePattern>${indy.home}/var/log/indy/indy.%i.log</fileNamePattern>
 
-      <maxHistory>20</maxHistory>
+      <maxIndex>20</maxIndex>
     </rollingPolicy>
 
     <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
@@ -48,7 +48,7 @@
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <fileNamePattern>${indy.home}/var/log/indy/indy-content-delete.%i.log</fileNamePattern>
 
-      <maxHistory>20</maxHistory>
+      <maxIndex>20</maxIndex>
     </rollingPolicy>
 
     <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
@@ -66,7 +66,7 @@
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <fileNamePattern>${indy.home}/var/log/indy/indy-rest-inbound.%i.log</fileNamePattern>
 
-      <maxHistory>20</maxHistory>
+      <maxIndex>20</maxIndex>
     </rollingPolicy>
 
     <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">

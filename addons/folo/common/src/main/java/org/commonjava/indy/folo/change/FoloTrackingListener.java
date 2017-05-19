@@ -20,6 +20,7 @@ import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.ctl.FoloConstants;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.data.FoloRecordCache;
@@ -49,11 +50,16 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.Map;
 
+import static org.commonjava.indy.model.core.StoreType.group;
+
 @ApplicationScoped
 public class FoloTrackingListener
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private FoloConfig foloConfig;
 
     @Inject
     private FoloRecordCache recordManager;
@@ -97,6 +103,14 @@ public class FoloTrackingListener
         try
         {
             final KeyedLocation keyedLocation = (KeyedLocation) location;
+            if ( !foloConfig.isGroupContentTracked() && keyedLocation.getKey().getType() == group )
+            {
+                logger.debug(
+                        "NOT tracking content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
+                        keyedLocation.getKey() );
+                return;
+            }
+
             logger.debug( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
                           keyedLocation.getKey() );
 
@@ -142,6 +156,14 @@ public class FoloTrackingListener
             logger.info( "Invalid transfer source location: {}. Not recording.", location );
             return;
         }
+        else if ( !foloConfig.isGroupContentTracked() && ( (KeyedLocation) location ).getKey().getType() == group )
+        {
+            logger.debug(
+                    "NOT tracking content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
+                    ( (KeyedLocation) location ).getKey() );
+            return;
+        }
+
 
         final TransferOperation op = event.getType();
         StoreEffect effect = null;
