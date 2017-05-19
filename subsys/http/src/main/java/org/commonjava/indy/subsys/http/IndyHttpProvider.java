@@ -19,7 +19,6 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.http.util.IndySiteConfigLookup;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
@@ -64,7 +63,7 @@ public class IndyHttpProvider
     {
         passwordManager = new org.commonjava.maven.galley.auth.AttributePasswordManager();
         http = new HttpImpl( passwordManager );
-        httpFactory = new HttpFactory( new AttributePasswordManager(siteConfigLookup) );
+        httpFactory = new HttpFactory( new AttributePasswordManager( siteConfigLookup ) );
     }
 
     @Produces
@@ -83,12 +82,17 @@ public class IndyHttpProvider
         return http;
     }
 
-    public HttpClientContext createContext()
-            throws IndyHttpException
+    /**
+     * Create http request context and apply site config.
+     * @param siteId ID to represent the site. It is generally the hostname of target site.
+     * @return
+     * @throws IndyHttpException
+     */
+    public HttpClientContext createContext( final String siteId ) throws IndyHttpException
     {
         try
         {
-            return httpFactory.createContext();
+            return httpFactory.createContext( siteConfigLookup.lookup( siteId ) );
         }
         catch ( JHttpCException e )
         {
@@ -96,42 +100,21 @@ public class IndyHttpProvider
         }
     }
 
-    public HttpClientContext createContext( final RemoteRepository repository )
-            throws IndyHttpException
+    /**
+     * Create http client and apply site config.
+     * @param siteId ID to represent the site. It is generally the hostname of target site.
+     * @return
+     * @throws IndyHttpException
+     */
+    public CloseableHttpClient createClient( final String siteId ) throws IndyHttpException
     {
         try
         {
-            return httpFactory.createContext( siteConfigLookup.toSiteConfig( repository ) );
-        }
-        catch ( JHttpCException e )
-        {
-            throw new IndyHttpException( "Failed to create http client context for remote repository: %s. Reason: %s", e, repository.getName(), e.getMessage() );
-        }
-    }
-
-    public CloseableHttpClient createClient()
-            throws IndyHttpException
-    {
-        try
-        {
-            return httpFactory.createClient();
+            return httpFactory.createClient( siteConfigLookup.lookup( siteId ) );
         }
         catch ( JHttpCException e )
         {
             throw new IndyHttpException( "Failed to create http client: %s", e, e.getMessage() );
-        }
-    }
-
-    public CloseableHttpClient createClient( final RemoteRepository repository )
-            throws IndyHttpException
-    {
-        try
-        {
-            return httpFactory.createClient( siteConfigLookup.toSiteConfig( repository ) );
-        }
-        catch ( JHttpCException e )
-        {
-            throw new IndyHttpException( "Failed to create http client for remote repository: %s. Reason: %s", e, repository.getName(), e.getMessage() );
         }
     }
 

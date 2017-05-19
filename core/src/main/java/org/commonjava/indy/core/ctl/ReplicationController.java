@@ -19,6 +19,7 @@ import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -290,8 +291,10 @@ public class ReplicationController
         CloseableHttpClient client = null;
         try
         {
-            client = http.createClient();
-            CloseableHttpResponse response = client.execute( req, http.createContext() );
+            String siteId = new URL( remotesUrl ).getHost();
+
+            client = http.createClient( siteId );
+            CloseableHttpResponse response = client.execute( req, http.createContext( siteId ) );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
@@ -367,9 +370,11 @@ public class ReplicationController
         CloseableHttpClient client = null;
         try
         {
-            client = http.createClient();
+            String siteId = new URL( url ).getHost();
 
-            CloseableHttpResponse response = client.execute( req, http.createContext() );
+            client = http.createClient( siteId );
+
+            CloseableHttpResponse response = client.execute( req, http.createContext( siteId ) );
 
             final StatusLine statusLine = response.getStatusLine();
             final int status = statusLine.getStatusCode();
