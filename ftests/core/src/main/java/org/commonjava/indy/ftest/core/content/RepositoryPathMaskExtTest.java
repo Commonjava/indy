@@ -66,14 +66,14 @@ public class RepositoryPathMaskExtTest
 
         RemoteRepository remoteRepo1 = new RemoteRepository( remote1, server.formatUrl( remote1 ) );
         Set<String> pathMaskPatterns = new HashSet<>();
-        pathMaskPatterns.add("org/bar.*"); // regex patterns
+        pathMaskPatterns.add("r|org/bar.*|"); // regex patterns
         remoteRepo1.setPathMaskPatterns(pathMaskPatterns);
         remoteRepo1 = client.stores().create( remoteRepo1, "adding remote 1", RemoteRepository.class );
 
         HostedRepository hostedRepo1 = new HostedRepository( hosted1 );
         pathMaskPatterns = new HashSet<>();
         pathMaskPatterns.add("org/foo");
-        pathMaskPatterns.add("org/bar.*");
+        pathMaskPatterns.add("r|org/bar.*|");
         hostedRepo1.setPathMaskPatterns(pathMaskPatterns);
         hostedRepo1 = client.stores().create( hostedRepo1, "adding hosted 1", HostedRepository.class );
         client.content().store( hosted, hosted1, path_1, new ByteArrayInputStream( content2.getBytes() ) );
