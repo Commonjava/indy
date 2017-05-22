@@ -97,7 +97,7 @@ public class RepositoryPathMaskMetadataTest
 
         RemoteRepository remoteRepo1 = new RemoteRepository( remote1, server.formatUrl( remote1 ) );
         Set<String> pathMaskPatterns = new HashSet<>();
-        pathMaskPatterns.add("org/bar.*"); // regex patterns
+        pathMaskPatterns.add("r|org/bar.*|"); // regex patterns
         remoteRepo1.setPathMaskPatterns(pathMaskPatterns);
         remoteRepo1 = client.stores().create( remoteRepo1, "adding remote 1", RemoteRepository.class );
 
