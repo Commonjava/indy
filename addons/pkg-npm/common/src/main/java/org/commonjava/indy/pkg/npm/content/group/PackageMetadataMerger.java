@@ -94,8 +94,7 @@ public class PackageMetadataMerger
 
                 PackageMetadata md = mapper.readValue( content, PackageMetadata.class );
 
-                packageMetadata.merge( md );
-                merged = true;
+                merged = packageMetadata.merge( md ) || merged;
             }
             catch ( final IOException e )
             {

@@ -96,7 +96,6 @@ public class PackageMetadataMergerTest
 
         // normal object fields merging verification
         assertThat( merged.getName(), equalTo( "jquery" ) );
-        assertThat( merged.getId(), equalTo( "jquery" ) );
         assertThat( merged.getAuthor().getName(), equalTo( "JS Foundation and other contributors" ) );
         assertThat( merged.getRepository().getType(), equalTo( "git" ) );
         assertThat( merged.getRepository().getUrl(), equalTo( "git+https://github.com/jquery/jquery.git" ) );
@@ -167,7 +166,6 @@ public class PackageMetadataMergerTest
 
         // normal object fields merging verification
         assertThat( merged.getName(), equalTo( "jquery" ) );
-        assertThat( merged.getId(), equalTo( "jquery" ) );
         assertThat( merged.getAuthor().getName(), equalTo( "JS Foundation and other contributors" ) );
         assertThat( merged.getRepository().getType(), equalTo( "git" ) );
         assertThat( merged.getRepository().getUrl(), equalTo( "git+https://github.com/jquery1/jquery1.git" ) );
@@ -211,7 +209,6 @@ public class PackageMetadataMergerTest
 
         // normal object fields merging verification
         assertThat( merged.getName(), equalTo( "jquery" ) );
-        assertThat( merged.getId(), equalTo( "jquery" ) );
         assertThat( merged.getAuthor().getName(), equalTo( "JS Foundation and other contributors" ) );
         assertThat( merged.getRepository().getType(), equalTo( "git" ) );
         assertThat( merged.getRepository().getUrl(), equalTo( "git+https://github.com/jquery1/jquery1.git" ) );
@@ -265,7 +262,6 @@ public class PackageMetadataMergerTest
 
         // normal object fields merging verification
         assertThat( merged.getName(), equalTo( "jquery" ) );
-        assertThat( merged.getId(), equalTo( "jquery" ) );
         assertThat( merged.getDescription(), equalTo( "provider description test" ) );
         assertThat( merged.getRepository().getType(), equalTo( "svn" ) );
         assertThat( merged.getRepository().getUrl(), equalTo( "svn+https://svn.host/jquery" ) );
@@ -341,7 +337,6 @@ public class PackageMetadataMergerTest
 
         // normal object fields merging verification
         assertThat( merged.getName(), equalTo( "jquery" ) );
-        assertThat( merged.getId(), equalTo( "jquery" ) );
         assertThat( merged.getAuthor().getName(), equalTo( "JS Foundation and other contributors" ) );
         assertThat( merged.getRepository().getType(), equalTo( "git" ) );
         assertThat( merged.getRepository().getUrl(), equalTo( "git+https://github.com/jquery1/jquery1.git" ) );

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -45,10 +46,12 @@ public class PackageMetadata
 
     private static final String CREATED = "created";
 
-    @JsonProperty( "_id" )
+    // ignored CouchDB data field
+    @JsonIgnoreProperties( ignoreUnknown = true, value = "_id" )
     private String id;
 
-    @JsonProperty( "_rev" )
+    // ignored CouchDB data field
+    @JsonIgnoreProperties( ignoreUnknown = true, value = "_rev" )
     private String rev;
 
     @ApiModelProperty( required = true, dataType = "String", value = "The name is what your thing is called." )
@@ -85,7 +88,8 @@ public class PackageMetadata
 
     private String license;
 
-    @JsonProperty( "_attachments" )
+    // ignored CouchDB data field
+    @JsonIgnoreProperties( ignoreUnknown = true, value = "_attachments" )
     private Object attachments;
 
     public PackageMetadata()
@@ -102,19 +106,9 @@ public class PackageMetadata
         return id;
     }
 
-    public void setId( String id )
-    {
-        this.id = id;
-    }
-
     public String getRev()
     {
         return rev;
-    }
-
-    public void setRev( String rev )
-    {
-        this.rev = rev;
     }
 
     public String getName()
@@ -272,11 +266,6 @@ public class PackageMetadata
         return attachments;
     }
 
-    public void setAttachments( Object attachments )
-    {
-        this.attachments = attachments;
-    }
-
     public void addMaintainers( UserInfo userInfo )
     {
         this.getMaintainers().add( userInfo );
@@ -298,16 +287,6 @@ public class PackageMetadata
         Logger logger = LoggerFactory.getLogger( getClass() );
 
         boolean changed = false;
-        if ( source.getId() != null )
-        {
-            this.setId( source.getId() );
-            changed = true;
-        }
-        if ( source.getRev() != null )
-        {
-            this.setRev( source.getRev() );
-            changed = true;
-        }
         if ( source.getName() != null )
         {
             this.setName( source.getName() );
@@ -353,29 +332,13 @@ public class PackageMetadata
             this.setLicense( source.getLicense() );
             changed = true;
         }
-        if ( source.getAttachments() != null )
-        {
-            this.setAttachments( source.getAttachments() );
-            changed = true;
-        }
 
         // merge maintainers list
         Iterator maintainer = source.getMaintainers().iterator();
         while ( maintainer.hasNext() )
         {
             UserInfo m = (UserInfo) maintainer.next();
-            boolean s = false;
-            Iterator snapshot = maintainers.iterator();
-            while ( snapshot.hasNext() )
-            {
-                UserInfo preExisting = (UserInfo) snapshot.next();
-                if ( preExisting.getName().equals( m.getName() ) )
-                {
-                    s = true;
-                    break;
-                }
-            }
-            if ( !s )
+            if ( !maintainers.contains( m ) )
             {
                 this.addMaintainers( new UserInfo( m.getName(), m.getEmail(), m.getUrl() ) );
                 changed = true;
@@ -411,92 +374,87 @@ public class PackageMetadata
 
         // merge time map
         SimpleDateFormat sdf = new SimpleDateFormat( TIMEOUT_FORMAT );
-        Map<String, String> sourceTimes = source.getTime();
+        Map<String, Date> clone = new LinkedHashMap<>();
 
-        Iterator timeKey = sourceTimes.keySet().iterator();
+        for ( String key : time.keySet() )
+        {
+            String value = time.get( key );
+            Date date = null;
+            try
+            {
+                date = sdf.parse( value );
+            }
+            catch ( ParseException e )
+            {
+                logger.error( String.format( "Cannot parse date: %s. Reason: %s", value, e ) );
+            }
+            clone.put( key, date );
+        }
+
+        Map<String, String> sourceTimes = source.getTime();
+        Iterator versionName = sourceTimes.keySet().iterator();
         boolean added = false;
 
-        while ( timeKey.hasNext() )
+        while ( versionName.hasNext() )
         {
-            String v = (String) timeKey.next();
-            String value = sourceTimes.get( v );
-            boolean s = false;
-            Iterator snapshot = time.keySet().iterator();
-
-            while ( snapshot.hasNext() )
+            String key = (String) versionName.next();
+            String value = sourceTimes.get( key );
+            Date date = null;
+            try
             {
-                String preExisting = (String) snapshot.next();
-                // when the source's version update time is more recent, will update it into the original map.
-                if ( preExisting.equals( v ) )
+                date = sdf.parse( value );
+            }
+            catch ( ParseException e )
+            {
+                logger.error( String.format( "Cannot parse date: %s. Reason: %s", value, e ) );
+            }
+            if ( clone.keySet().contains( key ) )
+            {
+                // if source's version update time is more recent(sort as the letter order), will update it into the original map.
+                int compare = date.compareTo( clone.get( key ) );
+                if ( compare > 0 )
                 {
-                    try
-                    {
-                        Date preDate = sdf.parse( time.get( v ) );
-                        Date sourceDate = sdf.parse( value );
-                        int compare = sourceDate.compareTo( preDate );
-                        if ( compare > 0 )
-                        {
-                            time.put( v, value );
-                            added = true;
-                            changed = true;
-                        }
-                    }
-                    catch ( ParseException e )
-                    {
-                        logger.error( String.format( "Cannot parse version %s 's update date. Reason: %s", preExisting,
-                                                     e ) );
-                    }
-                    s = true;
-                    break;
+                    clone.put( key, date );
+                    added = true;
+                    changed = true;
                 }
             }
-
-            if ( !s )
+            else
             {
-                time.put( v, value );
+                clone.put( key, date );
                 added = true;
                 changed = true;
             }
         }
 
+        // only sorting the map when update occurred
         if ( added )
         {
-            List<Map.Entry<String, String>> timeList = new ArrayList<>( time.entrySet() );
-            Collections.sort( timeList, ( o1, o2 ) ->
-            {
-                int compare = 0;
-                try
-                {
-                    // sort the time as value (update time) asc
-                    compare = sdf.parse( o1.getValue() ).compareTo( sdf.parse( o2.getValue() ) );
-                }
-                catch ( ParseException e )
-                {
-                    logger.error( String.format( "Cannot parse date when comparing. Reason: %s", e ) );
-                }
-                return compare;
-            } );
+            // sort as the time value in map
+            List<Map.Entry<String, Date>> timeList = new ArrayList<>( clone.entrySet() );
+            // sort the time as value (update time) asc
+            Collections.sort( timeList, ( o1, o2 ) -> o1.getValue().compareTo( o2.getValue() ) );
 
-            Map<String, String> clone = new LinkedHashMap<>();
-
-            if ( time.get( MODIFIED ) != null )
+            Map<String, String> result = new LinkedHashMap<>();
+            // make the 'modified' and 'created' value as the first two keys in final map
+            if ( clone.get( MODIFIED ) != null )
             {
-                clone.put( MODIFIED, time.get( MODIFIED ) );
+                clone.put( MODIFIED, clone.get( MODIFIED ) );
             }
-            if ( time.get( CREATED ) != null )
+            if ( clone.get( CREATED ) != null )
             {
-                clone.put( CREATED, time.get( CREATED ) );
+                clone.put( CREATED, clone.get( CREATED ) );
             }
 
-            for ( final Map.Entry<String, String> entry : timeList )
+            for ( final Map.Entry<String, Date> entry : timeList )
             {
                 if ( MODIFIED.equals( entry.getKey() ) || CREATED.equals( entry.getKey() ) )
                 {
                     continue;
                 }
-                clone.put( entry.getKey(), entry.getValue() );
+                result.put( entry.getKey(), sdf.format( entry.getValue() ) );
             }
-            time = clone;
+            time = result;
         }
 
         // merge dist-tag object

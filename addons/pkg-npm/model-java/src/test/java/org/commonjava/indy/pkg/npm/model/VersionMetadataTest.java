@@ -15,10 +15,12 @@
  */
 package org.commonjava.indy.pkg.npm.model;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class VersionMetadataTest
@@ -35,5 +37,19 @@ public class VersionMetadataTest
         final VersionMetadata result = mapper.readValue( json, VersionMetadata.class );
         assertThat( result.getName(), equalTo( metadata.getName() ) );
         assertThat( result.getVersion(), equalTo( metadata.getVersion() ) );
+    }
+
+    @Test
+    public void ignoreCouchDBJsonDataTest() throws Exception
+    {
+
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        String json = IOUtils.toString(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "test-package.json" ) );
+
+        final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
+        final VersionMetadata version = result.getVersions().get( "1.5.1" );
+
+        assertThat( version.getId(), nullValue() );
     }
 }

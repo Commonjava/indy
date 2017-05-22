@@ -20,6 +20,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -46,7 +47,6 @@ public class PackageMetadataTest
                         Thread.currentThread().getContextClassLoader().getResourceAsStream( "test-package.json" ) );
 
         final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
-        assertThat( result.getId(), equalTo( "jquery" ) );
         assertThat( result.getDistTags().getBeta(), equalTo( "3.2.1" ) );
 
         assertTrue( result.getVersions().keySet().contains( "1.5.1" ) );
@@ -56,5 +56,20 @@ public class PackageMetadataTest
 
         final String jsonResult = mapper.writeValueAsString( result );
         System.out.println( jsonResult );
+    }
+
+    @Test
+    public void ignoreCouchDBJsonDataTest() throws Exception
+    {
+
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        String json = IOUtils.toString(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "test-package.json" ) );
+
+        final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
+
+        assertThat( result.getRev(), nullValue() );
+        assertThat( result.getId(), nullValue() );
+        assertThat( result.getAttachments(), nullValue() );
     }
 }

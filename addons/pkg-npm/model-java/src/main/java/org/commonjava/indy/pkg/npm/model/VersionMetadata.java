@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -94,7 +95,8 @@ public class VersionMetadata
 
     private String gitHead;
 
-    @JsonProperty( "_id" )
+    // ignored CouchDB data field
+    @JsonIgnoreProperties( ignoreUnknown = true, value = "_id" )
     private String id;
 
     @JsonProperty( "_shasum" )
@@ -414,11 +416,6 @@ public class VersionMetadata
     public String getId()
     {
         return id;
-    }
-
-    public void setId( String id )
-    {
-        this.id = id;
     }
 
     public String getShasum()
