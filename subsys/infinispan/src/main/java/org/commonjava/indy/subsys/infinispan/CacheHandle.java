@@ -16,9 +16,6 @@
 package org.commonjava.indy.subsys.infinispan;
 
 import org.infinispan.Cache;
-import org.infinispan.IllegalLifecycleStateException;
-import org.infinispan.query.Search;
-import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -136,9 +136,13 @@ public class CacheProducer
             throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
         }
 
-        Cache<K,V> cache = cacheManager.getCache( named );
-        CacheHandle<K, V> handle = new CacheHandle( named, cache );
-        caches.put( named, handle );
+        CacheHandle<K, V> handle = caches.get( named );
+        if ( handle == null )
+        {
+            Cache<K, V> cache = cacheManager.getCache( named );
+            handle = new CacheHandle( named, cache );
+            caches.put( named, handle );
+        }
         return handle;
     }
 
