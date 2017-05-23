@@ -279,7 +279,7 @@ public class PackageMetadataMergerTest
     }
 
     @Test
-    public void mergeTwoFilesWithDistTagVersionSorted() throws Exception
+    public void mergeProviderWithDistTagVersionSorted() throws Exception
     {
         String path = "jquery/package.json";
         HostedRepository h1 = new HostedRepository( "test-hosted-1" );
@@ -311,6 +311,35 @@ public class PackageMetadataMergerTest
         assertThat( merged.getDistTags().getStable(), equalTo( "3.2.1" ) );
         assertThat( merged.getDistTags().getBeta(), equalTo( "3.2.1-beta.2" ) );
         assertThat( merged.getDistTags().getDev(), equalTo( "3.2.3-alpha" ) );
+    }
+
+    @Test
+    public void mergeProviderWithSameVersionMetadata() throws Exception
+    {
+        String path = "jquery/package.json";
+        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
+
+        Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
+        initTestData( t1, VERSION_META + "package-1.json" );
+
+        Group g = new Group( "test-group", h1.getKey() );
+
+        List<Transfer> sources = Arrays.asList( t1 );
+
+        PackageMetadata provided = new PackageMetadata( "jquery" );
+        VersionMetadata versionMetadata = new VersionMetadata("jquery", "1.5.1");
+        versionMetadata.setUrl( "jquery.new.com" );
+
+        TestPackageMetadataProvider testProvider = new TestPackageMetadataProvider( provided );
+
+        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ) ).merge( sources, g,
+                                                                                                      path );
+        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
+                                                   PackageMetadata.class );
+
+        assertThat( merged.getVersions().get( "1.5.1" ), notNullValue() );
+        assertThat( merged.getVersions().get( "1.5.1" ).getUrl(), equalTo( "jquery.com" ) );
     }
 
     @Test

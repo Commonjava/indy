@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
+import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiModel( description = "Specify the metadata of the relevant pulling package info." )
+@JsonIgnoreProperties({"_id", "_rev", "_attachments"})
 public class PackageMetadata
                 implements Serializable, Comparable<PackageMetadata>
 {
@@ -45,14 +47,6 @@ public class PackageMetadata
     private static final String MODIFIED = "modified";
 
     private static final String CREATED = "created";
-
-    // ignored CouchDB data field
-    @JsonIgnoreProperties( ignoreUnknown = true, value = "_id" )
-    private String id;
-
-    // ignored CouchDB data field
-    @JsonIgnoreProperties( ignoreUnknown = true, value = "_rev" )
-    private String rev;
 
     @ApiModelProperty( required = true, dataType = "String", value = "The name is what your thing is called." )
     private String name;
@@ -88,10 +82,6 @@ public class PackageMetadata
 
     private String license;
 
-    // ignored CouchDB data field
-    @JsonIgnoreProperties( ignoreUnknown = true, value = "_attachments" )
-    private Object attachments;
-
     public PackageMetadata()
     {
     }
@@ -99,16 +89,6 @@ public class PackageMetadata
     public PackageMetadata( String name )
     {
         this.name = name;
-    }
-
-    public String getId()
-    {
-        return id;
-    }
-
-    public String getRev()
-    {
-        return rev;
     }
 
     public String getName()
@@ -261,11 +241,6 @@ public class PackageMetadata
         this.license = license;
     }
 
-    public Object getAttachments()
-    {
-        return attachments;
-    }
-
     public void addMaintainers( UserInfo userInfo )
     {
         this.getMaintainers().add( userInfo );
@@ -361,22 +336,19 @@ public class PackageMetadata
         Map<String, Boolean> sourceUsers = source.getUsers();
         for ( final String user : sourceUsers.keySet() )
         {
-            if ( users.keySet().contains( user ) && users.get( user ).equals( sourceUsers.get( user ) ) )
+            if ( users.containsKey( user ) && users.get( user ).equals( sourceUsers.get( user ) ) )
             {
                 continue;
             }
-            else
-            {
-                users.put( user, sourceUsers.get( user ) );
-                changed = true;
-            }
+            users.put( user, sourceUsers.get( user ) );
+            changed = true;
         }
 
         // merge time map
         SimpleDateFormat sdf = new SimpleDateFormat( TIMEOUT_FORMAT );
         Map<String, Date> clone = new LinkedHashMap<>();
 
-        for ( String key : time.keySet() )
+        for ( final String key : time.keySet() )
         {
             String value = time.get( key );
             Date date = null;
@@ -392,12 +364,9 @@ public class PackageMetadata
         }
 
         Map<String, String> sourceTimes = source.getTime();
-        Iterator versionName = sourceTimes.keySet().iterator();
         boolean added = false;
-
-        while ( versionName.hasNext() )
+        for ( final String key : sourceTimes.keySet() )
         {
-            String key = (String) versionName.next();
             String value = sourceTimes.get( key );
             Date date = null;
             try
@@ -408,23 +377,14 @@ public class PackageMetadata
             {
                 logger.error( String.format( "Cannot parse date: %s. Reason: %s", value, e ) );
             }
-            if ( clone.keySet().contains( key ) )
+            // if source's version update time is more recent(sort as the letter order), will update it into the original map.
+            if ( clone.containsKey( key ) && date.compareTo( clone.get( key ) ) <= 0 )
             {
-                // if source's version update time is more recent(sort as the letter order), will update it into the original map.
-                int compare = date.compareTo( clone.get( key ) );
-                if ( compare > 0 )
-                {
-                    clone.put( key, date );
-                    added = true;
-                    changed = true;
-                }
+                continue;
             }
-            else
-            {
-                clone.put( key, date );
-                added = true;
-                changed = true;
-            }
+            clone.put( key, date );
+            added = true;
+            changed = true;
         }
 
         // only sorting the map when update occurred
@@ -439,11 +399,11 @@ public class PackageMetadata
             // make the 'modified' and 'created' value as the first two keys in final map
             if ( clone.get( MODIFIED ) != null )
             {
-                clone.put( MODIFIED, clone.get( MODIFIED ) );
+                result.put( MODIFIED, sdf.format( clone.get( MODIFIED )));
             }
             if ( clone.get( CREATED ) != null )
             {
-                clone.put( CREATED, clone.get( CREATED ) );
+                result.put( CREATED, sdf.format( clone.get( CREATED ) ) );
             }
 
             for ( final Map.Entry<String, Date> entry : timeList )
@@ -461,61 +421,32 @@ public class PackageMetadata
         DistTag sourceDist = source.getDistTags();
         Map<String, String> sourceDistMap = sourceDist.fetchTagsMap();
         Map<String, String> thisDistMap = distTags.fetchTagsMap();
-
-        if ( sourceDistMap.size() > 0 )
+        if ( thisDistMap.isEmpty() && !sourceDistMap.isEmpty() )
         {
-            if ( thisDistMap == null || thisDistMap.size() <= 0 )
+            this.setDistTags( sourceDist );
+            changed = true;
+        }
+        else
+        {
+            for ( final String tag : sourceDistMap.keySet() )
             {
-                this.setDistTags( sourceDist );
-                changed = true;
-            }
-            else
-            {
-                for ( final String tag : sourceDistMap.keySet() )
+                SingleVersion sourceVersion = VersionUtils.createSingleVersion( sourceDistMap.get( tag ) );
+                SingleVersion thisVersion = VersionUtils.createSingleVersion( thisDistMap.get( tag ) );
+                if ( thisDistMap.containsKey( tag ) && sourceVersion.compareTo( thisVersion ) <= 0 )
                 {
-                    if ( !thisDistMap.keySet().contains( tag ) )
-                    {
-                        distTags.putTag( tag, sourceDistMap.get( tag ) );
-                        changed = true;
-                    }
-                    else
-                    {
-                        int compare = VersionUtils.createSingleVersion( sourceDistMap.get( tag ) )
-                                                  .compareTo( VersionUtils.createSingleVersion(
-                                                                  thisDistMap.get( tag ) ) );
-                        if ( compare > 0 )
-                        {
-                            distTags.putTag( tag, sourceDistMap.get( tag ) );
-                            changed = true;
-                        }
-                    }
+                    continue;
                 }
+                distTags.putTag( tag, sourceDistMap.get( tag ) );
+                changed = true;
             }
         }
 
-        //merge versions
+        //merge versions, keep the first version metadata for a given version that coming across
         Map<String, VersionMetadata> sourceVersions = source.getVersions();
-        Iterator vm = sourceVersions.keySet().iterator();
-
-        while ( vm.hasNext() )
+        for ( final String v : sourceVersions.keySet() )
         {
-            String v = (String) vm.next();
             VersionMetadata value = sourceVersions.get( v );
-            boolean s = false;
-            Iterator snapshot = versions.keySet().iterator();
-
-            while ( snapshot.hasNext() )
-            {
-                String preExisting = (String) snapshot.next();
-                if ( preExisting.equals( v ) )
-                {
-                    versions.put( v, value );
-                    s = true;
-                    changed = true;
-                    break;
-                }
-            }
-            if ( !s )
+            if ( !versions.containsKey( v ) )
             {
                 versions.put( v, value );
                 changed = true;

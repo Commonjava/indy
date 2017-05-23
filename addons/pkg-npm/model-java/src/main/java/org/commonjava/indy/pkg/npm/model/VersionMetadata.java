@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiModel( description = "Specify all the corresponding versions metadata for the package." )
+@JsonIgnoreProperties("_id")
 public class VersionMetadata
                 implements Serializable, Comparable<VersionMetadata>
 {
@@ -94,10 +95,6 @@ public class VersionMetadata
     private String lib;
 
     private String gitHead;
-
-    // ignored CouchDB data field
-    @JsonIgnoreProperties( ignoreUnknown = true, value = "_id" )
-    private String id;
 
     @JsonProperty( "_shasum" )
     private String shasum;
@@ -411,11 +408,6 @@ public class VersionMetadata
     public void setGitHead( String gitHead )
     {
         this.gitHead = gitHead;
-    }
-
-    public String getId()
-    {
-        return id;
     }
 
     public String getShasum()

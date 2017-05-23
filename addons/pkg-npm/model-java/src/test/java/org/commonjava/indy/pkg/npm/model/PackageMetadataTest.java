@@ -49,7 +49,7 @@ public class PackageMetadataTest
         final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
         assertThat( result.getDistTags().getBeta(), equalTo( "3.2.1" ) );
 
-        assertTrue( result.getVersions().keySet().contains( "1.5.1" ) );
+        assertTrue( result.getVersions().containsKey( "1.5.1" ) );
         assertThat( result.getVersions().get( "1.5.1" ).getNpmVersion(), equalTo( "0.3.15" ) );
 
         assertThat( result.getRepository().getType(), equalTo( "git" ) );
@@ -67,9 +67,10 @@ public class PackageMetadataTest
                         Thread.currentThread().getContextClassLoader().getResourceAsStream( "test-package.json" ) );
 
         final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
+        final String jsonResult = mapper.writeValueAsString( result );
 
-        assertThat( result.getRev(), nullValue() );
-        assertThat( result.getId(), nullValue() );
-        assertThat( result.getAttachments(), nullValue() );
+        assertThat( jsonResult.contains( "_rev" ), equalTo( false ) );
+        assertThat( jsonResult.contains( "_id" ), equalTo( false ) );
+        assertThat( jsonResult.contains( "_attachments" ), equalTo( false ) );
     }
 }

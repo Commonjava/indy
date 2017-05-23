@@ -49,7 +49,9 @@ public class VersionMetadataTest
 
         final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
         final VersionMetadata version = result.getVersions().get( "1.5.1" );
+        final String jsonResult = mapper.writeValueAsString( version );
 
-        assertThat( version.getId(), nullValue() );
+        assertThat( jsonResult.contains( "_id" ), equalTo( false ) );
+
     }
 }
