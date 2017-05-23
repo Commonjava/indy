@@ -20,7 +20,6 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class VersionMetadataTest

@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiModel( description = "Specify the metadata of the relevant pulling package info." )
-@JsonIgnoreProperties({"_id", "_rev", "_attachments"})
+@JsonIgnoreProperties( { "_id", "_rev", "_attachments" } )
 public class PackageMetadata
                 implements Serializable, Comparable<PackageMetadata>
 {
@@ -399,7 +399,7 @@ public class PackageMetadata
             // make the 'modified' and 'created' value as the first two keys in final map
             if ( clone.get( MODIFIED ) != null )
             {
-                result.put( MODIFIED, sdf.format( clone.get( MODIFIED )));
+                result.put( MODIFIED, sdf.format( clone.get( MODIFIED ) ) );
             }
             if ( clone.get( CREATED ) != null )
             {

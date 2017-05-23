@@ -327,7 +327,7 @@ public class PackageMetadataMergerTest
         List<Transfer> sources = Arrays.asList( t1 );
 
         PackageMetadata provided = new PackageMetadata( "jquery" );
-        VersionMetadata versionMetadata = new VersionMetadata("jquery", "1.5.1");
+        VersionMetadata versionMetadata = new VersionMetadata( "jquery", "1.5.1" );
         versionMetadata.setUrl( "jquery.new.com" );
 
         TestPackageMetadataProvider testProvider = new TestPackageMetadataProvider( provided );

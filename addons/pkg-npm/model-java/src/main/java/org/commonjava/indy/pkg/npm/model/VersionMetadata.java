@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 @ApiModel( description = "Specify all the corresponding versions metadata for the package." )
-@JsonIgnoreProperties("_id")
+@JsonIgnoreProperties( "_id" )
 public class VersionMetadata
                 implements Serializable, Comparable<VersionMetadata>
 {
