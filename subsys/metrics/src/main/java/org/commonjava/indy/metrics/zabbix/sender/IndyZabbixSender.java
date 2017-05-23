@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -438,7 +439,7 @@ public class IndyZabbixSender
             throw new IndyMetricsException( "can not find Zabbix's Host" );
         }
 
-        zabbixApi = new IndyZabbixApi( this.zabbixHostUrl, indyHttpProvider.createClient() );
+        zabbixApi = new IndyZabbixApi( this.zabbixHostUrl, indyHttpProvider.createClient( new URL( zabbixHostUrl ).getHost() ) );
 
         zabbixApi.init();
 

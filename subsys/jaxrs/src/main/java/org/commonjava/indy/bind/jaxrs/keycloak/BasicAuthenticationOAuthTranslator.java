@@ -65,7 +65,6 @@ import org.slf4j.LoggerFactory;
 public class BasicAuthenticationOAuthTranslator
     implements AuthenticationMechanism
 {
-
     private static final String USERNAME = "username";
 
     private static final String PASSWORD = "password";
@@ -207,7 +206,7 @@ public class BasicAuthenticationOAuthTranslator
         AccessTokenResponse tokenResponse = null;
         try
         {
-            client = http.createClient();
+            client = http.createClient( uri.getHost() );
 
             final UrlEncodedFormEntity form = new UrlEncodedFormEntity( params, "UTF-8" );
             request.setEntity( form );

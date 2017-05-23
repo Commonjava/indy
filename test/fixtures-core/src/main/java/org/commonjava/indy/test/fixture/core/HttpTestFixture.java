@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.test.fixture.core;
 
+import static org.commonjava.indy.subsys.http.conf.IndyHttpConfig.DEFAULT_SITE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -171,8 +172,8 @@ public class HttpTestFixture
         CloseableHttpResponse response = null;
         try
         {
-            client = http.createClient();
-            response = client.execute( get, http.createContext() );
+            client = http.createClient( DEFAULT_SITE );
+            response = client.execute( get, http.createContext( DEFAULT_SITE ) );
 
             final StatusLine sl = response.getStatusLine();
 
