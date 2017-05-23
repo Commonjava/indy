@@ -364,12 +364,12 @@ public class JaxRsBooter
     {
         start( bootOptions );
 
-        logger.info( "Setting up shutdown hook..." );
-        Runtime.getRuntime()
-               .addShutdownHook( new Thread( lifecycleManager.createShutdownRunnable() ) );
-
         if ( server != null )
         {
+            logger.info( "Setting up shutdown hook..." );
+            Runtime.getRuntime()
+                   .addShutdownHook( new Thread( lifecycleManager.createShutdownRunnable( server ) ) );
+
             synchronized ( server )
             {
                 try
