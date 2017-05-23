@@ -183,6 +183,8 @@ public class IndyLifecycleManager
     public void stop()
         throws IndyLifecycleException
     {
+        System.out.println( "Shutting down Indy" );
+
         logger.info( "\n\n\n\n\n SHUTTING DOWN Indy\n    Version: {}\n    Built-By: {}\n    Commit-ID: {}\n    Built-On: {}\n\n\n\n\n",
                      versioning.getVersion(), versioning.getBuilder(), versioning.getCommitId(),
                      versioning.getTimestamp() );
@@ -251,8 +253,9 @@ public class IndyLifecycleManager
 
     /**
      * Create a Runnable that can be used in {@link Runtime#addShutdownHook(Thread)}.
+     * @param server
      */
-    public Runnable createShutdownRunnable()
+    public Runnable createShutdownRunnable( final Object server )
     {
         return ()->
         {
@@ -263,6 +266,13 @@ public class IndyLifecycleManager
             catch ( final IndyLifecycleException e )
             {
                 throw new RuntimeException( "\n\nFailed to stop Indy: " + e.getMessage(), e );
+            }
+            finally
+            {
+                synchronized ( server )
+                {
+                    server.notifyAll();
+                }
             }
         };
     }
