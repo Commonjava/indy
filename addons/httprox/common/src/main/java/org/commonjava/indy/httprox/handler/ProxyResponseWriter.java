@@ -21,6 +21,7 @@ import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.folo.ctl.FoloConstants;
@@ -31,6 +32,7 @@ import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.GenericPackageTypeDescriptor;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
@@ -49,6 +51,7 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.URL;
+import java.rmi.Remote;
 
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
@@ -56,6 +59,7 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_REPO_PREFIX;
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 
 public final class ProxyResponseWriter
@@ -359,18 +363,21 @@ public final class ProxyResponseWriter
 
         final String baseUrl = String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), port );
 
-        RemoteRepository remote = storeManager.findRemoteRepository( baseUrl );
+        ArtifactStoreQuery<RemoteRepository> query =
+                storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
+
+        RemoteRepository remote = query.getRemoteRepositoryByUrl( baseUrl );
         if ( remote == null )
         {
             logger.debug( "Looking for remote repo with name: {}", name );
-            remote = storeManager.getRemoteRepository( name );
+            remote = query.getByName( name );
             // if repo with this name already exists, it has a different url, so we need to use a different name
             int i = 1;
             while ( remote != null )
             {
                 name = PROXY_REPO_PREFIX + url.getHost().replace( '.', '-' ) + "_" + i++;
                 logger.debug( "Looking for remote repo with name: {}", name );
-                remote = storeManager.getRemoteRepository( name );
+                remote = query.getByName( name );
             }
         }
 
@@ -392,9 +399,10 @@ public final class ProxyResponseWriter
             remote = repoCreator.create( name, baseUrl, info, up, LoggerFactory.getLogger( repoCreator.getClass() ) );
             remote.setMetadata( ArtifactStore.METADATA_ORIGIN, ProxyAcceptHandler.HTTPROX_ORIGIN );
 
-            storeManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                        "Creating HTTProx proxy for: "
-                                                                                + info.getUrl() ), new EventMetadata() );
+            final ChangeSummary changeSummary =
+                    new ChangeSummary( ChangeSummary.SYSTEM_USER, "Creating HTTProx proxy for: " + info.getUrl() );
+
+            storeManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
         }
 
         return remote;

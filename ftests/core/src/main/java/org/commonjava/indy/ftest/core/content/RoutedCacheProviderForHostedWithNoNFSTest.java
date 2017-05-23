@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -38,7 +39,7 @@ public class RoutedCacheProviderForHostedWithNoNFSTest
 
         final String path = "/path/to/foo.class";
 
-        final File nfsStorage = new File(fixture.getBootOptions().getIndyHome() + NFS_BASE);
+        final File nfsStorage = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE ).toFile();
 
         assertThat( client.content().exists( hosted, STORE, path ), equalTo( false ) );
         assertThat( nfsStorage.exists(), equalTo( false ) );

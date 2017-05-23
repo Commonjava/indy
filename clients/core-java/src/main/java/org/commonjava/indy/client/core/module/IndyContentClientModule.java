@@ -15,11 +15,6 @@
  */
 package org.commonjava.indy.client.core.module;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
-import java.util.Map;
-
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyContentConstants;
 import org.commonjava.indy.client.core.IndyClientException;
@@ -27,59 +22,51 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.client.core.util.UrlUtils;
+import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.DirectoryListingDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collections;
+import java.util.Map;
+
+import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 public class IndyContentClientModule
     extends IndyClientModule
 {
 
+    private static final String CONTENT_BASE = "content";
+
+    @Deprecated
     public String contentUrl( final StoreType type, final String name, final String... path )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( type, name, path ) );
+        return contentUrl( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
-
-    private String[] aggregatePathParts( final StoreKey key, final String... path )
-    {
-        return aggregatePathParts( key.getType(), key.getName(), path );
-    }
-
-    private String[] aggregatePathParts( final StoreType type, final String name, final String... path )
-    {
-        final String[] parts = new String[path.length + 2];
-        parts[0] = type.singularEndpointName();
-        parts[1] = name;
-        System.arraycopy( path, 0, parts, 2, path.length );
-
-        return parts;
-    }
-
+    
     public String contentUrl( final StoreKey key, final String... path )
     {
-        return UrlUtils.buildUrl( http.getBaseUrl(), aggregatePathParts( key, path ) );
+        return buildUrl( http.getBaseUrl(), aggregatePathParts( key, path ) );
     }
 
+    @Deprecated
     public String contentPath( final StoreType type, final String name, final String... path )
     {
-        return UrlUtils.buildUrl( null, aggregatePathParts( type, name, path ) );
+        return contentPath( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
-
+    
     public String contentPath( final StoreKey key, final String... path )
     {
-        return UrlUtils.buildUrl( null, aggregatePathParts( key, path ) );
+        return buildUrl( null, aggregatePathParts( key, path ) );
     }
 
     public DirectoryListingDTO listContents( final StoreKey key, final String path )
             throws IndyClientException
-    {
-        return listContents( key.getType(), key.getName(), path );
-    }
-
-    public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
-        throws IndyClientException
     {
         String p = path;
         if ( !path.endsWith( "/" ) )
@@ -87,85 +74,88 @@ public class IndyContentClientModule
             p += "/";
         }
 
-        return http.get( contentPath( type, name, p ), DirectoryListingDTO.class );
+        return http.get( contentPath( key, p ), DirectoryListingDTO.class );
+    }
+
+    @Deprecated
+    public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return listContents( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
 
     public void delete( final StoreKey key, final String path )
             throws IndyClientException
     {
-        http.delete( contentPath( key.getType(), key.getName(), path ) );
+        http.delete( contentPath( key, path ) );
     }
 
+    @Deprecated
     public void delete( final StoreType type, final String name, final String path )
-        throws IndyClientException
+            throws IndyClientException
     {
-        http.delete( contentPath( type, name, path ) );
+        delete( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
-
+    
     public boolean exists( final StoreKey key, final String path )
             throws IndyClientException
     {
-        return http.exists( contentPath( key.getType(), key.getName(), path ) );
+        return http.exists( contentPath( key, path ) );
     }
 
     public Boolean exists( StoreKey key, String path, boolean cacheOnly )
             throws IndyClientException
     {
-        return http.exists( contentPath( key.getType(), key.getName(), path ),
+        return http.exists( contentPath( key, path ),
                             () -> Collections.<String, String>singletonMap( IndyContentConstants.CHECK_CACHE_ONLY,
                                                                             Boolean.toString( cacheOnly ) ) );
     }
 
+    @Deprecated
     public boolean exists( final StoreType type, final String name, final String path )
-        throws IndyClientException
+            throws IndyClientException
     {
-        return http.exists( contentPath( type, name, path ) );
+        return exists( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
-
+    
+    @Deprecated
     public Boolean exists( StoreType type, String name, String path, boolean cacheOnly )
             throws IndyClientException
     {
-        return http.exists( contentPath( type, name, path ),
-                            () -> Collections.<String, String>singletonMap( IndyContentConstants.CHECK_CACHE_ONLY,
-                                                                            Boolean.toString( cacheOnly ) ) );
+        return exists( new StoreKey( MAVEN_PKG_KEY, type, name ), path, cacheOnly );
     }
 
     public void store( final StoreKey key, final String path, final InputStream stream )
             throws IndyClientException
     {
-        http.putWithStream( contentPath( key.getType(), key.getName(), path ), stream );
+        http.putWithStream( contentPath( key, path ), stream );
     }
 
+    @Deprecated
     public void store( final StoreType type, final String name, final String path, final InputStream stream )
-        throws IndyClientException
+            throws IndyClientException
     {
-        http.putWithStream( contentPath( type, name, path ), stream );
+        store( new StoreKey( MAVEN_PKG_KEY, type, name ), path, stream );
     }
 
     public PathInfo getInfo( final StoreKey key, final String path )
         throws IndyClientException
     {
-        final Map<String, String> headers = http.head( contentPath( key.getType(), key.getName(), path ) );
+        final Map<String, String> headers = http.head( contentPath( key, path ) );
         return new PathInfo( headers );
     }
 
+    @Deprecated
     public PathInfo getInfo( final StoreType type, final String name, final String path )
             throws IndyClientException
     {
-        final Map<String, String> headers = http.head( contentPath( type, name, path ) );
-        return new PathInfo( headers );
+        return getInfo( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
-
+    
     public InputStream get( final StoreKey key, final String path )
             throws IndyClientException
     {
-        return get( key.getType(), key.getName(), path );
-    }
-
-    public InputStream get( final StoreType type, final String name, final String path )
-        throws IndyClientException
-    {
-        final HttpResources resources = http.getRaw( contentPath( type, name, path ) );
+        final HttpResources resources = http.getRaw( contentPath( key, path ) );
 
         if ( resources.getStatusCode() != 200 )
         {
@@ -176,7 +166,7 @@ public class IndyContentClientModule
             }
 
             throw new IndyClientException( resources.getStatusCode(), "Response returned status: %s.",
-                                            resources.getStatusLine() );
+                                           resources.getStatusLine() );
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -189,8 +179,28 @@ public class IndyContentClientModule
         {
             IOUtils.closeQuietly( resources );
             throw new IndyClientException( "Failed to open response content stream: %s", e,
-                                            e.getMessage() );
+                                           e.getMessage() );
         }
+    }
+
+    @Deprecated
+    public InputStream get( final StoreType type, final String name, final String path )
+            throws IndyClientException
+    {
+        return get( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
+    }
+    
+    private String[] aggregatePathParts( final StoreKey key, final String... path )
+    {
+        final String[] parts = new String[path.length + 4];
+        int i=0;
+        parts[i++] = CONTENT_BASE;
+        parts[i++] = key.getPackageType();
+        parts[i++] = key.getType().singularEndpointName();
+        parts[i++] = key.getName();
+        System.arraycopy( path, 0, parts, 4, path.length );
+
+        return parts;
     }
 
 }

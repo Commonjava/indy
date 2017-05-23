@@ -48,7 +48,7 @@ public class IndyPathGenerator
         final KeyedLocation kl = (KeyedLocation) resource.getLocation();
         final StoreKey key = kl.getKey();
 
-        final String name = key.getType()
+        final String name = key.getPackageType() + "/" + key.getType()
                                .name() + "-" + key.getName();
 
         String path = resource.getPath();

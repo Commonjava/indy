@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.rest.util;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -71,12 +72,12 @@ public class DownloadManagerTest
         final String content = "This is a test";
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
         
-        final RemoteRepository repo = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+        final RemoteRepository repo = new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2" );
         fixture.getTransport()
                .registerDownload( new ConcreteResource( new RepositoryLocation( repo ), path ),
                                   new TestDownload( content.getBytes() ) );
 
-        data.storeArtifactStore( repo, summary, new EventMetadata() );
+        data.storeArtifactStore( repo, summary, false, true, new EventMetadata() );
 
         final Transfer stream = downloader.retrieve( repo, path, new EventMetadata() );
         final String downloaded = IOUtils.toString( stream.openInputStream() );
@@ -88,20 +89,20 @@ public class DownloadManagerTest
     public void downloadOnePOMFromSecondRepositoryAfterDummyRepoFails()
         throws Exception
     {
-        final RemoteRepository repo = new RemoteRepository( "dummy", "http://www.nowhere.com/" );
+        final RemoteRepository repo = new RemoteRepository( MAVEN_PKG_KEY, "dummy", "http://www.nowhere.com/" );
 
         final String content = "This is a test";
         final String path = "/org/apache/maven/maven-model/3.0.3/maven-model-3.0.3.pom";
 
-        final RemoteRepository repo2 = new RemoteRepository( "central", "http://repo.maven.apache.org/maven2" );
+        final RemoteRepository repo2 = new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2" );
 
         fixture.getTransport()
                .registerDownload( new ConcreteResource( new RepositoryLocation( repo2 ), path ),
                                   new TestDownload( content.getBytes() ) );
 
 
-        data.storeArtifactStore( repo, summary, new EventMetadata() );
-        data.storeArtifactStore( repo2, summary, new EventMetadata() );
+        data.storeArtifactStore( repo, summary, false, true, new EventMetadata() );
+        data.storeArtifactStore( repo2, summary, false, true, new EventMetadata() );
 
         final List<ArtifactStore> repos = new ArrayList<ArtifactStore>();
         repos.add( repo );

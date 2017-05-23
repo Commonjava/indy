@@ -25,9 +25,12 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Date;
 
+import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -57,7 +60,7 @@ public class RoutedCacheProviderForRemoteWithNoNFSTest
         assertThat( "no result", result, notNullValue() );
         assertThat( "doesn't exist", result.exists(), equalTo( true ) );
 
-        final File nfsStorage = new File( fixture.getBootOptions().getIndyHome() + NFS_BASE );
+        final File nfsStorage = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE ).toFile();
         assertThat( nfsStorage.exists(), equalTo( false ) );
     }
 

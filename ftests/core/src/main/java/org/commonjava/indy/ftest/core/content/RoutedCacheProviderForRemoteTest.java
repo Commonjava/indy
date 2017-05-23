@@ -25,6 +25,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -57,7 +58,7 @@ public class RoutedCacheProviderForRemoteTest
         assertThat( "no result", result, notNullValue() );
         assertThat( "doesn't exist", result.exists(), equalTo( true ) );
 
-        final File nfsStorage = new File( fixture.getBootOptions().getIndyHome() + NFS_BASE );
+        final File nfsStorage = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE ).toFile();
         assertThat( nfsStorage.exists(), equalTo( true ) );
         assertThat( nfsStorage.list().length, equalTo( 0 ) );
     }

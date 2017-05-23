@@ -21,12 +21,9 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.rel.ProjectRelationship;
@@ -502,22 +499,10 @@ public class PromotionValidationTools
         return contentManager.getHttpMetadata( storeKey, path );
     }
 
-    public HostedRepository getHostedRepository( final String name )
+    public ArtifactStoreQuery<ArtifactStore> artifactStoreQuery()
             throws IndyDataException
     {
-        return storeDataManager.getHostedRepository( name );
-    }
-
-    public RemoteRepository getRemoteRepository( final String name )
-            throws IndyDataException
-    {
-        return storeDataManager.getRemoteRepository( name );
-    }
-
-    public Group getGroup( final String name )
-            throws IndyDataException
-    {
-        return storeDataManager.getGroup( name );
+        return storeDataManager.query();
     }
 
     public ArtifactStore getArtifactStore( final StoreKey key )
@@ -526,83 +511,10 @@ public class PromotionValidationTools
         return storeDataManager.getArtifactStore( key );
     }
 
-    public List<ArtifactStore> getAllArtifactStores()
+    public Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException
     {
         return storeDataManager.getAllArtifactStores();
-    }
-
-    public List<? extends ArtifactStore> getAllArtifactStores( final StoreType type )
-            throws IndyDataException
-    {
-        return storeDataManager.getAllArtifactStores( type );
-    }
-
-    public List<Group> getAllGroups()
-            throws IndyDataException
-    {
-        return storeDataManager.getAllGroups();
-    }
-
-    public List<RemoteRepository> getAllRemoteRepositories()
-            throws IndyDataException
-    {
-        return storeDataManager.getAllRemoteRepositories();
-    }
-
-    public List<HostedRepository> getAllHostedRepositories()
-            throws IndyDataException
-    {
-        return storeDataManager.getAllHostedRepositories();
-    }
-
-    public List<ArtifactStore> getAllConcreteArtifactStores()
-            throws IndyDataException
-    {
-        return storeDataManager.getAllConcreteArtifactStores();
-    }
-
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-            throws IndyDataException
-    {
-        return storeDataManager.getOrderedConcreteStoresInGroup( groupName, false );
-    }
-
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-            throws IndyDataException
-    {
-        return storeDataManager.getOrderedStoresInGroup( groupName, false );
-    }
-
-    public Set<Group> getGroupsContaining( final StoreKey repo )
-            throws IndyDataException
-    {
-        return storeDataManager.getGroupsContaining( repo );
-    }
-
-    public boolean hasRemoteRepository( final String name )
-    {
-        return storeDataManager.hasRemoteRepository( name );
-    }
-
-    public boolean hasGroup( final String name )
-    {
-        return storeDataManager.hasGroup( name );
-    }
-
-    public boolean hasHostedRepository( final String name )
-    {
-        return storeDataManager.hasHostedRepository( name );
-    }
-
-    public boolean hasArtifactStore( final StoreKey key )
-    {
-        return storeDataManager.hasArtifactStore( key );
-    }
-
-    public RemoteRepository findRemoteRepository( final String url )
-    {
-        return storeDataManager.findRemoteRepository( url );
     }
 
     public Transfer getTransfer( final StoreResource resource )

@@ -27,9 +27,11 @@ import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -76,9 +78,10 @@ public class MixContentRescheduleTimeoutTest
         client.content().get( remote, repoId, pomPath ).close(); // force storage
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
-        String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
-                                            remote.name(), repoId, pomPath );
-        File pomFile = new File( pomFilePath );
+
+        File pomFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+                                  remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
+
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
 
         // first time trigger metadata storage with timeout, should be 4s
@@ -86,11 +89,12 @@ public class MixContentRescheduleTimeoutTest
         client.content().get( remote, repoId, metadataPath ).close(); // force storage
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
-        String metadataFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
-                               remote.name(), repoId, metadataPath );
-        File metadataFile = new File( metadataFilePath );
-        assertThat( "metadata doesn't exist", metadataFile.exists(), equalTo( true ) );
+
+        File metadataFile =
+                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
+                           metadataPath ).toFile();
+
+        assertThat( "metadata doesn't exist: " + metadataFile, metadataFile.exists(), equalTo( true ) );
 
         // wait for first 4s
         Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );

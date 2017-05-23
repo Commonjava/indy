@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox;
 
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -28,6 +29,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
 
@@ -64,7 +66,9 @@ public class Propagate404NotFoundTest
         }
 
         final RemoteRepository remoteRepo = this.client.stores()
-                       .load( StoreType.remote, "httprox_127-0-0-1_" + server.getPort(), RemoteRepository.class );
+                                                       .load( new StoreKey( GENERIC_PKG_KEY, StoreType.remote,
+                                                                            "httprox_127-0-0-1_" + server.getPort() ),
+                                                              RemoteRepository.class );
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );

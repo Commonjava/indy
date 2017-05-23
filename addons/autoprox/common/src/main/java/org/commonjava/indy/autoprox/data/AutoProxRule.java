@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 
 public interface AutoProxRule
 {
@@ -28,25 +29,14 @@ public interface AutoProxRule
 
     boolean isValidationEnabled();
 
-    boolean matches( String name );
+    boolean matches( StoreKey key );
 
-    RemoteRepository createRemoteRepository( String named )
+    RemoteRepository createRemoteRepository( StoreKey key )
         throws AutoProxRuleException, MalformedURLException;
 
-    HostedRepository createHostedRepository( String named );
+    HostedRepository createHostedRepository( StoreKey key );
 
-    Group createGroup( String named );
-
-    /**
-     * MAY be null IF the group doesn't require validation vs. the remote URL of its associated auto-created remote repository.
-     * Otherwise, this repository should supply any credentials/configuration needed to validate the remote URL.
-     * 
-     * <br/>
-     * NOTE: Use {@link AutoProxRule#createValidationRemote(String)} instead.
-     */
-    @Deprecated
-    RemoteRepository createGroupValidationRemote( String name )
-        throws AutoProxRuleException, MalformedURLException;
+    Group createGroup( StoreKey key );
 
     String getRemoteValidationPath();
 
@@ -54,7 +44,7 @@ public interface AutoProxRule
      * MAY be null IF the remotes/groups don't require validation.
      * Otherwise, this repository should supply any credentials/configuration needed to validate the remote URL.
      */
-    RemoteRepository createValidationRemote( String name )
+    RemoteRepository createValidationRemote( StoreKey key )
         throws AutoProxRuleException, MalformedURLException;
 
 }

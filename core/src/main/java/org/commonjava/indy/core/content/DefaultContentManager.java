@@ -161,7 +161,10 @@ public class DefaultContentManager
                 List<ArtifactStore> members;
                 try
                 {
-                    members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
+                    members = storeManager.query()
+                                          .packageType( store.getPackageType() )
+                                          .enabledState( true )
+                                          .getOrderedConcreteStoresInGroup( store.getName() );
                 }
                 catch ( final IndyDataException e )
                 {
@@ -228,7 +231,10 @@ public class DefaultContentManager
             List<ArtifactStore> members;
             try
             {
-                members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+                members = storeManager.query()
+                                      .packageType( store.getPackageType() )
+                                      .enabledState( true )
+                                      .getOrderedConcreteStoresInGroup( store.getName() );
             }
             catch ( final IndyDataException e )
             {
@@ -426,7 +432,10 @@ public class DefaultContentManager
         {
             try
             {
-                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
+                final List<ArtifactStore> allMembers = storeManager.query()
+                                      .packageType( store.getPackageType() )
+                                      .enabledState( true )
+                                      .getOrderedConcreteStoresInGroup( store.getName() );
 
                 final Transfer txfr = store( allMembers, store.getKey(), path, stream, op, eventMetadata );
                 logger.info( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
@@ -528,7 +537,10 @@ public class DefaultContentManager
             List<ArtifactStore> members;
             try
             {
-                members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
+                members = storeManager.query()
+                                      .packageType( store.getPackageType() )
+                                      .enabledState( true )
+                                      .getOrderedConcreteStoresInGroup( store.getName() );
             }
             catch ( final IndyDataException e )
             {
@@ -637,7 +649,10 @@ public class DefaultContentManager
             List<ArtifactStore> members;
             try
             {
-                members = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+                members = storeManager.query()
+                                      .packageType( store.getPackageType() )
+                                      .enabledState( true )
+                                      .getOrderedConcreteStoresInGroup( store.getName() );
             }
             catch ( final IndyDataException e )
             {
@@ -750,12 +765,15 @@ public class DefaultContentManager
         if ( group == store.getKey().getType() )
         {
             KeyedLocation location = LocationUtils.toLocation( store );
-            SpecialPathInfo spInfo = specialPathManager.getSpecialPathInfo( location, path );
+            SpecialPathInfo spInfo = specialPathManager.getSpecialPathInfo( location, path, store.getPackageType() );
             if ( spInfo == null || !spInfo.isMergable() )
             {
                 try
                 {
-                    final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+                    final List<ArtifactStore> allMembers = storeManager.query()
+                                          .packageType( store.getPackageType() )
+                                          .enabledState( true )
+                                          .getOrderedConcreteStoresInGroup( store.getName() );
 
                     logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, store.getName(), allMembers );
 
@@ -829,7 +847,10 @@ public class DefaultContentManager
         {
             try
             {
-                final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
+                final List<ArtifactStore> allMembers = storeManager.query()
+                                      .packageType( store.getPackageType() )
+                                      .enabledState( true )
+                                      .getOrderedConcreteStoresInGroup( store.getName() );
 
                 logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
                 for ( ArtifactStore member : allMembers )

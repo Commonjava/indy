@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -38,7 +39,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import java.nio.file.Paths;
+
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Api( value = "Schedules and Expirations",
       description = "Retrieve and manipulate scheduled expirations for various parts of Indy" )
@@ -50,15 +56,54 @@ public class SchedulerHandler
     @Inject
     private SchedulerController controller;
 
-    @ApiOperation( "Retrieve the expiration information related to re-enablement of a repository" )
-    @ApiResponses( { @ApiResponse( code = 200, message = "Expiration information retrieved successfully." ),
+    @Inject
+    private ObjectMapper objectMapper;
+
+    @ApiOperation( "[Deprecated] Retrieve the expiration information related to re-enablement of a repository" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "Expiration information retrieved successfully.", response = Expiration.class ),
                      @ApiResponse( code = 400, message = "Store is manually disabled (doesn't automatically re-enable), or isn't disabled." ) } )
-    @Path( "store/{type}/{name}/disable-timeout" )
+    @Path( "store/{type: (hosted|group|remote)}/{name}/disable-timeout" )
     @GET
-    public Expiration getStoreDisableTimeout( @ApiParam( allowableValues = "hosted,group,remote", required=true ) @PathParam( "type" ) String storeType,
+    @Deprecated
+    public Response deprecatedGetStoreDisableTimeout( @ApiParam( allowableValues = "hosted,group,remote", required=true ) @PathParam( "type" ) String storeType,
                                               @ApiParam( required=true ) @PathParam( "name" ) String storeName )
     {
-        StoreKey storeKey = new StoreKey( StoreType.get( storeType ), storeName );
+        StoreType type = StoreType.get( storeType );
+
+        String altPath = Paths.get( "/api/admin/schedule", MAVEN_PKG_KEY, type.singularEndpointName(), storeName ).toString();
+        StoreKey storeKey = new StoreKey( type, storeName );
+        Expiration timeout = null;
+        try
+        {
+            timeout = controller.getStoreDisableTimeout( storeKey );
+            if ( timeout == null )
+            {
+                throw new WebApplicationException( Response.Status.NOT_FOUND );
+            }
+
+            return formatOkResponseWithJsonEntity( timeout, objectMapper, rb -> markDeprecated( rb, altPath ) );
+        }
+        catch ( IndyWorkflowException e )
+        {
+            throwError( e, rb->markDeprecated( rb, altPath ) );
+        }
+
+        return null;
+    }
+
+    @ApiOperation( "Retrieve the expiration information related to re-enablement of a repository" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "Expiration information retrieved successfully.", response = Expiration.class ),
+                           @ApiResponse( code = 400,
+                                         message = "Store is manually disabled (doesn't automatically re-enable), or isn't disabled." ) } )
+    @Path( "store/{packageType}/{type: (hosted|group|remote)}/{name}/disable-timeout" )
+    @GET
+    public Expiration getStoreDisableTimeout(
+            @ApiParam( value = "Package type (maven, generic-http, npm, etc)", required = true )
+            @PathParam( "packageType" ) String packageType,
+            @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String storeType,
+            @ApiParam( required = true ) @PathParam( "name" ) String storeName )
+    {
+        StoreKey storeKey = new StoreKey( packageType, StoreType.get( storeType ), storeName );
         Expiration timeout = null;
         try
         {
@@ -78,7 +123,7 @@ public class SchedulerHandler
     }
 
     @ApiOperation( "Retrieve the expiration information related to re-enablement of any currently disabled repositories" )
-    @ApiResponse( code = 200, message = "List of disabled repository re-enablement timeouts." )
+    @ApiResponse( code = 200, message = "List of disabled repository re-enablement timeouts.", response = ExpirationSet.class )
     @Path( "store/all/disable-timeout" )
     @GET
     public ExpirationSet getDisabledStores()

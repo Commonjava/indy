@@ -17,6 +17,7 @@ package org.commonjava.indy.autoprox.jaxrs;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import java.util.Collections;
 
@@ -25,6 +26,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
@@ -36,6 +38,8 @@ import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.rest.AutoProxCalculatorController;
 import org.commonjava.indy.autoprox.rest.dto.AutoProxCalculation;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,12 +64,23 @@ public class AutoProxCalculatorResource
     @Inject
     private AutoProxConfig config;
 
-    @ApiOperation( value = "Calculate the effects of referencing a remote repository with the given name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
+    @ApiOperation( value = "Calculate the effects of referencing a store with the given type and name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
     @ApiResponse( code=200, message = "Result of calculation" )
-    @Path( "/remote/{name}" )
+    @Path( "/{type: (hosted|group|remote)}/{name}" )
     @GET
-    @Consumes( ApplicationContent.application_json )
-    public Response evalRemote( final @PathParam( "name" ) String remoteName )
+    @Produces( ApplicationContent.application_json )
+    @Deprecated
+    public Response evalDeprecated( final @PathParam("type") String type, final @PathParam( "name" ) String remoteName )
+    {
+        return eval( MAVEN_PKG_KEY, type, remoteName );
+    }
+
+    @ApiOperation( value = "Calculate the effects of referencing a store with the given type and name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
+    @ApiResponse( code=200, message = "Result of calculation" )
+    @Path( "/{packageType}/{type: (hosted|group|remote)}/{name}" )
+    @GET
+    @Produces( ApplicationContent.application_json )
+    public Response eval( final @PathParam("packageType") String packageType, final @PathParam("type") String type, final @PathParam( "name" ) String remoteName )
     {
         Response response = checkEnabled();
         if ( response != null )
@@ -75,7 +90,10 @@ public class AutoProxCalculatorResource
 
         try
         {
-            final AutoProxCalculation calc = controller.evalRemoteRepository( remoteName );
+            StoreKey key = new StoreKey( packageType, StoreType.get( type ), remoteName );
+
+            final AutoProxCalculation calc =
+                    controller.eval( key );
 
             response =
                 formatOkResponseWithJsonEntity( serializer.writeValueAsString( calc == null ? Collections.singletonMap( "error",
@@ -106,81 +124,6 @@ public class AutoProxCalculatorResource
         }
 
         return null;
-    }
-
-    @ApiOperation( value = "Calculate the effects of referencing a hosted repository with the given name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
-    @ApiResponse( code=200, message = "Result of calculation" )
-    @Path( "/hosted/{name}" )
-    @GET
-    @Consumes( ApplicationContent.application_json )
-    public Response evalHosted( final @PathParam( "name" ) String hostedName )
-    {
-        Response response = checkEnabled();
-        if ( response != null )
-        {
-            return response;
-        }
-
-        try
-        {
-            final AutoProxCalculation calc = controller.evalHostedRepository( hostedName );
-
-            response =
-                formatOkResponseWithJsonEntity( serializer.writeValueAsString( calc == null ? Collections.singletonMap( "error",
-                                                                                                          "Nothing was created" )
-                                                            : calc ) );
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( String.format( "Failed to create demo HostedRepository for: '%s'. Reason: %s", hostedName,
-                                         e.getMessage() ), e );
-            response = formatResponse( e );
-        }
-        catch ( final JsonProcessingException e )
-        {
-            logger.error( String.format( "Failed to create demo HostedRepository for: '%s'. Reason: %s", hostedName,
-                                         e.getMessage() ), e );
-            response = formatResponse( e );
-        }
-        return response;
-    }
-
-    @ApiOperation( value = "Calculate the effects of referencing a group with the given name to determine what AutoProx will auto-create", response = AutoProxCalculation.class )
-    @ApiResponse( code=200, message = "Result of calculation" )
-    @Path( "/group/{name}" )
-    @GET
-    @Consumes( ApplicationContent.application_json )
-    public Response evalGroup( final @PathParam( "name" ) String groupName )
-    {
-        Response response = checkEnabled();
-        if ( response != null )
-        {
-            return response;
-        }
-
-        try
-        {
-            final AutoProxCalculation calc = controller.evalGroup( groupName );
-
-            response =
-                formatOkResponseWithJsonEntity( serializer.writeValueAsString( calc == null ? Collections.singletonMap( "error",
-                                                                                                          "Nothing was created" )
-                                                            : calc ) );
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( String.format( "Failed to create demo Group for: '%s'. Reason: %s", groupName, e.getMessage() ),
-                          e );
-            response = formatResponse( e );
-        }
-        catch ( final JsonProcessingException e )
-        {
-            logger.error( String.format( "Failed to create demo Group for: '%s'. Reason: %s", groupName, e.getMessage() ),
-                          e );
-            response = formatResponse( e );
-        }
-
-        return response;
     }
 
 }

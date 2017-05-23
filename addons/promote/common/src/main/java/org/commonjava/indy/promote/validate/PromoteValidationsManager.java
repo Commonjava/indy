@@ -32,9 +32,11 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -213,12 +215,19 @@ public class PromoteValidationsManager
             return null;
         }
 
-        String keyStr = storeKey.toString();
+        // Add deprecated form of StoreKey to the check to handle older rules.
+        List<String> keyStrings = Arrays.asList( storeKey.toString(),
+                                                 String.format( "%s:%s", storeKey.getType().singularEndpointName(),
+                                                                storeKey.getName() ) );
+
         for ( ValidationRuleSet set : ruleSets.values() )
         {
-            if ( set.matchesKey( keyStr ) )
+            for ( String keyStr : keyStrings )
             {
-                return set;
+                if ( set.matchesKey( keyStr ) )
+                {
+                    return set;
+                }
             }
         }
 

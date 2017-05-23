@@ -251,9 +251,9 @@ public class FoloAdminController
 
         try
         {
-            entryDTO.setLocalUrl(
-                    UrlUtils.buildUrl( apiBaseUrl, entryDTO.getStoreKey().getType().singularEndpointName(),
-                                       entryDTO.getStoreKey().getName(), entryDTO.getPath() ) );
+            entryDTO.setLocalUrl( UrlUtils.buildUrl( apiBaseUrl, "content", entryDTO.getStoreKey().getPackageType(),
+                                                     entryDTO.getStoreKey().getType().singularEndpointName(),
+                                                     entryDTO.getStoreKey().getName(), entryDTO.getPath() ) );
         }
         catch ( MalformedURLException e )
         {

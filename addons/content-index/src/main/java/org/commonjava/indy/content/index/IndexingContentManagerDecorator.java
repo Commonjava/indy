@@ -43,8 +43,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
 /**
  * Decorator for ContentManager which uses Infinispan to index content to avoid having to iterate all members of large
@@ -140,7 +140,7 @@ public abstract class IndexingContentManagerDecorator
             }
 
             return null;
-        } ).filter( ( transfer ) -> transfer != null ).forEachOrdered( ( transfer ) -> {
+        } ).filter( Objects::nonNull ).forEachOrdered( ( transfer ) -> {
             if ( transfer != null )
             {
                 results.add( transfer );
@@ -199,7 +199,9 @@ public abstract class IndexingContentManagerDecorator
             logger.debug( "No group index hits. Devolving to member store indexes." );
 
             KeyedLocation location = LocationUtils.toLocation( store );
-            SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, path );
+            SpecialPathInfo specialPathInfo =
+                    specialPathManager.getSpecialPathInfo( location, path, store.getPackageType() );
+
             if ( specialPathInfo == null || !specialPathInfo.isMergable() )
             {
                 transfer = getIndexedMemberTransfer( (Group) store, path, TransferOperation.DOWNLOAD,
@@ -321,26 +323,23 @@ public abstract class IndexingContentManagerDecorator
             if ( !nfc.isMissing( resource ) )
             {
                 logger.debug( "No group index hits. Devolving to member store indexes." );
-                for ( StoreKey key : ( (Group) store ).getConstituents() )
-                {
-                    transfer = getIndexedMemberTransfer( (Group) store, path, op, (member)->{
-                        try
-                        {
-                            return delegate.getTransfer( member, path, op );
-                        }
-                        catch ( IndyWorkflowException e )
-                        {
-                            logger.error( String.format(
-                                    "Failed to getTransfer() for: %s:%s with operation: %s. Reason: %s",
-                                    member.getKey(), path, op, e.getMessage() ), e );
-                        }
-
-                        return null;
-                    } );
-                    if ( transfer != null )
+                transfer = getIndexedMemberTransfer( (Group) store, path, op, (member)->{
+                    try
                     {
-                        return transfer;
+                        return delegate.getTransfer( member, path, op );
                     }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.error( String.format(
+                                "Failed to getTransfer() for: %s:%s with operation: %s. Reason: %s",
+                                member.getKey(), path, op, e.getMessage() ), e );
+                    }
+
+                    return null;
+                } );
+                if ( transfer != null )
+                {
+                    return transfer;
                 }
             }
             else
@@ -361,7 +360,8 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    private Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op, ContentManagementFunction func )
+    private Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
+                                               ContentManagementFunction func )
             throws IndyWorkflowException
     {
         StoreKey topKey = group.getKey();
@@ -369,14 +369,13 @@ public abstract class IndexingContentManagerDecorator
         List<StoreKey> toProcess = new ArrayList<>( group.getConstituents() );
         Set<StoreKey> seen = new HashSet<>();
 
-        Transfer transfer = null;
         while ( !toProcess.isEmpty() )
         {
             StoreKey key = toProcess.remove( 0 );
 
             seen.add( key );
 
-            ArtifactStore member = null;
+            final ArtifactStore member;
             try
             {
                 member = storeDataManager.getArtifactStore( key );
@@ -389,11 +388,12 @@ public abstract class IndexingContentManagerDecorator
             {
                 Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.error(
-                        String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s", key,
-                                       topKey, e.getMessage() ), e );
+                        String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s", key, topKey,
+                                       e.getMessage() ), e );
+                continue;
             }
 
-            transfer = getIndexedTransfer( key, topKey, path, op );
+            Transfer transfer = getIndexedTransfer( key, topKey, path, op );
             if ( transfer == null && StoreType.group != key.getType() )
             {
                 // don't call this for constituents that are groups...we'll manually traverse the membership below...
@@ -405,10 +405,10 @@ public abstract class IndexingContentManagerDecorator
                 indexManager.indexTransferIn( transfer, key, topKey );
                 return transfer;
             }
-            else if( StoreType.group == key.getType() )
+            else if ( StoreType.group == key.getType() )
             {
-                int i=0;
-                for ( StoreKey memberKey : ((Group)member).getConstituents() )
+                int i = 0;
+                for ( StoreKey memberKey : ( (Group) member ).getConstituents() )
                 {
                     if ( !seen.contains( memberKey ) )
                     {
@@ -420,7 +420,7 @@ public abstract class IndexingContentManagerDecorator
 
         }
 
-        return transfer;
+        return null;
     }
 
     @Override
@@ -439,7 +439,7 @@ public abstract class IndexingContentManagerDecorator
         ArtifactStore store;
         try
         {
-            store = storeDataManager.getGroup( storeKey.getName() );
+            store = storeDataManager.getArtifactStore( storeKey );
         }
         catch ( IndyDataException e )
         {

@@ -76,13 +76,11 @@ public class DelayedDownload
         }
         
         startTime = System.nanoTime();
-        InputStream in = null;
         content = new ByteArrayOutputStream();
 
         logger.info( "Trying: {}", Thread.currentThread().getName() );
-        try
+        try(InputStream in = client.content().get( key, path ))
         {
-            in = client.content().get( key.getType(), key.getName(), path );
             if ( in == null )
             {
                 missing = true;
@@ -98,11 +96,7 @@ public class DelayedDownload
         {
             e.printStackTrace();
         }
-        finally
-        {
-            IOUtils.closeQuietly( in );
-        }
-        
+
         endTime = System.nanoTime();
         latch.countDown();
 

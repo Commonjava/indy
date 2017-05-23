@@ -7,6 +7,7 @@ import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -176,8 +177,20 @@ public class StoreContentListener
             logger.debug( "Got members affected by membership divergence: {}", affectedMembers );
             if ( !affectedMembers.isEmpty() )
             {
-                Set<Group> groups = storeDataManager.getGroupsAffectedBy( group.getKey() );
+                Set<Group> groups = new HashSet<>();
                 groups.add( group );
+
+                try
+                {
+                    groups.addAll( storeDataManager.query()
+                                                   .packageType( group.getPackageType() )
+                                                   .getGroupsAffectedBy( group.getKey() ) );
+                }
+                catch ( IndyDataException e )
+                {
+                    logger.error( String.format( "Cannot retrieve groups affected by: %s. Reason: %s", group.getKey(),
+                                                 e.getMessage() ), e );
+                }
 
                 logger.debug( "Got affected groups: {}", groups );
 
@@ -281,15 +294,15 @@ public class StoreContentListener
                         }
                         else
                         {
-                            logger.debug( "Testing file path: {}", t.getPath() );
+                            logger.trace( "Testing file path: {}", t.getPath() );
                             if( pathFilter.test( t.getPath() ) )
                             {
-                                logger.debug( "Adding file path to results: {}", t.getPath() );
+                                logger.trace( "Adding file path to results: {}", t.getPath() );
                                 paths.add( t.getPath() );
                             }
                             else
                             {
-                                logger.debug( "Skipping file path: {}", t.getPath() );
+                                logger.trace( "Skipping file path: {}", t.getPath() );
                             }
                         }
                     } );
@@ -326,7 +339,15 @@ public class StoreContentListener
 
             if ( !paths.isEmpty() )
             {
-                Set<Group> groups = storeDataManager.getGroupsAffectedBy( key );
+                Set<Group> groups = null;
+                try
+                {
+                    groups = storeDataManager.query().packageType( key.getPackageType() ).getGroupsAffectedBy( key );
+                }
+                catch ( IndyDataException e )
+                {
+                    e.printStackTrace();
+                }
 
                 clearPaths( paths, key, groups, deleteOriginPath );
             }

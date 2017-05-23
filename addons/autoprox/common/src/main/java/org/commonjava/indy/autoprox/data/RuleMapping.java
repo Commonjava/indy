@@ -16,6 +16,7 @@
 package org.commonjava.indy.autoprox.data;
 
 import org.commonjava.indy.autoprox.rest.dto.RuleDTO;
+import org.commonjava.indy.model.core.StoreKey;
 
 public final class RuleMapping
     implements Comparable<RuleMapping>
@@ -75,10 +76,13 @@ public final class RuleMapping
         return rule;
     }
 
-    public boolean matchesName( final String name )
+    public boolean matches( final StoreKey key )
     {
         if ( externalMatch != null )
         {
+            // FIXME: Find a way to separate by package type here.
+            String name = key.getName();
+
             if ( externalMatch.length() > 2 && externalMatch.charAt( 0 ) == '/'
                 && externalMatch.charAt( externalMatch.length() - 1 ) == '/' )
             {
@@ -102,7 +106,7 @@ public final class RuleMapping
         }
         else
         {
-            return rule.matches( name );
+            return rule.matches( key );
         }
 
         return false;

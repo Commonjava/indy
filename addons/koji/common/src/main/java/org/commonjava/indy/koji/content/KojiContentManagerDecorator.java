@@ -290,7 +290,7 @@ public abstract class KojiContentManagerDecorator
             ArtifactRef artifactRef = pathInfo.getArtifact();
             logger.info( "Searching for Koji build: {}", artifactRef );
 
-            return proxyKojiBuild( artifactRef, path, eventMetadata, defValue, action );
+            return proxyKojiBuild( store.getKey(), artifactRef, path, eventMetadata, defValue, action );
         }
         else
         {
@@ -300,7 +300,7 @@ public abstract class KojiContentManagerDecorator
         return defValue;
     }
 
-    private <T> T proxyKojiBuild( final ArtifactRef artifactRef, final String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
+    private <T> T proxyKojiBuild( final StoreKey inStore, final ArtifactRef artifactRef, final String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -366,7 +366,7 @@ public abstract class KojiContentManagerDecorator
                         // If the authoritative store is not configured, one or both systems is missing MD5 information,
                         // or the artifact matches the one in the authoritative store, go ahead.
                         if (buildAuthority.isAuthorized(path, eventMetadata, artifactRef, build, session)) {
-                            return consumer.execute(artifactRef, build, session);
+                            return consumer.execute(inStore, artifactRef, build, session);
                         }
                     } else {
                         logger.debug("No whitelisted tags found for: {}", build.getNvr());
@@ -390,7 +390,7 @@ public abstract class KojiContentManagerDecorator
         return build.getTaskId() == null;
     }
 
-    private RemoteRepository createRemoteRepository( ArtifactRef artifactRef, final KojiBuildInfo build,
+    private RemoteRepository createRemoteRepository( StoreKey inStore, ArtifactRef artifactRef, final KojiBuildInfo build,
                                                      final KojiSessionInfo session )
             throws KojiClientException
     {
@@ -409,7 +409,8 @@ public abstract class KojiContentManagerDecorator
             {
                 throw new KojiClientException( "Cannot proceed without a valid KojiRepositoryCreator instance." );
             }
-            RemoteRepository remote = creator.createRemoteRepository( name, formatStorageUrl( build ),
+
+            RemoteRepository remote = creator.createRemoteRepository( inStore.getPackageType(), name, formatStorageUrl( build ),
                                                                       config.getDownloadTimeoutSeconds() );
 
             remote.setServerCertPem( config.getServerPemContent() );
@@ -436,9 +437,11 @@ public abstract class KojiContentManagerDecorator
             remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
             remote.setMetadata( NVR, build.getNvr() );
 
-            storeDataManager.storeArtifactStore( remote, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                            "Creating remote repository for Koji build: "
-                                                                                    + build.getNvr() ) );
+            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                   "Creating remote repository for Koji build: " + build
+                                                                           .getNvr() );
+
+            storeDataManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
 
             logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
 
@@ -497,7 +500,7 @@ public abstract class KojiContentManagerDecorator
         {
             try
             {
-                targetGroup = storeDataManager.getGroup( targetName );
+                targetGroup = storeDataManager.query().packageType( group.getPackageType() ).getGroup( targetName );
             }
             catch ( IndyDataException e )
             {
@@ -513,10 +516,11 @@ public abstract class KojiContentManagerDecorator
         targetGroup.addConstituent( buildRepo );
         try
         {
-            storeDataManager.storeArtifactStore( targetGroup, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                 "Adding remote repository for Koji build: "
-                                                                                         + buildRepo.getMetadata(
-                                                                                         NVR ) ) );
+            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                   "Adding remote repository for Koji build: "
+                                                                           + buildRepo.getMetadata( NVR ) );
+
+            storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
         }
         catch ( IndyDataException e )
         {
@@ -546,7 +550,7 @@ public abstract class KojiContentManagerDecorator
 
     private interface KojiBuildAction<T>
     {
-        T execute( ArtifactRef artifactRef, KojiBuildInfo build, KojiSessionInfo session )
+        T execute( StoreKey inStore, ArtifactRef artifactRef, KojiBuildInfo build, KojiSessionInfo session )
                 throws KojiClientException;
     }
 

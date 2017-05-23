@@ -25,8 +25,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -42,7 +44,7 @@ public class RoutedCacheProviderForHostedTest
 
         final String path = "/path/to/foo.class";
 
-        final File nfsStorage = new File( fixture.getBootOptions().getIndyHome() + NFS_BASE + "/hosted-" + STORE + path );
+        final File nfsStorage = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE, MAVEN_PKG_KEY, hosted.singularEndpointName() + "-" + STORE, path ).toFile();
 
         assertThat( client.content().exists( hosted, STORE, path ), equalTo( false ) );
         assertThat( nfsStorage.exists(), equalTo( false ) );

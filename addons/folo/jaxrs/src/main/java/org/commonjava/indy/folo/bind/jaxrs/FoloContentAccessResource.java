@@ -23,7 +23,6 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
-import org.commonjava.indy.core.bind.jaxrs.ContentAccessResource;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.AccessChannel;
@@ -49,16 +48,14 @@ import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 
 /**
- * Modified copy of {@link ContentAccessResource} that collects a tracking ID in addition to store type and name, then hands this off to
- * {@link ContentController} (with {@link EventMetadata} containing the tracking ID), which records artifact accesses.
- *
- * NOTE: This is a result of copy/paste programming, so changes to {@link ContentAccessResource} will have to be ported over.
+ * Collects a tracking ID in addition to store type and name, then hands this off to
+ * {@link ContentAccessHandler} (with {@link EventMetadata} containing the tracking ID), which records artifact accesses.
  *
  * @author jdcasey
  */
 @Api( value = "FOLO Tracked Content Access and Storage",
       description = "Tracks retrieval and management of file/artifact content." )
-@Path( "/api/folo/track/{id}/{type: (hosted|group|remote)}/{name}" )
+@Path( "/api/folo/track/{id}/{packageType}/{type: (hosted|group|remote)}/{name}" )
 public class FoloContentAccessResource
         implements IndyResources
 {
@@ -85,6 +82,8 @@ public class FoloContentAccessResource
     @PUT
     @Path( "/{path: (.*)}" )
     public Response doCreate( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
+                              @ApiParam( "Package type (eg. maven, npm)" ) @PathParam( "packageType" )
+                              final String packageType,
                               @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
                               final String type, @PathParam( "name" ) final String name,
                               @PathParam( "path" ) final String path, @Context final HttpServletRequest request,
@@ -94,10 +93,10 @@ public class FoloContentAccessResource
 
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
-        return handler.doCreate( type, name, path, request, metadata, () -> uriInfo.getBaseUriBuilder()
+        return handler.doCreate( packageType, type, name, path, request, metadata, () -> uriInfo.getBaseUriBuilder()
                                                                                    .path( getClass() )
                                                                                    .path( path )
-                                                                                   .build( id, type, name ) );
+                                                                                   .build( id, packageType, type, name ) );
     }
 
     @ApiOperation( "Store and track file/artifact content under the given artifact store (type/name) and path." )
@@ -106,6 +105,8 @@ public class FoloContentAccessResource
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
+                            @ApiParam( "Package type (eg. maven, npm)" ) @PathParam( "packageType" )
+                            final String packageType,
                             @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
                             final String type, @PathParam( "name" ) final String name,
                             @PathParam( "path" ) final String path,
@@ -118,7 +119,7 @@ public class FoloContentAccessResource
 
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
-        return handler.doHead( type, name, path, cacheOnly, baseUri, request, metadata );
+        return handler.doHead( packageType, type, name, path, cacheOnly, baseUri, request, metadata );
     }
 
     @ApiOperation( "Retrieve and track file/artifact content under the given artifact store (type/name) and path." )
@@ -128,6 +129,8 @@ public class FoloContentAccessResource
     @GET
     @Path( "/{path: (.*)}" )
     public Response doGet( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
+                           @ApiParam( "Package type (eg. maven, npm)" ) @PathParam( "packageType" )
+                           final String packageType,
                            @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
                            final String type, @PathParam( "name" ) final String name,
                            @PathParam( "path" ) final String path, @Context final HttpServletRequest request,
@@ -138,7 +141,7 @@ public class FoloContentAccessResource
 
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
-        return handler.doGet( type, name, path, baseUri, request, metadata );
+        return handler.doGet( packageType, type, name, path, baseUri, request, metadata );
     }
 
 }

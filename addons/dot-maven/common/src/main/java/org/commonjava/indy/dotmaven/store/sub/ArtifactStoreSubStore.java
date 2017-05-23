@@ -15,28 +15,9 @@
  */
 package org.commonjava.indy.dotmaven.store.sub;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.io.IOUtils.copy;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
-
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -54,6 +35,24 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.io.IOUtils.copy;
+import static org.apache.commons.lang.StringUtils.isEmpty;
 
 @ApplicationScoped
 @Named( "stores" )
@@ -180,9 +179,9 @@ public class ArtifactStoreSubStore
         Transfer item = null;
         try
         {
-            if ( StoreType.group == key.getType() )
+            if ( key != null && StoreType.group == key.getType() )
             {
-                final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName(), false );
+                final List<ArtifactStore> stores = indy.query().packageType( key.getPackageType() ).enabledState( true ).getOrderedStoresInGroup( key.getName() );
                 for ( final ArtifactStore store : stores )
                 {
                     //                    logger.info( "Getting Transfer for: {} from: {}", path, store );
@@ -282,10 +281,12 @@ public class ArtifactStoreSubStore
             final StoreKey key = matcher.getStoreKey();
             try
             {
-                if ( StoreType.group == key.getType() )
+                if ( key != null && StoreType.group == key.getType() )
                 {
-                    final List<ArtifactStore> stores = indy.getOrderedStoresInGroup( key.getName(), false );
-                    final Set<String> noms = new TreeSet<String>();
+                    final List<ArtifactStore> stores =
+                            indy.query().packageType( key.getPackageType() ).getOrderedStoresInGroup( key.getName() );
+
+                    final Set<String> noms = new TreeSet<>();
                     for ( final ArtifactStore store : stores )
                     {
                         final Transfer item = fileManager.getStorageReference( store, path );
@@ -342,25 +343,24 @@ public class ArtifactStoreSubStore
         }
         else if ( matcher.hasStoreType() )
         {
+            String packageType = matcher.getPackageType();
             final StoreType type = matcher.getStoreType();
-            List<? extends ArtifactStore> stores;
             try
             {
-                stores = indy.getAllArtifactStores( type );
+                List<String> noms = indy.query()
+                           .packageType( packageType )
+                           .storeTypes( type )
+                           .stream()
+                           .map( ArtifactStore::getName )
+                           .collect( Collectors.toList() );
+
+                names = noms.toArray( new String[noms.size()] );
             }
             catch ( final IndyDataException e )
             {
                 logger.error( String.format( "Failed to lookup ArtifactStores of type: %s. Reason: %s", type, e.getMessage() ), e );
                 throw new WebdavException( "Failed to get listing for: " + folderUri );
             }
-
-            final Set<String> noms = new TreeSet<String>();
-            for ( final ArtifactStore store : stores )
-            {
-                noms.add( store.getName() );
-            }
-
-            names = noms.toArray( new String[noms.size()] );
         }
         else
         {

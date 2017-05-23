@@ -59,6 +59,7 @@ import java.util.concurrent.ExecutorService;
 
 import static org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator.IMPLIED_REPO_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public class ImpliedRepositoryDetector
 {
@@ -258,7 +259,7 @@ public class ImpliedRepositoryDetector
         boolean anyChanged = false;
         try
         {
-            final Set<Group> groups = storeManager.getGroupsContaining( key );
+            final Set<Group> groups = storeManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( key );
             if ( groups != null )
             {
                 logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );
@@ -366,7 +367,18 @@ public class ImpliedRepositoryDetector
                 }
 
                 logger.debug( "Detected POM-declared repository: {}", repo );
-                RemoteRepository rr = storeManager.findRemoteRepository( repo.getUrl() );
+                RemoteRepository rr = null;
+                try
+                {
+                    rr = storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepositoryByUrl( repo.getUrl() );
+                }
+                catch ( IndyDataException e )
+                {
+                    logger.error(
+                            String.format( "Cannot lookup remote repositories by URL: %s. Reason: %s", e.getMessage() ),
+                            e );
+                }
+
                 if ( rr == null )
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );

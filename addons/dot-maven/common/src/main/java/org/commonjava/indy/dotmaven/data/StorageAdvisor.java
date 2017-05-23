@@ -16,6 +16,7 @@
 package org.commonjava.indy.dotmaven.data;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import java.util.List;
 
@@ -55,7 +56,10 @@ public class StorageAdvisor
                 List<ArtifactStore> constituents;
                 try
                 {
-                    constituents = dataManager.getOrderedConcreteStoresInGroup( store.getName(), false );
+                    constituents = dataManager.query()
+                                              .packageType( MAVEN_PKG_KEY )
+                                              .enabledState( true )
+                                              .getOrderedConcreteStoresInGroup( store.getName() );
                 }
                 catch ( final IndyDataException e )
                 {

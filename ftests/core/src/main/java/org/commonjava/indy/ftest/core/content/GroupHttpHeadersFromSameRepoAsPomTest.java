@@ -39,6 +39,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
+import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -121,7 +123,8 @@ public class GroupHttpHeadersFromSameRepoAsPomTest
 //        repoX.setDisabled( true );
 //        client.stores().update( repoX, "disabling" );
 
-        File remoteXFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage/remote-X", PATH ).toFile();
+        File remoteXFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+                                      remote.singularEndpointName() + "-X", PATH ).toFile();
 
         waitForEventPropagation();
 

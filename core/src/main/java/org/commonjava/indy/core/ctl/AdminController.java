@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.core.expire.ScheduleManager;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -36,6 +37,8 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 public class AdminController
 {
+    public static final String ALL_PACKAGE_TYPES = "_all";
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -70,7 +73,7 @@ public class AdminController
             final ChangeSummary summary = new ChangeSummary( user, changelog );
 
             logger.info( "Persisting artifact store: {} using: {}", store, storeManager );
-            return storeManager.storeArtifactStore( store, summary, skipExisting, new EventMetadata() );
+            return storeManager.storeArtifactStore( store, summary, skipExisting, true, new EventMetadata() );
         }
         catch ( final IndyDataException e )
         {
@@ -79,17 +82,37 @@ public class AdminController
         }
     }
 
-    public List<? extends ArtifactStore> getAllOfType( final StoreType type )
+    public List<ArtifactStore> getAllOfType( final StoreType type )
         throws IndyWorkflowException
     {
         try
         {
-            return storeManager.getAllArtifactStores( type );
+            return storeManager.query().noPackageType().storeTypes( type ).getAll();
         }
         catch ( final IndyDataException e )
         {
             throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(), "Failed to list: {}. Reason: {}",
                                               e, type, e.getMessage() );
+        }
+    }
+
+    public List<ArtifactStore> getAllOfType( final String packageType, final StoreType type )
+            throws IndyWorkflowException
+    {
+        try
+        {
+            ArtifactStoreQuery<ArtifactStore> query = storeManager.query().storeTypes( type );
+            if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
+            {
+                query = query.packageType( packageType );
+            }
+
+            return query.getAll();
+        }
+        catch ( final IndyDataException e )
+        {
+            throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(), "Failed to list: {}. Reason: {}",
+                                             e, type, e.getMessage() );
         }
     }
 

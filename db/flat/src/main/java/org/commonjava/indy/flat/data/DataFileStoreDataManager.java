@@ -41,6 +41,8 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 @ApplicationScoped
 @Alternative
 public class DataFileStoreDataManager
@@ -75,98 +77,45 @@ public class DataFileStoreDataManager
     @PostConstruct
     public void readDefinitions()
     {
-        try
-        {
-            DataFile dir = manager.getDataFile( INDY_STORE, StoreType.hosted.singularEndpointName() );
-            final ChangeSummary summary =
+        final ChangeSummary summary =
                 new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                    "Reading definitions from disk, culling invalid definition files." );
 
-            String[] files = dir.list();
-            if ( files != null )
+        try
+        {
+            DataFile[] packageDirs = manager.getDataFile( INDY_STORE ).listFiles( ( f ) -> true );
+            for ( DataFile pkgDir : packageDirs )
             {
-                for ( final String file : files )
+                for ( StoreType type : StoreType.values() )
                 {
-                    final DataFile f = dir.getChild( file );
-                    try
+                    DataFile[] files = pkgDir.getChild( type.singularEndpointName() ).listFiles(f->true);
+                    if ( files != null )
                     {
-                        final String json = f.readString();
-                        final HostedRepository h = serializer.readValue( json, HostedRepository.class );
-                        if ( h == null )
+                        for ( final DataFile f : files )
                         {
-                            f.delete( summary );
+                            try
+                            {
+                                final String json = f.readString();
+                                final ArtifactStore store = serializer.readValue( json, type.getStoreClass() );
+                                if ( store == null )
+                                {
+                                    f.delete( summary );
+                                }
+                                else
+                                {
+                                    storeArtifactStore( store, summary, false, false,
+                                                        new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
+                                }
+                            }
+                            catch ( final IOException e )
+                            {
+                                logger.error( String.format( "Failed to load %s store: %s. Reason: %s", type, f, e.getMessage() ),
+                                              e );
+                            }
                         }
-                        else
-                        {
-                            storeArtifactStore( h, summary, false, false,
-                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
-                        }
-                    }
-                    catch ( final IOException e )
-                    {
-                        logger.error( String.format( "Failed to load deploy point: %s. Reason: %s", f, e.getMessage() ),
-                                      e );
                     }
                 }
             }
-
-            dir = manager.getDataFile( INDY_STORE, StoreType.remote.singularEndpointName() );
-            files = dir.list();
-            if ( files != null )
-            {
-                for ( final String file : files )
-                {
-                    final DataFile f = dir.getChild( file );
-                    try
-                    {
-                        final String json = f.readString();
-                        final RemoteRepository r = serializer.readValue( json, RemoteRepository.class );
-                        if ( r == null )
-                        {
-                            f.delete( summary );
-                        }
-                        else
-                        {
-                            storeArtifactStore( r, summary, false, false,
-                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
-                        }
-                    }
-                    catch ( final IOException e )
-                    {
-                        logger.error( String.format( "Failed to load repository: %s. Reason: %s", f, e.getMessage() ),
-                                      e );
-                    }
-                }
-            }
-
-            dir = manager.getDataFile( INDY_STORE, StoreType.group.singularEndpointName() );
-            files = dir.list();
-            if ( files != null )
-            {
-                for ( final String file : files )
-                {
-                    final DataFile f = dir.getChild( file );
-                    try
-                    {
-                        final String json = f.readString();
-                        final Group g = serializer.readValue( json, Group.class );
-                        if ( g == null )
-                        {
-                            f.delete( summary );
-                        }
-                        else
-                        {
-                            storeArtifactStore( g, summary, false, false,
-                                                new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
-                        }
-                    }
-                    catch ( final IOException e )
-                    {
-                        logger.error( String.format( "Failed to load group: %s. Reason: %s", f, e.getMessage() ), e );
-                    }
-                }
-            }
-
             started = true;
         }
         catch ( final IndyDataException e )
@@ -181,9 +130,9 @@ public class DataFileStoreDataManager
         for ( final ArtifactStore store : stores )
         {
             final DataFile f =
-                manager.getDataFile( INDY_STORE, store.getKey()
-                                                       .getType()
-                                                       .singularEndpointName(), store.getName() + ".json" );
+                    manager.getDataFile( INDY_STORE, store.getPackageType(), store.getType().singularEndpointName(),
+                                         store.getName() + ".json" );
+
             if ( skipIfExists && f.exists() )
             {
                 continue;
@@ -209,12 +158,15 @@ public class DataFileStoreDataManager
         }
     }
 
-    private void delete( final StoreType type, final String name, final ChangeSummary summary )
+    private void delete( final ArtifactStore store, final ChangeSummary summary )
         throws IndyDataException
     {
-        logger.trace( "Attempting to delete data file for store: {}:{}", type, name );
+        logger.trace( "Attempting to delete data file for store: {}", store.getKey() );
 
-        final DataFile f = manager.getDataFile( INDY_STORE, type.singularEndpointName(), name + ".json" );
+        final DataFile f =
+                manager.getDataFile( INDY_STORE, store.getPackageType(), store.getType().singularEndpointName(),
+                                     store.getName() + ".json" );
+
         try
         {
             logger.trace( "Deleting file: {}", f );
@@ -222,8 +174,8 @@ public class DataFileStoreDataManager
         }
         catch ( final IOException e )
         {
-            throw new IndyDataException( "Cannot delete store definition: {}:{} in file: {}. Reason: {}", e, type,
-                                          name, f, e.getMessage() );
+            throw new IndyDataException( "Cannot delete store definition: {} in file: {}. Reason: {}", e,
+                                         store.getKey(), f, e.getMessage() );
         }
     }
 
@@ -241,8 +193,7 @@ public class DataFileStoreDataManager
                                final EventMetadata eventMetadata )
         throws IndyDataException
     {
-        delete( store.getKey()
-                     .getType(), store.getName(), summary );
+        delete( store, summary );
         super.postDelete( store, summary, fireEvents, eventMetadata );
     }
 
@@ -272,11 +223,12 @@ public class DataFileStoreDataManager
         {
             final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing defaults" );
 
-            storeArtifactStore( new RemoteRepository( "central", "http://repo1.maven.apache.org/maven2/" ), summary,
-                                true, false, new EventMetadata() );
+            storeArtifactStore(
+                    new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2/" ), summary,
+                    true, false, new EventMetadata() );
 
-            storeArtifactStore( new Group( "public", new StoreKey( StoreType.remote, "central" ) ), summary, true,
-                                false, new EventMetadata() );
+            storeArtifactStore( new Group( MAVEN_PKG_KEY, "public", new StoreKey( StoreType.remote, "central" ) ),
+                                summary, true, false, new EventMetadata() );
         }
     }
 
