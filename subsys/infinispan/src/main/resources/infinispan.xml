@@ -11,6 +11,10 @@
 
     <local-cache name="folo-in-progress" >
       <eviction size="1000" type="COUNT" strategy="LRU"/>
+      <indexing index="LOCAL">
+        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
+        <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property>
+      </indexing>
     </local-cache>
 
     <local-cache name="folo-sealed">
@@ -18,18 +22,10 @@
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
-      <indexing index="LOCAL">
-        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
-        <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property>
-      </indexing>
     </local-cache>
     
     <local-cache name="content-index">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
-      <!--<indexing index="LOCAL">-->
-        <!--<property name="default.directory_provider">ram</property>-->
-        <!--<property name="hibernate.search.model_mapping">org.commonjava.indy.content.index.ContentIndexCacheProducer</property>-->
-      <!--</indexing>-->
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">

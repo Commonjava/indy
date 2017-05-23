@@ -25,13 +25,8 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Factory;
-import org.hibernate.search.cfg.Environment;
 import org.hibernate.search.cfg.SearchMapping;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.cache.Index;
 import org.infinispan.query.Search;
-import org.infinispan.query.SearchManager;
 import org.infinispan.query.spi.SearchManagerImplementor;
 
 import javax.annotation.PostConstruct;
@@ -39,8 +34,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.lang.annotation.ElementType;
-import java.util.Arrays;
-import java.util.Properties;
 
 /**
  * This ISPN cache producer has some self-defined indexing logic. This directly uses ISPN/hibernate search api
@@ -49,8 +42,6 @@ import java.util.Properties;
  */
 public class FoloCacheProducer
 {
-
-//    private static final String FOLO_DATA_DIR = "folo";
 
     private static final String SEALED_NAME = "folo-sealed";
 
@@ -89,34 +80,10 @@ public class FoloCacheProducer
 
         return entryMapping;
     }
-//
-//        Properties properties = new Properties();
-//        properties.put( Environment.MODEL_MAPPING, entryMapping);
-//
-//        // note: if this is a java.io.File type, it doesn't seem to work. So, we get the absolute path.
-//        properties.put("hibernate.search.default.indexBase", dataConfig.getDataDir( FOLO_DATA_DIR ).getAbsolutePath() );
-//
-//        Configuration sealedConfig=
-//                cacheProducer.getCacheConfiguration( SEALED_NAME );
-//
-//        if ( sealedConfig == null )
-//        {
-//            sealedConfig = cacheProducer.getDefaultCacheConfiguration();
-//        }
-//
-//        if ( sealedConfig != null )
-//        {
-//            final Configuration indexingConfig =
-//                    new ConfigurationBuilder().read( sealedConfig ).indexing().withProperties( properties ).index(
-//                            Index.LOCAL ).build();
-//
-//            cacheProducer.setCacheConfiguration( SEALED_NAME, indexingConfig );
-//        }
-//    }
 
     private void registerTransformer(){
-        final CacheHandle<TrackingKey, TrackedContent> handler =
-                cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
+        final CacheHandle<TrackedContentEntry, TrackedContentEntry> handler =
+                        cacheProducer.getCache( IN_PROGRESS_NAME, TrackedContentEntry.class, TrackedContentEntry.class );
 
         handler.execute( cache->{
             SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
