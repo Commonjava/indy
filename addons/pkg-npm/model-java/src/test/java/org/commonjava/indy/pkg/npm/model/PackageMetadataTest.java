@@ -46,15 +46,30 @@ public class PackageMetadataTest
                         Thread.currentThread().getContextClassLoader().getResourceAsStream( "test-package.json" ) );
 
         final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
-        assertThat( result.getId(), equalTo( "jquery" ) );
         assertThat( result.getDistTags().getBeta(), equalTo( "3.2.1" ) );
 
-        assertTrue( result.getVersions().keySet().contains( "1.5.1" ) );
+        assertTrue( result.getVersions().containsKey( "1.5.1" ) );
         assertThat( result.getVersions().get( "1.5.1" ).getNpmVersion(), equalTo( "0.3.15" ) );
 
         assertThat( result.getRepository().getType(), equalTo( "git" ) );
 
         final String jsonResult = mapper.writeValueAsString( result );
         System.out.println( jsonResult );
+    }
+
+    @Test
+    public void ignoreCouchDBJsonDataTest() throws Exception
+    {
+
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        String json = IOUtils.toString(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "test-package.json" ) );
+
+        final PackageMetadata result = mapper.readValue( json, PackageMetadata.class );
+        final String jsonResult = mapper.writeValueAsString( result );
+
+        assertThat( jsonResult.contains( "_rev" ), equalTo( false ) );
+        assertThat( jsonResult.contains( "_id" ), equalTo( false ) );
+        assertThat( jsonResult.contains( "_attachments" ), equalTo( false ) );
     }
 }

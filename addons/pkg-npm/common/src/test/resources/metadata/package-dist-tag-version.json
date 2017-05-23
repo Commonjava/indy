@@ -1,0 +1,11 @@
+{
+  "_id": "jquery",
+  "name": "jquery",
+  "description": "JavaScript library for DOM operations",
+  "dist-tags": {
+    "latest": "3.2.1-rc.1",
+    "stable": "3.2.1",
+    "beta": "3.2.1-beta.1",
+    "dev": "3.2.1-alpha"
+  }
+}

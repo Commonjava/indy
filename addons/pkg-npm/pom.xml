@@ -16,6 +16,7 @@
 
   <modules>
     <module>model-java</module>
+      <module>common</module>
   </modules>
 
 
