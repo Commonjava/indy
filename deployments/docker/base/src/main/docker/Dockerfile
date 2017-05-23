@@ -36,7 +36,9 @@ RUN chmod +x /usr/local/bin/* && \
 	yum -y install wget git tar which curl tree java-1.8.0-openjdk-devel && \
 	yum clean all
 
-ENTRYPOINT ["/usr/local/bin/dumb-init", "/usr/local/bin/start-indy.py"]
+#ENTRYPOINT ["/usr/local/bin/dumb-init", "/usr/local/bin/start-indy.py"]
+ENTRYPOINT ["/usr/local/bin/start-indy.py"]
+#ENTRYPOINT ["/bin/bash"]
 
 # Unpack the distro that was created elsewhere in this Indy build.
 

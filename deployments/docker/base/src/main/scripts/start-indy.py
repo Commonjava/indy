@@ -22,6 +22,8 @@ from urllib2 import urlopen
 # import tarfile
 import shutil
 import fnmatch
+import subprocess
+import signal
 
 def run(cmd, fail_message='Error running command', fail=True):
   cmd += " 2>&1"
@@ -86,7 +88,10 @@ def move_and_link(src, target, replaceIfExists=False):
         shutil.copy(srcFile, targetFile)
     
     print "rm -r %s" % src
-    shutil.rmtree(src)
+    if os.path.islink(src):
+      os.unlink(src)
+    else:
+      shutil.rmtree(src)
   
   print "ln -s %s %s" % (target, src)
   os.symlink(target, src)
@@ -181,10 +186,33 @@ if indyEtcUrl is not None:
   if indyEtcSubpath is not None and indyEtcSubpath != '.':
     runIn("git read-tree -um --aggressive `git write-tree`: HEAD:%s" % indyEtcSubpath, INDY_ETC, "Failed to relocate %s subpath to %s", (indyEtcSubpath, INDY_ETC))
   
-move_and_link(INDY_ETC, ETC_INDY, replaceIfExists=True)
+#move_and_link(INDY_ETC, ETC_INDY, replaceIfExists=True)
+move_and_link(INDY_ETC, ETC_INDY)
 move_and_link(INDY_STORAGE, VAR_STORAGE)
 move_and_link(INDY_DATA, VAR_DATA)
 move_and_link(INDY_LOGS, LOGS)
 
 
-run("%s %s" % (os.path.join(INDY_DIR, 'bin', 'indy.sh'), opts), fail=False)
+def handle_shutdown(signum, frame):
+  print "SIGTERM: Stopping Indy."
+  process.send_signal(signal.SIGTERM)
+
+def handle_output(process):
+  try:
+    for c in iter(lambda: process.stdout.read(1), ''):
+      sys.stdout.write(c)
+  except KeyboardInterrupt:
+    print ""
+    return
+
+cmd_parts = [os.path.join(INDY_DIR, 'bin', 'indy.sh')]
+for opt in opts.split():
+  cmd_parts.append(opt)
+
+print "Command parts: %s" % cmd_parts
+process = subprocess.Popen(cmd_parts, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+signal.signal(signal.SIGTERM, handle_shutdown)
+
+handle_output(process)
+

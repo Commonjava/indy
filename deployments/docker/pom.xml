@@ -137,7 +137,12 @@
                     <port>indy-vanilla.port:8080</port>
                   </ports>
                   <wait>
-                    <log>${indy-waitFor}</log>
+                    <tcp>
+                      <ports>
+                        <port>8080</port>
+                      </ports>
+                    </tcp>
+                    <!-- <log>${indy-waitFor}</log> -->
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
@@ -163,7 +168,12 @@
                     <link>gogs-test-appliance:gogs</link>
                   </links>
                   <wait>
-                    <log>${indy-waitFor}</log>
+                    <tcp>
+                      <ports>
+                        <port>8080</port>
+                      </ports>
+                    </tcp>
+                    <!-- <log>${indy-waitFor}</log> -->
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
@@ -190,7 +200,12 @@
                     <link>gogs-test-appliance:gogs</link>
                   </links>
                   <wait>
-                    <log>${indy-waitFor}</log>
+                    <tcp>
+                      <ports>
+                        <port>8080</port>
+                      </ports>
+                    </tcp>
+                    <!-- <log>${indy-waitFor}</log> -->
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
@@ -217,7 +232,12 @@
                     <link>gogs-test-appliance:gogs</link>
                   </links>
                   <wait>
-                    <log>${indy-waitFor}</log>
+                    <tcp>
+                      <ports>
+                        <port>8080</port>
+                      </ports>
+                    </tcp>
+                    <!-- <log>${indy-waitFor}</log> -->
                     <time>${dockerStartTimeout}</time>
                   </wait>
                   <log>
