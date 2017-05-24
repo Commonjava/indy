@@ -28,8 +28,12 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessResource;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.data.PromotionManager;
+import org.commonjava.indy.promote.metrics.IndyPromoteMetricsNames;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -79,6 +83,13 @@ public class PromoteResource
                        value = "JSON request specifying source and target, with other configuration options",
                        allowMultiple = false, required = true,
                        dataType = "org.commonjava.indy.promote.model.GroupPromoteRequest" )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_PROMTETOGROUP
+                                    + IndyPromoteMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_PROMTETOGROUP
+                                    + IndyPromoteMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_PROMTETOGROUP
+                                    + IndyPromoteMetricsNames.EXCEPTION ) ) )
     @Path( "/groups/promote" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -113,6 +124,13 @@ public class PromoteResource
                        value = "JSON result from previous call, specifying source and target, with other configuration options",
                        allowMultiple = false, required = true,
                        dataType = "org.commonjava.indy.promote.model.GroupPromoteResult" )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_ROLLBACKGROUPROMOTE
+                                    + IndyPromoteMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_ROLLBACKGROUPROMOTE
+                                    + IndyPromoteMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_ROLLBACKGROUPROMOTE
+                                    + IndyPromoteMetricsNames.EXCEPTION ) ) )
     @Path( "/groups/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -140,6 +158,13 @@ public class PromoteResource
                        value = "JSON request specifying source and target, with other configuration options",
                        allowMultiple = false, required = true,
                        dataType = "org.commonjava.indy.promote.model.PathsPromoteRequest" )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_PROMOTEPATHS
+                                    + IndyPromoteMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_PROMOTEPATHS
+                                    + IndyPromoteMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_PROMOTEPATHS
+                                    + IndyPromoteMetricsNames.EXCEPTION ) ) )
     @Path( "/paths/promote" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -190,6 +215,13 @@ public class PromoteResource
                        value = "JSON result from previous attempt, specifying source and target, with other configuration options",
                        allowMultiple = false, required = true,
                        dataType = "org.commonjava.indy.promote.model.PathsPromoteResult" )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_RESUMEPATHS
+                                    + IndyPromoteMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_RESUMEPATHS
+                                    + IndyPromoteMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_RESUMEPATHS
+                                    + IndyPromoteMetricsNames.EXCEPTION ) ) )
     @Path( "/paths/resume" )
     @POST
     @Consumes( ApplicationContent.application_json )
@@ -233,6 +265,13 @@ public class PromoteResource
                        value = "JSON result from previous attempt, specifying source and target, with other configuration options",
                        allowMultiple = false, required = true,
                        dataType = "org.commonjava.indy.promote.model.PathsPromoteResult" )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_ROLLBACKPATHS
+                                    + IndyPromoteMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_ROLLBACKPATHS
+                                    + IndyPromoteMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyPromoteMetricsNames.METHOD_ROLLBACKPATHS
+                                    + IndyPromoteMetricsNames.EXCEPTION ) ) )
     @Path( "/paths/rollback" )
     @POST
     @Consumes( ApplicationContent.application_json )
