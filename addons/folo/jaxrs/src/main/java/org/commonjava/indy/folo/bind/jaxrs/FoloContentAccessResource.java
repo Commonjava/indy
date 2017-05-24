@@ -24,7 +24,11 @@ import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.folo.metrics.IndyFoloMetricsNames;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -79,6 +83,14 @@ public class FoloContentAccessResource
     @ApiOperation( "Store and track file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ), @ApiResponse( code = 400,
                                                                                                             message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
+
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOCREATE
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOCREATE
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOCREATE
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @PUT
     @Path( "/{path: (.*)}" )
     public Response doCreate( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
@@ -102,6 +114,14 @@ public class FoloContentAccessResource
     @ApiOperation( "Store and track file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200,
                                    message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
+
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOHEAD
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOHEAD
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOHEAD
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
@@ -126,6 +146,14 @@ public class FoloContentAccessResource
     @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200, response = String.class,
                                    message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
                            @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
+
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOGET
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOGET
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloContentAccessResourceMetricsNames.METHOD_DOGET
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @GET
     @Path( "/{path: (.*)}" )
     public Response doGet( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,

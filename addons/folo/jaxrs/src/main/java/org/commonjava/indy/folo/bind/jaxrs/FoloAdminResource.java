@@ -28,6 +28,10 @@ import org.commonjava.indy.folo.ctl.FoloConstants;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
+import org.commonjava.indy.folo.metrics.IndyFoloMetricsNames;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,6 +81,13 @@ public class FoloAdminResource
     @ApiResponses(
             { @ApiResponse( code = 200, response = TrackedContentDTO.class, message = "Recalculated tracking report" ),
                     @ApiResponse( code = 404, message = "No such tracking record can be found" ) } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_RECALCULATERECORD
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_RECALCULATERECORD
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_RECALCULATERECORD
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @GET
     @Path( "/{id}/record/recalculate" )
     public Response recalculateRecord( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) String id,
@@ -112,6 +123,13 @@ public class FoloAdminResource
             "Retrieve the content referenced in a tracking record as a ZIP-compressed Maven repository directory." )
     @ApiResponses( { @ApiResponse( code = 200, response = File.class, message = "ZIP repository content" ),
                            @ApiResponse( code = 404, message = "No such tracking record" ) } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETZIPREPOSITORY
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETZIPREPOSITORY
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETZIPREPOSITORY
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/{id}/repo/zip" )
     @GET
     @Produces( application_zip )
@@ -137,6 +155,13 @@ public class FoloAdminResource
     @ApiResponses( { @ApiResponse( code = 404, message = "No such tracking record exists." ),
                            @ApiResponse( code = 200, message = "Tracking record",
                                          response = TrackedContentDTO.class ), } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETREPORT
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETREPORT
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETREPORT
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/{id}/report" )
     @GET
     public Response getReport( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
@@ -173,6 +198,13 @@ public class FoloAdminResource
             "Explicitly setup a new tracking record for the specified key, to prevent 404 if the record is never used." )
     @ApiResponses( { @ApiResponse( code = 201, message = "Tracking record was created",
                                    response = TrackedContentDTO.class ), } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_INITRECORD
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_INITRECORD
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_INITRECORD
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/{id}/record" )
     @PUT
     public Response initRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
@@ -186,6 +218,13 @@ public class FoloAdminResource
     @ApiResponses( { @ApiResponse( code = 404, message = "No such tracking record exists." ),
                            @ApiResponse( code = 200, message = "Tracking record",
                                          response = TrackedContentDTO.class ), } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_SEALRECORD
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_SEALRECORD
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_SEALRECORD
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/{id}/record" )
     @POST
     public Response sealRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
@@ -207,6 +246,13 @@ public class FoloAdminResource
     @ApiResponses( { @ApiResponse( code = 404, message = "No such tracking record exists." ),
                            @ApiResponse( code = 200, message = "Tracking record",
                                          response = TrackedContentDTO.class ), } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETRECORD
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETRECORD
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETRECORD
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/{id}/record" )
     @GET
     public Response getRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
@@ -237,6 +283,13 @@ public class FoloAdminResource
         return response;
     }
 
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_CLEARRECORD
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_CLEARRECORD
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_CLEARRECORD
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/{id}/record" )
     @DELETE
     public Response clearRecord( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id )
@@ -259,6 +312,13 @@ public class FoloAdminResource
     @ApiResponses( { @ApiResponse( code = 200, response = List.class,
                                    message = "folo tracking ids with sealed or in_progress" ),
                            @ApiResponse( code = 404, message = "No ids found for type" ) } )
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETRECORDIDS
+                                    + IndyFoloMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETRECORDIDS
+                                    + IndyFoloMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyFoloMetricsNames.FoloAdminResourceMetricsNames.METHOD_GETRECORDIDS
+                                    + IndyFoloMetricsNames.EXCEPTION ) ) )
     @Path( "/report/ids/{type}" )
     @GET
     public Response getRecordIds(

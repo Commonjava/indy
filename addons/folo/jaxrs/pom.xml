@@ -62,5 +62,9 @@
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
     </dependency>
+      <dependency>
+          <groupId>org.commonjava.indy</groupId>
+          <artifactId>indy-subsys-metrics</artifactId>
+      </dependency>
   </dependencies>
 </project>
