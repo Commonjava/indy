@@ -31,6 +31,20 @@ public class UserInfo
         this.url = null;
     }
 
+    public UserInfo( final String name )
+    {
+        this.name = name;
+        this.email = null;
+        this.url = null;
+    }
+
+    public UserInfo( final String name, final String email )
+    {
+        this.name = name;
+        this.email = email;
+        this.url = null;
+    }
+
     public UserInfo( final String name, final String email, final String url )
     {
         this.name = name;
@@ -53,4 +67,29 @@ public class UserInfo
         return url;
     }
 
+    @Override
+    public boolean equals( Object o )
+    {
+        if ( this == o )
+        {
+            return true;
+        }
+        if ( !( o instanceof UserInfo ) )
+        {
+            return false;
+        }
+
+        UserInfo that = (UserInfo) o;
+
+        return getName().equals( that.getName() );
+    }
+
+    @Override
+    public int hashCode()
+    {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
+        return result;
+    }
 }
