@@ -4,6 +4,7 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.zabbix.cache.ZabbixCacheStorage;
@@ -14,6 +15,7 @@ import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.net.InetSocketAddress;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -204,7 +206,12 @@ public class ReporterIntializer
                                  .prefix( config.getZabbixPrefix() )
                                  .convertRatesTo( TimeUnit.SECONDS )
                                  .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                 .hostName( config.getZabbixLocalHostName() );
+                                 .hostName( config.getZabbixLocalHostName() )
+                                 .filter( ( name, metric ) ->
+                                          {
+                                              return checkContainsEnabledGroups( config.getZabbixEnableItemGroups(),
+                                                                                 name );
+                                          } );
     }
 
     private IndyZabbixSender initZabbixSender()
@@ -222,4 +229,18 @@ public class ReporterIntializer
                                                               .build();
         return zabbixSender;
     }
+
+    private boolean checkContainsEnabledGroups( String groups, String name )
+    {
+        String[] gs = groups.split( ";" );
+        for ( String group : gs )
+        {
+            if ( name.contains( group ) )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

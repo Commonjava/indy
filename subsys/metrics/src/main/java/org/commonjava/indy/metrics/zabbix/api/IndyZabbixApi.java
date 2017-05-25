@@ -243,6 +243,7 @@ public class IndyZabbixApi
                                         .paramEntry( "type", type )
                                         .paramEntry( "value_type", value_type )
                                         .paramEntry( "delay", delay )
+                                        .paramEntry( "history", 7 )
                                         .build();
 
         JsonNode response = call( request );
