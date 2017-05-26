@@ -70,6 +70,10 @@
       <artifactId>galley-test-harness-maven</artifactId>
       <scope>test</scope>
     </dependency>
+      <dependency>
+          <groupId>org.commonjava.indy</groupId>
+          <artifactId>indy-subsys-metrics</artifactId>
+      </dependency>
   </dependencies>
 
 </project>
