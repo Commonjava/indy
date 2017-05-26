@@ -103,9 +103,9 @@ public class KojiMavenMetadataProvider
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENT_GETMETADATA
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA
                     + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENT_GETMETADATA + IndyMetricsNames.METER ) ) )
+                    IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA + IndyMetricsNames.METER ) ) )
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {

@@ -25,12 +25,17 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.ObjectBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -123,6 +128,12 @@ public abstract class KojiContentManagerDecorator
     @Inject
     private KojiBuildAuthority buildAuthority;
 
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_CREATEREPOCREATOR
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_CREATEREPOCREATOR
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_CREATEREPOCREATOR + IndyMetricsNames.EXCEPTION ) ) )
     public KojiRepositoryCreator createRepoCreator()
     {
         KojiRepositoryCreator creator = null;
@@ -142,6 +153,11 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
+                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS + IndyMetricsNames.EXCEPTION ) ) )
     public boolean exists( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
@@ -177,6 +193,11 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE
+                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE + IndyMetricsNames.EXCEPTION ) ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -206,6 +227,12 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_GETTRANSFER
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_GETTRANSFER
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_GETTRANSFER + IndyMetricsNames.EXCEPTION ) ) )
     public Transfer getTransfer( StoreKey storeKey, String path, TransferOperation op )
             throws IndyWorkflowException
     {
@@ -231,6 +258,13 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_GETTRANSFERWITHARIFACTSTORE
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_GETTRANSFERWITHARIFACTSTORE
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_GETTRANSFERWITHARIFACTSTORE
+                                    + IndyMetricsNames.EXCEPTION ) ) )
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation operation )
             throws IndyWorkflowException
     {
