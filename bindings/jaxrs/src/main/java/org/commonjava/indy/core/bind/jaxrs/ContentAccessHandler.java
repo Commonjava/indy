@@ -392,11 +392,14 @@ public class ContentAccessHandler
                     {
                         return handleMissingContentQuery( sk, path, builderModifier );
                     }
-                    else if ( item.isDirectory() || ( path.endsWith( "index.html" ) ) )
+                    else if ( item.isDirectory() || ( path.endsWith( LISTING_HTML_FILE ) ) )
                     {
                         try
                         {
-                            item.delete( false );
+                            if ( item.isFile() && item.getLocation().allowsDownloading() )
+                            {
+                                item.delete( false );
+                            }
 
                             logger.info( "Getting listing at: {}", path + "/" );
                             final String content =
