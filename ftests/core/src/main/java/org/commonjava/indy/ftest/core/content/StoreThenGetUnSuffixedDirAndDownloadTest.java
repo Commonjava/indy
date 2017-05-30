@@ -75,6 +75,9 @@ public class StoreThenGetUnSuffixedDirAndDownloadTest
         client.content()
               .store( hosted, STORE, path, stream );
 
+        assertThat( client.content()
+                          .exists( hosted, STORE, path ), equalTo( true ) );
+
         try(InputStream htmlIn = client.content().get( new StoreKey( hosted, STORE ), dirPath ))
         {
             assertThat( htmlIn, notNullValue() );
@@ -82,9 +85,6 @@ public class StoreThenGetUnSuffixedDirAndDownloadTest
             assertThat( html.contains( "<html>" ), equalTo( true ) );
             assertThat( html.contains( "bar-1.pom" ), equalTo( true ) );
         }
-
-        assertThat( client.content()
-                          .exists( hosted, STORE, path ), equalTo( true ) );
 
         assertThat( client.content()
                           .exists( hosted, STORE, path ), equalTo( true ) );
