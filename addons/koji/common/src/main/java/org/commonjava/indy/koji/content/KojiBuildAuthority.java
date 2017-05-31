@@ -7,17 +7,21 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
@@ -120,6 +124,10 @@ public class KojiBuildAuthority
         return isAuthorized( path, eventMetadata, ref, build, session, new HashMap<>() );
     }
 
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED + IndyMetricsNames.METER ) ) )
     public boolean isAuthorized( String path, EventMetadata eventMetadata, ProjectRef ref, KojiBuildInfo build,
                                  KojiSessionInfo session, Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
             throws KojiClientException
