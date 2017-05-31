@@ -61,6 +61,10 @@ public class IndyMetricsConfig
     public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD =
                     "zabbix.reporter.healthcheck.period";
 
+    public final static String INDY_METRICS_ENABLE_ITEM_GROUPS = "zabbix.enable.item.groups";
+
+    private String zabbixEnableItemGroups;
+
     private String zabbixPrefix;
 
     private int zabbixSimplePriod;
@@ -69,10 +73,22 @@ public class IndyMetricsConfig
 
     private int zabbixHealthcheckPeriod;
 
+    public String getZabbixEnableItemGroups()
+    {
+        return zabbixEnableItemGroups;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_ENABLE_ITEM_GROUPS )
+    public void setZabbixEnableItemGroups( String zabbixEnableItemGroups )
+    {
+        this.zabbixEnableItemGroups = zabbixEnableItemGroups;
+    }
+
     public String getZabbixPrefix()
     {
         return zabbixPrefix;
     }
+
     @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX )
     public void setZabbixPrefix( String zabbixPrefix )
     {

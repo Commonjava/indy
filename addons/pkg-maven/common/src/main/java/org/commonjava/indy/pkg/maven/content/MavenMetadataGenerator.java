@@ -15,17 +15,22 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
 import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.metrics.IndyMetricsPkgMavenNames;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier;
 import org.commonjava.maven.atlas.ident.ref.TypeAndClassifier;
@@ -134,6 +139,10 @@ public class MavenMetadataGenerator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsPkgMavenNames.METHOD_CONTENT_GENERATEFILECONTENT
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsPkgMavenNames.METHOD_CONTENT_GENERATEFILECONTENT + IndyMetricsNames.METER ) ) )
     public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -214,6 +223,10 @@ public class MavenMetadataGenerator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsPkgMavenNames.METHOD_CONTENT_GENERATEDIRECTORYCONENT
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsPkgMavenNames.METHOD_CONTENT_GENERATEDIRECTORYCONENT + IndyMetricsNames.METER ) ) )
     public List<StoreResource> generateDirectoryContent( final ArtifactStore store, final String path,
                                                          final List<StoreResource> existing,
                                                          final EventMetadata eventMetadata )
@@ -295,6 +308,10 @@ public class MavenMetadataGenerator
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsPkgMavenNames.METHOD_CONTENT_GENERATEGROUPFILECONTENT
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsPkgMavenNames.METHOD_CONTENT_GENERATEGROUPFILECONTENT + IndyMetricsNames.METER ) ) )
     public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
                                               final EventMetadata eventMetadata )
         throws IndyWorkflowException
