@@ -104,7 +104,7 @@ public class ContentAccessHandler
         try
         {
             transfer =
-                    contentController.store( new StoreKey( st, name ), path, request.getInputStream(), eventMetadata );
+                    contentController.store( sk, path, request.getInputStream(), eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
