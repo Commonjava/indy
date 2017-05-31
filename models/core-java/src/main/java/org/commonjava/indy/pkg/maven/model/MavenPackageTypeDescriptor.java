@@ -1,6 +1,5 @@
 package org.commonjava.indy.pkg.maven.model;
 
-import org.commonjava.atservice.annotation.Service;
 import org.commonjava.indy.model.core.PackageTypeDescriptor;
 
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_MAVEN;

@@ -1,7 +1,5 @@
 package org.commonjava.indy.model.core;
 
-import org.commonjava.atservice.annotation.Service;
-
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 
 /**
