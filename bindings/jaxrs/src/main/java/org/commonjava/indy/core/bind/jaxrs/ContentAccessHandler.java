@@ -60,16 +60,16 @@ public class ContentAccessHandler
         implements IndyResources
 {
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private ContentController contentController;
+    protected ContentController contentController;
 
     @Inject
-    private UriFormatter uriFormatter;
+    protected UriFormatter uriFormatter;
 
     @Inject
-    private JaxRsRequestHelper jaxRsRequestHelper;
+    protected JaxRsRequestHelper jaxRsRequestHelper;
 
     protected ContentAccessHandler()
     {
@@ -103,8 +103,8 @@ public class ContentAccessHandler
         final Transfer transfer;
         try
         {
-            transfer =
-                    contentController.store( new StoreKey( st, name ), path, request.getInputStream(), eventMetadata );
+            transfer = contentController.store( new StoreKey( packageType, st, name ), path, request.getInputStream(),
+                                                eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
@@ -451,8 +451,8 @@ public class ContentAccessHandler
         return response;
     }
 
-    private Response handleMissingContentQuery( final StoreKey sk, final String path,
-                                                final Consumer<ResponseBuilder> builderModifier )
+    protected Response handleMissingContentQuery( final StoreKey sk, final String path,
+                                                  final Consumer<ResponseBuilder> builderModifier )
     {
         Response response = null;
 
