@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.change;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
@@ -24,8 +25,12 @@ import org.commonjava.indy.core.expire.IndySchedulerException;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
 import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
+import org.commonjava.indy.core.metrics.IndyMetricsCoreNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -173,6 +178,8 @@ public class StoreEnablementManager
         }
     }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDESABLETIMEOUT + IndyMetricsNames.METER ) ) )
     public void onDisableTimeout( @Observes SchedulerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

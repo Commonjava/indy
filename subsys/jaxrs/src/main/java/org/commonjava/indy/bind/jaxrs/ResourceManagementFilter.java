@@ -68,7 +68,9 @@ public class ResourceManagementFilter
 
     @Override
     @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsJaxrsNames.METHOD_RESOURCEMANAGEMENT_DOFILTERE + IndyMetricsNames.METER ) ) )
+                    IndyMetricsJaxrsNames.METHOD_RESOURCEMANAGEMENT_DOFILTERE
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsJaxrsNames.METHOD_RESOURCEMANAGEMENT_DOFILTERE + IndyMetricsNames.EXCEPTION ) ) )
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {

@@ -24,8 +24,11 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.indy.IndyMetricsNames;
+import org.commonjava.indy.core.bind.jaxrs.metrics.IndyMetricsBindingsNames;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +44,10 @@ public class TransferStreamingOutput
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsBindingsNames.METHOD_TRANSFERSTREAMING_WRITE
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsBindingsNames.METHOD_TRANSFERSTREAMING_WRITE + IndyMetricsNames.TIMER ) ) )
     public void write( final OutputStream out )
         throws IOException, WebApplicationException
     {

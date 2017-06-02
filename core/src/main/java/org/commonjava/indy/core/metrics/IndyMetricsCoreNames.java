@@ -13,6 +13,11 @@ public class IndyMetricsCoreNames extends IndyMetricsNames
 
     private static final String MODULE_STORECONTENTLISTENER_PREFIX_NAME = ".storeContentListener.";
 
+    private static final String MODULE_STOREENABLEMENT_PREFIX_NAME = ".StoreEnablement.";
+
+    public static final String METHOD_STOREENABLEMENT_ONDESABLETIMEOUT =
+                    MODULE_PREFIX_NAME + MODULE_STOREENABLEMENT_PREFIX_NAME    + "onDisableTimeout.";
+
     public static final String METHOD_DEFAULTCONTENTMANAGER_RETRIEVE =
                     MODULE_PREFIX_NAME + MODULE_DEFAULTCONTENTMANAGER_PREFIX_NAME    + "retrieve.";
 
