@@ -37,11 +37,19 @@ public class PromoteConfig
 
     private static final String LOCK_TIMEOUT_SECONDS_PARAM = "lock.timeout.seconds";
 
+    private static final String AUTOLOCK_HOSTED_REPOS = "autolock.hosted.repos";
+
     public static final long DEFAULT_LOCK_TIMEOUT_SECONDS = 30;
+
+    public static final boolean DEFAULT_AUTOLOCK = true;
+
+    public static final boolean DEFAULT_ENABLED = true;
 
     private String basedir;
 
-    private boolean enabled = true;
+    private Boolean enabled;
+
+    private Boolean autoLockHostedRepos;
 
     private Long lockTimeoutSeconds;
 
@@ -55,7 +63,23 @@ public class PromoteConfig
         this.enabled = enabled;
     }
 
-    @ConfigName(PromoteConfig.BASEDIR_PARAM)
+    public boolean isAutoLockHostedRepos()
+    {
+        return autoLockHostedRepos == null ? DEFAULT_AUTOLOCK : autoLockHostedRepos;
+    }
+
+    public Boolean getAutoLockHostedRepos()
+    {
+        return autoLockHostedRepos;
+    }
+
+    @ConfigName( PromoteConfig.AUTOLOCK_HOSTED_REPOS )
+    public void setAutoLockHostedRepos( final Boolean autoLockHostedRepos )
+    {
+        this.autoLockHostedRepos = autoLockHostedRepos;
+    }
+
+    @ConfigName( PromoteConfig.BASEDIR_PARAM)
     public void setBasedir( final String basedir )
     {
         this.basedir = basedir;
@@ -67,6 +91,11 @@ public class PromoteConfig
     }
 
     public boolean isEnabled()
+    {
+        return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    public Boolean getEnabled()
     {
         return enabled;
     }
