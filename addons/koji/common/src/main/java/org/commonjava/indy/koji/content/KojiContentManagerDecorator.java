@@ -272,6 +272,12 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND
+                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND + IndyMetricsNames.EXCEPTION ) ) )
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {

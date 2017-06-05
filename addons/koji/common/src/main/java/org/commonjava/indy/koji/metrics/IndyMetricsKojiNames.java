@@ -22,9 +22,13 @@ public class IndyMetricsKojiNames
     public static final String METHOD_CONTENTMANAGER_EXISTS =
                     MODULE_PREFIX_NAME + MODULE_CONTENTMANAGER_PREFIX_NAME + "exists.";
 
-    public static final String METHOD_CONTENTMANAGER_RETRIEVE =
+    public static final String METHOD_CONTENTMANAGER_FINDKOJIBUILDAND =
                     MODULE_PREFIX_NAME + MODULE_CONTENTMANAGER_PREFIX_NAME + "retrieve.";
 
-    public static final String METHOD_BUILDAUTHORITY_ISAUTHORIZED = MODULE_BUILDAUTHORITY_PREFIX_NAME + "isAuthorized.";
+    public static final String METHOD_CONTENTMANAGER_RETRIEVE =
+                    MODULE_PREFIX_NAME + MODULE_CONTENTMANAGER_PREFIX_NAME + "findKojiBuildAnd";
+
+    public static final String METHOD_BUILDAUTHORITY_ISAUTHORIZED =
+                    MODULE_PREFIX_NAME + MODULE_BUILDAUTHORITY_PREFIX_NAME + "isAuthorized.";
 
 }
