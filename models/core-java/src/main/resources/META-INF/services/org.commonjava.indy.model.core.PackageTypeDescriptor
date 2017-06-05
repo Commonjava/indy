@@ -1,2 +1,3 @@
 org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor
+org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor
 org.commonjava.indy.model.core.GenericPackageTypeDescriptor
