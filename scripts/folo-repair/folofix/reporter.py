@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import json
 import requests
-import shutil
 import hashlib
 from threading import Thread
 
@@ -24,7 +22,7 @@ def get_sealed_reports(url):
 def pull_folo_report(url, tracking_id):
     """Pull the Folo tracking report associated with the current build"""
 
-    resp = requests.get("%s/api/folo/admin/%s/record" % url, tracking_id)
+    resp = requests.get("%s/api/folo/admin/%s/record" % (url, tracking_id))
     if resp.status_code == 200:
         return resp.json()
     elif resp.status_code == 404:
@@ -32,7 +30,7 @@ def pull_folo_report(url, tracking_id):
     else:
         resp.raise_for_status()
 
-def verify_report(tracking_id, report_json_file, report):
+def verify_report(tracking_id, report_json_dir, report):
     downloads = report.get('downloads') or []
     uploads = report.get('uploads') or []
 
@@ -53,7 +51,7 @@ def verify_report(tracking_id, report_json_file, report):
     if len(result['results']) > 0:
         print "Writing %s failed entries for tracking report: %s" % (len(result['results']), tracking_id)
 
-        output_name = os.path.join(os.path.dirname(report_json_file), "%s-mismatched.json" % tracking_id)
+        output_name = os.path.join(report_json_dir, "%s-mismatched.json" % tracking_id)
         with open(output_name, 'w') as f:
             f.write(json.dumps(result, indent=2))
 
@@ -137,16 +135,15 @@ class DownloadLoader(Thread):
                 tracking_id = self.record_queue.get()
 
                 report = pull_folo_report(self.indy_url, tracking_id)
+
                 if report is None:
                     print "Cannot retrieve: %s" % tracking_id
                     return
 
-                report_name = tracking_id
-
                 print "Writing copy of tracking report: %s" % tracking_id
 
-                input_name = os.path.join(self.reports_dir, "%s.json" % tracking_id)
-                with open(input_name, 'w') as f:
+                record_json_file = os.path.join(self.reports_dir, "%s.json" % tracking_id)
+                with open(record_json_file, 'w') as f:
                     f.write(json.dumps(report, indent=2))
 
                 downloads = report.get('downloads') or []
@@ -167,7 +164,7 @@ class DownloadLoader(Thread):
 
                         self.download_queue.put((dest,url))
 
-                self.report_queue.put((tracking_id, input_name, report))
+                self.report_queue.put((tracking_id, record_json_file, report))
             except (KeyboardInterrupt,SystemExit,Exception) as e:
                 print e
                 break
@@ -175,22 +172,21 @@ class DownloadLoader(Thread):
                 self.record_queue.task_done()
 
 class Reporter(Thread):
-    def __init__(self, report_queue):
+    def __init__(self, report_queue, reports_dir):
         Thread.__init__(self)
         self.queue = report_queue
+        self.reports_dir = reports_dir
 
     def run(self):
         while True:
             try:
-                (tracking_id, report_json_file, report) = self.queue.get()
-                verified = verify_report(reports_dir, url, tracking_id, content_cache)
-
+                (tracking_id, record_json_file, report) = self.queue.get()
+                verified = verify_report(tracking_id, self.reports_dir, report)
                 if verified is True:
-                    os.remove(report_json_file)
+                    os.remove(record_json_file)
 
             except (KeyboardInterrupt,SystemExit,Exception) as e:
                 print e
                 break
             finally:
                 self.queue.task_done()
-
