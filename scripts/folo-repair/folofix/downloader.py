@@ -1,16 +1,17 @@
 import requests
 import os
-import json
+import shutil
 from threading import Thread
 
 class Downloader(Thread):
     def __init__(self, queue):
+        Thread.__init__(self)
         self.queue = queue
 
     def run(self):
         while True:
             try:
-                (dest,url) = self.queue.pop()
+                (dest,url) = self.queue.get()
 
                 if os.path.exists(dest):
                     print "Something else is writing / has already written: %s" % dest
