@@ -26,8 +26,10 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.conf.PromoteConfig;
@@ -60,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
  * Component responsible for orchestrating the transfer of artifacts from one store to another, according to the given {@link PathsPromoteRequest} or
@@ -161,6 +164,22 @@ public class PromotionManager
                                 + " into membership of group: " + target.getKey() );
 
                         storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
+
+                        if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
+                        {
+                            HostedRepository source =
+                                    (HostedRepository) storeManager.getArtifactStore( request.getSource() );
+
+                            source.setReadonly( true );
+
+                            final ChangeSummary readOnlySummary = new ChangeSummary( user,
+                                                                                     "Promoting " + request.getSource()
+                                                                                             + " into membership of group: "
+                                                                                             + target.getKey() );
+
+                            storeManager.storeArtifactStore( source, readOnlySummary, false, true,
+                                                             new EventMetadata() );
+                        }
                     }
                     catch ( IndyDataException e )
                     {
