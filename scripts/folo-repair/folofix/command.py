@@ -19,7 +19,7 @@ def check(indy_url, threads):
         os.makedirs(content_cache)
 
     tracking_record_queue = Queue()
-    download_file_queue = Queue()
+    download_queue = Queue()
     report_queue = Queue()
 
     try:
@@ -47,18 +47,21 @@ def check(indy_url, threads):
 
         # wait for all tracking records to be processed for content to be cached
         tracking_record_queue.join()
+        print "tracking_record_queue processed"
 
         # wait for content to be cached
-        download_file_queue.join()
+        download_queue.join()
+        print "download_queue processed"
 
         # threads for verifying content checksums / sizes
         for t in range(threads):
-            thread = reporter.Reporter(report_queue, content_cache)
+            thread = reporter.Reporter(report_queue, reports_dir)
             thread.daemon = True
             thread.start()
 
         # wait for all reports to be verified
         report_queue.join()
+        print "report_queue processed"
     except (KeyboardInterrupt, SystemExit) as e:
         print e
         print "Quitting."
