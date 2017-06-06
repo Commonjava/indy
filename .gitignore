@@ -30,3 +30,8 @@ embedder-tests/savant/org.commonjava.indy.folo.model.TrackingKey/*
 embedder-tests/savant/indexedStorePath/*
 **/indexedStorePath/*
 
+# virtualenv directories (personal convention)
+.venv
+venv
+*.pyc
+*.egg-info
