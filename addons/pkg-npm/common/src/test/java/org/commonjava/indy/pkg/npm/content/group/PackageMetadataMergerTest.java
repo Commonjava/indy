@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -76,8 +77,8 @@ public class PackageMetadataMergerTest
     public void mergeTwoSimplePackageMetadataFiles() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
-        HostedRepository h2 = new HostedRepository( "test-hosted-2" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
+        HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-1.json" );
@@ -85,7 +86,7 @@ public class PackageMetadataMergerTest
         Transfer t2 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h2 ), path ) );
         initTestData( t2, VERSION_META + "package-2.json" );
 
-        Group g = new Group( "test-group", h1.getKey(), h2.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey(), h2.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
@@ -147,15 +148,15 @@ public class PackageMetadataMergerTest
     public void mergeWhenOneTransferIsMissing() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
-        HostedRepository h2 = new HostedRepository( "test-hosted-2" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
+        HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-1.json" );
 
         Transfer t2 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h2 ), path ) );
 
-        Group g = new Group( "test-group", h1.getKey(), h2.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey(), h2.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
@@ -189,8 +190,8 @@ public class PackageMetadataMergerTest
     public void mergeWhenOneTransferIsInvalidXml() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
-        HostedRepository h2 = new HostedRepository( "test-hosted-2" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
+        HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-1.json" );
@@ -198,7 +199,7 @@ public class PackageMetadataMergerTest
         Transfer t2 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h2 ), path ) );
         initTestData( t2, VERSION_META + "invalid.json" );
 
-        Group g = new Group( "test-group", h1.getKey(), h2.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey(), h2.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
@@ -232,8 +233,8 @@ public class PackageMetadataMergerTest
     public void mergeOneTransferWithProviderContent() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
-        HostedRepository h2 = new HostedRepository( "test-hosted-2" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
+        HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-1.json" );
@@ -241,7 +242,7 @@ public class PackageMetadataMergerTest
         Transfer t2 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h2 ), path ) );
         initTestData( t2, VERSION_META + "package-2.json" );
 
-        Group g = new Group( "test-group", h1.getKey(), h2.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey(), h2.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
@@ -282,12 +283,12 @@ public class PackageMetadataMergerTest
     public void mergeProviderWithDistTagVersionSorted() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-dist-tag-version.json" );
 
-        Group g = new Group( "test-group", h1.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1 );
 
@@ -317,12 +318,12 @@ public class PackageMetadataMergerTest
     public void mergeProviderWithSameVersionMetadata() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-1.json" );
 
-        Group g = new Group( "test-group", h1.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1 );
 
@@ -346,12 +347,12 @@ public class PackageMetadataMergerTest
     public void mergeOneTransferWithProviderError() throws Exception
     {
         String path = "jquery/package.json";
-        HostedRepository h1 = new HostedRepository( "test-hosted-1" );
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
         initTestData( t1, VERSION_META + "package-1.json" );
 
-        Group g = new Group( "test-group", h1.getKey() );
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey() );
 
         List<Transfer> sources = Arrays.asList( t1 );
 

@@ -16,7 +16,8 @@
 
   <modules>
     <module>model-java</module>
-      <module>common</module>
+    <module>common</module>
+    <module>jaxrs</module>
   </modules>
 
 
