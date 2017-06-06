@@ -19,7 +19,8 @@ def build(testfile, indy_url, delay, vagrant_dir):
     with open(testfile) as f:
         build_config = yaml.safe_load(f)
 
-    vagrant_dir = mb.vagrant.find_vagrant_dir(vagrant_dir)
+    if vagrant_dir is not None:
+        vagrant_dir = mb.vagrant.find_vagrant_dir(vagrant_dir)
 
     if delay is None:
         delay = 0
