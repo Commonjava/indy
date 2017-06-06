@@ -1,0 +1,38 @@
+proxy-port: 8081
+build:
+  project-dir: 'my-test-project-workdir'
+  threads: 4
+  builds: 8
+report:
+  threads: 4
+vagrant:
+  pre-build:
+    copy:
+      '{project_dir}/indy-info': 'indy:/vagrant/indy-scripts/indy-info'
+    run:
+      - 
+        host: nfs
+        commands:
+          - "sudo rm -rf /exports/test/storage/*"
+      - 
+        host: indy
+        commands:
+          - "sudo rm -rf /tmp/project*"
+          - "sudo systemctl stop indy"
+          - "sudo systemctl start indy"
+        wait-for-indy: true
+      - 
+        host: nfs
+        commands:
+          - "sudo tcset --device eth1 --delay 50 --loss 10 --overwrite"
+  post-build:
+    copy:
+      'indy:/tmp/project*': '{project_dir}/record-calc-content/'
+      'indy:/opt/indy/var/log/indy/': '{project_dir}/indy-logs/'
+  pre-report:
+    run:
+      reset-network:
+        host: nfs
+        commands:
+          - "sudo tcset --device eth1 --delay 1 --loss 0 --overwrite"
+

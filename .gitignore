@@ -32,3 +32,6 @@ embedder-tests/savant/indexedStorePath/*
 
 # virtualenv directories (personal convention)
 .venv
+venv
+*.pyc
+*.egg-info
