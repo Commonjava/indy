@@ -16,17 +16,24 @@
 package org.commonjava.indy.promote.data;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.metrics.IndyMetricsPromoteNames;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -55,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
  * Component responsible for orchestrating the transfer of artifacts from one store to another, according to the given {@link PathsPromoteRequest} or
@@ -101,6 +109,10 @@ public class PromotionManager
         this.config = config;
     }
 
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP + IndyMetricsNames.METER ) ) )
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException
     {
@@ -152,6 +164,22 @@ public class PromotionManager
                                 + " into membership of group: " + target.getKey() );
 
                         storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
+
+                        if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
+                        {
+                            HostedRepository source =
+                                    (HostedRepository) storeManager.getArtifactStore( request.getSource() );
+
+                            source.setReadonly( true );
+
+                            final ChangeSummary readOnlySummary = new ChangeSummary( user,
+                                                                                     "Promoting " + request.getSource()
+                                                                                             + " into membership of group: "
+                                                                                             + target.getKey() );
+
+                            storeManager.storeArtifactStore( source, readOnlySummary, false, true,
+                                                             new EventMetadata() );
+                        }
                     }
                     catch ( IndyDataException e )
                     {
@@ -253,6 +281,10 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
+    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS + IndyMetricsNames.METER ) ) )
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {

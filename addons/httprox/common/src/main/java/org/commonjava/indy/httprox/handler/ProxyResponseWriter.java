@@ -18,6 +18,7 @@ package org.commonjava.indy.httprox.handler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.core.ctl.ContentController;
@@ -29,7 +30,11 @@ import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.conf.TrackingType;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
+import org.commonjava.indy.httprox.metrics.IndyMetricsHttpProxyNames;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.GenericPackageTypeDescriptor;
@@ -102,6 +107,8 @@ public final class ProxyResponseWriter
     }
 
     @Override
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsHttpProxyNames.METHOD_PROXYRESPONSEWRITER_HANDLEEVENT + IndyMetricsNames.METER ) ) )
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
         HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );

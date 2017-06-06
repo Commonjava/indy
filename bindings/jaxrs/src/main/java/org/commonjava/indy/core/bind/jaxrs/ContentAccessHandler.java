@@ -103,8 +103,8 @@ public class ContentAccessHandler
         final Transfer transfer;
         try
         {
-            transfer = contentController.store( new StoreKey( packageType, st, name ), path, request.getInputStream(),
-                                                eventMetadata );
+            transfer =
+                    contentController.store( sk, path, request.getInputStream(), eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
@@ -392,15 +392,10 @@ public class ContentAccessHandler
                     {
                         return handleMissingContentQuery( sk, path, builderModifier );
                     }
-                    else if ( item.isDirectory() || ( path.endsWith( LISTING_HTML_FILE ) ) )
+                    else if ( item.isDirectory() )
                     {
                         try
                         {
-                            if ( item.isFile() && item.getLocation().allowsDownloading() )
-                            {
-                                item.delete( false );
-                            }
-
                             logger.info( "Getting listing at: {}", path + "/" );
                             final String content =
                                     contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
@@ -408,7 +403,7 @@ public class ContentAccessHandler
 
                             response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
                         }
-                        catch ( final IndyWorkflowException | IOException e )
+                        catch ( final IndyWorkflowException e )
                         {
                             logger.error(
                                     String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,

@@ -18,4 +18,12 @@ public class IndyMetricsNames
 
     public static final String TIMER_CONTENT_RETRIEVAL = "org.commonjava.indy.content.get.timer";
     public static final String TIMER_REST_REQUEST = "org.commonjava.indy.rest.inbound.timer";
+
+    public static final String EXCEPTION = "exception";
+
+    public static final String METER = "meter";
+
+    public static final String TIMER = "timer";
+
+
 }

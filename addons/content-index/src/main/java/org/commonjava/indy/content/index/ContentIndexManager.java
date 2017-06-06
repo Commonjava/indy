@@ -15,8 +15,13 @@
  */
 package org.commonjava.indy.content.index;
 
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.metrics.IndyMetricsContentIndexNames;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -73,6 +78,11 @@ public class ContentIndexManager
         this.nfc = nfc;
     }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_REMOVEINDEXSTOREPATH
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_REMOVEINDEXSTOREPATH
+                                    + IndyMetricsNames.TIMER ) ) )
     public boolean removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
 //        Logger logger = LoggerFactory.getLogger( getClass() );
@@ -90,6 +100,11 @@ public class ContentIndexManager
         return false;
     }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_DEINDEXSTOREPATH
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_DEINDEXSTOREPATH
+                                    + IndyMetricsNames.TIMER ) ) )
     public void deIndexStorePath( final StoreKey key, final String path )
     {
             IndexedStorePath toRemove = new IndexedStorePath( key, path );
@@ -113,6 +128,11 @@ public class ContentIndexManager
     /**
      * When we store or retrieve content, index it for faster reference next time.
      */
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_INDEXPATHINSTORES
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_INDEXPATHINSTORES
+                                    + IndyMetricsNames.TIMER ) ) )
     public void indexPathInStores( String path, StoreKey originKey, StoreKey... topKeys )
     {
             IndexedStorePath origin = new IndexedStorePath( originKey, path );
@@ -133,6 +153,11 @@ public class ContentIndexManager
      * {@link StoreDataManager#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
      * the path should be cleared.
      */
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_CLEARINDEXEDPATHFROM
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_CONTENTINDEXMANAGER_CLEARINDEXEDPATHFROM
+                                    + IndyMetricsNames.TIMER ) ) )
     public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
         if ( groups == null || groups.isEmpty() )

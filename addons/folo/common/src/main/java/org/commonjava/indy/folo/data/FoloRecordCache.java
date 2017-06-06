@@ -15,12 +15,17 @@
  */
 package org.commonjava.indy.folo.data;
 
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.metrics.IndyMetricsFoloNames;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.Cache;
 import org.infinispan.cdi.ConfigureCache;
@@ -71,6 +76,10 @@ public class FoloRecordCache
      * @param entry The TrackedContentEntry which will be cached
      * @return True if a new record was stored, otherwise false
      */
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_RECORDARTIFACT
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_RECORDARTIFACT + IndyMetricsNames.TIMER ) ) )
     public synchronized boolean recordArtifact( final TrackedContentEntry entry )
             throws FoloContentException,IndyWorkflowException
     {
@@ -94,6 +103,9 @@ public class FoloRecordCache
         return false;
     }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name = IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_DELETE
+                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_DELETE + IndyMetricsNames.TIMER ) ) )
     public synchronized void delete( final TrackingKey key )
     {
         sealedRecordCache.remove( key );
@@ -128,6 +140,9 @@ public class FoloRecordCache
         return sealedRecordCache.get( key );
     }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name = IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_SEAL
+                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_SEAL + IndyMetricsNames.TIMER ) ) )
     public TrackedContent seal( final TrackingKey trackingKey )
     {
         TrackedContent record = sealedRecordCache.get( trackingKey );

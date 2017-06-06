@@ -77,6 +77,9 @@ public class StoreThenGetUnSuffixedDirAndDownloadViaGroupTest
         client.content()
               .store( hosted, STORE, path, stream );
 
+        assertThat( client.content()
+                          .exists( group, PUBLIC, path ), equalTo( true ) );
+
         try(InputStream htmlIn = client.content().get( new StoreKey( group, PUBLIC ), dirPath ))
         {
             assertThat( htmlIn, notNullValue() );
@@ -87,9 +90,6 @@ public class StoreThenGetUnSuffixedDirAndDownloadViaGroupTest
 
         assertThat( client.content()
                           .exists( group, PUBLIC, path ), equalTo( true ) );
-
-        assertThat( client.content()
-                          .exists( hosted, STORE, path ), equalTo( true ) );
 
         final URL url = new URL( client.content()
                                        .contentUrl( hosted, STORE, path ) );
