@@ -61,6 +61,30 @@ public class IndyMetricsConfig
     public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD =
                     "zabbix.reporter.healthcheck.period";
 
+    public final static String INDY_METRICS_REPORTER_ELKREPORTER_PREFIX = "elk.reporter.prefix";
+
+    public final static String INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD = "elk.reporter.simple.period";
+
+    public final static String INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD = "elk.reporter.jvm.period";
+
+    public final static String INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD = "elk.reporter.healthcheck.period";
+
+    public final static String INDY_METRICS_REPORTER_ELKREPORTER_INDEX = "elk.reporter.index";
+
+    public final static String INDY_METRICS_REPORTER_ELKREPORTER_HOSTS = "elk.reporter.hosts";
+
+    private String elkPrefix;
+
+    private int elkSimplePriod;
+
+    private int elkJVMPriod;
+
+    private int elkHealthCheckPriod;
+
+    private String elkHosts;
+
+    private String elkIndex;
+
     private String zabbixPrefix;
 
     private int zabbixSimplePriod;
@@ -68,6 +92,103 @@ public class IndyMetricsConfig
     private int zabbixJVMPriod;
 
     private int zabbixHealthcheckPeriod;
+
+    private String zabbixApiHostUrl;
+
+    private String zabbixHost;
+
+    private int zabbixPort;
+
+    private String zabbixUser;
+
+    private String zabbixPwd;
+
+    private String zabbixLocalHostName;
+
+    private String reporter;
+
+    private String grphiterHostName;
+
+    private int grphiterPort;
+
+    private String grphiterPrefix;
+
+    private int grphiterSimplePriod;
+
+    private int grphiterJVMPriod;
+
+    private int grphiterHealthcheckPeriod;
+
+    private boolean metricsEnabled;
+
+    private boolean reporterEnabled;
+
+
+    public String getElkPrefix()
+    {
+        return elkPrefix;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_PREFIX )
+    public void setElkPrefix( String elkPrefix )
+    {
+        this.elkPrefix = elkPrefix;
+    }
+
+    public int getElkSimplePriod()
+    {
+        return elkSimplePriod;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD )
+    public void setElkSimplePriod( int elkSimplePriod )
+    {
+        this.elkSimplePriod = elkSimplePriod;
+    }
+
+    public int getElkJVMPriod()
+    {
+        return elkJVMPriod;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD )
+    public void setElkJVMPriod( int elkJVMPriod )
+    {
+        this.elkJVMPriod = elkJVMPriod;
+    }
+
+    public int getElkHealthCheckPriod()
+    {
+        return elkHealthCheckPriod;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD )
+    public void setElkHealthCheckPriod( int elkHealthCheckPriod )
+    {
+        this.elkHealthCheckPriod = elkHealthCheckPriod;
+    }
+
+    public String getElkHosts()
+    {
+        return elkHosts;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_HOSTS )
+    public void setElkHosts( String elkHosts )
+    {
+        this.elkHosts = elkHosts;
+    }
+
+    public String getElkIndex()
+    {
+        return elkIndex;
+    }
+
+    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_INDEX )
+    public void setElkIndex( String elkIndex )
+    {
+        this.elkIndex = elkIndex;
+    }
 
     public String getZabbixPrefix()
     {
@@ -111,18 +232,6 @@ public class IndyMetricsConfig
     {
         this.zabbixHealthcheckPeriod = zabbixHealthcheckPeriod;
     }
-
-    private String zabbixApiHostUrl;
-
-    private String zabbixHost;
-
-    private int zabbixPort;
-
-    private String zabbixUser;
-
-    private String zabbixPwd;
-
-    private String zabbixLocalHostName;
 
     public String getZabbixApiHostUrl()
     {
@@ -189,24 +298,6 @@ public class IndyMetricsConfig
     {
         this.zabbixLocalHostName = zabbixLocalHostName;
     }
-
-    private String reporter;
-
-    private String grphiterHostName;
-
-    private int grphiterPort;
-
-    private String grphiterPrefix;
-
-    private int grphiterSimplePriod;
-
-    private int grphiterJVMPriod;
-
-    private int grphiterHealthcheckPeriod;
-
-    private boolean metricsEnabled;
-
-    private boolean reporterEnabled;
 
     public boolean isReporterEnabled()
     {
