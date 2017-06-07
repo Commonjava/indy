@@ -11,6 +11,7 @@ import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheckRegistrySet;
 import org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
+import org.commonjava.indy.metrics.sigar.IndySystemInstrumentation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,6 +51,7 @@ public class IndyMetricsManager
         if ( !config.isMetricsEnabled() )
             return;
         IndyJVMInstrumentation.init( metricRegistry );
+        IndySystemInstrumentation.init( metricRegistry );
         IndyHealthCheckRegistrySet healthCheckRegistrySet = new IndyHealthCheckRegistrySet();
 
         indyMetricsHealthChecks.forEach( indyHealthCheck ->
