@@ -18,6 +18,12 @@ public class IndyMetricsCoreNames extends IndyMetricsNames
     public static final String METHOD_STOREENABLEMENT_ONDESABLETIMEOUT =
                     MODULE_PREFIX_NAME + MODULE_STOREENABLEMENT_PREFIX_NAME    + "onDisableTimeout.";
 
+    public static final String METHOD_STOREENABLEMENT_ONDSTOREENABLEMENTCHANGE =
+                    MODULE_PREFIX_NAME + MODULE_STOREENABLEMENT_PREFIX_NAME    + "onStoreEnablementChange.";
+
+    public static final String METHOD_STOREENABLEMENT_ONDSTOREEERROR =
+                    MODULE_PREFIX_NAME + MODULE_STOREENABLEMENT_PREFIX_NAME    + "onStoreError.";
+
     public static final String METHOD_DEFAULTCONTENTMANAGER_RETRIEVE =
                     MODULE_PREFIX_NAME + MODULE_DEFAULTCONTENTMANAGER_PREFIX_NAME    + "retrieve.";
 

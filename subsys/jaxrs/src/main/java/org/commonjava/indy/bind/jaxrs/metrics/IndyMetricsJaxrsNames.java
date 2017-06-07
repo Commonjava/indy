@@ -11,7 +11,7 @@ public class IndyMetricsJaxrsNames extends IndyMetricsNames
 
     private static final String MODULE_RESOURCEMANAGEMENT_PREFIX_NAME = ".resourceManagement.";
 
-    private static final String MODULE_PROXYRESPONSEWRITER_PREFIX_NAME = ".ProxyResponseWriter.";
+    private static final String MODULE_PROXYRESPONSEWRITER_PREFIX_NAME = ".proxyResponseWriter.";
 
     public static final String METHOD_RESOURCEMANAGEMENT_DOFILTERE =
                     MODULE_PREFIX_NAME + MODULE_RESOURCEMANAGEMENT_PREFIX_NAME + "doFilter.";

@@ -130,6 +130,10 @@ public class FoloRecordCache
         return sealedRecordCache.containsKey( key );
     }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_HASINPROGRESSRECORD
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_HASINPROGRESSRECORD + IndyMetricsNames.TIMER ) ) )
     public synchronized boolean hasInProgressRecord( final TrackingKey key )
     {
         return !sealedRecordCache.containsKey( key ) && inProgressByTrackingKey( key, (qb, cacheHandle)->qb.build().getResultSize() > 0);

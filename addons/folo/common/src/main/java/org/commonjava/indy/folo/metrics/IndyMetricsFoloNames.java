@@ -20,4 +20,7 @@ public class IndyMetricsFoloNames
 
     public static final String METHOD_FOLORECORDCACHE_DELETE =
                     MODULE_PREFIX_NAME + MODULE_FOLORECORDCACHE_PREFIX_NAME + "delete.";
+
+    public static final String METHOD_FOLORECORDCACHE_HASINPROGRESSRECORD =
+                    MODULE_PREFIX_NAME + MODULE_FOLORECORDCACHE_PREFIX_NAME +"hasInProgressRecord.";
 }

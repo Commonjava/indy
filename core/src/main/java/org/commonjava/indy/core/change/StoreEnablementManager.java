@@ -66,6 +66,8 @@ public class StoreEnablementManager
     private IndyConfiguration config;
 
     //FIXME: Convert to using ArtifactStoreEnablementEvent.
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREENABLEMENTCHANGE + IndyMetricsNames.METER ) ) )
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
         if ( event.isPreprocessing() )
@@ -138,6 +140,8 @@ public class StoreEnablementManager
 //        }
 //    }
 
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREEERROR + IndyMetricsNames.METER ) ) )
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
