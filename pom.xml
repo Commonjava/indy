@@ -1262,6 +1262,11 @@
         <version>1.6</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.fusesource</groupId>
+        <artifactId>sigar</artifactId>
+        <version>1.6.4</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   
