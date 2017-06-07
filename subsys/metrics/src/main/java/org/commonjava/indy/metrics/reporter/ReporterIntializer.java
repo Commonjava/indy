@@ -2,6 +2,7 @@ package org.commonjava.indy.metrics.reporter;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
@@ -10,9 +11,11 @@ import org.commonjava.indy.metrics.zabbix.cache.ZabbixCacheStorage;
 import org.commonjava.indy.metrics.zabbix.reporter.IndyZabbixReporter;
 import org.commonjava.indy.metrics.zabbix.sender.IndyZabbixSender;
 import org.commonjava.indy.subsys.http.IndyHttpProvider;
+import org.elasticsearch.metrics.ElasticsearchReporter;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +36,8 @@ public class ReporterIntializer
     public final static String INDY_METRICS_REPORTER_CONSOLEREPORTER = "console";
 
     public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER = "zabbix";
+
+    public final static String INDY_METRICS_REPORTER_ELKEPORTER = "elasticsearch";
 
     @Inject
     IndyHttpProvider indyHttpProvider;
@@ -70,6 +75,75 @@ public class ReporterIntializer
         {
             initConsoleReporter( metrics, config );
         }
+
+        if ( this.isExistReporter( INDY_METRICS_REPORTER_ELKEPORTER ) )
+        {
+            initELKReporterForSimpleMetric( metrics, config );
+            initELKReporterForJVMMetric( metrics, config );
+            initELKReporterForHealthCheckMetric( metrics, config );
+        }
+    }
+
+    private void initELKReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config ) throws IOException
+    {
+        ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
+                                                              .hosts( config.getElkHosts().split( ";" ) )
+                                                              .index( config.getElkIndex() )
+                                                              .indexDateFormat( "YYYY-MM-dd" )
+                                                              .filter( ( name, metric ) ->
+                                                                       {
+                                                                           if ( name.contains( FILTER_SIMPLE ) )
+                                                                           {
+                                                                               return true;
+                                                                           }
+                                                                           return false;
+                                                                       } )
+                                                              .build();
+
+        reporter.start( config.getElkSimplePriod(), TimeUnit.SECONDS );
+    }
+
+    private void initELKReporterForJVMMetric( MetricRegistry metrics, IndyMetricsConfig config ) throws IOException
+    {
+        ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
+                                                              .hosts( config.getElkHosts().split( ";" ) )
+                                                              .index( config.getElkIndex() )
+                                                              .indexDateFormat( "YYYY-MM-dd" )
+                                                              .filter( ( name, metric ) ->
+                                                                       {
+                                                                           if ( !name.contains( FILTER_SIMPLE )
+                                                                                           && name.contains(
+                                                                                           FILTER_JVM ) )
+                                                                           {
+                                                                               return true;
+                                                                           }
+                                                                           return false;
+                                                                       } )
+                                                              .build();
+
+        reporter.start( config.getElkJVMPriod(), TimeUnit.SECONDS );
+    }
+
+    private void initELKReporterForHealthCheckMetric( MetricRegistry metrics, IndyMetricsConfig config )
+                    throws IOException
+    {
+        ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
+                                                              .hosts( config.getElkHosts().split( ";" ) )
+                                                              .index( config.getElkIndex() )
+                                                              .indexDateFormat( "YYYY-MM-dd" )
+                                                              .filter( ( name, metric ) ->
+                                                                       {
+                                                                           if ( !name.contains( FILTER_SIMPLE )
+                                                                                           && name.contains(
+                                                                                           FILTER_HEALTHCHECK ) )
+                                                                           {
+                                                                               return true;
+                                                                           }
+                                                                           return false;
+                                                                       } )
+                                                              .build();
+
+        reporter.start( config.getElkHealthCheckPriod(), TimeUnit.SECONDS );
     }
 
     private void initConsoleReporter( MetricRegistry metrics, IndyMetricsConfig config )

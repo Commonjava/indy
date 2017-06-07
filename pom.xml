@@ -1262,6 +1262,11 @@
         <version>1.6</version>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>org.elasticsearch</groupId>
+        <artifactId>metrics-elasticsearch-reporter</artifactId>
+        <version>2.2.0</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   
