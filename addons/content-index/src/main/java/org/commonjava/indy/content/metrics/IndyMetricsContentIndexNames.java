@@ -10,17 +10,13 @@ public class IndyMetricsContentIndexNames
 {
     private static final String MODULE_PREFIX_NAME = "org.commonjava.indy.content.index";
 
-    private static final String MODULE_CONTENTINDEXMANAGER_PREFIX_NAME = ".contentIndexManager.";
+    private static final String MODULE_INDEXINGCONTENTMANAGER_PREFIX_NAME = ".IndexingContentManager.";
 
-    public static final String METHOD_CONTENTINDEXMANAGER_REMOVEINDEXSTOREPATH =
-                    MODULE_PREFIX_NAME + MODULE_CONTENTINDEXMANAGER_PREFIX_NAME + "removeIndexedStorePath.";
+    public static final String METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER =
+                    MODULE_PREFIX_NAME + MODULE_INDEXINGCONTENTMANAGER_PREFIX_NAME + "getIndexedTransfer.";
 
-    public static final String METHOD_CONTENTINDEXMANAGER_INDEXPATHINSTORES =
-                    MODULE_PREFIX_NAME + MODULE_CONTENTINDEXMANAGER_PREFIX_NAME + "indexPathInStores.";
+    public static final String METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER =
+                    MODULE_PREFIX_NAME + MODULE_INDEXINGCONTENTMANAGER_PREFIX_NAME + "getIndexedMemberTransfer.";
 
-    public static final String METHOD_CONTENTINDEXMANAGER_CLEARINDEXEDPATHFROM =
-                    MODULE_PREFIX_NAME + MODULE_CONTENTINDEXMANAGER_PREFIX_NAME + "clearIndexedPathFrom.";
 
-    public static final String METHOD_CONTENTINDEXMANAGER_DEINDEXSTOREPATH =
-                    MODULE_PREFIX_NAME + MODULE_CONTENTINDEXMANAGER_PREFIX_NAME + "deIndexStorePath.";
 }

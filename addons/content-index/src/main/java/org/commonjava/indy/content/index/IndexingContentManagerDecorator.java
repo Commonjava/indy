@@ -15,10 +15,15 @@
  */
 package org.commonjava.indy.content.index;
 
+import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.metrics.IndyMetricsContentIndexNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.IndyMetrics;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -253,7 +258,14 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    private Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER
+                                    + IndyMetricsNames.TIMER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER
+                                    + IndyMetricsNames.EXCEPTION ) ) )
+    public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -360,7 +372,14 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    private Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
+    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER
+                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER
+                                    + IndyMetricsNames.TIMER ) ), exceptions = @Measure( meters = @MetricNamed( name =
+                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER
+                                    + IndyMetricsNames.EXCEPTION ) ) )
+    public Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
                                                ContentManagementFunction func )
             throws IndyWorkflowException
     {
