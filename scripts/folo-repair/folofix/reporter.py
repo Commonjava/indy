@@ -30,7 +30,7 @@ def pull_folo_report(url, tracking_id):
     else:
         resp.raise_for_status()
 
-def verify_report(tracking_id, report_json_dir, report):
+def verify_report(tracking_id, report_json_dir, indy_storage_dir, report):
     downloads = report.get('downloads') or []
     uploads = report.get('uploads') or []
 
@@ -46,7 +46,7 @@ def verify_report(tracking_id, report_json_dir, report):
     print "Processing %s entries for tracking report: %s" % (len(entries), tracking_id)
 
     result = {'results': []}
-    _process_partition(entries, result['results'])
+    _process_partition(entries, result['results'], indy_storage_dir)
 
     if len(result['results']) > 0:
         print "Writing %s failed entries for tracking report: %s" % (len(result['results']), tracking_id)
@@ -58,7 +58,7 @@ def verify_report(tracking_id, report_json_dir, report):
     print "Tracking report analysis completed for: %s" % tracking_id
     return len(result['results']) < 1
 
-def _process_partition(entries, results):
+def _process_partition(entries, results, indy_storage_dir):
     for p in entries:
         entry = p['entry']
         path = entry['path'][1:]
@@ -77,8 +77,16 @@ def _process_partition(entries, results):
                 entry_data = {'path': path, 'local_url': url, 'type':p['dataset']}
 
                 dest_sz = os.path.getsize(dest)
-                if entry['size'] != dest_sz:
-                    entry_data['size'] = {'success': False, 'record': entry['size'], 'calculated': dest_sz}
+
+                storage_sz = entry['size']
+
+                if indy_storage_dir is not None:
+                    storage_sz = os.path.getsize(_get_storage_f(indy_storage_dir, entry))
+
+                if entry['size'] != storage_sz:
+                    entry_data['size'] = {'success': False, 'fatal': True, 'record': entry['size'], 'calculated': dest_sz, 'storage': storage_sz}
+                elif entry['size'] != dest_sz:
+                    entry_data['size'] = {'success': False, 'record': entry['size'], 'calculated': dest_sz, 'storage': storage_sz}
                 else:
                     entry_data['size'] = {'success': True}
 
@@ -96,10 +104,24 @@ def _process_partition(entries, results):
 
                 if append is True:
                     results.append(entry_data)
-            except:
+            except Exception as e:
                 print "Failed to download: %s" % url
+                raise e
 
     return results
+
+def _get_storage_f(indy_storage_dir, entry):
+    """ e.g., maven:hosted:build_test-20170608T111011-0 to maven/hosted-build_test-20170608T111011-0 """
+    storage_f = indy_storage_dir
+    key_parts = entry['storeKey'].split(':')
+    for part in key_parts:
+        if part in ['hosted', 'remote', 'group']:
+            storage_f = os.path.join(storage_f, part + '-')
+        elif storage_f.endswith('-'):
+            storage_f += part
+        else:
+            storage_f = os.path.join(storage_f, part)
+    return os.path.join(storage_f, entry['path'][1:])
 
 def _compare_checksum(checksum_type, url, dest, entry, entry_data):
     check_url = url + '.' + checksum_type
@@ -154,9 +176,9 @@ class DownloadLoader(Thread):
                 for section in [uploads, downloads]:
                     for entry in section:
                         url = entry.get('localUrl')
-                        if url is None:
-                            key_parts = entry['storeKey'].split(':')
-                            url = "%s/api/%s/%s/%s" % (base_url, key_parts[0], key_parts[1], path)
+                        #if url is None:
+                        #    key_parts = entry['storeKey'].split(':')
+                        #    url = "%s/api/%s/%s/%s" % (base_url, key_parts[0], key_parts[1], path)
 
                         dest = os.path.join(self.content_cache, entry['path'][1:])
                         entry['cached_content'] = dest
@@ -172,16 +194,17 @@ class DownloadLoader(Thread):
                 self.record_queue.task_done()
 
 class Reporter(Thread):
-    def __init__(self, report_queue, reports_dir):
+    def __init__(self, report_queue, reports_dir, storage_dir):
         Thread.__init__(self)
         self.queue = report_queue
         self.reports_dir = reports_dir
+        self.storage_dir = storage_dir
 
     def run(self):
         while True:
             try:
                 (tracking_id, record_json_file, report) = self.queue.get()
-                verified = verify_report(tracking_id, self.reports_dir, report)
+                verified = verify_report(tracking_id, self.reports_dir, self.storage_dir, report)
                 if verified is True:
                     os.remove(record_json_file)
 

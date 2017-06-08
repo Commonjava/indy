@@ -174,7 +174,7 @@ class Builder(Thread):
         resp.raise_for_status()
 
     def build(self, builddir):
-        mb.util.run_cmd("mvn -f %(d)s/pom.xml -s %(d)s/settings.xml clean deploy 2>&1 | tee %(d)s/build.log" % {'d': builddir}, fail=False)
+        mb.util.run_cmd("mvn -DskipTests -f %(d)s/pom.xml -s %(d)s/settings.xml clean deploy 2>&1 | tee %(d)s/build.log" % {'d': builddir}, fail=False)
 
     def setup(self, builddir, params):
         """Create the hosted repo and group, then pull the Indy-generated Maven

@@ -32,12 +32,16 @@ class Downloader(Thread):
                 print "Writing to disk: %s" % url
                 with open(dest, 'wb') as f:
                     #r.raw.decode_content = True
-                    shutil.copyfileobj(r.raw, f)
-            except (KeyboardInterrupt,SystemExit,Exception) as e:
-                print e
-                break
-            except:
+                    try:
+                        shutil.copyfileobj(r.raw, f)
+                    finally:
+                        f.close()
+            #except (KeyboardInterrupt,SystemExit,Exception) as e:
+            #    print e
+            #    break
+            except Exception as e:
                 print "Failed to download: %s" % url
+                raise e
             finally:
                 self.queue.task_done()
 

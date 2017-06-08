@@ -7,7 +7,8 @@ from Queue import Queue
 @click.command()
 @click.argument('indy_url')
 @click.option('--threads', '-T', type=click.INT, default=4, help='Number of threads to use in verifying reports')
-def check(indy_url, threads):
+@click.option('--storage_dir', '-S', help='Indy storage folder, e.g., ${indy.home}/var/lib/indy/storage. This is to check files in storage folder')
+def check(indy_url, threads, storage_dir):
     cwd = os.getcwd()
     reports_dir = os.path.join(cwd, 'mismatched')
     content_cache = os.path.join(cwd, 'content-cache')
@@ -55,7 +56,7 @@ def check(indy_url, threads):
 
         # threads for verifying content checksums / sizes
         for t in range(threads):
-            thread = reporter.Reporter(report_queue, reports_dir)
+            thread = reporter.Reporter(report_queue, reports_dir, storage_dir)
             thread.daemon = True
             thread.start()
 
