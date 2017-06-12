@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.core.bind.jaxrs;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
@@ -56,7 +55,6 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 public class ContentAccessHandler
         implements IndyResources
@@ -395,32 +393,6 @@ public class ContentAccessHandler
                     if ( !item.exists() )
                     {
                         return handleMissingContentQuery( sk, path, builderModifier );
-                    }
-                    else if ( packageType.equals( NPM_PKG_KEY ) )
-                    {
-                        logger.info( "RETURNING: retrieval of npm content: {}:{}", sk, path );
-
-                        Object entity = null;
-                        InputStream in = item.openInputStream( true, eventMetadata );
-
-                        if ( path.endsWith( PACAGE_TGZ ) )
-                        {
-                            entity = new TransferStreamingOutput( in );
-                        }
-                        else
-                        {
-                            entity = IOUtils.toString( in );
-                        }
-
-                        final Response.ResponseBuilder builder = Response.ok( entity );
-                        setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
-                                        contentController.getHttpMetadata( item ) );
-
-                        if ( builderModifier != null )
-                        {
-                            builderModifier.accept( builder );
-                        }
-                        response = builder.build();
                     }
                     else if ( item.isDirectory() )
                     {

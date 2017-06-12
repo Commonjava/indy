@@ -40,6 +40,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_CONTENT_REST_BASE_PATH;
@@ -125,7 +126,7 @@ public class NPMContentAccessResource
                     @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         // map /{package} to /{package}/package.json
-        final String path = packageName + PATH_SPLITER + PackageMetadataMerger.METADATA_NAME;
+        final String path = Paths.get( packageName, PATH_SPLITER, PackageMetadataMerger.METADATA_NAME ).toString();
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request, new EventMetadata() );
     }
@@ -143,7 +144,8 @@ public class NPMContentAccessResource
                     @Context final HttpServletRequest request )
     {
         // map /{package}/{version} to /{package}/{version}/package.json
-        final String path = packageName + PATH_SPLITER + version + PATH_SPLITER + PackageMetadataMerger.METADATA_NAME;
+        final String path = Paths.get( packageName, PATH_SPLITER, version, PATH_SPLITER,
+                                       PackageMetadataMerger.METADATA_NAME ).toString();
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
                                new EventMetadata() );
@@ -174,7 +176,7 @@ public class NPMContentAccessResource
             logger.error( "Version transform error for tarball: %s", tarball );
         }
 
-        final String path = packageName + PATH_SPLITER + v + PATH_SPLITER + PACAGE_TGZ;
+        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACAGE_TGZ ).toString();
 
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
@@ -194,7 +196,7 @@ public class NPMContentAccessResource
                     @Context final HttpServletRequest request )
     {
         // map /{package} to /{package}/package.json
-        final String path = packageName + PATH_SPLITER + PackageMetadataMerger.METADATA_NAME;
+        final String path = Paths.get( packageName, PATH_SPLITER, PackageMetadataMerger.METADATA_NAME ).toString();
 
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
@@ -212,7 +214,8 @@ public class NPMContentAccessResource
                     @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         // map /{package}/{version} to /{package}/{version}/package.json
-        final String path = packageName + PATH_SPLITER + version + PATH_SPLITER + PackageMetadataMerger.METADATA_NAME;
+        final String path = Paths.get( packageName, PATH_SPLITER, version, PATH_SPLITER,
+                                       PackageMetadataMerger.METADATA_NAME ).toString();
 
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
@@ -242,7 +245,7 @@ public class NPMContentAccessResource
             logger.error( "Version transform error for tarball: %s", tarball );
         }
 
-        final String path = packageName + PATH_SPLITER + v + PATH_SPLITER + PACAGE_TGZ;
+        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACAGE_TGZ ).toString();
 
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
