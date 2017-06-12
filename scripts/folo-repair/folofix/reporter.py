@@ -180,7 +180,7 @@ class DownloadLoader(Thread):
                         #    key_parts = entry['storeKey'].split(':')
                         #    url = "%s/api/%s/%s/%s" % (base_url, key_parts[0], key_parts[1], path)
 
-                        dest = os.path.join(self.content_cache, entry['path'][1:])
+                        dest = os.path.join(self.content_cache, tracking_id, entry['path'][1:])
                         entry['cached_content'] = dest
                         entry['content_url'] = url
 
