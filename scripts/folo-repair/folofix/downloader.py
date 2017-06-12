@@ -2,6 +2,7 @@ import requests
 import os
 import shutil
 from threading import Thread
+import errno
 
 class Downloader(Thread):
     def __init__(self, queue):
@@ -23,7 +24,11 @@ class Downloader(Thread):
                 print "Calculated temp dir as: %s" % destdir
                 if not os.path.isdir(destdir):
                     print "Creating directory: %s" % destdir
-                    os.makedirs(destdir)
+                    try:
+                        os.makedirs(destdir)
+                    except OSError as exception:
+                        if exception.errno != errno.EEXIST:
+                            raise
 
                 r = requests.get(url, stream=True)
                 if r.status_code != 200:
