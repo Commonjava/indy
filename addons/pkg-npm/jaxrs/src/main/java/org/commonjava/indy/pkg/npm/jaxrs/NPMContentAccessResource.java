@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011 Red Hat, Inc. (yma@commonjava.org)
+ * Copyright (C) 2017 Red Hat, Inc. (yma@commonjava.org)
  * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -48,6 +49,7 @@ import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG
 
 @Api( value = "NPM Content Access and Storage", description = "Handles retrieval and management of NPM artifact content. This is the main point of access for NPM users." )
 @Path( "/api/content/npm/{type: (hosted|group|remote)}/{name}" )
+@ApplicationScoped
 public class NPMContentAccessResource
                 implements PackageContentAccessResource
 {
@@ -155,12 +157,12 @@ public class NPMContentAccessResource
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                     @ApiResponse( code = 200, message = "Header metadata for tarball content" ), } )
     @HEAD
-    @Path( "/{packageName}/-/{tarball}" )
+    @Path( "/{packageName}/{cross}/{tarball}" )
     public Response doHead(
                     final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                     final @ApiParam( required = true ) @PathParam( "name" ) String name,
                     final @PathParam( "packageName" ) String packageName,
-                    final @ApiParam( allowableValues = CROSS ) @PathParam( "version" ) String version,
+                    final @ApiParam( allowableValues = CROSS ) @PathParam( "cross" ) String cross,
                     final @PathParam( "tarball" ) String tarball,
                     @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final UriInfo uriInfo,
                     @Context final HttpServletRequest request )
@@ -186,7 +188,8 @@ public class NPMContentAccessResource
     @Override
     @ApiOperation( "Retrieve NPM package metadata content under the given artifact store (type/name) and packageName." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Metadata content is not available" ),
-                    @ApiResponse( code = 200, response = String.class, message = "Rendered metadata content" ), } )
+                    @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ),
+                    @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
     @Path( "/{packageName}" )
     public Response doGet(
@@ -204,7 +207,8 @@ public class NPMContentAccessResource
 
     @ApiOperation( "Retrieve NPM package version metadata content under the given artifact store (type/name), packageName and version." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Metadata content is not available" ),
-                    @ApiResponse( code = 200, response = String.class, message = "Rendered metadata content" ), } )
+                    @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ),
+                    @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
     @Path( "/{packageName}/{version}" )
     public Response doGet(
@@ -225,12 +229,12 @@ public class NPMContentAccessResource
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                     @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
-    @Path( "/{packageName}/-/{tarball}" )
+    @Path( "/{packageName}/{cross}/{tarball}" )
     public Response doGet(
                     final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                     final @ApiParam( required = true ) @PathParam( "name" ) String name,
                     final @PathParam( "packageName" ) String packageName,
-                    final @ApiParam( allowableValues = CROSS ) @PathParam( "version" ) String version,
+                    final @ApiParam( allowableValues = CROSS ) @PathParam( "cross" ) String cross,
                     final @PathParam( "tarball" ) String tarball, @Context final UriInfo uriInfo,
                     @Context final HttpServletRequest request )
     {

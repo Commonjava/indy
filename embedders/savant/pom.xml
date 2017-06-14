@@ -212,6 +212,11 @@
       <artifactId>indy-ftests-pkg-maven</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-pkg-npm</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   
   <build>
@@ -234,6 +239,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               </dependenciesToScan> 
             </configuration>
         </plugin>
