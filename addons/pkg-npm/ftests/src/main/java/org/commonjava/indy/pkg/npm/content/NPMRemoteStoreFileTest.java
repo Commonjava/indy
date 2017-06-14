@@ -46,7 +46,7 @@ public class NPMRemoteStoreFileTest
 
         StoreKey storeKey = remoteRepository.getKey();
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, "jquery" ), equalTo( false ) );
 
         try
         {
@@ -57,6 +57,6 @@ public class NPMRemoteStoreFileTest
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.BAD_REQUEST.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, "jquery" ), equalTo( false ) );
     }
 }

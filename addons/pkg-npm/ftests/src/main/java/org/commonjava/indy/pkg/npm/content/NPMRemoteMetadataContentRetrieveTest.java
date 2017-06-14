@@ -46,7 +46,7 @@ public class NPMRemoteMetadataContentRetrieveTest
     @Test
     public void test() throws Exception
     {
-        final String packagecontent =
+        final String packageContent =
                         "{\"name\": \"jquery\",\n" + "\"description\": \"JavaScript library for DOM operations\",\n"
                                         + "\"license\": \"MIT\"}";
         final String versionContent =
@@ -56,7 +56,7 @@ public class NPMRemoteMetadataContentRetrieveTest
         final String versionPath = "jquery/1.1.0/package.json";
 
         server.expect( server.formatUrl( STORE, packagePath ), 200,
-                       new ByteArrayInputStream( packagecontent.getBytes() ) );
+                       new ByteArrayInputStream( packageContent.getBytes() ) );
         server.expect( server.formatUrl( STORE, versionPath ), 200,
                        new ByteArrayInputStream( versionContent.getBytes() ) );
 
@@ -71,7 +71,7 @@ public class NPMRemoteMetadataContentRetrieveTest
         assertThat( packageStream, notNullValue() );
         assertThat( versionStream, notNullValue() );
 
-        assertThat( IOUtils.toString( packageStream ), equalTo( packagecontent ) );
+        assertThat( IOUtils.toString( packageStream ), equalTo( packageContent ) );
         assertThat( IOUtils.toString( versionStream ), equalTo( versionContent ) );
 
         packageStream.close();
