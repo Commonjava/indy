@@ -20,7 +20,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
+import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +40,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_CONTENT_REST_BASE_PATH;
@@ -51,14 +54,20 @@ public class NPMContentAccessResource
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private static final String CROSS = "-";
+
+    private static final String PATH_SPLITER = "/";
+
+    private static final String PACAGE_TGZ = "package.tgz";
+
     @Inject
-    private PackageContentAccessHandler handler;
+    private ContentAccessHandler handler;
 
     public NPMContentAccessResource()
     {
     }
 
-    public NPMContentAccessResource( final PackageContentAccessHandler handler )
+    public NPMContentAccessResource( final ContentAccessHandler handler )
     {
         this.handler = handler;
     }
@@ -116,8 +125,10 @@ public class NPMContentAccessResource
                     @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly,
                     @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
+        // map /{package} to /{package}/package.json
+        final String path = Paths.get( packageName, PATH_SPLITER, PackageMetadataMerger.METADATA_NAME ).toString();
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doHead( NPM_PKG_KEY, type, name, packageName, cacheOnly, baseUri, request, new EventMetadata() );
+        return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request, new EventMetadata() );
     }
 
     @ApiOperation( "Retrieve NPM package version header metadata content under the given artifact store (type/name), packageName and version." )
@@ -132,8 +143,11 @@ public class NPMContentAccessResource
                     @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final UriInfo uriInfo,
                     @Context final HttpServletRequest request )
     {
+        // map /{package}/{version} to /{package}/{version}/package.json
+        final String path = Paths.get( packageName, PATH_SPLITER, version, PATH_SPLITER,
+                                       PackageMetadataMerger.METADATA_NAME ).toString();
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doHead( NPM_PKG_KEY, type, name, packageName, version, null, cacheOnly, baseUri, request,
+        return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
                                new EventMetadata() );
     }
 
@@ -145,13 +159,27 @@ public class NPMContentAccessResource
     public Response doHead(
                     final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                     final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName, final @PathParam( "version" ) String version,
+                    final @PathParam( "packageName" ) String packageName,
+                    final @ApiParam( allowableValues = CROSS ) @PathParam( "version" ) String version,
                     final @PathParam( "tarball" ) String tarball,
                     @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final UriInfo uriInfo,
                     @Context final HttpServletRequest request )
     {
+        // map /{package}/-/{package}-{version}.tgz to /{package}/{version}/package.tgz
+        String v = CROSS;
+        try
+        {
+            v = tarball.substring( packageName.length() + CROSS.length(), tarball.length() - 4 );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Version transform error for tarball: %s", tarball );
+        }
+
+        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACAGE_TGZ ).toString();
+
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doHead( NPM_PKG_KEY, type, name, packageName, "-", tarball, cacheOnly, baseUri, request,
+        return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
                                new EventMetadata() );
     }
 
@@ -167,9 +195,11 @@ public class NPMContentAccessResource
                     final @PathParam( "packageName" ) String packageName, @Context final UriInfo uriInfo,
                     @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
+        // map /{package} to /{package}/package.json
+        final String path = Paths.get( packageName, PATH_SPLITER, PackageMetadataMerger.METADATA_NAME ).toString();
 
-        return handler.doGet( NPM_PKG_KEY, type, name, packageName, baseUri, request, new EventMetadata() );
+        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
+        return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
     }
 
     @ApiOperation( "Retrieve NPM package version metadata content under the given artifact store (type/name), packageName and version." )
@@ -183,10 +213,12 @@ public class NPMContentAccessResource
                     final @PathParam( "packageName" ) String packageName, final @PathParam( "version" ) String version,
                     @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
+        // map /{package}/{version} to /{package}/{version}/package.json
+        final String path = Paths.get( packageName, PATH_SPLITER, version, PATH_SPLITER,
+                                       PackageMetadataMerger.METADATA_NAME ).toString();
 
-        return handler.doGet( NPM_PKG_KEY, type, name, packageName, version, null, baseUri, request,
-                              new EventMetadata() );
+        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
+        return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
     }
 
     @ApiOperation( "Retrieve NPM package tarball content under the given artifact store (type/name), packageName and tarball." )
@@ -197,14 +229,26 @@ public class NPMContentAccessResource
     public Response doGet(
                     final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                     final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName, final @PathParam( "version" ) String version,
+                    final @PathParam( "packageName" ) String packageName,
+                    final @ApiParam( allowableValues = CROSS ) @PathParam( "version" ) String version,
                     final @PathParam( "tarball" ) String tarball, @Context final UriInfo uriInfo,
                     @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
+        // map /{package}/-/{package}-{version}.tgz to /{package}/{version}/package.tgz
+        String v = CROSS;
+        try
+        {
+            v = tarball.substring( packageName.length() + CROSS.length(), tarball.length() - 4 );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Version transform error for tarball: %s", tarball );
+        }
 
-        return handler.doGet( NPM_PKG_KEY, type, name, packageName, "-", tarball, baseUri, request,
-                              new EventMetadata() );
+        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACAGE_TGZ ).toString();
+
+        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
+        return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
     }
 
     @Override

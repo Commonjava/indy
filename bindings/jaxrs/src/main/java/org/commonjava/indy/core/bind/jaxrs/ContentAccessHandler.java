@@ -62,6 +62,8 @@ public class ContentAccessHandler
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private static final String PACAGE_TGZ = "package.tgz";
+
     @Inject
     protected ContentController contentController;
 
@@ -397,17 +399,15 @@ public class ContentAccessHandler
                         try
                         {
                             logger.info( "Getting listing at: {}", path + "/" );
-                            final String content =
-                                    contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
-                                                                     uriFormatter );
+                            final String content = contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
+                                                                                    uriFormatter );
 
                             response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
                         }
                         catch ( final IndyWorkflowException e )
                         {
-                            logger.error(
-                                    String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
-                                                   name, e.getMessage() ), e );
+                            logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
+                                                         name, e.getMessage() ), e );
                             response = formatResponse( e, builderModifier );
                         }
                     }
