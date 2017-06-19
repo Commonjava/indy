@@ -59,4 +59,4 @@ JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
 MAIN_CLASS=org.commonjava.indy.boot.jaxrs.JaxRsBooter
 
-exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties ${MAIN_CLASS} "$@"
+exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties -Dorg.jboss.logging.provider=slf4j ${MAIN_CLASS}  "$@"
