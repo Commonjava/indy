@@ -18,6 +18,7 @@ package org.commonjava.indy.pkg.npm.content.group;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -27,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -38,7 +40,9 @@ import java.util.List;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
+@ApplicationScoped
 public class PackageMetadataMerger
+                implements MetadataMerger
 {
     public static final String METADATA_NAME = "package.json";
 
@@ -67,6 +71,7 @@ public class PackageMetadataMerger
         }
     }
 
+    @Override
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
