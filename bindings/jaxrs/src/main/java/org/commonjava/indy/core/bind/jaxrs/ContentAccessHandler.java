@@ -62,8 +62,6 @@ public class ContentAccessHandler
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String PACAGE_TGZ = "package.tgz";
-
     @Inject
     protected ContentController contentController;
 
@@ -157,7 +155,7 @@ public class ContentAccessHandler
         Response response;
         try
         {
-            final ApplicationStatus result = contentController.delete( st, name, path, eventMetadata );
+            final ApplicationStatus result = contentController.delete( sk, path, eventMetadata );
             ResponseBuilder builder = Response.status( result.code() );
             if ( builderModifier != null )
             {
@@ -357,7 +355,7 @@ public class ContentAccessHandler
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                        contentController.renderListing( standardAccept, st, name, path, baseUri, uriFormatter );
+                                contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter );
 
                 response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
             }
@@ -399,8 +397,9 @@ public class ContentAccessHandler
                         try
                         {
                             logger.info( "Getting listing at: {}", path + "/" );
-                            final String content = contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
-                                                                                    uriFormatter );
+                            final String content =
+                                            contentController.renderListing( standardAccept, sk, path + "/", baseUri,
+                                                                             uriFormatter );
 
                             response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
                         }
