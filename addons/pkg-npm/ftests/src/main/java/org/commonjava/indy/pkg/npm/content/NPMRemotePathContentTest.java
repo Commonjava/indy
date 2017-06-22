@@ -19,8 +19,6 @@ import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -31,18 +29,22 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if files path-info can be retrieved successfully in a remote repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a remote repo and expect files in it</li>
+ *      <li>retrieve the files using corresponding mapping path in the remote repo</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the files path-info can be retrieved successfully with no error</li>
+ * </ul>
+ */
+
 public class NPMRemotePathContentTest
                 extends AbstractContentManagementTest
 {
-    @Rule
-    public ExpectationServer server = new ExpectationServer( "repos" );
-
-    @Override
-    protected boolean createStandardTestStructures()
-    {
-        return false;
-    }
-
     @Test
     public void test() throws Exception
     {
@@ -77,5 +79,11 @@ public class NPMRemotePathContentTest
 
         assertThat( "no result", result3, notNullValue() );
         assertThat( "doesn't exist", result3.exists(), equalTo( true ) );
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 }

@@ -29,24 +29,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be stored in a readonly hosted repo
+ * This case test if files can be re-stored in a hosted repo
  * when: <br />
  * <ul>
- *      <li>creates a readonly hosted repo</li>
+ *      <li>creates a hosted repo</li>
  *      <li>stores file in hosted repo once</li>
- *      <li>updates the hosted repo to non-readonly</li>
- *      <li>stores file again</li>
+ *      <li>updates the files content in hosted repo</li>
  * </ul>
  * then: <br />
  * <ul>
- *     <li>the file can not be stored with 405 error first time</li>
- *     <li>the file can be stored successfully with no error second time</li>
+ *     <li>the file can be updated successfully with no error</li>
  * </ul>
  */
 public class NPMHostedReStoreContentTest
                 extends AbstractContentManagementTest
 {
-
     @Test
     public void test() throws Exception
     {
@@ -81,5 +78,11 @@ public class NPMHostedReStoreContentTest
         assertThat( result, equalTo( versionSnapshotContent ) );
 
         is.close();
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 }

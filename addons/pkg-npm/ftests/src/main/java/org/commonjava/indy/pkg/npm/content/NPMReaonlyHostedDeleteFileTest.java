@@ -89,6 +89,11 @@ public class NPMReaonlyHostedDeleteFileTest
         client.content().delete( storeKey, path );
 
         assertThat( client.content().exists( storeKey, mappingPath ), equalTo( false ) );
+    }
 
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 }

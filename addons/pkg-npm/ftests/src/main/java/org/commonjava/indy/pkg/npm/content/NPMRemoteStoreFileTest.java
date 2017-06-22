@@ -29,6 +29,18 @@ import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if files can be stored in a remote repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a remote repo</li>
+ *      <li>stores file in the remote repo</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the file can not be stored with 400 error</li>
+ * </ul>
+ */
 public class NPMRemoteStoreFileTest
                 extends AbstractContentManagementTest
 {
@@ -58,5 +70,11 @@ public class NPMRemoteStoreFileTest
         }
 
         assertThat( client.content().exists( storeKey, "jquery" ), equalTo( false ) );
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 }

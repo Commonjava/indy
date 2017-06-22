@@ -19,8 +19,6 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -32,18 +30,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if package.tgz can be retrieved correctly in a remote repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a remote repo and expect tgz file in it</li>
+ *      <li>retrieve the file using corresponding mapping path in the remote repo</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the tgz content can be retrieved correctly with no error, equal to the original value</li>
+ * </ul>
+ */
 public class NPMRemotePackageContentRetrieveTest
                 extends AbstractContentManagementTest
 {
-    @Rule
-    public ExpectationServer server = new ExpectationServer( "repos" );
-
-    @Override
-    protected boolean createStandardTestStructures()
-    {
-        return false;
-    }
-
     @Test
     public void test() throws Exception
     {
@@ -65,5 +66,11 @@ public class NPMRemotePackageContentRetrieveTest
         assertThat( IOUtils.toByteArray( tarballStream ), equalTo( tgz ) );
 
         tarballStream.close();
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 }

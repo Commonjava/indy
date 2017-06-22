@@ -60,7 +60,7 @@ public class NPMContentAccessResource
 
     private static final String PATH_SPLITER = "/";
 
-    private static final String PACAGE_TGZ = "package.tgz";
+    private static final String PACKAGE_TGZ = "package.tgz";
 
     @Inject
     private ContentAccessHandler handler;
@@ -178,7 +178,7 @@ public class NPMContentAccessResource
             logger.error( "Version transform error for tarball: %s", tarball );
         }
 
-        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACAGE_TGZ ).toString();
+        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACKAGE_TGZ ).toString();
 
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
@@ -249,7 +249,7 @@ public class NPMContentAccessResource
             logger.error( "Version transform error for tarball: %s", tarball );
         }
 
-        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACAGE_TGZ ).toString();
+        final String path = Paths.get( packageName, PATH_SPLITER, v, PATH_SPLITER, PACKAGE_TGZ ).toString();
 
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );

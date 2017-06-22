@@ -62,8 +62,6 @@ public class ContentAccessHandler
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String PACAGE_TGZ = "package.tgz";
-
     @Inject
     protected ContentController contentController;
 

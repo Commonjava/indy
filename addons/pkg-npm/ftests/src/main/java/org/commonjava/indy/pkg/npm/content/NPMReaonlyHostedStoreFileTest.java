@@ -92,4 +92,10 @@ public class NPMReaonlyHostedStoreFileTest
 
         is.close();
     }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
+    }
 }

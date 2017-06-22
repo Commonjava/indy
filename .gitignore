@@ -37,3 +37,6 @@ embedder-tests/savant/indexedStorePath/*
 venv
 *.pyc
 *.egg-info
+
+# embedders log
+embedders/savant/indy.home_IS_UNDEFINED/*

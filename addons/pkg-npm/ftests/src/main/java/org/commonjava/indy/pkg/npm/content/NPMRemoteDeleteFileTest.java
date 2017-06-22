@@ -29,6 +29,18 @@ import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * This case test if files can be deleted in a remote repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a remote repo and expect file in it</li>
+ *      <li>deletes the file in remote repo</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the file can not be deleted with 400 error</li>
+ * </ul>
+ */
 public class NPMRemoteDeleteFileTest
                 extends AbstractContentManagementTest
 {
@@ -60,5 +72,11 @@ public class NPMRemoteDeleteFileTest
         }
 
         assertThat( client.content().exists( storeKey, "jquery" ), equalTo( true ) );
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 }
