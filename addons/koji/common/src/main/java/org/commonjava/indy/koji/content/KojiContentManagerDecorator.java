@@ -285,6 +285,7 @@ public abstract class KojiContentManagerDecorator
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.info( "Koji content-manager decorator is disabled." );
+            logger.debug("When koji addon is disenabled , path:{},config instance is {}",path,config.toString());
             return defValue;
         }
 
@@ -294,11 +295,12 @@ public abstract class KojiContentManagerDecorator
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.info( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
+            logger.debug("When the group is disenabled , path:{},config instance is {}",path,config.toString());
             return defValue;
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-
+        logger.debug("When the koji is enabled , path:{},config instance is {}",path,config.toString());
         // TODO: This won't work for maven-metadata.xml files! We need to hit a POM or jar or something first.
         ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null )
