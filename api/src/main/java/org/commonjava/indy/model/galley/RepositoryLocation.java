@@ -15,14 +15,14 @@
  */
 package org.commonjava.indy.model.galley;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
 import org.commonjava.maven.galley.transport.htcli.model.LocationTrustType;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * {@link KeyedLocation} implementation that represents a {@link RemoteRepository} Indy store, and bridges the handling of {@link RemoteRepository}
@@ -88,6 +88,12 @@ public class RepositoryLocation
     public boolean allowsReleases()
     {
         return repository.isAllowReleases();
+    }
+
+    @Override
+    public boolean allowsDeletion()
+    {
+        return false;
     }
 
     @Override
