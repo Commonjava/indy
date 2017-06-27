@@ -379,7 +379,7 @@ public class DefaultContentManager
 
     private boolean isRegexPattern( String pattern )
     {
-        return pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
+        return pattern != null && pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
     }
 
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
