@@ -363,7 +363,7 @@ public class DefaultContentManager
             // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
             if ( isRegexPattern( pattern ) )
             {
-                if ( path.matches( pattern ) )
+                if ( path.matches( pattern.substring( 2, pattern.length() - 1 ) ) )
                 {
                     return true;
                 }
