@@ -285,6 +285,45 @@ public class DefaultContentManager
         return item;
     }
 
+    private boolean checkListingMask( final ArtifactStore store, final String path )
+    {
+        if ( !( store instanceof AbstractRepository ) )
+        {
+            return true;
+        }
+
+        AbstractRepository repo = (AbstractRepository) store;
+        Set<String> maskPatterns = repo.getPathMaskPatterns();
+        logger.debug( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(), maskPatterns );
+
+        if (maskPatterns == null || maskPatterns.isEmpty())
+        {
+            logger.debug( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
+            return true;
+        }
+
+        for ( String pattern : maskPatterns )
+        {
+            if ( isRegexPattern( pattern ) )
+            {
+                // if there is a regexp pattern we cannot check presence of directory listing, because we would have to
+                // check only the beginning of the regexp and that's impossible, so we have to assume that the path is
+                // present
+                return true;
+            }
+        }
+
+        for ( String pattern : maskPatterns )
+        {
+            if ( path.startsWith( pattern ) || pattern.startsWith( path ) )
+            {
+                logger.debug( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
+                return true;
+            }
+        }
+        return false;
+    }
+
     private boolean checkMask( final ArtifactStore store, final String path )
     {
         if ( !( store instanceof AbstractRepository ) )
@@ -301,15 +340,29 @@ public class DefaultContentManager
             logger.debug( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
             return true;
         }
-        for (String pattern : maskPatterns)
+
+        for ( String pattern : maskPatterns )
         {
-            if (path.startsWith(pattern) || path.matches(pattern))
+            // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
+            if ( isRegexPattern( pattern ) )
+            {
+                if ( path.matches( pattern.substring( 2, pattern.length() - 1 ) ) )
+                {
+                    return true;
+                }
+            }
+            else if ( path.startsWith( pattern ) )
             {
                 logger.debug( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean isRegexPattern( String pattern )
+    {
+        return pattern != null && pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
     }
 
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
@@ -623,7 +676,14 @@ public class DefaultContentManager
         }
         else
         {
-            listed = downloadManager.list( store, path );
+            if ( checkListingMask( store, path ) )
+            {
+                listed = downloadManager.list( store, path );
+            }
+            else
+            {
+                listed = new ArrayList<>();
+            }
 
             for ( final ContentGenerator producer : contentGenerators )
             {
