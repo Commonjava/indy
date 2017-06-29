@@ -133,4 +133,10 @@ public class CacheInstanceAdapter
     {
         cacheHandle.lock( keys );
     }
+
+    @Override
+    public void unlock( String s )
+    {
+        //Not implemented. Just for galley api compatible fix.
+    }
 }
