@@ -363,7 +363,7 @@ public class DefaultContentManager
             // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
             if ( isRegexPattern( pattern ) )
             {
-                if ( path.matches( pattern ) )
+                if ( path.matches( pattern.substring( 2, pattern.length() - 1 ) ) )
                 {
                     return true;
                 }
@@ -379,7 +379,7 @@ public class DefaultContentManager
 
     private boolean isRegexPattern( String pattern )
     {
-        return pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
+        return pattern != null && pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
     }
 
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
