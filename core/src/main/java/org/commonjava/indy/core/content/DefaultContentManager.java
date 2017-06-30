@@ -294,7 +294,16 @@ public class DefaultContentManager
 
         AbstractRepository repo = (AbstractRepository) store;
         Set<String> maskPatterns = repo.getPathMaskPatterns();
-        logger.debug( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(), maskPatterns );
+
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(),
+                          maskPatterns );
+        }
+        else
+        {
+            logger.debug( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
+        }
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
@@ -333,7 +342,16 @@ public class DefaultContentManager
 
         AbstractRepository repo = (AbstractRepository) store;
         Set<String> maskPatterns = repo.getPathMaskPatterns();
-        logger.debug( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(), maskPatterns );
+
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Checking mask in: {}, type: {}, patterns: {}", repo.getName(), repo.getKey().getType(),
+                          maskPatterns );
+        }
+        else
+        {
+            logger.debug( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
+        }
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
@@ -757,7 +775,16 @@ public class DefaultContentManager
                 {
                     final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
 
-                    logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, store.getName(), allMembers );
+                    if ( logger.isTraceEnabled() )
+                    {
+                        logger.trace( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path,
+                                      store.getName(), allMembers );
+                    }
+                    else
+                    {
+                        logger.debug( "Trying to retrieve suitable transfer for: {} in group: {}", path,
+                                      store.getName() );
+                    }
 
                     return getTransfer( allMembers, path, op );
                 }
@@ -831,7 +858,16 @@ public class DefaultContentManager
             {
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
 
-                logger.debug( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path, allMembers, store.getName() );
+                if ( logger.isTraceEnabled() )
+                {
+                    logger.trace( "Trying to retrieve suitable transfer for: {} in group: {} members:\n{}", path,
+                                  store.getName(), allMembers );
+                }
+                else
+                {
+                    logger.debug( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
+                }
+
                 for ( ArtifactStore member : allMembers )
                 {
                     if ( exists( member, path ) )
