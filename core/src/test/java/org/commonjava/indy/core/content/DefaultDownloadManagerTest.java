@@ -6,7 +6,9 @@ import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.indy.core.inject.ExpiringMemoryNotFoundCache;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
@@ -85,7 +87,11 @@ public class DefaultDownloadManagerTest
 
         LocationExpander locationExpander = new IndyLocationExpander( storeManager );
 
-        downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander );
+        final DefaultIndyConfiguration config = new DefaultIndyConfiguration();
+        config.setNotFoundCacheTimeoutSeconds( 1 );
+        final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
+
+        downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander,null, nfc);
 
         DirectContentAccess dca =
                         new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );

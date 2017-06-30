@@ -31,6 +31,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.commonjava.indy.boot.BootOptions;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
@@ -41,6 +42,7 @@ import org.commonjava.indy.core.content.DefaultContentManager;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.core.inject.ExpiringMemoryNotFoundCache;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.handler.ProxyAcceptHandler;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
@@ -163,19 +165,23 @@ public class HttpProxyTest
 
         final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
+        final DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
+        indyConfig.setNotFoundCacheTimeoutSeconds( 1 );
+        final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( indyConfig );
+
         final DownloadManager downloadManager =
                 new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(),
-                                            new MockInstance<>( new MockContentAdvisor() ) );
+                                            new MockInstance<>( new MockContentAdvisor() ), nfc );
 
         DirectContentAccess dca =
                 new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
 
-        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<>(
                 "content-metadata", contentMetadata ) );
 
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, downloadManager, mapper, new SpecialPathManagerImpl(),
-                                           new MemoryNotFoundCache(), contentDigester, Collections.<ContentGenerator>emptySet() );
+                                           new MemoryNotFoundCache(), contentDigester, Collections.emptySet() );
 
         DataFileManager dfm = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), dfm );
@@ -209,7 +215,7 @@ public class HttpProxyTest
             throws Exception
     {
         final String testRepo = "test";
-        final PomRef pom = loadPom( "simple.pom", Collections.<String, String>emptyMap() );
+        final PomRef pom = loadPom( "simple.pom", Collections.emptyMap() );
         final String url = server.formatUrl( testRepo, pom.path );
         server.expect( url, 200, pom.pom );
 
@@ -245,7 +251,7 @@ public class HttpProxyTest
             throws Exception
     {
         final String testRepo = "test";
-        final PomRef pom = loadPom( "simple.pom", Collections.<String, String>emptyMap() );
+        final PomRef pom = loadPom( "simple.pom", Collections.emptyMap() );
         final String url = server.formatUrl( testRepo, pom.path );
 
         final HttpGet get = new HttpGet( url );
@@ -277,7 +283,7 @@ public class HttpProxyTest
             throws Exception
     {
         final String testRepo = "test";
-        final PomRef pom = loadPom( "simple.pom", Collections.<String, String>emptyMap() );
+        final PomRef pom = loadPom( "simple.pom", Collections.emptyMap() );
         final String url = server.formatUrl( testRepo, pom.path );
         server.registerException( new File( "/" + testRepo, pom.path ).getPath(), "Expected exception", 500 );
 
