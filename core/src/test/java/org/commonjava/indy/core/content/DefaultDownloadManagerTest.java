@@ -17,7 +17,9 @@ package org.commonjava.indy.core.content;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.indy.core.inject.ExpiringMemoryNotFoundCache;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
@@ -25,13 +27,10 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
-import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
-import org.commonjava.maven.galley.internal.TransferManagerImpl;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.maven.galley.transport.NoOpLocationExpander;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -67,7 +66,11 @@ public class DefaultDownloadManagerTest
 
         LocationExpander locationExpander = new IndyLocationExpander( storeManager );
 
-        downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander );
+        final DefaultIndyConfiguration config = new DefaultIndyConfiguration();
+        config.setNotFoundCacheTimeoutSeconds( 1 );
+        final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
+
+        downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander,null, nfc);
     }
 
     @Test

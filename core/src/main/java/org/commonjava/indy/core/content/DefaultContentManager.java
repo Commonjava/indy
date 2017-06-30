@@ -100,13 +100,13 @@ public class DefaultContentManager
         this.specialPathManager = specialPathManager;
         this.nfc = nfc;
         this.contentDigester = contentDigester;
-        this.contentGenerators = contentProducers == null ? new HashSet<ContentGenerator>() : contentProducers;
+        this.contentGenerators = contentProducers == null ? new HashSet<>() : contentProducers;
     }
 
     @PostConstruct
     public void initialize()
     {
-        contentGenerators = new HashSet<ContentGenerator>();
+        contentGenerators = new HashSet<>();
         if ( contentProducerInstances != null )
         {
             for ( final ContentGenerator producer : contentProducerInstances )
@@ -153,7 +153,7 @@ public class DefaultContentManager
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        final List<Transfer> txfrs = new ArrayList<Transfer>();
+        final List<Transfer> txfrs = new ArrayList<>();
         for ( final ArtifactStore store : stores )
         {
             if ( group == store.getKey().getType() )
@@ -169,7 +169,7 @@ public class DefaultContentManager
                                                       e.getMessage() );
                 }
 
-                final List<Transfer> storeTransfers = new ArrayList<Transfer>();
+                final List<Transfer> storeTransfers = new ArrayList<>();
                 for ( final ContentGenerator generator : contentGenerators )
                 {
                     final Transfer txfr =
@@ -560,7 +560,7 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
-            listed = new ArrayList<StoreResource>();
+            listed = new ArrayList<>();
             for ( final ContentGenerator generator : contentGenerators )
             {
                 final List<StoreResource> generated =
@@ -611,7 +611,7 @@ public class DefaultContentManager
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
-        final List<StoreResource> listed = new ArrayList<StoreResource>();
+        final List<StoreResource> listed = new ArrayList<>();
         for ( final ArtifactStore store : stores )
         {
             List<StoreResource> storeListing = null;
@@ -692,7 +692,7 @@ public class DefaultContentManager
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Looking for path: '{}' in stores: {}", path,
-                      stores.stream().map( ( store ) -> store.getKey() ).collect( Collectors.toList() ) );
+                      stores.stream().map( ArtifactStore::getKey ).collect( Collectors.toList() ) );
 
         return downloadManager.getStorageReference( stores, path, op );
     }

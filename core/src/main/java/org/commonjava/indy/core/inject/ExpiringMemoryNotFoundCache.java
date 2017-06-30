@@ -30,7 +30,6 @@ import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.inject.Production;
 import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
@@ -52,7 +51,8 @@ public class ExpiringMemoryNotFoundCache
     @Inject
     protected IndyConfiguration config;
 
-    protected final Map<ConcreteResource, Long> missingWithTimeout = new HashMap<ConcreteResource, Long>();
+    // TODO: Now using a simple hashmap, need to take attention here to see if need ISPN instead if it is a mem eater.
+    protected final Map<ConcreteResource, Long> missingWithTimeout = new HashMap<>();
 
     protected ExpiringMemoryNotFoundCache()
     {
@@ -116,7 +116,7 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void clearMissing( final Location location )
     {
-        for ( final ConcreteResource resource : new HashSet<ConcreteResource>( missingWithTimeout.keySet() ) )
+        for ( final ConcreteResource resource : new HashSet<>( missingWithTimeout.keySet() ) )
         {
             if ( resource.getLocation()
                          .equals( location ) )
@@ -142,16 +142,11 @@ public class ExpiringMemoryNotFoundCache
     public Map<Location, Set<String>> getAllMissing()
     {
         clearAllExpiredMissing();
-        final Map<Location, Set<String>> result = new HashMap<Location, Set<String>>();
+        final Map<Location, Set<String>> result = new HashMap<>();
         for ( final ConcreteResource resource : missingWithTimeout.keySet() )
         {
             final Location loc = resource.getLocation();
-            Set<String> paths = result.get( loc );
-            if ( paths == null )
-            {
-                paths = new HashSet<String>();
-                result.put( loc, paths );
-            }
+            Set<String> paths = result.computeIfAbsent( loc, k -> new HashSet<>() );
 
             paths.add( resource.getPath() );
         }
@@ -163,7 +158,7 @@ public class ExpiringMemoryNotFoundCache
     public Set<String> getMissing( final Location location )
     {
         clearAllExpiredMissing();
-        final Set<String> paths = new HashSet<String>();
+        final Set<String> paths = new HashSet<>();
         for ( final ConcreteResource resource : missingWithTimeout.keySet() )
         {
             final Location loc = resource.getLocation();

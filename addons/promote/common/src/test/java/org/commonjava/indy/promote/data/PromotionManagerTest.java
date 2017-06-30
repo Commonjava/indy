@@ -18,6 +18,7 @@ package org.commonjava.indy.promote.data;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
@@ -28,6 +29,7 @@ import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
+import org.commonjava.indy.core.inject.ExpiringMemoryNotFoundCache;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
@@ -132,9 +134,13 @@ public class PromotionManagerTest
 
         storeManager = new MemoryStoreDataManager( true );
 
+        final DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
+        indyConfig.setNotFoundCacheTimeoutSeconds( 1 );
+        final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( indyConfig );
+
         downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
                                                       new IndyLocationExpander( storeManager ),
-                                                      new MockInstance<>( new MockContentAdvisor() ) );
+                                                      new MockInstance<>( new MockContentAdvisor() ), nfc );
 
         DirectContentAccess dca =
                 new DefaultDirectContentAccess( downloadManager );
