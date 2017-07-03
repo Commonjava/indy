@@ -93,7 +93,7 @@ public class RepositoryLocation
     @Override
     public boolean allowsDeletion()
     {
-        return false;
+        return true;
     }
 
     @Override
