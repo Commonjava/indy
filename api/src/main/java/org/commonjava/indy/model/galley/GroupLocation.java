@@ -37,4 +37,11 @@ public class GroupLocation
     {
         return "GroupLocation [" + getKey() + "]";
     }
+
+    @Override
+    public boolean allowsDeletion()
+    {
+        //TODO: make this default value true, may change future if need consider its constituents' readonly attribute
+        return true;
+    }
 }
