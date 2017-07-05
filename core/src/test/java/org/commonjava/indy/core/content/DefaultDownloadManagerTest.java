@@ -2,28 +2,45 @@ package org.commonjava.indy.core.content;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.content.ContentDigester;
+import org.commonjava.indy.content.ContentGenerator;
+import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
+import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
+import org.infinispan.Cache;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.concurrent.Executors;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -41,10 +58,27 @@ public class DefaultDownloadManagerTest
 
     private StoreDataManager storeManager;
 
+    private static DefaultCacheManager cacheManager;
+
+    private static Cache<String, TransferMetadata> contentMetadata;
+
+    private ContentManager contentManager;
+
+    @BeforeClass
+    public static void setupClass()
+    {
+        cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+
+        contentMetadata = cacheManager.getCache( "content-metadata", true );
+
+    }
+
     @Before
     public void setup()
             throws IOException, GalleyInitException
     {
+        contentMetadata.clear();
+
         core = new GalleyCoreBuilder( new FileCacheProviderFactory( temp.newFolder( "cache" ) ) ).build();
 
         storeManager = new MemoryStoreDataManager( true );
@@ -52,6 +86,16 @@ public class DefaultDownloadManagerTest
         LocationExpander locationExpander = new IndyLocationExpander( storeManager );
 
         downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander );
+
+        DirectContentAccess dca =
+                        new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+                        "content-metadata", contentMetadata ) );
+
+        contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
+                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
+                                                    contentDigester, Collections.<ContentGenerator>emptySet() );
     }
 
     @Test
@@ -83,5 +127,31 @@ public class DefaultDownloadManagerTest
                                                                  TransferOperation.DOWNLOAD );
 
         assertThat( transfer, nullValue() );
+    }
+
+    @Test( expected = IOException.class )
+    public void getTransferFromNotAlloweDeletionStore_DownloadOp_ThrowException() throws Exception
+    {
+        ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test setup" );
+        HostedRepository hosted = new HostedRepository( MAVEN_PKG_KEY, "one" );
+
+        storeManager.storeArtifactStore( hosted, summary, false, true, new EventMetadata() );
+
+        String originalString = "This is a test";
+        final String path = "/path/path";
+
+        contentManager.store( hosted, path, new ByteArrayInputStream( originalString.getBytes() ),
+                              TransferOperation.DOWNLOAD, new EventMetadata() );
+
+        hosted.setReadonly( true );
+        ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Change to readonly" );
+
+        storeManager.storeArtifactStore( hosted, changeSummary, false, true, new EventMetadata() );
+
+        Transfer transfer = downloadManager.getStorageReference( hosted, path, TransferOperation.DOWNLOAD );
+
+        assertThat( transfer.exists(), equalTo( true ) );
+
+        transfer.delete();
     }
 }

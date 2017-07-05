@@ -15,13 +15,13 @@
  */
 package org.commonjava.indy.model.galley;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * {@link KeyedLocation} implementation that only knows about locally hosted/cached content. During Galley's handling, it can be converted into other 
@@ -81,6 +81,12 @@ public class CacheOnlyLocation
     public boolean allowsReleases()
     {
         return repo == null || repo.isAllowReleases();
+    }
+
+    @Override
+    public boolean allowsDeletion()
+    {
+        return repo != null && !repo.isReadonly();
     }
 
     @Override
