@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -66,7 +67,11 @@ public class ContentRescheduleTimeoutTest
 
         // first time trigger normal content storage with timeout, should be 6s
         PathInfo pomResult = client.content().getInfo( remote, repoId, pomPath );
-        client.content().get(remote, repoId, pomPath).close(); // force storage
+        InputStream is = client.content().get( remote, repoId, pomPath); // force storage
+        if ( is != null )
+        {
+            is.close();
+        }
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
         String pomFilePath = String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
