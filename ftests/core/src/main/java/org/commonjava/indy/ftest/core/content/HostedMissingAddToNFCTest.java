@@ -30,6 +30,7 @@ import java.io.InputStream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -42,6 +43,7 @@ import static org.junit.Assert.assertThat;
  * <b>WHEN:</b>
  * <ul>
  *     <li>Access a missing content in the hosted</li>
+ *     <li>After access store the missing content in hosted</li>
  * </ul>
  *
  * <br/>
@@ -49,6 +51,7 @@ import static org.junit.Assert.assertThat;
  * <ul>
  *     <li>The content is missing</li>
  *     <li>The missing content is added to the NFC</li>
+ *     <li>After store the missing content, entry in NFC for this content removed</li>
  * </ul>
  */
 public class HostedMissingAddToNFCTest
@@ -100,5 +103,25 @@ public class HostedMissingAddToNFCTest
         assertThat( nfcSectionDto.getPaths(), notNullValue() );
         assertThat( nfcSectionDto.getPaths().contains( POM_PATH ), equalTo( true ) );
 
+        client.content().store( hosted.getKey(), POM_PATH, new ByteArrayInputStream( "This is the pom".getBytes() ) );
+
+        try (InputStream inputStream = client.content().get( hosted.getKey(), POM_PATH ))
+        {
+            assertThat( inputStream, notNullValue() );
+        }
+
+        dto = client.module( IndyNfcClientModule.class )
+                    .getAllNfcContentInStore( StoreType.hosted, hosted.getName() );
+
+        assertThat( dto, notNullValue() );
+        assertThat( dto.getSections(), notNullValue() );
+
+        nfcSectionDto = dto.getSections()
+                           .stream()
+                           .filter( d -> d.getKey().equals( hosted.getKey() ) )
+                           .findFirst()
+                           .orElse( null );
+        assertThat( nfcSectionDto, notNullValue() );
+        assertThat( nfcSectionDto.getPaths(), nullValue() );
     }
 }
