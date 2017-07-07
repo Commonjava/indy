@@ -77,4 +77,9 @@ public final class PathUtils
 
         return new File( path ).getParent();
     }
+
+    public static String removeExtraSlash( String path )
+    {
+        return path.replaceAll( "/+", "/" );
+    }
 }

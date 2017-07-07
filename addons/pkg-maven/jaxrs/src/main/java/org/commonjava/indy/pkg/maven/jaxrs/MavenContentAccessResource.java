@@ -20,15 +20,13 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -134,7 +132,8 @@ public class MavenContentAccessResource
     {
         final String baseUri = uriInfo.getBaseUriBuilder().path( MAVEN_CONTENT_REST_BASE_PATH ).build().toString();
 
-        return handler.doGet( MAVEN_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
+        return handler.doGet( MAVEN_PKG_KEY, type, name, PathUtils.removeExtraSlash( path ), baseUri, request,
+                              new EventMetadata() );
     }
 
     @Override
