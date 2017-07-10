@@ -1,8 +1,8 @@
 package org.commonjava.indy.mem.data;
 
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -32,6 +32,7 @@ import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 /**
  * This query interface is intended to be reusable across any {@link StoreDataManager} implementation. It contains logic
@@ -196,6 +197,26 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
             throws IndyDataException
     {
         return stream( filter ).collect( Collectors.toList() );
+    }
+
+    @Override
+    public List<String> allDefaultPackageTypes()
+    {
+        return Arrays.asList( MAVEN_PKG_KEY, NPM_PKG_KEY );
+    }
+
+    @Override
+    public List<T> getAllByDefaultPackageTypes()
+            throws IndyDataException
+    {
+        List<T> result = new ArrayList<T>();
+        List<String> defaults = allDefaultPackageTypes();
+        for ( String packageType : defaults )
+        {
+            this.packageType = packageType;
+            result.addAll( stream().collect( Collectors.toList() ) );
+        }
+        return result;
     }
 
     @Override

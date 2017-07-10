@@ -107,6 +107,19 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    public List<String> allDefaultPackageTypes()
+    {
+        return delegate.allDefaultPackageTypes();
+    }
+
+    @Override
+    public List<T> getAllByDefaultPackageTypes()
+            throws IndyDataException
+    {
+        return delegate.getAllByDefaultPackageTypes();
+    }
+
+    @Override
     public T getByName( final String name )
             throws IndyDataException
     {
