@@ -200,17 +200,11 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<String> allDefaultPackageTypes()
-    {
-        return Arrays.asList( MAVEN_PKG_KEY, NPM_PKG_KEY );
-    }
-
-    @Override
     public List<T> getAllByDefaultPackageTypes()
             throws IndyDataException
     {
         List<T> result = new ArrayList<T>();
-        List<String> defaults = allDefaultPackageTypes();
+        Set<String> defaults = PackageTypes.getPackageTypes();
         for ( String packageType : defaults )
         {
             this.packageType = packageType;
