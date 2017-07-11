@@ -104,10 +104,12 @@ public class AdminController
             ArtifactStoreQuery<ArtifactStore> query = storeManager.query().storeTypes( type );
             if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
             {
-                query = query.packageType( packageType );
+                return query.packageType( packageType ).getAll();
             }
-
-            return query.getAll();
+            else
+            {
+                return query.getAllByDefaultPackageTypes();
+            }
         }
         catch ( final IndyDataException e )
         {

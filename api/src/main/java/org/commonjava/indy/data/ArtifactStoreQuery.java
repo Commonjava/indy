@@ -53,6 +53,9 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
     List<T> getAll( Predicate<ArtifactStore> filter )
             throws IndyDataException;
 
+    List<T> getAllByDefaultPackageTypes()
+            throws IndyDataException;
+
     T getByName( String name )
             throws IndyDataException;
 
