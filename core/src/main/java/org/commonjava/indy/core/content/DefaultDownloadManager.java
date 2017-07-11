@@ -50,6 +50,7 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.VirtualResource;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,6 +107,9 @@ public class DefaultDownloadManager
     private StoreDataManager storeManager;
 
     @Inject
+    private NotFoundCache nfc;
+
+    @Inject
     @Any
     private Instance<ContentAdvisor> contentAdvisors;
 
@@ -128,6 +132,13 @@ public class DefaultDownloadManager
     {
         this(storeManager, transfers, locationExpander);
         this.contentAdvisors = contentAdvisors;
+    }
+
+    public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
+                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors, final NotFoundCache nfc)
+    {
+        this(storeManager, transfers, locationExpander, contentAdvisors);
+        this.nfc = nfc;
     }
 
     @Override
@@ -158,26 +169,17 @@ public class DefaultDownloadManager
             }
             catch ( final BadGatewayException e )
             {
-                Location location = e.getLocation();
-                KeyedLocation kl = (KeyedLocation) location;
-
-                fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+                fireIndyStoreErrorEvent( e );
                 logger.warn( "Bad gateway: " + e.getMessage(), e );
             }
             catch ( final TransferTimeoutException e )
             {
-                Location location = e.getLocation();
-                KeyedLocation kl = (KeyedLocation) location;
-
-                fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+                fireIndyStoreErrorEvent( e );
                 logger.warn( "Timeout: " + e.getMessage(), e );
             }
             catch ( final TransferLocationException e )
             {
-                Location location = e.getLocation();
-                KeyedLocation kl = (KeyedLocation) location;
-
-                fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+                fireIndyStoreErrorEvent( e );
                 logger.warn( "Location Error: " + e.getMessage(), e );
             }
             catch ( final TransferException e )
@@ -211,26 +213,17 @@ public class DefaultDownloadManager
                 }
                 catch ( final BadGatewayException e )
                 {
-                    Location location = e.getLocation();
-                    KeyedLocation kl = (KeyedLocation) location;
-
-                    fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+                    fireIndyStoreErrorEvent( e );
                     logger.warn( "Bad gateway: " + e.getMessage(), e );
                 }
                 catch ( final TransferTimeoutException e )
                 {
-                    Location location = e.getLocation();
-                    KeyedLocation kl = (KeyedLocation) location;
-
-                    fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+                    fireIndyStoreErrorEvent( e );
                     logger.warn( "Timeout: " + e.getMessage(), e );
                 }
                 catch ( final TransferLocationException e )
                 {
-                    Location location = e.getLocation();
-                    KeyedLocation kl = (KeyedLocation) location;
-
-                    fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+                    fireIndyStoreErrorEvent( e );
                     logger.warn( "Location Error: " + e.getMessage(), e );
                 }
                 catch ( final TransferException e )
@@ -255,11 +248,8 @@ public class DefaultDownloadManager
                 }
                 catch ( final TransferLocationException e )
                 {
-                    Location location = res.getLocation();
-                    KeyedLocation kl = (KeyedLocation) location;
-
+                    fireIndyStoreErrorEvent( e );
                     logger.warn( "Timeout  / bad gateway: " + e.getMessage(), e );
-                    fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
                 }
                 catch ( final TransferException e )
                 {
@@ -298,26 +288,17 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
         }
         catch ( final TransferTimeoutException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Timeout: " + e.getMessage(), e );
         }
         catch ( final TransferLocationException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Location Error: " + e.getMessage(), e );
         }
         catch ( final TransferException e )
@@ -350,26 +331,17 @@ public class DefaultDownloadManager
         }
         catch ( final BadGatewayException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
         }
         catch ( final TransferTimeoutException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Timeout: " + e.getMessage(), e );
         }
         catch ( final TransferLocationException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Location Error: " + e.getMessage(), e );
         }
         catch ( final TransferException e )
@@ -404,9 +376,21 @@ public class DefaultDownloadManager
     {
         try
         {
-            return transfers.retrieveAll(
+            List<Transfer> txfrs = transfers.retrieveAll(
                     locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ),
                     eventMetadata );
+            txfrs.forEach( txfr ->
+                           {
+                               final KeyedLocation location = (KeyedLocation) txfr.getLocation();
+                               // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
+                               if ( location.getKey().getType() == StoreType.hosted && !txfr.exists() )
+                               {
+                                   logger.debug( "DM: resource not found when retrieve and added to NFC: {}",
+                                                 txfr.getResource() );
+                                   nfc.addMissing( txfr.getResource() );
+                               }
+                           } );
+            return txfrs;
         }
         catch ( final TransferException e )
         {
@@ -454,7 +438,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        Transfer target = null;
+        Transfer target;
         try
         {
             final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -465,8 +449,10 @@ public class DefaultDownloadManager
             else
             {
                 target = transfers.getCacheReference( res );
-                if ( !target.exists() )
+                if ( target == null || !target.exists() )
                 {
+                    logger.debug( "DM: resource not found when retrieve and added to NFC: {}", res );
+                    nfc.addMissing( res );
                     target = null;
                 }
             }
@@ -610,35 +596,28 @@ public class DefaultDownloadManager
 
         try
         {
-            return transfers.store( new ConcreteResource( LocationUtils.toLocation( store ), path ), stream,
-                                    eventMetadata );
+            final ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+            Transfer txfr = transfers.store( resource, stream, eventMetadata );
+            nfc.clearMissing( resource );
+            return txfr;
         }
         catch ( final BadGatewayException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
                                              e.getMessage() );
         }
         catch ( final TransferTimeoutException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Timeout: " + e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
                                              e.getMessage() );
         }
         catch ( final TransferLocationException e )
         {
-            Location location = e.getLocation();
-            KeyedLocation kl = (KeyedLocation) location;
-
-            fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
+            fireIndyStoreErrorEvent( e );
             logger.warn( "Location Error: " + e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
                                              e.getMessage() );
@@ -855,7 +834,8 @@ public class DefaultDownloadManager
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Retrieving cache reference (Transfer) to: {} in: {}", Arrays.asList( path ), store.getKey() );
-        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+
+        return getCacheReferenceWithNFC( store, path );
     }
 
     @Override
@@ -878,7 +858,23 @@ public class DefaultDownloadManager
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
-        return transfers.getCacheReference( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+        return getCacheReferenceWithNFC( store, path );
+    }
+
+    private Transfer getCacheReferenceWithNFC( final ArtifactStore store, final String... path )
+    {
+        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+        Transfer txfr = transfers.getCacheReference( resource );
+        // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
+        if ( store.getKey().getType() == StoreType.hosted )
+        {
+            if ( txfr == null || !txfr.exists() )
+            {
+                logger.debug( "DM: resource not found when get cached and added to NFC: {}", resource );
+                nfc.addMissing( resource );
+            }
+        }
+        return txfr;
     }
 
     @Override
@@ -924,7 +920,17 @@ public class DefaultDownloadManager
         }
 
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
-        return doDelete( item, eventMetadata );
+
+        final boolean deleted = doDelete( item, eventMetadata );
+
+        if ( deleted && store.getKey().getType() == StoreType.hosted )
+        {
+            final ConcreteResource res = item.getResource();
+            logger.debug( "DM: resource not found by deleted and added to NFC: {}", res );
+            nfc.addMissing( res );
+        }
+
+        return deleted;
     }
 
     private Boolean doDelete( final Transfer item, final EventMetadata eventMetadata )
@@ -932,7 +938,8 @@ public class DefaultDownloadManager
     {
         try
         {
-            transfers.delete( item.getResource(), eventMetadata );
+            final ConcreteResource res = item.getResource();
+            transfers.delete( res, eventMetadata );
         }
         catch ( final TransferException e )
         {
@@ -1202,6 +1209,14 @@ public class DefaultDownloadManager
     private boolean isRegexPattern( String pattern )
     {
         return pattern != null && pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
+    }
+
+    private void fireIndyStoreErrorEvent( TransferLocationException e )
+    {
+        Location location = e.getLocation();
+        KeyedLocation kl = (KeyedLocation) location;
+
+        fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
     }
 
 

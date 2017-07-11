@@ -17,12 +17,14 @@ package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
 import org.commonjava.indy.core.content.DefaultDownloadManager;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
+import org.commonjava.indy.core.inject.ExpiringMemoryNotFoundCache;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -85,7 +87,11 @@ public class MavenMetadataGeneratorTest
 
         final LocationExpander locations = new IndyLocationExpander( stores );
 
-        final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransferManager(), locations );
+        final DefaultIndyConfiguration config = new DefaultIndyConfiguration();
+        config.setNotFoundCacheTimeoutSeconds( 1 );
+        final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
+
+        final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransferManager(), locations, null, nfc );
 
         final XMLInfrastructure xml = new XMLInfrastructure();
         final TypeMapper types = new StandardTypeMapper();
