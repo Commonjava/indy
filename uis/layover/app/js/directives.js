@@ -113,7 +113,7 @@ directives.directive('apGroupConstituent', ['$timeout', function(timer) {
           var idx = scope.store.constituents.indexOf(scope.constituent);
           
           var parts = scope.constituent.split(':')
-          scope.raw.available.push({type: parts[0], name: parts[1]});
+          scope.raw.available.push({packageType: parts[0], type: parts[1], name: parts[2]});
           
           scope.store.constituents.splice(idx,1);
           
@@ -164,11 +164,11 @@ directives.directive('apGroupAvailable', ['$timeout', function( timer ) {
     link: function(scope, element, attributes){
       var run = function(){
         scope.addConstituent = function(){
-          scope.store.constituents.push(scope.available.type + ':' + scope.available.name);
+          scope.store.constituents.push(scope.available.packageType + ':' + scope.available.type + ':' + scope.available.name);
           element.addClass('hidden');
         };
 
-        var key = scope.available.type + ':' + scope.available.name;
+        var key = scope.available.packageType + ':' + scope.available.type + ':' + scope.available.name;
         var idx = scope.store.constituents.indexOf(key);
         var gKey = 'group:' + scope.raw.name;
 

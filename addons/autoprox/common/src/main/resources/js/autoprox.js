@@ -97,6 +97,7 @@ indyAddons.controller('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$loca
 				$scope.raw = {
 			    demo: true,
 				  type: StoreUtilSvc.typeFromKey( key ),
+				  packageType: StoreUtilSvc.packageTypeFromKey( key ),
 				  name: StoreUtilSvc.nameFromKey( key ),
 				  description: StoreUtilSvc.defaultDescription( result.store.description ),
 				  storeHref: StoreUtilSvc.storeHref( key ),
@@ -142,12 +143,14 @@ indyAddons.controller('AutoProxCalculatorCtl', ['$scope', '$routeParams', '$loca
 	};
 	
   var routeType = $routeParams.type;
+  var routePackageType = $routeParams.packageType;
   var routeName = $routeParams.name;
   
 //  alert( "Got route type: " + routeType + "\n and name: " + routeName );
   
-  if ( routeType !== undefined && routeName !== undefined ){
+  if ( routeType !== undefined && routePackageType !== undefined && routeName !== undefined ){
     $scope.form.type = routeType;
+    $scope.form.packageType = routePackageType;
     $scope.form.name = routeName;
     
   	$scope.calculate();
@@ -169,6 +172,7 @@ indyAddons.controller('AutoProxCalcConstituentCtl', ['$scope', 'StoreUtilSvc', f
     $scope.raw = {
       demo: true,
       type: StoreUtilSvc.typeFromKey( key ),
+      packageType: StoreUtilSvc.packageTypeFromKey( key ),
       name: StoreUtilSvc.nameFromKey( key ),
       description: StoreUtilSvc.defaultDescription( store.description ),
       storeHref: StoreUtilSvc.storeHref( key ),

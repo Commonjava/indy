@@ -191,7 +191,7 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
   $scope.controls = function( store ){
     $scope.store = store;
     
-    ControlSvc.addControlHrefs($scope, 'hosted', $scope.raw.name, $scope.mode, $location);
+    ControlSvc.addControlHrefs($scope, 'hosted', $scope.raw.packageType, $scope.raw.name, $scope.mode, $location);
     ControlSvc.addStoreControls($scope, $location, 'hosted', HostedSvc, StoreUtilSvc, {
       save: function(scope){
         if (!$scope.store.allow_snapshots){
@@ -307,7 +307,7 @@ indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', '
       $scope.raw.available = StoreUtilSvc.sortEndpoints( listing.items );
     });
 
-    ControlSvc.addControlHrefs($scope, 'group', $scope.raw.name, $scope.mode, $location);
+    ControlSvc.addControlHrefs($scope, 'group', $scope.raw.packageType, $scope.raw.name, $scope.mode, $location);
     ControlSvc.addStoreControls($scope, $location, 'group', GroupSvc, StoreUtilSvc);
   };
 
@@ -320,7 +320,7 @@ indyControllers.controller('GroupCtl', ['$scope', '$routeParams', '$location', '
     $scope.controls($scope.store);
   }
   else{
-    GroupSvc.resource.get({name: $routeParams.name}, function(store){
+    GroupSvc.resource.get({packageType: $routeParams.packageType, name: $routeParams.name}, function(store){
       $scope.raw.name = StoreUtilSvc.nameFromKey(store.key);
       $scope.raw.packageType = StoreUtilSvc.packageTypeFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
