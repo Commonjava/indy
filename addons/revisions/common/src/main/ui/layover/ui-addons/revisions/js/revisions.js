@@ -101,6 +101,7 @@ indy.controllerProvider.register('StoreChangelogCtl', ['$scope', '$location', '$
   $scope.change = function(){
     if ( $scope.form.key !== undefined && $scope.form.key != '' ){
       $scope.form.type = StoreUtilSvc.typeFromKey($scope.form.key);
+      $scope.form.packageType = StoreUtilSvc.packageTypeFromKey($scope.form.key);
       $scope.form.name = StoreUtilSvc.nameFromKey($scope.form.key);
       $scope.form.label = StoreUtilSvc.keyLabel( $scope.form.key );
       
