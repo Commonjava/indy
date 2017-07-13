@@ -21,7 +21,6 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -165,6 +164,15 @@ public class ReadOnlyTransfer
     @Override
     public OutputStream openOutputStream( TransferOperation accessType, boolean fireEvents,
                                           EventMetadata eventMetadata )
+            throws IOException
+    {
+        deny();
+        return null;
+    }
+
+    @Override
+    public OutputStream openOutputStream( TransferOperation accessType, boolean fireEvents,
+                                          EventMetadata eventMetadata, boolean deleteFilesOnPath )
             throws IOException
     {
         deny();
