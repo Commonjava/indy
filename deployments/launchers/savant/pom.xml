@@ -153,6 +153,12 @@
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-index</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
   </dependencies>
   
   <build>
