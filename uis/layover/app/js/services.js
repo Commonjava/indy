@@ -304,6 +304,20 @@ indyServices.factory('StoreUtilSvc', function(){
       return secs;
     },
 
+    timestampToDateFormat: function(milliseconds){
+      if ( milliseconds == undefined ){
+        return 'never';
+      }
+
+      if ( milliseconds < 1 ){
+        return 'never';
+      }
+
+      var date = new Date();
+      date.setTime(milliseconds)
+      return date.toLocaleString();
+    },
+
     secondsToDuration: function(secs){
       if ( secs == undefined ){
         return 'never';
