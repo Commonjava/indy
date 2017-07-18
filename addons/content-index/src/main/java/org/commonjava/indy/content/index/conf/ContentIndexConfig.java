@@ -31,7 +31,9 @@ public class ContentIndexConfig
 
     public static final String AUTH_INDEX_PARAM = "support.authoritative.indexes";
 
-    private boolean authIndex;
+    private static final Boolean DEFAULT_AUTHORITATIVE_INDEXES = Boolean.FALSE;
+
+    private Boolean authIndex;
 
     public ContentIndexConfig()
     {
@@ -42,13 +44,13 @@ public class ContentIndexConfig
         this.authIndex = authIndex;
     }
 
-    public boolean isAuthIndex()
+    public Boolean isAuthIndex()
     {
-        return authIndex;
+        return authIndex == null ? DEFAULT_AUTHORITATIVE_INDEXES : authIndex;
     }
 
     @ConfigName( ContentIndexConfig.AUTH_INDEX_PARAM )
-    public void setAuthIndex( boolean authIndex )
+    public void setAuthIndex( Boolean authIndex )
     {
         this.authIndex = authIndex;
     }
