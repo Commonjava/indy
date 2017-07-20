@@ -32,3 +32,27 @@ filterModule
       return StoreUtilSvc.secondsToDuration( secs );
     };
   }]);
+
+filterModule
+  .filter('dateFormat', ['StoreUtilSvc', function(StoreUtilSvc) {
+    return function(secs) {
+      return StoreUtilSvc.timestampToDateFormat( secs );
+    };
+  }]);
+
+filterModule
+  .filter('timestampToDuration', ['StoreUtilSvc', function(StoreUtilSvc) {
+    return function(secs) {
+      if ( secs == undefined ){
+        return 'never';
+      }
+
+      if ( secs < 1 ){
+        return 'never';
+      }
+       var nextDate =  new Date(secs);
+       var toDay = new Date();
+       var total = nextDate.getTime() - toDay.getTime();
+       return StoreUtilSvc.secondsToDuration( total / 1000);
+    };
+  }]);
