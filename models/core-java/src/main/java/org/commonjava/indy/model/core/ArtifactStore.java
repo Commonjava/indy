@@ -71,7 +71,7 @@ public abstract class ArtifactStore
     // the content in this repo will be content-indexing dependent forcibly, which will be treated as missing if
     // it is not included in content indexing.
     @JsonProperty("authoritative_index")
-    private Boolean authIndex;
+    private Boolean authoritativeIndex;
 
     protected ArtifactStore()
     {
@@ -257,13 +257,13 @@ public abstract class ArtifactStore
         this.pathStyle = pathStyle;
     }
 
-    public boolean isAuthIndex()
+    public boolean isAuthoritativeIndex()
     {
-        return authIndex == null ? Boolean.FALSE : authIndex;
+        return authoritativeIndex == null ? Boolean.FALSE : authoritativeIndex;
     }
 
-    public void setAuthIndex( boolean authIndex )
+    public void setAuthoritativeIndex( boolean authoritativeIndex )
     {
-        this.authIndex = authIndex;
+        this.authoritativeIndex = authoritativeIndex;
     }
 }

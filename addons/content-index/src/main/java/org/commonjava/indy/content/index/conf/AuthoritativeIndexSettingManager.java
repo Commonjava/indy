@@ -56,11 +56,11 @@ public class AuthoritativeIndexSettingManager
                             final HostedRepository hosted = (HostedRepository) store;
                             if ( hosted.isReadonly() )
                             {
-                                hosted.setAuthIndex( true );
+                                hosted.setAuthoritativeIndex( true );
                             }
                             else
                             {
-                                hosted.setAuthIndex( false );
+                                hosted.setAuthoritativeIndex( false );
                             }
                         } );
     }

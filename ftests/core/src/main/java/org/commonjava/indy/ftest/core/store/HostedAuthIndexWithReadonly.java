@@ -64,7 +64,7 @@ import static org.junit.Assert.assertThat;
                      .create( repo, name.getMethodName(), HostedRepository.class );
 
         assertThat( repo.isReadonly(), equalTo( false ) );
-        assertThat( repo.isAuthIndex(), equalTo( false ));
+        assertThat( repo.isAuthoritativeIndex(), equalTo( false ));
 
         repo.setReadonly( true );
         assertThat( client.stores()
@@ -76,7 +76,7 @@ import static org.junit.Assert.assertThat;
                      .load( new StoreKey( MAVEN_PKG_KEY, StoreType.hosted, repo.getName() ), HostedRepository.class );
         assertThat( repo.getName(), equalTo( repo.getName() ) );
         assertThat( repo.isReadonly(), equalTo( true ) );
-        assertThat( repo.isAuthIndex(), equalTo( true ) );
+        assertThat( repo.isAuthoritativeIndex(), equalTo( true ) );
 
         repo.setReadonly( false );
         assertThat( client.stores()
@@ -88,7 +88,7 @@ import static org.junit.Assert.assertThat;
                      .load( new StoreKey( MAVEN_PKG_KEY, StoreType.hosted, repo.getName() ), HostedRepository.class );
         assertThat( repo.getName(), equalTo( repo.getName() ) );
         assertThat( repo.isReadonly(), equalTo( false ) );
-        assertThat( repo.isAuthIndex(), equalTo( false ) );
+        assertThat( repo.isAuthoritativeIndex(), equalTo( false ) );
     }
 
     @Override
