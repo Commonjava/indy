@@ -34,6 +34,7 @@ public abstract class AbstractRepository
     @JsonProperty( "path_mask_patterns" )
     private Set<String> pathMaskPatterns;
 
+
     AbstractRepository()
     {
     }

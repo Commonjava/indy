@@ -67,6 +67,12 @@ public abstract class ArtifactStore
     @JsonProperty( "path_style" )
     private PathStyle pathStyle;
 
+    // This field controls if this repo should be authoritative indexing enabled. This means if it is enabled,
+    // the content in this repo will be content-indexing dependent forcibly, which will be treated as missing if
+    // it is not included in content indexing.
+    @JsonProperty("authoritative_index")
+    private Boolean authoritativeIndex;
+
     protected ArtifactStore()
     {
     }
@@ -249,5 +255,15 @@ public abstract class ArtifactStore
     public void setPathStyle( PathStyle pathStyle )
     {
         this.pathStyle = pathStyle;
+    }
+
+    public boolean isAuthoritativeIndex()
+    {
+        return authoritativeIndex == null ? Boolean.FALSE : authoritativeIndex;
+    }
+
+    public void setAuthoritativeIndex( boolean authoritativeIndex )
+    {
+        this.authoritativeIndex = authoritativeIndex;
     }
 }
