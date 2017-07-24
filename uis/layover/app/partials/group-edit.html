@@ -30,7 +30,7 @@
       <div class="detail-field">
         <input type="checkbox" ng-model="raw.enabled" />
         <label>Enabled?</label>
-        <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration}}</span>
+        <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration | dateFormat}}</span>
       </div>
 
       <div class="sub-fields">
