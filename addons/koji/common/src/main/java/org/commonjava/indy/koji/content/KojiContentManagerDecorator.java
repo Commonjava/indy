@@ -29,6 +29,7 @@ import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
@@ -127,6 +128,10 @@ public abstract class KojiContentManagerDecorator
 
     @Inject
     private KojiBuildAuthority buildAuthority;
+
+    @Inject
+    private ContentIndexManager indexManager;
+
     public KojiRepositoryCreator createRepoCreator()
     {
         KojiRepositoryCreator creator = null;
@@ -450,6 +455,10 @@ public abstract class KojiContentManagerDecorator
                                                       + "/" + a.getVersion() + "/" + a.getFilename() )
                                               .collect( Collectors.toSet() ) );
 
+            // pre-index the koji build artifacts and set authoritative index of the remote to let the
+            // koji remote repo directly go through the content index
+            patterns.forEach( path->indexManager.indexPathInStores( path, remote.getKey() ) );
+            remote.setAuthoritativeIndex( true );
             remote.setPathMaskPatterns( patterns );
 
             remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
@@ -460,6 +469,7 @@ public abstract class KojiContentManagerDecorator
                                                                            .getNvr() );
 
             storeDataManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
+
 
             logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
 
