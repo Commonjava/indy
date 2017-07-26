@@ -55,6 +55,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
+import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_NPM;
 
 public class ContentAccessHandler
         implements IndyResources
@@ -117,6 +118,7 @@ public class ContentAccessHandler
                 builderModifier.accept( builder );
             }
             response = builder.build();
+            contentController.generateHttpMetadataHeaders( transfer, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
