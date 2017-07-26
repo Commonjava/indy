@@ -18,6 +18,7 @@ package org.commonjava.indy.content.index;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.content.index.conf.ContentIndexConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -30,6 +31,8 @@ import javax.decorator.Delegate;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -46,6 +49,9 @@ public abstract class IndexingDirectContentAccessDecorator
     @Delegate
     private DirectContentAccess delegate;
 
+    @Inject
+    private ContentIndexConfig indexCfg;
+
     @Override
     public Transfer retrieveRaw( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -56,6 +62,12 @@ public abstract class IndexingDirectContentAccessDecorator
         if ( transfer != null )
         {
             return transfer;
+        }
+        else if ( indexCfg.isAuthoritativeIndex() )
+        {
+            logger.debug(
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+            return null;
         }
 
         transfer = delegate.retrieveRaw( store, path, eventMetadata );
@@ -131,6 +143,18 @@ public abstract class IndexingDirectContentAccessDecorator
 //        List<IndexedStorePath> paths =
 //                indexManager.lookupIndexedSubPathsByTopKey( store.getKey(), parentPath );
 
-        return delegate.listRaw( store, parentPath );
+
+        List<StoreResource> raws = delegate.listRaw( store, parentPath );
+        if ( indexCfg.isAuthoritativeIndex() )
+        {
+            // Here we will filter the resources if authoritative index set on. Only these indexed resources will be return.
+            return raws.stream()
+                       .filter( res -> indexManager.getIndexedStorePath( res.getStoreKey(), res.getPath() ) != null )
+                       .collect( Collectors.toList() );
+        }
+        else
+        {
+            return raws;
+        }
     }
 }

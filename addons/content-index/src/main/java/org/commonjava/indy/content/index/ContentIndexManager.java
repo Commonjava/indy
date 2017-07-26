@@ -102,7 +102,6 @@ public class ContentIndexManager
     }
 
     public IndexedStorePath getIndexedStorePath( final StoreKey key, final String path )
-            throws IndyWorkflowException
     {
         return contentIndex.get( new IndexedStorePath( key, path ) );
     }
