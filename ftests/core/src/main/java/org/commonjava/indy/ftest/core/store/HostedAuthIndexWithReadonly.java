@@ -50,7 +50,7 @@ import static org.junit.Assert.assertThat;
  *     <li>The hosted repo will set to authoritative index off when changed back to non-readonly</li>
  * </ul>
  */
-    public class HostedAuthIndexWithReadonly
+public class HostedAuthIndexWithReadonly
         extends AbstractStoreManagementTest
 {
     @Test

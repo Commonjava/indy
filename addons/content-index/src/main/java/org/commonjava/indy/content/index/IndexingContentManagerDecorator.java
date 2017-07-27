@@ -189,7 +189,7 @@ public abstract class IndexingContentManagerDecorator
             logger.debug( "Found indexed transfer: {}. Returning.", transfer );
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() )
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
         {
             logger.debug(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -345,7 +345,7 @@ public abstract class IndexingContentManagerDecorator
         {
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() )
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
         {
             logger.info(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -479,12 +479,6 @@ public abstract class IndexingContentManagerDecorator
             logger.debug( "Returning indexed transfer: {}", transfer );
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() )
-        {
-            logger.debug(
-                    "Not found indexed transfer: {} and authoritative index switched on. Return null." );
-            return null;
-        }
 
         ArtifactStore store;
         try
@@ -495,6 +489,12 @@ public abstract class IndexingContentManagerDecorator
         {
             throw new IndyWorkflowException( "Failed to lookup ArtifactStore: %s for NFC handling. Reason: %s", e,
                                              storeKey, e.getMessage() );
+        }
+
+        if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        {
+            logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null." );
+            return null;
         }
 
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
