@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -513,7 +514,7 @@ public class ContentController
             }
         }
 
-        final HttpExchangeMetadata metadata = new HttpExchangeMetadata( request, responseWithLastModified );
+        final HttpExchangeMetadata metadata = new StoreHttpExchangeMetadata( request, responseWithLastModified );
         OutputStream out = null;
         try
         {
