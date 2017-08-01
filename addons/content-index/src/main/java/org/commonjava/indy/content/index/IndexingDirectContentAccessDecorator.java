@@ -63,7 +63,7 @@ public abstract class IndexingDirectContentAccessDecorator
         {
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() )
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
         {
             logger.debug(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -145,7 +145,7 @@ public abstract class IndexingDirectContentAccessDecorator
 
 
         List<StoreResource> raws = delegate.listRaw( store, parentPath );
-        if ( indexCfg.isAuthoritativeIndex() )
+        if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
         {
             // Here we will filter the resources if authoritative index set on. Only these indexed resources will be return.
             return raws.stream()

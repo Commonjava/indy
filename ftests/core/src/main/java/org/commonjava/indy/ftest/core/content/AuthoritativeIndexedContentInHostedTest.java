@@ -63,7 +63,7 @@ import static org.junit.Assert.assertThat;
  * <b>THEN:</b>
  * <ul>
  *     <li>When repo is readonly first time, the cached artifact can be fetched, but the direct writing one can not</li>
- *     <li>When repo is non-readonly, both artifacts are available</li>
+ *     <li>When repo is non-readonly, both artifacts are available, and after fetching they are both indexed</li>
  *     <li>When repo is readonly again, both artifacts are still available</li>
  * </ul>
  */

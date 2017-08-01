@@ -53,7 +53,7 @@ import static org.junit.Assert.assertThat;
  * <b>THEN:</b>
  * <ul>
  *     <li>When repo is authoritative index enabled first time, the first path can be fetched, but the second path can not</li>
- *     <li>When repo is authoritative index disabled, both path are available</li>
+ *     <li>When repo is authoritative index disabled, both path are available, and after fetching they are both indexed</li>
  *     <li>When repo is authoritative index enabled again, both path are still available</li>
  * </ul>
  */
