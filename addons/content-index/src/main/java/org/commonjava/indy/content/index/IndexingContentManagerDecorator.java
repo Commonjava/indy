@@ -18,6 +18,7 @@ package org.commonjava.indy.content.index;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.index.conf.ContentIndexConfig;
 import org.commonjava.indy.content.metrics.IndyMetricsContentIndexNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -78,6 +79,9 @@ public abstract class IndexingContentManagerDecorator
     @Inject
     private NotFoundCache nfc;
 
+    @Inject
+    private ContentIndexConfig indexCfg;
+
     protected IndexingContentManagerDecorator()
     {
     }
@@ -91,6 +95,15 @@ public abstract class IndexingContentManagerDecorator
         this.specialPathManager = specialPathManager;
         this.indexManager = indexManager;
         this.nfc = nfc;
+    }
+
+    protected IndexingContentManagerDecorator( final ContentManager delegate, final StoreDataManager storeDataManager,
+                                               final SpecialPathManager specialPathManager,
+                                               final ContentIndexManager indexManager, final NotFoundCache nfc,
+                                               final ContentIndexConfig indexCfg)
+    {
+        this(delegate, storeDataManager, specialPathManager, indexManager, nfc);
+        this.indexCfg = indexCfg;
     }
 
     @Override
@@ -175,6 +188,12 @@ public abstract class IndexingContentManagerDecorator
         {
             logger.debug( "Found indexed transfer: {}. Returning.", transfer );
             return transfer;
+        }
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        {
+            logger.debug(
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+            return null;
         }
 
         StoreType type = store.getKey().getType();
@@ -326,6 +345,12 @@ public abstract class IndexingContentManagerDecorator
         {
             return transfer;
         }
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        {
+            logger.info(
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+            return null;
+        }
 
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
         StoreType type = store.getKey().getType();
@@ -464,6 +489,12 @@ public abstract class IndexingContentManagerDecorator
         {
             throw new IndyWorkflowException( "Failed to lookup ArtifactStore: %s for NFC handling. Reason: %s", e,
                                              storeKey, e.getMessage() );
+        }
+
+        if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        {
+            logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null." );
+            return null;
         }
 
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );

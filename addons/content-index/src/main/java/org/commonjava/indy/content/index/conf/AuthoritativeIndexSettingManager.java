@@ -44,7 +44,7 @@ public class AuthoritativeIndexSettingManager
 
     public void setAuthoritativeManager( @Observes final ArtifactStorePostUpdateEvent event )
     {
-        if ( indexCfg == null || !indexCfg.isAuthIndex() )
+        if ( indexCfg == null || !indexCfg.isAuthoritativeIndex() )
         {
             return;
         }
