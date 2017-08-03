@@ -68,7 +68,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsStoring()
     {
-        return !repo.isReadonly();
+        return repo != null && !repo.isReadonly();
     }
 
     @Override
