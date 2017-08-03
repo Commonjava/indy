@@ -65,7 +65,7 @@ public class RollbackTwoArtifactsTest
 
         pending = result.getPendingPaths();
         assertThat( pending, notNullValue() );
-        assertThat( pending.size(), equalTo( 2 ) );
+        assertThat( pending.size(), equalTo( 4 ) ); // account for http-metadata.json files
 
         assertThat( result.getError(), nullValue() );
 

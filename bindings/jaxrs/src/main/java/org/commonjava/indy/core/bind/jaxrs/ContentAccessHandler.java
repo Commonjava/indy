@@ -55,7 +55,6 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_NPM;
 
 public class ContentAccessHandler
         implements IndyResources
@@ -238,12 +237,15 @@ public class ContentAccessHandler
                 Transfer item = null;
                 logger.info( "Checking existence of: {}:{} (cache only? {})", sk, path, cacheOnly );
 
-                logger.debug( "Calling getTransfer()" );
-                item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
-                logger.debug( "Got transfer reference: {}", item );
-
-                boolean exists = item != null && item.exists();
-                if ( !exists && !Boolean.TRUE.equals( cacheOnly ) )
+                boolean exists = false;
+                if ( Boolean.TRUE.equals( cacheOnly ) )
+                {
+                    logger.debug( "Calling getTransfer()" );
+                    item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                    exists = item != null && item.exists();
+                    logger.debug( "Got transfer reference: {}", item );
+                }
+                else
                 {
                     // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
                     // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
@@ -259,8 +261,8 @@ public class ContentAccessHandler
                             contentController.getHttpMetadata( item ) :
                             contentController.getHttpMetadata( sk, path );
 
-                    // TODO: For hosted repo, artifacts do not have metadata generated. Fall to get(). But we need a better fix later on.
-                    if ( httpMetadata == null )
+                    // For hosted / group repo, artifacts will also have metadata generated. This will fetch the item by content get method.
+                    if ( item == null )
                     {
                         logger.info( "Retrieving: {}:{} for existence test", sk, path );
                         item = contentController.get( sk, path, eventMetadata );
