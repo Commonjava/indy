@@ -15,15 +15,10 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.apache.http.HttpResponse;
 import org.commonjava.indy.client.core.IndyClientModule;
-import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.client.core.module.IndyRawHttpModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
-import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -34,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
-import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;

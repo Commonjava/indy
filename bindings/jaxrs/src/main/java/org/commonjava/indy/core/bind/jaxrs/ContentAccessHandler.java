@@ -117,6 +117,7 @@ public class ContentAccessHandler
                 builderModifier.accept( builder );
             }
             response = builder.build();
+            contentController.generateHttpMetadataHeaders( transfer, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
@@ -249,9 +250,9 @@ public class ContentAccessHandler
                     // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
                     // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
                     // file when it makes a request). This file stores the HTTP response status code and headers regardless exist returning true or false.
-                    logger.debug( "Calling exists()" );
+                    logger.debug( "Calling remote exists()" );
                     exists = contentController.exists( sk, path );
-                    logger.debug( "Got exists: {}", exists );
+                    logger.debug( "Got remote exists: {}", exists );
                 }
 
                 if ( exists )
@@ -260,8 +261,8 @@ public class ContentAccessHandler
                             contentController.getHttpMetadata( item ) :
                             contentController.getHttpMetadata( sk, path );
 
-                    // TODO: For hosted repo, artifacts do not have metadata generated. Fall to get(). But we need a better fix later on.
-                    if ( httpMetadata == null )
+                    // For hosted / group repo, artifacts will also have metadata generated. This will fetch the item by content get method.
+                    if ( item == null )
                     {
                         logger.info( "Retrieving: {}:{} for existence test", sk, path );
                         item = contentController.get( sk, path, eventMetadata );

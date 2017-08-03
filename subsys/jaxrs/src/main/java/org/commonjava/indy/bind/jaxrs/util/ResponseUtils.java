@@ -247,6 +247,18 @@ public final class ResponseUtils
                 builder.header( ApplicationHeader.content_length.key(), item.length() );
             }
         }
+        else
+        {
+            if ( !lastModSet )
+            {
+                logger.debug( "CANNOT SET: {}", ApplicationHeader.last_modified.key() );
+            }
+
+            if ( includeContentLength && !lenSet )
+            {
+                logger.debug( "CANNOT SET: {}", ApplicationHeader.content_length.key() );
+            }
+        }
 
         return builder;
     }
