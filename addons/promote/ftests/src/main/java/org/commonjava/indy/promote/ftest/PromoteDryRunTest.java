@@ -49,7 +49,7 @@ public class PromoteDryRunTest
 
         final Set<String> pending = result.getPendingPaths();
         assertThat( pending, notNullValue() );
-        assertThat( pending.size(), equalTo( 2 ) );
+        assertThat( completed.size(), equalTo( 4 ) ); // account for http-metadata.json files
 
         assertThat( result.getError(), nullValue() );
 

@@ -526,56 +526,64 @@ public class PromotionManager
 
                 final boolean purgeSource = request.isPurgeSource();
                 contents.forEach( (transfer)->{
-                    try
+                    final String path = transfer.getPath();
+
+                    if ( !transfer.exists() )
                     {
-                        final String path = transfer.getPath();
-
-                        Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
-                        //                        synchronized ( target )
-                        //                        {
-                        // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                        if ( target != null && target.exists() )
+                        pending.remove( path );
+                        skipped.add( path );
+                    }
+                    else
+                    {
+                        try
                         {
-                            logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                         request.getSource(), request.getTarget() );
-
-                            // TODO: There's no guarantee that the pre-existing content is the same!
-                            pending.remove( path );
-                            skipped.add( path );
-                        }
-                        else
-                        {
-                            try (InputStream stream = transfer.openInputStream( true ))
+                            Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
+                            //                        synchronized ( target )
+                            //                        {
+                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                            if ( target != null && target.exists() )
                             {
-                                contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                      new EventMetadata() );
+                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                             request.getSource(), request.getTarget() );
 
+                                // TODO: There's no guarantee that the pre-existing content is the same!
                                 pending.remove( path );
-                                complete.add( path );
-
-                                stream.close();
-
-                                if ( purgeSource )
+                                skipped.add( path );
+                            }
+                            else
+                            {
+                                try (InputStream stream = transfer.openInputStream( true ))
                                 {
-                                    contentManager.delete( sourceStore, path, new EventMetadata() );
+                                    contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                          new EventMetadata() );
+
+                                    pending.remove( path );
+                                    complete.add( path );
+
+                                    stream.close();
+
+                                    if ( purgeSource )
+                                    {
+                                        contentManager.delete( sourceStore, path, new EventMetadata() );
+                                    }
+                                }
+                                catch ( final IOException e )
+                                {
+                                    String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                                e.getMessage() );
+                                    errors.add( msg );
+                                    logger.error( msg, e );
                                 }
                             }
-                            catch ( final IOException e )
-                            {
-                                String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                            e.getMessage() );
-                                errors.add( msg );
-                                logger.error( msg, e );
-                            }
                         }
-                    }
-                    catch ( final IndyWorkflowException e )
-                    {
-                        String msg =
-                                String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, targetStore,
-                                               e.getMessage() );
-                        errors.add( msg );
-                        logger.error( msg, e );
+                        catch ( final IndyWorkflowException e )
+                        {
+                            String msg =
+                                    String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, targetStore,
+                                                   e.getMessage() );
+                            errors.add( msg );
+                            logger.error( msg, e );
+                        }
                     }
                 } );
             }
