@@ -883,6 +883,18 @@
         <version>${metrics.version}</version>
       </dependency>
 
+      <!-- START: appender of logback for elasticsearch support-->
+      <dependency>
+        <groupId>com.internetitem</groupId>
+        <artifactId>logback-elasticsearch-appender</artifactId>
+        <version>1.6</version>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.janino</groupId>
+        <artifactId>janino</artifactId>
+        <version>3.0.6</version>
+      </dependency>
+
       <dependency>
         <groupId>io.github.hengyunabc</groupId>
         <artifactId>zabbix-api</artifactId>
