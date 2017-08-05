@@ -165,6 +165,14 @@
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
+    <dependency>
+      <groupId>com.internetitem</groupId>
+      <artifactId>logback-elasticsearch-appender</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
