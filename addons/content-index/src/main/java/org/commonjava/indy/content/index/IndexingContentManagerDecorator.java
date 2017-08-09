@@ -232,10 +232,20 @@ public abstract class IndexingContentManagerDecorator
                 {
                     try
                     {
+                        // Recursively fetching the transfer from group constituents, and only
+                        // indexing the transfer for first found repo and its parent groups.
                         ArtifactStore member = storeDataManager.getArtifactStore( memberKey );
                         if ( member != null )
                         {
                             transfer = retrieve( member, path, eventMetadata );
+                        }
+
+                        if ( exists( transfer ) )
+                        {
+                            nfc.clearMissing( resource );
+                            logger.debug( "Got transfer from delegate: {} (will index)", transfer );
+                            indexManager.indexTransferIn( transfer, store.getKey() );
+                            return transfer;
                         }
                     }
                     catch ( IndyDataException e )
@@ -245,20 +255,13 @@ public abstract class IndexingContentManagerDecorator
                     }
                 }
 
-                if ( transfer != null )
-                {
-                    nfc.clearMissing( resource );
-                    logger.debug( "Got transfer from delegate: {} (will index)", transfer );
-                    indexManager.indexTransferIn( transfer, store.getKey() );
-                    return transfer;
-                }
                 logger.debug( "No index hits. Delegating to main content manager for: {} in: {}", path, store );
             }
             else
             {
                 logger.debug( "Merged content. Delegating to main content manager for: {} in: {}", path, store );
                 transfer = delegate.retrieve( store, path, eventMetadata );
-                if ( transfer == null )
+                if ( !exists( transfer ) )
                 {
                     nfc.addMissing( resource );
                 }
@@ -269,7 +272,7 @@ public abstract class IndexingContentManagerDecorator
 
         transfer = delegate.retrieve( store, path, eventMetadata );
 
-        if ( transfer != null )
+        if ( exists( transfer ) )
         {
             logger.debug( "Got transfer from delegate: {} (will index)", transfer );
 
@@ -278,6 +281,11 @@ public abstract class IndexingContentManagerDecorator
 
         logger.debug( "Returning transfer: {}", transfer );
         return transfer;
+    }
+
+    private boolean exists( final Transfer transfer )
+    {
+        return transfer != null && transfer.exists();
     }
 
     @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
@@ -344,7 +352,7 @@ public abstract class IndexingContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
 
         Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
-        if ( transfer != null )
+        if ( exists( transfer ) )
         {
             return transfer;
         }
@@ -366,10 +374,19 @@ public abstract class IndexingContentManagerDecorator
                 for (StoreKey memberKey: ((Group)store).getConstituents()){
                     try
                     {
+                        // Recursively fetching the transfer from group constituents, and only
+                        // indexing the transfer for first found repo and its parent groups.
                         ArtifactStore member = storeDataManager.getArtifactStore( memberKey );
                         if ( member != null )
                         {
                             transfer = getTransfer( member, path, op );
+                        }
+
+                        if ( exists( transfer ) )
+                        {
+                            logger.debug( "Indexing transfer: {}", transfer );
+                            indexManager.indexTransferIn( transfer, store.getKey() );
+                            return transfer;
                         }
                     }
                     catch ( IndyDataException e )
@@ -377,12 +394,6 @@ public abstract class IndexingContentManagerDecorator
                         logger.error( String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s",
                                                      memberKey, store.getKey(), e.getMessage() ), e );
                     }
-                }
-                if ( transfer != null )
-                {
-                    logger.debug( "Indexing transfer: {}", transfer );
-                    indexManager.indexTransferIn( transfer, store.getKey() );
-                    return transfer;
                 }
             }
             else
@@ -394,7 +405,7 @@ public abstract class IndexingContentManagerDecorator
 
         transfer = delegate.getTransfer( store, path, op );
         // index the transfer only if it exists, it cannot be null at this point
-        if ( transfer != null && transfer.exists() )
+        if ( exists( transfer ) )
         {
             indexManager.indexTransferIn( transfer, store.getKey() );
         }
@@ -481,7 +492,7 @@ public abstract class IndexingContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
 
         Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD );
-        if ( transfer != null )
+        if ( exists( transfer ) )
         {
             logger.debug( "Returning indexed transfer: {}", transfer );
             return transfer;
@@ -527,10 +538,20 @@ public abstract class IndexingContentManagerDecorator
             {
                 try
                 {
+                    // Recursively fetching the transfer from group constituents, and only
+                    // indexing the transfer for first found repo and its parent groups.
                     ArtifactStore member = storeDataManager.getArtifactStore( key );
                     if ( member != null )
                     {
                         transfer = getTransfer( key, path, op );
+                    }
+
+                    if ( exists( transfer ) )
+                    {
+                        logger.debug( "Indexing transfer: {}", transfer );
+                        indexManager.indexTransferIn( transfer, storeKey );
+                        logger.debug( "Returning indexed transfer: {} from member: {}", transfer, key );
+                        return transfer;
                     }
                 }
                 catch ( IndyDataException e )
@@ -538,18 +559,11 @@ public abstract class IndexingContentManagerDecorator
                     logger.error( String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s",
                                                  key, store.getKey(), e.getMessage() ), e );
                 }
-                if ( transfer != null )
-                {
-                    logger.debug( "Indexing transfer: {}", transfer );
-                    indexManager.indexTransferIn( transfer, storeKey );
-                    logger.debug( "Returning indexed transfer: {} from member: {}", transfer, key );
-                    return transfer;
-                }
             }
         }
 
         transfer = delegate.getTransfer( storeKey, path, op );
-        if ( transfer != null )
+        if ( exists( transfer ) )
         {
             logger.debug( "Indexing transfer: {}", transfer );
             indexManager.indexTransferIn( transfer, storeKey );
