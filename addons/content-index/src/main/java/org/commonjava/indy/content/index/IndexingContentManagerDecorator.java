@@ -211,7 +211,16 @@ public abstract class IndexingContentManagerDecorator
                         ArtifactStore member = storeDataManager.getArtifactStore( memberKey );
                         if ( member != null )
                         {
-                            transfer = retrieve( member, path, eventMetadata );
+                            try
+                            {
+                                transfer = retrieve( member, path, eventMetadata );
+                            }
+                            catch ( IndyWorkflowException e )
+                            {
+                                logger.error( String.format(
+                                        "Failed to retrieve() for member path: %s:%s. Reason: %s",
+                                        member.getKey(), path, e.getMessage() ), e );
+                            }
                         }
 
                         if ( exists( transfer ) )
@@ -340,7 +349,16 @@ public abstract class IndexingContentManagerDecorator
                         ArtifactStore member = storeDataManager.getArtifactStore( memberKey );
                         if ( member != null )
                         {
-                            transfer = getTransfer( member, path, op );
+                            try
+                            {
+                                transfer = getTransfer( member, path, op );
+                            }
+                            catch ( IndyWorkflowException e )
+                            {
+                                logger.error( String.format(
+                                        "Failed to getTransfer() for member path: %s:%s. Reason: %s",
+                                        member.getKey(), path, e.getMessage() ), e );
+                            }
                         }
 
                         if ( exists( transfer ) )
@@ -491,7 +509,16 @@ public abstract class IndexingContentManagerDecorator
                     ArtifactStore member = storeDataManager.getArtifactStore( key );
                     if ( member != null )
                     {
-                        transfer = getTransfer( key, path, op );
+                        try
+                        {
+                            transfer = getTransfer( key, path, op );
+                        }
+                        catch ( IndyWorkflowException e )
+                        {
+                            logger.error( String.format(
+                                    "Failed to getTransfer() for member path: %s:%s. Reason: %s",
+                                    member.getKey(), path, e.getMessage() ), e );
+                        }
                     }
 
                     if ( exists( transfer ) )
