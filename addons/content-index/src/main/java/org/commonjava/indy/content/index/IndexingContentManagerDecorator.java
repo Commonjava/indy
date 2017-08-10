@@ -246,12 +246,8 @@ public abstract class IndexingContentManagerDecorator
                                                                 return null;
                                                             }
                                                         } );
-                if ( exists( transfer ) )
-                {
-                    return transfer;
-                }
-
-                logger.debug( "No index hits. Delegating to main content manager for: {} in: {}", path, store );
+                nfcForGroup( store, transfer, resource );
+                return transfer;
             }
             else
             {
@@ -423,10 +419,10 @@ public abstract class IndexingContentManagerDecorator
                                                                 return null;
                                                             }
                                                         } );
-                if ( exists( transfer ) )
-                {
-                    return transfer;
-                }
+
+                nfcForGroup( store, transfer, resource );
+
+                return transfer;
             }
             else
             {
@@ -568,10 +564,10 @@ public abstract class IndexingContentManagerDecorator
             logger.debug( "No group index hits. Devolving to member store indexes." );
             transfer = getTransferFromConstituents( g.getConstituents(), resource, path, g,
                                                     memberKey -> getTransfer( memberKey, path, op ) );
-            if ( exists( transfer ) )
-            {
-                return transfer;
-            }
+
+            nfcForGroup( store, transfer, resource );
+
+            return transfer;
         }
 
         transfer = delegate.getTransfer( storeKey, path, op );
@@ -582,6 +578,26 @@ public abstract class IndexingContentManagerDecorator
         }
 
         return transfer;
+    }
+
+    private void nfcForGroup( final ArtifactStore store, final Transfer transfer, final ConcreteResource resource )
+    {
+        if ( store.getKey().getType() == StoreType.group )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            if ( exists( transfer ) )
+            {
+                nfc.clearMissing( resource );
+            }
+            else
+            {
+                logger.debug( "No index hits. Delegating to main content manager for: {} in: {}", resource.getPath(),
+                              store );
+                logger.debug( "No transfer hit at group level of group {}, will add to NFC for this group resource",
+                              store );
+                nfc.addMissing( resource );
+            }
+        }
     }
 
     @Override
