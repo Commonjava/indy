@@ -17,7 +17,11 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.action.BootupAction;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.content.metrics.IndyMetricsContentIndexNames;
+import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -51,7 +55,10 @@ import java.util.stream.Stream;
  */
 @ApplicationScoped
 public class ContentIndexManager
+        implements BootupAction, ShutdownAction
 {
+    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
     @Inject
     private StoreDataManager storeDataManager;
 
@@ -66,7 +73,12 @@ public class ContentIndexManager
     @Inject
     private NotFoundCache nfc;
 
-    protected ContentIndexManager(){}
+    @Inject
+    private NFCContentListener listener;
+
+    protected ContentIndexManager()
+    {
+    }
 
     public ContentIndexManager( StoreDataManager storeDataManager, SpecialPathManager specialPathManager,
                                 CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex,
@@ -78,9 +90,46 @@ public class ContentIndexManager
         this.nfc = nfc;
     }
 
+    @Override
+    public String getId()
+    {
+        return "Indy ContentIndexManager";
+    }
+
+
+    @Override
+    public void init()
+            throws IndyLifecycleException
+    {
+        logger.debug( "Register index cache listener for NFC" );
+        contentIndex.execute( cache -> {
+            cache.addListener( listener );
+            return null;
+        } );
+    }
+
+    @Override
+    public void stop()
+            throws IndyLifecycleException
+    {
+        logger.debug( "Shutdown index cache" );
+        contentIndex.stop();
+    }
+
+    @Override
+    public int getBootPriority()
+    {
+        return 80;
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 95;
+    }
+
     public boolean removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
-//        Logger logger = LoggerFactory.getLogger( getClass() );
         IndexedStorePath topPath = new IndexedStorePath( key, path );
 //        logger.trace( "Attempting to remove indexed path: {}", topPath );
         if ( contentIndex.remove( topPath ) != null )
@@ -97,8 +146,8 @@ public class ContentIndexManager
 
     public void deIndexStorePath( final StoreKey key, final String path )
     {
-            IndexedStorePath toRemove = new IndexedStorePath( key, path );
-            contentIndex.remove( toRemove );
+        IndexedStorePath toRemove = new IndexedStorePath( key, path );
+        contentIndex.remove( toRemove );
     }
 
     public IndexedStorePath getIndexedStorePath( final StoreKey key, final String path )
@@ -120,7 +169,6 @@ public class ContentIndexManager
     public void indexPathInStores( String path, StoreKey originKey, StoreKey... topKeys )
     {
             IndexedStorePath origin = new IndexedStorePath( originKey, path );
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.trace( "Indexing path: {} in: {}", path, originKey );
             contentIndex.put( origin, origin );
 
@@ -144,7 +192,6 @@ public class ContentIndexManager
             return;
         }
 
-        Logger logger = LoggerFactory.getLogger( getClass() );
 //        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
 
         groups.forEach( (group)->{

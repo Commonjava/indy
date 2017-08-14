@@ -150,12 +150,6 @@ public class TwoGroupsWithSameHostedNFCTest
 
         nfcSectionDto =
                 dto.getSections().stream().filter( d -> d.getKey().equals( a.getKey() ) ).findFirst().orElse( null );
-        assertThat( nfcSectionDto, notNullValue() );
-        assertThat( nfcSectionDto.getPaths(), nullValue() );
-
-        nfcSectionDto =
-                dto.getSections().stream().filter( d -> d.getKey().equals( x.getKey() ) ).findFirst().orElse( null );
-        assertThat( nfcSectionDto, notNullValue() );
-        assertThat( nfcSectionDto.getPaths(), nullValue() );
+        assertThat( nfcSectionDto, nullValue() );
     }
 }

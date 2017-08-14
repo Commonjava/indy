@@ -63,6 +63,8 @@ import java.util.Set;
 public abstract class IndexingContentManagerDecorator
         implements ContentManager
 {
+    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
     @Inject
     private StoreDataManager storeDataManager;
 
@@ -152,7 +154,6 @@ public abstract class IndexingContentManagerDecorator
             }
             catch ( IndyWorkflowException e )
             {
-                Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.error(
                         String.format( "Failed to retrieve indexed content: %s:%s. Reason: %s", store.getKey(), path,
                                        e.getMessage() ), e );
@@ -180,8 +181,6 @@ public abstract class IndexingContentManagerDecorator
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         logger.trace( "Looking for indexed path: {} in: {}", path, store.getKey() );
 
         Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
@@ -267,7 +266,6 @@ public abstract class IndexingContentManagerDecorator
         if ( exists( transfer ) )
         {
             logger.debug( "Got transfer from delegate: {} (will index)", transfer );
-
             indexManager.indexTransferIn( transfer, store.getKey() );
         }
 
@@ -282,7 +280,6 @@ public abstract class IndexingContentManagerDecorator
     private Transfer getTransferFromConstituents( Collection<StoreKey> constituents, ConcreteResource resource, String path,
                                                   ArtifactStore parentStore, TransferSupplier<Transfer> transferSupplier )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
         List<StoreKey> members = new ArrayList<>( constituents );
         Transfer transfer = null;
         for ( StoreKey memberKey : members )
@@ -329,7 +326,6 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Looking for indexed path: {} in: {} (entry point: {})", path, storeKey, topKey );
 
         try
@@ -380,8 +376,6 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
         if ( exists( transfer ) )
         {
@@ -476,7 +470,6 @@ public abstract class IndexingContentManagerDecorator
             }
             catch ( IndyDataException e )
             {
-                Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.error(
                         String.format( "Failed to lookup store: %s (in membership of: %s). Reason: %s", key, topKey,
                                        e.getMessage() ), e );
@@ -517,8 +510,6 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final StoreKey storeKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD );
         if ( exists( transfer ) )
         {
@@ -584,7 +575,6 @@ public abstract class IndexingContentManagerDecorator
     {
         if ( store.getKey().getType() == StoreType.group )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             if ( exists( transfer ) )
             {
                 nfc.clearMissing( resource );
@@ -599,6 +589,7 @@ public abstract class IndexingContentManagerDecorator
             }
         }
     }
+
 
     @Override
     public Transfer getTransfer( final List<ArtifactStore> stores, final String path, final TransferOperation op )
@@ -631,7 +622,7 @@ public abstract class IndexingContentManagerDecorator
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Storing: {} in: {}", path, store.getKey() );
+        logger.trace( "Storing: {} in: {} from indexing level", path, store.getKey() );
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
@@ -643,6 +634,7 @@ public abstract class IndexingContentManagerDecorator
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
             }
         }
+//        nfcClearByContaining( store, path );
 
         return transfer;
     }
