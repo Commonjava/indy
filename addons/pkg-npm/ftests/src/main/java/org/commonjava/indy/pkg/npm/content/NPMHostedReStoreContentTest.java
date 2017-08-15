@@ -51,8 +51,7 @@ public class NPMHostedReStoreContentTest
                         "{\"name\": \"jquery\",\n" + "\"url\": \"jquery.com\",\n" + "\"version\": \"2.1.0\"}";
         InputStream stream = new ByteArrayInputStream( versionContent.getBytes() );
 
-        final String path = "jquery/2.1.0/package.json";
-        final String mappingPath = "jquery/2.1.0";
+        final String path = "jquery/2.1.0";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -60,19 +59,19 @@ public class NPMHostedReStoreContentTest
         repo = client.stores().create( repo, "adding npm hosted repo", HostedRepository.class );
 
         StoreKey storeKey = repo.getKey();
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
         client.content().store( storeKey, path, stream );
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         final String versionSnapshotContent =
                         "{\"name\": \"jquery\",\n" + "\"url\": \"jquery.com\",\n" + "\"version\": \"2.2.0-snapshot\"}";
         InputStream snapshotStream = new ByteArrayInputStream( versionSnapshotContent.getBytes() );
 
         client.content().store( storeKey, path, snapshotStream );
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
-        final InputStream is = client.content().get( storeKey, mappingPath );
+        final InputStream is = client.content().get( storeKey, path );
         final String result = IOUtils.toString( is );
 
         assertThat( result, equalTo( versionSnapshotContent ) );

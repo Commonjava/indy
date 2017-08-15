@@ -58,7 +58,7 @@ public class NPMGroupStoreFileTest
 
     private static final String GROUP_B = "B";
 
-    private static final String PATH = "jquery/package.json";
+    private static final String PATH = "jquery";
 
     private static final String CONTENT_1 = "This is content #1.";
 

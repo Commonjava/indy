@@ -55,8 +55,7 @@ public class NPMReaonlyHostedStoreFileTest
         final String content = "This is a test: " + System.nanoTime();
         InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
-        final String path = "jquery/2.1.0/package.tgz";
-        final String mappingPath = "jquery/-/jquery-2.1.0.tgz";
+        final String path = "jquery/-/jquery-2.1.0.tgz";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -64,7 +63,7 @@ public class NPMReaonlyHostedStoreFileTest
         repo = client.stores().create( repo, "adding npm hosted repo", HostedRepository.class );
 
         StoreKey storeKey = repo.getKey();
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
         try
         {
@@ -75,7 +74,7 @@ public class NPMReaonlyHostedStoreFileTest
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.METHOD_NOT_ALLOWED.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
         repo.setReadonly( false );
         client.stores().update( repo, "change read-only false" );
@@ -83,9 +82,9 @@ public class NPMReaonlyHostedStoreFileTest
         stream = new ByteArrayInputStream( content.getBytes() );
         client.content().store( storeKey, path, stream );
 
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
-        final InputStream is = client.content().get( storeKey, mappingPath );
+        final InputStream is = client.content().get( storeKey, path );
         final String result = IOUtils.toString( is );
 
         assertThat( result, equalTo( content ) );

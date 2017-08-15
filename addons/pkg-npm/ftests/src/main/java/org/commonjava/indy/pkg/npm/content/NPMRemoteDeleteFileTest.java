@@ -50,7 +50,7 @@ public class NPMRemoteDeleteFileTest
         final String content = "This is a test: " + System.nanoTime();
         InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
-        final String path = "jquery/package.json";
+        final String path = "jquery";
         final String repoName = "test-remote";
 
         server.expect( server.formatUrl( repoName, path ), 200, stream );
@@ -60,7 +60,7 @@ public class NPMRemoteDeleteFileTest
 
         StoreKey storeKey = remoteRepository.getKey();
 
-        assertThat( client.content().exists( storeKey, "jquery" ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         try
         {
@@ -71,7 +71,7 @@ public class NPMRemoteDeleteFileTest
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.BAD_REQUEST.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, "jquery" ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
     }
 
     @Override

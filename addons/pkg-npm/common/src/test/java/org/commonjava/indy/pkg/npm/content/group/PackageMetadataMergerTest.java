@@ -76,7 +76,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeTwoSimplePackageMetadataFiles() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
         HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
@@ -147,7 +147,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeWhenOneTransferIsMissing() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
         HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
@@ -189,7 +189,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeWhenOneTransferIsInvalidXml() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
         HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
@@ -232,7 +232,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeOneTransferWithProviderContent() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
         HostedRepository h2 = new HostedRepository( NPM_PKG_KEY, "test-hosted-2" );
 
@@ -282,7 +282,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeProviderWithDistTagVersionSorted() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
@@ -317,7 +317,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeProviderWithSameVersionMetadata() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
@@ -346,7 +346,7 @@ public class PackageMetadataMergerTest
     @Test
     public void mergeOneTransferWithProviderError() throws Exception
     {
-        String path = "jquery/package.json";
+        String path = "jquery";
         HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
 
         Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );

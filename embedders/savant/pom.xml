@@ -227,7 +227,7 @@
           <artifactId>maven-failsafe-plugin</artifactId>
             <configuration>
               <dependenciesToScan>
-                <dependency>org.commonjava.indy:indy-ftests-core</dependency>
+<!--                <dependency>org.commonjava.indy:indy-ftests-core</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
@@ -238,7 +238,7 @@
                 <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
                 <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
-                <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
+                <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>-->
                 <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               </dependenciesToScan> 
             </configuration>

@@ -62,7 +62,7 @@ public class NPMGroupDeleteFileTest
 
     private static final String GROUP_C = "B";
 
-    private static final String PATH = "jquery/package.json";
+    private static final String PATH = "jquery";
 
     private static final String CONTENT_1 = "This is content #1.";
 
@@ -104,9 +104,9 @@ public class NPMGroupDeleteFileTest
         client.content().delete( groupB.getKey(), PATH );
         client.content().delete( groupC.getKey(), PATH );
 
-        assertThat( client.content().exists( groupA.getKey(), "jquery" ), equalTo( true ) );
-        assertThat( client.content().exists( groupB.getKey(), "jquery" ), equalTo( false ) );
-        assertThat( client.content().exists( groupC.getKey(), "jquery" ), equalTo( false ) );
+        assertThat( client.content().exists( groupA.getKey(), PATH ), equalTo( true ) );
+        assertThat( client.content().exists( groupB.getKey(), PATH ), equalTo( false ) );
+        assertThat( client.content().exists( groupC.getKey(), PATH ), equalTo( false ) );
     }
 
     @Override
