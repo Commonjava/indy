@@ -19,17 +19,15 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +41,9 @@ import javax.inject.Inject;
  *     <li>When new content index entry added, it means that a new resource is available in repo(s),
  *     so all nfc content for this resource of the cascaded repos(low level concrete repo to higher group which contains it)
  *     should be cleared</li>
- *     <li>When content index entry removed, it means that the resource is missing in repo(s), so this resource with specified repo</li>
+ *     <li>When content index entry removed, it means that the resource is missing in repo(s), so this resource with specified
+ *     repo should be added into nfc. Note that only group level is processed here because remote and hosted are handled in
+ *     other functions. </li>
  * </ul>
  *
  * So here we used ISPN event listener to handle these types of logic, by CacheEntryCreatedEvent and CacheEntryRemovedEvent
@@ -99,18 +99,23 @@ class NFCContentListener
             IndexedStorePath isp = e.getValue();
             final StoreKey key =
                     new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, isp.getStoreType(), isp.getStoreName() );
-            try
+            // Only care about group level, as remote repo nfc is handled by remote timeout handler(see galley DownloadHandler),
+            // and hosted is handled by DownloadManager
+            if ( key.getType() == StoreType.group )
             {
-                final ArtifactStore store = storeDataManager.getArtifactStore( key );
-                final ConcreteResource r = new ConcreteResource( LocationUtils.toLocation( store ), isp.getPath() );
-                logger.debug( "Add NFC of resource {} in store {}", r, store );
-                nfc.addMissing( r );
-            }
-            catch ( IndyDataException ex )
-            {
-                logger.error( String.format(
-                        "When add nfc missing for indexed artifact of path %s in store %s, failed to lookup store. Reason: %s",
-                        isp.getPath(), key, ex.getMessage() ), ex );
+                try
+                {
+                    final ArtifactStore store = storeDataManager.getArtifactStore( key );
+                    final ConcreteResource r = new ConcreteResource( LocationUtils.toLocation( store ), isp.getPath() );
+                    logger.debug( "Add NFC of resource {} in store {}", r, store );
+                    nfc.addMissing( r );
+                }
+                catch ( IndyDataException ex )
+                {
+                    logger.error( String.format(
+                            "When add nfc missing for indexed artifact of path %s in store %s, failed to lookup store. Reason: %s",
+                            isp.getPath(), key, ex.getMessage() ), ex );
+                }
             }
         }
     }
