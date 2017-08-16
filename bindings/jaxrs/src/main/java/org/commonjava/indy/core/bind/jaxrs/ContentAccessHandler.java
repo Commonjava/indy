@@ -55,6 +55,8 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 public class ContentAccessHandler
         implements IndyResources
@@ -117,6 +119,8 @@ public class ContentAccessHandler
                 builderModifier.accept( builder );
             }
             response = builder.build();
+
+            // generating .http-metadata.json for PUT request to resolve some header requirements
             contentController.generateHttpMetadataHeaders( transfer, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
@@ -424,6 +428,11 @@ public class ContentAccessHandler
                             builderModifier.accept( builder );
                         }
                         response = builder.build();
+                        // generating .http-metadata.json for npm group retrieve to resolve header requirements
+                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.group == st )
+                        {
+                            contentController.generateHttpMetadataHeaders( item, request, response );
+                        }
                     }
                 }
                 finally

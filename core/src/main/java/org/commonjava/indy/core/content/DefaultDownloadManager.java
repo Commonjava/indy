@@ -453,6 +453,7 @@ public class DefaultDownloadManager
             {
                 if ( eventMetadata.get( STORAGE_PATH ) != null )
                 {
+                    // make all the npm hosted and group /package content retrieved as /package/package.json
                     res = ResourceUtils.storageResource( res, eventMetadata );
                 }
 

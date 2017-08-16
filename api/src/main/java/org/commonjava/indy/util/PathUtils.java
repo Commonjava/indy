@@ -19,8 +19,6 @@ import org.commonjava.maven.galley.event.EventMetadata;
 
 import java.io.File;
 
-import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
-
 public final class PathUtils
 {
     private PathUtils()

@@ -62,7 +62,7 @@ public class NPMGroupDeleteFileTest
 
     private static final String GROUP_C = "B";
 
-    private static final String PATH = "jquery";
+    private static final String PATH = "jquery/package.json";
 
     private static final String CONTENT_1 = "This is content #1.";
 

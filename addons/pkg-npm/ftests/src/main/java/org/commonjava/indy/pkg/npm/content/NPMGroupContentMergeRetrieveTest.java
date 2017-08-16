@@ -58,7 +58,7 @@ public class NPMGroupContentMergeRetrieveTest
 
     private static final String GROUP_A = "A";
 
-    private static final String PATH = "jquery";
+    private static final String PATH = "jquery/package.json";
 
     @Test
     public void test() throws Exception

@@ -32,6 +32,11 @@ public class GroupLocation
         super( new StoreKey( StoreType.group, name ) );
     }
 
+    public GroupLocation ( final String packageType, final String name )
+    {
+        super( new StoreKey( packageType, StoreType.group, name ) );
+    }
+
     @Override
     public String toString()
     {
