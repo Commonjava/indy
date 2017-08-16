@@ -181,6 +181,11 @@ public abstract class IndexingContentManagerDecorator
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( store == null )
+        {
+            return null;
+        }
+
         logger.trace( "Looking for indexed path: {} in: {}", path, store.getKey() );
 
         Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
@@ -234,7 +239,16 @@ public abstract class IndexingContentManagerDecorator
                                                             {
                                                                 ArtifactStore member =
                                                                         storeDataManager.getArtifactStore( memberKey );
-                                                                return retrieve( member, path, eventMetadata );
+
+                                                                if ( member == null )
+                                                                {
+                                                                    logger.trace( "Cannot find store for key: {}",
+                                                                                  memberKey );
+                                                                }
+                                                                else
+                                                                {
+                                                                    return retrieve( member, path, eventMetadata );
+                                                                }
                                                             }
                                                             catch ( IndyDataException e )
                                                             {
@@ -242,8 +256,9 @@ public abstract class IndexingContentManagerDecorator
                                                                         "Failed to lookup store: %s (in membership of: %s). Reason: %s",
                                                                         memberKey, store.getKey(), e.getMessage() ),
                                                                               e );
-                                                                return null;
                                                             }
+
+                                                            return null;
                                                         } );
                 nfcForGroup( store, transfer, resource );
                 return transfer;
