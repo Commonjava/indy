@@ -19,12 +19,10 @@ import org.commonjava.indy.client.core.module.IndyNfcClientModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheSectionDTO;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
-import org.hamcrest.core.IsNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,29 +37,29 @@ import static org.junit.Assert.assertThat;
 /**
  * <b>GIVEN:</b>
  * <ul>
- *     <li>Groups A and B</li>
+ *     <li>Groups A, B and C</li>
  *     <li>Hosted repository X</li>
  *     <li>Both A and B contain X as a member</li>
- *     <li>Path P doesn't exist in X</li>
+ *     <li>C contains A as a member</li>
  * </ul>
  *
  * <br/>
  * <b>WHEN:</b>
  * <ul>
- *     <li>1: Resolve P from A</li>
- *     <li>2: Upload P to X via B</li>
- *     <li>3: Resolve P from A again</li>
+ *     <li>Step 1: Resolve P from C</li>
+ *     <li>Step 2: Upload P to X via B</li>
+ *     <li>Step 3: Resolve P from C again</li>
  * </ul>
  *
  * <br/>
  * <b>THEN:</b>
  * <ul>
- *     <li>1: Both X and A should get NFC entries for P</li>
- *     <li>2: NFC entry for P in X should be cleared</li>
- *     <li>3: NFC entry for P in A should have been cleared too</li>
+ *     <li>After step-1: Both X, A and C should get NFC entries for P</li>
+ *     <li>After step-2: NFC entry for P in X should be cleared</li>
+ *     <li>After step-3: NFC entry for P in A and C should have been cleared too</li>
  * </ul>
  */
-public class TwoGroupsWithSameHostedNFCTest
+public class NFCForGroupsWithGroupsTest
         extends AbstractContentManagementTest
 {
     private HostedRepository x;
@@ -75,6 +73,10 @@ public class TwoGroupsWithSameHostedNFCTest
     private Group b;
 
     private static final String NAME_B = "group_b";
+
+    private Group c;
+
+    private static final String NAME_C = "group_c";
 
     private static final String PATH = "org/foo/bar/1/bar-1.jar";
 
@@ -93,13 +95,17 @@ public class TwoGroupsWithSameHostedNFCTest
         b = client.stores()
                   .create( new Group( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, NAME_B, x.getKey() ), change,
                            Group.class );
+
+        c = client.stores()
+                  .create( new Group( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, NAME_C, a.getKey() ), change,
+                           Group.class );
     }
 
     @Test
     public void run()
             throws Exception
     {
-        try (InputStream inputStream = client.content().get( a.getKey(), PATH ))
+        try (InputStream inputStream = client.content().get( c.getKey(), PATH ))
         {
             assertThat( inputStream, nullValue() );
         }
@@ -110,6 +116,12 @@ public class TwoGroupsWithSameHostedNFCTest
         assertThat( dto.getSections(), notNullValue() );
 
         NotFoundCacheSectionDTO nfcSectionDto =
+                dto.getSections().stream().filter( d -> d.getKey().equals( c.getKey() ) ).findFirst().orElse( null );
+        assertThat( nfcSectionDto, notNullValue() );
+        assertThat( nfcSectionDto.getPaths(), notNullValue() );
+        assertThat( nfcSectionDto.getPaths().contains( PATH ), equalTo( true ) );
+
+        nfcSectionDto =
                 dto.getSections().stream().filter( d -> d.getKey().equals( a.getKey() ) ).findFirst().orElse( null );
         assertThat( nfcSectionDto, notNullValue() );
         assertThat( nfcSectionDto.getPaths(), notNullValue() );
@@ -138,7 +150,7 @@ public class TwoGroupsWithSameHostedNFCTest
         assertThat( nfcSectionDto, notNullValue() );
         assertThat( nfcSectionDto.getPaths(), nullValue() );
 
-        try (InputStream inputStream = client.content().get( a.getKey(), PATH ))
+        try (InputStream inputStream = client.content().get( c.getKey(), PATH ))
         {
             assertThat( inputStream, notNullValue() );
         }
@@ -147,6 +159,10 @@ public class TwoGroupsWithSameHostedNFCTest
 
         assertThat( dto, notNullValue() );
         assertThat( dto.getSections(), notNullValue() );
+
+        nfcSectionDto =
+                dto.getSections().stream().filter( d -> d.getKey().equals( c.getKey() ) ).findFirst().orElse( null );
+        assertThat( nfcSectionDto, nullValue() );
 
         nfcSectionDto =
                 dto.getSections().stream().filter( d -> d.getKey().equals( a.getKey() ) ).findFirst().orElse( null );
