@@ -181,8 +181,6 @@ public abstract class IndexingContentManagerDecorator
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         if ( store == null )
         {
             return null;
@@ -204,7 +202,7 @@ public abstract class IndexingContentManagerDecorator
         }
 
         StoreType type = store.getKey().getType();
-        
+
         // NOTE: This will make the index cache non-disposable, which will mean that we have to use more reliable
         // (slower) disk to store it...which will be BAD for performance.
         // Ironically, this change will speed things up in the short term but slow them way down in the larger

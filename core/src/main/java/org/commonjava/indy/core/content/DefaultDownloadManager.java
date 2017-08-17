@@ -50,10 +50,8 @@ import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.VirtualResource;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
-import org.commonjava.maven.galley.util.ResourceUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,7 +75,6 @@ import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
-import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @javax.enterprise.context.ApplicationScoped
 public class DefaultDownloadManager

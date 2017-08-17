@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.util;
 
-import org.commonjava.maven.galley.event.EventMetadata;
 
 import java.io.File;
 
@@ -84,10 +83,4 @@ public final class PathUtils
     {
         return path.replaceAll( "/+", "/" );
     }
-
-    public static String storagePath ( final String path, final EventMetadata eventMetadata )
-    {
-        return org.commonjava.maven.galley.util.PathUtils.storagePath( path, eventMetadata );
-    }
-
 }
