@@ -444,19 +444,13 @@ public class DefaultDownloadManager
         Transfer target;
         try
         {
-            ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
+            final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( store instanceof RemoteRepository )
             {
                 target = transfers.retrieve( res, suppressFailures, eventMetadata );
             }
             else
             {
-                if ( eventMetadata.get( STORAGE_PATH ) != null )
-                {
-                    // make all the npm hosted and group /package content retrieved as /package/package.json
-                    res = ResourceUtils.storageResource( res, eventMetadata );
-                }
-
                 target = transfers.getCacheReference( res );
                 if ( target == null || !target.exists() )
                 {

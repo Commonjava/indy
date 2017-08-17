@@ -38,6 +38,26 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>Correct remote repo1 which can return content correctly</li>
+ *     <li>Incorrect remote repo2 which will return 401 error</li>
+ *     <li>Group which contains these repos which the repo2 is the first member and repo1 is the last</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Client requests the content through group</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The content can be fetched correctly from the group as repo1 has the content, even the repo2 returns 401 error</li>
+ * </ul>
+ */
 public class NestedStoreInGroupWithErrorTest
         extends AbstractContentManagementTest
 {

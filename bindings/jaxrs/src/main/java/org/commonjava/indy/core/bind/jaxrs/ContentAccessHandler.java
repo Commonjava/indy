@@ -30,6 +30,7 @@ import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.indy.util.PathUtils;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -325,7 +326,7 @@ public class ContentAccessHandler
         return doGet( packageType, type, name, path, baseUri, request, eventMetadata, null );
     }
 
-    public Response doGet( final String packageType, final String type, final String name, final String path,
+    public Response doGet( final String packageType, final String type, final String name, String path,
                            final String baseUri, final HttpServletRequest request, EventMetadata eventMetadata,
                            final Consumer<ResponseBuilder> builderModifier )
     {
@@ -375,6 +376,11 @@ public class ContentAccessHandler
         {
             try
             {
+                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
+                {
+                    // make sure the right mapping path for hosted and group when retrieve content
+                    path = PathUtils.storagePath( path, eventMetadata );
+                }
                 logger.info( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
 

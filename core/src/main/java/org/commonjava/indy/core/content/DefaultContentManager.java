@@ -234,7 +234,7 @@ public class DefaultContentManager
                     IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_RETRIEVE
                                     + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
                     IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_RETRIEVE + IndyMetricsNames.EXCEPTION ) ) )
-    public Transfer retrieve( final ArtifactStore store, String path, final EventMetadata eventMetadata )
+    public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         Transfer item;
@@ -263,8 +263,6 @@ public class DefaultContentManager
             boolean generated = false;
             for ( final ContentGenerator generator : contentGenerators )
             {
-                // make all the npm group /package path retrieved as /package/package.json, then do the merging.
-                path = PathUtils.storagePath( path, eventMetadata );
                 if ( generator.canProcess( path ) )
                 {
                     item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
