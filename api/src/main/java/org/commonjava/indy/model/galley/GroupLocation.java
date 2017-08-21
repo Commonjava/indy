@@ -27,6 +27,7 @@ public class GroupLocation
     implements KeyedLocation
 {
 
+    @Deprecated
     public GroupLocation( final String name )
     {
         super( new StoreKey( StoreType.group, name ) );

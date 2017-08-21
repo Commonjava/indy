@@ -56,10 +56,6 @@ public class NPMContentAccessResource
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String CROSS = "-";
-
-    private static final String PATH_SPLITER = "/";
-
     private static final String PACKAGE_JSON = "/package.json";
 
     @Inject
@@ -79,10 +75,11 @@ public class NPMContentAccessResource
     @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ), @ApiResponse( code = 400, message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
     @PUT
     @Path( "/{packageName}" )
-    public Response doCreate( final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                              final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                              final @PathParam( "packageName" ) String packageName, final @Context UriInfo uriInfo,
-                              final @Context HttpServletRequest request )
+    public Response doCreate(
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @PathParam( "packageName" ) String packageName, final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request )
     {
         EventMetadata eventMetadata = new EventMetadata();
         eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
@@ -94,39 +91,20 @@ public class NPMContentAccessResource
                                               .build( NPM_PKG_KEY, type, name ) );
     }
 
-    @ApiOperation( "Store NPM artifact content under the given artifact store (type/name), packageName and version." )
+    @ApiOperation(
+            "Store NPM artifact content under the given artifact store (type/name), packageName and versionTarball (/version or /-/tarball)." )
     @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ), @ApiResponse( code = 400,
                                                                                                             message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
     @PUT
-    @Path( "/{packageName}/{version}" )
+    @Path( "/{packageName}/{versionTarball: (.*)}" )
     public Response doCreate(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "packageName" ) String packageName, final @PathParam( "version" ) String version,
-            final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
-    {
-        final String path = Paths.get( packageName, PATH_SPLITER, version ).toString();
-        return handler.doCreate( NPM_PKG_KEY, type, name, path, request, new EventMetadata(),
-                                 () -> uriInfo.getBaseUriBuilder()
-                                              .path( getClass() )
-                                              .path( path )
-                                              .build( NPM_PKG_KEY, type, name ) );
-    }
-
-    @ApiOperation( "Store NPM artifact content under the given artifact store (type/name), packageName and tarball." )
-    @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ), @ApiResponse( code = 400,
-                                                                                                            message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
-    @PUT
-    @Path( "/{packageName}/{cross}/{tarball}" )
-    public Response doCreate(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "packageName" ) String packageName,
-            final @ApiParam( allowableValues = CROSS ) @PathParam( "cross" ) String cross,
-            final @PathParam( "tarball" ) String tarball, final @Context UriInfo uriInfo,
+            final @PathParam( "versionTarball" ) String versionTarball, final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request )
     {
-        final String path = Paths.get( packageName, PATH_SPLITER, CROSS, PATH_SPLITER, tarball ).toString();
+        final String path = Paths.get( packageName, versionTarball ).toString();
         return handler.doCreate( NPM_PKG_KEY, type, name, path, request, new EventMetadata(), () -> uriInfo.getBaseUriBuilder()
                                                                                                            .path( getClass() )
                                                                                                            .path( path )
@@ -136,16 +114,33 @@ public class NPMContentAccessResource
     }
 
     @Override
-    @ApiOperation( "Delete NPM package and metadata content under the given artifact store (type/name) and path." )
+    @ApiOperation(
+            "Delete NPM package and metadata content under the given artifact store (type/name) and packageName." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                     @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
-    @Path( "/{path: (.*)}" )
+    @Path( "/{packageName}" )
     public Response doDelete(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "path" ) String path )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, final @PathParam( "packageName" ) String packageName )
     {
+        EventMetadata eventMetadata = new EventMetadata();
+        eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
+        return handler.doDelete( NPM_PKG_KEY, type, name, packageName, new EventMetadata() );
+    }
+
+    @ApiOperation(
+            "Delete NPM package and metadata content under the given artifact store (type/name), packageName and versionTarball (/version or /-/tarball)." )
+    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
+                           @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
+    @DELETE
+    @Path( "/{packageName}/{versionTarball: (.*)}" )
+    public Response doDelete(
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, final @PathParam( "packageName" ) String packageName,
+            final @PathParam( "versionTarball" ) String versionTarball )
+    {
+        final String path = Paths.get( packageName, versionTarball ).toString();
         return handler.doDelete( NPM_PKG_KEY, type, name, path, new EventMetadata() );
     }
 
@@ -156,11 +151,10 @@ public class NPMContentAccessResource
     @HEAD
     @Path( "/{packageName}" )
     public Response doHead(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName,
-                    @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly,
-                    @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, final @PathParam( "packageName" ) String packageName,
+            @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly,
+            @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         EventMetadata eventMetadata = new EventMetadata();
         eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
@@ -169,39 +163,20 @@ public class NPMContentAccessResource
         return handler.doHead( NPM_PKG_KEY, type, name, packageName, cacheOnly, baseUri, request, eventMetadata );
     }
 
-    @ApiOperation( "Retrieve NPM package version header metadata content under the given artifact store (type/name), packageName and version." )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Metadata Content is not available" ),
-                    @ApiResponse( code = 200, message = "Header metadata for version metadata content" ), } )
-    @HEAD
-    @Path( "/{packageName}/{version}" )
-    public Response doHead(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName, final @PathParam( "version" ) String version,
-                    @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final UriInfo uriInfo,
-                    @Context final HttpServletRequest request )
-    {
-        final String path = Paths.get( packageName, PATH_SPLITER, version ).toString();
-        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
-                               new EventMetadata() );
-    }
-
-    @ApiOperation( "Retrieve NPM package tarball header metadata content under the given artifact store (type/name), packageName and tarball." )
+    @ApiOperation(
+            "Retrieve NPM package tarball header metadata content under the given artifact store (type/name), packageName and versionTarball (/version or /-/tarball)." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                     @ApiResponse( code = 200, message = "Header metadata for tarball content" ), } )
     @HEAD
-    @Path( "/{packageName}/{cross}/{tarball}" )
+    @Path( "/{packageName}/{versionTarball: (.*)}" )
     public Response doHead(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName,
-                    final @ApiParam( allowableValues = CROSS ) @PathParam( "cross" ) String cross,
-                    final @PathParam( "tarball" ) String tarball,
-                    @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final UriInfo uriInfo,
-                    @Context final HttpServletRequest request )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, final @PathParam( "packageName" ) String packageName,
+            final @PathParam( "versionTarball" ) String versionTarball,
+            @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly, @Context final UriInfo uriInfo,
+            @Context final HttpServletRequest request )
     {
-        final String path = Paths.get( packageName, PATH_SPLITER, CROSS, PATH_SPLITER, tarball ).toString();
+        final String path = Paths.get( packageName, versionTarball ).toString();
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doHead( NPM_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
                                new EventMetadata() );
@@ -215,8 +190,8 @@ public class NPMContentAccessResource
     @GET
     @Path( "/{packageName}" )
     public Response doGet(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "packageName" ) String packageName, @Context final UriInfo uriInfo,
             @Context final HttpServletRequest request )
     {
@@ -227,37 +202,20 @@ public class NPMContentAccessResource
         return handler.doGet( NPM_PKG_KEY, type, name, packageName, baseUri, request, eventMetadata );
     }
 
-    @ApiOperation( "Retrieve NPM package version metadata content under the given artifact store (type/name), packageName and version." )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Metadata content is not available" ),
-                    @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ),
-                    @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
-    @GET
-    @Path( "/{packageName}/{version}" )
-    public Response doGet(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName, final @PathParam( "version" ) String version,
-                    @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
-    {
-        final String path = Paths.get( packageName, PATH_SPLITER, version ).toString();
-        final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
-    }
-
-    @ApiOperation( "Retrieve NPM package tarball content under the given artifact store (type/name), packageName and tarball." )
+    @ApiOperation(
+            "Retrieve NPM package tarball content under the given artifact store (type/name), packageName and versionTarball (/version or /-/tarball)." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                     @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
-    @Path( "/{packageName}/{cross}/{tarball}" )
+    @Path( "/{packageName}/{versionTarball: (.*)}" )
     public Response doGet(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                    final @PathParam( "packageName" ) String packageName,
-                    final @ApiParam( allowableValues = CROSS ) @PathParam( "cross" ) String cross,
-                    final @PathParam( "tarball" ) String tarball, @Context final UriInfo uriInfo,
-                    @Context final HttpServletRequest request )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @PathParam( "packageName" ) String packageName,
+            final @PathParam( "versionTarball" ) String versionTarball, @Context final UriInfo uriInfo,
+            @Context final HttpServletRequest request )
     {
-        final String path = Paths.get( packageName, PATH_SPLITER, CROSS, PATH_SPLITER, tarball ).toString();
+        final String path = Paths.get( packageName, versionTarball ).toString();
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
     }
@@ -269,9 +227,9 @@ public class NPMContentAccessResource
     @GET
     @Path( "/" )
     public Response doGet(
-                    final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                    final @ApiParam( required = true ) @PathParam( "name" ) String name, @Context final UriInfo uriInfo,
-                    @Context final HttpServletRequest request )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, @Context final UriInfo uriInfo,
+            @Context final HttpServletRequest request )
     {
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, "", baseUri, request, new EventMetadata() );
