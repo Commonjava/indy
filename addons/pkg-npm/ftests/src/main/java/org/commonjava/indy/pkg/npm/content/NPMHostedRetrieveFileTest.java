@@ -58,13 +58,9 @@ public class NPMHostedRetrieveFileTest
         byte[] tgz = new byte[32];
         new Random().nextBytes( tgz );
 
-        final String packagePath = "jquery/package.json";
-        final String versionPath = "jquery/2.1.0/package.json";
-        final String tarballPath = "jquery/2.1.0/package.tgz";
-
-        final String packageMappingPath = "jquery";
-        final String versionMappingPath = "jquery/2.1.0";
-        final String tarballMappingPath = "jquery/-/jquery-2.1.0.tgz";
+        final String packagePath = "jquery";
+        final String versionPath = "jquery/2.1.0";
+        final String tarballPath = "jquery/-/jquery-2.1.0.tgz";
 
         final HostedRepository hostedRepository = new HostedRepository( NPM_PKG_KEY, STORE );
         final StoreKey storeKey = hostedRepository.getKey();
@@ -75,9 +71,9 @@ public class NPMHostedRetrieveFileTest
         client.content().store( storeKey, versionPath, new ByteArrayInputStream( versionContent.getBytes() ) );
         client.content().store( storeKey, tarballPath, new ByteArrayInputStream( tgz ) );
 
-        final PathInfo result1 = client.content().getInfo( storeKey, packageMappingPath );
-        final PathInfo result2 = client.content().getInfo( storeKey, versionMappingPath );
-        final PathInfo result3 = client.content().getInfo( storeKey, tarballMappingPath );
+        final PathInfo result1 = client.content().getInfo( storeKey, packagePath );
+        final PathInfo result2 = client.content().getInfo( storeKey, versionPath );
+        final PathInfo result3 = client.content().getInfo( storeKey, tarballPath );
 
         assertThat( "no result", result1, notNullValue() );
         assertThat( "doesn't exist", result1.exists(), equalTo( true ) );
@@ -88,8 +84,8 @@ public class NPMHostedRetrieveFileTest
         assertThat( "no result", result3, notNullValue() );
         assertThat( "doesn't exist", result3.exists(), equalTo( true ) );
 
-        final InputStream packageStream = client.content().get( storeKey, packageMappingPath );
-        final InputStream tarballStream = client.content().get( storeKey, tarballMappingPath );
+        final InputStream packageStream = client.content().get( storeKey, packagePath );
+        final InputStream tarballStream = client.content().get( storeKey, tarballPath );
 
         assertThat( packageStream, notNullValue() );
         assertThat( tarballStream, notNullValue() );

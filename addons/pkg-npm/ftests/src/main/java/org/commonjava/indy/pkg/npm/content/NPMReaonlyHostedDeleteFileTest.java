@@ -55,19 +55,18 @@ public class NPMReaonlyHostedDeleteFileTest
         final String content = "This is a test: " + System.nanoTime();
         InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
-        final String path = "jquery/2.1.0/package.json";
-        final String mappingPath = "jquery/2.1.0";
+        final String path = "jquery/2.1.0";
 
         final String repoName = "test-npm-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
         repo = client.stores().create( repo, "adding npm hosted repo", HostedRepository.class );
 
         StoreKey storeKey = repo.getKey();
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
         client.content().store( storeKey, path, stream );
 
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         repo.setReadonly( true );
         client.stores().update( repo, "change read-only true" );
@@ -81,14 +80,14 @@ public class NPMReaonlyHostedDeleteFileTest
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.METHOD_NOT_ALLOWED.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         repo.setReadonly( false );
         client.stores().update( repo, "change read-only false" );
 
         client.content().delete( storeKey, path );
 
-        assertThat( client.content().exists( storeKey, mappingPath ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
     }
 
     @Override

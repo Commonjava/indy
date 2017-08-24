@@ -58,7 +58,7 @@ public final class LocationUtils
         {
             case group:
             {
-                location = new GroupLocation( store.getName() );
+                location = new GroupLocation( store.getPackageType(), store.getName() );
                 break;
             }
             case hosted:

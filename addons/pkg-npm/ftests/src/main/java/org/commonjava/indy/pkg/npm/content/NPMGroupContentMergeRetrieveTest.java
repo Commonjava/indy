@@ -60,8 +60,6 @@ public class NPMGroupContentMergeRetrieveTest
 
     private static final String PATH = "jquery/package.json";
 
-    private static final String MAPPING_PATH = "jquery";
-
     @Test
     public void test() throws Exception
     {
@@ -86,8 +84,8 @@ public class NPMGroupContentMergeRetrieveTest
         System.out.printf( "\n\n-------Group constituents are:\n  %s\n\n",
                            StringUtils.join( groupA.getConstituents(), "\n  " ) );
 
-        final InputStream remote = client.content().get( repoX.getKey(), MAPPING_PATH );
-        final InputStream group = client.content().get( groupA.getKey(), MAPPING_PATH );
+        final InputStream remote = client.content().get( repoX.getKey(), PATH );
+        final InputStream group = client.content().get( groupA.getKey(), PATH );
 
         assertThat( remote, notNullValue() );
         assertThat( group, notNullValue() );

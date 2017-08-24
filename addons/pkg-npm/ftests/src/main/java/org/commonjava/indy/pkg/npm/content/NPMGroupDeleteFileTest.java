@@ -104,9 +104,9 @@ public class NPMGroupDeleteFileTest
         client.content().delete( groupB.getKey(), PATH );
         client.content().delete( groupC.getKey(), PATH );
 
-        assertThat( client.content().exists( groupA.getKey(), "jquery" ), equalTo( true ) );
-        assertThat( client.content().exists( groupB.getKey(), "jquery" ), equalTo( false ) );
-        assertThat( client.content().exists( groupC.getKey(), "jquery" ), equalTo( false ) );
+        assertThat( client.content().exists( groupA.getKey(), PATH ), equalTo( true ) );
+        assertThat( client.content().exists( groupB.getKey(), PATH ), equalTo( false ) );
+        assertThat( client.content().exists( groupC.getKey(), PATH ), equalTo( false ) );
     }
 
     @Override

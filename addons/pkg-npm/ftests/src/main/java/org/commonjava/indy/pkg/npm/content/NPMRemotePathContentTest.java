@@ -50,13 +50,9 @@ public class NPMRemotePathContentTest
     {
         final InputStream stream = new ByteArrayInputStream( ( "This is a test: " + System.nanoTime() ).getBytes() );
 
-        final String packagePath = "jquery/package.json";
-        final String versionPath = "jquery/1.1.0/package.json";
-        final String tarballPath = "jquery/1.1.0/package.tgz";
-
-        final String packageMappingPath = "jquery";
-        final String versionMappingPath = "jquery/1.1.0";
-        final String tarballMappingPath = "jquery/-/jquery-1.1.0.tgz";
+        final String packagePath = "jquery";
+        final String versionPath = "jquery/1.1.0";
+        final String tarballPath = "jquery/-/jquery-1.1.0.tgz";
 
         server.expect( server.formatUrl( STORE, packagePath ), 200, stream );
         server.expect( server.formatUrl( STORE, versionPath ), 200, stream );
@@ -67,9 +63,9 @@ public class NPMRemotePathContentTest
 
         client.stores().create( remoteRepository, "adding npm remote repo", RemoteRepository.class );
 
-        final PathInfo result1 = client.content().getInfo( storeKey, packageMappingPath );
-        final PathInfo result2 = client.content().getInfo( storeKey, versionMappingPath );
-        final PathInfo result3 = client.content().getInfo( storeKey, tarballMappingPath );
+        final PathInfo result1 = client.content().getInfo( storeKey, packagePath );
+        final PathInfo result2 = client.content().getInfo( storeKey, versionPath );
+        final PathInfo result3 = client.content().getInfo( storeKey, tarballPath );
 
         assertThat( "no result", result1, notNullValue() );
         assertThat( "doesn't exist", result1.exists(), equalTo( true ) );

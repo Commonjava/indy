@@ -51,8 +51,8 @@ public class NPMRemoteMetadataContentRetrieveTest
                         "{\"name\": \"jquery\",\n" + "\"description\": \"JavaScript library for DOM operations\",\n" + "\"license\": \"MIT\"}";
         final String versionContent = "{\"name\": \"jquery\",\n" + "\"url\": \"jquery.com\",\n" + "\"version\": \"1.1.0\"}";
 
-        final String packagePath = "jquery/package.json";
-        final String versionPath = "jquery/1.1.0/package.json";
+        final String packagePath = "jquery";
+        final String versionPath = "jquery/1.1.0";
 
         server.expect( server.formatUrl( STORE, packagePath ), 200, new ByteArrayInputStream( packageContent.getBytes() ) );
         server.expect( server.formatUrl( STORE, versionPath ), 200, new ByteArrayInputStream( versionContent.getBytes() ) );
@@ -62,8 +62,8 @@ public class NPMRemoteMetadataContentRetrieveTest
 
         client.stores().create( remoteRepository, "adding npm remote repo", RemoteRepository.class );
 
-        final InputStream packageStream = client.content().get( storeKey, "jquery" );
-        final InputStream versionStream = client.content().get( storeKey, "jquery/1.1.0" );
+        final InputStream packageStream = client.content().get( storeKey, packagePath );
+        final InputStream versionStream = client.content().get( storeKey, versionPath );
 
         assertThat( packageStream, notNullValue() );
         assertThat( versionStream, notNullValue() );

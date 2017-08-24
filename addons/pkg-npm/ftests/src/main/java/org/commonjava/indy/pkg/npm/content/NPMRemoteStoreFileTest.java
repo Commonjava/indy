@@ -50,7 +50,7 @@ public class NPMRemoteStoreFileTest
         final String content = "This is a test: " + System.nanoTime();
         InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
-        final String path = "jquery/package.json";
+        final String path = "jquery";
         final String repoName = "test-remote";
 
         RemoteRepository remoteRepository = new RemoteRepository( NPM_PKG_KEY, repoName, server.formatUrl( repoName ) );
@@ -58,7 +58,7 @@ public class NPMRemoteStoreFileTest
 
         StoreKey storeKey = remoteRepository.getKey();
 
-        assertThat( client.content().exists( storeKey, "jquery" ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
         try
         {
@@ -69,7 +69,7 @@ public class NPMRemoteStoreFileTest
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.BAD_REQUEST.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, "jquery" ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
     }
 
     @Override

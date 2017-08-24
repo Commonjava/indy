@@ -38,6 +38,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
@@ -287,6 +288,7 @@ public class DefaultContentManager
                     }
                     if ( item != null )
                     {
+                        // get the item from the first member store
                         break;
                     }
                 }

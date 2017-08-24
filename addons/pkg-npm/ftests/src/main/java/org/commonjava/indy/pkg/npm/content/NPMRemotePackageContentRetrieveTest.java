@@ -51,7 +51,7 @@ public class NPMRemotePackageContentRetrieveTest
         byte[] tgz = new byte[32];
         new Random().nextBytes( tgz );
 
-        final String tarballPath = "jquery/1.1.0/package.tgz";
+        final String tarballPath = "jquery/-/jquery-1.1.0.tgz";
 
         server.expect( server.formatUrl( STORE, tarballPath ), 200, new ByteArrayInputStream( tgz ) );
 
@@ -60,7 +60,7 @@ public class NPMRemotePackageContentRetrieveTest
 
         client.stores().create( remoteRepository, "adding npm remote repo", RemoteRepository.class );
 
-        final InputStream tarballStream = client.content().get( storeKey, "jquery/-/jquery-1.1.0.tgz" );
+        final InputStream tarballStream = client.content().get( storeKey, tarballPath );
 
         assertThat( tarballStream, notNullValue() );
         assertThat( IOUtils.toByteArray( tarballStream ), equalTo( tgz ) );
