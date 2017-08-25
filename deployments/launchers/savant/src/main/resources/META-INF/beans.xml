@@ -21,10 +21,13 @@
   </alternatives>
   
   <decorators>
-    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
-    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
+    <!-- ordering is CRITICAL here. First declaration is outermost in decoration chain -->
     <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
+    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
+
+    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
+
+    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
   </decorators>
       
 </beans>
