@@ -389,6 +389,16 @@ public class MavenMetadataGenerator
         return null;
     }
 
+    /**
+     * Will generate group related files(e.g maven-metadata.xml) from cache level, which means all the generation of the
+     * files will be cached. In terms of cache clearing, see #{@link MetadataMergeListner}
+     *
+     * @param group
+     * @param members
+     * @param path
+     * @return
+     * @throws IndyWorkflowException
+     */
     private Metadata generateGroupMetadata( final Group group, final List<ArtifactStore> members, final String path )
             throws IndyWorkflowException
     {

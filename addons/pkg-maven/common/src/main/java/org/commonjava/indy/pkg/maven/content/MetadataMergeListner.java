@@ -21,6 +21,7 @@ import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -39,6 +40,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * This listener will do these tasks:
+ * <ul>
+ *     <li>When there are member changes for a group, delete groups metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
+ *     <li>When the metadata file changed of a member in a group, delete correspond cache of that file path of the member and group (cascaded)</li>
+ * </ul>
+ */
 @ApplicationScoped
 public class MetadataMergeListner
         implements MergedContentAction
@@ -46,18 +54,25 @@ public class MetadataMergeListner
     final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    protected DirectContentAccess fileManager;
+    private DirectContentAccess fileManager;
+
+    @Inject
+    private StoreDataManager storeManager;
 
     @Inject
     @MetadataCache
     private CacheHandle<StoreKey, Map> metadataCache;
 
+    /**
+     * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache due to changed memeber in that event
+     *
+     * @param event
+     */
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
 
         logger.trace( "Got store-update event: {}", event );
 
-        // we're only interested in existing stores, since new stores cannot have indexed keys
         if ( ArtifactStoreUpdateType.UPDATE == event.getType() )
         {
             for ( ArtifactStore store : event )
@@ -70,15 +85,15 @@ public class MetadataMergeListner
     private void removeMetadataCacheContent( final ArtifactStore store,
                                              final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        StoreKey key = store.getKey();
+        final StoreKey key = store.getKey();
         // we're only interested in groups, as metadata merging only happens in group level.
         if ( StoreType.group == key.getType() )
         {
-            List<StoreKey> newMembers = ( (Group) store ).getConstituents();
+            final List<StoreKey> newMembers = ( (Group) store ).getConstituents();
             logger.trace( "New members of: {} are: {}", store.getKey(), newMembers );
 
-            Group group = (Group) changeMap.get( store );
-            List<StoreKey> oldMembers = group.getConstituents();
+            final Group group = (Group) changeMap.get( store );
+            final List<StoreKey> oldMembers = group.getConstituents();
             logger.trace( "Old members of: {} are: {}", group.getName(), oldMembers );
 
             boolean membersChanged = false;
@@ -100,19 +115,23 @@ public class MetadataMergeListner
 
             if ( membersChanged )
             {
-                final Map<String, Metadata> metadataMap = metadataCache.get( group.getKey() );
-
-                if ( metadataMap != null && !metadataMap.isEmpty() )
-                {
-                    metadataMap.keySet().forEach( path -> {
-                        clearTempMetaFile( group, path );
-                    } );
-                }
-
-                metadataCache.remove( group.getKey() );
+                clearGroupMetaCache( group );
+                storeManager.getGroupsAffectedBy( group.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
             }
-
         }
+    }
+
+    private void clearGroupMetaCache(final Group group){
+        final Map<String, Metadata> metadataMap = metadataCache.get( group.getKey() );
+
+        if ( metadataMap != null && !metadataMap.isEmpty() )
+        {
+            metadataMap.keySet().parallelStream().forEach( path -> {
+                clearTempMetaFile( group, path );
+            } );
+        }
+
+        metadataCache.remove( group.getKey() );
     }
 
     private void clearTempMetaFile( final Group group, final String path )
@@ -131,12 +150,17 @@ public class MetadataMergeListner
         }
     }
 
+    /**
+     * Will clear the merge path of member and group contains that member(cascaded) if that path of file changed in the member of #originatingStore
+     *
+     * @param event
+     */
     @Override
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
         if ( originatingStore.getKey().getType() != StoreType.group )
         {
-            Map<String, Metadata> metadataMap = metadataCache.get( originatingStore.getKey() );
+            final Map<String, Metadata> metadataMap = metadataCache.get( originatingStore.getKey() );
 
             if ( metadataMap != null && !metadataMap.isEmpty() )
             {

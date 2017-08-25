@@ -264,7 +264,6 @@ public class MavenMetadataMerger
     }
 
     @Override
-    @Deprecated
     public Metadata mergeFromMetadatas( final Collection<Metadata> sources, final Group group, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
