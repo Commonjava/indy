@@ -44,6 +44,7 @@ import java.util.Set;
  * This listener will do these tasks:
  * <ul>
  *     <li>When there are member changes for a group, delete groups metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
+ *     <li>When </li>
  *     <li>When the metadata file changed of a member in a group, delete correspond cache of that file path of the member and group (cascaded)</li>
  * </ul>
  */
@@ -85,8 +86,30 @@ public class MetadataMergeListner
     private void removeMetadataCacheContent( final ArtifactStore store,
                                              final Map<ArtifactStore, ArtifactStore> changeMap )
     {
+        handleStoreDisableOrEnable( store, changeMap );
+
+        handleGroupMembersChanged( store, changeMap );
+    }
+
+    // if a store is disabled/enabled, we should clear its metadata cache and all of its affected groups cache too.
+    private void handleStoreDisableOrEnable(final ArtifactStore store,
+                                            final Map<ArtifactStore, ArtifactStore> changeMap){
+        final ArtifactStore oldStore = changeMap.get( store );
+        if ( store.isDisabled() != oldStore.isDisabled() )
+        {
+            final Map<String, Metadata> metadataMap = metadataCache.get( store.getKey() );
+            if ( metadataMap != null && !metadataMap.isEmpty() )
+            {
+                metadataCache.remove( store.getKey() );
+                storeManager.getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
+            }
+        }
+    }
+
+    // If group members changed, should clear the cascading groups metadata cache
+    private void handleGroupMembersChanged(final ArtifactStore store,
+                                           final Map<ArtifactStore, ArtifactStore> changeMap){
         final StoreKey key = store.getKey();
-        // we're only interested in groups, as metadata merging only happens in group level.
         if ( StoreType.group == key.getType() )
         {
             final List<StoreKey> newMembers = ( (Group) store ).getConstituents();

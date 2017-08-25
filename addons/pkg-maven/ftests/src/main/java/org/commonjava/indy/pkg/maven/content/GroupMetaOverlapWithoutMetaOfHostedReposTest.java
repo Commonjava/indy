@@ -24,6 +24,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -53,6 +54,7 @@ import static org.junit.Assert.assertThat;
  * </ul>
  *
  */
+@Deprecated
 public class GroupMetaOverlapWithoutMetaOfHostedReposTest
         extends AbstractContentManagementTest
 {
@@ -60,6 +62,7 @@ public class GroupMetaOverlapWithoutMetaOfHostedReposTest
     public ExpectationServer server = new ExpectationServer();
 
     @Test
+    @Ignore("Due to the new way of metadata merging with cache, this case does not apply to that and should be considered as not suitable now. See MetadataMergeListener for the new logic")
     @Category( EventDependent.class )
     public void run()
             throws Exception
