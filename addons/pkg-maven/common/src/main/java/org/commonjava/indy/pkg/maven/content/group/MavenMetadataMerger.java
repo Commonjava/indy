@@ -106,6 +106,7 @@ public class MavenMetadataMerger
     }
 
     @Override
+    @Deprecated
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -262,7 +263,9 @@ public class MavenMetadataMerger
         return null;
     }
 
-    public Metadata tempMerge( final Collection<Metadata> sources, final Group group, final String path )
+    @Override
+    @Deprecated
+    public Metadata mergeFromMetadatas( final Collection<Metadata> sources, final Group group, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Generating merged metadata in: {}:{}", group.getKey(), path );
