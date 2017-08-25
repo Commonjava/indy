@@ -21,7 +21,6 @@ import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
-import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -41,7 +40,8 @@ import java.util.Map;
 import java.util.Set;
 
 @ApplicationScoped
-public class MetadataMergeListner implements MergedContentAction
+public class MetadataMergeListner
+        implements MergedContentAction
 {
     final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -100,35 +100,35 @@ public class MetadataMergeListner implements MergedContentAction
 
             if ( membersChanged )
             {
-                clearGroupMeta( (Group) store );
+                final Map<String, Metadata> metadataMap = metadataCache.get( group.getKey() );
+
+                if ( metadataMap != null && !metadataMap.isEmpty() )
+                {
+                    metadataMap.keySet().forEach( path -> {
+                        clearTempMetaFile( group, path );
+                    } );
+                }
+
+                metadataCache.remove( group.getKey() );
             }
 
         }
     }
 
-    private void clearGroupMeta(final Group group){
-        final Map<String, Metadata> metadataMap = metadataCache.get( group.getKey() );
-
-        if ( metadataMap != null && !metadataMap.isEmpty() )
+    private void clearTempMetaFile( final Group group, final String path )
+    {
+        try
         {
-            metadataMap.keySet().forEach( path -> {
-                try
-                {
-                    final Transfer tempMetaTxfr = fileManager.getTransfer( group, path );
-                    if ( tempMetaTxfr != null && tempMetaTxfr.exists() )
-                    {
-                        tempMetaTxfr.delete();
-                    }
-                }
-                catch ( IndyWorkflowException | IOException e )
-                {
-                    logger.error( "Can not delete temp metadata file for group. Group: {}, file path: {}",
-                                  group, path );
-                }
-            } );
+            final Transfer tempMetaTxfr = fileManager.getTransfer( group, path );
+            if ( tempMetaTxfr != null && tempMetaTxfr.exists() )
+            {
+                tempMetaTxfr.delete();
+            }
         }
-
-        metadataCache.remove( group.getKey() );
+        catch ( IndyWorkflowException | IOException e )
+        {
+            logger.error( "Can not delete temp metadata file for group. Group: {}, file path: {}", group, path );
+        }
     }
 
     @Override
@@ -143,8 +143,15 @@ public class MetadataMergeListner implements MergedContentAction
                 final Metadata meta = metadataMap.get( path );
                 if ( meta != null )
                 {
-                    metadataCache.remove( originatingStore.getKey() );
-                    affectedGroups.forEach( group -> clearGroupMeta( group ) );
+                    metadataMap.remove( path );
+                    affectedGroups.forEach( group -> {
+                        final Map<String, Metadata> grpMetaMap = metadataCache.get( group.getKey() );
+                        if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
+                        {
+                            clearTempMetaFile( group, path );
+                            grpMetaMap.remove( path );
+                        }
+                    } );
                 }
             }
         }
