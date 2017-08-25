@@ -28,6 +28,10 @@
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
 
+    <local-cache name="metadata-cache" deadlock-detection-spin="10000">
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
+    </local-cache>
+
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
       <eviction size="200000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
@@ -42,5 +46,6 @@
        -->
       <expiration interval="300" />
     </local-cache>
+    
   </cache-container>
 </infinispan>
