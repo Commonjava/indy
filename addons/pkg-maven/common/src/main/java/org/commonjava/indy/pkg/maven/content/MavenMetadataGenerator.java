@@ -443,7 +443,7 @@ public class MavenMetadataGenerator
             }
         }
 
-        final Metadata master = merger.tempMerge( memberMetas, group, toMergePath );
+        final Metadata master = merger.mergeFromMetadatas( memberMetas, group, toMergePath );
 
         if ( master != null )
         {

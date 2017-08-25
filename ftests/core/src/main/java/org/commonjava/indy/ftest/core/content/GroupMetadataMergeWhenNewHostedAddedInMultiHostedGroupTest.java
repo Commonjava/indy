@@ -134,19 +134,19 @@ public class GroupMetadataMergeWhenNewHostedAddedInMultiHostedGroupTest
         HostedRepository hostedA = createHostedAndStorePath( repoA, path, repoAContent );
         try (final InputStream stream = client.content().get( hostedA.getKey(), path ))
         {
-            assertContent( IOUtils.toString( stream ), repoAContent );
+            assertContent( repoAContent, IOUtils.toString( stream ) );
         }
 
         HostedRepository hostedB = createHostedAndStorePath( repoB, path, repoBContent );
         try (final InputStream stream = client.content().get( hostedB.getKey(), path ))
         {
-            assertContent( IOUtils.toString( stream ), repoBContent );
+            assertContent( repoBContent, IOUtils.toString( stream ) );
         }
 
         HostedRepository hostedC = createHostedAndStorePath( repoC, path, repoCContent );
         try (final InputStream stream = client.content().get( hostedC.getKey(), path ))
         {
-            assertContent( IOUtils.toString( stream ), repoCContent );
+            assertContent( repoCContent, IOUtils.toString( stream ) );
         }
 
         HostedRepository hostedD = createHostedAndStorePath( repoD, path, null );
@@ -175,7 +175,7 @@ public class GroupMetadataMergeWhenNewHostedAddedInMultiHostedGroupTest
         /* @formatter:on */
         try (final InputStream stream = client.content().get( group, g.getName(), path ))
         {
-            assertContent( IOUtils.toString( stream ), mergedContent1 );
+            assertContent( mergedContent1, IOUtils.toString( stream ) );
         }
 
         g.addConstituent( hostedC );
@@ -205,7 +205,7 @@ public class GroupMetadataMergeWhenNewHostedAddedInMultiHostedGroupTest
 
         try (final InputStream stream = client.content().get( group, g.getName(), path ))
         {
-            assertContent( IOUtils.toString( stream ), mergedContent2 );
+            assertContent( mergedContent2, IOUtils.toString( stream ) );
         }
     }
 
@@ -227,7 +227,7 @@ public class GroupMetadataMergeWhenNewHostedAddedInMultiHostedGroupTest
         return hosted;
     }
 
-    private void assertContent( String actual, String expectedXml )
+    private void assertContent( String expectedXml, String actual  )
             throws IndyClientException, IOException
     {
 
@@ -240,7 +240,7 @@ public class GroupMetadataMergeWhenNewHostedAddedInMultiHostedGroupTest
             XMLUnit.setIgnoreAttributeOrder( true );
             XMLUnit.setIgnoreComments( true );
 
-            assertXMLEqual( actual, expectedXml );
+            assertXMLEqual( expectedXml, actual );
         }
         catch ( SAXException e )
         {
