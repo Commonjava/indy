@@ -46,6 +46,6 @@
        -->
       <expiration interval="300" />
     </local-cache>
-    
+
   </cache-container>
 </infinispan>

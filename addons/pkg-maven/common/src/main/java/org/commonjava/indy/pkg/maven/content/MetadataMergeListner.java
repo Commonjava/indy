@@ -21,6 +21,7 @@ import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -116,7 +117,14 @@ public class MetadataMergeListner
             if ( membersChanged )
             {
                 clearGroupMetaCache( group );
-                storeManager.getGroupsAffectedBy( group.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
+                try
+                {
+                    storeManager.query().getGroupsAffectedBy( group.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
+                }
+                catch ( IndyDataException e )
+                {
+                    logger.error( String.format( "Can not get affected groups of %s", group.getKey()), e );
+                }
             }
         }
     }
