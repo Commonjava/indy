@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.pkg.maven.inject;
+package org.commonjava.indy.pkg.maven.content.cache;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
@@ -34,11 +34,11 @@ public class MetadataCacheProducer
     private DataFileConfiguration config;
 
 
-    @MetadataCache
+    @MavenVersionMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<StoreKey, Map> metadataCacheCfg()
+    public CacheHandle<StoreKey, Map> mavenVersionMetaCacheCfg()
     {
-        return cacheProducer.getCache( "metadata-cache", StoreKey.class, Map.class );
+        return cacheProducer.getCache( "maven-version-metadata-cache", StoreKey.class, Map.class );
     }
 }

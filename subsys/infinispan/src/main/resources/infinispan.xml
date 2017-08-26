@@ -28,7 +28,7 @@
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
 
-    <local-cache name="metadata-cache" deadlock-detection-spin="10000">
+    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000">
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
     </local-cache>
 

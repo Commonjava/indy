@@ -38,7 +38,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.metrics.IndyMetricsPkgMavenNames;
-import org.commonjava.indy.pkg.maven.inject.MetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier;
@@ -113,8 +113,8 @@ public class MavenMetadataGenerator
     private static final String CLASSIFIER = "classifier";
 
     @Inject
-    @MetadataCache
-    private CacheHandle<StoreKey, Map> metadataCache;
+    @MavenVersionMetadataCache
+    private CacheHandle<StoreKey, Map> versionMetadataCache;
 
     private static final Set<String> HANDLED_FILENAMES = Collections.unmodifiableSet( new HashSet<String>()
     {
@@ -346,7 +346,8 @@ public class MavenMetadataGenerator
                 target = fileManager.getTransfer( group, toMergePath );
                 if ( target.exists() )
                 {
-                    target.delete();
+                    // Means there is no metadata change if this transfer exists, so directly return it.
+                    return target;
                 }
                 new MetadataXpp3Writer().write( baos, md );
 
@@ -460,7 +461,7 @@ public class MavenMetadataGenerator
                             memberMeta = reader.read( new StringReader( content ), false );
                             Map<String, Metadata> cacheMap = new HashMap<>();
                             cacheMap.put( toMergePath, memberMeta );
-                            metadataCache.putIfAbsent( store.getKey(), cacheMap );
+                            versionMetadataCache.putIfAbsent( store.getKey(), cacheMap );
                         }
                         catch ( final IOException e )
                         {
@@ -489,7 +490,7 @@ public class MavenMetadataGenerator
         {
             Map<String, Metadata> cacheMap = new HashMap<>();
             cacheMap.put( toMergePath, master );
-            metadataCache.put( group.getKey(), cacheMap );
+            versionMetadataCache.put( group.getKey(), cacheMap );
             return master;
         }
 
@@ -498,7 +499,7 @@ public class MavenMetadataGenerator
 
     private Metadata getMetaFromCache( final StoreKey key, final String path )
     {
-        Map<String, Metadata> metadataMap = metadataCache.get( key );
+        Map<String, Metadata> metadataMap = versionMetadataCache.get( key );
 
         if ( metadataMap != null && !metadataMap.isEmpty() )
         {

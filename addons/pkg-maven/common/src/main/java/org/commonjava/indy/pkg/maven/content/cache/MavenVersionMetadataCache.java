@@ -1,4 +1,4 @@
-package org.commonjava.indy.pkg.maven.inject;
+package org.commonjava.indy.pkg.maven.content.cache;
 
 import javax.inject.Qualifier;
 import java.lang.annotation.Documented;
@@ -14,6 +14,6 @@ import java.lang.annotation.Target;
 @Target( { ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @Retention( RetentionPolicy.RUNTIME)
 @Documented
-public @interface MetadataCache
+public @interface MavenVersionMetadataCache
 {
 }

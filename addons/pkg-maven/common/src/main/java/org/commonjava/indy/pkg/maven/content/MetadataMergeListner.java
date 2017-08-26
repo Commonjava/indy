@@ -27,7 +27,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.inject.MetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
@@ -44,8 +44,7 @@ import java.util.Set;
 /**
  * This listener will do these tasks:
  * <ul>
- *     <li>When there are member changes for a group, delete groups metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
- *     <li>When </li>
+ *     <li>When there are member changes for a group, or some members disabled/enabled in a group, delete group metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
  *     <li>When the metadata file changed of a member in a group, delete correspond cache of that file path of the member and group (cascaded)</li>
  * </ul>
  */
@@ -62,8 +61,8 @@ public class MetadataMergeListner
     private StoreDataManager storeManager;
 
     @Inject
-    @MetadataCache
-    private CacheHandle<StoreKey, Map> metadataCache;
+    @MavenVersionMetadataCache
+    private CacheHandle<StoreKey, Map> versionMetadataCache;
 
     /**
      * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache due to changed memeber in that event
@@ -98,10 +97,10 @@ public class MetadataMergeListner
         final ArtifactStore oldStore = changeMap.get( store );
         if ( store.isDisabled() != oldStore.isDisabled() )
         {
-            final Map<String, Metadata> metadataMap = metadataCache.get( store.getKey() );
+            final Map<String, Metadata> metadataMap = versionMetadataCache.get( store.getKey() );
             if ( metadataMap != null && !metadataMap.isEmpty() )
             {
-                metadataCache.remove( store.getKey() );
+                versionMetadataCache.remove( store.getKey() );
                 try
                 {
                     storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
@@ -139,7 +138,7 @@ public class MetadataMergeListner
                 {
                     if ( !oldMembers.contains( storeKey ) )
                     {
-                        membersChanged = false;
+                        membersChanged = true;
                     }
                 }
             }
@@ -160,7 +159,7 @@ public class MetadataMergeListner
     }
 
     private void clearGroupMetaCache(final Group group){
-        final Map<String, Metadata> metadataMap = metadataCache.get( group.getKey() );
+        final Map<String, Metadata> metadataMap = versionMetadataCache.get( group.getKey() );
 
         if ( metadataMap != null && !metadataMap.isEmpty() )
         {
@@ -169,7 +168,7 @@ public class MetadataMergeListner
             } );
         }
 
-        metadataCache.remove( group.getKey() );
+        versionMetadataCache.remove( group.getKey() );
     }
 
     private void clearTempMetaFile( final Group group, final String path )
@@ -198,7 +197,7 @@ public class MetadataMergeListner
     {
         if ( originatingStore.getKey().getType() != StoreType.group )
         {
-            final Map<String, Metadata> metadataMap = metadataCache.get( originatingStore.getKey() );
+            final Map<String, Metadata> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
 
             if ( metadataMap != null && !metadataMap.isEmpty() )
             {
@@ -207,7 +206,7 @@ public class MetadataMergeListner
                 {
                     metadataMap.remove( path );
                     affectedGroups.forEach( group -> {
-                        final Map<String, Metadata> grpMetaMap = metadataCache.get( group.getKey() );
+                        final Map<String, Metadata> grpMetaMap = versionMetadataCache.get( group.getKey() );
                         if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
                         {
                             clearTempMetaFile( group, path );
