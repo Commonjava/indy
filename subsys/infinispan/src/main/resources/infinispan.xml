@@ -32,10 +32,15 @@
       </indexing>
     </local-cache>
 
+    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000">
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
+    </local-cache>
+
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
+
   </cache-container>
 </infinispan>

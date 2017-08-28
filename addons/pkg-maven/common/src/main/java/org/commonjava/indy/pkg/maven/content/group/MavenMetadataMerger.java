@@ -106,6 +106,7 @@ public class MavenMetadataMerger
     }
 
     @Override
+    @Deprecated
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -250,6 +251,112 @@ public class MavenMetadataMerger
             {
                 logger.error( String.format( "Cannot write consolidated metadata: %s to: %s. Reason: %s", path, group.getKey(), e.getMessage() ), e );
             }
+        }
+
+        return null;
+    }
+
+    @Override
+    public Metadata mergeFromMetadatas( final Collection<Metadata> sources, final Group group, final String path )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Generating merged metadata in: {}:{}", group.getKey(), path );
+
+        final Metadata master = new Metadata();
+        master.setVersioning( new Versioning() );
+
+        boolean merged = false;
+        for ( final Metadata src : sources )
+        {
+
+            logger.debug( "Adding in metadata content from: {}", src );
+
+            // there is a lot of junk in here to make up for Metadata's anemic merge() method.
+            if ( src.getGroupId() != null )
+            {
+                master.setGroupId( src.getGroupId() );
+            }
+
+            if ( src.getArtifactId() != null )
+            {
+                master.setArtifactId( src.getArtifactId() );
+            }
+
+            if ( src.getVersion() != null )
+            {
+                master.setVersion( src.getVersion() );
+            }
+
+            master.merge( src );
+
+            Versioning versioning = master.getVersioning();
+            Versioning mdVersioning = src.getVersioning();
+
+            // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
+            if ( versioning.getSnapshot() == null && mdVersioning != null )
+            {
+                logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
+
+                versioning.setSnapshot( mdVersioning.getSnapshot() );
+
+                final List<SnapshotVersion> snapshotVersions = versioning.getSnapshotVersions();
+                boolean added = false;
+                for ( final SnapshotVersion snap : mdVersioning.getSnapshotVersions() )
+                {
+                    if ( !snapshotVersions.contains( snap ) )
+                    {
+                        snapshotVersions.add( snap );
+                        added = true;
+                    }
+                }
+
+                if ( added )
+                {
+                    snapshotVersions.sort( new SnapshotVersionComparator() );
+                }
+            }
+            else
+            {
+                logger.warn( "SKIPPING snapshot information from: {} in: {}:{})", src, group.getKey(), path );
+            }
+
+            merged = true;
+        }
+
+        Versioning versioning = master.getVersioning();
+        if ( versioning != null && versioning.getVersions() != null )
+        {
+            if ( metadataProviders != null )
+            {
+                for ( MavenMetadataProvider provider : metadataProviders )
+                {
+                    try
+                    {
+                        Metadata toMerge = provider.getMetadata( group.getKey(), path );
+                        if ( toMerge != null )
+                        {
+                            merged = master.merge( toMerge ) || merged;
+                        }
+                    }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.error( String.format( "Cannot read metadata: %s from metadata provider: %s. Reason: %s", path, provider.getClass().getSimpleName(), e.getMessage() ), e );
+                    }
+                }
+            }
+
+            List<SingleVersion> versionObjects =
+                    versioning.getVersions().stream().map( VersionUtils::createSingleVersion ).collect( Collectors.toList() );
+
+            Collections.sort( versionObjects );
+
+            versioning.setVersions(
+                    versionObjects.stream().map( SingleVersion::renderStandard ).collect( Collectors.toList() ) );
+        }
+
+        if ( merged )
+        {
+            return master;
         }
 
         return null;
