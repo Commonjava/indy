@@ -15,12 +15,12 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
-import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
+import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -96,7 +96,7 @@ public class MetadataMergeListner
         final ArtifactStore oldStore = changeMap.get( store );
         if ( store.isDisabled() != oldStore.isDisabled() )
         {
-            final Map<String, Metadata> metadataMap = versionMetadataCache.get( store.getKey() );
+            final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( store.getKey() );
             if ( metadataMap != null && !metadataMap.isEmpty() )
             {
                 versionMetadataCache.remove( store.getKey() );
@@ -143,8 +143,9 @@ public class MetadataMergeListner
         }
     }
 
-    private void clearGroupMetaCache(final Group group){
-        final Map<String, Metadata> metadataMap = versionMetadataCache.get( group.getKey() );
+    private void clearGroupMetaCache( final Group group )
+    {
+        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( group.getKey() );
 
         if ( metadataMap != null && !metadataMap.isEmpty() )
         {
@@ -170,28 +171,40 @@ public class MetadataMergeListner
         {
             logger.error( "Can not delete temp metadata file for group. Group: {}, file path: {}", group, path );
         }
+
+        try
+        {
+            final Transfer tempMetaMergeInfoTxfr =
+                    fileManager.getTransfer( group, path + GroupMergeHelper.MERGEINFO_SUFFIX );
+            if ( tempMetaMergeInfoTxfr != null && tempMetaMergeInfoTxfr.exists() )
+            {
+                tempMetaMergeInfoTxfr.delete();
+            }
+        }
+        catch ( IndyWorkflowException | IOException e )
+        {
+            logger.error( "Can not delete temp metadata file for group. Group: {}, file path: {}", group, path );
+        }
     }
 
     /**
-     * Will clear the merge path of member and group contains that member(cascaded) if that path of file changed in the member of #originatingStore
+     * Will clear the both merge path and merge info file of member and group contains that member(cascaded) if that path of file changed in the member of #originatingStore
      *
-     * @param event
      */
     @Override
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
         if ( originatingStore.getKey().getType() != StoreType.group )
         {
-            final Map<String, Metadata> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
+            final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
 
             if ( metadataMap != null && !metadataMap.isEmpty() )
             {
-                final Metadata meta = metadataMap.get( path );
-                if ( meta != null )
+                if ( metadataMap.get( path ) != null )
                 {
                     metadataMap.remove( path );
                     affectedGroups.forEach( group -> {
-                        final Map<String, Metadata> grpMetaMap = versionMetadataCache.get( group.getKey() );
+                        final Map<String, MetadataInfo> grpMetaMap = versionMetadataCache.get( group.getKey() );
                         if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
                         {
                             clearTempMetaFile( group, path );

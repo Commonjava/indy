@@ -318,11 +318,13 @@ public class MavenMetadataGenerator
             try
             {
                 target = fileManager.getTransfer( group, toMergePath );
-                if ( target.exists() )
+                if ( exists( target ) )
                 {
                     // Means there is no metadata change if this transfer exists, so directly return it.
+                    logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
                     return target;
                 }
+                logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(), path );
                 new MetadataXpp3Writer().write( baos, md );
 
                 final byte[] merged = baos.toByteArray();
@@ -344,9 +346,7 @@ public class MavenMetadataGenerator
                         closeQuietly( fos );
                     }
 
-                    final List<Transfer> sources =
-                            fileManager.retrieveAllRaw( members, toMergePath, new EventMetadata() );
-                    helper.writeMergeInfo( merged, sources, group, toMergePath );
+                    writeGroupMergeInfo( group, members, toMergePath );
                 }
             }
             catch ( final IOException e )
@@ -355,13 +355,49 @@ public class MavenMetadataGenerator
                                              group.getKey(), e.getMessage() ), e );
             }
 
-            if ( target.exists() )
+            if ( exists( target ) )
             {
                 return target;
             }
         }
 
         return null;
+    }
+
+    private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
+            throws IndyWorkflowException
+    {
+        logger.trace( "Start write .info file based on if the cache exists for group {} of members {} in path. ",
+                      group.getKey(), members, path );
+        final Transfer mergeInfoTarget = fileManager.getTransfer( group, path + GroupMergeHelper.MERGEINFO_SUFFIX );
+        if ( !exists( mergeInfoTarget ) )
+        {
+            logger.trace( ".info file not found for {} of members {} in path {}", group.getKey(), members, path );
+            final MetadataInfo metaInfo = getMetaInfoFromCache( group.getKey(), path );
+            if ( metaInfo != null )
+            {
+                String metaMergeInfo = metaInfo.getMetadataMergeInfo();
+                if ( StringUtils.isBlank( metaMergeInfo ) )
+                {
+                    logger.trace(
+                            "metadata merge info not cached for group {} of members {} in path {}, will regenerate.",
+                            group.getKey(), members, path );
+                    final List<Transfer> sources = fileManager.retrieveAllRaw( members, path, new EventMetadata() );
+                    metaMergeInfo = helper.generateMergeInfo( sources );
+                    metaInfo.setMetadataMergeInfo( metaMergeInfo );
+                }
+                logger.trace( "Metadata merge info for {} of members {} in path {} is {}", group.getKey(), members,
+                              path, metaMergeInfo );
+                helper.writeMergeInfo( metaMergeInfo, group, path );
+                logger.trace( ".info file regenerated for group {} of members {} in path. ", group.getKey(), members,
+                              path );
+            }
+        }
+        else
+        {
+            logger.trace( ".info file exists for group {} of members {} in path, no need to regenerate ",
+                          group.getKey(), members, path );
+        }
     }
 
     /**
@@ -421,7 +457,7 @@ public class MavenMetadataGenerator
                 {
 
                     final Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
-                    if ( memberMetaTxfr != null && memberMetaTxfr.exists() )
+                    if ( exists( memberMetaTxfr ) )
                     {
                         final MetadataXpp3Reader reader = new MetadataXpp3Reader();
 
@@ -429,8 +465,8 @@ public class MavenMetadataGenerator
                         {
                             String content = IOUtils.toString( in );
                             memberMeta = reader.read( new StringReader( content ), false );
-                            Map<String, Metadata> cacheMap = new HashMap<>();
-                            cacheMap.put( toMergePath, memberMeta );
+                            Map<String, MetadataInfo> cacheMap = new HashMap<>();
+                            cacheMap.put( toMergePath, new MetadataInfo( memberMeta ) );
                             versionMetadataCache.putIfAbsent( store.getKey(), cacheMap );
                         }
                         catch ( final IOException e )
@@ -458,8 +494,8 @@ public class MavenMetadataGenerator
 
         if ( master != null )
         {
-            Map<String, Metadata> cacheMap = new HashMap<>();
-            cacheMap.put( toMergePath, master );
+            Map<String, MetadataInfo> cacheMap = new HashMap<>();
+            cacheMap.put( toMergePath, new MetadataInfo( master ) );
             versionMetadataCache.put( group.getKey(), cacheMap );
             return master;
         }
@@ -467,18 +503,30 @@ public class MavenMetadataGenerator
         return null;
     }
 
+    private boolean exists( final Transfer target )
+    {
+        return target != null && target.exists();
+    }
+
     private Metadata getMetaFromCache( final StoreKey key, final String path )
     {
-        Map<String, Metadata> metadataMap = versionMetadataCache.get( key );
+        final MetadataInfo metaMergeInfo = getMetaInfoFromCache( key, path );
+        if ( metaMergeInfo != null )
+        {
+            return metaMergeInfo.getMetadata();
+        }
+        return null;
+    }
+
+    private MetadataInfo getMetaInfoFromCache( final StoreKey key, final String path )
+    {
+        Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( key );
 
         if ( metadataMap != null && !metadataMap.isEmpty() )
         {
-            final Metadata meta = metadataMap.get( path );
-            if ( meta != null )
-            {
-                return meta;
-            }
+            return metadataMap.get( path );
         }
+
         return null;
     }
 
