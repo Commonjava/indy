@@ -530,5 +530,17 @@ public class ContentController
             IOUtils.closeQuietly( out );
         }
 
+        // npm will generate .tgz and version json metadata files from the package json file target,
+        // which will also need the HttpExchangeMetadata for npm header check.
+
+        Set<Transfer> generated = target.getGeneratedFromTarget();
+        if ( !generated.isEmpty() )
+        {
+            for ( Transfer transfer : generated )
+            {
+                generateHttpMetadataHeaders( transfer, request, response );
+            }
+        }
+
     }
 }
