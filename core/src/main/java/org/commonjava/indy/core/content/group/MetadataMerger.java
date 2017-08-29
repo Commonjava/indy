@@ -17,6 +17,7 @@ package org.commonjava.indy.core.content.group;
 
 import java.util.Collection;
 
+import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.maven.galley.model.Transfer;
 
@@ -24,5 +25,7 @@ public interface MetadataMerger
 {
 
     byte[] merge( final Collection<Transfer> sources, final Group group, final String path );
+
+    Metadata mergeFromMetadatas( final Collection<Metadata> sources, final Group group, final String path );
 
 }

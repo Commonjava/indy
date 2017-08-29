@@ -30,6 +30,7 @@ import org.apache.maven.archetype.catalog.Archetype;
 import org.apache.maven.archetype.catalog.ArchetypeCatalog;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Reader;
 import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Writer;
+import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
@@ -116,4 +117,9 @@ public class ArchetypeCatalogMerger
         return null;
     }
 
+    @Override
+    public Metadata mergeFromMetadatas( Collection<Metadata> sources, Group group, String path )
+    {
+        throw new UnsupportedOperationException( "Not yet implemented" );
+    }
 }
