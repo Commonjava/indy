@@ -16,33 +16,36 @@
 package org.commonjava.indy.boot.jaxrs;
 
 import io.undertow.Undertow;
+import io.undertow.predicate.Predicate;
+import io.undertow.predicate.Predicates;
+import io.undertow.server.handlers.encoding.ContentEncodingRepository;
+import io.undertow.server.handlers.encoding.DeflateEncodingProvider;
+import io.undertow.server.handlers.encoding.EncodingHandler;
+import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
-
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.lang.reflect.InvocationTargetException;
-
-import javax.enterprise.inject.spi.BeanManager;
-import javax.servlet.ServletException;
-import javax.xml.ws.Holder;
-
+import org.commonjava.atservice.annotation.Service;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.IndyLifecycleManager;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
-import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.boot.BootInterface;
 import org.commonjava.indy.boot.BootOptions;
 import org.commonjava.indy.boot.BootStatus;
+import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.boot.PortFinder;
 import org.commonjava.indy.boot.WeldBootInterface;
 import org.commonjava.indy.conf.IndyConfigFactory;
-import org.commonjava.atservice.annotation.Service;
 import org.commonjava.web.config.ConfigurationException;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.enterprise.inject.spi.BeanManager;
+import javax.servlet.ServletException;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationTargetException;
 
 @Service( BootInterface.class )
 public class JaxRsBooter
@@ -231,7 +234,7 @@ public class JaxRsBooter
 
         final DeploymentInfo di = indyDeployment.getDeployment( bootOptions.getContextPath() )
                                                  .setContextPath( "/" );
-        
+
         final DeploymentManager dm = Servlets.defaultContainer()
                                              .addDeployment( di );
         dm.deploy();
@@ -250,8 +253,20 @@ public class JaxRsBooter
                     Undertow undertow = null;
                     try
                     {
+                        // FROM: https://stackoverflow.com/questions/28295752/compressing-undertow-server-responses#28329810
+                        final Predicate sizePredicate =
+                                Predicates.parse( "max-content-size[" + Long.toString( 5 * 1024 ) + "]" );
+
+                        EncodingHandler eh = new EncodingHandler(
+                                new ContentEncodingRepository().addEncodingHandler( "gzip", new GzipEncodingProvider(),
+                                                                                    50, sizePredicate )
+                                                               .addEncodingHandler( "deflate",
+                                                                                    new DeflateEncodingProvider(), 51,
+                                                                                    sizePredicate ) ).setNext(
+                                dm.start() );
+
                         undertow = Undertow.builder()
-                                           .setHandler( dm.start() )
+                                           .setHandler( eh )
                                            .addHttpListener( foundPort, bootOptions.getBind() )
                                            .build();
 
