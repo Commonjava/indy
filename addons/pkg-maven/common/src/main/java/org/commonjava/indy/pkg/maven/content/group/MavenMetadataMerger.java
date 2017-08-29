@@ -359,6 +359,13 @@ public class MavenMetadataMerger
 
             versioning.setVersions(
                     versionObjects.stream().map( SingleVersion::renderStandard ).collect( Collectors.toList() ) );
+
+            if ( versionObjects.size() > 0 )
+            {
+                String latest = versionObjects.get( versionObjects.size() - 1 ).renderStandard();
+                versioning.setLatest( latest );
+                versioning.setRelease( latest );
+            }
         }
 
         if ( merged )
