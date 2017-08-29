@@ -30,8 +30,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Paths;
 
 import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 
@@ -133,19 +136,19 @@ public class GroupMetadataMergeInfoGenTest
         {
             System.out.println( IOUtils.toString( stream ) );
         }
-        assertInfoContent( g, path, "hosted:hostedA\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedA\n" );
 
         g.addConstituent( hostedB.getKey() );
         g = updateAndRetrieve( g, "adding group", path );
-        assertInfoContent( g, path, "hosted:hostedA\nhosted:hostedB\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedA\nmaven:hosted:hostedB\n" );
 
         g.removeConstituent( hostedA.getKey() );
         g = updateAndRetrieve( g, "removing group", path );
-        assertInfoContent( g, path, "hosted:hostedB\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedB\n" );
 
         g.addConstituent( hostedC.getKey() );
         g = updateAndRetrieve( g, "adding group", path );
-        assertInfoContent( g, path, "hosted:hostedB\nhosted:hostedC\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedB\nmaven:hosted:hostedC\n" );
 
         hostedB.setDisabled( true );
         client.stores().update( hostedB, "disabled" );
@@ -153,7 +156,7 @@ public class GroupMetadataMergeInfoGenTest
         {
             System.out.println( IOUtils.toString( stream ) );
         }
-        assertInfoContent( g, path, "hosted:hostedC\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedC\n" );
 
     }
 
@@ -192,10 +195,12 @@ public class GroupMetadataMergeInfoGenTest
     private void assertInfoContent( final ArtifactStore store, final String path, final String expectedContent )
             throws Exception
     {
-        final String infoFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
-                               store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX );
-        final File infoFile = new File( infoFilePath );
+
+//        final String infoFilePath =
+//                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
+//                               store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX );
+        final File infoFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", store.getPackageType(),
+                                         group.singularEndpointName() + "-" + store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX ).toFile();
         assertThat( "info file doesn't exist", infoFile.exists(), equalTo( true ) );
 
         try (final InputStream stream = new FileInputStream( infoFile ))
