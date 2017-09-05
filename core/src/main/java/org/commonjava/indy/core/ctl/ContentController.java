@@ -17,11 +17,9 @@ package org.commonjava.indy.core.ctl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -45,17 +43,13 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -488,59 +482,5 @@ public class ContentController
 
     public boolean exists(StoreKey sk, String path) throws IndyWorkflowException {
         return contentManager.exists( getStore( sk ), path );
-    }
-
-    public void generateHttpMetadataHeaders( Transfer target, final HttpServletRequest request,
-                                             final Response response )
-    {
-        if ( target == null || request == null || response == null )
-        {
-            return;
-        }
-
-        Response responseWithLastModified =
-                response.fromResponse( response ).lastModified( new Date( target.lastModified() ) ).build();
-
-        Transfer metaTxfr = target.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
-        if ( metaTxfr == null )
-        {
-            if ( target.isDirectory() )
-            {
-                metaTxfr = target.getChild( HttpExchangeMetadata.FILE_EXTENSION );
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        final HttpExchangeMetadata metadata = new StoreHttpExchangeMetadata( request, responseWithLastModified );
-        OutputStream out = null;
-        try
-        {
-            out = metaTxfr.openOutputStream( TransferOperation.GENERATE, false );
-            out.write( mapper.writeValueAsBytes( metadata ) );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to write metadata for HTTP exchange to: {}. Reason: {}", metaTxfr, e );
-        }
-        finally
-        {
-            IOUtils.closeQuietly( out );
-        }
-
-        // npm will generate .tgz and version json metadata files from the package json file target,
-        // which will also need the HttpExchangeMetadata for npm header check.
-
-        Set<Transfer> generated = target.getGeneratedFromTarget();
-        if ( !generated.isEmpty() )
-        {
-            for ( Transfer transfer : generated )
-            {
-                generateHttpMetadataHeaders( transfer, request, response );
-            }
-        }
-
     }
 }
