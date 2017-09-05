@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -232,8 +233,11 @@ public class NPMContentAccessResource
             final @ApiParam( required = true ) @PathParam( "name" ) String name, @Context final UriInfo uriInfo,
             @Context final HttpServletRequest request )
     {
+        EventMetadata eventMetadata = new EventMetadata();
+        eventMetadata.set( STORAGE_PATH, "" );
+
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doGet( NPM_PKG_KEY, type, name, "", baseUri, request, new EventMetadata() );
+        return handler.doGet( NPM_PKG_KEY, type, name, "", baseUri, request, eventMetadata );
     }
 
 }

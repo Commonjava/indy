@@ -40,6 +40,9 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+
 /**
  * Created by jdcasey on 5/2/16.
  */
@@ -116,9 +119,19 @@ public class DefaultDirectContentAccess
     }
 
     @Override
-    public Transfer retrieveRaw( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
+    public Transfer retrieveRaw( final ArtifactStore store, String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        // npm should handle the path as '/project' not '/project/package.json' when retrieves a remote registry
+        if ( store.getType() == remote && store.getPackageType().equals( NPM_PKG_KEY ) )
+        {
+            String project = path.substring( 0, path.length()-13 );
+            if ( project != null && project.length() > 0 )
+            {
+                path = project;
+            }
+        }
+
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
 

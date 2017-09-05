@@ -17,9 +17,11 @@ package org.commonjava.indy.core.ctl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -43,13 +45,17 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -275,6 +281,13 @@ public class ContentController
 
     public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl, final UriFormatter uriFormatter )
+            throws IndyWorkflowException
+    {
+        return renderListing( acceptHeader, key, requestPath, serviceUrl, uriFormatter, new EventMetadata() );
+    }
+
+    public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
+                                 final String serviceUrl, final UriFormatter uriFormatter, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
         String path = requestPath;
@@ -283,7 +296,7 @@ public class ContentController
             path = normalize( parentPath( path ) );
         }
 
-        final List<StoreResource> listed = getListing( key, path );
+        final List<StoreResource> listed = getListing( key, path, eventMetadata );
         if ( ApplicationContent.application_json.equals( acceptHeader ) )
         {
             final DirectoryListingDTO dto = new DirectoryListingDTO( StoreResource.convertToEntries( listed ) );
@@ -315,6 +328,11 @@ public class ContentController
                     String p = res.getPath();
                     if ( pass == 0 && !p.endsWith( "/" ) )
                     {
+                        continue;
+                    }
+                    if ( p.endsWith( "-" ) || p.endsWith( "-/" ) )
+                    {
+                        //skip npm adduser path to avoid the sensitive info showing.
                         continue;
                     }
                     else if ( pass == 1 )
@@ -416,10 +434,16 @@ public class ContentController
     }
 
     public List<StoreResource> getListing( final StoreKey key, final String path )
+            throws IndyWorkflowException
+    {
+        return getListing( key, path, new EventMetadata() );
+    }
+
+    public List<StoreResource> getListing( final StoreKey key, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
         final ArtifactStore store = getStore( key );
-        return contentManager.list( store, path, new EventMetadata() );
+        return contentManager.list( store, path, eventMetadata );
     }
 
     public boolean isHtmlContent( final Transfer item )

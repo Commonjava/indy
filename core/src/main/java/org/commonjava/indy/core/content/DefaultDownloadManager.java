@@ -140,9 +140,15 @@ public class DefaultDownloadManager
         this(storeManager, transfers, locationExpander, contentAdvisors);
         this.nfc = nfc;
     }
-
     @Override
     public List<StoreResource> list( final ArtifactStore store, final String path )
+            throws IndyWorkflowException
+    {
+        return list(store, path, new EventMetadata() );
+    }
+
+    @Override
+    public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         final List<StoreResource> result = new ArrayList<>();
@@ -154,7 +160,7 @@ public class DefaultDownloadManager
             try
             {
                 final List<ListingResult> results = transfers.listAll(
-                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ) );
+                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ), eventMetadata );
 
                 for ( final ListingResult lr : results )
                 {
@@ -202,7 +208,7 @@ public class DefaultDownloadManager
             {
                 try
                 {
-                    final ListingResult lr = transfers.list( res );
+                    final ListingResult lr = transfers.list( res, eventMetadata );
                     if ( lr != null && lr.getListing() != null )
                     {
                         for ( final String file : lr.getListing() )
@@ -237,7 +243,7 @@ public class DefaultDownloadManager
             {
                 try
                 {
-                    final ListingResult listing = transfers.list( res );
+                    final ListingResult listing = transfers.list( res, eventMetadata );
                     if ( listing != null && listing.getListing() != null )
                     {
                         for ( final String child : listing.getListing() )
@@ -267,13 +273,20 @@ public class DefaultDownloadManager
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
+        return list( stores, path, new EventMetadata() );
+    }
+
+    @Override
+    public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+            throws IndyWorkflowException
+    {
         final String dir = PathUtils.dirname( path );
 
         final List<StoreResource> result = new ArrayList<>();
         try
         {
             final List<ListingResult> results = transfers.listAll(
-                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ) );
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ), eventMetadata );
 
             for ( final ListingResult lr : results )
             {

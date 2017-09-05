@@ -149,6 +149,17 @@ public class NPMContentAccessHandler
             return builder.build();
         }
 
+         // hide npm sensitive user info for publish
+         if ( path.startsWith( "-/user" ) )
+         {
+             Response.ResponseBuilder builder = Response.status( 404 );
+             if ( builderModifier != null )
+             {
+                builderModifier.accept( builder );
+             }
+             return builder.build();
+         }
+
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( packageType, st, name );
 
@@ -170,7 +181,7 @@ public class NPMContentAccessHandler
             {
                 logger.info( "Getting listing at: {}", path );
                 final String content =
-                        contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter );
+                        contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter, eventMetadata );
 
                 response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
             }
@@ -219,7 +230,7 @@ public class NPMContentAccessHandler
                             logger.info( "Getting listing at: {}", path + "/" );
                             final String content =
                                     contentController.renderListing( standardAccept, sk, path + "/", baseUri,
-                                                                     uriFormatter );
+                                                                     uriFormatter, eventMetadata );
 
                             response =
                                     formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
