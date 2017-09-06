@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.launch</groupId>
     <artifactId>indy-launchers</artifactId>
-    <version>1.1.9</version>
+    <version>1.1.10-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-launcher-min</artifactId>
