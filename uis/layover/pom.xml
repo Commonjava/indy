@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.ui</groupId>
     <artifactId>indy-uis</artifactId>
-    <version>1.1.9-SNAPSHOT</version>
+    <version>1.1.9</version>
   </parent>
   
   <artifactId>indy-ui-layover</artifactId>
