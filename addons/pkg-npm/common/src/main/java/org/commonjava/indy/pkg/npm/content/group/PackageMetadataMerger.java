@@ -51,7 +51,7 @@ public class PackageMetadataMerger
 
     private List<PackageMetadataProvider> metadataProviders;
 
-    protected PackageMetadataMerger()
+    public PackageMetadataMerger()
     {
     }
 
@@ -99,7 +99,7 @@ public class PackageMetadataMerger
 
                 PackageMetadata md = mapper.readValue( content, PackageMetadata.class );
 
-                merged = packageMetadata.merge( md ) || merged;
+                merged = packageMetadata.merge( md, true ) || merged;
             }
             catch ( final IOException e )
             {
@@ -122,7 +122,7 @@ public class PackageMetadataMerger
                     PackageMetadata toMerge = provider.getMetadata( group.getKey(), path );
                     if ( toMerge != null )
                     {
-                        merged = packageMetadata.merge( toMerge ) || merged;
+                        merged = packageMetadata.merge( toMerge, true ) || merged;
                     }
                 }
                 catch ( IndyWorkflowException e )
@@ -151,4 +151,64 @@ public class PackageMetadataMerger
 
         return null;
     }
+
+    public InputStream merge( final Transfer... sources )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "[NPM] Generating merged metadata when publish" );
+
+        InputStream stream = null;
+
+        final PackageMetadata packageMetadata = new PackageMetadata();
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+
+        for ( final Transfer src : sources )
+        {
+            if ( !src.exists() )
+            {
+                continue;
+            }
+
+            try
+            {
+                stream = src.openInputStream();
+                String content = IOUtils.toString( stream );
+                logger.debug( "[NPM] Adding in metadata content from: {}\n\n{}\n\n", src, content );
+
+                PackageMetadata md = mapper.readValue( content, PackageMetadata.class );
+
+                packageMetadata.merge( md, false );
+            }
+            catch ( final IOException e )
+            {
+                final StoreKey key = getKey( src );
+                logger.error( String.format( "[NPM] Cannot read metadata: %s from artifact-store: %s. Reason: %s",
+                                             src.getPath(), key, e.getMessage() ), e );
+            }
+            finally
+            {
+                closeQuietly( stream );
+            }
+        }
+
+        String output = null;
+        try
+        {
+            output = mapper.writeValueAsString( packageMetadata );
+        }
+        catch ( JsonProcessingException e )
+        {
+            logger.error(
+                    String.format( "[NPM] Cannot convert from metadata: %s to String. Reason: %s", packageMetadata,
+                                   e.getMessage() ), e );
+        }
+
+        if ( output != null )
+        {
+            return IOUtils.toInputStream( output );
+        }
+
+        return null;
+    }
+
 }

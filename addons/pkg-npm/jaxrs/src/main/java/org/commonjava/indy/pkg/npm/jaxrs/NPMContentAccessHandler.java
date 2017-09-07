@@ -24,9 +24,11 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
@@ -95,14 +97,40 @@ public class NPMContentAccessHandler
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response = null;
-        final Transfer transfer;
+
+        InputStream merged = null;
         try
         {
-            InputStream stream = request.getInputStream();
-            transfer = contentController.store( sk, path, stream, eventMetadata );
+            // check the original existed package.json transfer
+            ArtifactStore store = contentController.getStore( sk );
+            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ),
+                                                              PathUtils.storagePath( path, eventMetadata ) );
 
-            final StoreKey storageKey = LocationUtils.getKey( transfer );
-            logger.info( "Key for storage location: {}", storageKey );
+            Transfer existed = transfers.getCacheReference( resource );
+
+            //copy the existed transfer to temp one
+            ConcreteResource tempResource = new ConcreteResource( LocationUtils.toLocation( store ),
+                                                                  PathUtils.storagePath( path, eventMetadata )
+                                                                          + ".temp" );
+            Transfer temp = transfers.getCacheReference( tempResource );
+
+            if ( existed != null && existed.exists() )
+            {
+                temp.copyFrom( existed, eventMetadata );
+            }
+
+            // store the transfer of new request package.json
+            Transfer tomerge = contentController.store( sk, path, request.getInputStream(), eventMetadata );
+            // genenrate its relevant files from the new request package.json
+            generateNPMContentsFromTransfer( tomerge, eventMetadata, response, builderModifier );
+
+            // merged the both transfers, original existed one and new request one, then store the transfer.
+            if ( temp != null && temp.exists() )
+            {
+                merged = new PackageMetadataMerger().merge( temp, tomerge );
+                contentController.store( sk, path, merged, eventMetadata );
+                temp.delete();
+            }
 
             final URI uri = uriBuilder.get();
 
@@ -113,15 +141,18 @@ public class NPMContentAccessHandler
             }
             response = builder.build();
 
-            generateNPMContentsFromTransfer( transfer, eventMetadata, response, builderModifier );
             // generating .http-metadata.json for PUT request to resolve some header requirements
-            generateHttpMetadataHeaders( transfer, request, response );
+            generateHttpMetadataHeaders( tomerge, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
             logger.error( String.format( "Failed to upload: %s to: %s. Reason: %s", path, name, e.getMessage() ), e );
 
             response = formatResponse( e, builderModifier );
+        }
+        finally
+        {
+            closeQuietly( merged );
         }
 
         return response;

@@ -244,7 +244,7 @@ public class ContentController
         }
     }
 
-    private ArtifactStore getStore( final StoreKey key )
+    public ArtifactStore getStore( final StoreKey key )
         throws IndyWorkflowException
     {
         ArtifactStore store;
