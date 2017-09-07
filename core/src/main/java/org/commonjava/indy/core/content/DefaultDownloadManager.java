@@ -19,10 +19,10 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
-import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.AbstractRepository;
@@ -38,6 +38,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.BadGatewayException;
+import org.commonjava.maven.galley.TransferContentException;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferLocationException;
 import org.commonjava.maven.galley.TransferManager;
@@ -478,12 +479,20 @@ public class DefaultDownloadManager
             //                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
             //                                              e.getMessage() );
         }
+        catch ( final TransferContentException e )
+        {
+            logger.warn( "Content-Length mismatch: "+ e.getMessage(), e );
+            target = null;
+//            throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+//                                             e.getMessage() );
+        }
         catch ( final TransferException e )
         {
             logger.error( e.getMessage(), e );
             throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
                                              e.getMessage() );
         }
+
 
         return target;
     }
