@@ -18,7 +18,6 @@ package org.commonjava.indy.core.change;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
-import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.expire.IndySchedulerException;
@@ -38,8 +37,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
-
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
 
 @ApplicationScoped
 public class StoreEnablementManager
@@ -73,19 +70,7 @@ public class StoreEnablementManager
 
         for ( ArtifactStore store : event )
         {
-            if ( event.isDisabling() )
-            {
-                try
-                {
-                    setReEnablementTimeout( store.getKey() );
-                }
-                catch ( IndySchedulerException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
-                }
-            }
-            else
+            if ( ! event.isDisabling() )
             {
                 try
                 {
