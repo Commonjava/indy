@@ -77,19 +77,7 @@ public class StoreEnablementManager
 
         for ( ArtifactStore store : event )
         {
-            if ( event.isDisabling() )
-            {
-                try
-                {
-                    setReEnablementTimeout( store.getKey() );
-                }
-                catch ( IndySchedulerException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
-                }
-            }
-            else
+            if ( ! event.isDisabling() )
             {
                 try
                 {
