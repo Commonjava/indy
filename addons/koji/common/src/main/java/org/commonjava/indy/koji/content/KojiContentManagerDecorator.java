@@ -424,54 +424,74 @@ public abstract class KojiContentManagerDecorator
 
             boolean isBinaryBuild = isBinaryBuild( build );
             String name = getRepositoryName( build, isBinaryBuild );
+            StoreKey remoteKey = new StoreKey( inStore.getPackageType(), StoreType.remote, name );
 
-            // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
-            final KojiRepositoryCreator creator = createRepoCreator();
-
-            if ( creator == null )
+            RemoteRepository remote = ( RemoteRepository ) storeDataManager.getArtifactStore( remoteKey );
+            if ( remote == null )
             {
-                throw new KojiClientException( "Cannot proceed without a valid KojiRepositoryCreator instance." );
-            }
+                // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
+                final KojiRepositoryCreator creator = createRepoCreator();
 
-            RemoteRepository remote = creator.createRemoteRepository( inStore.getPackageType(), name, formatStorageUrl( build ),
-                                                                      config.getDownloadTimeoutSeconds() );
+                if ( creator == null )
+                {
+                    throw new KojiClientException( "Cannot proceed without a valid KojiRepositoryCreator instance." );
+                }
 
-            remote.setServerCertPem( config.getServerPemContent() );
+                remote = creator.createRemoteRepository( inStore.getPackageType(), name, formatStorageUrl( build ),
+                                                         config.getDownloadTimeoutSeconds() );
 
-            if ( isBinaryBuild )
-            {
-                remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN_BINARY );
+                remote.setServerCertPem( config.getServerPemContent() );
+
+                if ( isBinaryBuild )
+                {
+                    remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN_BINARY );
+                }
+                else
+                {
+                    remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
+                }
+
+                // set pathMaskPatterns using build output paths
+                Set<String> patterns = new HashSet<>();
+                patterns.addAll( archiveCollection.getArchives()
+                                                  .stream()
+                                                  .map( a -> a.getGroupId().replace( '.', '/' ) + "/" + a.getArtifactId()
+                                                          + "/" + a.getVersion() + "/" + a.getFilename() )
+                                                  .collect( Collectors.toSet() ) );
+
+                // pre-index the koji build artifacts and set authoritative index of the remote to let the
+                // koji remote repo directly go through the content index
+                patterns.forEach( path->indexManager.indexPathInStores( path, remoteKey ) );
+                remote.setAuthoritativeIndex( true );
+                remote.setPathMaskPatterns( patterns );
+
+                remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
+                remote.setMetadata( NVR, build.getNvr() );
+
+                final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                       "Creating remote repository for Koji build: " + build
+                                                                               .getNvr() );
+
+                storeDataManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
+
+                logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
             }
             else
             {
-                remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
+                if ( remote.isDisabled() )
+                {
+                    logger.info( "Remote repository {} already exists, but is currently disabled. Returning null.",
+                                 remoteKey );
+                    remote = null;
+                }
+                else
+                {
+                    // this is a strange situation - delegate did not find the requested resource while Koji claims it
+                    // is contained in this repo and it already exists and is enabled. Possibly corrupted list of path
+                    // mask patterns set on the repo or content index
+                    logger.warn( "Remote repository {} already exists. Using it as is.", remoteKey );
+                }
             }
-
-            // set pathMaskPatterns using build output paths
-            Set<String> patterns = new HashSet<>();
-            patterns.addAll( archiveCollection.getArchives()
-                                              .stream()
-                                              .map( a -> a.getGroupId().replace( '.', '/' ) + "/" + a.getArtifactId()
-                                                      + "/" + a.getVersion() + "/" + a.getFilename() )
-                                              .collect( Collectors.toSet() ) );
-
-            // pre-index the koji build artifacts and set authoritative index of the remote to let the
-            // koji remote repo directly go through the content index
-            patterns.forEach( path->indexManager.indexPathInStores( path, remote.getKey() ) );
-            remote.setAuthoritativeIndex( true );
-            remote.setPathMaskPatterns( patterns );
-
-            remote.setMetadata( CREATION_TRIGGER_GAV, artifactRef.toString() );
-            remote.setMetadata( NVR, build.getNvr() );
-
-            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                   "Creating remote repository for Koji build: " + build
-                                                                           .getNvr() );
-
-            storeDataManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
-
-
-            logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
 
             return remote;
         }

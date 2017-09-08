@@ -17,6 +17,7 @@ package org.commonjava.indy.pkg.npm.content.group;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
@@ -151,7 +152,7 @@ public class PackageMetadataMerger
 
         return null;
     }
-
+    
     public InputStream merge( final Transfer... sources )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -211,4 +212,9 @@ public class PackageMetadataMerger
         return null;
     }
 
+    @Override
+    public Metadata mergeFromMetadatas( Collection<Metadata> sources, Group group, String path )
+    {
+        throw new UnsupportedOperationException( "Not supported" );
+    }
 }

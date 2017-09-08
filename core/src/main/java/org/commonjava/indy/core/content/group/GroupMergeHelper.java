@@ -27,7 +27,6 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
@@ -82,25 +81,39 @@ public class GroupMergeHelper
         }
     }
 
+    @Deprecated
     public final void writeMergeInfo( final byte[] data, final List<Transfer> sources, final Group group,
                                       final String path )
     {
-        final Transfer targetInfo = downloadManager.getStorageReference( group, path + MERGEINFO_SUFFIX );
+        writeMergeInfo( generateMergeInfo( sources ), group, path );
+    }
 
+    public final String generateMergeInfo( final List<Transfer> sources )
+    {
+        final StringBuilder mergeInfoBuilder = new StringBuilder();
+        for ( final Transfer source : sources )
+        {
+            mergeInfoBuilder.append( getKey( source ).toString() );
+            mergeInfoBuilder.append( "\n" );
+        }
+        return mergeInfoBuilder.toString();
+    }
+
+    public final void writeMergeInfo( final String mergeInfo, final Group group, final String path )
+    {
+        final String infoPath = path+MERGEINFO_SUFFIX;
+        logger.trace( ".info file path is {} for group {}, content is {}", infoPath, group.getKey(), mergeInfo );
+        final Transfer targetInfo = downloadManager.getStorageReference( group, infoPath );
         Writer fw = null;
         try
         {
             fw = new OutputStreamWriter( targetInfo.openOutputStream( TransferOperation.GENERATE ) );
-            for ( final Transfer source : sources )
-            {
-                final StoreKey key = getKey( source );
-                fw.write( key.toString() );
-                fw.write( "\n" );
-            }
+            fw.write( mergeInfo );
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "Failed to write merged metadata information to: %s.\nError: %s", targetInfo, e.getMessage() ), e );
+            logger.error( String.format( "Failed to write merged metadata information to: %s.\nError: %s", targetInfo,
+                                         e.getMessage() ), e );
         }
         finally
         {

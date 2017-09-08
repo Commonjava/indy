@@ -413,7 +413,7 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
   $scope.show = function(){
     if ( !$scope.currentKey ){return;}
     
-    var viewPath = '/nfc/view/' + $scope.currentKey.replace(':', '/');
+    var viewPath = '/nfc/view/' + $scope.currentKey.replace(/:/g, '/');
     
     if ( !window.location.hash.startsWith( "#" + viewPath ) ){
       $location.path(viewPath);
