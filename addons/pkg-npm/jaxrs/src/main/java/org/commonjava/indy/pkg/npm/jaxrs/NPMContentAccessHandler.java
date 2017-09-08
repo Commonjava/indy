@@ -24,7 +24,6 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
-import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -32,7 +31,6 @@ import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -73,6 +71,8 @@ public class NPMContentAccessHandler
 {
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    public static final String TEMP_EXTENSION = ".temp";
+
     @Inject
     private TransferManager transfers;
 
@@ -91,45 +91,56 @@ public class NPMContentAccessHandler
                               EventMetadata eventMetadata, Supplier<URI> uriBuilder,
                               Consumer<Response.ResponseBuilder> builderModifier )
     {
+        path = PathUtils.storagePath( path, eventMetadata );
+
         final StoreType st = StoreType.get( type );
-        StoreKey sk = new StoreKey( packageType, st, name );
+        final StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response = null;
 
-        InputStream merged = null;
+        InputStream stream = null;
         try
         {
             // check the original existed package.json transfer
-            ArtifactStore store = contentController.getStore( sk );
-            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ),
-                                                              PathUtils.storagePath( path, eventMetadata ) );
+            final Transfer existed = contentController.get( sk, path, eventMetadata );
+            Transfer httpMeta = null;
+            Transfer temp = null;
 
-            Transfer existed = transfers.getCacheReference( resource );
-
-            //copy the existed transfer to temp one
-            ConcreteResource tempResource = new ConcreteResource( LocationUtils.toLocation( store ),
-                                                                  PathUtils.storagePath( path, eventMetadata )
-                                                                          + ".temp" );
-            Transfer temp = transfers.getCacheReference( tempResource );
-
+            // copy the existed transfer to temp one
             if ( existed != null && existed.exists() )
             {
+                httpMeta = existed.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
+                temp = existed.getSibling( TEMP_EXTENSION );
                 temp.copyFrom( existed, eventMetadata );
             }
 
             // store the transfer of new request package.json
-            Transfer tomerge = contentController.store( sk, path, request.getInputStream(), eventMetadata );
-            // genenrate its relevant files from the new request package.json
+            final Transfer tomerge = contentController.store( sk, path, request.getInputStream(), eventMetadata );
+
+            // generate its relevant files from the new request package.json
             generateNPMContentsFromTransfer( tomerge, eventMetadata, response, builderModifier );
 
-            // merged the both transfers, original existed one and new request one, then store the transfer.
+            // merged both of the transfers, original existed one and new request one,
+            // then store the transfer, delete unuseful temp and meta transfers.
             if ( temp != null && temp.exists() )
             {
-                merged = new PackageMetadataMerger().merge( temp, tomerge );
-                contentController.store( sk, path, merged, eventMetadata );
+                stream = new PackageMetadataMerger().merge( temp, tomerge );
+                Transfer merged = contentController.store( sk, path, stream, eventMetadata );
+
                 temp.delete();
+
+                try
+                {
+                    // if merged successfully, CONTENT-LENGTH will be updated too,
+                    // delete this old one, indy will generate the new one when npm install on a group
+                    httpMeta.delete();
+                }
+                catch ( IOException e )
+                {
+                    logger.debug( "[NPM] Delete meta {} failed", httpMeta, e );
+                }
             }
 
             final URI uri = uriBuilder.get();
@@ -141,7 +152,7 @@ public class NPMContentAccessHandler
             }
             response = builder.build();
 
-            // generating .http-metadata.json for PUT request to resolve some header requirements
+            // generate .http-metadata.json for hosted repo to resolve npm header requirements
             generateHttpMetadataHeaders( tomerge, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
@@ -152,7 +163,7 @@ public class NPMContentAccessHandler
         }
         finally
         {
-            closeQuietly( merged );
+            closeQuietly( stream );
         }
 
         return response;
@@ -318,7 +329,7 @@ public class NPMContentAccessHandler
                                                   Response response,
                                                   final Consumer<Response.ResponseBuilder> builderModifier )
     {
-        if ( transfer == null )
+        if ( transfer == null || !transfer.exists() )
         {
             return;
         }
@@ -413,7 +424,7 @@ public class NPMContentAccessHandler
     public void generateHttpMetadataHeaders( final Transfer transfer, final HttpServletRequest request,
                                              final Response response )
     {
-        if ( transfer == null || request == null || response == null )
+        if ( transfer == null || !transfer.exists() || request == null || response == null )
         {
             return;
         }

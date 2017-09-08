@@ -15,17 +15,20 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.npm.model.PackageMetadata;
+import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Map;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -47,11 +50,12 @@ public class NPMHostedReStoreContentTest
     @Test
     public void test() throws Exception
     {
-        final String versionContent =
-                        "{\"name\": \"jquery\",\n" + "\"url\": \"jquery.com\",\n" + "\"version\": \"2.1.0\"}";
-        InputStream stream = new ByteArrayInputStream( versionContent.getBytes() );
+        final InputStream CONTENT_1 =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.json" );
+        final InputStream CONTENT_2 =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-2.json" );
 
-        final String path = "jquery/2.1.0";
+        final String path = "jquery";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -61,20 +65,23 @@ public class NPMHostedReStoreContentTest
         StoreKey storeKey = repo.getKey();
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
-        client.content().store( storeKey, path, stream );
+        client.content().store( storeKey, path, CONTENT_1 );
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
-        final String versionSnapshotContent =
-                        "{\"name\": \"jquery\",\n" + "\"url\": \"jquery.com\",\n" + "\"version\": \"2.2.0-snapshot\"}";
-        InputStream snapshotStream = new ByteArrayInputStream( versionSnapshotContent.getBytes() );
-
-        client.content().store( storeKey, path, snapshotStream );
+        client.content().store( storeKey, path, CONTENT_2 );
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         final InputStream is = client.content().get( storeKey, path );
-        final String result = IOUtils.toString( is );
 
-        assertThat( result, equalTo( versionSnapshotContent ) );
+        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        PackageMetadata reStoreMetadata = mapper.readValue( is, PackageMetadata.class );
+
+        // versions map merging verification when re-publish
+        Map<String, VersionMetadata> versions = reStoreMetadata.getVersions();
+        assertThat( versions, notNullValue() );
+        assertThat( versions.size(), equalTo( 2 ) );
+        assertThat( versions.get( "1.5.1" ).getVersion(), equalTo( "1.5.1" ) );
+        assertThat( versions.get( "1.6.2" ).getVersion(), equalTo( "1.6.2" ) );
 
         is.close();
     }
