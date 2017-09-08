@@ -18,7 +18,6 @@ package org.commonjava.indy.pkg.npm.jaxrs;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
@@ -50,8 +49,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -60,8 +62,6 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-import static org.commonjava.indy.pkg.npm.util.GeneratedTransfers.getGeneratedTransfers;
-import static org.commonjava.indy.pkg.npm.util.GeneratedTransfers.setGeneratedTransfers;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
@@ -72,6 +72,8 @@ public class NPMContentAccessHandler
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String TEMP_EXTENSION = ".temp";
+
+    private GeneratedTransfers generatedTransfers = new GeneratedTransfers();
 
     @Inject
     private TransferManager transfers;
@@ -334,13 +336,10 @@ public class NPMContentAccessHandler
             return;
         }
 
-        OutputStream out1 = null;
-        OutputStream out2 = null;
-
-        Transfer target1;
-        Transfer target2;
-        String content1 = "";
-        String content2 = "";
+        Transfer versionTarget;
+        Transfer tarballTarget;
+        String versionContent = "";
+        String tarballContent = "";
 
         ConcreteResource resource = transfer.getResource();
         try
@@ -348,21 +347,22 @@ public class NPMContentAccessHandler
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree( transfer.openInputStream( true ) );
 
-            String path1 = null;
-            String path2 = null;
+            String versionPath = null;
+            String tarballPath = null;
             JsonNode vnode = root.path( "versions" );
             JsonNode anode = root.path( "_attachments" );
             JsonNode idnode = root.path( "_id" );
 
             if ( vnode.fields().hasNext() )
             {
-                String version = vnode.fields().next().getKey();
+                Map.Entry<String, JsonNode> entry = vnode.fields().next();
+                String version = entry.getKey();
                 if ( version == null )
                 {
                     return;
                 }
-                path1 = Paths.get( idnode.asText(), version ).toString();
-                content1 = vnode.findValue( version ).toString();
+                versionPath = Paths.get( idnode.asText(), version ).toString();
+                versionContent = entry.getValue().toString();
             }
 
             if ( anode.fields().hasNext() )
@@ -372,19 +372,19 @@ public class NPMContentAccessHandler
                 {
                     return;
                 }
-                path2 = Paths.get( idnode.asText(), "-", tarball ).toString();
-                content2 = anode.findPath( "data" ).asText();
+                tarballPath = Paths.get( idnode.asText(), "-", tarball ).toString();
+                tarballContent = anode.findPath( "data" ).asText();
             }
 
-            if ( path1 == null || path2 == null )
+            if ( versionPath == null || tarballPath == null )
             {
                 return;
             }
-            target1 = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), path1 ) );
-            logger.info( "STORE {}", target1.getResource() );
+            versionTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), versionPath ) );
+            logger.info( "STORE {}", versionTarget.getResource() );
 
-            target2 = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), path2 ) );
-            logger.info( "STORE {}", target2.getResource() );
+            tarballTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), tarballPath ) );
+            logger.info( "STORE {}", tarballTarget.getResource() );
         }
         catch ( final IOException e )
         {
@@ -394,30 +394,27 @@ public class NPMContentAccessHandler
 
             return;
         }
-        try
+
+        if ( versionTarget == null || tarballTarget == null )
         {
-            if ( target1 == null || target2 == null )
-            {
-                return;
-            }
-            out1 = target1.openOutputStream( TransferOperation.UPLOAD, true, eventMetadata );
-            out1.write( content1.getBytes() );
+            return;
+        }
 
-            out2 = target2.openOutputStream( TransferOperation.UPLOAD, true, eventMetadata );
-            out2.write( Base64.decodeBase64( content2 ) );
-
-            setGeneratedTransfers( transfer, target1, target2 );
+        try (OutputStream versionOutputStream = versionTarget.openOutputStream( TransferOperation.UPLOAD, true,
+                                                                                eventMetadata );
+             OutputStream tarballOutputStream = tarballTarget.openOutputStream( TransferOperation.UPLOAD, true,
+                                                                                eventMetadata ))
+        {
+            versionOutputStream.write( versionContent.getBytes() );
+            tarballOutputStream.write( Base64.decodeBase64( tarballContent ) );
+            generatedTransfers = new GeneratedTransfers( transfer, versionTarget, tarballTarget );
         }
         catch ( final IOException e )
         {
             logger.error( String.format( "[NPM] Failed to store the generated targets: s% and s%. Reason: s%",
-                                         target1.getResource(), target2.getResource(), e.getMessage() ), e );
+                                         versionTarget.getResource(), tarballTarget.getResource(), e.getMessage() ),
+                          e );
             response = formatResponse( e, builderModifier );
-        }
-        finally
-        {
-            closeQuietly( out1 );
-            closeQuietly( out2 );
         }
     }
 
@@ -446,25 +443,23 @@ public class NPMContentAccessHandler
         }
 
         final HttpExchangeMetadata metadata = new StoreHttpExchangeMetadata( request, responseWithLastModified );
-        OutputStream out = null;
-        try
+
+        try (OutputStream out = metaTxfr.openOutputStream( TransferOperation.GENERATE, false ))
         {
-            out = metaTxfr.openOutputStream( TransferOperation.GENERATE, false );
-            out.write( mapper.writeValueAsBytes( metadata ) );
+            if ( out != null )
+            {
+                out.write( mapper.writeValueAsBytes( metadata ) );
+            }
         }
         catch ( final IOException e )
         {
             logger.error( "Failed to write metadata for HTTP exchange to: {}. Reason: {}", metaTxfr, e );
         }
-        finally
-        {
-            IOUtils.closeQuietly( out );
-        }
 
         // npm will generate .tgz and version json metadata files from the package json file target,
         // which will also need the HttpExchangeMetadata for npm header check.
 
-        List<Transfer> generated = getGeneratedTransfers( transfer );
+        List<Transfer> generated = generatedTransfers.getGeneratedTransfers( transfer );
         if ( generated == null )
         {
             return;
@@ -473,5 +468,31 @@ public class NPMContentAccessHandler
         {
             generateHttpMetadataHeaders( t, request, response );
         }
+    }
+
+    private class GeneratedTransfers
+    {
+
+        private Map<Transfer, List<Transfer>> map = new HashMap<>();
+
+        GeneratedTransfers()
+        {
+        }
+
+        GeneratedTransfers( Transfer target, Transfer... generated )
+        {
+            List<Transfer> list = new ArrayList<>();
+            for ( Transfer t : generated )
+            {
+                list.add( t );
+            }
+            map.put( target, list );
+        }
+
+        public List<Transfer> getGeneratedTransfers( Transfer target )
+        {
+            return map.get( target );
+        }
+
     }
 }
