@@ -136,13 +136,7 @@ public class NPMContentAccessHandler
             }
 
             final URI uri = uriBuilder.get();
-
-            Response.ResponseBuilder builder = Response.created( uri );
-            if ( builderModifier != null )
-            {
-                builderModifier.accept( builder );
-            }
-            response = builder.build();
+            response = responseWithBuilder( Response.created( uri ), builderModifier );
 
             // generate .http-metadata.json for hosted repo to resolve npm header requirements
             generateHttpMetadataHeaders( tomerge, generated, request, response );
@@ -175,23 +169,13 @@ public class NPMContentAccessHandler
     {
         if ( !PackageTypes.contains( packageType ) )
         {
-            Response.ResponseBuilder builder = Response.status( 400 );
-            if ( builderModifier != null )
-            {
-                builderModifier.accept( builder );
-            }
-            return builder.build();
+            return responseWithBuilder( Response.status( 400 ), builderModifier );
         }
 
          // hide npm sensitive user info for publish
-         if ( path.startsWith( "-/user" ) )
+        if ( path != null && path.startsWith( "-/user" ) )
          {
-             Response.ResponseBuilder builder = Response.status( 404 );
-             if ( builderModifier != null )
-             {
-                builderModifier.accept( builder );
-             }
-             return builder.build();
+             return responseWithBuilder( Response.status( 404 ), builderModifier );
          }
 
         final StoreType st = StoreType.get( type );
@@ -285,11 +269,7 @@ public class NPMContentAccessHandler
                         final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
                         setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );
-                        if ( builderModifier != null )
-                        {
-                            builderModifier.accept( builder );
-                        }
-                        response = builder.build();
+                        response = responseWithBuilder( builder, builderModifier );
                         // generating .http-metadata.json for npm group retrieve to resolve header requirements
                         if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.group == st )
                         {
@@ -318,15 +298,14 @@ public class NPMContentAccessHandler
     }
 
     private List<Transfer> generateNPMContentsFromTransfer( final Transfer transfer, final EventMetadata eventMetadata )
-            throws IndyWorkflowException
     {
         if ( transfer == null || !transfer.exists() )
         {
             return null;
         }
 
-        Transfer versionTarget;
-        Transfer tarballTarget;
+        Transfer versionTarget = null;
+        Transfer tarballTarget = null;
         String versionContent = "";
         String tarballContent = "";
 
@@ -372,15 +351,16 @@ public class NPMContentAccessHandler
 
             versionTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), versionPath ) );
             tarballTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), tarballPath ) );
-            if ( versionTarget == null || tarballTarget == null )
-            {
-                return null;
-            }
+
         }
         catch ( final IOException e )
         {
-            throw new IndyWorkflowException( "[NPM] Json node parse failed for resource: %s. Reason: %s", e, resource,
-                                             e.getMessage() );
+            logger.error( String.format( "[NPM] Json node parse failed for resource: %s. Reason: %s", resource, e.getMessage() ), e );
+        }
+
+        if ( versionTarget == null || tarballTarget == null )
+        {
+            return null;
         }
 
         try (OutputStream versionOutputStream = versionTarget.openOutputStream( TransferOperation.UPLOAD, true,
@@ -396,9 +376,10 @@ public class NPMContentAccessHandler
         }
         catch ( final IOException e )
         {
-            throw new IndyWorkflowException( "[NPM] Failed to store the generated targets: s% and s%. Reason: s%", e,
-                                             versionTarget.getResource(), tarballTarget.getResource(), e.getMessage() );
+            logger.error( String.format( "[NPM] Failed to store the generated targets: s% and s%. Reason: s%",
+                                         versionTarget.getResource(), tarballTarget.getResource(), e.getMessage() ), e );
         }
+        return null;
     }
 
     private void generateHttpMetadataHeaders( final Transfer transfer, final HttpServletRequest request,
@@ -416,7 +397,7 @@ public class NPMContentAccessHandler
         }
 
         Response responseWithLastModified =
-                response.fromResponse( response ).lastModified( new Date( transfer.lastModified() ) ).build();
+                Response.fromResponse( response ).lastModified( new Date( transfer.lastModified() ) ).build();
 
         Transfer metaTxfr = transfer.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
         if ( metaTxfr == null )
@@ -463,5 +444,15 @@ public class NPMContentAccessHandler
         List<Transfer> list = new ArrayList<>();
         Collections.addAll( list, generated );
         return list;
+    }
+
+    private Response responseWithBuilder( final Response.ResponseBuilder builder,
+                                          final Consumer<Response.ResponseBuilder> builderModifier )
+    {
+        if ( builderModifier != null )
+        {
+            builderModifier.accept( builder );
+        }
+        return builder.build();
     }
 }
