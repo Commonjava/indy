@@ -50,8 +50,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -72,8 +72,6 @@ public class NPMContentAccessHandler
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String TEMP_EXTENSION = ".temp";
-
-    private GeneratedTransfers generatedTransfers = new GeneratedTransfers();
 
     @Inject
     private TransferManager transfers;
@@ -100,7 +98,7 @@ public class NPMContentAccessHandler
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
-        Response response = null;
+        Response response;
 
         InputStream stream = null;
         try
@@ -122,7 +120,7 @@ public class NPMContentAccessHandler
             final Transfer tomerge = contentController.store( sk, path, request.getInputStream(), eventMetadata );
 
             // generate its relevant files from the new request package.json
-            generateNPMContentsFromTransfer( tomerge, eventMetadata, response, builderModifier );
+            List<Transfer> generated = generateNPMContentsFromTransfer( tomerge, eventMetadata );
 
             // merged both of the transfers, original existed one and new request one,
             // then store the transfer, delete unuseful temp and meta transfers.
@@ -131,18 +129,10 @@ public class NPMContentAccessHandler
                 stream = new PackageMetadataMerger().merge( temp, tomerge );
                 Transfer merged = contentController.store( sk, path, stream, eventMetadata );
 
+                // for npm group, will not replace with the new http meta when re-upload,
+                // delete the old http meta, will generate the new one with updated CONTENT-LENGTH when npm install
+                httpMeta.delete();
                 temp.delete();
-
-                try
-                {
-                    // if merged successfully, CONTENT-LENGTH will be updated too,
-                    // delete this old one, indy will generate the new one when npm install on a group
-                    httpMeta.delete();
-                }
-                catch ( IOException e )
-                {
-                    logger.debug( "[NPM] Delete meta {} failed", httpMeta, e );
-                }
             }
 
             final URI uri = uriBuilder.get();
@@ -155,7 +145,7 @@ public class NPMContentAccessHandler
             response = builder.build();
 
             // generate .http-metadata.json for hosted repo to resolve npm header requirements
-            generateHttpMetadataHeaders( tomerge, request, response );
+            generateHttpMetadataHeaders( tomerge, generated, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
@@ -327,13 +317,12 @@ public class NPMContentAccessHandler
         return response;
     }
 
-    private void generateNPMContentsFromTransfer( final Transfer transfer, final EventMetadata eventMetadata,
-                                                  Response response,
-                                                  final Consumer<Response.ResponseBuilder> builderModifier )
+    private List<Transfer> generateNPMContentsFromTransfer( final Transfer transfer, final EventMetadata eventMetadata )
+            throws IndyWorkflowException
     {
         if ( transfer == null || !transfer.exists() )
         {
-            return;
+            return null;
         }
 
         Transfer versionTarget;
@@ -359,7 +348,7 @@ public class NPMContentAccessHandler
                 String version = entry.getKey();
                 if ( version == null )
                 {
-                    return;
+                    return null;
                 }
                 versionPath = Paths.get( idnode.asText(), version ).toString();
                 versionContent = entry.getValue().toString();
@@ -370,7 +359,7 @@ public class NPMContentAccessHandler
                 String tarball = anode.fields().next().getKey();
                 if ( tarball == null )
                 {
-                    return;
+                    return null;
                 }
                 tarballPath = Paths.get( idnode.asText(), "-", tarball ).toString();
                 tarballContent = anode.findPath( "data" ).asText();
@@ -378,26 +367,20 @@ public class NPMContentAccessHandler
 
             if ( versionPath == null || tarballPath == null )
             {
-                return;
+                return null;
             }
-            versionTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), versionPath ) );
-            logger.info( "STORE {}", versionTarget.getResource() );
 
+            versionTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), versionPath ) );
             tarballTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), tarballPath ) );
-            logger.info( "STORE {}", tarballTarget.getResource() );
+            if ( versionTarget == null || tarballTarget == null )
+            {
+                return null;
+            }
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "[NPM] Json node parse failed for resource: %s. Reason: %s", resource,
-                                         e.getMessage() ), e );
-            response = formatResponse( e, builderModifier );
-
-            return;
-        }
-
-        if ( versionTarget == null || tarballTarget == null )
-        {
-            return;
+            throw new IndyWorkflowException( "[NPM] Json node parse failed for resource: %s. Reason: %s", e, resource,
+                                             e.getMessage() );
         }
 
         try (OutputStream versionOutputStream = versionTarget.openOutputStream( TransferOperation.UPLOAD, true,
@@ -405,21 +388,27 @@ public class NPMContentAccessHandler
              OutputStream tarballOutputStream = tarballTarget.openOutputStream( TransferOperation.UPLOAD, true,
                                                                                 eventMetadata ))
         {
+            logger.info( "STORE {}", versionTarget.getResource() );
             versionOutputStream.write( versionContent.getBytes() );
+            logger.info( "STORE {}", tarballTarget.getResource() );
             tarballOutputStream.write( Base64.decodeBase64( tarballContent ) );
-            generatedTransfers = new GeneratedTransfers( transfer, versionTarget, tarballTarget );
+            return generateTransfers( versionTarget, tarballTarget );
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "[NPM] Failed to store the generated targets: s% and s%. Reason: s%",
-                                         versionTarget.getResource(), tarballTarget.getResource(), e.getMessage() ),
-                          e );
-            response = formatResponse( e, builderModifier );
+            throw new IndyWorkflowException( "[NPM] Failed to store the generated targets: s% and s%. Reason: s%", e,
+                                             versionTarget.getResource(), tarballTarget.getResource(), e.getMessage() );
         }
     }
 
-    public void generateHttpMetadataHeaders( final Transfer transfer, final HttpServletRequest request,
-                                             final Response response )
+    private void generateHttpMetadataHeaders( final Transfer transfer, final HttpServletRequest request,
+                                              final Response response )
+    {
+        generateHttpMetadataHeaders( transfer, null, request, response );
+    }
+
+    private void generateHttpMetadataHeaders( final Transfer transfer, final List<Transfer> generated,
+                                              final HttpServletRequest request, final Response response )
     {
         if ( transfer == null || !transfer.exists() || request == null || response == null )
         {
@@ -459,7 +448,6 @@ public class NPMContentAccessHandler
         // npm will generate .tgz and version json metadata files from the package json file target,
         // which will also need the HttpExchangeMetadata for npm header check.
 
-        List<Transfer> generated = generatedTransfers.getGeneratedTransfers( transfer );
         if ( generated == null )
         {
             return;
@@ -470,29 +458,10 @@ public class NPMContentAccessHandler
         }
     }
 
-    private class GeneratedTransfers
+    private List<Transfer> generateTransfers( Transfer... generated )
     {
-
-        private Map<Transfer, List<Transfer>> map = new HashMap<>();
-
-        GeneratedTransfers()
-        {
-        }
-
-        GeneratedTransfers( Transfer target, Transfer... generated )
-        {
-            List<Transfer> list = new ArrayList<>();
-            for ( Transfer t : generated )
-            {
-                list.add( t );
-            }
-            map.put( target, list );
-        }
-
-        public List<Transfer> getGeneratedTransfers( Transfer target )
-        {
-            return map.get( target );
-        }
-
+        List<Transfer> list = new ArrayList<>();
+        Collections.addAll( list, generated );
+        return list;
     }
 }
