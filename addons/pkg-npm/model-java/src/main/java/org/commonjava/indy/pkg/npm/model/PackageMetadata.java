@@ -257,7 +257,7 @@ public class PackageMetadata
         return 0;
     }
 
-    public boolean merge( PackageMetadata source )
+    public boolean merge( PackageMetadata source, boolean isForGroup )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -446,7 +446,9 @@ public class PackageMetadata
         for ( final String v : sourceVersions.keySet() )
         {
             VersionMetadata value = sourceVersions.get( v );
-            if ( !versions.containsKey( v ) )
+            // for group merging, versions only accepts the first one coming to the group,
+            // for publish merging, it always accepts the latest updated version meta
+            if ( !isForGroup || !versions.containsKey( v ) )
             {
                 versions.put( v, value );
                 changed = true;

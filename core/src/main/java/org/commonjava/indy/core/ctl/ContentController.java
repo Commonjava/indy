@@ -244,7 +244,7 @@ public class ContentController
         }
     }
 
-    private ArtifactStore getStore( final StoreKey key )
+    public ArtifactStore getStore( final StoreKey key )
         throws IndyWorkflowException
     {
         ArtifactStore store;
@@ -281,6 +281,13 @@ public class ContentController
 
     public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl, final UriFormatter uriFormatter )
+            throws IndyWorkflowException
+    {
+        return renderListing( acceptHeader, key, requestPath, serviceUrl, uriFormatter, new EventMetadata() );
+    }
+
+    public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
+                                 final String serviceUrl, final UriFormatter uriFormatter, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
         String path = requestPath;
@@ -289,7 +296,7 @@ public class ContentController
             path = normalize( parentPath( path ) );
         }
 
-        final List<StoreResource> listed = getListing( key, path );
+        final List<StoreResource> listed = getListing( key, path, eventMetadata );
         if ( ApplicationContent.application_json.equals( acceptHeader ) )
         {
             final DirectoryListingDTO dto = new DirectoryListingDTO( StoreResource.convertToEntries( listed ) );
@@ -321,6 +328,11 @@ public class ContentController
                     String p = res.getPath();
                     if ( pass == 0 && !p.endsWith( "/" ) )
                     {
+                        continue;
+                    }
+                    if ( p.endsWith( "-" ) || p.endsWith( "-/" ) )
+                    {
+                        //skip npm adduser path to avoid the sensitive info showing.
                         continue;
                     }
                     else if ( pass == 1 )
@@ -422,10 +434,16 @@ public class ContentController
     }
 
     public List<StoreResource> getListing( final StoreKey key, final String path )
+            throws IndyWorkflowException
+    {
+        return getListing( key, path, new EventMetadata() );
+    }
+
+    public List<StoreResource> getListing( final StoreKey key, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
         final ArtifactStore store = getStore( key );
-        return contentManager.list( store, path, new EventMetadata() );
+        return contentManager.list( store, path, eventMetadata );
     }
 
     public boolean isHtmlContent( final Transfer item )
@@ -488,47 +506,5 @@ public class ContentController
 
     public boolean exists(StoreKey sk, String path) throws IndyWorkflowException {
         return contentManager.exists( getStore( sk ), path );
-    }
-
-    public void generateHttpMetadataHeaders( Transfer target, final HttpServletRequest request,
-                                             final Response response )
-    {
-        if ( target == null || request == null || response == null )
-        {
-            return;
-        }
-
-        Response responseWithLastModified =
-                response.fromResponse( response ).lastModified( new Date( target.lastModified() ) ).build();
-
-        Transfer metaTxfr = target.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
-        if ( metaTxfr == null )
-        {
-            if ( target.isDirectory() )
-            {
-                metaTxfr = target.getChild( HttpExchangeMetadata.FILE_EXTENSION );
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        final HttpExchangeMetadata metadata = new StoreHttpExchangeMetadata( request, responseWithLastModified );
-        OutputStream out = null;
-        try
-        {
-            out = metaTxfr.openOutputStream( TransferOperation.GENERATE, false );
-            out.write( mapper.writeValueAsBytes( metadata ) );
-        }
-        catch ( final IOException e )
-        {
-            logger.error( "Failed to write metadata for HTTP exchange to: {}. Reason: {}", metaTxfr, e );
-        }
-        finally
-        {
-            IOUtils.closeQuietly( out );
-        }
-
     }
 }

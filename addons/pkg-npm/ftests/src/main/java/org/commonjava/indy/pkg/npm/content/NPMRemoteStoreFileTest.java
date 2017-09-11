@@ -51,6 +51,7 @@ public class NPMRemoteStoreFileTest
         InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
         final String path = "jquery";
+        final String realPath = "jquery/package.json";
         final String repoName = "test-remote";
 
         RemoteRepository remoteRepository = new RemoteRepository( NPM_PKG_KEY, repoName, server.formatUrl( repoName ) );
@@ -69,7 +70,8 @@ public class NPMRemoteStoreFileTest
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.BAD_REQUEST.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
+        // for remote, list path of 'jquery/' will be stored
+        assertThat( client.content().exists( storeKey, realPath ), equalTo( false ) );
     }
 
     @Override

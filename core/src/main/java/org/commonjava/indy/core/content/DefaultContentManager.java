@@ -637,7 +637,7 @@ public class DefaultContentManager
         }
         else
         {
-            listed = downloadManager.list( store, path );
+            listed = downloadManager.list( store, path, eventMetadata );
 
             for ( final ContentGenerator producer : contentGenerators )
             {

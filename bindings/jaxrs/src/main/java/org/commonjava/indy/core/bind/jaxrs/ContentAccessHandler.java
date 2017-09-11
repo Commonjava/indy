@@ -39,6 +39,9 @@ import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
@@ -56,9 +59,8 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
-import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
+@ApplicationScoped
 public class ContentAccessHandler
         implements IndyResources
 {
@@ -120,9 +122,6 @@ public class ContentAccessHandler
                 builderModifier.accept( builder );
             }
             response = builder.build();
-
-            // generating .http-metadata.json for PUT request to resolve some header requirements
-            contentController.generateHttpMetadataHeaders( transfer, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
@@ -376,11 +375,6 @@ public class ContentAccessHandler
         {
             try
             {
-                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
-                {
-                    // make sure the right mapping path for hosted and group when retrieve content
-                    path = PathUtils.storagePath( path, eventMetadata );
-                }
                 logger.info( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
 
@@ -434,11 +428,6 @@ public class ContentAccessHandler
                             builderModifier.accept( builder );
                         }
                         response = builder.build();
-                        // generating .http-metadata.json for npm group retrieve to resolve header requirements
-                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.group == st )
-                        {
-                            contentController.generateHttpMetadataHeaders( item, request, response );
-                        }
                     }
                 }
                 finally

@@ -163,7 +163,21 @@ public class MockDownloadManager implements DownloadManager
     }
 
     @Override
+    public List<StoreResource> list( ArtifactStore store, String path, EventMetadata eventMetadata )
+            throws IndyWorkflowException
+    {
+        return null;
+    }
+
+    @Override
     public List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
+            throws IndyWorkflowException
+    {
+        return null;
+    }
+
+    @Override
+    public List<StoreResource> list( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         return null;

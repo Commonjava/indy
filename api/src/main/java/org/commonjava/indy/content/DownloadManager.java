@@ -162,9 +162,15 @@ public interface DownloadManager
         throws IndyWorkflowException;
 
     List<StoreResource> list( ArtifactStore store, String path )
+            throws IndyWorkflowException;
+
+    List<StoreResource> list( ArtifactStore store, String path, EventMetadata eventMetadatada )
         throws IndyWorkflowException;
 
     List<StoreResource> list( List<? extends ArtifactStore> stores, String path )
+            throws IndyWorkflowException;
+
+    List<StoreResource> list( List<? extends ArtifactStore> stores, String path, EventMetadata eventMetadata )
         throws IndyWorkflowException;
 
     Transfer getStoreRootDirectory( StoreKey key )

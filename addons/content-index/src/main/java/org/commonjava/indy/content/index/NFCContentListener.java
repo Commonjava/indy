@@ -124,6 +124,10 @@ class NFCContentListener
     {
         try
         {
+            if ( store == null )
+            {
+                return;
+            }
             logger.debug( "Start to clear nfc for groups affected by {} of path {}", store, path );
             storeDataManager.query()
                             .packageType( store.getKey().getPackageType() )

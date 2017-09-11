@@ -48,7 +48,7 @@ public class PromoteAllTest
 
         final Set<String> completed = result.getCompletedPaths();
         assertThat( completed, notNullValue() );
-        assertThat( completed.size(), equalTo( 4 ) ); // account for http-metadata.json files
+        assertThat( completed.size(), equalTo( 2 ) );
 
         assertThat( result.getError(), nullValue() );
 

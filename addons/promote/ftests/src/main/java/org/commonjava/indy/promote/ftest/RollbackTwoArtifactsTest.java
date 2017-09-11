@@ -48,7 +48,7 @@ public class RollbackTwoArtifactsTest
 
         Set<String> completed = result.getCompletedPaths();
         assertThat( completed, notNullValue() );
-        assertThat( completed.size(), equalTo( 4 ) ); // account for http-metadata.json files
+        assertThat( completed.size(), equalTo( 2 ) );
 
         assertThat( result.getError(), nullValue() );
 
@@ -65,7 +65,7 @@ public class RollbackTwoArtifactsTest
 
         pending = result.getPendingPaths();
         assertThat( pending, notNullValue() );
-        assertThat( pending.size(), equalTo( 4 ) ); // account for http-metadata.json files
+        assertThat( pending.size(), equalTo( 2 ) );
 
         assertThat( result.getError(), nullValue() );
 

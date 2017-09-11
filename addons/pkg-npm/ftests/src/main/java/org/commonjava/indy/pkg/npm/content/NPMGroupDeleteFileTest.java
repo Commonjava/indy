@@ -62,7 +62,9 @@ public class NPMGroupDeleteFileTest
 
     private static final String GROUP_C = "B";
 
-    private static final String PATH = "jquery/package.json";
+    private static final String PATH = "jquery";
+
+    private static final String REAL_PATH = "jquery/package.json";
 
     private static final String CONTENT_1 = "This is content #1.";
 
@@ -100,13 +102,16 @@ public class NPMGroupDeleteFileTest
         final Group groupC = new Group( NPM_PKG_KEY, GROUP_C, repoZ.getKey(), repoW.getKey() );
         client.stores().create( groupC, "adding npm group C repo", Group.class );
 
-        client.content().delete( groupA.getKey(), PATH );
-        client.content().delete( groupB.getKey(), PATH );
-        client.content().delete( groupC.getKey(), PATH );
+        assertThat( client.content().exists( groupA.getKey(), REAL_PATH ), equalTo( false ) );
 
-        assertThat( client.content().exists( groupA.getKey(), PATH ), equalTo( true ) );
-        assertThat( client.content().exists( groupB.getKey(), PATH ), equalTo( false ) );
-        assertThat( client.content().exists( groupC.getKey(), PATH ), equalTo( false ) );
+        assertThat( client.content().exists( groupB.getKey(), REAL_PATH ), equalTo( true ) );
+        assertThat( client.content().exists( groupC.getKey(), REAL_PATH ), equalTo( true ) );
+
+        client.content().delete( groupB.getKey(), REAL_PATH );
+        client.content().delete( groupC.getKey(), REAL_PATH );
+
+        assertThat( client.content().exists( groupB.getKey(), REAL_PATH ), equalTo( false ) );
+        assertThat( client.content().exists( groupC.getKey(), REAL_PATH ), equalTo( false ) );
     }
 
     @Override

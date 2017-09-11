@@ -18,44 +18,27 @@ package org.commonjava.indy.pkg.npm.content;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.pkg.npm.model.PackageMetadata;
-import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.util.Map;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-/**
- * This case test if files can be re-stored in a hosted repo
- * when: <br />
- * <ul>
- *      <li>creates a hosted repo</li>
- *      <li>stores file in hosted repo once</li>
- *      <li>updates the files content in hosted repo</li>
- * </ul>
- * then: <br />
- * <ul>
- *     <li>the file can be updated successfully with no error</li>
- * </ul>
- */
-public class NPMHostedReStoreContentTest
+public class NPMUploadGeneratedContentsTest
                 extends AbstractContentManagementTest
 {
     @Test
     public void test() throws Exception
     {
-        final InputStream CONTENT_1 =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.json" );
-        final InputStream CONTENT_2 =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-2.json" );
+        final InputStream CONTENT =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-with-tarball.json" );
 
         final String path = "jquery";
+        final String tarballPath = "jquery/-/jquery-1.5.1.tgz";
+        final String versionPath = "jquery/1.5.1";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -65,25 +48,11 @@ public class NPMHostedReStoreContentTest
         StoreKey storeKey = repo.getKey();
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
-        client.content().store( storeKey, path, CONTENT_1 );
+        client.content().store( storeKey, path, CONTENT );
+
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-
-        client.content().store( storeKey, path, CONTENT_2 );
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-
-        final InputStream is = client.content().get( storeKey, path );
-
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
-        PackageMetadata reStoreMetadata = mapper.readValue( is, PackageMetadata.class );
-
-        // versions map merging verification when re-publish
-        Map<String, VersionMetadata> versions = reStoreMetadata.getVersions();
-        assertThat( versions, notNullValue() );
-        assertThat( versions.size(), equalTo( 2 ) );
-        assertThat( versions.get( "1.5.1" ).getVersion(), equalTo( "1.5.1" ) );
-        assertThat( versions.get( "1.6.2" ).getVersion(), equalTo( "1.6.2" ) );
-
-        is.close();
+        assertThat( client.content().exists( storeKey, tarballPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, versionPath ), equalTo( true ) );
     }
 
     @Override
