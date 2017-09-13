@@ -66,19 +66,21 @@ public class HostedContentIndexRescanManager
     public void hostedIndexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
             throws IndyWorkflowException
     {
-        Collection<ArtifactStore> hostedStores = e.getStores();
-        for ( ArtifactStore repo : hostedStores )
+        Collection<ArtifactStore> affectedRepos = e.getStores();
+        for ( ArtifactStore repo : affectedRepos )
         {
-            final HostedRepository hosted = (HostedRepository) repo;
+            if ( repo.getType() == StoreType.hosted )
+            {
+                final HostedRepository hosted = (HostedRepository) repo;
 
-            LOGGER.trace( "Clear content index for {}", hosted.getKey() );
-            // Remove the content index items for the hosted which will be rescanned
-            contentIndexManager.clearAllIndexedPathInStore( hosted );
-            // Remove the content index items for the affected groups of the hosted which will be rescanned, note that
-            // we will only cared about the items that is from this hosted only but not others(the origin key in
-            // IndexedStorePath which hits this hosted)
-            contentIndexManager.clearAllIndexedPathWithOriginalStore( hosted );
-
+                LOGGER.trace( "Clear content index for {}", hosted.getKey() );
+                // Remove the content index items for the hosted which will be rescanned
+                contentIndexManager.clearAllIndexedPathInStore( hosted );
+                // Remove the content index items for the affected groups of the hosted which will be rescanned, note that
+                // we will only cared about the items that is from this hosted only but not others(the origin key in
+                // IndexedStorePath which hits this hosted)
+                contentIndexManager.clearAllIndexedPathWithOriginalStore( hosted );
+            }
         }
     }
 
@@ -88,32 +90,32 @@ public class HostedContentIndexRescanManager
         Collection<ArtifactStore> hostedStores = e.getStores();
         for ( ArtifactStore repo : hostedStores )
         {
-            LOGGER.trace( "Rebuild content index for {}", repo.getKey() );
-            final HostedRepository hosted = (HostedRepository) repo;
-            try
+            if ( repo.getType() == StoreType.hosted )
             {
-                List<StoreResource> resources = contentManager.list( hosted, DownloadManager.ROOT_PATH );
-                Set<Group> affected = storeDataManager.query().getGroupsAffectedBy( hosted.getKey() );
-                Set<StoreKey> affetctedGroupKeys =
-                        affected.stream().map( g -> g.getKey() ).collect( Collectors.toSet() );
-                StoreKey[] gKeys = affetctedGroupKeys.toArray( new StoreKey[affetctedGroupKeys.size()] );
-                resources.forEach( res -> {
-                    contentIndexManager.indexPathInStores( res.getPath(), hosted.getKey(), gKeys );
-                } );
+                LOGGER.trace( "Rebuild content index for {}", repo.getKey() );
+                final HostedRepository hosted = (HostedRepository) repo;
+                try
+                {
+                    List<StoreResource> resources = contentManager.list( hosted, DownloadManager.ROOT_PATH );
+                    Set<Group> affected = storeDataManager.query().getGroupsAffectedBy( hosted.getKey() );
+                    Set<StoreKey> affetctedGroupKeys =
+                            affected.stream().map( g -> g.getKey() ).collect( Collectors.toSet() );
+                    StoreKey[] gKeys = affetctedGroupKeys.toArray( new StoreKey[affetctedGroupKeys.size()] );
+                    resources.forEach( res -> {
+                        contentIndexManager.indexPathInStores( res.getPath(), hosted.getKey(), gKeys );
+                    } );
+                }
+                catch ( IndyWorkflowException ex )
+                {
+                    LOGGER.error( String.format( "Can not list resource correctly for hosted repo %s due to %s",
+                                                 hosted.getKey(), ex.getMessage() ), ex );
+                }
+                catch ( IndyDataException ex )
+                {
+                    LOGGER.error( String.format( "Can not get the affected groups for hosted repo %s due to %s",
+                                                 hosted.getKey(), ex.getMessage() ), ex );
+                }
             }
-            catch ( IndyWorkflowException ex )
-            {
-                LOGGER.error(
-                        String.format( "Can not list resource correctly for hosted repo %s due to %s", hosted.getKey(),
-                                       ex.getMessage() ), ex );
-            }
-            catch ( IndyDataException ex )
-            {
-                LOGGER.error(
-                        String.format( "Can not get the affected groups for hosted repo %s due to %s", hosted.getKey(),
-                                       ex.getMessage() ), ex );
-            }
-
         }
     }
 }
