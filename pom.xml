@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011 Red Hat, Inc. (jdcasey@commonjava.org)
+    Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
   
   <name>Indy :: Project Root</name>
-  <inceptionYear>2011</inceptionYear>
+  <inceptionYear>2011-2017</inceptionYear>
   
   <scm>
     <connection>scm:git:https://github.com/Commonjava/indy.git</connection>
@@ -43,6 +43,7 @@
   <properties>
     <apiVersion>1</apiVersion>
     <projectOwner>Red Hat, Inc.</projectOwner>
+    <projectEmail>https://github.com/Commonjava/indy</projectEmail>
     
     <!-- <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation> -->
 
@@ -1511,7 +1512,7 @@
               <exclude>bin/**</exclude>
               <exclude>**/*.log</exclude>
               <exclude>scratch/**</exclude>
-              <exclude>scripts/**</exclude>
+              <!-- exclude>scripts/**</exclude -->
               <exclude>**/README</exclude>
               <exclude>**/LICENSE*</exclude>
               <exclude>src/test/resources/**</exclude>
