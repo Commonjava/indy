@@ -73,9 +73,7 @@
                   <alias>keycloak-test-appliance</alias>
                 </network>
                 <wait>
-                  <http>
-                    <url>http://localhost:${keycloak.port}/auth</url>
-                  </http>
+                  <log>${keycloak-waitFor}</log>
                   <time>${dockerStartTimeout}</time>
                 </wait>
               </run>
