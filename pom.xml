@@ -1501,7 +1501,9 @@
           <configuration>
             <excludes>
               <exclude>bin/**</exclude>
+              <exclude>**/*.log</exclude>
               <exclude>scratch/**</exclude>
+              <exclude>scripts/**</exclude>
               <exclude>**/README</exclude>
               <exclude>**/LICENSE*</exclude>
               <exclude>src/test/resources/**</exclude>
