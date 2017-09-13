@@ -15,17 +15,11 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.indy.IndyMetricsNames;
-import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
-import org.commonjava.indy.content.metrics.IndyMetricsContentIndexNames;
-import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -40,15 +34,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -178,6 +168,26 @@ public class ContentIndexManager
                 logger.trace( "Indexing path: {} in: {} via member: {}", path, key, originKey );
                 contentIndex.put( isp, origin );
             } );
+    }
+
+    public void clearAllIndexedPathInStore( ArtifactStore store )
+    {
+        Set<IndexedStorePath> isps =
+                contentIndex.cacheKeySetByFilter( key -> key.getStoreKey().equals( store.getKey() ) );
+        if ( isps != null )
+        {
+            isps.forEach( isp -> contentIndex.remove( isp ) );
+        }
+    }
+
+    public void clearAllIndexedPathWithOriginalStore( ArtifactStore originalStore )
+    {
+        Set<IndexedStorePath> isps =
+                contentIndex.cacheKeySetByFilter( key -> key.getOriginStoreKey().equals( originalStore.getKey() ) );
+        if ( isps != null )
+        {
+            isps.forEach( isp -> contentIndex.remove( isp ) );
+        }
     }
 
     /**
