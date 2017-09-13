@@ -16,6 +16,8 @@
 package org.commonjava.indy.subsys.infinispan;
 
 import org.infinispan.Cache;
+import org.infinispan.query.Search;
+import org.infinispan.query.SearchManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,8 +26,11 @@ import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Holder class that helps manage the shutdown process for things that use Infinispan.
@@ -264,4 +269,10 @@ public class CacheHandle<K,V>
     {
         execute( ( c ) -> c.getAdvancedCache().lock( keys ) );
     }
+
+    public Set<K> cacheKeySetByFilter( Predicate<K> filter )
+    {
+        return this.cache.keySet().stream().filter( filter ).collect( Collectors.toSet() );
+    }
+
 }
