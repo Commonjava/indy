@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.content.index.conf;
+package org.commonjava.indy.koji.content;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
@@ -22,12 +22,12 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.index.ContentIndexManager;
-import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
@@ -42,11 +42,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * This component will handle the content index for the hosted repo during its rescan. It will rebuild all relevant
- * index entries for the hosted repo, and remove all useless entries for the missed artifacts in hosted repo
+ * This component will handle the content index for the Koji generated remote repo during its rescan. It will rebuild all relevant
+ * index entries for the remote repo, and remove all useless entries for the missed artifacts in hosted repo. All these entries will
+ * be based on the remote path masks.
  */
 @ApplicationScoped
-public class HostedContentIndexRescanManager
+public class KojiRemoteContenIndexingRescanManager
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
 
@@ -59,60 +60,51 @@ public class HostedContentIndexRescanManager
     @Inject
     private ContentManager contentManager;
 
-    protected HostedContentIndexRescanManager()
+    protected KojiRemoteContenIndexingRescanManager()
     {
     }
 
-    public void hostedIndexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
+    public void kojiRemoteIndexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
             throws IndyWorkflowException
     {
-        Collection<ArtifactStore> affectedRepos = e.getStores();
-        for ( ArtifactStore repo : affectedRepos )
+        Collection<ArtifactStore> repos = e.getStores();
+        for ( ArtifactStore repo : repos )
         {
-            if ( repo.getType() == StoreType.hosted )
+            if ( repo.getType() == StoreType.remote && repo.getName()
+                                                           .startsWith( KojiContentManagerDecorator.KOJI_ORIGIN ) )
             {
-                final HostedRepository hosted = (HostedRepository) repo;
-
-                LOGGER.trace( "Clear content index for {}", hosted.getKey() );
-                // Remove the content index items for the hosted which will be rescanned
-                contentIndexManager.clearAllIndexedPathInStore( hosted );
-                // Remove the content index items for the affected groups of the hosted which will be rescanned, note that
-                // we will only cared about the items that is from this hosted only but not others(the origin key in
-                // IndexedStorePath which hits this hosted)
-                contentIndexManager.clearAllIndexedPathWithOriginalStore( hosted );
+                LOGGER.trace( "Clear content index for koji remote: {}", repo.getKey() );
+                contentIndexManager.clearAllIndexedPathInStore( repo );
+                contentIndexManager.clearAllIndexedPathWithOriginalStore( repo );
             }
         }
     }
 
-    public void hostedIndexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
+    public void kojiRemoteIndexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
             throws IndyWorkflowException
     {
-        Collection<ArtifactStore> hostedStores = e.getStores();
-        for ( ArtifactStore repo : hostedStores )
+        Collection<ArtifactStore> repos = e.getStores();
+        for ( ArtifactStore repo : repos )
         {
-            if ( repo.getType() == StoreType.hosted )
+            if ( repo.getType() == StoreType.remote && repo.getName()
+                                                           .startsWith( KojiContentManagerDecorator.KOJI_ORIGIN ) )
             {
-                LOGGER.trace( "Rebuild content index for {}", repo.getKey() );
-                final HostedRepository hosted = (HostedRepository) repo;
+                LOGGER.trace( "Rebuild content index for koji remote: {}", repo.getKey() );
+                final RemoteRepository kojiRemote = (RemoteRepository) repo;
                 try
                 {
-                    List<StoreResource> resources = contentManager.list( hosted, DownloadManager.ROOT_PATH );
-                    Set<Group> affected = storeDataManager.query().getGroupsAffectedBy( hosted.getKey() );
+                    Set<Group> affected = storeDataManager.query().getGroupsAffectedBy( kojiRemote.getKey() );
                     Set<StoreKey> affetctedGroupKeys =
                             affected.stream().map( g -> g.getKey() ).collect( Collectors.toSet() );
                     StoreKey[] gKeys = affetctedGroupKeys.toArray( new StoreKey[affetctedGroupKeys.size()] );
-                    resources.forEach(
-                            res -> contentIndexManager.indexPathInStores( res.getPath(), hosted.getKey(), gKeys ) );
-                }
-                catch ( IndyWorkflowException ex )
-                {
-                    LOGGER.error( String.format( "Can not list resource correctly for hosted repo %s due to %s",
-                                                 hosted.getKey(), ex.getMessage() ), ex );
+                    kojiRemote.getPathMaskPatterns()
+                              .forEach( path -> contentIndexManager.indexPathInStores( path, kojiRemote.getKey(),
+                                                                                       gKeys ) );
                 }
                 catch ( IndyDataException ex )
                 {
                     LOGGER.error( String.format( "Can not get the affected groups for hosted repo %s due to %s",
-                                                 hosted.getKey(), ex.getMessage() ), ex );
+                                                 kojiRemote.getKey(), ex.getMessage() ), ex );
                 }
             }
         }
