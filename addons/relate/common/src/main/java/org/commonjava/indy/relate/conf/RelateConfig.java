@@ -28,7 +28,7 @@ import java.io.InputStream;
 public class RelateConfig
     implements IndyConfigInfo
 {
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     public RelateConfig()
     {

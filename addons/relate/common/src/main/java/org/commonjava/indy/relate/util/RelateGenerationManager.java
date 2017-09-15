@@ -21,6 +21,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.relate.conf.RelateConfig;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.graph.model.EProjectDirectRelationships;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
@@ -72,6 +73,9 @@ public class RelateGenerationManager
     @Inject
     private IndyObjectMapper indyObjectMapper;
 
+    @Inject
+    private RelateConfig config;
+
     /**
      * Generate relationship file for pom transfer.
      * @param transfer
@@ -81,6 +85,12 @@ public class RelateGenerationManager
     public Transfer generateRelationshipFile( Transfer transfer, TransferOperation op )
     {
         final Logger logger = LoggerFactory.getLogger( getClass() );
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Relate Add-on is not enabled." );
+            return null;
+        }
+
         logger.debug( "Relate generation for {}", transfer );
 
         if ( transfer == null )
