@@ -119,6 +119,12 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>dataset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-implied-repos-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
@@ -165,6 +171,13 @@
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-relate-common</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+
     <dependency>
       <groupId>com.internetitem</groupId>
       <artifactId>logback-elasticsearch-appender</artifactId>

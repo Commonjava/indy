@@ -87,8 +87,8 @@
             <configuration>
               <descriptorRefs>
                 <descriptorRef>confset</descriptorRef>
-                <!--
                 <descriptorRef>dataset</descriptorRef>
+                <!--
                 <descriptorRef>docset</descriptorRef>
                 <descriptorRef>uiset</descriptorRef>
                 -->
