@@ -701,7 +701,8 @@ public class ScheduleManager
     {
         if ( e == null )
         {
-            throw new IllegalArgumentException( "[FATAL]The infinispan cache created event for indy schedule manager is null." );
+            logger.error( "[FATAL]The infinispan cache created event for indy schedule manager is null.", new NullPointerException( "CacheEntryCreatedEvent is null" ) );
+            return;
         }
 
         if ( !e.isPre() )
@@ -723,7 +724,8 @@ public class ScheduleManager
     {
         if ( e == null )
         {
-            throw new IllegalArgumentException( "[FATAL]The infinispan cache expired event for indy schedule manager is null." );
+            logger.error( "[FATAL]The infinispan cache expired event for indy schedule manager is null.", new NullPointerException( "CacheEntryExpiredEvent is null" ) );
+            return;
         }
 
         if ( !e.isPre() )
@@ -745,7 +747,8 @@ public class ScheduleManager
     {
         if ( e == null )
         {
-            throw new IllegalArgumentException( "[FATAL]The infinispan cache removed event for indy schedule manager is null." );
+            logger.error( "[FATAL]The infinispan cache removed event for indy schedule manager is null.", new NullPointerException( "CacheEntryRemovedEvent is null" ) );
+            return;
         }
         logger.info( "Cache removed to cancel scheduling, Key is {}, Value is {}", e.getKey(), e.getValue() );
     }
