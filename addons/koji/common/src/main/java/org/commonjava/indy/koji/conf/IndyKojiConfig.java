@@ -191,6 +191,36 @@ public class IndyKojiConfig
         return KOJI_SITE_ID;
     }
 
+    @Override
+    public String getKrbCCache()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbKeytab()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbPassword()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbPrincipal()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbService()
+    {
+        return null;
+    }
+
     public Integer getMaxConnections()
     {
         return maxConnections == null ? DEFAULT_MAX_CONNECTIONS : maxConnections;

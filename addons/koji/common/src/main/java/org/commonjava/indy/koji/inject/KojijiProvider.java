@@ -22,12 +22,10 @@ import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -80,14 +78,7 @@ public class KojijiProvider
             kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
         }
 
-        try
-        {
-            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
-        }
-        catch ( BindException e )
-        {
-            throw new IndyLifecycleException( "Failed to start koji client: %s", e, e.getMessage() );
-        }
+        kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
     }
 
     @Override

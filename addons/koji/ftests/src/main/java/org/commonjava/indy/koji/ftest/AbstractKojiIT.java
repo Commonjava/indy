@@ -15,11 +15,6 @@
  */
 package org.commonjava.indy.koji.ftest;
 
-import com.redhat.red.build.koji.model.xmlrpc.KojiXmlRpcBindery;
-import com.redhat.red.build.koji.KojiClient;
-import com.redhat.red.build.koji.config.KojiConfig;
-import com.redhat.red.build.koji.config.SimpleKojiConfigBuilder;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -37,10 +32,8 @@ import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
-import org.commonjava.util.jhttpc.auth.PasswordType;
 import org.commonjava.util.jhttpc.util.UrlUtils;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -55,12 +48,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractKojiIT
