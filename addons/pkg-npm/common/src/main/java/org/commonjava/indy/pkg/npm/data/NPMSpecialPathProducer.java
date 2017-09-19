@@ -41,7 +41,7 @@ public class NPMSpecialPathProducer
     private SpecialPathManager specialPathManager;
 
     @PostConstruct
-    public void start() throws IndyLifecycleException
+    public void start()
     {
         specialPathManager.registerSpecialPathSet( new NPMSpecialPathSet() );
     }

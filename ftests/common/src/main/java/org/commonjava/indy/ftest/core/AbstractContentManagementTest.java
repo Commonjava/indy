@@ -116,15 +116,18 @@ public class AbstractContentManagementTest
                     client.content().exists( store.getKey(), path ), equalTo( expected ) );
     }
 
-    protected void assertContent( ArtifactStore store, String path, String expected )
+    protected String assertContent( ArtifactStore store, String path, String expected )
             throws IndyClientException, IOException
     {
         try(InputStream in = client.content().get( store.getKey(), path))
         {
             assertThat( "Content not found: " + path + " in store: " + store.getKey(), in, notNullValue() );
 
-            assertThat( "Content is wrong: " + path + " in store: " + store.getKey(), IOUtils.toString( in ),
+            String foundContent = IOUtils.toString( in );
+            assertThat( "Content is wrong: " + path + " in store: " + store.getKey(), foundContent,
                         equalTo( expected ) );
+
+            return foundContent;
         }
     }
 
