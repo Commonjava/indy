@@ -492,7 +492,16 @@ public class MavenMetadataGenerator
                 if ( memberMeta == null )
                 {
 
-                    final Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
+                    Transfer memberMetaTxfr = null;
+                    try
+                    {
+                        memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
+                    }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.warn( String.format( "Error retrieving: %s from: %s. Skipping...", toMergePath, store.getKey() ), e );
+                    }
+
                     if ( exists( memberMetaTxfr ) )
                     {
                         final MetadataXpp3Reader reader = new MetadataXpp3Reader();
