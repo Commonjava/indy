@@ -22,17 +22,7 @@ from urlparse import urlparse
 import time
 import mb.util
 
-SETTINGS = """
-<?xml version="1.0"?>
-<settings>
-  <localRepository>%(dir)s/local-repo</localRepository>
-  <mirrors>
-    <mirror>
-      <id>indy</id>
-      <mirrorOf>*</mirrorOf>
-      <url>%(url)s/api/folo/track/%(id)s/group/%(id)s</url>
-    </mirror>
-  </mirrors>
+PROXIES = """
   <proxies>
     <proxy>
       <id>indy-httprox</id>
@@ -45,6 +35,20 @@ SETTINGS = """
       <nonProxyHosts>%(host)s</nonProxyHosts>
     </proxy>
   </proxies>
+"""
+
+SETTINGS = """
+<?xml version="1.0"?>
+<settings>
+  <localRepository>%(dir)s/local-repo</localRepository>
+  <mirrors>
+    <mirror>
+      <id>indy</id>
+      <mirrorOf>*</mirrorOf>
+      <url>%(url)s/api/folo/track/%(id)s/group/%(id)s</url>
+    </mirror>
+  </mirrors>
+  %(proxies)s
   <profiles>
     <profile>
       <id>resolve-settings</id>
@@ -73,20 +77,16 @@ SETTINGS = """
         </pluginRepository>
       </pluginRepositories>
     </profile>
-    
     <profile>
       <id>deploy-settings</id>
       <properties>
         <altDeploymentRepository>%(id)s::default::%(url)s/api/folo/track/%(id)s/hosted/%(id)s</altDeploymentRepository>
       </properties>
     </profile>
-    
   </profiles>
   <activeProfiles>
     <activeProfile>resolve-settings</activeProfile>
-    
     <activeProfile>deploy-settings</activeProfile>
-    
   </activeProfiles>
 </settings>
 """
@@ -251,7 +251,8 @@ class Builder(Thread):
             'disabled': False, 
             'doctype': 'hosted', 
             'name': params['id'], 
-            'allow_releases': True
+            'allow_releases': True,
+            'allow_snapshots': True
         }
 
         print "POSTing: %s" % json.dumps(hosted, indent=2)
@@ -279,6 +280,11 @@ class Builder(Thread):
 
         resp = requests.post("%(url)s/api/admin/group" % params, json=group, headers=POST_HEADERS)
         resp.raise_for_status()
+
+        if params.get('proxy_port') is not None:
+            params['proxies'] = PROXIES % params
+        else:
+            params['proxies'] = ''
 
         # Write the settings.xml we need for this build
         with open("%s/settings.xml" % builddir, 'w') as f:

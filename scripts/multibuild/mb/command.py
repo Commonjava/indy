@@ -75,7 +75,7 @@ def build(testfile, indy_url, delay, vagrant_dir):
 
             for x in range(build['builds']):
                 builddir = mb.util.setup_builddir(builds_dir, project_src_dir, git_branch, tid_base, x)
-                build_queue.put((builddir, indy_url, build_config['proxy-port'], (x % int(build['threads']))*int(delay)))
+                build_queue.put((builddir, indy_url, build_config.get('proxy-port'), (x % int(build['threads']))*int(delay)))
 
             build_queue.join()
 

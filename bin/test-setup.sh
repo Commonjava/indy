@@ -82,4 +82,4 @@ fi
 
 popd
 
-$DIR/bin/debug-launcher.rb -e
+exec $DIR/bin/debug-launcher.rb -e
