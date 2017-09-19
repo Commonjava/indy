@@ -383,7 +383,13 @@ public class MavenMetadataGenerator
 
             if ( exists( target ) )
             {
-                return target;
+//                return target;
+                // if this is a checksum file, we need to return the original path.
+                Transfer original = fileManager.getTransfer( group, path );
+                if ( exists( original ) )
+                {
+                    return original;
+                }
             }
         }
 
