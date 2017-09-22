@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.apache.commons.io.FileUtils.readFileToString;
+import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_CONNECTION_POOL_TIMEOUT_SECONDS;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_MAX_CONNECTIONS;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_PROXY_PORT;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_REQUEST_TIMEOUT_SECONDS;
@@ -120,6 +121,8 @@ public class IndyKojiConfig
 
     private String artifactAuthorityStore;
 
+    private Integer connectionPoolTimeoutSeconds;
+
     @Override
     public SiteConfig getKojiSiteConfig()
             throws IOException
@@ -133,6 +136,7 @@ public class IndyKojiConfig
                                       .withProxyPort( getProxyPort() )
                                       .withProxyUser( getProxyUser() )
                                       .withRequestTimeoutSeconds( getRequestTimeoutSeconds() )
+                                      .withConnectionPoolTimeoutSeconds( getConnectionPoolTimeoutSeconds() )
                                       .withTrustType( SiteTrustType.getType( getSiteTrustType() ) )
                                       .build();
     }
@@ -190,6 +194,38 @@ public class IndyKojiConfig
     {
         return KOJI_SITE_ID;
     }
+
+    // TODO: Implement kerberos support...
+    @Override
+    public String getKrbCCache()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbKeytab()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbPassword()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbPrincipal()
+    {
+        return null;
+    }
+
+    @Override
+    public String getKrbService()
+    {
+        return null;
+    }
+    // TODO: END: Implement kerberos support...
 
     public Integer getMaxConnections()
     {
@@ -476,6 +512,11 @@ public class IndyKojiConfig
                 this.siteTrustType = value;
                 break;
             }
+            case "connection.pool.timeout.seconds":
+            {
+                this.connectionPoolTimeoutSeconds= Integer.valueOf( value );
+                break;
+            }
             case "request.timeout.seconds":
             {
                 this.requestTimeoutSeconds = Integer.valueOf( value );
@@ -632,7 +673,18 @@ public class IndyKojiConfig
         return namingFormat;
     }
 
-    public String getBinayNamingFormat() {
+    public String getBinayNamingFormat()
+    {
         return binayNamingFormat;
+    }
+
+    public Integer getConnectionPoolTimeoutSeconds()
+    {
+        return connectionPoolTimeoutSeconds == null ? DEFAULT_CONNECTION_POOL_TIMEOUT_SECONDS : connectionPoolTimeoutSeconds;
+    }
+
+    public void setConnectionPoolTimeoutSeconds( final Integer connectionPoolTimeoutSeconds )
+    {
+        this.connectionPoolTimeoutSeconds = connectionPoolTimeoutSeconds;
     }
 }
