@@ -24,7 +24,7 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
 
 /**
- * {@link KeyedLocation} implementation that only knows about locally hosted/cached content. During Galley's handling, it can be converted into other 
+ * {@link KeyedLocation} implementation that only knows about locally hosted/cached content. During Galley's handling, it can be converted into other
  * store-related {@link KeyedLocation} types, assuming it's not referencing a {@link HostedRepository}, via the {@link IndyLocationExpander} component.
  */
 public class CacheOnlyLocation
@@ -81,6 +81,12 @@ public class CacheOnlyLocation
     public boolean allowsReleases()
     {
         return repo == null || repo.isAllowReleases();
+    }
+
+    @Override
+    public boolean allowsDeletion()
+    {
+        return repo != null && !repo.isReadonly();
     }
 
     @Override

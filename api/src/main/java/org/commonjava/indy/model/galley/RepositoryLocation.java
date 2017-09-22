@@ -91,6 +91,12 @@ public class RepositoryLocation
     }
 
     @Override
+    public boolean allowsDeletion()
+    {
+        return true;
+    }
+
+    @Override
     public String getUri()
     {
         return repository.getUrl();
