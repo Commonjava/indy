@@ -62,6 +62,7 @@ def findTimings(timer_config, logdir):
     processed = []
     firstStart = None
     lastEnd = None
+    maxConcurrent=0
 
     fnames = sorted([fname for fname in os.listdir(logdir) if re.match(r'indy(\.\d+).log', fname)], reverse=True)
     if os.path.exists(os.path.join(logdir, 'indy.log')):
@@ -95,7 +96,11 @@ def findTimings(timer_config, logdir):
 
                         matcher[START_TIME] = startTime
                         end_matchers.append(matcher)
-                        print "Found new START (%d/%d)." % (len(end_matchers), (len(end_matchers) + len(done)))
+
+                        concurrent = len(end_matchers)
+                        maxConcurrent = concurrent if concurrent > maxConcurrent else maxConcurrent
+
+                        print "Found new START (%d/%d)." % (concurrent, (concurrent + len(done)))
                         # print "END will be:\n'%s'\n\n" % end_exp
                         found = True
                         break
@@ -148,7 +153,8 @@ def findTimings(timer_config, logdir):
             'counts': {
                 'entries_ended': avgCount,
                 'lines_processed': lines,
-                'unmatched_starts': len(end_matchers)
+                'unmatched_starts': len(end_matchers),
+                'max_concurrency': maxConcurrent
             },
             'times': {
                 'avg': formatElapsed(avgTime), 
