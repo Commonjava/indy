@@ -58,58 +58,63 @@ public class CallableDelayedDownload
     
     public CallableDelayedDownload call()
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Starting: {}", Thread.currentThread().getName() );
-
-        if ( initialDelay > 0 )
-        {
-            logger.info( "Delaying: {}", initialDelay );
-
-            try
-            {
-                Thread.sleep( initialDelay );
-            }
-            catch ( final InterruptedException e )
-            {
-                return this;
-            }
-        }
-        
-        startTime = System.nanoTime();
-        InputStream in = null;
-        content = new ByteArrayOutputStream();
-
-        logger.info( "Trying: {}", Thread.currentThread().getName() );
+        String oldName = Thread.currentThread().getName();
         try
         {
-            in = client.content().get( key.getType(), key.getName(), path );
-            if ( in == null )
+
+            Thread.currentThread().setName( getClass().getSimpleName() + ": " + oldName );
+            
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Starting: {}", Thread.currentThread().getName() );
+
+            if ( initialDelay > 0 )
             {
+                logger.info( "Delaying: {}", initialDelay );
+
+                try
+                {
+                    Thread.sleep( initialDelay );
+                }
+                catch ( final InterruptedException e )
+                {
+                    return this;
+                }
+            }
+
+            startTime = System.nanoTime();
+            content = new ByteArrayOutputStream();
+
+            logger.info( "Trying: {}", Thread.currentThread().getName() );
+            try(InputStream in = client.content().get( key.getType(), key.getName(), path ))
+            {
+                if ( in == null )
+                {
+                    missing = true;
+                }
+                else
+                {
+                    CountingInputStream cin = new CountingInputStream( in );
+                    IOUtils.copy( cin, content );
+                    logger.debug( "Read: {} bytes", cin.getByteCount() );
+                }
+            }
+            catch ( IndyClientException | IOException e )
+            {
+                e.printStackTrace();
                 missing = true;
             }
-            else
-            {
-                CountingInputStream cin = new CountingInputStream( in );
-                IOUtils.copy( cin, content );
-                logger.debug( "Read: {} bytes", cin.getByteCount() );
-            }
-        }
-        catch ( IndyClientException | IOException e )
-        {
-            e.printStackTrace();
-            missing = true;
+
+            endTime = System.nanoTime();
+            latch.countDown();
+
+            logger.info( "Stopping: {}", Thread.currentThread().getName() );
+
+            return this;
         }
         finally
         {
-            IOUtils.closeQuietly( in );
+            Thread.currentThread().setName( oldName );
         }
-        
-        endTime = System.nanoTime();
-        latch.countDown();
-
-        logger.info( "Stopping: {}", Thread.currentThread().getName() );
-
-        return this;
     }
     
     public boolean isMissing()
