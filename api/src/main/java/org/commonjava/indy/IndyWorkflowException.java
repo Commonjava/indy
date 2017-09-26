@@ -76,6 +76,14 @@ public class IndyWorkflowException
             }
             else
             {
+                for(int i=0; i<params.length; i++)
+                {
+                    if ( params[i] == null )
+                    {
+                        params[i] = "null";
+                    }
+                }
+
                 final String original = formattedMessage;
                 try
                 {
@@ -97,20 +105,29 @@ public class IndyWorkflowException
                     {
                         formattedMessage = MessageFormat.format( format, params );
                     }
+                    catch ( IllegalArgumentException e )
+                    {
+                        formattedMessage = format;
+                    }
                     catch ( final Error e )
                     {
                         formattedMessage = format;
-                        throw e;
+//                        throw e;
                     }
                     catch ( final RuntimeException e )
                     {
                         formattedMessage = format;
-                        throw e;
+//                        throw e;
                     }
                     catch ( final Exception e )
                     {
                         formattedMessage = format;
                     }
+                }
+
+                if ( formattedMessage == null )
+                {
+                    formattedMessage = format;
                 }
             }
         }
