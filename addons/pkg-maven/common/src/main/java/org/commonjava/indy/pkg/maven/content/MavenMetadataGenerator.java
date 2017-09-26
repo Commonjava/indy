@@ -21,6 +21,8 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
@@ -44,6 +46,7 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier;
 import org.commonjava.maven.atlas.ident.ref.TypeAndClassifier;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
@@ -59,6 +62,7 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -74,6 +78,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -139,6 +149,11 @@ public class MavenMetadataGenerator
     @Inject
     private MavenMetadataMerger merger;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named="maven-metadata-generator", threads=8 )
+    private ExecutorService executorService;
+
     protected MavenMetadataGenerator()
     {
     }
@@ -152,6 +167,16 @@ public class MavenMetadataGenerator
         this.xml = xml;
         this.typeMapper = typeMapper;
         this.merger = merger;
+        start();
+    }
+
+    @PostConstruct
+    public void start()
+    {
+        if ( executorService == null )
+        {
+            executorService = Executors.newFixedThreadPool( 8 );
+        }
     }
 
     @Override
@@ -330,70 +355,78 @@ public class MavenMetadataGenerator
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        final Metadata md = generateGroupMetadata( group, members, path );
-        if ( md != null )
+        String toMergePath = path;
+        if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {
-            String toMergePath = path;
-            if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
-            {
-                toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
-            }
-
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            Transfer target = null;
-            try
-            {
-                target = fileManager.getTransfer( group, toMergePath );
-                if ( exists( target ) )
-                {
-                    // Means there is no metadata change if this transfer exists, so directly return it.
-                    logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
-                    return target;
-                }
-                logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(), path );
-                new MetadataXpp3Writer().write( baos, md );
-
-                final byte[] merged = baos.toByteArray();
-                if ( merged != null )
-                {
-                    OutputStream fos = null;
-                    try
-                    {
-                        fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-                        fos.write( merged );
-                    }
-                    catch ( final IOException e )
-                    {
-                        throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}", e,
-                                                         target, e.getMessage() );
-                    }
-                    finally
-                    {
-                        closeQuietly( fos );
-                    }
-
-                    writeGroupMergeInfo( group, members, toMergePath );
-                }
-            }
-            catch ( final IOException e )
-            {
-                logger.error( String.format( "Cannot write consolidated metadata: %s to: %s. Reason: %s", path,
-                                             group.getKey(), e.getMessage() ), e );
-            }
-
-            if ( exists( target ) )
-            {
-//                return target;
-                // if this is a checksum file, we need to return the original path.
-                Transfer original = fileManager.getTransfer( group, path );
-                if ( exists( original ) )
-                {
-                    return original;
-                }
-            }
+            toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
         }
 
-        return null;
+        Transfer target = fileManager.getTransfer( group, toMergePath );
+        try
+        {
+            target.lockWrite();
+
+            final Metadata md = generateGroupMetadata( group, members, path );
+            if ( md != null )
+            {
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                try
+                {
+                    if ( exists( target ) )
+                    {
+                        // Means there is no metadata change if this transfer exists, so directly return it.
+                        logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
+                        return target;
+                    }
+                    logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(), path );
+                    new MetadataXpp3Writer().write( baos, md );
+
+                    final byte[] merged = baos.toByteArray();
+                    if ( merged != null )
+                    {
+                        OutputStream fos = null;
+                        try
+                        {
+                            fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
+                            fos.write( merged );
+                        }
+                        catch ( final IOException e )
+                        {
+                            throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}", e,
+                                                             target, e.getMessage() );
+                        }
+                        finally
+                        {
+                            closeQuietly( fos );
+                        }
+
+                        writeGroupMergeInfo( group, members, toMergePath );
+                    }
+                }
+                catch ( final IOException e )
+                {
+                    logger.error( String.format( "Cannot write consolidated metadata: %s to: %s. Reason: %s", path,
+                                                 group.getKey(), e.getMessage() ), e );
+                }
+
+                if ( exists( target ) )
+                {
+                    //                return target;
+                    // if this is a checksum file, we need to return the original path.
+                    Transfer original = fileManager.getTransfer( group, path );
+                    if ( exists( original ) )
+                    {
+                        return original;
+                    }
+                }
+            }
+
+            return null;
+        }
+        finally
+        {
+            target.unlock();
+        }
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
@@ -456,6 +489,8 @@ public class MavenMetadataGenerator
             toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
         }
 
+        final String tmp = toMergePath;
+
         Metadata meta = getMetaFromCache( group.getKey(), toMergePath );
 
         if ( meta != null )
@@ -463,7 +498,35 @@ public class MavenMetadataGenerator
             return meta;
         }
 
-        List<Metadata> memberMetas = new ArrayList<>( members.size() );
+        Map<StoreKey, Metadata> memberMetas = new ConcurrentHashMap<>( members.size() );
+        Set<ArtifactStore> missing = retrieveCachedMemberMetadata( memberMetas, members, toMergePath );
+
+        downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
+
+        List<Metadata> metas = members.stream()
+                                      .map( mem -> memberMetas.get( mem ) )
+                                      .filter( mmeta -> mmeta != null )
+                                      .collect( Collectors.toList() );
+
+        final Metadata master = merger.mergeFromMetadatas( metas, group, toMergePath );
+
+        if ( master != null )
+        {
+            Map<String, MetadataInfo> cacheMap = new HashMap<>();
+            cacheMap.put( toMergePath, new MetadataInfo( master ) );
+            versionMetadataCache.put( group.getKey(), cacheMap );
+            return master;
+        }
+
+        return null;
+    }
+
+    private Set<ArtifactStore> retrieveCachedMemberMetadata( final Map<StoreKey, Metadata> memberMetas,
+                                                             final List<ArtifactStore> members, final String toMergePath )
+            throws IndyWorkflowException
+    {
+        Set<ArtifactStore> missing = new HashSet<>();
+
         for ( ArtifactStore store : members )
         {
             Metadata memberMeta = null;
@@ -478,6 +541,7 @@ public class MavenMetadataGenerator
                                                                                    .filter( st -> !st.isDisabled() )
                                                                                    .collect( Collectors.toList() ),
                                                         toMergePath );
+                    memberMetas.put( store.getKey(), memberMeta );
                 }
                 catch ( IndyDataException e )
                 {
@@ -489,9 +553,32 @@ public class MavenMetadataGenerator
             {
                 memberMeta = getMetaFromCache( store.getKey(), toMergePath );
 
-                if ( memberMeta == null )
+                if ( memberMeta != null )
                 {
+                    memberMetas.put( store.getKey(), memberMeta );
+                }
+                else
+                {
+                    missing.add( store );
+                }
+            }
+        }
 
+        return missing;
+    }
+
+    private void downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missing,
+                                                final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
+            throws IndyWorkflowException
+    {
+        CountDownLatch latch = new CountDownLatch( missing.size() );
+        List<String> errors = new ArrayList<>();
+
+        /* @formatter:off */
+        missing.forEach( (store)->{
+            executorService.execute( ()->{
+                try
+                {
                     Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -501,43 +588,63 @@ public class MavenMetadataGenerator
                         try (InputStream in = memberMetaTxfr.openInputStream())
                         {
                             String content = IOUtils.toString( in );
-                            memberMeta = reader.read( new StringReader( content ), false );
+                            Metadata memberMeta = reader.read( new StringReader( content ), false );
+                            memberMetas.put( store.getKey(), memberMeta );
+
                             Map<String, MetadataInfo> cacheMap = new HashMap<>();
                             cacheMap.put( toMergePath, new MetadataInfo( memberMeta ) );
                             versionMetadataCache.putIfAbsent( store.getKey(), cacheMap );
                         }
-                        catch ( final IOException e )
-                        {
-                            throw new IndyWorkflowException( "Failed to get metadata: {}.\nError: {}", e,
-                                                             e.getMessage() );
-                        }
-                        catch ( final XmlPullParserException e )
-                        {
-                            final StoreKey key = store.getKey();
-                            logger.error(
-                                    String.format( "Cannot parse metadata: %s from artifact-store: %s. Reason: %s",
-                                                   toMergePath, key, e.getMessage() ), e );
-                        }
                     }
                 }
-            }
-            if ( memberMeta != null )
-            {
-                memberMetas.add( memberMeta );
-            }
-        }
+                catch ( final IOException e )
+                {
+                    logger.error( String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                                                 e.getMessage() ), e );
+                }
+                catch ( final XmlPullParserException e )
+                {
+                    final StoreKey key = store.getKey();
+                    logger.error( String.format( "Cannot parse metadata: %s:%s. Reason: %s", key, toMergePath, e.getMessage() ), e );
+                }
+                catch ( IndyWorkflowException e )
+                {
+                    String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                                                 e.getMessage() );
+                    logger.error( msg, e );
+                    synchronized ( errors )
+                    {
+                        errors.add( msg );
+                    }
+                }
+                finally
+                {
+                    latch.countDown();
+                }
+            } );
+        } );
+        /* @formatter:on */
 
-        final Metadata master = merger.mergeFromMetadatas( memberMetas, group, toMergePath );
-
-        if ( master != null )
+        while ( latch.getCount() > 0 )
         {
-            Map<String, MetadataInfo> cacheMap = new HashMap<>();
-            cacheMap.put( toMergePath, new MetadataInfo( master ) );
-            versionMetadataCache.put( group.getKey(), cacheMap );
-            return master;
+            try
+            {
+                logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
+                latch.await( 1000, TimeUnit.MILLISECONDS );
+            }
+            catch ( InterruptedException e )
+            {
+                logger.debug("Interrupted while waiting for member metadata downloads.");
+                break;
+            }
         }
 
-        return null;
+        if ( !errors.isEmpty() )
+        {
+            throw new IndyWorkflowException(
+                    "Failed to retrieve one or more member metadata files for: %s:%s. Errors were:\n  %s",
+                    group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
+        }
     }
 
     private boolean exists( final Transfer target )
