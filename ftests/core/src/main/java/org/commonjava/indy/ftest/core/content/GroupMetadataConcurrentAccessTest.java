@@ -86,7 +86,7 @@ public class GroupMetadataConcurrentAccessTest
     @Test
     @BMRules( rules = {
         @BMRule( name = "init", targetClass = "org.commonjava.indy.pkg.maven.content.MavenMetadataGenerator",
-                 targetMethod = "<clinit>",
+                 targetMethod = "<init>",
                  targetLocation = "ENTRY",
                  action = "debug(\"Creating rendezvous\"); createRendezvous(\"wait\", 8);"),
         @BMRule( name = "wait", targetClass = "org.commonjava.indy.pkg.maven.content.MavenMetadataGenerator",
