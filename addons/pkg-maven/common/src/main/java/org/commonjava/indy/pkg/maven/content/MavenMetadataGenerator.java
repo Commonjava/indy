@@ -492,7 +492,8 @@ public class MavenMetadataGenerator
                 if ( memberMeta == null )
                 {
 
-                    final Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
+                    Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
+
                     if ( exists( memberMetaTxfr ) )
                     {
                         final MetadataXpp3Reader reader = new MetadataXpp3Reader();

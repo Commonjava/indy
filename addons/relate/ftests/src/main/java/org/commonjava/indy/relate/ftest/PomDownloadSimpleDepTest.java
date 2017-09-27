@@ -62,7 +62,7 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class PomDownloadSimpleDepTest
-                extends AbstractIndyFunctionalTest
+        extends AbstractRelateFunctionalTest
 {
     private static final String resource = "simple-dep";
 
