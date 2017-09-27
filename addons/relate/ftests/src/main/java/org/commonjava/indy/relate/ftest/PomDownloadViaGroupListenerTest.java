@@ -56,7 +56,7 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class PomDownloadViaGroupListenerTest
-                extends AbstractIndyFunctionalTest
+        extends AbstractRelateFunctionalTest
 {
     private static final String path = "org/foo/bar/1/bar-1.pom";
 
