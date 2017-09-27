@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if package.json metadata can be retrieved correctly in a remote repo
+ * This case tests if package.json metadata can be retrieved correctly in a remote repo
  * when: <br />
  * <ul>
  *      <li>creates a remote repo and expect metadata files in it</li>

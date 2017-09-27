@@ -8,10 +8,10 @@
     "latest": "3.2.1"
   },
   "versions": {
-    "1.6.2": {
+    "1.5.1": {
       "name": "jquery",
-      "description": "jQuery: The Write Less, Do More, JavaScript Library",
-      "url": "jquery.com",
+      "description": "This is a new reupload for 1.5.1",
+      "url": "jquery.com.new",
       "keywords": [
         "util",
         "dom",
@@ -28,14 +28,14 @@
       },
       "lib": "lib",
       "main": "./dist/node-jquery.js",
-      "version": "1.6.2",
+      "version": "1.5.1",
       "_npmJsonOpts": {
-        "file": "/Users/coolaj86/.npm/jquery/1.6.2/package/package.json",
+        "file": "/Users/coolaj86/.npm/jquery/1.5.1/package/package.json",
         "wscript": false,
         "contributors": false,
         "serverjs": false
       },
-      "_id": "jquery@1.6.2",
+      "_id": "jquery@1.5.1",
       "devDependencies": {},
       "engines": {
         "node": "*"
@@ -46,7 +46,7 @@
       "_defaultsLoaded": true,
       "dist": {
         "shasum": "01757a4c5beea29e8ae697527c3131abbe997a28",
-        "tarball": "https://registry.npmjs.org/jquery/-/jquery-1.6.2.tgz"
+        "tarball": "https://registry.npmjs.org/jquery/-/jquery-1.5.1.tgz"
       },
       "scripts": {},
       "directories": {},
@@ -98,5 +98,11 @@
     "url": "https://github.com/jquery/jquery/issues"
   },
   "license": "MIT",
-  "_attachments": {}
+  "_attachments": {
+    "jquery-1.5.1.tgz":{
+      "content_type":"application/octet-stream",
+      "data":"H4sIAAAAAAAAA+1Uz0/CMBgdIMYQDh703vTASaFdt0GIB43xoFwgxkQTLs1WoMp+pB2KGOJfzNG77YrEA8aDBEOytyzf9r3vfW3XviXUf6JD1khMrD/KOLI2DISQ5zhAx6bnZhHZ5l2DEAIsTLDruDbymk0LYYJsT/Gbnsg6TGRKhZrKX/uYtYBV3BG8VQCAEQ0ZbAP4GtJWC57o1DMTkseRztp1XCcmGzDpC56kSyYMAZdAsEkyjmlgSkLKM45HAZueRuxFHSnDGKlUpB5UJVImU13K/FEM+vBKiFi0QRQDTQCZMJ8POAv6ENRqgE15CjBUynnWjU7SUSy03HQfc59FMlvG9e0lrMwr//1pdwJL3zeyTV79BdLhbINj/OJ/G9mZ/wl2XOQa/xOMc/9vA91Oac84pVde3HxnitahZTfu7qvWe2/wMFP3R+FI1ReKx6WfFNWvx/PFhQ5af7DSdzvlfZ0tqOtMxa3sb44cOXLkWItPNfw2cQAMAAA=",
+      "length":380
+    }
+  }
 }

@@ -31,7 +31,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be stored in a readonly hosted repo
+ * This case tests if files can be stored in a readonly hosted repo
  * when: <br />
  * <ul>
  *      <li>creates a readonly hosted repo</li>
@@ -90,6 +90,7 @@ public class NPMReaonlyHostedStoreFileTest
         assertThat( result, equalTo( content ) );
 
         is.close();
+        stream.close();
     }
 
     @Override

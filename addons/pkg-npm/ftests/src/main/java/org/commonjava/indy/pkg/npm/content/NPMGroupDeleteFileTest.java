@@ -28,20 +28,20 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be deleted in a group repo
+ * This case tests if files can be deleted in a group repo
  * when: <br />
  * <ul>
  *      <li>creates two hosted repos and two remote repos</li>
  *      <li>creates one group A repo contains two remote members</li>
  *      <li>creates one group B repo contains two members with one remote and one hosted</li>
  *      <li>creates one group C repo contains two hosted members</li>
- *      <li>delete file in the three group repos</li>
+ *      <li>delete file with original path / real path in the three group repos</li>
  * </ul>
  * then: <br />
  * <ul>
- *     <li>the file can be deleted for the group A</li>
- *     <li>the file can not be deleted for the group B</li>
- *     <li>the file can not be deleted for the group C</li>
+ *     <li>the file with original path can not be deleted for the group A</li>
+ *     <li>the file with real path can be deleted for the group B</li>
+ *     <li>the file with real path can be deleted for the group C</li>
  * </ul>
  */
 public class NPMGroupDeleteFileTest
@@ -103,13 +103,16 @@ public class NPMGroupDeleteFileTest
         client.stores().create( groupC, "adding npm group C repo", Group.class );
 
         assertThat( client.content().exists( groupA.getKey(), REAL_PATH ), equalTo( false ) );
+        assertThat( client.content().exists( groupA.getKey(), PATH ), equalTo( true ) );
 
         assertThat( client.content().exists( groupB.getKey(), REAL_PATH ), equalTo( true ) );
         assertThat( client.content().exists( groupC.getKey(), REAL_PATH ), equalTo( true ) );
 
+        client.content().delete( groupA.getKey(), PATH );
         client.content().delete( groupB.getKey(), REAL_PATH );
         client.content().delete( groupC.getKey(), REAL_PATH );
 
+        assertThat( client.content().exists( groupA.getKey(), PATH ), equalTo( true ) );
         assertThat( client.content().exists( groupB.getKey(), REAL_PATH ), equalTo( false ) );
         assertThat( client.content().exists( groupC.getKey(), REAL_PATH ), equalTo( false ) );
     }

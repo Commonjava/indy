@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -24,38 +25,36 @@ import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.util.Map;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case tests if files can be re-stored in a hosted repo
+ * This case tests the version meta generation for a project's one version upload
  * when: <br />
  * <ul>
  *      <li>creates a hosted repo</li>
- *      <li>stores file in hosted repo once</li>
- *      <li>updates the files content in hosted repo</li>
+ *      <li>stores the project's package.json in the hosted repo</li>
  * </ul>
  * then: <br />
  * <ul>
- *     <li>the file can be updated successfully with no error</li>
+ *     <li>the version meta file can be generated successfully</li>
  * </ul>
  */
-public class NPMHostedReStoreContentTest
-                extends AbstractContentManagementTest
+public class NPMVersionMetaGenerationWhenUploadTest
+        extends AbstractContentManagementTest
 {
     @Test
-    public void test() throws Exception
+    public void test()
+            throws Exception
     {
-        final InputStream content1 =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" );
-        final InputStream content2 =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.6.2.json" );
+        final String content = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" ) );
 
         final String path = "jquery";
+        final String versionPath = "jquery/1.5.1";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -65,27 +64,31 @@ public class NPMHostedReStoreContentTest
         StoreKey storeKey = repo.getKey();
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
-        client.content().store( storeKey, path, content1 );
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+        client.content().store( storeKey, path, IOUtils.toInputStream( content ) );
 
-        client.content().store( storeKey, path, content2 );
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-
-        final InputStream is = client.content().get( storeKey, path );
+        assertThat( client.content().exists( storeKey, versionPath ), equalTo( true ) );
 
         IndyObjectMapper mapper = new IndyObjectMapper( true );
-        PackageMetadata reStoreMetadata = mapper.readValue( is, PackageMetadata.class );
 
-        // versions map merging verification when re-publish
-        Map<String, VersionMetadata> versions = reStoreMetadata.getVersions();
-        assertThat( versions, notNullValue() );
-        assertThat( versions.size(), equalTo( 2 ) );
-        assertThat( versions.get( "1.5.1" ).getVersion(), equalTo( "1.5.1" ) );
-        assertThat( versions.get( "1.6.2" ).getVersion(), equalTo( "1.6.2" ) );
+        PackageMetadata packageMetadata = mapper.readValue( content, PackageMetadata.class );
+        VersionMetadata versionMetadata = packageMetadata.getVersions().get( "1.5.1" );
+        String name = versionMetadata.getName();
+        String desc = versionMetadata.getDescription();
+        String version = versionMetadata.getVersion();
 
-        is.close();
-        content1.close();
-        content2.close();
+        InputStream stream = client.content().get( storeKey, versionPath );
+
+        VersionMetadata actualVersionMeta = mapper.readValue( IOUtils.toString( stream ), VersionMetadata.class );
+        String actualName = actualVersionMeta.getName();
+        String actualDesc = actualVersionMeta.getDescription();
+        String actualVersion = actualVersionMeta.getVersion();
+
+        assertEquals( name, actualName );
+        assertEquals( desc, actualDesc );
+        assertEquals( version, actualVersion );
+
+        stream.close();
     }
 
     @Override

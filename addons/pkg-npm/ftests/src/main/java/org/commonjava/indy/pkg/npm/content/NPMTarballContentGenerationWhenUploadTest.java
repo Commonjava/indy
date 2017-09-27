@@ -15,47 +15,46 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.pkg.npm.model.PackageMetadata;
-import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
 import java.io.InputStream;
-import java.util.Map;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case tests if files can be re-stored in a hosted repo
+ * This case tests the tarball generation when upload
  * when: <br />
  * <ul>
  *      <li>creates a hosted repo</li>
- *      <li>stores file in hosted repo once</li>
- *      <li>updates the files content in hosted repo</li>
+ *      <li>stores the project's package.json (with field '_attachments') in the hosted repo</li>
  * </ul>
  * then: <br />
  * <ul>
- *     <li>the file can be updated successfully with no error</li>
+ *     <li>the tarball file can be generated successfully as _attachment base64 decode</li>
  * </ul>
  */
-public class NPMHostedReStoreContentTest
-                extends AbstractContentManagementTest
+public class NPMTarballContentGenerationWhenUploadTest
+        extends AbstractContentManagementTest
 {
     @Test
-    public void test() throws Exception
+    public void test()
+            throws Exception
     {
-        final InputStream content1 =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" );
-        final InputStream content2 =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.6.2.json" );
+        final String content = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" ) );
 
         final String path = "jquery";
+        final String tarballPath = "jquery/-/jquery-1.5.1.tgz";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -65,27 +64,21 @@ public class NPMHostedReStoreContentTest
         StoreKey storeKey = repo.getKey();
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
-        client.content().store( storeKey, path, content1 );
+        client.content().store( storeKey, path, IOUtils.toInputStream( content ) );
+
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, tarballPath ), equalTo( true ) );
 
-        client.content().store( storeKey, path, content2 );
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree( content );
+        JsonNode anode = root.path( "_attachments" );
+        String tarballBase64 = anode.findPath( "data" ).asText();
 
-        final InputStream is = client.content().get( storeKey, path );
+        InputStream tarball = client.content().get( storeKey, tarballPath );
 
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
-        PackageMetadata reStoreMetadata = mapper.readValue( is, PackageMetadata.class );
+        assertEquals( tarballBase64, Base64.encodeBase64String( ( IOUtils.toByteArray( tarball ) ) ) );
 
-        // versions map merging verification when re-publish
-        Map<String, VersionMetadata> versions = reStoreMetadata.getVersions();
-        assertThat( versions, notNullValue() );
-        assertThat( versions.size(), equalTo( 2 ) );
-        assertThat( versions.get( "1.5.1" ).getVersion(), equalTo( "1.5.1" ) );
-        assertThat( versions.get( "1.6.2" ).getVersion(), equalTo( "1.6.2" ) );
-
-        is.close();
-        content1.close();
-        content2.close();
+        tarball.close();
     }
 
     @Override

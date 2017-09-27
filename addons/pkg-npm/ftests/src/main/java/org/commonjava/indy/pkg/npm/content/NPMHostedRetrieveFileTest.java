@@ -32,7 +32,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be retrieved correctly in a hosted repo
+ * This case tests if files can be retrieved correctly in a hosted repo
  * when: <br />
  * <ul>
  *      <li>creates a hosted repo</li>

@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be deleted in a remote repo
+ * This case tests if files can be deleted in a remote repo
  * when: <br />
  * <ul>
  *      <li>creates a remote repo and expect file in it</li>
@@ -72,6 +72,8 @@ public class NPMRemoteDeleteFileTest
         }
 
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+
+        stream.close();
     }
 
     @Override
