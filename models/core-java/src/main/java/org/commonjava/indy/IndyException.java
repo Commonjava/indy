@@ -57,6 +57,14 @@ public class IndyException
             }
             else
             {
+                for(int i=0; i<params.length; i++)
+                {
+                    if ( params[i] == null )
+                    {
+                        params[i] = "null";
+                    }
+                }
+
                 final String original = formattedMessage;
                 try
                 {
@@ -81,12 +89,10 @@ public class IndyException
                     catch ( final Error e )
                     {
                         formattedMessage = format;
-                        throw e;
                     }
                     catch ( final RuntimeException e )
                     {
                         formattedMessage = format;
-                        throw e;
                     }
                     catch ( final Exception e )
                     {
