@@ -88,7 +88,7 @@ public class GroupMetadataConcurrentAccessTest
         @BMRule( name = "init", targetClass = "org.commonjava.indy.pkg.maven.content.MavenMetadataGenerator",
                  targetMethod = "<init>",
                  targetLocation = "ENTRY",
-                 action = "debug(\"Creating rendezvous\"); createRendezvous(\"wait\", 8);"),
+                 action = "debug(\"Creating rendezvous\"); createRendezvous(\"wait\", 4);"),
         @BMRule( name = "wait", targetClass = "org.commonjava.indy.pkg.maven.content.MavenMetadataGenerator",
                 targetMethod = "generateGroupFileContent",
                 targetLocation = "ENTRY",
@@ -100,7 +100,7 @@ public class GroupMetadataConcurrentAccessTest
             throws Exception
     {
         // NOTE: MUST be coordinated with the "init" @BMRule above!
-        final int threadNumber = 8;
+        final int threadNumber = 4;
 
         final String repo1 = "repo1";
         final String repo2 = "repo2";

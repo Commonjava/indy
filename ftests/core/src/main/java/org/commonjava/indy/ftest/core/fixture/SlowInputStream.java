@@ -26,6 +26,8 @@ import static java.lang.Thread.sleep;
 public class SlowInputStream
     extends InputStream
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     private final byte[] data;
 
     private long perByteTransferTime;
@@ -44,12 +46,12 @@ public class SlowInputStream
     {
         if ( idx >= data.length )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "out of data" );
+            logger.debug( "out of data: {}\nSent:\n\n{}\n\n", idx, new String(data) );
 
             return -1;
         }
 
+        logger.debug( "read()" );
         try
         {
             if ( perByteTransferTime > 0 )
