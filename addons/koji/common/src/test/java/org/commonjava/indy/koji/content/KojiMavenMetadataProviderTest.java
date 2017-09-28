@@ -46,7 +46,6 @@ import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
-import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.hamcrest.CoreMatchers;
@@ -308,7 +307,7 @@ public class KojiMavenMetadataProviderTest
     public TemporaryFolder temp = new TemporaryFolder();
 
     private void initKojiClient( String exchangeName, boolean verifyArtifacts )
-            throws BindException, IOException, GalleyInitException, IndyDataException
+            throws IOException, GalleyInitException, IndyDataException
     {
         StoreDataManager storeDataManager = new MemoryStoreDataManager( true );
 

@@ -29,6 +29,7 @@ import java.util.Collections;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.commonjava.indy.koji.content.KojiContentManagerDecorator.KOJI_ORIGIN;
 
@@ -36,36 +37,42 @@ public class ProxyRemoteKojiContentTest
 {
     final static Logger logger = LoggerFactory.getLogger( ProxyRemoteKojiContentTest.class );
 
+    private static String groupName = "build-1"; // proxy target group name "brew-proxies";
+
     /**
      * Accessing an existing external Koji site and retrieve artifact. This is disabled by default. In order to run it,
      * you need an external Koji instance and start Indy via:
+     *
      * 1. export TEST_ETC=<your-koji-config-dir> => with proper settings for Koji url, pem, etc
      * 2. bin/test-setup.sh => to start Indy
-     * 3. run this test
+     * 3. look at TEST_ETC/conf.d/koji.conf for something like: target.build.+=brew-proxies
+     *    make sure the group (e.g., group-1) and target group (e.g., brew-proxies) are ready in Indy. if not, create them manually.
+     * 4. run this test
      */
     @Ignore
     @Test
-    public void proxyRemoteKojiArtifact()
-        throws Exception
+    public void proxyRemoteKojiArtifact() throws Exception
     {
         final String path = "org/dashbuilder/dashbuilder-all/0.4.0.Final-redhat-10/dashbuilder-all-0.4.0.Final-redhat-10.pom";
         Indy client = new Indy( "http://localhost:8080/api", new IndyObjectMapper( Collections.emptySet() ),
-                Collections.emptySet() ).connect();
+                                Collections.emptySet() ).connect();
 
         // would be slow the first time to get an artifact
-        long elapse = getContent( "build-x", client, path );
-        logger.debug("Get (first) use " + elapse + " milliseconds");
+        long elapse = getContent( groupName, client, path );
+        logger.debug( "Get (first) use " + elapse + " milliseconds" );
 
         // the following get should have been cached and fast
-        elapse = getContent( "build-x", client, path );
-        logger.debug("Get (second) use " + elapse + " milliseconds");
+        elapse = getContent( groupName, client, path );
+        logger.debug( "Get (second) use " + elapse + " milliseconds" );
 
         // the remote store should have been added to builds-untested group
         StoreListingDTO<RemoteRepository> repos = client.stores().listRemoteRepositories();
-        for ( RemoteRepository repo : repos.getItems() ) {
-            logger.debug("Repo " + repo.getName());
-            if (repo.getName().startsWith(KOJI_ORIGIN)) {
-                logger.debug("Koji repo patterns: " + repo.getPathMaskPatterns());
+        for ( RemoteRepository repo : repos.getItems() )
+        {
+            logger.debug( "Repo " + repo.getName() );
+            if ( repo.getName().startsWith( KOJI_ORIGIN ) )
+            {
+                logger.debug( "Koji repo patterns: " + repo.getPathMaskPatterns() );
             }
         }
 
@@ -73,36 +80,49 @@ public class ProxyRemoteKojiContentTest
 
     @Ignore
     @Test
-    public void proxyBinaryRemoteKojiArtifact()
-            throws Exception
+    public void proxyNotExistingKojiArtifact() throws Exception
+    {
+        final String path = "non/existing/thing/0.1/thing-0.1.pom";
+        Indy client = new Indy( "http://localhost:8080/api", new IndyObjectMapper( Collections.emptySet() ),
+                                Collections.emptySet() ).connect();
+
+        InputStream stream = client.content().get( group, groupName, path );
+        assertThat( stream, nullValue() );
+    }
+
+    @Ignore
+    @Test
+    public void proxyBinaryRemoteKojiArtifact() throws Exception
     {
         final String path = "org/apache/apache/18/apache-18.pom";
         Indy client = new Indy( "http://localhost:8080/api", new IndyObjectMapper( Collections.emptySet() ),
-                Collections.emptySet() ).connect();
+                                Collections.emptySet() ).connect();
 
-        long elapse = getContent( "build-x", client, path );
+        long elapse = getContent( groupName, client, path );
 
         // the remote store should have been added to brew-binaries group
         StoreListingDTO<RemoteRepository> repos = client.stores().listRemoteRepositories();
-        for ( RemoteRepository repo : repos.getItems() ) {
-            logger.debug("Repo " + repo.getName());
-            if (repo.getName().startsWith(KOJI_ORIGIN)) {
-                logger.debug("Koji repo patterns: " + repo.getPathMaskPatterns());
+        for ( RemoteRepository repo : repos.getItems() )
+        {
+            logger.debug( "Repo " + repo.getName() );
+            if ( repo.getName().startsWith( KOJI_ORIGIN ) )
+            {
+                logger.debug( "Koji repo patterns: " + repo.getPathMaskPatterns() );
             }
         }
 
     }
 
-    private long getContent( String groupName, Indy client, String path )
-            throws Exception
+    private long getContent( String groupName, Indy client, String path ) throws Exception
     {
         long t1 = System.currentTimeMillis();
-        logger.debug("Start getting... (" + t1 + ")");
-        try (InputStream stream = client.content().get(group, groupName, path)) {
-            assertThat(stream, notNullValue());
+        logger.debug( "Start getting... (" + t1 + ")" );
+        try (InputStream stream = client.content().get( group, groupName, path ))
+        {
+            assertThat( stream, notNullValue() );
         }
         long t2 = System.currentTimeMillis();
-        logger.debug("Finish getting... (" + t2 + ")");
+        logger.debug( "Finish getting... (" + t2 + ")" );
         return t2 - t1;
     }
 

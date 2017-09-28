@@ -17,6 +17,7 @@ package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
@@ -61,9 +62,11 @@ import javax.decorator.Delegate;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -323,19 +326,22 @@ public abstract class KojiContentManagerDecorator
         return defValue;
     }
 
-    private <T> T proxyKojiBuild( final StoreKey inStore, final ArtifactRef artifactRef, final String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
+    private <T> T proxyKojiBuild( final StoreKey inStore, final ArtifactRef artifactRef, final String path,
+                                  EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
             return kojiClient.withKojiSession( ( session ) -> {
-                List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( artifactRef, session );
+                List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( artifactRef, session ); // use multicall
 
                 Collections.sort( builds, ( build1, build2 ) -> build2.getCreationTime()
                                                                       .compareTo( build1.getCreationTime() ) );
 
                 logger.debug( "Got {} builds from koji. Looking for best match.", builds.size() );
+
+                Map<Integer, List<KojiTagInfo>> tagsMap = getTagsByBuildIds( builds, session ); // use multicall
 
                 for ( KojiBuildInfo build : builds )
                 {
@@ -369,8 +375,12 @@ public abstract class KojiContentManagerDecorator
                         }
                         else
                         {
-                            List<KojiTagInfo> tags = kojiClient.listTags(build.getId(), session);
-                            logger.debug("Build is in {} tags...", tags.size());
+                            List<KojiTagInfo> tags = tagsMap.get( build.getId() );
+                            logger.debug( "Build {} is in {} tags.", build.getId(), tags.size() );
+                            if ( logger.isTraceEnabled() )
+                            {
+                                logTagsForBuild( build.getId(), tags );
+                            }
 
                             for (KojiTagInfo tag : tags) {
                                 // If the tags match patterns configured in whitelist, construct a new remote repo.
@@ -406,6 +416,32 @@ public abstract class KojiContentManagerDecorator
             throw new IndyWorkflowException( "Cannot retrieve builds for: %s. Error: %s", e, artifactRef,
                                              e.getMessage() );
         }
+    }
+
+    private void logTagsForBuild( int id, List<KojiTagInfo> tags )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        List<String> tagNames = new ArrayList<>();
+        for ( KojiTagInfo t : tags )
+        {
+            tagNames.add( t.getName() );
+        }
+        logger.trace( "Tags for build {}: {}", id, tagNames );
+    }
+
+    private Map<Integer,List<KojiTagInfo>> getTagsByBuildIds( List<KojiBuildInfo> builds, KojiSessionInfo session )
+                    throws KojiClientException
+    {
+        if ( !builds.isEmpty() )
+        {
+            List<Integer> buildIds = new ArrayList<>( );
+            for ( KojiBuildInfo b : builds )
+            {
+                buildIds.add( b.getId() );
+            }
+            return kojiClient.listTags( buildIds, session );
+        }
+        return Collections.EMPTY_MAP;
     }
 
     private boolean isBinaryBuild( KojiBuildInfo build )
@@ -452,12 +488,7 @@ public abstract class KojiContentManagerDecorator
                 }
 
                 // set pathMaskPatterns using build output paths
-                Set<String> patterns = new HashSet<>();
-                patterns.addAll( archiveCollection.getArchives()
-                                                  .stream()
-                                                  .map( a -> a.getGroupId().replace( '.', '/' ) + "/" + a.getArtifactId()
-                                                          + "/" + a.getVersion() + "/" + a.getFilename() )
-                                                  .collect( Collectors.toSet() ) );
+                Set<String> patterns = getPatterns( artifactRef, archiveCollection );
 
                 // pre-index the koji build artifacts and set authoritative index of the remote to let the
                 // koji remote repo directly go through the content index
@@ -511,6 +542,40 @@ public abstract class KojiContentManagerDecorator
         {
             throw new KojiClientException( "Failed to store temporary remote repo: %s", e, e.getMessage() );
         }
+    }
+
+    private Set<String> getPatterns( ArtifactRef artifactRef, KojiBuildArchiveCollection kojiBuildArchiveCollection )
+    {
+        List<KojiArchiveInfo> archives = kojiBuildArchiveCollection.getArchives();
+        Set<String> ret = new HashSet<>();
+        for ( KojiArchiveInfo a : archives )
+        {
+            String pattern = getPatternString( artifactRef, a );
+            if ( pattern != null )
+            {
+                ret.add( pattern );
+            }
+        }
+        return ret;
+    }
+
+    private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+        String ver = artifact.getVersionStringRaw();
+
+        if ( gId == null || artiId == null || ver == null )
+        {
+            logger.trace( "Pattern ignored, gId: {}, artiId: {}, ver: {}", gId, artiId, ver );
+            return null;
+        }
+        String pattern = gId.replace( '.', '/' ) + "/" + artiId + "/" + ver + "/" + a.getFilename();
+        logger.trace( "Pattern: {}", pattern );
+
+        return pattern;
     }
 
     private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )
