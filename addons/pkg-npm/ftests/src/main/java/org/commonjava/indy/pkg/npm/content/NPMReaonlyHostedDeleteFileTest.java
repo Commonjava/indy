@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be deleted in a readonly hosted repo
+ * This case tests if files can be deleted in a readonly hosted repo
  * when: <br />
  * <ul>
  *      <li>creates a non-readonly hosted repo and stores file in it</li>
@@ -88,6 +88,8 @@ public class NPMReaonlyHostedDeleteFileTest
         client.content().delete( storeKey, path );
 
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
+
+        stream.close();
     }
 
     @Override

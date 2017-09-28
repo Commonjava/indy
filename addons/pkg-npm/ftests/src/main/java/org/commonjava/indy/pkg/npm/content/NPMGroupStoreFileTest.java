@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be stored in a group repo
+ * This case tests if files can be stored in a group repo
  * when: <br />
  * <ul>
  *      <li>creates two remote repos and one hosted repo</li>

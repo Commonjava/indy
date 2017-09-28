@@ -24,21 +24,40 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class NPMUploadGeneratedContentsTest
-                extends AbstractContentManagementTest
+/**
+ * This case tests if files can be generated for two versions uploads in a hosted repo
+ * when: <br />
+ * <ul>
+ *      <li>creates a hosted repo</li>
+ *      <li>uploads two versions of metas to the hosted repo</li>
+ * </ul>
+ * then: <br />
+ * <ul>
+ *     <li>the tarball and version meta can be generated successfully with no error</li>
+ * </ul>
+ */
+public class NPMTwoTimesUploadsGeneratedContentsTest
+        extends AbstractContentManagementTest
 {
     @Test
-    public void test() throws Exception
+    public void test()
+            throws Exception
     {
-        final InputStream CONTENT =
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-with-tarball.json" );
+        final InputStream content1 =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" );
+
+        final InputStream content2 =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.6.2.json" );
 
         final String path = "jquery";
-        final String tarballPath = "jquery/-/jquery-1.5.1.tgz";
-        final String versionPath = "jquery/1.5.1";
+
+        final String firstTarballPath = "jquery/-/jquery-1.5.1.tgz";
+        final String firstVersionPath = "jquery/1.5.1";
+
+        final String secondTarballPath = "jquery/-/jquery-1.6.2.tgz";
+        final String secondVersionPath = "jquery/1.6.2";
 
         final String repoName = "test-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
@@ -46,13 +65,20 @@ public class NPMUploadGeneratedContentsTest
         repo = client.stores().create( repo, "adding npm hosted repo", HostedRepository.class );
 
         StoreKey storeKey = repo.getKey();
-        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
-        client.content().store( storeKey, path, CONTENT );
+        client.content().store( storeKey, path, content1 );
+        client.content().store( storeKey, path, content2 );
 
         assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-        assertThat( client.content().exists( storeKey, tarballPath ), equalTo( true ) );
-        assertThat( client.content().exists( storeKey, versionPath ), equalTo( true ) );
+
+        assertThat( client.content().exists( storeKey, firstTarballPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, firstVersionPath ), equalTo( true ) );
+
+        assertThat( client.content().exists( storeKey, secondTarballPath ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, secondVersionPath ), equalTo( true ) );
+
+        content1.close();
+        content2.close();
     }
 
     @Override

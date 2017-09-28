@@ -31,7 +31,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if package.tgz can be retrieved correctly in a remote repo
+ * This case tests if package.tgz can be retrieved correctly in a remote repo
  * when: <br />
  * <ul>
  *      <li>creates a remote repo and expect tgz file in it</li>

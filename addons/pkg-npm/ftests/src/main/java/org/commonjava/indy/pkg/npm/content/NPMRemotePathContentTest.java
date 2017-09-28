@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files path-info can be retrieved successfully in a remote repo
+ * This case tests if files path-info can be retrieved successfully in a remote repo
  * when: <br />
  * <ul>
  *      <li>creates a remote repo and expect files in it</li>
@@ -75,6 +75,8 @@ public class NPMRemotePathContentTest
 
         assertThat( "no result", result3, notNullValue() );
         assertThat( "doesn't exist", result3.exists(), equalTo( true ) );
+
+        stream.close();
     }
 
     @Override

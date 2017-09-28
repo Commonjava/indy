@@ -30,7 +30,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case test if files can be stored in a remote repo
+ * This case tests if files can be stored in a remote repo
  * when: <br />
  * <ul>
  *      <li>creates a remote repo</li>
@@ -72,6 +72,8 @@ public class NPMRemoteStoreFileTest
 
         // for remote, list path of 'jquery/' will be stored
         assertThat( client.content().exists( storeKey, realPath ), equalTo( false ) );
+
+        stream.close();
     }
 
     @Override

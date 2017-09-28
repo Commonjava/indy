@@ -16,17 +16,15 @@
 package org.commonjava.indy.pkg.npm.content;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
 import org.commonjava.indy.pkg.npm.model.UserInfo;
 import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
@@ -37,63 +35,43 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case tests if package.json can be merged successfully for a group repo
+ * This case tests if package.json meta could be merged correctly for uploads
  * when: <br />
  * <ul>
- *      <li>creates two remote repos and expect two package.json files in them</li>
- *      <li>creates group A repo contains the two remote members</li>
+ *      <li>creates a hosted repo</li>
+ *      <li>uploads two times with same version (different metas) to the hosted repo</li>
  * </ul>
  * then: <br />
  * <ul>
- *     <li>the merged file can be retrieved correctly for the group A</li>
+ *     <li>the merged package.json can be retrieved correctly</li>
  * </ul>
  */
-public class NPMGroupContentMergeRetrieveTest
-                extends AbstractContentManagementTest
+public class NPMUploadContentMergeRetrieveTest
+        extends AbstractContentManagementTest
 {
-
-    private static final String REPO_X = "X";
-
-    private static final String REPO_Y = "Y";
-
-    private static final String GROUP_A = "A";
-
-    private static final String PATH = "jquery";
-
     @Test
-    public void test() throws Exception
+    public void test()
+            throws Exception
     {
-        final String CONTENT_1 = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" ) );
-        final String CONTENT_2 = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.6.2.json" ) );
+        final InputStream content1 =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" );
 
-        server.expect( server.formatUrl( REPO_X, PATH ), 200, new ByteArrayInputStream( CONTENT_1.getBytes() ) );
+        final InputStream content2 =
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1-reupload.json" );
 
-        server.expect( server.formatUrl( REPO_Y, PATH ), 200, new ByteArrayInputStream( CONTENT_2.getBytes() ) );
+        final String path = "jquery";
+        final String repoName = "test-hosted";
 
-        final RemoteRepository repoX = new RemoteRepository( NPM_PKG_KEY, REPO_X, server.formatUrl( REPO_X ) );
-        client.stores().create( repoX, "adding npm remote repo", RemoteRepository.class );
+        HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
+        repo = client.stores().create( repo, "adding npm hosted repo", HostedRepository.class );
+        StoreKey storeKey = repo.getKey();
 
-        final RemoteRepository repoY = new RemoteRepository( NPM_PKG_KEY, REPO_Y, server.formatUrl( REPO_Y ) );
-        client.stores().create( repoY, "adding npm remote repo", RemoteRepository.class );
+        client.content().store( storeKey, path, content1 );
+        client.content().store( storeKey, path, content2 );
 
-        final Group groupA = new Group( NPM_PKG_KEY, GROUP_A, repoX.getKey(), repoY.getKey() );
-        client.stores().create( groupA, "adding npm group repo", Group.class );
-
-        System.out.printf( "\n\n-------Group constituents are:\n  %s\n\n",
-                           StringUtils.join( groupA.getConstituents(), "\n  " ) );
-
-        final InputStream remote = client.content().get( repoX.getKey(), PATH );
-        final InputStream group = client.content().get( groupA.getKey(), PATH );
-
-        assertThat( remote, notNullValue() );
-        assertThat( group, notNullValue() );
-
-        assertThat( IOUtils.toString( remote ), equalTo( CONTENT_1 ) );
-
+        InputStream meta = client.content().get( storeKey, path );
         IndyObjectMapper mapper = new IndyObjectMapper( true );
-        PackageMetadata merged = mapper.readValue( IOUtils.toString( group ), PackageMetadata.class );
+        PackageMetadata merged = mapper.readValue( IOUtils.toString( meta ), PackageMetadata.class );
 
         // normal object fields merging verification
         assertThat( merged.getName(), equalTo( "jquery" ) );
@@ -112,9 +90,10 @@ public class NPMGroupContentMergeRetrieveTest
         // versions map merging verification
         Map<String, VersionMetadata> versions = merged.getVersions();
         assertThat( versions, notNullValue() );
-        assertThat( versions.size(), equalTo( 2 ) );
+        assertThat( versions.size(), equalTo( 1 ) );
         assertThat( versions.get( "1.5.1" ).getVersion(), equalTo( "1.5.1" ) );
-        assertThat( versions.get( "1.6.2" ).getVersion(), equalTo( "1.6.2" ) );
+        assertThat( versions.get( "1.5.1" ).getDescription(), equalTo( "This is a new reupload for 1.5.1" ) );
+        assertThat( versions.get( "1.5.1" ).getUrl(), equalTo( "jquery.com.new" ) );
 
         // maintainers list merging verification
         List<UserInfo> maintainers = merged.getMaintainers();
@@ -143,8 +122,9 @@ public class NPMGroupContentMergeRetrieveTest
         assertThat( keywords.size(), equalTo( 4 ) );
         assertThat( keywords.contains( "javascript" ), equalTo( true ) );
 
-        remote.close();
-        group.close();
+        content1.close();
+        content2.close();
+        meta.close();
     }
 
     @Override
