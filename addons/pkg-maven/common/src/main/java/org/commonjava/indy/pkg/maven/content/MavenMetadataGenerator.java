@@ -479,7 +479,7 @@ public class MavenMetadataGenerator
         downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
 
         List<Metadata> metas = members.stream()
-                                      .map( mem -> memberMetas.get( mem ) )
+                                      .map( mem -> memberMetas.get(mem.getKey()) )
                                       .filter( mmeta -> mmeta != null )
                                       .collect( Collectors.toList() );
 
@@ -547,9 +547,11 @@ public class MavenMetadataGenerator
 
         /* @formatter:off */
         missing.forEach( (store)->{
+            logger.debug( "Submitting download task for {} metadata: '{}'", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
+                    logger.debug( "Starting metadata download: {}:{}", store.getKey(), toMergePath);
                     Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -570,13 +572,22 @@ public class MavenMetadataGenerator
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
-                                                 e.getMessage() ), e );
+                    String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                                                 e.getMessage() );
+                    logger.error( msg, e );
+                    synchronized ( errors )
+                    {
+                        errors.add( msg );
+                    }
                 }
                 catch ( final XmlPullParserException e )
                 {
-                    final StoreKey key = store.getKey();
-                    logger.error( String.format( "Cannot parse metadata: %s:%s. Reason: %s", key, toMergePath, e.getMessage() ), e );
+                    String msg = String.format( "Cannot parse metadata: %s:%s. Reason: %s", store.getKey(), toMergePath, e.getMessage() );
+                    logger.error( msg, e );
+                    synchronized ( errors )
+                    {
+                        errors.add( msg );
+                    }
                 }
                 catch ( IndyWorkflowException e )
                 {
@@ -596,8 +607,9 @@ public class MavenMetadataGenerator
         } );
         /* @formatter:on */
 
-        while ( latch.getCount() > 0 )
+        do
         {
+            logger.debug( "Latch count: {}", latch.getCount() );
             try
             {
                 logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
@@ -609,6 +621,7 @@ public class MavenMetadataGenerator
                 break;
             }
         }
+        while ( latch.getCount() > 0 );
 
         if ( !errors.isEmpty() )
         {
