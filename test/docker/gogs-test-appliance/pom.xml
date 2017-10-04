@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.docker</groupId>
     <artifactId>indy-test-docker-appliances</artifactId>
-    <version>1.1.12-SNAPSHOT</version>
+    <version>1.1.12</version>
   </parent>
   
   <artifactId>indy-docker-gogs-test-appliance</artifactId>
