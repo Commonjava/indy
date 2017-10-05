@@ -18,7 +18,7 @@ package org.commonjava.indy.koji.content;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
-import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
+import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveQuery;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
@@ -456,7 +456,8 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
-            KojiBuildArchiveCollection archiveCollection = kojiClient.listArchivesForBuild( build, session );
+            KojiArchiveQuery archiveQuery = new KojiArchiveQuery().withBuildId( build.getId() ).withType( "maven" );
+            List<KojiArchiveInfo> archives = kojiClient.listArchives( archiveQuery, session );
 
             boolean isBinaryBuild = isBinaryBuild( build );
             String name = getRepositoryName( build, isBinaryBuild );
@@ -488,7 +489,7 @@ public abstract class KojiContentManagerDecorator
                 }
 
                 // set pathMaskPatterns using build output paths
-                Set<String> patterns = getPatterns( artifactRef, archiveCollection );
+                Set<String> patterns = getPatterns( artifactRef, archives );
 
                 // pre-index the koji build artifacts and set authoritative index of the remote to let the
                 // koji remote repo directly go through the content index
@@ -544,9 +545,8 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
-    private Set<String> getPatterns( ArtifactRef artifactRef, KojiBuildArchiveCollection kojiBuildArchiveCollection )
+    private Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
     {
-        List<KojiArchiveInfo> archives = kojiBuildArchiveCollection.getArchives();
         Set<String> ret = new HashSet<>();
         for ( KojiArchiveInfo a : archives )
         {
