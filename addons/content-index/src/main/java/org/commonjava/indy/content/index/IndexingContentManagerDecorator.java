@@ -194,7 +194,7 @@ public abstract class IndexingContentManagerDecorator
             logger.debug( "Found indexed transfer: {}. Returning.", transfer );
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() && !store.isRescanInProgress() )
         {
             logger.debug(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -396,7 +396,7 @@ public abstract class IndexingContentManagerDecorator
         {
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() && !store.isRescanInProgress() )
         {
             logger.info(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -543,7 +543,7 @@ public abstract class IndexingContentManagerDecorator
                                              storeKey, e.getMessage() );
         }
 
-        if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() )
+        if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() && !store.isRescanInProgress() )
         {
             logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null." );
             return null;

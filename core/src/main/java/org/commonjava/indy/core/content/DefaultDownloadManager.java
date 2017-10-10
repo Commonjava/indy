@@ -18,6 +18,8 @@ package org.commonjava.indy.core.content;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
+import org.commonjava.indy.change.event.ArtifactStorePreRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
@@ -1006,7 +1008,7 @@ public class DefaultDownloadManager
 
         private final Transfer start;
 
-        private final Event<ArtifactStoreRescanEvent> rescanEvent;
+        private final Event<ArtifactStoreRescanEvent> rescanEventPublisher;
 
         private final IndyFileEventManager fileEventManager;
 
@@ -1022,7 +1024,7 @@ public class DefaultDownloadManager
             this.start = start;
             this.rescansInProgress = rescansInProgress;
             this.fileEventManager = fileEventManager;
-            this.rescanEvent = rescanEvent;
+            this.rescanEventPublisher = rescanEvent;
             this.eventMetadata = eventMetadata;
         }
 
@@ -1038,22 +1040,29 @@ public class DefaultDownloadManager
                 }
 
                 rescansInProgress.put( storeKey, IN_PROGRESS_FLAG );
+                store.setRescanInProgress( true );
             }
 
             try
             {
-                if ( rescanEvent != null )
+                if ( rescanEventPublisher != null )
                 {
-                    rescanEvent.fire( new ArtifactStoreRescanEvent( eventMetadata, store ) );
+                    rescanEventPublisher.fire( new ArtifactStorePreRescanEvent( eventMetadata, store ) );
                 }
 
                 doRescan( start );
+
+                if ( rescanEventPublisher != null )
+                {
+                    rescanEventPublisher.fire( new ArtifactStorePostRescanEvent( eventMetadata, store ) );
+                }
             }
             finally
             {
                 synchronized ( rescansInProgress )
                 {
                     rescansInProgress.remove( storeKey );
+                    store.setRescanInProgress( false );
                 }
             }
         }

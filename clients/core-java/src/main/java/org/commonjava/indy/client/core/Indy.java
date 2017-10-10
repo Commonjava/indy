@@ -18,6 +18,7 @@ package org.commonjava.indy.client.core;
 import com.fasterxml.jackson.databind.Module;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.module.IndyContentClientModule;
+import org.commonjava.indy.client.core.module.IndyMaintenanceClientModule;
 import org.commonjava.indy.client.core.module.IndyNfcClientModule;
 import org.commonjava.indy.client.core.module.IndySchedulerClientModule;
 import org.commonjava.indy.client.core.module.IndyStatsClientModule;
@@ -26,7 +27,6 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
-import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 
 import java.io.Closeable;
 import java.util.Arrays;
@@ -237,6 +237,7 @@ public class Indy
         standardModules.add( new IndySchedulerClientModule() );
         standardModules.add( new IndyStatsClientModule() );
         standardModules.add( new IndyNfcClientModule() );
+        standardModules.add( new IndyMaintenanceClientModule() );
 
         for ( final IndyClientModule module : standardModules )
         {
