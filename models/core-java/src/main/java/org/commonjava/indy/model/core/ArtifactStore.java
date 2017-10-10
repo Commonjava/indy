@@ -75,7 +75,7 @@ public abstract class ArtifactStore
     private Boolean authoritativeIndex;
 
     @JsonIgnore
-    private Boolean rescanInProgress;
+    private Boolean rescanInProgress = false;
 
     protected ArtifactStore()
     {
