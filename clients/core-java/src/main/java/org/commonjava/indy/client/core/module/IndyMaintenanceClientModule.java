@@ -22,7 +22,7 @@ import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 
-public class IndyMaintenacneClientModule
+public class IndyMaintenanceClientModule
         extends IndyClientModule
 {
 

@@ -1040,6 +1040,7 @@ public class DefaultDownloadManager
                 }
 
                 rescansInProgress.put( storeKey, IN_PROGRESS_FLAG );
+                store.setRescanInProgress( true );
             }
 
             try
@@ -1061,6 +1062,7 @@ public class DefaultDownloadManager
                 synchronized ( rescansInProgress )
                 {
                     rescansInProgress.remove( storeKey );
+                    store.setRescanInProgress( false );
                 }
             }
         }

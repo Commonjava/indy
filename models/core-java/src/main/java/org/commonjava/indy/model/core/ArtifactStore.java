@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
@@ -72,6 +73,9 @@ public abstract class ArtifactStore
     // it is not included in content indexing.
     @JsonProperty("authoritative_index")
     private Boolean authoritativeIndex;
+
+    @JsonIgnore
+    private Boolean rescanInProgress;
 
     protected ArtifactStore()
     {
@@ -265,5 +269,15 @@ public abstract class ArtifactStore
     public void setAuthoritativeIndex( boolean authoritativeIndex )
     {
         this.authoritativeIndex = authoritativeIndex;
+    }
+
+    public Boolean isRescanInProgress()
+    {
+        return rescanInProgress;
+    }
+
+    public void setRescanInProgress( Boolean rescanInProgress )
+    {
+        this.rescanInProgress = rescanInProgress;
     }
 }

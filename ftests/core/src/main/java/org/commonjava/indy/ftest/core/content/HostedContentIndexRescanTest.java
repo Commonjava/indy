@@ -16,14 +16,16 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.client.core.module.IndyMaintenacneClientModule;
+import org.commonjava.indy.client.core.module.IndyMaintenanceClientModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static org.junit.Assert.assertThat;
@@ -45,6 +47,7 @@ public class HostedContentIndexRescanTest
         final String content3 = "content3";
 
         HostedRepository hosted = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, hostedName );
+        hosted.setAuthoritativeIndex( true );
 
         hosted = client.stores().create( hosted, "create hosted", HostedRepository.class );
 
@@ -52,7 +55,7 @@ public class HostedContentIndexRescanTest
         client.content().store( hosted.getKey(), path2, new ByteArrayInputStream( content2.getBytes() ) );
         client.content().store( hosted.getKey(), path3, new ByteArrayInputStream( content3.getBytes() ) );
 
-        client.module( IndyMaintenacneClientModule.class )
+        client.module( IndyMaintenanceClientModule.class )
               .rescan( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.hosted, hostedName );
 
         try (InputStream in = client.content().get( hosted.getKey(), path1 ))
@@ -70,5 +73,13 @@ public class HostedContentIndexRescanTest
             assertThat( IOUtils.toString( in ), equalTo( content3 ) );
         }
 
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/content-index.conf", "[content-index]\nsupport.authoritative.indexes=true" );
     }
 }

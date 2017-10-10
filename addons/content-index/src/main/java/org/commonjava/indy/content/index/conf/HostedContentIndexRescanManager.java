@@ -22,6 +22,7 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.index.ContentIndexManager;
+import org.commonjava.indy.content.index.ContentIndexRescanManager;
 import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -30,6 +31,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +48,7 @@ import java.util.stream.Collectors;
  * index entries for the hosted repo, and remove all useless entries for the missed artifacts in hosted repo
  */
 @ApplicationScoped
-public class HostedContentIndexRescanManager
+public class HostedContentIndexRescanManager implements ContentIndexRescanManager
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
 
@@ -57,13 +59,13 @@ public class HostedContentIndexRescanManager
     private ContentIndexManager contentIndexManager;
 
     @Inject
-    private ContentManager contentManager;
+    private DownloadManager downloadManager;
 
     protected HostedContentIndexRescanManager()
     {
     }
 
-    public void hostedIndexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
+    public void indexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
             throws IndyWorkflowException
     {
         Collection<ArtifactStore> affectedRepos = e.getStores();
@@ -84,7 +86,7 @@ public class HostedContentIndexRescanManager
         }
     }
 
-    public void hostedIndexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
+    public void indexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
             throws IndyWorkflowException
     {
         Collection<ArtifactStore> hostedStores = e.getStores();
@@ -96,13 +98,13 @@ public class HostedContentIndexRescanManager
                 final HostedRepository hosted = (HostedRepository) repo;
                 try
                 {
-                    List<StoreResource> resources = contentManager.list( hosted, DownloadManager.ROOT_PATH );
+                    List<Transfer> transfers = downloadManager.listRecursively( hosted.getKey(), DownloadManager.ROOT_PATH );
                     Set<Group> affected = storeDataManager.query().getGroupsAffectedBy( hosted.getKey() );
                     Set<StoreKey> affetctedGroupKeys =
                             affected.stream().map( g -> g.getKey() ).collect( Collectors.toSet() );
                     StoreKey[] gKeys = affetctedGroupKeys.toArray( new StoreKey[affetctedGroupKeys.size()] );
-                    resources.forEach(
-                            res -> contentIndexManager.indexPathInStores( res.getPath(), hosted.getKey(), gKeys ) );
+                    transfers.forEach(
+                            txfr -> contentIndexManager.indexPathInStores( txfr.getPath(), hosted.getKey(), gKeys ) );
                 }
                 catch ( IndyWorkflowException ex )
                 {

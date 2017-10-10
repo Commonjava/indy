@@ -22,6 +22,7 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.index.ContentIndexManager;
+import org.commonjava.indy.content.index.ContentIndexRescanManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
  * be based on the remote path masks.
  */
 @ApplicationScoped
-public class KojiRemoteContenIndexingRescanManager
+public class KojiRemoteContenIndexingRescanManager implements ContentIndexRescanManager
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
 
@@ -57,14 +58,11 @@ public class KojiRemoteContenIndexingRescanManager
     @Inject
     private ContentIndexManager contentIndexManager;
 
-    @Inject
-    private ContentManager contentManager;
-
     protected KojiRemoteContenIndexingRescanManager()
     {
     }
 
-    public void kojiRemoteIndexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
+    public void indexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
             throws IndyWorkflowException
     {
         Collection<ArtifactStore> repos = e.getStores();
@@ -80,7 +78,7 @@ public class KojiRemoteContenIndexingRescanManager
         }
     }
 
-    public void kojiRemoteIndexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
+    public void indexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
             throws IndyWorkflowException
     {
         Collection<ArtifactStore> repos = e.getStores();
