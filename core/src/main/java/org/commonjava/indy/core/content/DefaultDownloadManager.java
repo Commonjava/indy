@@ -483,8 +483,6 @@ public class DefaultDownloadManager
         {
             logger.warn( "Content-Length mismatch: "+ e.getMessage(), e );
             target = null;
-//            throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
-//                                             e.getMessage() );
         }
         catch ( final TransferException e )
         {
