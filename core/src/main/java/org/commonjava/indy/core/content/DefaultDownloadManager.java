@@ -21,10 +21,10 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
-import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.AbstractRepository;
@@ -40,6 +40,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.BadGatewayException;
+import org.commonjava.maven.galley.TransferContentException;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferLocationException;
 import org.commonjava.maven.galley.TransferManager;
@@ -454,9 +455,9 @@ public class DefaultDownloadManager
         }
 
         Transfer target;
+        final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
         try
         {
-            final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
             if ( store instanceof RemoteRepository )
             {
                 target = transfers.retrieve( res, suppressFailures, eventMetadata );
@@ -487,11 +488,17 @@ public class DefaultDownloadManager
         catch ( final TransferLocationException e )
         {
             fileEventManager.fire( new IndyStoreErrorEvent( store.getKey(), e ) );
-            logger.warn( "Timeout / bad gateway: " + e.getMessage(), e );
+            logger.warn( "Timeout / bad gateway: " + res + ". Reason: " + e.getMessage(), e );
             target = null;
             //            throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(),
             //                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
             //                                              e.getMessage() );
+        }
+        catch ( final TransferContentException e )
+        {
+            logger.warn( "Content-Length mismatch: " + res + ". Reason: " + e.getMessage()
+                                 + "\nNOTE: This may be a network error; will retry download on next request.", e );
+            target = null;
         }
         catch ( final TransferException e )
         {
@@ -499,7 +506,7 @@ public class DefaultDownloadManager
             throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
                                              e.getMessage() );
         }
-
+        
         return target;
     }
 
