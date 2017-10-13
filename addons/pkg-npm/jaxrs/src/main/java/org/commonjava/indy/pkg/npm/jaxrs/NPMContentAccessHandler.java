@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -271,7 +272,7 @@ public class NPMContentAccessHandler
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
                         // generating .http-metadata.json for npm group retrieve to resolve header requirements
-                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.group == st )
+                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
                         {
                             generateHttpMetadataHeaders( item, request, response );
                         }
@@ -396,8 +397,12 @@ public class NPMContentAccessHandler
             return;
         }
 
-        Response responseWithLastModified =
-                Response.fromResponse( response ).lastModified( new Date( transfer.lastModified() ) ).build();
+        Response responseWithLastModified = Response.fromResponse( response )
+                                                    .header( "TRANSFER-ENCODING", null )
+                                                    .header( "CONTENT-LENGTH", null )
+                                                    .type( MediaType.APPLICATION_JSON_TYPE )
+                                                    .lastModified( new Date( transfer.lastModified() ) )
+                                                    .build();
 
         Transfer metaTxfr = transfer.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
         if ( metaTxfr == null )
