@@ -256,7 +256,8 @@ public class DefaultContentManager
 
             if ( logger.isDebugEnabled() )
             {
-                logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), StringUtils.join(members, "\n  ") );
+                logger.debug( "{} is a group. Attempting downloads from {} members", store.getKey(), (members != null ? members.size() : 0) );
+                logger.trace( "Group members (in order):\n  {}", StringUtils.join(members, "\n  ") );
             }
 
             item = null;
