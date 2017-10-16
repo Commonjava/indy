@@ -92,6 +92,8 @@ public class ResourceManagementFilter
 
             putRequestIDs( hsr, threadContext );
 
+            putUserIP( hsr, threadContext );
+
             logger.info( "START request: {} (from: {})", tn, clientAddr );
 
             Thread.currentThread().setName( tn );
@@ -120,6 +122,19 @@ public class ResourceManagementFilter
             logger.info( "END request: {} (from: {})", tn, clientAddr );
 
             MDC.clear();
+        }
+    }
+
+    public static String X_FORWARDED_FOR = "x-forwarded-for";
+
+    /* Openshift/Kubernetes proxy adds the HTTP header 'x-forwarded-for' representing user IP */
+    private void putUserIP( HttpServletRequest hsr, ThreadContext threadContext )
+    {
+        String userIp = hsr.getHeader( X_FORWARDED_FOR );
+        if ( userIp != null )
+        {
+            MDC.put( X_FORWARDED_FOR, userIp );
+            threadContext.put( X_FORWARDED_FOR, userIp );
         }
     }
 
