@@ -22,12 +22,13 @@ import indylog.timer as it
 @click.command()
 @click.argument('timers-yml', type=click.Path(exists=True))
 @click.option('--logdir', '-d', type=click.Path(exists=True), help='Specify the directory containing the logs to analyze (default: current dir)', default=os.getcwd())
+@click.option('--filename-prefix', '-F', help='Specify the filename prefix for logs to analyze (default: indy)', default='indy')
 @click.option('--output-file', '-O', help='Specify the output file (default: output.log)', type=click.Path(), default='output.yml')
-def timer(timers_yml, logdir, output_file):
+def timer(timers_yml, filename_prefix, logdir, output_file):
     with open(timers_yml) as f:
         timer_config = yaml.safe_load(f)
 
-    output = it.findTimings(timer_config, logdir)
+    output = it.findTimings(timer_config, logdir, filename_prefix)
     with open(output_file, 'w') as f:
         yaml.dump(output, f, default_flow_style=False)
 
