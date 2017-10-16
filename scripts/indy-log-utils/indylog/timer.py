@@ -20,10 +20,15 @@ import re
 import yaml
 import time
 import math
+from dateutil import tz
+
+UTC=tz.tzutc()
+LOCAL=tz.tzlocal()
 
 START='start'
 REFS='refs'
 END='end'
+FROM='from'
 
 START_RE='start_regexp'
 END_RE = 'end_regexp'
@@ -35,6 +40,8 @@ START_LINE='start_line'
 END_LINE='end_line'
 
 ELAPSED='elapsed'
+CONCURRENCY='concurrent_requests'
+CONCURRENCY_FROM = 'concurrent_requests_from'
 
 TIMESTAMP_FORMAT='%Y-%m-%d %H:%M:%S.%f'
 ELAPSED_FORMAT='%H:%M:%S'
@@ -59,11 +66,20 @@ def parseTime(line):
 def formatElapsed(seconds):
     return time.strftime(ELAPSED_FORMAT, time.gmtime(seconds))
 
-def findTimings(timer_config, logdir):
+def formatTime(seconds):
+    return time.strftime(TIMESTAMP_FORMAT[:-3], time.gmtime(seconds))
+
+def findTimings(timer_config, logdir, filename_prefix):
+    expression = "%s(\.\d+).log" % filename_prefix
+    basefile = "%s.log" % filename_prefix
+
     end_matchers = []
+    end_matchers_from = {}
 
     for timing in timer_config:
         timing[START_RE] = re.compile(timing[START])
+        if timing.get(FROM) is not None:
+            timing[FROM] = re.compile(timing[FROM])
 
     done=[]
     lines=0
@@ -78,9 +94,9 @@ def findTimings(timer_config, logdir):
     lastEnd = None
     maxConcurrent=0
 
-    fnames = sorted([fname for fname in os.listdir(logdir) if re.match(r'indy(\.\d+).log', fname)], reverse=True)
-    if os.path.exists(os.path.join(logdir, 'indy.log')):
-        fnames.append('indy.log')
+    fnames = sorted([fname for fname in os.listdir(logdir) if re.match(expression, fname)], reverse=True)
+    if os.path.exists(os.path.join(logdir, basefile)):
+        fnames.append(basefile)
 
     for fname in fnames:
         processed.append(fname)
@@ -104,14 +120,26 @@ def findTimings(timer_config, logdir):
                         matcher[END_RE] = end_re
                         matcher[REFS] = raw_refs
 
+                        fromIP = 'unknown'
+                        if timing.get(FROM) is not None:
+                            fromMatch = timing[FROM].search(line)
+                            if fromMatch is not None:
+                                fromIP = fromMatch.group(1)
+
                         startTime = parseTime(line)
                         if firstStart is None:
                             firstStart = getDatestampFields(line)
 
                         matcher[START_TIME] = startTime
+                        matcher[FROM] = fromIP
                         end_matchers.append(matcher)
 
+                        matchers = end_matchers_from.get(fromIP) or []
+                        matchers.append(matcher)
+                        end_matchers_from[fromIP] = matchers
+
                         concurrent = len(end_matchers)
+                        concurrent_from = len(matchers)
                         maxConcurrent = concurrent if concurrent > maxConcurrent else maxConcurrent
 
                         print "Found new START (%d/%d)." % (concurrent, (concurrent + len(done)))
@@ -143,9 +171,14 @@ def findTimings(timer_config, logdir):
                                 sumSqr = sumSqr + (elapsedSeconds ** 2 )
                                 avgCount = avgCount+1
 
+                            entry[START_TIME] = formatTime(entry[START_TIME])
+                            entry[END_TIME] = formatTime(endTime)
                             entry[ELAPSED] = formatElapsed(elapsedSeconds)
+                            entry[CONCURRENCY] = len(end_matchers)
 
-                            entry.pop(START_TIME, None)
+                            matchers_from = end_matchers_from[entry[FROM]]
+                            entry[CONCURRENCY_FROM] = len(matchers_from)
+
                             entry.pop(START_RE, None)
                             entry.pop(END_RE, None)
 
@@ -156,6 +189,10 @@ def findTimings(timer_config, logdir):
 
                     if remove_entry is not None:
                         end_matchers.remove(remove_entry)
+
+                        matchers_from = end_matchers_from[entry[FROM]]
+                        matchers_from.remove(remove_entry)
+
 
     output={
         '_summary': {
