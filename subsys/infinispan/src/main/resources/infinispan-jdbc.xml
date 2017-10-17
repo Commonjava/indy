@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd
+                        urn:infinispan:config:store:jdbc:8.0 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-8.0.xsd"
+    xmlns="urn:infinispan:config:8.2"
+    xmlns:jdbc="urn:infinispan:config:store:jdbc:8.0">
+
+  <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
+    <local-cache name="koji-maven-version-metadata" >
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
+    </local-cache>
+
+    <local-cache name="folo-in-progress" >
+      <eviction size="200000" type="COUNT" strategy="LRU"/>
+      <indexing index="LOCAL">
+        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
+        <property name="default.directory_provider">ram</property>
+        <!-- <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property> -->
+      </indexing>
+    </local-cache>
+
+    <!--
+    <local-cache name="folo-sealed">
+      <eviction size="1000" type="COUNT" strategy="LRU"/>
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
+      </persistence>
+    </local-cache>
+    -->
+
+    <local-cache name="folo-sealed">
+      <eviction size="1000" type="COUNT" strategy="LRU"/>
+      <persistence passivation="true">
+        <jdbc:string-keyed-jdbc-store shared="false" preload="false" fetch-state="true" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.folo.model.TrackingKey2StringMapper">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="INDY_CACHE">
+            <jdbc:id-column name="ID_COLUMN" type="TEXT" />
+            <jdbc:data-column name="DATA_COLUMN" type="BYTEA" />
+            <jdbc:timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+
+
+    <local-cache name="content-index">
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPKey2StringMapper2">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="INDY_CACHE">
+            <jdbc:id-column name="ID_COLUMN" type="TEXT" />
+            <jdbc:data-column name="DATA_COLUMN" type="BYTEA" />
+            <jdbc:timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+
+    <!--
+    <local-cache name="content-index">
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
+      <persistence>
+        <jdbc:binary-keyed-jdbc-store fetch-state="false" read-only="false" purge="false">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:binary-keyed-table prefix="INDY_CACHE" drop-on-exit="false" create-on-start="true" key-to-string-mapper="org.commonjava.indy.content.index.ISPKey2StringMapper">
+            <jdbc:id-column name="ID_COLUMN" type="BYTEA" />
+            <jdbc:data-column name="DATA_COLUMN" type="BYTEA" />
+            <jdbc:timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
+          </jdbc:binary-keyed-table>
+        </jdbc:binary-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+    -->
+
+    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000">
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
+    </local-cache>
+
+    <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
+      <eviction size="200000" type="COUNT" strategy="LRU"/>
+      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
+                   locking="PESSIMISTIC"/>
+    </local-cache>
+
+    <local-cache name="schedule-expire-cache">
+      <!--
+          this expiration interval is used to trigger the purge threads of ISPN to let it purge the cache, which will
+          trigger the cache expire event to happen. Did not find a way to let the expire event automatically happen
+          without this. See http://infinispan.org/docs/stable/faqs/faqs.html#eviction_and_expiration_questions for more
+       -->
+      <expiration interval="300" />
+    </local-cache>
+
+  </cache-container>
+</infinispan>

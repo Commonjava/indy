@@ -24,7 +24,7 @@
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
     </local-cache>
-    
+
     <local-cache name="content-index">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>

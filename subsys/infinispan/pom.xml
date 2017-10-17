@@ -69,5 +69,9 @@
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-search-orm</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+    </dependency>
   </dependencies>
 </project>
