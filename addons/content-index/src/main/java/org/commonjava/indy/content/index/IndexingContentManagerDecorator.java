@@ -53,6 +53,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
+
 /**
  * Decorator for ContentManager which uses Infinispan to index content to avoid having to iterate all members of large
  * groups looking for a file.
@@ -269,7 +271,11 @@ public abstract class IndexingContentManagerDecorator
                 transfer = delegate.retrieve( store, path, eventMetadata );
                 if ( !exists( transfer ) )
                 {
-                    nfc.addMissing( resource );
+                    Boolean isGenerated = (Boolean) eventMetadata.get( GROUP_METADATA_GENERATED );
+                    if ( isGenerated == null || !isGenerated ) // generated but missing, not add to nfc so next req can try again
+                    {
+                        nfc.addMissing( resource );
+                    }
                 }
 
                 return transfer;

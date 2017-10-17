@@ -87,6 +87,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -401,6 +402,8 @@ public class MavenMetadataGenerator
                         }
 
                         writeGroupMergeInfo( group, members, toMergePath );
+
+                        eventMetadata.set( GROUP_METADATA_GENERATED, true );
                     }
                 }
                 catch ( final IOException e )

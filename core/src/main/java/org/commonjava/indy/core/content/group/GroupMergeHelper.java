@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 public class GroupMergeHelper
 {
 
+    public static final String GROUP_METADATA_GENERATED = "group-metadata-generated";
+
     public static final String MERGEINFO_SUFFIX = ".info";
 
     public static final String SHA_SUFFIX = ".sha";
