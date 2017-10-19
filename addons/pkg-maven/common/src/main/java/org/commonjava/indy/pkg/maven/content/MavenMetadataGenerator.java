@@ -87,6 +87,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -377,6 +378,7 @@ public class MavenMetadataGenerator
                     {
                         // Means there is no metadata change if this transfer exists, so directly return it.
                         logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
+                        eventMetadata.set( GROUP_METADATA_EXISTS, true );
                         return target;
                     }
                     logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(), path );

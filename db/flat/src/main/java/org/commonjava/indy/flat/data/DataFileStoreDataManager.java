@@ -72,6 +72,7 @@ public class DataFileStoreDataManager
         super( dispatcher, config );
         this.manager = manager;
         this.serializer = serializer;
+        this.started = true;
     }
 
     @PostConstruct
