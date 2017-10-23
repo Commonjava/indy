@@ -35,15 +35,13 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
-import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -59,6 +57,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 @ApplicationScoped
 public class ContentAccessHandler
@@ -276,7 +275,13 @@ public class ContentAccessHandler
                     logger.debug( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
 
                     final ResponseBuilder builder = Response.ok();
-                    setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
+
+                    // restrict the npm header contentType with json to avoid some parsing error
+                    String contentType = packageType.equals( NPM_PKG_KEY ) ?
+                            MediaType.APPLICATION_JSON :
+                            contentController.getContentType( path );
+
+                    setInfoHeaders( builder, item, sk, path, true, contentType,
                                     httpMetadata );
                     if ( builderModifier != null )
                     {
