@@ -268,11 +268,11 @@ public class NPMContentAccessHandler
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
-                        setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
+                        setInfoHeaders( builder, item, sk, path, false, MediaType.APPLICATION_JSON,
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
                         // generating .http-metadata.json for npm group retrieve to resolve header requirements
-                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
+                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.group == st )
                         {
                             generateHttpMetadataHeaders( item, request, response );
                         }
@@ -397,12 +397,8 @@ public class NPMContentAccessHandler
             return;
         }
 
-        Response responseWithLastModified = Response.fromResponse( response )
-                                                    .header( "TRANSFER-ENCODING", null )
-                                                    .header( "CONTENT-LENGTH", null )
-                                                    .type( MediaType.APPLICATION_JSON_TYPE )
-                                                    .lastModified( new Date( transfer.lastModified() ) )
-                                                    .build();
+        Response responseWithLastModified =
+                Response.fromResponse( response ).lastModified( new Date( transfer.lastModified() ) ).build();
 
         Transfer metaTxfr = transfer.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
         if ( metaTxfr == null )
