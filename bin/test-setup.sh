@@ -35,14 +35,19 @@ rm -rf indy
 tar -zxvf indy-launcher-savant-*-launcher.tar.gz
 
 if [ "x${TEST_REPOS}" != "x" ]; then
+  echo "Copying repository/group definitions from: ${TEST_REPOS}"
   rm -rf $REPO_BASE/*
   mkdir -p $REPO_BASE
   cp -rvf $TEST_REPOS/* $REPO_BASE
+else
+  echo "No test repositories specified."
 fi
 
 if [ "x${TEST_ETC}" != "x" ]; then
+  echo "Copying test configuration from: ${TEST_ETC}"
   cp -rvf $TEST_ETC/* $ETC_BASE
 else
+  echo "No test configuration specified."
   INDY_HOME=$PWD/indy
   cat > $ETC_BASE/logging/logback.xml <<-EOF
 <configuration>
@@ -82,4 +87,4 @@ fi
 
 popd
 
-$DIR/bin/debug-launcher.rb -e
+exec $DIR/deployments/launchers/savant/target/indy/bin/indy.sh
