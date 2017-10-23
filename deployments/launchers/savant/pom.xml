@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.launch</groupId>
     <artifactId>indy-launchers</artifactId>
-    <version>1.1.13</version>
+    <version>1.1.14-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-launcher-savant</artifactId>
