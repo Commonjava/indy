@@ -51,7 +51,7 @@ def build(testfile, indy_url, delay, vagrant_dir):
         tid_base = "build_%s" % os.path.basename(project_dir)
 
         build = build_config['build']
-        report = build_config['report']
+        report = build_config.get('report')
 
         if build_config.get('vagrant') is not None:
             mb.vagrant.init_ssh_config(vagrant_dir)
@@ -83,12 +83,16 @@ def build(testfile, indy_url, delay, vagrant_dir):
                 mb.vagrant.vagrant_env(build_config, 'post-build', indy_url, vagrant_dir, project_dir, builds_dir)
                 mb.vagrant.vagrant_env(build_config, 'pre-report', indy_url, vagrant_dir, project_dir, builds_dir)
 
-            for t in range(int(report['threads'])):
-                thread = mb.reporter.Reporter(report_queue)
-                thread.daemon = True
-                thread.start()
+            if report is not None:
+                if build_config.get('vagrant') is not None:
+                    mb.vagrant.vagrant_env(build_config, 'pre-report', indy_url, vagrant_dir, project_dir, builds_dir)
 
-            report_queue.join()
+                for t in range(int(report['threads'])):
+                    thread = mb.reporter.Reporter(report_queue)
+                    thread.daemon = True
+                    thread.start()
+
+                report_queue.join()
         except Exception as e:
             print e
             print "Quitting."
