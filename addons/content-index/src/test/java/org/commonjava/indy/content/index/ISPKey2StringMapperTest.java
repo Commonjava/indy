@@ -16,7 +16,6 @@
 package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -29,7 +28,7 @@ public class ISPKey2StringMapperTest
         StoreKey key = StoreKey.fromString( "maven:remote:central" );
         IndexedStorePath isp = new IndexedStorePath( key, key, "/org/apache/maven/maven-metadata.xml" );
 
-        ISPKey2StringMapper mapper = new ISPKey2StringMapper(  );
+        ISPBinaryObjectKey2StringMapper mapper = new ISPBinaryObjectKey2StringMapper(  );
 
         assertTrue( mapper.isSupportedType( isp.getClass() ) );
 
@@ -48,7 +47,7 @@ public class ISPKey2StringMapperTest
         StoreKey key = StoreKey.fromString( "maven:remote:central" );
         IndexedStorePath isp = new IndexedStorePath( key, key, "/org/apache/maven/maven-metadata.xml" );
 
-        ISPKey2StringMapper2 mapper = new ISPKey2StringMapper2(  );
+        ISPFieldStringKey2StringMapper mapper = new ISPFieldStringKey2StringMapper(  );
 
         assertTrue( mapper.isSupportedType( isp.getClass() ) );
 

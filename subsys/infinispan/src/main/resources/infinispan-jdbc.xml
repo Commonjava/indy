@@ -6,7 +6,13 @@
     xmlns="urn:infinispan:config:8.2"
     xmlns:jdbc="urn:infinispan:config:store:jdbc:8.0">
 
-  <cache-container default-cache="dont-use" name="IndyCacheManager" shutdown-hook="DEFAULT">
+  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT">
+    <local-cache-configuration name="local-template">
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
+    </local-cache-configuration>
+
+    <local-cache name="local" configuration="local-template"/>
+
     <local-cache name="koji-maven-version-metadata" >
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
@@ -20,34 +26,17 @@
       </indexing>
     </local-cache>
 
-    <!--
     <local-cache name="folo-sealed">
       <eviction size="1000" type="COUNT" strategy="LRU"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
     </local-cache>
-    -->
-
-    <local-cache name="folo-sealed">
-      <eviction size="1000" type="COUNT" strategy="LRU"/>
-      <persistence passivation="true">
-        <jdbc:string-keyed-jdbc-store shared="false" preload="false" fetch-state="true" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.folo.model.TrackingKey2StringMapper">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
-          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="INDY_CACHE">
-            <jdbc:id-column name="ID_COLUMN" type="TEXT" />
-            <jdbc:data-column name="DATA_COLUMN" type="BYTEA" />
-            <jdbc:timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
-          </jdbc:string-keyed-table>
-        </jdbc:string-keyed-jdbc-store>
-      </persistence>
-    </local-cache>
-
 
     <local-cache name="content-index">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
       <persistence>
-        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPKey2StringMapper2">
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
           <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="INDY_CACHE">
             <jdbc:id-column name="ID_COLUMN" type="TEXT" />

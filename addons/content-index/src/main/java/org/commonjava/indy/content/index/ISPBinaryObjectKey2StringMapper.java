@@ -26,7 +26,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class ISPKey2StringMapper
+/**
+ * @deprecated not used as this mapper will cause storage duplication because un-unique for equaled ISP object
+ */
+@Deprecated
+public class ISPBinaryObjectKey2StringMapper
         implements TwoWayKey2StringMapper
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );

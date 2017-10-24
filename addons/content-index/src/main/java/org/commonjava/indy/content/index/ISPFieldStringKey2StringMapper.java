@@ -28,10 +28,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-public class ISPKey2StringMapper2
+public class ISPFieldStringKey2StringMapper
         implements TwoWayKey2StringMapper
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
+    
+    private final static String FIELD_SPLITTER = ";;";
 
     @Override
     public boolean isSupportedType( Class<?> keyType )
@@ -53,11 +55,11 @@ public class ISPKey2StringMapper2
                 return null;
             }
             builder.append( isp.getStoreType().toString() )
-                   .append( ";;" )
+                   .append( FIELD_SPLITTER )
                    .append( isp.getStoreName() )
-                   .append( ";;" )
+                   .append( FIELD_SPLITTER )
                    .append( isp.getPath() )
-                   .append( ";;" );
+                   .append( FIELD_SPLITTER );
             if ( isp.getOriginStoreType() != null )
             {
                 builder.append( isp.getOriginStoreType().toString() );
@@ -66,7 +68,7 @@ public class ISPKey2StringMapper2
             {
                 builder.append( "null" );
             }
-            builder.append( ";;" );
+            builder.append( FIELD_SPLITTER );
             if ( isp.getOriginStoreName() != null )
             {
                 builder.append( isp.getOriginStoreName() );
@@ -75,7 +77,7 @@ public class ISPKey2StringMapper2
             {
                 builder.append( "null" );
             }
-            return Base64.encodeBytes( builder.toString().getBytes() );
+            return builder.toString();
 
         }
         LOGGER.error( "Content Index JDBC store error: Not supported key type {}",
@@ -86,11 +88,7 @@ public class ISPKey2StringMapper2
     @Override
     public Object getKeyMapping( String stringKey )
     {
-        byte[] bytes = Base64.decode( stringKey );
-
-        String ispString = new String( bytes );
-
-        String[] parts = ispString.split(";;");
+        String[] parts = stringKey.split( FIELD_SPLITTER );
 
         StoreType type = StoreType.get( parts[0] );
         StoreKey key = new StoreKey( type, parts[1] );
