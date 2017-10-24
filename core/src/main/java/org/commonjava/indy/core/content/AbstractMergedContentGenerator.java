@@ -151,13 +151,23 @@ public abstract class AbstractMergedContentGenerator
 
             if ( target.exists() )
             {
-                logger.debug( "Deleting merged file: {}", target );
-                target.delete( false );
-                if ( target.exists() )
+                try
                 {
-                    logger.error( "\n\n\n\nDID NOT DELETE merged metadata file at: {} in group: {}\n\n\n\n", path, group.getName() );
+                    target.lockWrite();
+
+                    logger.debug( "Deleting merged file: {}", target );
+                    target.delete( false );
+                    if ( target.exists() )
+                    {
+                        logger.error( "\n\n\n\nDID NOT DELETE merged metadata file at: {} in group: {}\n\n\n\n", path,
+                                      group.getName() );
+                    }
+                    helper.deleteChecksumsAndMergeInfo( group, path );
                 }
-                helper.deleteChecksumsAndMergeInfo( group, path );
+                finally
+                {
+                    target.unlock();
+                }
             }
             else
             {
