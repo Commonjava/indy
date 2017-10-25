@@ -39,6 +39,8 @@ public final class LocationUtils
 {
     public static final String PATH_STYLE = "pathStyle";
 
+    public static final String KEYED_LOCATION_METADATA = "keyedLocation";
+
     private LocationUtils()
     {
     }
@@ -50,10 +52,15 @@ public final class LocationUtils
             return null;
         }
 
+        KeyedLocation location = (KeyedLocation) store.getTransientMetadata( KEYED_LOCATION_METADATA );
+        if ( location != null )
+        {
+            return location;
+        }
+
         final StoreType type = store.getKey()
                                     .getType();
 
-        KeyedLocation location = null;
         switch ( type )
         {
             case group:
@@ -96,6 +103,8 @@ public final class LocationUtils
                 } );
             }
         }
+
+        store.setTransientMetadata( KEYED_LOCATION_METADATA, location );
 
         return location;
     }
