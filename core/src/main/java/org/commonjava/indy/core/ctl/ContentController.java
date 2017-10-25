@@ -17,11 +17,9 @@ package org.commonjava.indy.core.ctl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -45,17 +43,14 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -155,6 +150,16 @@ public class ContentController
     public String getContentType( final String path )
     {
         return mimeTyper.getContentType( path );
+    }
+
+    public String getNPMContentType( final String path )
+    {
+        String type = MediaType.APPLICATION_JSON;
+        if ( path.endsWith( ".tgz" ) )
+        {
+            type = MediaType.APPLICATION_OCTET_STREAM;
+        }
+        return type;
     }
 
     public Transfer store( final StoreType type, final String name, final String path, final InputStream stream )
