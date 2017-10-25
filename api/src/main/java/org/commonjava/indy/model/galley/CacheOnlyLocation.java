@@ -31,15 +31,22 @@ public class CacheOnlyLocation
     implements KeyedLocation
 {
 
-    private final HostedRepository repo;
-
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     private final StoreKey key;
 
+    private final boolean isHosted;
+
+    private final boolean isAllowSnapshots;
+
+    private final boolean isAllowReleases;
+
     public CacheOnlyLocation( final HostedRepository repo )
     {
-        this.repo = repo;
+        this.isHosted = true;
+        this.isAllowReleases = repo.isAllowReleases();
+        this.isAllowSnapshots = repo.isAllowSnapshots();
+
         if ( repo.getStorage() != null )
         {
             attributes.put( Location.ATTR_ALT_STORAGE_LOCATION, repo.getStorage() );
@@ -50,13 +57,16 @@ public class CacheOnlyLocation
 
     public CacheOnlyLocation( final StoreKey key )
     {
-        this.repo = null;
+        this.isHosted = false;
+        this.isAllowReleases = true;
+        this.isAllowSnapshots = false;
+
         this.key = key;
     }
 
     public boolean isHostedRepository()
     {
-        return repo != null;
+        return isHosted;
     }
 
     @Override
@@ -74,13 +84,13 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsSnapshots()
     {
-        return repo != null && repo.isAllowSnapshots();
+        return isAllowSnapshots;
     }
 
     @Override
     public boolean allowsReleases()
     {
-        return repo == null || repo.isAllowReleases();
+        return isAllowReleases;
     }
 
     @Override
