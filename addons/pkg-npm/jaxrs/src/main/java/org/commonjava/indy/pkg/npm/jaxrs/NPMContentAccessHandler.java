@@ -26,10 +26,12 @@ import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -61,8 +63,8 @@ import java.util.function.Supplier;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
-import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
@@ -157,6 +159,149 @@ public class NPMContentAccessHandler
     }
 
     @Override
+    public Response doHead( final String packageType, final String type, final String name, final String path,
+                            final Boolean cacheOnly, final String baseUri, final HttpServletRequest request,
+                            EventMetadata eventMetadata )
+    {
+        return doHead( packageType, type, name, path, cacheOnly, baseUri, request, eventMetadata, null );
+    }
+
+    @Override
+    public Response doHead( final String packageType, final String type, final String name, final String path,
+                            final Boolean cacheOnly, final String baseUri, final HttpServletRequest request,
+                            EventMetadata eventMetadata, final Consumer<Response.ResponseBuilder> builderModifier )
+    {
+        if ( !PackageTypes.contains( packageType ) )
+        {
+            Response.ResponseBuilder builder = Response.status( 400 );
+            if ( builderModifier != null )
+            {
+                builderModifier.accept( builder );
+            }
+            return builder.build();
+        }
+
+        final StoreType st = StoreType.get( type );
+        final StoreKey sk = new StoreKey( packageType, st, name );
+
+        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+
+        final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
+
+        Response response = null;
+
+        if ( path == null || path.equals( "" ) )
+        {
+            try
+            {
+                logger.info( "Getting listing at: {}", path );
+                final String content =
+                        contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
+
+                Response.ResponseBuilder builder = Response.ok()
+                                                           .header( ApplicationHeader.content_type.key(),
+                                                                    acceptInfo.getRawAccept() )
+                                                           .header( ApplicationHeader.content_length.key(),
+                                                                    Long.toString( content.length() ) )
+                                                           .header( ApplicationHeader.last_modified.key(),
+                                                                    HttpUtils.formatDateHeader( new Date() ) );
+                if ( builderModifier != null )
+                {
+                    builderModifier.accept( builder );
+                }
+                response = builder.build();
+            }
+            catch ( final IndyWorkflowException e )
+            {
+                logger.error(
+                        String.format( "Failed to list content: %s from: %s. Reason: %s", path, name, e.getMessage() ),
+                        e );
+                response = formatResponse( e, builderModifier );
+            }
+        }
+        else
+        {
+            try
+            {
+                Transfer item = null;
+                logger.info( "Checking existence of: {}:{} (cache only? {})", sk, path, cacheOnly );
+
+                boolean exists = false;
+                if ( Boolean.TRUE.equals( cacheOnly ) )
+                {
+                    logger.debug( "Calling getTransfer()" );
+                    item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
+                    exists = item != null && item.exists();
+                    logger.debug( "Got transfer reference: {}", item );
+                }
+                else
+                {
+                    logger.debug( "Calling remote exists()" );
+                    exists = contentController.exists( sk, path );
+                    logger.debug( "Got remote exists: {}", exists );
+                }
+
+                if ( exists )
+                {
+                    // for npm will fetch the http-meta as the mapping path directly to get the headers info for further header set
+                    HttpExchangeMetadata httpMetadata =
+                            contentController.getHttpMetadata( sk, PathUtils.storagePath( path, eventMetadata ) );
+
+                    if ( item == null )
+                    {
+                        logger.info( "Retrieving: {}:{} for existence test", sk, path );
+                        item = contentController.get( sk, path, eventMetadata );
+                        logger.debug( "Got retrieved transfer reference: {}", item );
+                    }
+
+                    logger.debug( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
+
+                    final Response.ResponseBuilder builder = Response.ok();
+
+                    setInfoHeaders( builder, item, sk, path, true, getNPMContentType( path ),
+                                    httpMetadata );
+                    if ( builderModifier != null )
+                    {
+                        builderModifier.accept( builder );
+                    }
+                    response = builder.build();
+                }
+                else
+                {
+                    logger.debug( "Building 404 (or error) response..." );
+                    if ( StoreType.remote == st )
+                    {
+                        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
+                        if ( metadata != null )
+                        {
+                            logger.debug( "Using HTTP metadata to build negative response." );
+                            response = formatResponseFromMetadata( metadata );
+                        }
+                    }
+
+                    if ( response == null )
+                    {
+                        logger.debug( "No HTTP metadata; building generic 404 response." );
+                        Response.ResponseBuilder builder = Response.status( Response.Status.NOT_FOUND );
+                        if ( builderModifier != null )
+                        {
+                            builderModifier.accept( builder );
+                        }
+                        response = builder.build();
+                    }
+                }
+            }
+            catch ( final IndyWorkflowException e )
+            {
+                logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
+                                             e.getMessage() ), e );
+                response = formatResponse( e, builderModifier );
+            }
+        }
+        return response;
+    }
+
+    @Override
     public Response doGet( String packageType, String type, String name, String path, String baseUri,
                            HttpServletRequest request, EventMetadata eventMetadata )
     {
@@ -193,8 +338,7 @@ public class NPMContentAccessHandler
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
                 path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
-        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
-                LISTING_HTML_FILE ) )
+        if ( path == null || path.equals( "" ) )
         {
             try
             {
@@ -221,7 +365,7 @@ public class NPMContentAccessHandler
                     path = PathUtils.storagePath( path, eventMetadata );
                 }
                 logger.info( "START: retrieval of content: {}:{}", sk, path );
-                final Transfer item = contentController.get( sk, path, eventMetadata );
+                Transfer item = contentController.get( sk, path, eventMetadata );
 
                 logger.info( "HANDLE: retrieval of content: {}:{}", sk, path );
                 if ( item == null )
@@ -242,7 +386,7 @@ public class NPMContentAccessHandler
                     {
                         return handleMissingContentQuery( sk, path, builderModifier );
                     }
-                    else if ( item.isDirectory() )
+                    else if ( item.isDirectory() && StoreType.remote != st )
                     {
                         try
                         {
@@ -264,15 +408,24 @@ public class NPMContentAccessHandler
                     }
                     else
                     {
+                        // for remote retrieve, when content has downloaded and cached in the mapping path,
+                        // the item here will be a directory, so reassign the path and item as the mapping one
+                        if ( item.isDirectory() && StoreType.remote == st )
+                        {
+                            path = PathUtils.storagePath( path, eventMetadata );
+                            item = contentController.get( sk, path, eventMetadata );
+                        }
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
-                        setInfoHeaders( builder, item, sk, path, false, MediaType.APPLICATION_JSON,
+                        setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
-                        // generating .http-metadata.json for npm group retrieve to resolve header requirements
-                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.group == st )
+                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
+                        // hosted .http-metadata.json will be generated when publish
+                        // only package.json file will generate this customized http meta to satisfy npm client header check
+                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
                         {
                             generateHttpMetadataHeaders( item, request, response );
                         }
@@ -397,8 +550,12 @@ public class NPMContentAccessHandler
             return;
         }
 
-        Response responseWithLastModified =
-                Response.fromResponse( response ).lastModified( new Date( transfer.lastModified() ) ).build();
+        Response customizedResponse = Response.fromResponse( response )
+                                              .header( ApplicationHeader.content_length.upperKey(), transfer.length() )
+                                              .header( ApplicationHeader.indy_origin.upperKey(), null )
+                                              .header( ApplicationHeader.transfer_encoding.upperKey(), null )
+                                              .lastModified( new Date( transfer.lastModified() ) )
+                                              .build();
 
         Transfer metaTxfr = transfer.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
         if ( metaTxfr == null )
@@ -413,7 +570,7 @@ public class NPMContentAccessHandler
             }
         }
 
-        final HttpExchangeMetadata metadata = new StoreHttpExchangeMetadata( request, responseWithLastModified );
+        final HttpExchangeMetadata metadata = new StoreHttpExchangeMetadata( request, customizedResponse );
 
         try (OutputStream out = metaTxfr.openOutputStream( TransferOperation.GENERATE, false ))
         {
@@ -455,5 +612,16 @@ public class NPMContentAccessHandler
             builderModifier.accept( builder );
         }
         return builder.build();
+    }
+
+
+    private String getNPMContentType( final String path )
+    {
+        String type = MediaType.APPLICATION_JSON;
+        if ( path.endsWith( ".tgz" ) )
+        {
+            type = MediaType.APPLICATION_OCTET_STREAM;
+        }
+        return type;
     }
 }

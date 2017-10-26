@@ -31,7 +31,8 @@ public enum ApplicationHeader
     proxy_authorization( "Proxy-Authorization" ),
     cache_control( "Cache-Control" ),
     content_disposition( "Content-Disposition" ),
-    indy_origin("Indy-Origin");
+    indy_origin( "Indy-Origin" ),
+    transfer_encoding( "Transfer-Encoding" );
 
     private final String key;
 
