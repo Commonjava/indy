@@ -82,7 +82,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsStoring()
     {
-        return isReadOnly;
+        return !isReadOnly;
     }
 
     @Override
