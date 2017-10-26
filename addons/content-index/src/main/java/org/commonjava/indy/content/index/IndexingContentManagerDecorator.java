@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 
 /**
@@ -271,8 +272,14 @@ public abstract class IndexingContentManagerDecorator
                 transfer = delegate.retrieve( store, path, eventMetadata );
                 if ( !exists( transfer ) )
                 {
-                    Boolean isGenerated = (Boolean) eventMetadata.get( GROUP_METADATA_GENERATED );
-                    if ( isGenerated == null || !isGenerated ) // generated but missing, not add to nfc so next req can try again
+                    Boolean metadataGenerated = (Boolean) eventMetadata.get( GROUP_METADATA_GENERATED );
+                    Boolean metadataExists = (Boolean) eventMetadata.get( GROUP_METADATA_EXISTS );
+
+                    if ( Boolean.TRUE.equals( metadataGenerated ) || Boolean.TRUE.equals( metadataExists ) )
+                    {
+                        ; // metadata generated/exists but missing due to membership change, not add to nfc so next req can retry
+                    }
+                    else
                     {
                         nfc.addMissing( resource );
                     }

@@ -113,22 +113,45 @@
     <plugins>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
-          <configuration>
-            <dependenciesToScan>
-              <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
-            </dependenciesToScan> 
-          </configuration>
+        <configuration>
+          <dependenciesToScan>
+            <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-core</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
+          </dependenciesToScan>
+        </configuration>
+        <executions>
+          <execution>
+            <id>integration-tests</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <excludedGroups>org.commonjava.indy.ftest.core.category.BytemanTest</excludedGroups>
+            </configuration>
+          </execution>
+          <execution>
+            <id>byteman-ftests</id>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+            <configuration>
+              <forkCount>1</forkCount>
+              <groups>org.commonjava.indy.ftest.core.category.BytemanTest</groups>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
