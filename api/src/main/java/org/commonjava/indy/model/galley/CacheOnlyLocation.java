@@ -41,11 +41,14 @@ public class CacheOnlyLocation
 
     private final boolean isAllowReleases;
 
+    private final boolean isReadOnly;
+
     public CacheOnlyLocation( final HostedRepository repo )
     {
         this.isHosted = true;
         this.isAllowReleases = repo.isAllowReleases();
         this.isAllowSnapshots = repo.isAllowSnapshots();
+        this.isReadOnly = repo.isReadonly();
 
         if ( repo.getStorage() != null )
         {
@@ -60,6 +63,7 @@ public class CacheOnlyLocation
         this.isHosted = false;
         this.isAllowReleases = true;
         this.isAllowSnapshots = false;
+        this.isReadOnly = true;
 
         this.key = key;
     }
@@ -78,7 +82,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsStoring()
     {
-        return repo != null && !repo.isReadonly();
+        return isReadOnly;
     }
 
     @Override
@@ -96,7 +100,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsDeletion()
     {
-        return repo != null && !repo.isReadonly();
+        return isReadOnly;
     }
 
     @Override
