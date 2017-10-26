@@ -100,7 +100,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsDeletion()
     {
-        return isReadOnly;
+        return !isReadOnly;
     }
 
     @Override
