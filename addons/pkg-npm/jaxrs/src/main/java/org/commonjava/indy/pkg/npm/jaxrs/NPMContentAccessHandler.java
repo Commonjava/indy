@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
@@ -257,7 +258,7 @@ public class NPMContentAccessHandler
 
                     final Response.ResponseBuilder builder = Response.ok();
 
-                    setInfoHeaders( builder, item, sk, path, true, contentController.getNPMContentType( path ),
+                    setInfoHeaders( builder, item, sk, path, true, getNPMContentType( path ),
                                     httpMetadata );
                     if ( builderModifier != null )
                     {
@@ -418,7 +419,7 @@ public class NPMContentAccessHandler
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
-                        setInfoHeaders( builder, item, sk, path, false, contentController.getNPMContentType( path ),
+                        setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
                         // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
@@ -611,5 +612,16 @@ public class NPMContentAccessHandler
             builderModifier.accept( builder );
         }
         return builder.build();
+    }
+
+
+    private String getNPMContentType( final String path )
+    {
+        String type = MediaType.APPLICATION_JSON;
+        if ( path.endsWith( ".tgz" ) )
+        {
+            type = MediaType.APPLICATION_OCTET_STREAM;
+        }
+        return type;
     }
 }

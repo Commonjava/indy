@@ -152,16 +152,6 @@ public class ContentController
         return mimeTyper.getContentType( path );
     }
 
-    public String getNPMContentType( final String path )
-    {
-        String type = MediaType.APPLICATION_JSON;
-        if ( path.endsWith( ".tgz" ) )
-        {
-            type = MediaType.APPLICATION_OCTET_STREAM;
-        }
-        return type;
-    }
-
     public Transfer store( final StoreType type, final String name, final String path, final InputStream stream )
         throws IndyWorkflowException
     {
