@@ -28,7 +28,7 @@ public class ISPKey2StringMapperTest
         StoreKey key = StoreKey.fromString( "maven:remote:central" );
         IndexedStorePath isp = new IndexedStorePath( key, key, "/org/apache/maven/maven-metadata.xml" );
 
-        ISPBinaryObjectKey2StringMapper mapper = new ISPBinaryObjectKey2StringMapper(  );
+        ISPFieldStringKey2StringMapper mapper = new ISPFieldStringKey2StringMapper(  );
 
         assertTrue( mapper.isSupportedType( isp.getClass() ) );
 
