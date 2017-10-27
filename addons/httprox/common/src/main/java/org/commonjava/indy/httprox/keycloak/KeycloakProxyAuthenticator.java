@@ -32,12 +32,16 @@ import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
+
 
 /**
  * Created by jdcasey on 9/1/15.
@@ -237,8 +241,8 @@ public class KeycloakProxyAuthenticator
     protected void sendChallengeResponse( HttpWrapper http, String error, String description )
             throws IOException
     {
-        StringBuilder header = new StringBuilder( "Bearer realm=\"" );
-        header.append( httproxConfig.getProxyRealm() ).append( "\"" );
+        StringBuilder header = new StringBuilder( String.format( PROXY_AUTHENTICATE_FORMAT,
+                                                                 httproxConfig.getProxyRealm() ) );
         if ( error != null )
         {
             header.append( ", error=\"" ).append( error ).append( "\"" );
