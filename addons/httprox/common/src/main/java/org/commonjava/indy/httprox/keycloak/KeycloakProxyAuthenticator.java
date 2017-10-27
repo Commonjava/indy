@@ -22,6 +22,7 @@ import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.keycloak.KeycloakAuthenticator;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.keycloak.util.KeycloakBearerTokenDebug;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.keycloak.RSATokenVerifier;
 import org.keycloak.adapters.KeycloakDeployment;
@@ -249,8 +250,8 @@ public class KeycloakProxyAuthenticator
 
         final String challenge = header.toString();
 
-        ApplicationStatus stat = ApplicationStatus.UNAUTHORIZED;
+        ApplicationStatus stat = ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED;
         http.writeStatus( stat.code(), stat.message() );
-        http.writeHeader( "WWW-Authenticate", challenge );
+        http.writeHeader( ApplicationHeader.proxy_authenticate, challenge );
     }
 }
