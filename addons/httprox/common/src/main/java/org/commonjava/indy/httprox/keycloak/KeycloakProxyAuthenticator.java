@@ -118,11 +118,6 @@ public class KeycloakProxyAuthenticator
             if ( headers != null && !headers.isEmpty() )
             {
                 ts = new String( Base64.decodeBase64( headers.get( 0 ) ) );
-            }
-
-            if ( ts != null )
-            {
-                tokenString = ts;
                 result = authenticateToken( http, ts );
             }
         }
