@@ -136,7 +136,7 @@ public class KeycloakProxyAuthenticator
             sendChallengeResponse( http, null, null );
             result = new AuthResult( false );
         }
-        else
+        else if (!result.success)
         {
             sendChallengeResponse( http, result.reason, result.description );
         }
