@@ -22,6 +22,7 @@ import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.keycloak.KeycloakAuthenticator;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.keycloak.util.KeycloakBearerTokenDebug;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.keycloak.RSATokenVerifier;
 import org.keycloak.adapters.KeycloakDeployment;
@@ -31,12 +32,16 @@ import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
+
 
 /**
  * Created by jdcasey on 9/1/15.
@@ -118,11 +123,6 @@ public class KeycloakProxyAuthenticator
             if ( headers != null && !headers.isEmpty() )
             {
                 ts = new String( Base64.decodeBase64( headers.get( 0 ) ) );
-            }
-
-            if ( ts != null )
-            {
-                tokenString = ts;
                 result = authenticateToken( http, ts );
             }
         }
@@ -136,7 +136,7 @@ public class KeycloakProxyAuthenticator
             sendChallengeResponse( http, null, null );
             result = new AuthResult( false );
         }
-        else
+        else if (!result.success)
         {
             sendChallengeResponse( http, result.reason, result.description );
         }
@@ -241,8 +241,8 @@ public class KeycloakProxyAuthenticator
     protected void sendChallengeResponse( HttpWrapper http, String error, String description )
             throws IOException
     {
-        StringBuilder header = new StringBuilder( "Bearer realm=\"" );
-        header.append( httproxConfig.getProxyRealm() ).append( "\"" );
+        StringBuilder header = new StringBuilder( String.format( PROXY_AUTHENTICATE_FORMAT,
+                                                                 httproxConfig.getProxyRealm() ) );
         if ( error != null )
         {
             header.append( ", error=\"" ).append( error ).append( "\"" );
@@ -254,8 +254,8 @@ public class KeycloakProxyAuthenticator
 
         final String challenge = header.toString();
 
-        ApplicationStatus stat = ApplicationStatus.UNAUTHORIZED;
+        ApplicationStatus stat = ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED;
         http.writeStatus( stat.code(), stat.message() );
-        http.writeHeader( "WWW-Authenticate", challenge );
+        http.writeHeader( ApplicationHeader.proxy_authenticate, challenge );
     }
 }
