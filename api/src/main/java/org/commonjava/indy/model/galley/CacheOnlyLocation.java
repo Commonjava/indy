@@ -22,6 +22,8 @@ import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link KeyedLocation} implementation that only knows about locally hosted/cached content. During Galley's handling, it can be converted into other 
@@ -31,15 +33,25 @@ public class CacheOnlyLocation
     implements KeyedLocation
 {
 
-    private final HostedRepository repo;
-
     private final Map<String, Object> attributes = new HashMap<String, Object>();
 
     private final StoreKey key;
 
+    private final boolean isHosted;
+
+    private final boolean isAllowSnapshots;
+
+    private final boolean isAllowReleases;
+
+    private final boolean isReadOnly;
+
     public CacheOnlyLocation( final HostedRepository repo )
     {
-        this.repo = repo;
+        this.isHosted = true;
+        this.isAllowReleases = repo.isAllowReleases();
+        this.isAllowSnapshots = repo.isAllowSnapshots();
+        this.isReadOnly = repo.isReadonly();
+
         if ( repo.getStorage() != null )
         {
             attributes.put( Location.ATTR_ALT_STORAGE_LOCATION, repo.getStorage() );
@@ -50,13 +62,17 @@ public class CacheOnlyLocation
 
     public CacheOnlyLocation( final StoreKey key )
     {
-        this.repo = null;
+        this.isHosted = false;
+        this.isAllowReleases = true;
+        this.isAllowSnapshots = false;
+        this.isReadOnly = true;
+
         this.key = key;
     }
 
     public boolean isHostedRepository()
     {
-        return repo != null;
+        return isHosted;
     }
 
     @Override
@@ -68,19 +84,19 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsStoring()
     {
-        return true;
+        return isHosted&& !isReadOnly;
     }
 
     @Override
     public boolean allowsSnapshots()
     {
-        return repo != null && repo.isAllowSnapshots();
+        return isAllowSnapshots;
     }
 
     @Override
     public boolean allowsReleases()
     {
-        return repo == null || repo.isAllowReleases();
+        return isAllowReleases;
     }
 
     @Override
