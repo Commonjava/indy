@@ -19,6 +19,8 @@ import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -82,7 +84,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsStoring()
     {
-        return !isReadOnly;
+        return isHosted && !isReadOnly;
     }
 
     @Override
@@ -100,7 +102,7 @@ public class CacheOnlyLocation
     @Override
     public boolean allowsDeletion()
     {
-        return !isReadOnly;
+        return isHosted && !isReadOnly;
     }
 
     @Override
