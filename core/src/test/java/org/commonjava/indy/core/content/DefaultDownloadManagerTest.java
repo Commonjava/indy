@@ -106,27 +106,4 @@ public class DefaultDownloadManagerTest
 
         assertThat( transfer, nullValue() );
     }
-
-    @Test( expected = IOException.class )
-    public void getTransferFromNotAllowedDeletionStore_DownloadOp_ThrowException() throws Exception
-    {
-        ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test setup" );
-        HostedRepository hosted = new HostedRepository( "one" );
-        hosted.setReadonly( true );
-
-        storeManager.storeArtifactStore( hosted, summary, false, true, new EventMetadata() );
-
-        String originalString = "This is a test";
-        final String path = "/path/path";
-
-        Transfer transfer = downloadManager.getStorageReference( hosted, path, TransferOperation.DOWNLOAD );
-        try(OutputStream out = transfer.openOutputStream( TransferOperation.UPLOAD ))
-        {
-            out.write( originalString.getBytes() );
-        }
-
-        assertThat( transfer.exists(), equalTo( true ) );
-
-        transfer.delete();
-    }
 }
