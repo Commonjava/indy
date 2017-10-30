@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
-    xmlns="urn:infinispan:config:8.2">
+    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd
+                        urn:infinispan:config:store:jdbc:8.0 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-8.0.xsd"
+    xmlns="urn:infinispan:config:8.2"
+    xmlns:jdbc="urn:infinispan:config:store:jdbc:8.0">
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT">
     <local-cache-configuration name="local-template">
@@ -33,7 +35,33 @@
 
     <local-cache name="content-index">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="INDY_CACHE">
+            <jdbc:id-column name="ID_COLUMN" type="TEXT" />
+            <jdbc:data-column name="DATA_COLUMN" type="BYTEA" />
+            <jdbc:timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
     </local-cache>
+
+    <!--
+    <local-cache name="content-index">
+      <eviction strategy="LRU" size="200000" type="COUNT"/>
+      <persistence>
+        <jdbc:binary-keyed-jdbc-store fetch-state="false" read-only="false" purge="false">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:binary-keyed-table prefix="INDY_CACHE" drop-on-exit="false" create-on-start="true" key-to-string-mapper="org.commonjava.indy.content.index.ISPKey2StringMapper">
+            <jdbc:id-column name="ID_COLUMN" type="BYTEA" />
+            <jdbc:data-column name="DATA_COLUMN" type="BYTEA" />
+            <jdbc:timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT" />
+          </jdbc:binary-keyed-table>
+        </jdbc:binary-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+    -->
 
     <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000">
       <eviction size="10000000" type="COUNT" strategy="LRU"/>

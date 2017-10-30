@@ -89,6 +89,16 @@ public class IndexedStorePath
         return path;
     }
 
+    public StoreType getOriginStoreType()
+    {
+        return originStoreType;
+    }
+
+    public String getOriginStoreName()
+    {
+        return originStoreName;
+    }
+
     @Override
     public String toString()
     {
