@@ -28,6 +28,7 @@ import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.FileCacheProviderFactory;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
@@ -37,8 +38,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -102,5 +105,28 @@ public class DefaultDownloadManagerTest
                                                                  TransferOperation.DOWNLOAD );
 
         assertThat( transfer, nullValue() );
+    }
+
+    @Test( expected = IOException.class )
+    public void getTransferFromNotAllowedDeletionStore_DownloadOp_ThrowException() throws Exception
+    {
+        ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test setup" );
+        HostedRepository hosted = new HostedRepository( "one" );
+        hosted.setReadonly( true );
+
+        storeManager.storeArtifactStore( hosted, summary, false, true, new EventMetadata() );
+
+        String originalString = "This is a test";
+        final String path = "/path/path";
+
+        Transfer transfer = downloadManager.getStorageReference( hosted, path, TransferOperation.DOWNLOAD );
+        try(OutputStream out = transfer.openOutputStream( TransferOperation.UPLOAD ))
+        {
+            out.write( originalString.getBytes() );
+        }
+
+        assertThat( transfer.exists(), equalTo( true ) );
+
+        transfer.delete();
     }
 }

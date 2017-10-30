@@ -188,6 +188,16 @@ public abstract class ArtifactStore
         return metadata == null ? null : metadata.get( key );
     }
 
+    public synchronized Object removeTransientMetadata( final String key )
+    {
+        if ( transientMetadata == null || key == null )
+        {
+            return null;
+        }
+
+        return transientMetadata.remove( key );
+    }
+
     public synchronized Object setTransientMetadata( final String key, final Object value )
     {
         if ( key == null || value == null )
