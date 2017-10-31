@@ -52,6 +52,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Executors;
@@ -151,25 +152,22 @@ public class DefaultDownloadManagerTest
     }
 
     @Test( expected = IOException.class )
-    public void getTransferFromNotAlloweDeletionStore_DownloadOp_ThrowException() throws Exception
+    public void getTransferFromNotAllowedDeletionStore_DownloadOp_ThrowException() throws Exception
     {
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Test setup" );
         HostedRepository hosted = new HostedRepository( MAVEN_PKG_KEY, "one" );
+        hosted.setReadonly( true );
 
         storeManager.storeArtifactStore( hosted, summary, false, true, new EventMetadata() );
 
         String originalString = "This is a test";
         final String path = "/path/path";
 
-        contentManager.store( hosted, path, new ByteArrayInputStream( originalString.getBytes() ),
-                              TransferOperation.DOWNLOAD, new EventMetadata() );
-
-        hosted.setReadonly( true );
-        ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Change to readonly" );
-
-        storeManager.storeArtifactStore( hosted, changeSummary, false, true, new EventMetadata() );
-
         Transfer transfer = downloadManager.getStorageReference( hosted, path, TransferOperation.DOWNLOAD );
+        try(OutputStream out = transfer.openOutputStream( TransferOperation.UPLOAD ))
+        {
+            out.write( originalString.getBytes() );
+        }
 
         assertThat( transfer.exists(), equalTo( true ) );
 

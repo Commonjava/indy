@@ -55,7 +55,7 @@ public abstract class ArtifactStore
 
     private String description;
 
-    private transient Map<String, String> transientMetadata;
+    private transient Map<String, Object> transientMetadata;
 
     private Map<String, String> metadata;
 
@@ -195,7 +195,17 @@ public abstract class ArtifactStore
         return metadata == null ? null : metadata.get( key );
     }
 
-    public synchronized String setTransientMetadata( final String key, final String value )
+    public synchronized Object removeTransientMetadata( final String key )
+    {
+        if ( transientMetadata == null || key == null )
+        {
+            return null;
+        }
+
+        return transientMetadata.remove( key );
+    }
+
+    public synchronized Object setTransientMetadata( final String key, final Object value )
     {
         if ( key == null || value == null )
         {
@@ -210,7 +220,7 @@ public abstract class ArtifactStore
         return transientMetadata.put( key, value );
     }
 
-    public String getTransientMetadata( final String key )
+    public Object getTransientMetadata( final String key )
     {
         return transientMetadata == null ? null : transientMetadata.get( key );
     }
@@ -225,12 +235,12 @@ public abstract class ArtifactStore
         store.setDisableTimeout( getDisableTimeout() );
     }
 
-    protected void setTransientMetadata( Map<String, String> transientMetadata )
+    protected void setTransientMetadata( Map<String, Object> transientMetadata )
     {
         this.transientMetadata = transientMetadata;
     }
 
-    protected Map<String, String> getTransientMetadata()
+    protected Map<String, Object> getTransientMetadata()
     {
         return transientMetadata;
     }
