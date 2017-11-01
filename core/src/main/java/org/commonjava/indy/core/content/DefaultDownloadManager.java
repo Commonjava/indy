@@ -75,6 +75,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 @javax.enterprise.context.ApplicationScoped
@@ -1049,10 +1050,7 @@ public class DefaultDownloadManager
 
             try
             {
-                if ( rescanEvent != null )
-                {
-                    rescanEvent.fire( new ArtifactStoreRescanEvent( eventMetadata, store ) );
-                }
+                fireEvent( rescanEvent, new ArtifactStoreRescanEvent( eventMetadata, store ) );
 
                 doRescan( start );
             }

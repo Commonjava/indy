@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.core.change.event;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -31,7 +29,8 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import java.util.concurrent.Executor;
+
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 
 /**
  * Helper class to provide simple methods to handle null-checking, etc. around the firing of Indy filesystem events.
@@ -71,70 +70,55 @@ public class IndyFileEventManager
     @Override
     public void fire( final FileNotFoundEvent evt )
     {
-        if ( fireEvent( evt.getEventMetadata() ) ){
-            doFire( notFoundEvent, evt );
+        if ( shouldFireEvent( evt.getEventMetadata() ) ){
+            fireEvent( notFoundEvent, evt );
         }
     }
 
     @Override
     public void fire( final FileStorageEvent evt )
     {
-        if ( fireEvent( evt.getEventMetadata() ) )
+        if ( shouldFireEvent( evt.getEventMetadata() ) )
         {
-            doFire( storageEvent, evt );
+            fireEvent( storageEvent, evt );
         }
     }
 
     @Override
     public void fire( final FileAccessEvent evt )
     {
-        if ( fireEvent( evt.getEventMetadata() ) )
+        if ( shouldFireEvent( evt.getEventMetadata() ) )
         {
-            doFire( accessEvent, evt );
+            fireEvent( accessEvent, evt );
         }
     }
 
     @Override
     public void fire( final FileDeletionEvent evt )
     {
-        if ( fireEvent( evt.getEventMetadata() ) )
+        if ( shouldFireEvent( evt.getEventMetadata() ) )
         {
-            doFire( deleteEvent, evt );
+            fireEvent( deleteEvent, evt );
         }
     }
 
     @Override
     public void fire( final FileErrorEvent evt )
     {
-        if ( fireEvent( evt.getEventMetadata() ) )
+        if ( shouldFireEvent( evt.getEventMetadata() ) )
         {
-            doFire( errorEvent, evt );
+            fireEvent( errorEvent, evt );
         }
     }
 
     public void fire( final IndyStoreErrorEvent evt )
     {
-        doFire( storeErrorEvent, evt );
+        fireEvent( storeErrorEvent, evt );
     }
 
-    private boolean fireEvent( EventMetadata eventMetadata )
+    private boolean shouldFireEvent( EventMetadata eventMetadata )
     {
         return ( eventMetadata == null || !Boolean.TRUE.equals( eventMetadata.get( ContentManager.SUPPRESS_EVENTS ) ) );
     }
 
-    private <T> void doFire( final Event<T> eventQ, final T evt )
-    {
-//        executor.execute( () -> {
-//        logger.trace( "Firing {} event: {}", evt.getClass().getSimpleName(), evt );
-        if ( eventQ != null )
-        {
-            eventQ.fire( evt );
-        }
-        else
-        {
-            logger.warn( "ERROR: No event queue available for firing: {}", evt );
-        }
-//        logger.trace( "Done firing {} event: {}", evt.getClass().getSimpleName(), evt );
-//        } );
-    }
 }

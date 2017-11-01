@@ -39,11 +39,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import static org.commonjava.indy.change.EventUtils.fireEvent;
+
 public class DefaultStoreEventDispatcher
         implements StoreEventDispatcher
 {
-
-    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Event<ArtifactStorePreUpdateEvent> updatePreEvent;
@@ -78,23 +78,21 @@ public class DefaultStoreEventDispatcher
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.trace( "Firing store pre-delete event for: {}", Arrays.asList( stores ) );
 
-//            executor.execute( () -> {
-                final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
-                for ( final ArtifactStore store : stores )
+            final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
+            for ( final ArtifactStore store : stores )
+            {
+                if ( store == null )
                 {
-                    if ( store == null )
-                    {
-                        continue;
-                    }
-
-                    final Transfer root = fileManager.getStoreRootDirectory( store );
-                    storeRoots.put( store, root );
+                    continue;
                 }
 
-                final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
+                final Transfer root = fileManager.getStoreRootDirectory( store );
+                storeRoots.put( store, root );
+            }
 
-                preDelEvent.fire( event );
-//            } );
+            final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
+
+            fireEvent( preDelEvent, event );
         }
     }
 
@@ -124,7 +122,7 @@ public class DefaultStoreEventDispatcher
                 final ArtifactStoreDeletePostEvent event =
                         new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
 
-                postDelEvent.fire( event );
+                fireEvent( postDelEvent, event );
             } );
         }
     }
@@ -133,32 +131,20 @@ public class DefaultStoreEventDispatcher
     public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
                           final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
-        if ( updatePreEvent != null )
-        {
-//            executor.execute( () -> {
-                final ArtifactStorePreUpdateEvent event =
-                        new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
-                //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
-                //                          new JoinString( "\n  ", Thread.currentThread()
-                //                                                        .getStackTrace() ) );
-                updatePreEvent.fire( event );
-//            } );
-        }
+        final ArtifactStorePreUpdateEvent event =
+                new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
+        fireEvent( updatePreEvent, event );
     }
 
     @Override
     public void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
                          final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        if ( updatePostEvent != null )
-        {
-            executor.execute( () -> {
-                final ArtifactStorePostUpdateEvent event =
-                        new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
-                updatePostEvent.fire( event );
-            } );
-        }
+        executor.execute( () -> {
+            final ArtifactStorePostUpdateEvent event =
+                    new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
+            fireEvent( updatePostEvent, event );
+        } );
     }
 
     @Override
@@ -194,15 +180,17 @@ public class DefaultStoreEventDispatcher
     {
         if ( enablementEvent != null )
         {
-            final ArtifactStoreEnablementEvent event = new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+            final ArtifactStoreEnablementEvent event =
+                    new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+
             if ( preprocess )
             {
-                enablementEvent.fire( event );
+                fireEvent( enablementEvent, event );
             }
             else
             {
                 executor.execute( ()->{
-                    enablementEvent.fire( event );
+                    fireEvent( enablementEvent, event );
                 });
             }
         }
