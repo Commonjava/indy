@@ -71,6 +71,7 @@ import java.util.Spliterators;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.change.StoreEnablementManager.DISABLE_TIMEOUT;
 import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE_DEFAULT;
 
@@ -714,7 +715,7 @@ public class ScheduleManager
                 logger.debug( "Expiration Created: {}", expiredKey );
                 final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
                 final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
-                eventDispatcher.fire( new SchedulerScheduleEvent( type, data ) );
+                fireEvent( eventDispatcher, new SchedulerScheduleEvent( type, data ) );
             }
         }
     }
@@ -737,7 +738,7 @@ public class ScheduleManager
                 logger.debug( "EXPIRED: {}", expiredKey );
                 final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
                 final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
-                eventDispatcher.fire( new SchedulerTriggerEvent( type, data ) );
+                fireEvent( eventDispatcher, new SchedulerTriggerEvent( type, data ) );
             }
         }
     }

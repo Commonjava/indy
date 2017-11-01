@@ -79,6 +79,7 @@ import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 @javax.enterprise.context.ApplicationScoped
@@ -1074,10 +1075,7 @@ public class DefaultDownloadManager
 
             try
             {
-                if ( rescanEventPublisher != null )
-                {
-                    rescanEventPublisher.fire( new ArtifactStorePreRescanEvent( eventMetadata, store ) );
-                }
+                fireEvent( rescanEvent, new ArtifactStoreRescanEvent( eventMetadata, store ) );
 
                 doRescan( start );
 
