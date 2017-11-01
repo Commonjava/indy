@@ -128,15 +128,20 @@ public class ScheduleManager
     public void init()
             throws IndyLifecycleException
     {
+        logger.trace( "BOOT: Starting ScheduleManager init." );
+
         if ( !schedulerConfig.isEnabled() )
         {
             logger.info( "Scheduler disabled. Skipping initialization" );
             return;
         }
 
-        // register this producer as schedule cache listener
+        final ScheduleManager sm = this;
+        // register ScheduleManager as schedule cache listener
         scheduleCache.execute( cache -> {
-            cache.addListener( ScheduleManager.this );
+            cache.addListener( sm );
+            logger.trace( "Schedule cache has listeners: {}", cache.getListeners() );
+
             return null;
         } );
     }
@@ -699,46 +704,74 @@ public class ScheduleManager
     @CacheEntryCreated
     public void scheduled( final CacheEntryCreatedEvent<ScheduleKey, Map> e )
     {
-        if ( e == null )
+        try
         {
-            logger.error( "[FATAL]The infinispan cache created event for indy schedule manager is null.", new NullPointerException( "CacheEntryCreatedEvent is null" ) );
-            return;
-        }
-
-        if ( !e.isPre() )
-        {
-            final ScheduleKey expiredKey = e.getKey();
-            final Map expiredContent = e.getValue();
-            if ( expiredKey != null && expiredContent != null )
+            if ( e == null )
             {
-                logger.debug( "Expiration Created: {}", expiredKey );
-                final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
-                final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
-                eventDispatcher.fire( new SchedulerScheduleEvent( type, data ) );
+                logger.error( "[FATAL]The infinispan cache created event for indy schedule manager is null.", new NullPointerException( "CacheEntryCreatedEvent is null" ) );
+                return;
             }
+
+            if ( eventDispatcher == null )
+            {
+                logger.error( "[FATAL] The JEE event dispatcher for indy schedule manager is null." );
+                return;
+            }
+
+            if ( !e.isPre() )
+            {
+                final ScheduleKey expiredKey = e.getKey();
+                final Map expiredContent = e.getValue();
+                if ( expiredKey != null && expiredContent != null )
+                {
+                    logger.debug( "Expiration Created: {}", expiredKey );
+                    final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
+                    final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
+                    eventDispatcher.fire( new SchedulerScheduleEvent( type, data ) );
+                }
+            }
+        }
+        catch ( RuntimeException error )
+        {
+            logger.error( String.format( "Failed to handle expiration event: %s. Reason: %s", e, error.getMessage() ), error );
+            throw error;
         }
     }
 
     @CacheEntryExpired
     public void expired( CacheEntryExpiredEvent<ScheduleKey, Map> e )
     {
-        if ( e == null )
+        try
         {
-            logger.error( "[FATAL]The infinispan cache expired event for indy schedule manager is null.", new NullPointerException( "CacheEntryExpiredEvent is null" ) );
-            return;
-        }
-
-        if ( !e.isPre() )
-        {
-            final ScheduleKey expiredKey = e.getKey();
-            final Map expiredContent = e.getValue();
-            if ( expiredKey != null && expiredContent != null )
+            if ( e == null )
             {
-                logger.debug( "EXPIRED: {}", expiredKey );
-                final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
-                final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
-                eventDispatcher.fire( new SchedulerTriggerEvent( type, data ) );
+                logger.error( "[FATAL] The infinispan cache expired event for indy schedule manager is null." );
+                return;
             }
+
+            if ( eventDispatcher == null )
+            {
+                logger.error( "[FATAL] The JEE event dispatcher for indy schedule manager is null." );
+                return;
+            }
+
+            if ( !e.isPre() )
+            {
+                final ScheduleKey expiredKey = e.getKey();
+                final Map expiredContent = e.getValue();
+                if ( expiredKey != null && expiredContent != null )
+                {
+                    logger.debug( "EXPIRED: {}", expiredKey );
+                    final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
+                    final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
+                    eventDispatcher.fire( new SchedulerTriggerEvent( type, data ) );
+                }
+            }
+        }
+        catch ( RuntimeException error )
+        {
+            logger.error( String.format( "Failed to handle expiration event: %s. Reason: %s", e, error.getMessage() ), error );
+            throw error;
         }
     }
 
