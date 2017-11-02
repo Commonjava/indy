@@ -560,13 +560,13 @@ public class IndyKojiConfig
                             && name.length() > TARGET_BINARY_KEY_PREFIX.length() )
                     {
                         String source = name.substring( TARGET_BINARY_KEY_PREFIX.length(), name.length() );
-                        logger.debug( "KOJI: Group {} targets binary group {}", source, value );
+                        logger.trace( "KOJI: Group {} targets binary group {}", source, value );
                         targetBinaryGroups.put( source, value );
                     }
                     else
                     {
                         String source = name.substring( TARGET_KEY_PREFIX.length(), name.length() );
-                        logger.debug( "KOJI: Group {} targets group {}", source, value );
+                        logger.trace( "KOJI: Group {} targets group {}", source, value );
                         targetGroups.put( source, value );
                     }
                 }
@@ -627,10 +627,10 @@ public class IndyKojiConfig
 
         for ( String key : targetGroups.keySet() )
         {
-            logger.debug( "Checking target pattern '{}' against group name: '{}'", key, name );
+            logger.trace( "Checking target pattern '{}' against group name: '{}'", key, name );
             if ( name.equals(key) || name.matches( key ) )
             {
-                logger.info( "Target group for {} is {}", name, targetGroups.get( key ) );
+                logger.debug( "Target group for {} is {}", name, targetGroups.get( key ) );
                 return true;
             }
         }

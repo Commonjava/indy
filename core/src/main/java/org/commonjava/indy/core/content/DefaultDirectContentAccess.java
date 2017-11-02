@@ -77,7 +77,7 @@ public class DefaultDirectContentAccess
         Map<ArtifactStore, Future<Transfer>> futures = new HashMap<>();
         for ( final ArtifactStore store : stores )
         {
-            logger.debug( "Requesting retrieval of {} in {}", path, store );
+            logger.trace( "Requesting retrieval of {} in {}", path, store );
 
             Future<Transfer> future = executorService.submit( ()->{
                 logger.trace( "Retrieving {} in {}", path, store );
@@ -98,7 +98,7 @@ public class DefaultDirectContentAccess
                 logger.trace( "Waiting for transfer of {} in {}", path, store );
                 Future<Transfer> future = futures.get( store );
                 txfr = future.get();
-                logger.debug( "Transfer {} in {} retrieved", path, store );
+                logger.trace( "Transfer {} in {} retrieved", path, store );
             }
             catch ( InterruptedException ex )
             {
@@ -133,7 +133,7 @@ public class DefaultDirectContentAccess
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
+        logger.trace( "Attempting to retrieve: {} from: {}", path, store.getKey() );
 
         Transfer item = null;
         try
@@ -185,7 +185,7 @@ public class DefaultDirectContentAccess
         Logger logger = LoggerFactory.getLogger( getClass() );
         for ( final String path : parentPathList )
         {
-            logger.debug( "Requesting listing of {} in {}", path, store );
+            logger.trace( "Requesting listing of {} in {}", path, store );
             Future<List<StoreResource>> future = executor.submit( ()->{
                 logger.trace( "Starting listing of {} in {}", path, store );
                 List<StoreResource> listRaw = listRaw( store, path );
@@ -204,7 +204,7 @@ public class DefaultDirectContentAccess
                 logger.trace( "Waiting for listing of {} in {}", path, store );
                 Future<List<StoreResource>> future = futures.get( path );
                 List<StoreResource> listing = future.get();
-                logger.debug( "Listing of {} in {} received", path, store );
+                logger.trace( "Listing of {} in {} received", path, store );
                 if ( listing != null )
                 {
                     result.put( path, listing );
