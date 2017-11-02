@@ -15,13 +15,14 @@
  */
 package org.commonjava.indy.subsys.datafile.change;
 
-import java.io.File;
+import org.commonjava.indy.audit.ChangeSummary;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
+import java.io.File;
 
-import org.commonjava.indy.audit.ChangeSummary;
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 
 /**
  * Helper class to provide simple methods to handle null-checking, etc. around the firing of Indy filesystem events.
@@ -35,10 +36,7 @@ public class DataFileEventManager
 
     public void fire( final DataFileEvent evt )
     {
-        if ( events != null )
-        {
-            events.fire( evt );
-        }
+        fireEvent( events, evt );
     }
 
     public void accessed( final File file )
