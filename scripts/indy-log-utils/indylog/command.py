@@ -18,12 +18,25 @@ import click
 import os
 import yaml
 import indylog.timer as it
+import indylog.counter as ic
+
+@click.command()
+@click.option('--filename-prefix', '-F', help='Specify the filename prefix for logs to analyze (default: indy)', default='indy')
+@click.option('--logdir', '-d', type=click.Path(exists=True), help='Specify the directory containing the logs to analyze (default: current dir)', default=os.getcwd())
+@click.option('--output-file', '-O', help='Specify the output file (default: output.yml)', type=click.Path(), default='output.yml')
+@click.option('--level-group', '-L', help='Specify the regular expression group number containing the log level (default: 1)', type=click.INT, default=1)
+@click.option('--class-group', '-C', help='Specify the regular expression group number containing the class name (default: 3)', type=click.INT, default=3)
+@click.option('--logline-expr', '-E', help='Specify the expression identifying a log line (default: [^\[]+(\[[^\]]+\])\s+(\[[^\]]+\])\s+(\S+).+)', default='[^\[]+(\[[^\]]+\])\s+(\[[^\]]+\])\s+(\S+).+')
+def counter(filename_prefix, logdir, output_file, level_group, class_group, logline_expr):
+    output = ic.countLogs(logdir, filename_prefix, logline_expr, level_group, class_group)
+    with open(output_file, 'w') as f:
+        yaml.dump(output, f, default_flow_style=False)
 
 @click.command()
 @click.argument('timers-yml', type=click.Path(exists=True))
 @click.option('--logdir', '-d', type=click.Path(exists=True), help='Specify the directory containing the logs to analyze (default: current dir)', default=os.getcwd())
 @click.option('--filename-prefix', '-F', help='Specify the filename prefix for logs to analyze (default: indy)', default='indy')
-@click.option('--output-file', '-O', help='Specify the output file (default: output.log)', type=click.Path(), default='output.yml')
+@click.option('--output-file', '-O', help='Specify the output file (default: output.yml)', type=click.Path(), default='output.yml')
 def timer(timers_yml, filename_prefix, logdir, output_file):
     with open(timers_yml) as f:
         timer_config = yaml.safe_load(f)
