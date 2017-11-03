@@ -96,4 +96,9 @@ public class ScheduleKey
     {
         return toStringKey();
     }
+
+    public boolean exists()
+    {
+        return this.storeKey != null && this.type != null;
+    }
 }
