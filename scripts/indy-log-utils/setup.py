@@ -54,7 +54,8 @@ setup(
     entry_points={
       'console_scripts': [
         'indy-log-timer = indylog:timer',
-        'indy-log-timer-sample = indylog:timerConfigSample'
+        'indy-log-timer-sample = indylog:timerConfigSample',
+        'indy-log-counter = indylog:counter'
       ],
     }
 )

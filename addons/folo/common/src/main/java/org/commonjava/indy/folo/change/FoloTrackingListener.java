@@ -81,7 +81,7 @@ public class FoloTrackingListener
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
-            logger.info( "No tracking key for access to: {}", event.getTransfer() );
+            logger.trace( "No tracking key for access to: {}", event.getTransfer() );
             return;
         }
         final AccessChannel accessChannel = (AccessChannel) metadata.get( FoloConstants.ACCESS_CHANNEL );
@@ -89,14 +89,14 @@ public class FoloTrackingListener
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
         {
-            logger.info( "No transfer: {}", event );
+            logger.trace( "No transfer: {}", event );
             return;
         }
 
         final Location location = transfer.getLocation();
         if ( !( location instanceof KeyedLocation ) )
         {
-            logger.info( "Not in a keyed location: {}", event.getTransfer() );
+            logger.trace( "Not in a keyed location: {}", event.getTransfer() );
             return;
         }
 
@@ -105,13 +105,13 @@ public class FoloTrackingListener
             final KeyedLocation keyedLocation = (KeyedLocation) location;
             if ( !foloConfig.isGroupContentTracked() && keyedLocation.getKey().getType() == group )
             {
-                logger.debug(
+                logger.trace(
                         "NOT tracking content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
                         keyedLocation.getKey() );
                 return;
             }
 
-            logger.debug( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
+            logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
                           keyedLocation.getKey() );
 
             recordManager.recordArtifact(
@@ -126,11 +126,11 @@ public class FoloTrackingListener
 
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
-        logger.debug( "FILE STORAGE: {}", event );
+        logger.trace( "FILE STORAGE: {}", event );
 
         if ( TransferOperation.UPLOAD != event.getType() )
         {
-            logger.debug( "Not a file upload from client; skipping tracking of storage" );
+            logger.trace( "Not a file upload from client; skipping tracking of storage" );
             return;
         }
 
@@ -138,7 +138,7 @@ public class FoloTrackingListener
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
-            logger.info( "No tracking key. Not recording." );
+            logger.trace( "No tracking key. Not recording." );
             return;
         }
         final AccessChannel accessChannel = (AccessChannel) metadata.get( FoloConstants.ACCESS_CHANNEL );
@@ -146,19 +146,19 @@ public class FoloTrackingListener
         final Transfer transfer = event.getTransfer();
         if ( transfer == null )
         {
-            logger.info( "No transfer. Not recording." );
+            logger.trace( "No transfer. Not recording." );
             return;
         }
 
         final Location location = transfer.getLocation();
         if ( !( location instanceof KeyedLocation ) )
         {
-            logger.info( "Invalid transfer source location: {}. Not recording.", location );
+            logger.trace( "Invalid transfer source location: {}. Not recording.", location );
             return;
         }
         else if ( !foloConfig.isGroupContentTracked() && ( (KeyedLocation) location ).getKey().getType() == group )
         {
-            logger.debug(
+            logger.trace(
                     "NOT tracking content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
                     ( (KeyedLocation) location ).getKey() );
             return;
@@ -181,7 +181,7 @@ public class FoloTrackingListener
             }
             default:
             {
-                logger.debug( "Ignoring transfer operation: {} for: {}", op, transfer );
+                logger.trace( "Ignoring transfer operation: {} for: {}", op, transfer );
                 return;
             }
         }
@@ -189,7 +189,7 @@ public class FoloTrackingListener
         try
         {
             final KeyedLocation keyedLocation = (KeyedLocation) location;
-            logger.debug( "Tracking report: {} += {} in {} ({})", trackingKey, transfer.getPath(),
+            logger.trace( "Tracking report: {} += {} in {} ({})", trackingKey, transfer.getPath(),
                           keyedLocation.getKey(), effect );
 
             recordManager.recordArtifact(

@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 
-from command import timer, timerConfigSample
+from command import counter, timer, timerConfigSample
 
 __all__ = [
+	'counter',
     'timer',
     'timerConfigSample'
 ]
