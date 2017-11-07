@@ -47,6 +47,7 @@ import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -66,6 +67,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
@@ -165,7 +167,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial existence check for: {}/{}", store.getKey(), path );
         boolean result = delegate.exists( store, path );
-        if ( !result && StoreType.group == store.getKey().getType() )
+        if ( !result && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
             Group group = (Group) store;
 
@@ -203,7 +205,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial retrieval attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.retrieve( store, path, eventMetadata );
-        if ( result == null && StoreType.group == store.getKey().getType() )
+        if ( result == null && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
@@ -257,7 +259,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial getTransfer() attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.getTransfer( store, path, operation );
-        if ( result == null && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
+        if ( result == null && isVerSignedAllowedWithPath( path ) && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
@@ -660,6 +662,37 @@ public abstract class KojiContentManagerDecorator
     {
         T execute( StoreKey inStore, ArtifactRef artifactRef, KojiBuildInfo build, KojiSessionInfo session )
                 throws KojiClientException;
+    }
+
+    private boolean isVerSignedAllowedWithPath ( String path )
+    {
+
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+
+        // skip those files without standard GAV format path
+        if ( pathInfo == null )
+        {
+            return true;
+        }
+
+        ProjectVersionRef versionRef = pathInfo.getProjectId();
+        return isVerSignedAllowedWithVersion( versionRef.getVersionStringRaw() );
+    }
+
+    private boolean isVerSignedAllowedWithVersion ( String version )
+    {
+        final String versionFilter = config.getVersionFilter();
+
+        if ( versionFilter == null )
+        {
+            return true;
+        }
+
+        if ( Pattern.compile( versionFilter ).matcher( version ).matches())
+        {
+            return true;
+        }
+        return false;
     }
 
 }
