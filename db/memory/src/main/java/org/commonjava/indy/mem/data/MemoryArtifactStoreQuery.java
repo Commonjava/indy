@@ -47,7 +47,6 @@ import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
-import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 /**
  * This query interface is intended to be reusable across any {@link StoreDataManager} implementation. It contains logic
@@ -296,7 +295,8 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                             {
                                 ipForUrl = urlInfo.getIpForUrl();
                                 ipForTargetUrl = targetUrlInfo.getIpForUrl();
-                                if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl ) )
+                                if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
+                                        && urlInfo.getPort() == targetUrlInfo.getPort() )
                                 {
                                     if ( urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
                                     {
