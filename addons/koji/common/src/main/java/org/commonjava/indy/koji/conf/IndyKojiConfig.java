@@ -123,6 +123,8 @@ public class IndyKojiConfig
 
     private Integer connectionPoolTimeoutSeconds;
 
+    private String versionFilter;
+
     @Override
     public SiteConfig getKojiSiteConfig()
             throws IOException
@@ -429,6 +431,16 @@ public class IndyKojiConfig
         return result.isPresent();
     }
 
+    public String getVersionFilter()
+    {
+        return versionFilter;
+    }
+
+    public void setVersionFilterer( String versionFilter )
+    {
+        this.versionFilter = versionFilter;
+    }
+
     @Override
     public void parameter( final String name, final String value )
             throws ConfigurationException
@@ -550,6 +562,11 @@ public class IndyKojiConfig
             case "naming.format.binary":
             {
                 this.binayNamingFormat = value;
+                break;
+            }
+            case "version.filter":
+            {
+                this.versionFilter = value;
                 break;
             }
             default:

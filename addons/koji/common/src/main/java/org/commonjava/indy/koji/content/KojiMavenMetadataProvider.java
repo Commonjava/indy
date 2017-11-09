@@ -62,6 +62,7 @@ import java.util.TimeZone;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -201,6 +202,11 @@ public class KojiMavenMetadataProvider
                             if ( !archive.getFilename().endsWith( ".pom" ) )
                             {
                                 logger.debug( "Skipping non-POM: {}", archive.getFilename() );
+                                continue;
+                            }
+                            if ( !isVerSignedAllowed( archive.getVersion() ) )
+                            {
+                                logger.debug( "version filter pattern not matched: {}", archive.getVersion() );
                                 continue;
                             }
                             SingleVersion singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
@@ -349,5 +355,21 @@ public class KojiMavenMetadataProvider
 
         logger.debug( "Returning null metadata result for unknown reason (path: '{}')", path );
         return null;
+    }
+
+    private boolean isVerSignedAllowed ( String version )
+    {
+        final String versionFilter = kojiConfig.getVersionFilter();
+
+        if ( versionFilter == null )
+        {
+            return true;
+        }
+
+        if ( Pattern.compile( versionFilter ).matcher( version ).matches())
+        {
+            return true;
+        }
+        return false;
     }
 }
