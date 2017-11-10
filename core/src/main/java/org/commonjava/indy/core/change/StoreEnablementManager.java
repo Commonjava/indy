@@ -138,27 +138,27 @@ public class StoreEnablementManager
         try
         {
             ArtifactStore store = storeDataManager.getArtifactStore( key );
-            if ( store.getDisableTimeout() <= TIMEOUT_NEVER_DISABLE )
+            int disableTimeout = store.getDisableTimeout();
+            if ( disableTimeout <= TIMEOUT_NEVER_DISABLE )
             {
-                logger.debug( "Disable-timeout set to {}, will never disable the repo", store.getDisableTimeout() );
+                logger.debug( "Disable-timeout set to {}, will never disable the repo", disableTimeout );
                 store.setDisabled( false );
             }
             else
             {
                 store.setDisabled( true );
+                final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
+                        "Disabling %s due to error: %s\n\nStack Trace:\n  %s", key, error,
+                        StringUtils.join( error.getStackTrace(), "\n  " ) ) );
+
+                storeDataManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
+
+                logger.warn( "{} has been disabled due to store-level error: {}\n Will re-enable in {} seconds.", key,
+                             error, disableTimeout == TIMEOUT_USE_DEFAULT ? config.getStoreDisableTimeoutSeconds() : disableTimeout );
+
+                // TODO: How is it this doesn't duplicate the event handler method onStoreUpdate()...we're updating the store just above here.
+                setReEnablementTimeout( key );
             }
-
-            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
-                    "Disabling %s due to error: %s\n\nStack Trace:\n  %s", key, error,
-                    StringUtils.join( error.getStackTrace(), "\n  " ) ) );
-
-            storeDataManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
-
-            logger.warn( "{} has been disabled due to store-level error: {}\n Will re-enable in {} seconds.", key,
-                         error, config.getStoreDisableTimeoutSeconds() );
-
-            // TODO: How is it this doesn't duplicate the event handler method onStoreUpdate()...we're updating the store just above here.
-            setReEnablementTimeout( key );
         }
         catch ( IndyDataException e )
         {
