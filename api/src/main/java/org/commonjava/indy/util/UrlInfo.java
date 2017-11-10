@@ -85,8 +85,7 @@ public final class UrlInfo
         host = url.getHost();
         if ( url.getPort() < 0 )
         {
-            port = url.getProtocol()
-                      .equals( "https" ) ? 443 : 80;
+            port = url.getDefaultPort();
         }
         else
         {
@@ -99,14 +98,14 @@ public final class UrlInfo
             int index = fileWithSlash.lastIndexOf( "/" );
             fileWithNoLastSlash = fileWithSlash.deleteCharAt( index ).toString();
 
-            final StringBuilder urlWithSlash = new StringBuilder( url.getAuthority() + url.getFile() );
+            final StringBuilder urlWithSlash = new StringBuilder( host + ':' + port + url.getFile() );
             index = urlWithSlash.lastIndexOf( "/" );
             urlWithNoSchemeAndLastSlash = urlWithSlash.deleteCharAt( index ).toString();
         }
         else
         {
             fileWithNoLastSlash = url.getFile();
-            urlWithNoSchemeAndLastSlash = url.getAuthority() + url.getFile();
+            urlWithNoSchemeAndLastSlash = host + ':' + port + url.getFile();
         }
     }
 
