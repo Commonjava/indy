@@ -17,13 +17,18 @@ package org.commonjava.indy.core.inject;
 
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
+import java.lang.ref.SoftReference;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -48,19 +53,63 @@ public class ExpiringMemoryNotFoundCache
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private final ScheduledExecutorService evictionService = Executors.newScheduledThreadPool( 1 );
+
     @Inject
     protected IndyConfiguration config;
 
-    // TODO: Now using a simple hashmap, need to take attention here to see if need ISPN instead if it is a mem eater.
-    protected final Map<ConcreteResource, Long> missingWithTimeout = new HashMap<>();
+    protected final Map<ResourceSoftReference<ConcreteResource>, Long> missingWithTimeout = new HashMap<>();
 
     protected ExpiringMemoryNotFoundCache()
     {
+        // schedule to run eviction after 8 hours and every 8 hours
+        evictionService.scheduleAtFixedRate( () ->
+                                       {
+                                           clearAllExpiredMissing();
+                                       }, 8, 8, TimeUnit.HOURS );
     }
 
     public ExpiringMemoryNotFoundCache( final IndyConfiguration config )
     {
+        this();
         this.config = config;
+    }
+
+    private class ResourceSoftReference<T>
+                    extends SoftReference<T>
+    {
+        public ResourceSoftReference( T referent )
+        {
+            super( referent );
+        }
+
+        @Override
+        public boolean equals( Object other )
+        {
+
+            boolean returnValue = super.equals( other );
+
+            // If we're not equal, then check equality using referenced objects
+            if ( !returnValue && ( other instanceof ResourceSoftReference<?> ) )
+            {
+                T value = this.get();
+                if ( value != null )
+                {
+                    T otherValue = ( (ResourceSoftReference<T>) other ).get();
+
+                    // The delegate equals should handle otherValue == null
+                    returnValue = value.equals( otherValue );
+                }
+            }
+            return returnValue;
+        }
+
+        @Override
+        public int hashCode()
+        {
+            T value = this.get();
+            return value != null ? value.hashCode() : super.hashCode();
+        }
     }
 
     @Override
@@ -96,13 +145,20 @@ public class ExpiringMemoryNotFoundCache
             }
         } );
 
-        missingWithTimeout.put( resource, timeout );
+        synchronized ( MUTEX )
+        {
+            missingWithTimeout.put( new ResourceSoftReference( resource ), timeout );
+        }
     }
 
     @Override
     public boolean isMissing( final ConcreteResource resource )
     {
-        final Long timeout = missingWithTimeout.get( resource );
+        Long timeout;
+        synchronized ( MUTEX )
+        {
+            timeout = missingWithTimeout.get( new ResourceSoftReference( resource ) );
+        }
         boolean result = false;
         if ( timeout != null && System.currentTimeMillis() < timeout )
         {
@@ -116,12 +172,18 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void clearMissing( final Location location )
     {
-        for ( final ConcreteResource resource : new HashSet<>( missingWithTimeout.keySet() ) )
+        synchronized ( MUTEX )
         {
-            if ( resource.getLocation()
-                         .equals( location ) )
+            // The set is backed by the map, so changes to the map are reflected in the set, and vice-versa.
+            for ( Iterator<ResourceSoftReference<ConcreteResource>>
+                  i = missingWithTimeout.keySet().iterator(); i.hasNext(); )
             {
-                missingWithTimeout.remove( resource );
+                ResourceSoftReference<ConcreteResource> resourceRef = i.next();
+                ConcreteResource resource = resourceRef.get();
+                if ( resource == null || resource.getLocation().equals( location ) )
+                {
+                    i.remove();
+                }
             }
         }
     }
@@ -129,59 +191,106 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void clearMissing( final ConcreteResource resource )
     {
-        missingWithTimeout.remove( resource );
+        synchronized ( MUTEX )
+        {
+            missingWithTimeout.remove( new ResourceSoftReference( resource ) );
+        }
     }
 
     @Override
     public void clearAllMissing()
     {
-        this.missingWithTimeout.clear();
+        synchronized ( MUTEX )
+        {
+            this.missingWithTimeout.clear();
+        }
     }
 
     @Override
     public Map<Location, Set<String>> getAllMissing()
     {
-        clearAllExpiredMissing();
         final Map<Location, Set<String>> result = new HashMap<>();
-        for ( final ConcreteResource resource : missingWithTimeout.keySet() )
+        Set<ResourceSoftReference<ConcreteResource>> keySet = getKeySet();
+
+        for ( final ResourceSoftReference<ConcreteResource> resourceRef : keySet )
         {
+            ConcreteResource resource = resourceRef.get();
+            if ( resource == null )
+            {
+                continue;
+            }
             final Location loc = resource.getLocation();
             Set<String> paths = result.computeIfAbsent( loc, k -> new HashSet<>() );
-
             paths.add( resource.getPath() );
         }
-
         return result;
     }
 
     @Override
     public Set<String> getMissing( final Location location )
     {
-        clearAllExpiredMissing();
         final Set<String> paths = new HashSet<>();
-        for ( final ConcreteResource resource : missingWithTimeout.keySet() )
+        Set<ResourceSoftReference<ConcreteResource>> keySet = getKeySet();
+
+        for ( final ResourceSoftReference<ConcreteResource> resourceRef : keySet )
         {
+            ConcreteResource resource = resourceRef.get();
+            if ( resource == null )
+            {
+                continue;
+            }
             final Location loc = resource.getLocation();
             if ( loc.equals( location ) )
             {
                 paths.add( resource.getPath() );
             }
         }
-
         return paths;
     }
 
+    // One million. We can not return a huge collection without a memory issue when calling getAllMissing/getMissing
+    private final static int MAX_SIZE_AFFORDABLE = 1_000_000;
+
+    private Set<ResourceSoftReference<ConcreteResource>> getKeySet()
+    {
+        synchronized ( MUTEX )
+        {
+            int size = missingWithTimeout.size();
+            if ( size > MAX_SIZE_AFFORDABLE )
+            {
+                logger.warn( "Can not retrieve all NFC entries - size too big, {}", size );
+                return Collections.emptySet();
+            }
+            return new HashSet<>( missingWithTimeout.keySet() );
+        }
+    }
+
+    private final Object MUTEX = new Object(); // we must synchronize when we iterate through the map or remove entries
+
+    /**
+     * This is time consuming. We set up a scheduled task to to it.
+     */
     private void clearAllExpiredMissing()
     {
-        for ( final Iterator<Map.Entry<ConcreteResource, Long>> it = missingWithTimeout.entrySet()
-                                                                                       .iterator(); it.hasNext(); )
+        synchronized ( MUTEX )
         {
-            final Map.Entry<ConcreteResource, Long> entry = it.next();
-            final Long timeout = entry.getValue();
-
-            if ( System.currentTimeMillis() >= timeout )
+            for ( final Iterator<Map.Entry<ResourceSoftReference<ConcreteResource>, Long>>
+                  it = missingWithTimeout.entrySet().iterator(); it.hasNext(); )
             {
-                it.remove();
+                final Map.Entry<ResourceSoftReference<ConcreteResource>, Long> entry = it.next();
+                ConcreteResource resource = entry.getKey().get();
+                if ( resource == null )
+                {
+                    it.remove();
+                }
+                else
+                {
+                    final Long timeout = entry.getValue();
+                    if ( System.currentTimeMillis() >= timeout )
+                    {
+                        it.remove();
+                    }
+                }
             }
         }
     }
