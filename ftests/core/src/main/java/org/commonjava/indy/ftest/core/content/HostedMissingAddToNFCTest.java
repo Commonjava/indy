@@ -23,6 +23,7 @@ import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheSectionDTO;
 import org.hamcrest.core.IsNull;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -74,6 +75,8 @@ public class HostedMissingAddToNFCTest
         client.content().store( hosted.getKey(), JAR_PATH, new ByteArrayInputStream( "This is the jar".getBytes() ) );
     }
 
+    // Ignore this test since we disabled those NFC endpoints for now
+    @Ignore
     @Test
     public void run()
             throws Exception
