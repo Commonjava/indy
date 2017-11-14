@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -54,12 +57,17 @@ public class ExpiringMemoryNotFoundCache
     // TODO: Now using a simple hashmap, need to take attention here to see if need ISPN instead if it is a mem eater.
     protected final Map<ConcreteResource, Long> missingWithTimeout = new HashMap<>();
 
+    private final ScheduledExecutorService evictionService = Executors.newScheduledThreadPool( 1 );
+
     protected ExpiringMemoryNotFoundCache()
     {
+        // schedule to run eviction after 8 hours and every 8 hours
+        evictionService.scheduleAtFixedRate( () -> clearAllExpiredMissing(), 8, 8, TimeUnit.HOURS );
     }
 
     public ExpiringMemoryNotFoundCache( final IndyConfiguration config )
     {
+        this();
         this.config = config;
     }
 
@@ -171,7 +179,7 @@ public class ExpiringMemoryNotFoundCache
         return paths;
     }
 
-    private void clearAllExpiredMissing()
+    private synchronized void clearAllExpiredMissing()
     {
         for ( final Iterator<Map.Entry<ConcreteResource, Long>> it = missingWithTimeout.entrySet()
                                                                                        .iterator(); it.hasNext(); )
