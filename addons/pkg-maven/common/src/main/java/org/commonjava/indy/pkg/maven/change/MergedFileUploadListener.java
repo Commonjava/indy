@@ -110,7 +110,7 @@ public class MergedFileUploadListener
     private void reMerge( final Group group, final String path )
         throws IOException
     {
-        logger.debug( "Updating merged metadata file: {} in group: {}", path, group.getKey() );
+        logger.trace( "Updating merged metadata file: {} in group: {}", path, group.getKey() );
 
         final Transfer[] toDelete =
             { fileManager.getStorageReference( group, path ),
@@ -120,16 +120,16 @@ public class MergedFileUploadListener
 
         for ( final Transfer item : toDelete )
         {
-            logger.debug( "Attempting to delete: {}", item );
+            logger.trace( "Attempting to delete: {}", item );
 
             if ( item.exists() )
             {
                 final boolean result = item.delete();
-                logger.debug( "Deleted: {} (success? {})", item, result );
+                logger.trace( "Deleted: {} (success? {})", item, result );
 
                 if ( fileEvent != null )
                 {
-                    logger.debug( "Firing deletion event for: {}", item );
+                    logger.trace( "Firing deletion event for: {}", item );
                     fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
                 }
             }

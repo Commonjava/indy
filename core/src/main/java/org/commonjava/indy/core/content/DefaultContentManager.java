@@ -236,9 +236,9 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
-            if ( logger.isDebugEnabled() )
+            if ( logger.isTraceEnabled() )
             {
-                logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), StringUtils.join(members, "\n  ") );
+                logger.trace( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), StringUtils.join(members, "\n  ") );
             }
 
             item = null;
@@ -248,7 +248,7 @@ public class DefaultContentManager
                 if ( generator.canProcess( path ) )
                 {
                     item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
-                    logger.debug( "From content {}.generateGroupFileContent: {} (exists? {})",
+                    logger.trace( "From content {}.generateGroupFileContent: {} (exists? {})",
                                   generator.getClass().getSimpleName(), item, item != null && item.exists() );
                     generated = true;
                     break;
@@ -288,11 +288,11 @@ public class DefaultContentManager
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
+        logger.trace( "Attempting to retrieve: {} from: {}", path, store.getKey() );
 
         if ( store.isDisabled() )
         {
-            logger.info( "Content not available in repository layer due to store disabled for {}, path is {}", store,
+            logger.debug( "Content not available in repository layer due to store disabled for {}, path is {}", store,
                          path );
             return null;
         }
@@ -306,7 +306,7 @@ public class DefaultContentManager
             {
                 for ( final ContentGenerator generator : contentGenerators )
                 {
-                    logger.debug( "Attempting to generate content for path: {} in: {} via: {}", path, store,
+                    logger.trace( "Attempting to generate content for path: {} in: {} via: {}", path, store,
                                   generator );
                     item = generator.generateFileContent( store, path, eventMetadata );
                     if ( item != null )
@@ -344,7 +344,7 @@ public class DefaultContentManager
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), false );
 
                 final Transfer txfr = store( allMembers, store.getKey(), path, stream, op, eventMetadata );
-                logger.info( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
+                logger.debug( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );
                 return txfr;
             }
             catch ( final IndyDataException e )
@@ -354,7 +354,7 @@ public class DefaultContentManager
             }
         }
 
-        logger.info( "Storing: {} for: {} with event metadata: {}", path, store.getKey(), eventMetadata );
+        logger.debug( "Storing: {} for: {} with event metadata: {}", path, store.getKey(), eventMetadata );
         final Transfer txfr = downloadManager.store( store, path, stream, op, eventMetadata );
         if ( txfr != null )
         {
@@ -400,7 +400,7 @@ public class DefaultContentManager
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        logger.info( "Storing: {} in: {} with event metadata: {}", path, stores, eventMetadata );
+        logger.debug( "Storing: {} in: {} with event metadata: {}", path, stores, eventMetadata );
         final Transfer txfr = downloadManager.store( stores, path, stream, op, eventMetadata );
         if ( txfr != null )
         {
@@ -418,7 +418,7 @@ public class DefaultContentManager
 
             for ( final ContentGenerator generator : contentGenerators )
             {
-                logger.info( "{} Handling content storage of: {} in: {}", generator, path, transferStore.getKey() );
+                logger.debug( "{} Handling content storage of: {} in: {}", generator, path, transferStore.getKey() );
                 generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
             }
         }
@@ -654,7 +654,7 @@ public class DefaultContentManager
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        logger.debug( "Getting transfer for: {}/{} (op: {})", store.getKey(), path, op );
+        logger.trace( "Getting transfer for: {}/{} (op: {})", store.getKey(), path, op );
         if ( group == store.getKey().getType() )
         {
             KeyedLocation location = LocationUtils.toLocation( store );
@@ -665,7 +665,7 @@ public class DefaultContentManager
                 {
                     final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
 
-                    logger.debug( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
+                    logger.trace( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
                     logger.trace( "Members in group {}: {}", store.getName(), allMembers );
 
                     return getTransfer( allMembers, path, op );
@@ -678,11 +678,11 @@ public class DefaultContentManager
             }
             else
             {
-                logger.debug( "Detected mergable special path: {}/{}.", store.getKey(), path );
+                logger.trace( "Detected mergable special path: {}/{}.", store.getKey(), path );
             }
         }
 
-        logger.debug( "Retrieving storage reference (Transfer) directly for: {}/{}", store.getKey(), path );
+        logger.trace( "Retrieving storage reference (Transfer) directly for: {}/{}", store.getKey(), path );
         return downloadManager.getStorageReference( store, path, op );
     }
 
@@ -691,7 +691,7 @@ public class DefaultContentManager
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Looking for path: '{}' in stores: {}", path,
+        logger.trace( "Looking for path: '{}' in stores: {}", path,
                       stores.stream().map( ArtifactStore::getKey ).collect( Collectors.toList() ) );
 
         return downloadManager.getStorageReference( stores, path, op );
@@ -728,14 +728,14 @@ public class DefaultContentManager
         throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Checking existence of: {} in: {}", path, store.getKey() );
+        logger.trace( "Checking existence of: {} in: {}", path, store.getKey() );
         if ( store instanceof Group )
         {
             try
             {
                 final List<ArtifactStore> allMembers = storeManager.getOrderedConcreteStoresInGroup( store.getName(), true );
 
-                logger.debug( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
+                logger.trace( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
                 logger.trace( "Members in group {}: {}", store.getName(), allMembers );
 
                 for ( ArtifactStore member : allMembers )
@@ -769,7 +769,7 @@ public class DefaultContentManager
             try(InputStream stream = meta.openInputStream( false ))
             {
                 String raw = IOUtils.toString( stream );
-                logger.debug( "HTTP Metadata string is:\n\n{}\n\n", raw );
+                logger.trace( "HTTP Metadata string is:\n\n{}\n\n", raw );
 
                 return mapper.readValue( raw, HttpExchangeMetadata.class );
             }

@@ -520,7 +520,7 @@ public class IndyKojiConfig
                     }
 
                     String source = name.substring( "target.".length(), name.length() );
-                    logger.debug( "KOJI: Group {} targets group {}", source, value );
+                    logger.trace( "KOJI: Group {} targets group {}", source, value );
                     targetGroups.put( source, value );
                 }
                 else
@@ -574,10 +574,10 @@ public class IndyKojiConfig
 
         for ( String key : targetGroups.keySet() )
         {
-            logger.debug( "Checking target pattern '{}' against group name: '{}'", key, name );
+            logger.trace( "Checking target pattern '{}' against group name: '{}'", key, name );
             if ( name.equals(key) || name.matches( key ) )
             {
-                logger.info( "Target group for {} is {}", name, targetGroups.get( key ) );
+                logger.debug( "Target group for {} is {}", name, targetGroups.get( key ) );
                 return true;
             }
         }

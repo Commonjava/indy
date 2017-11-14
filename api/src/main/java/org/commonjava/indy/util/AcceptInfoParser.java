@@ -55,17 +55,17 @@ public class AcceptInfoParser
             final String[] parts = accept.split( "\\s*,\\s*" );
             if ( parts.length == 1 )
             {
-                logger.info( "adding atomic addMetadata header: '{}'", accept );
+                logger.trace( "adding atomic addMetadata header: '{}'", accept );
                 raw.add( accept );
             }
             else
             {
-                logger.info( "Adding split header values: '{}'", join( parts, "', '" ) );
+                logger.trace( "Adding split header values: '{}'", join( parts, "', '" ) );
                 raw.addAll( Arrays.asList( parts ) );
             }
         }
 
-        logger.info( "Got raw ACCEPT header values:\n  {}", join( raw, "\n  " ) );
+        logger.trace( "Got raw ACCEPT header values:\n  {}", join( raw, "\n  " ) );
 
         if ( raw == null || raw.isEmpty() )
         {
@@ -84,11 +84,11 @@ public class AcceptInfoParser
                 cleaned = cleaned.substring( 0, qIdx );
             }
 
-            logger.info( "Cleaned up: {} to: {}", r, cleaned );
+            logger.trace( "Cleaned up: {} to: {}", r, cleaned );
 
             final String appPrefix = "application/" + APP_ID + "-";
 
-            logger.info( "Checking for ACCEPT header starting with: '{}' and containing: '+' (header value is: '{}')",
+            logger.trace( "Checking for ACCEPT header starting with: '{}' and containing: '+' (header value is: '{}')",
                          appPrefix, cleaned );
             if ( cleaned.startsWith( appPrefix ) && cleaned.contains( "+" ) )
             {

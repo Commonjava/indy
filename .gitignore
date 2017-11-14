@@ -20,6 +20,9 @@ uis/layover/node_modules/
 *.iws
 *.ipr
 
+# mac
+.DS_Store
+
 # temp ISPN indexing generates
 */savant/*Track*
 */savant/org.commonjava.indy.folo.model.TrackedContentEntry/segments*
@@ -35,3 +38,6 @@ embedder-tests/savant/indexedStorePath/*
 venv
 *.pyc
 *.egg-info
+
+# embedders log
+embedders/savant/indy.home_IS_UNDEFINED/*

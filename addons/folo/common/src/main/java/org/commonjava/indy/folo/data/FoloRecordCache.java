@@ -80,10 +80,10 @@ public class FoloRecordCache
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Trying to add tracking entry: {}", entry );
+        logger.trace( "Trying to add tracking entry: {}", entry );
         if ( !inProgressRecordCache.containsKey( entry ) )
         {
-            logger.debug( "Adding: {}", entry );
+            logger.debug( "Adding tracking entry: {}", entry );
             inProgressRecordCache.put( entry, entry );
             return true;
         }
@@ -158,7 +158,7 @@ public class FoloRecordCache
                     {
                         uploads.add( result );
                     }
-                    logger.debug( "Removing in-progress entry: {}", result );
+                    logger.trace( "Removing in-progress entry: {}", result );
                     inProgressRecordCache.remove( result );
                 } );
                 created = new TrackedContent( trackingKey, uploads, downloads );
