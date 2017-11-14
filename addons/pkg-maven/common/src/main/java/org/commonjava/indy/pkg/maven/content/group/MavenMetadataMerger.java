@@ -132,7 +132,7 @@ public class MavenMetadataMerger
             {
                 stream = src.openInputStream();
                 String content = IOUtils.toString( stream );
-                logger.debug( "Adding in metadata content from: {}\n\n{}\n\n", src, content );
+                logger.trace( "Adding in metadata content from: {}\n\n{}\n\n", src, content );
 
                 // there is a lot of junk in here to make up for Metadata's anemic merge() method.
                 final Metadata md = reader.read( new StringReader( content ), false );
@@ -160,7 +160,7 @@ public class MavenMetadataMerger
                 // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
                 if ( versioning.getSnapshot() == null && mdVersioning != null )
                 {
-                    logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
+                    logger.trace( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
                     snapshotProvider = src;
 
                     versioning.setSnapshot( mdVersioning.getSnapshot() );
@@ -269,7 +269,7 @@ public class MavenMetadataMerger
         for ( final Metadata src : sources )
         {
 
-            logger.debug( "Adding in metadata content from: {}", src );
+            logger.trace( "Adding in metadata content from: {}", src );
 
             // there is a lot of junk in here to make up for Metadata's anemic merge() method.
             if ( src.getGroupId() != null )
@@ -295,7 +295,7 @@ public class MavenMetadataMerger
             // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
             if ( versioning.getSnapshot() == null && mdVersioning != null )
             {
-                logger.info( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
+                logger.trace( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
 
                 versioning.setSnapshot( mdVersioning.getSnapshot() );
 

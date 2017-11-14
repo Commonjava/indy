@@ -68,7 +68,7 @@ public class DefaultDirectContentAccess
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Attempting to retrieve: {} from: {}", path, store.getKey() );
+        logger.trace( "Attempting to retrieve: {} from: {}", path, store.getKey() );
 
         Transfer item = null;
         try

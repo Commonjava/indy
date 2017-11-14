@@ -385,7 +385,7 @@ public class DefaultDownloadManager
                                // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
                                if ( location.getKey().getType() == StoreType.hosted && !txfr.exists() )
                                {
-                                   logger.debug( "DM: resource not found when retrieve and added to NFC: {}",
+                                   logger.trace( "Resource not found when retrieved; added to NFC: {}",
                                                  txfr.getResource() );
                                    nfc.addMissing( txfr.getResource() );
                                }
@@ -451,7 +451,7 @@ public class DefaultDownloadManager
                 target = transfers.getCacheReference( res );
                 if ( target == null || !target.exists() )
                 {
-                    logger.debug( "DM: resource not found when retrieve and added to NFC: {}", res );
+                    logger.trace( "Resource not found when retrieved; added to NFC: {}", res );
                     nfc.addMissing( res );
                     target = null;
                 }
@@ -663,7 +663,7 @@ public class DefaultDownloadManager
         {
             if ( storeManager.isReadonly( store ) )
             {
-                logger.info( "The store {} is readonly, store operation not allowed" );
+                logger.debug( "The store {} is readonly, store operation not allowed" );
                 continue;
             }
             if ( storeIsSuitableFor( store, quality, op ) )
@@ -725,7 +725,7 @@ public class DefaultDownloadManager
 
         Transfer transfer = null;
 
-        logger.debug( "Checking {} stores to find one suitable for {} of: {}", stores.size(), op, path );
+        logger.trace( "Checking {} stores to find one suitable for {} of: {}", stores.size(), op, path );
         boolean suitableFound = false;
         for ( final ArtifactStore store : stores )
         {
@@ -733,11 +733,11 @@ public class DefaultDownloadManager
             {
                 suitableFound = true;
 
-                logger.info( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
+                logger.trace( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
                              op );
 
                 transfer = getStorageReference( store, path );
-                logger.debug( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
+                logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
                 if ( transfer != null && !transfer.exists() && ( op == TransferOperation.DOWNLOAD
                         || op == TransferOperation.LISTING ) )
                 {
@@ -746,7 +746,7 @@ public class DefaultDownloadManager
 
                 if ( transfer != null )
                 {
-                    logger.info( "Using transfer: {}", transfer );
+                    logger.debug( "Using transfer: {}", transfer );
                     break;
                 }
             }
@@ -785,7 +785,7 @@ public class DefaultDownloadManager
                     }
                     else
                     {
-                        logger.debug( "Hosted repo doesn't allow snapshot uploads: {}", store.getKey() );
+                        logger.trace( "Hosted repo doesn't allow snapshot uploads: {}", store.getKey() );
                     }
                 }
                 else if ( dp.isAllowReleases() )
@@ -795,12 +795,12 @@ public class DefaultDownloadManager
                 }
                 else
                 {
-                    logger.debug( "Hosted repo doesn't allow release uploads: {}", store.getKey() );
+                    logger.trace( "Hosted repo doesn't allow release uploads: {}", store.getKey() );
                 }
             }
             else
             {
-                logger.debug( "Store not suitable for upload: {}", store.getKey() );
+                logger.trace( "Store not suitable for upload: {}", store.getKey() );
             }
 
             // TODO: Allow push-through via remote repositories too.
@@ -870,7 +870,7 @@ public class DefaultDownloadManager
         {
             if ( txfr == null || !txfr.exists() )
             {
-                logger.debug( "DM: resource not found when get cached and added to NFC: {}", resource );
+                logger.trace( "Resource not found when retrieving cached reference; added to NFC: {}", resource );
                 nfc.addMissing( resource );
             }
         }
@@ -886,7 +886,7 @@ public class DefaultDownloadManager
         {
             if ( storeManager.isReadonly( store ) )
             {
-                logger.info( "The store {} is readonly, store operation not allowed" );
+                logger.warn( "The store {} is readonly, store operation not allowed" );
                 continue;
             }
 
@@ -926,7 +926,7 @@ public class DefaultDownloadManager
         if ( deleted && store.getKey().getType() == StoreType.hosted )
         {
             final ConcreteResource res = item.getResource();
-            logger.debug( "DM: resource not found by deleted and added to NFC: {}", res );
+            logger.trace( "Resource not found for deletion; added to NFC: {}", res );
             nfc.addMissing( res );
         }
 
@@ -1136,12 +1136,12 @@ public class DefaultDownloadManager
         AbstractRepository repo = (AbstractRepository) store;
         Set<String> maskPatterns = repo.getPathMaskPatterns();
 
-        logger.debug( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
+        logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
         logger.trace( "Mask patterns in {}: {}", repo.getName(), maskPatterns );
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
-            logger.debug( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
+            logger.trace( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
             return true;
         }
 
@@ -1160,7 +1160,7 @@ public class DefaultDownloadManager
         {
             if ( path.startsWith( pattern ) || pattern.startsWith( path ) )
             {
-                logger.debug( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
+                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
                 return true;
             }
         }
@@ -1178,12 +1178,12 @@ public class DefaultDownloadManager
         AbstractRepository repo = (AbstractRepository) store;
         Set<String> maskPatterns = repo.getPathMaskPatterns();
 
-        logger.debug( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
+        logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
         logger.trace( "Mask patterns in {}: {}", repo.getName(), maskPatterns );
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
-            logger.debug( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
+            logger.trace( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
             return true;
         }
 
@@ -1199,7 +1199,7 @@ public class DefaultDownloadManager
             }
             else if ( path.startsWith( pattern ) )
             {
-                logger.debug( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
+                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
                 return true;
             }
         }
