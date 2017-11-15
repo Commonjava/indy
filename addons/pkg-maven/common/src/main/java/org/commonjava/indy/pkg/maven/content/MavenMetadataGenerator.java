@@ -254,12 +254,12 @@ public class MavenMetadataGenerator
 
         if ( snapshotPomInfo != null )
         {
-            logger.info( "Generating maven-metadata.xml for snapshots" );
+            logger.debug( "Generating maven-metadata.xml for snapshots" );
             generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath, eventMetadata );
         }
         else
         {
-            logger.info( "Generating maven-metadata.xml for releases" );
+            logger.debug( "Generating maven-metadata.xml for releases" );
             generated = writeVersionMetadata( firstLevel, store, toGenPath, eventMetadata );
         }
 
@@ -585,7 +585,7 @@ public class MavenMetadataGenerator
             executorService.execute( ()->{
                 try
                 {
-                    logger.debug( "Starting metadata download: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath);
                     Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -643,7 +643,7 @@ public class MavenMetadataGenerator
 
         do
         {
-            logger.debug( "Latch count: {}", latch.getCount() );
+            logger.trace( "Latch count: {}", latch.getCount() );
             try
             {
                 logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
