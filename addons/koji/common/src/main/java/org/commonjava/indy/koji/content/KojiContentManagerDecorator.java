@@ -163,7 +163,7 @@ public abstract class KojiContentManagerDecorator
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "KOJI: Delegating initial existence check for: {}/{}", store.getKey(), path );
+        logger.debug( "KOJI: Delegating initial existence check for: {}/{}", store.getKey(), path );
         boolean result = delegate.exists( store, path );
         if ( !result && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
@@ -201,7 +201,7 @@ public abstract class KojiContentManagerDecorator
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "KOJI: Delegating initial retrieval attempt for: {}/{}", store.getKey(), path );
+        logger.debug( "KOJI: Delegating initial retrieval attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.retrieve( store, path, eventMetadata );
         if ( result == null && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
@@ -255,7 +255,7 @@ public abstract class KojiContentManagerDecorator
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "KOJI: Delegating initial getTransfer() attempt for: {}/{}", store.getKey(), path );
+        logger.debug( "KOJI: Delegating initial getTransfer() attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.getTransfer( store, path, operation );
         if ( result == null && isVerSignedAllowedWithPath( path ) && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
         {
@@ -294,7 +294,7 @@ public abstract class KojiContentManagerDecorator
         if ( !config.getEnabled() )
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.info( "Koji content-manager decorator is disabled." );
+            logger.debug( "Koji content-manager decorator is disabled." );
             logger.debug("When koji addon is disenabled , path:{},config instance is {}",path,config.toString());
             return defValue;
         }
@@ -304,7 +304,7 @@ public abstract class KojiContentManagerDecorator
         if ( !config.isEnabledFor( group.getName() ) )
         {
             Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.info( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
+            logger.debug( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
             logger.debug("When the group is disenabled , path:{},config instance is {}",path,config.toString());
             return defValue;
         }
@@ -408,7 +408,7 @@ public abstract class KojiContentManagerDecorator
                     }
                 }
 
-                logger.debug( "No builds were found that matched the restrictions." );
+                logger.trace( "No builds were found that matched the restrictions." );
 
                 return defValue;
             } );
