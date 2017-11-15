@@ -181,7 +181,7 @@ public class ContentAccessHandler
 
                 boolean exists = false;
                 if (Boolean.TRUE.equals(cacheOnly)) {
-                    logger.trace( "Calling getTransfer()" );
+                    logger.debug( "Calling getTransfer()" );
                     item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
                     exists = item != null && item.exists();
                     logger.debug( "Got transfer reference: {}", item );
@@ -189,7 +189,7 @@ public class ContentAccessHandler
                     // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
                     // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
                     // file when it makes a request). This file stores the HTTP response status code and headers regardless exist returning true or false.
-                    logger.trace( "Calling exists()" );
+                    logger.debug( "Calling exists()" );
                     exists = contentController.exists(sk, path);
                     logger.debug("Got exists: {}", exists);
                 }
@@ -288,7 +288,7 @@ public class ContentAccessHandler
                 logger.info( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
 
-                logger.trace( "HANDLE: retrieval of content: {}:{}", sk, path );
+                logger.debug( "HANDLE: retrieval of content: {}:{}", sk, path );
                 if ( item == null )
                 {
                     return handleMissingContentQuery( sk, path );
@@ -311,7 +311,7 @@ public class ContentAccessHandler
                     {
                         try
                         {
-                            logger.info( "Getting listing at: {}", path + "/" );
+                            logger.debug( "Getting listing at: {}", path + "/" );
                             final String content =
                                     contentController.renderListing( standardAccept, st, name, path + "/", baseUri,
                                                                      uriFormatter );
@@ -354,7 +354,7 @@ public class ContentAccessHandler
             }
         }
 
-        logger.debug( "RETURNING RESULT: {}:{}", sk, path );
+        logger.info( "RETURNING RESULT: {}:{}", sk, path );
         return response;
     }
 
