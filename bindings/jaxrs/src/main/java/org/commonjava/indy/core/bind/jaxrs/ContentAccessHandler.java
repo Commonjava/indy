@@ -211,7 +211,7 @@ public class ContentAccessHandler
         {
             try
             {
-                logger.info( "Getting listing at: {}", path );
+                logger.debug( "Getting listing at: {}", path );
                 final String content =
                         contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
 
@@ -244,7 +244,7 @@ public class ContentAccessHandler
                 boolean exists = false;
                 if ( Boolean.TRUE.equals( cacheOnly ) )
                 {
-                    logger.debug( "Calling getTransfer()" );
+                    logger.trace( "Calling getTransfer()" );
                     item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
                     exists = item != null && item.exists();
                     logger.debug( "Got transfer reference: {}", item );
@@ -254,7 +254,7 @@ public class ContentAccessHandler
                     // Use exists for remote repo to avoid downloading file. Use getTransfer for everything else (hosted, cache-only).
                     // Response will be composed of metadata by getHttpMetadata which get metadata from .http-metadata.json (because HTTP transport always writes a .http-metadata.json
                     // file when it makes a request). This file stores the HTTP response status code and headers regardless exist returning true or false.
-                    logger.debug( "Calling remote exists()" );
+                    logger.trace( "Calling remote exists()" );
                     exists = contentController.exists( sk, path );
                     logger.debug( "Got remote exists: {}", exists );
                 }
@@ -273,7 +273,7 @@ public class ContentAccessHandler
                         logger.debug( "Got retrieved transfer reference: {}", item );
                     }
 
-                    logger.debug( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
+                    logger.trace( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
 
                     final ResponseBuilder builder = Response.ok();
                     setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
@@ -286,13 +286,13 @@ public class ContentAccessHandler
                 }
                 else
                 {
-                    logger.debug( "Building 404 (or error) response..." );
+                    logger.trace( "Building 404 (or error) response..." );
                     if ( StoreType.remote == st )
                     {
                         final HttpExchangeMetadata metadata = contentController.getHttpMetadata( sk, path );
                         if ( metadata != null )
                         {
-                            logger.debug( "Using HTTP metadata to build negative response." );
+                            logger.trace( "Using HTTP metadata to build negative response." );
                             response = formatResponseFromMetadata( metadata );
                         }
                     }
@@ -349,7 +349,7 @@ public class ContentAccessHandler
 
         Response response = null;
 
-        logger.info(
+        logger.debug(
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
                 path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
@@ -358,7 +358,7 @@ public class ContentAccessHandler
         {
             try
             {
-                logger.info( "Getting listing at: {}", path );
+                logger.debug( "Getting listing at: {}", path );
                 final String content =
                                 contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter );
 
@@ -378,7 +378,7 @@ public class ContentAccessHandler
                 logger.info( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
 
-                logger.info( "HANDLE: retrieval of content: {}:{}", sk, path );
+                logger.trace( "HANDLE: retrieval of content: {}:{}", sk, path );
                 if ( item == null )
                 {
                     return handleMissingContentQuery( sk, path, builderModifier );
@@ -417,7 +417,7 @@ public class ContentAccessHandler
                     }
                     else
                     {
-                        logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
+                        logger.debug( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
@@ -446,7 +446,7 @@ public class ContentAccessHandler
             }
         }
 
-        logger.info( "RETURNING RESULT: {}:{}", sk, path );
+        logger.debug( "RETURNING RESULT: {}:{}", sk, path );
         return response;
     }
 
