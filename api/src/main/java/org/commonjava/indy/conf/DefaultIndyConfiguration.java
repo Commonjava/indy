@@ -39,6 +39,8 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS = 1800; // 30 minutes
 
+    public static final int DEFAULT_NFC_EXPIRATION_SWEEP_MINUTES = 30;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -46,6 +48,8 @@ public class DefaultIndyConfiguration
     private Integer requestTimeoutSeconds;
 
     private Integer storeDisableTimeoutSeconds;
+
+    private Integer nfcExpirationSweepMinutes;
 
     public DefaultIndyConfiguration()
     {
@@ -91,6 +95,18 @@ public class DefaultIndyConfiguration
     public int getStoreDisableTimeoutSeconds()
     {
         return storeDisableTimeoutSeconds == null ? DEFAULT_STORE_DISABLE_TIMEOUT_SECONDS : storeDisableTimeoutSeconds;
+    }
+
+    @ConfigName( "nfc.sweep.minutes" )
+    public void setDefaultNfcExpirationSweepMinutes( final int minutes )
+    {
+        this.nfcExpirationSweepMinutes = nfcExpirationSweepMinutes;
+    }
+
+    @Override
+    public int getNfcExpirationSweepMinutes()
+    {
+        return nfcExpirationSweepMinutes == null ? DEFAULT_NFC_EXPIRATION_SWEEP_MINUTES : nfcExpirationSweepMinutes;
     }
 
     @Override
