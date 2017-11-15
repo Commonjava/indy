@@ -44,6 +44,12 @@ public interface IndyConfiguration
 
     int getStoreDisableTimeoutSeconds();
 
+    /**
+     * Number of minutes between sweeps of the NFC expiration reaper thread.
+     * @since 1.1.15
+     */
+    int getNfcExpirationSweepMinutes();
+
     File getIndyHomeDir();
 
     File getIndyConfDir();
