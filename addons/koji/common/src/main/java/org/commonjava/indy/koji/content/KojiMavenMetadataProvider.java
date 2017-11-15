@@ -251,7 +251,7 @@ public class KojiMavenMetadataProvider
                             }
                             else
                             {
-                                logger.debug( "Checking for builds/tags of: {}", archive );
+                                logger.trace( "Checking for builds/tags of: {}", archive );
 
                                 List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
                                 for ( KojiTagInfo tag : tags )
