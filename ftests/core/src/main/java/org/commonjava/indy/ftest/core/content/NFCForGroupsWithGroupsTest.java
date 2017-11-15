@@ -60,7 +60,6 @@ import static org.junit.Assert.assertThat;
  *     <li>After step-3: NFC entry for P in A and C should have been cleared too</li>
  * </ul>
  */
-@Ignore("New NFC OOM fix has removed NFC get endpoints, so this test can not be used")
 public class NFCForGroupsWithGroupsTest
         extends AbstractContentManagementTest
 {

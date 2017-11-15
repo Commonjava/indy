@@ -15,7 +15,9 @@
  */
 package org.commonjava.indy.core.ctl;
 
+import static org.apache.http.HttpStatus.SC_UNPROCESSABLE_ENTITY;
 import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.util.LocationUtils.toLocation;
 import static org.commonjava.indy.util.LocationUtils.toLocations;
@@ -25,17 +27,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.core.inject.AbstractNotFoundCache;
+import org.commonjava.indy.core.inject.NfcKeyedLocation;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
+import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
@@ -46,7 +54,7 @@ public class NfcController
 {
 
     @Inject
-    protected NotFoundCache cache;
+    protected AbstractNotFoundCache cache;
 
     @Inject
     protected StoreDataManager storeManager;
@@ -55,7 +63,7 @@ public class NfcController
     {
     }
 
-    public NfcController( final NotFoundCache nfc, final StoreDataManager stores )
+    public NfcController( final AbstractNotFoundCache nfc, final StoreDataManager stores )
     {
         this.cache = nfc;
         this.storeManager = stores;
@@ -63,8 +71,19 @@ public class NfcController
     
     public NotFoundCacheDTO getAllMissing()
     {
+        Map<Location, Set<String>> allMissing = cache.getAllMissing();
+        return getNotFoundCacheDTO( allMissing );
+    }
+
+    public NotFoundCacheDTO getAllMissing( int pageIndex, int pageSize )
+    {
+        Map<Location, Set<String>> allMissing = cache.getAllMissing( pageIndex, pageSize );
+        return getNotFoundCacheDTO( allMissing );
+    }
+
+    private NotFoundCacheDTO getNotFoundCacheDTO( Map<Location, Set<String>> allMissing )
+    {
         final NotFoundCacheDTO dto = new NotFoundCacheDTO();
-        final Map<Location, Set<String>> allMissing = cache.getAllMissing();
         for ( final Location loc : allMissing.keySet() )
         {
             if ( loc instanceof KeyedLocation )
@@ -80,34 +99,24 @@ public class NfcController
     }
 
     public NotFoundCacheDTO getMissing( final StoreKey key )
-        throws IndyWorkflowException
+                    throws IndyWorkflowException
+    {
+        return doGetMissing( key );
+    }
+
+    public NotFoundCacheDTO getMissing( final StoreKey key, int pageIndex, int pageSize )
+                    throws IndyWorkflowException
+    {
+        return doGetMissing( key, pageIndex, pageSize );
+    }
+
+    private NotFoundCacheDTO doGetMissing( final StoreKey key, int... pagingParams )
+                    throws IndyWorkflowException
     {
         final NotFoundCacheDTO dto = new NotFoundCacheDTO();
         if ( key.getType() == group )
         {
-            List<ArtifactStore> stores;
-            try
-            {
-                stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
-            }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to retrieve concrete constituent ArtifactStores for: %s.", e,
-                                                  key );
-            }
-
-            final List<? extends KeyedLocation> locations = toLocations( stores );
-            for ( final KeyedLocation location : locations )
-            {
-                final Set<String> missing = cache.getMissing( location );
-                if ( missing != null && !missing.isEmpty() )
-                {
-                    final List<String> paths = new ArrayList<String>( missing );
-                    Collections.sort( paths );
-
-                    dto.addSection( location.getKey(), paths );
-                }
-            }
+            throw new IndyWorkflowException( SC_UNPROCESSABLE_ENTITY, "Get missing for group is not supported");
         }
         else
         {
@@ -123,7 +132,16 @@ public class NfcController
 
             if ( store != null )
             {
-                final Set<String> missing = cache.getMissing( toLocation( store ) );
+                Set<String> missing;
+                if ( pagingParams != null && pagingParams.length > 0 )
+                {
+                    missing = cache.getMissing( toLocation( store ), pagingParams[0], pagingParams[1] );
+                }
+                else
+                {
+                    missing = cache.getMissing( toLocation( store ) );
+                }
+
                 final List<String> paths = new ArrayList<String>( missing );
                 Collections.sort( paths );
 
@@ -180,8 +198,7 @@ public class NfcController
 
     private void clear( final ArtifactStore store, final String path )
     {
-        if ( store.getKey()
-                  .getType() == remote )
+        if ( store.getKey().getType() == remote || store.getKey().getType() == hosted )
         {
             final Location loc = toLocation( store );
             if ( loc != null )
@@ -198,4 +215,31 @@ public class NfcController
         }
     }
 
+    public NotFoundCacheInfoDTO getInfo()
+    {
+        NotFoundCacheInfoDTO dto = new NotFoundCacheInfoDTO();
+        dto.setSize( cache.getSize() );
+        return dto;
+    }
+
+    public NotFoundCacheInfoDTO getInfo( StoreKey key ) throws IndyWorkflowException
+    {
+        NotFoundCacheInfoDTO dto = new NotFoundCacheInfoDTO();
+        long size;
+        switch ( key.getType() )
+        {
+            case group:
+            {
+                throw new IndyWorkflowException( SC_UNPROCESSABLE_ENTITY,
+                                                 "Get missing info for group is not supported" );
+            }
+            default:
+            {
+                size = cache.getSize( key );
+                break;
+            }
+        }
+        dto.setSize( size );
+        return dto;
+    }
 }

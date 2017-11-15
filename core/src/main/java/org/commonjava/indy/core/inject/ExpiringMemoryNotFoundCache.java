@@ -21,32 +21,31 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
-@Default
-//@Production
+@Alternative
 public class ExpiringMemoryNotFoundCache
-    implements NotFoundCache
+    extends AbstractNotFoundCache
 {
 
     private static final String TIMEOUT_FORMAT = "yyyy-MM-dd hh:mm:ss z";
@@ -235,4 +234,15 @@ public class ExpiringMemoryNotFoundCache
         }
     }
 
+    @Override
+    public long getSize( StoreKey storeKey )
+    {
+        return 0; // Not support
+    }
+
+    @Override
+    public long getSize()
+    {
+        return missingWithTimeout.size();
+    }
 }

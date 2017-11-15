@@ -41,6 +41,8 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NFC_EXPIRATION_SWEEP_MINUTES = 30;
 
+    public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 10000; // 10,000
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -50,6 +52,8 @@ public class DefaultIndyConfiguration
     private Integer storeDisableTimeoutSeconds;
 
     private Integer nfcExpirationSweepMinutes;
+
+    private Integer nfcMaxResultSetSize;
 
     public DefaultIndyConfiguration()
     {
@@ -100,13 +104,25 @@ public class DefaultIndyConfiguration
     @ConfigName( "nfc.sweep.minutes" )
     public void setDefaultNfcExpirationSweepMinutes( final int minutes )
     {
-        this.nfcExpirationSweepMinutes = nfcExpirationSweepMinutes;
+        this.nfcExpirationSweepMinutes = minutes;
+    }
+
+    @ConfigName( "nfc.maxresultsetsize" )
+    public void setDefaultNfcMaxResultSetSize( final int size )
+    {
+        this.nfcMaxResultSetSize = size;
     }
 
     @Override
     public int getNfcExpirationSweepMinutes()
     {
         return nfcExpirationSweepMinutes == null ? DEFAULT_NFC_EXPIRATION_SWEEP_MINUTES : nfcExpirationSweepMinutes;
+    }
+
+    @Override
+    public int getNfcMaxResultSetSize()
+    {
+        return nfcMaxResultSetSize == null ? DEFAULT_NFC_MAX_RESULT_SET_SIZE : nfcMaxResultSetSize;
     }
 
     @Override
