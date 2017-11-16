@@ -40,6 +40,11 @@ public interface IndyConfiguration
      */
     int getNotFoundCacheTimeoutSeconds();
 
+    /**
+     * Need a data dir to hold the db file when we use embedded db for NFC cache
+     */
+    String getNotFoundCacheDataDir();
+
     int getRequestTimeoutSeconds();
 
     int getStoreDisableTimeoutSeconds();
@@ -47,5 +52,4 @@ public interface IndyConfiguration
     File getIndyHomeDir();
 
     File getIndyConfDir();
-
 }
