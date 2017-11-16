@@ -43,6 +43,8 @@ public class DefaultIndyConfiguration
 
     private Integer notFoundCacheTimeoutSeconds;
 
+    private String notFoundCacheDataDir;
+
     private Integer requestTimeoutSeconds;
 
     private Integer storeDisableTimeoutSeconds;
@@ -73,6 +75,18 @@ public class DefaultIndyConfiguration
     public int getNotFoundCacheTimeoutSeconds()
     {
         return notFoundCacheTimeoutSeconds == null ? DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS : notFoundCacheTimeoutSeconds;
+    }
+
+    @ConfigName( "nfc.data.dir" )
+    public void setNotFoundCacheDataDir( final String dir )
+    {
+        notFoundCacheDataDir = dir;
+    }
+
+    @Override
+    public String getNotFoundCacheDataDir()
+    {
+        return notFoundCacheDataDir == null ? new File( getIndyHomeDir(), "var/lib/indy/data/nfc").getAbsolutePath() : notFoundCacheDataDir;
     }
 
     @Override
