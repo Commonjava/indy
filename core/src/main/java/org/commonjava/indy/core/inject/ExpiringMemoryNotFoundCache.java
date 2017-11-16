@@ -27,7 +27,9 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
@@ -61,14 +63,20 @@ public class ExpiringMemoryNotFoundCache
 
     protected ExpiringMemoryNotFoundCache()
     {
-        // schedule to run eviction after 8 hours and every 8 hours
-        evictionService.scheduleAtFixedRate( () -> clearAllExpiredMissing(), 8, 8, TimeUnit.HOURS );
     }
 
     public ExpiringMemoryNotFoundCache( final IndyConfiguration config )
     {
-        this();
         this.config = config;
+        start();
+    }
+
+    @PostConstruct
+    public void start()
+    {
+        // schedule an expiration reaper thread to run according to some offset (in minutes) from the configuration
+        final int sweepMins = config.getNfcExpirationSweepMinutes();
+        evictionService.scheduleAtFixedRate( () -> clearAllExpiredMissing(), sweepMins, sweepMins, TimeUnit.MINUTES );
     }
 
     @Override
@@ -104,7 +112,10 @@ public class ExpiringMemoryNotFoundCache
             }
         } );
 
-        missingWithTimeout.put( resource, timeout );
+        synchronized ( missingWithTimeout )
+        {
+            missingWithTimeout.put( resource, timeout );
+        }
     }
 
     @Override
@@ -124,12 +135,15 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void clearMissing( final Location location )
     {
-        for ( final ConcreteResource resource : new HashSet<>( missingWithTimeout.keySet() ) )
+        Set<ConcreteResource> paths = keys().stream()
+                    .filter( r -> r != null && r.getLocation().equals( location ) )
+                    .collect( Collectors.toSet() );
+
+        if ( !paths.isEmpty() )
         {
-            if ( resource.getLocation()
-                         .equals( location ) )
+            synchronized ( missingWithTimeout )
             {
-                missingWithTimeout.remove( resource );
+                paths.stream().forEach( r->missingWithTimeout.remove(r) );
             }
         }
     }
@@ -137,27 +151,34 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void clearMissing( final ConcreteResource resource )
     {
-        missingWithTimeout.remove( resource );
+        synchronized ( missingWithTimeout )
+        {
+            missingWithTimeout.remove( resource );
+        }
     }
 
     @Override
     public void clearAllMissing()
     {
-        this.missingWithTimeout.clear();
+        synchronized ( missingWithTimeout )
+        {
+            this.missingWithTimeout.clear();
+        }
     }
 
     @Override
     public Map<Location, Set<String>> getAllMissing()
     {
         clearAllExpiredMissing();
-        final Map<Location, Set<String>> result = new HashMap<>();
-        for ( final ConcreteResource resource : missingWithTimeout.keySet() )
-        {
-            final Location loc = resource.getLocation();
-            Set<String> paths = result.computeIfAbsent( loc, k -> new HashSet<>() );
+        Set<ConcreteResource> paths = keys();
 
-            paths.add( resource.getPath() );
-        }
+        final Map<Location, Set<String>> result = new HashMap<>();
+        paths.stream().forEach( resource->{
+            final Location loc = resource.getLocation();
+            Set<String> locationPaths = result.computeIfAbsent( loc, k -> new HashSet<>() );
+
+            locationPaths.add( resource.getPath() );
+        } );
 
         return result;
     }
@@ -166,14 +187,18 @@ public class ExpiringMemoryNotFoundCache
     public Set<String> getMissing( final Location location )
     {
         clearAllExpiredMissing();
-        final Set<String> paths = new HashSet<>();
-        for ( final ConcreteResource resource : missingWithTimeout.keySet() )
+        return keys().stream()
+                    .filter( r -> r != null && r.getLocation().equals( location ) )
+                    .map( r -> r.getPath() )
+                    .collect( Collectors.toSet() );
+    }
+
+    private Set<ConcreteResource> keys()
+    {
+        Set<ConcreteResource> paths;
+        synchronized ( missingWithTimeout )
         {
-            final Location loc = resource.getLocation();
-            if ( loc.equals( location ) )
-            {
-                paths.add( resource.getPath() );
-            }
+            paths = new HashSet<>(missingWithTimeout.keySet());
         }
 
         return paths;
@@ -181,16 +206,32 @@ public class ExpiringMemoryNotFoundCache
 
     private synchronized void clearAllExpiredMissing()
     {
-        for ( final Iterator<Map.Entry<ConcreteResource, Long>> it = missingWithTimeout.entrySet()
-                                                                                       .iterator(); it.hasNext(); )
+        try
         {
-            final Map.Entry<ConcreteResource, Long> entry = it.next();
-            final Long timeout = entry.getValue();
+            long tstamp = System.currentTimeMillis();
+            Set<ConcreteResource> paths = keys().stream().filter( r ->
+                                   {
+                                       if ( r == null )
+                                       {
+                                           return false;
+                                       }
 
-            if ( System.currentTimeMillis() >= timeout )
+                                       Long timeout = missingWithTimeout.get( r );
+                                       return timeout != null && timeout < tstamp;
+                                   } ).collect( Collectors.toSet() );
+
+            if ( !paths.isEmpty() )
             {
-                it.remove();
+                synchronized ( missingWithTimeout )
+                {
+                    paths.stream().forEach( r->missingWithTimeout.remove(r) );
+                }
             }
+        }
+        catch ( Throwable error )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( "Failed to clear expired entries from NFC", error );
         }
     }
 
