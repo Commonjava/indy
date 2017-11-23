@@ -25,12 +25,15 @@ public class IndyNfcClientModule
 {
     private static final String BASE_URL = "/nfc";
 
+    // As nfc get endpoints has been removed in new nfc oom fixes, will make these two methods deprecated.
+    @Deprecated
     public NotFoundCacheDTO getAllNfcContent()
             throws IndyClientException
     {
         return getHttp().get( BASE_URL, NotFoundCacheDTO.class );
     }
 
+    @Deprecated
     public NotFoundCacheDTO getAllNfcContentInStore( final StoreType type, final String name )
             throws IndyClientException
     {
