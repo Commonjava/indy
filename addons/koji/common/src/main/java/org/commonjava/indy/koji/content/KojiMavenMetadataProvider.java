@@ -200,6 +200,7 @@ public class KojiMavenMetadataProvider
                                 logger.debug( "version filter pattern not matched: {}", archive.getVersion() );
                                 continue;
                             }
+
                             SingleVersion singleVersion = null;
                             try
                             {
