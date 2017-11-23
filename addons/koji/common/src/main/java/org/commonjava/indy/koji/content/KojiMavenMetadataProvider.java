@@ -194,7 +194,17 @@ public class KojiMavenMetadataProvider
                                 logger.debug( "Skipping non-POM: {}", archive.getFilename() );
                                 continue;
                             }
-                            SingleVersion singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
+                            SingleVersion singleVersion = null;
+                            try
+                            {
+                                singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
+                            }
+                            catch ( InvalidVersionSpecificationException ivse )
+                            {
+                                logger.warn( "Skipping mal-formatted version: {}, relPath: {}, buildId: {}",
+                                             archive.getVersion(), archive.getRelPath(), archive.getBuildId() );
+                                continue;
+                            }
                             if ( versions.contains( singleVersion ) )
                             {
                                 logger.debug( "Skipping already collected version: {}", archive.getVersion() );
