@@ -23,13 +23,13 @@
     <artifactId>indy-parent</artifactId>
     <version>1.2.1-SNAPSHOT</version>
   </parent>
-  
+
   <groupId>org.commonjava.indy</groupId>
   <artifactId>indy-deployments</artifactId>
   <packaging>pom</packaging>
 
   <name>Indy :: Deployments :: Parent</name>
-  
+
   <modules>
     <module>launchers</module>
   </modules>
@@ -43,9 +43,11 @@
     </profile>
     <profile>
       <id>release</id>
+      <!--
       <modules>
         <module>docker</module>
       </modules>
+      -->
     </profile>
   </profiles>
 </project>
