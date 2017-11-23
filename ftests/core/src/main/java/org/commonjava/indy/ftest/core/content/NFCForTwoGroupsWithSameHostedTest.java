@@ -26,6 +26,7 @@ import org.commonjava.indy.model.core.dto.NotFoundCacheSectionDTO;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.hamcrest.core.IsNull;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -61,6 +62,7 @@ import static org.junit.Assert.assertThat;
  *     <li>After step-3: NFC entry for P in A should have been cleared too</li>
  * </ul>
  */
+@Ignore( "New NFC OOM fix has removed NFC get endpoints, so this test can not be used")
 public class NFCForTwoGroupsWithSameHostedTest
         extends AbstractContentManagementTest
 {
@@ -104,19 +106,20 @@ public class NFCForTwoGroupsWithSameHostedTest
             assertThat( inputStream, nullValue() );
         }
 
-        NotFoundCacheDTO dto = client.module( IndyNfcClientModule.class ).getAllNfcContent();
+        NotFoundCacheDTO dto = client.module( IndyNfcClientModule.class ).getAllNfcContentInStore( StoreType.group, a.getName() );
 
         assertThat( dto, notNullValue() );
         assertThat( dto.getSections(), notNullValue() );
-
-        NotFoundCacheSectionDTO nfcSectionDto =
-                dto.getSections().stream().filter( d -> d.getKey().equals( a.getKey() ) ).findFirst().orElse( null );
+        NotFoundCacheSectionDTO nfcSectionDto = dto.getSections().stream().findFirst().orElse( null );
         assertThat( nfcSectionDto, notNullValue() );
         assertThat( nfcSectionDto.getPaths(), notNullValue() );
         assertThat( nfcSectionDto.getPaths().contains( PATH ), equalTo( true ) );
 
-        nfcSectionDto =
-                dto.getSections().stream().filter( d -> d.getKey().equals( x.getKey() ) ).findFirst().orElse( null );
+        dto = client.module( IndyNfcClientModule.class ).getAllNfcContentInStore( StoreType.hosted, x.getName() );
+
+        assertThat( dto, notNullValue() );
+        assertThat( dto.getSections(), notNullValue() );
+        nfcSectionDto = dto.getSections().stream().findFirst().orElse( null );
         assertThat( nfcSectionDto, notNullValue() );
         assertThat( nfcSectionDto.getPaths(), notNullValue() );
         assertThat( nfcSectionDto.getPaths().contains( PATH ), equalTo( true ) );
@@ -132,9 +135,8 @@ public class NFCForTwoGroupsWithSameHostedTest
 
         assertThat( dto, notNullValue() );
         assertThat( dto.getSections(), notNullValue() );
-
         nfcSectionDto =
-                dto.getSections().stream().filter( d -> d.getKey().equals( x.getKey() ) ).findFirst().orElse( null );
+                dto.getSections().stream().findFirst().orElse( null );
         assertThat( nfcSectionDto, notNullValue() );
         assertThat( nfcSectionDto.getPaths(), nullValue() );
 
@@ -143,13 +145,9 @@ public class NFCForTwoGroupsWithSameHostedTest
             assertThat( inputStream, notNullValue() );
         }
 
-        dto = client.module( IndyNfcClientModule.class ).getAllNfcContent();
+        dto = client.module( IndyNfcClientModule.class ).getAllNfcContentInStore( StoreType.group, a.getName() );
 
-        assertThat( dto, notNullValue() );
-        assertThat( dto.getSections(), notNullValue() );
-
-        nfcSectionDto =
-                dto.getSections().stream().filter( d -> d.getKey().equals( a.getKey() ) ).findFirst().orElse( null );
+        nfcSectionDto = dto.getSections().stream().findFirst().orElse( null );
         assertThat( nfcSectionDto, nullValue() );
     }
 }
