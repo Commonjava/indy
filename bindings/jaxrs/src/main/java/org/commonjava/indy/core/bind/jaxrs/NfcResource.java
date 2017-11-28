@@ -143,6 +143,9 @@ public class NfcResource
         return response;
     }
 
+    /*
+     * Temporary disable them to avoid OOM issue
+     *
     @GET
     @ApiOperation( "Retrieve all not-found cache entries currently tracked" )
     @ApiResponses(
@@ -214,5 +217,5 @@ public class NfcResource
         }
         return response;
     }
-
+    */
 }
