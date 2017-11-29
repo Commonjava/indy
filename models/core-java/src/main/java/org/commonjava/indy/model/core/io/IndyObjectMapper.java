@@ -148,7 +148,7 @@ public class IndyObjectMapper
         {
             for ( ModuleSet moduleSet : moduleSets )
             {
-                logger.info("Adding module-set to object mapper..." );
+                logger.trace("Adding module-set to object mapper..." );
 
                 Set<Module> set = moduleSet.getModules();
                 if ( set != null )
