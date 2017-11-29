@@ -113,7 +113,7 @@ public class PromoteValidationsManager
         {
             final DataFile[] scripts = dataDir.listFiles( (pathname) ->
             {
-                    logger.info( "Checking for promote validation rule script in: {}", pathname );
+                    logger.debug( "Checking for promote validation rule script in: {}", pathname );
                     return pathname.getName()
                                    .endsWith( ".groovy" );
             } );
@@ -122,7 +122,7 @@ public class PromoteValidationsManager
             {
                 for ( final DataFile script : scripts )
                 {
-                    logger.info( "Reading promotion validation rule from: {}", script );
+                    logger.debug( "Reading promotion validation rule from: {}", script );
                     final ValidationRuleMapping rule = ruleParser.parseRule( script );
                     if ( rule != null )
                     {
@@ -151,7 +151,7 @@ public class PromoteValidationsManager
         {
             final DataFile[] scripts = dataDir.listFiles( (pathname) ->
                                                           {
-                                                              logger.info( "Checking for promotion rule-set in: {}", pathname );
+                                                              logger.debug( "Checking for promotion rule-set in: {}", pathname );
                                                               return pathname.getName()
                                                                              .endsWith( ".json" );
                                                           } );
@@ -161,7 +161,7 @@ public class PromoteValidationsManager
 
                 for ( final DataFile script : scripts )
                 {
-                    logger.info( "Reading promotion validation rule-set from: {}", script );
+                    logger.debug( "Reading promotion validation rule-set from: {}", script );
                     final ValidationRuleSet set = ruleParser.parseRuleSet( script );
                     if ( set != null )
                     {
