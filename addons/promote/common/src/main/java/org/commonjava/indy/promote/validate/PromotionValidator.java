@@ -135,7 +135,7 @@ public class PromotionValidator
                                                               new EventMetadata().set( ContentManager.SUPPRESS_EVENTS,
                                                                                        true ) );
 
-                            logger.info( "Promotion temporary repo {} has been deleted for {}", store.getKey(),
+                            logger.debug( "Promotion temporary repo {} has been deleted for {}", store.getKey(),
                                          request.getSource() );
                         }
                         catch ( IndyDataException e )
