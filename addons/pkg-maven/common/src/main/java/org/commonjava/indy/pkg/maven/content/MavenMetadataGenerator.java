@@ -364,6 +364,13 @@ public class MavenMetadataGenerator
         }
 
         Transfer target = fileManager.getTransfer( group, toMergePath );
+        if ( exists( target ) )
+        {
+            // Means there is no metadata change if this transfer exists, so directly return it.
+            logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
+            eventMetadata.set( GROUP_METADATA_EXISTS, true );
+            return target;
+        }
         try
         {
             target.lockWrite();
@@ -374,13 +381,6 @@ public class MavenMetadataGenerator
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 try
                 {
-                    if ( exists( target ) )
-                    {
-                        // Means there is no metadata change if this transfer exists, so directly return it.
-                        logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
-                        eventMetadata.set( GROUP_METADATA_EXISTS, true );
-                        return target;
-                    }
                     logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(), path );
                     new MetadataXpp3Writer().write( baos, md );
 
