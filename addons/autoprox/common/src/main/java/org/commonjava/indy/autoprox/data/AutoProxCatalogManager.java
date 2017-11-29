@@ -108,7 +108,7 @@ public class AutoProxCatalogManager
                 @Override
                 public boolean accept( final File pathname )
                 {
-                    logger.info( "Checking for autoprox script in: {}", pathname );
+                    logger.debug( "Checking for autoprox script in: {}", pathname );
                     return pathname.getName().endsWith( ".groovy" );
                 }
             } );
@@ -189,7 +189,7 @@ public class AutoProxCatalogManager
         //                                                      .getStackTrace(), "\n  " ) );
         for ( final RuleMapping mapping : getRuleMappings() )
         {
-            logger.info( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );
+            logger.debug( "Checking rule: '{}' for applicability to name: '{}'", mapping.getScriptName(), name );
             if ( mapping.matchesName( name ) )
             {
                 logger.info( "Using rule: '{}'", mapping.getScriptName() );

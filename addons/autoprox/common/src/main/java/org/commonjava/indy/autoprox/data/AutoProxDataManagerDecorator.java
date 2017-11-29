@@ -118,7 +118,7 @@ public abstract class AutoProxDataManagerDecorator
 
             if ( g != null )
             {
-                logger.info( "Validating group: {}", g );
+                logger.debug( "Validating group: {}", g );
                 for ( final StoreKey key : new ArrayList<>( g.getConstituents() ) )
                 {
                     final ArtifactStore store = getArtifactStore( key, impliedBy == null ? g.getKey() : impliedBy );
