@@ -114,9 +114,7 @@ public abstract class ArtifactStore
     public int hashCode()
     {
         final int prime = 31;
-        int result = super.hashCode();
-        result = prime * result + ( ( key == null ) ? 0 : key.hashCode() );
-        return result;
+        return prime + ( ( key == null ) ? 0 : key.hashCode() );
     }
 
     @Override
