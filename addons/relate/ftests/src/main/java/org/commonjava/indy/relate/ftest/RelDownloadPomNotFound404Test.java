@@ -80,6 +80,7 @@ public class RelDownloadPomNotFound404Test
         server.expect( server.formatUrl( repo1, path ), 404, "not found" );
 
         RemoteRepository remote1 = new RemoteRepository( repo1, server.formatUrl( repo1 ) );
+        remote1.setNfcTimeoutSeconds( 1 );
         client.stores().create( remote1, "adding remote", RemoteRepository.class );
 
         // Download .rel before even touching POM
@@ -87,6 +88,9 @@ public class RelDownloadPomNotFound404Test
         assertThat( rel, nullValue() );
 
         logger.debug( ">>> register again ..." );
+
+        Thread.sleep( 2000 ); // wait for NFC to expire
+
         server.expect( server.formatUrl( repo1, path ), 200, content ); // upstream restored
         remote1.setDisabled( false );
         client.stores().update( remote1, "enable it" ); // disabled due to previous error, need to enable it again
