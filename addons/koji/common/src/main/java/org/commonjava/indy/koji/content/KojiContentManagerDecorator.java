@@ -72,6 +72,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
  * this decorator will attempt the following:
@@ -102,6 +104,8 @@ import java.util.stream.Collectors;
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
+    private Logger logger = LoggerFactory.getLogger( getClass() );
+
     private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
     private static final String NVR = "koji-NVR";
@@ -549,7 +553,7 @@ public abstract class KojiContentManagerDecorator
 
     private Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
     {
-        Set<String> ret = new HashSet<>();
+        Set<String> patterns = new HashSet<>();
         for ( KojiArchiveInfo a : archives )
         {
             if ( !isVerSignedAllowedWithVersion( artifactRef.getVersionStringRaw() ) )
@@ -559,16 +563,19 @@ public abstract class KojiContentManagerDecorator
             String pattern = getPatternString( artifactRef, a );
             if ( pattern != null )
             {
-                ret.add( pattern );
+                patterns.add( pattern );
             }
         }
-        return ret;
+        if ( !patterns.isEmpty() )
+        {
+            String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
+            patterns.add( meta );
+        }
+        return patterns;
     }
 
     private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         String gId = artifact.getGroupId();
         String artiId = artifact.getArtifactId();
         String ver = artifact.getVersionStringRaw();
@@ -582,6 +589,21 @@ public abstract class KojiContentManagerDecorator
         logger.trace( "Pattern: {}", pattern );
 
         return pattern;
+    }
+
+    private String getMetaString( ArtifactRef artifact )
+    {
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+
+        if ( gId == null || artiId == null )
+        {
+            logger.trace( "Meta ignored, gId: {}, artiId: {}", gId, artiId );
+            return null;
+        }
+        String meta = gId.replace( '.', '/' ) + "/" + artiId + "/" + METADATA_NAME;
+        logger.trace( "Meta: {}", meta );
+        return meta;
     }
 
     private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )

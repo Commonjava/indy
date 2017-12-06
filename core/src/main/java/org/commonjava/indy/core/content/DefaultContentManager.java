@@ -62,6 +62,7 @@ import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
+import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 
 public class DefaultContentManager
         implements ContentManager
@@ -330,6 +331,17 @@ public class DefaultContentManager
                     item = generator.generateFileContent( store, path, eventMetadata );
                     if ( item != null )
                     {
+                        logger.debug( "Resource generated for {}, clean NFC and delete obsolete http-metadata.json", item.getResource() );
+                        nfc.clearMissing( item.getResource() );
+                        Transfer httpMeta = item.getSiblingMeta( HTTP_METADATA_EXT );
+                        try
+                        {
+                            httpMeta.delete();
+                        }
+                        catch ( IOException e )
+                        {
+                            logger.warn( "Failed to delete {}", httpMeta.getResource() );
+                        }
                         break;
                     }
                 }
