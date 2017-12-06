@@ -68,6 +68,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
  * this decorator will attempt the following:
@@ -98,6 +100,8 @@ import java.util.stream.Collectors;
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
+    private Logger logger = LoggerFactory.getLogger( getClass() );
+
     private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
     private static final String NVR = "koji-NVR";
@@ -512,6 +516,61 @@ public abstract class KojiContentManagerDecorator
         {
             throw new KojiClientException( "Failed to store temporary remote repo: %s", e, e.getMessage() );
         }
+    }
+
+    private Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
+    {
+        Set<String> patterns = new HashSet<>();
+        for ( KojiArchiveInfo a : archives )
+        {
+            if ( !isVerSignedAllowedWithVersion( artifactRef.getVersionStringRaw() ) )
+            {
+                continue;
+            }
+            String pattern = getPatternString( artifactRef, a );
+            if ( pattern != null )
+            {
+                patterns.add( pattern );
+            }
+        }
+        if ( !patterns.isEmpty() )
+        {
+            String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
+            patterns.add( meta );
+        }
+        return patterns;
+    }
+
+    private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
+    {
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+        String ver = artifact.getVersionStringRaw();
+
+        if ( gId == null || artiId == null || ver == null )
+        {
+            logger.trace( "Pattern ignored, gId: {}, artiId: {}, ver: {}", gId, artiId, ver );
+            return null;
+        }
+        String pattern = gId.replace( '.', '/' ) + "/" + artiId + "/" + ver + "/" + a.getFilename();
+        logger.trace( "Pattern: {}", pattern );
+
+        return pattern;
+    }
+
+    private String getMetaString( ArtifactRef artifact )
+    {
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+
+        if ( gId == null || artiId == null )
+        {
+            logger.trace( "Meta ignored, gId: {}, artiId: {}", gId, artiId );
+            return null;
+        }
+        String meta = gId.replace( '.', '/' ) + "/" + artiId + "/" + METADATA_NAME;
+        logger.trace( "Meta: {}", meta );
+        return meta;
     }
 
     private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )
