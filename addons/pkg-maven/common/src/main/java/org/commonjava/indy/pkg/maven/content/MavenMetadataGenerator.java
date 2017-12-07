@@ -80,10 +80,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -153,6 +153,8 @@ public class MavenMetadataGenerator
     @WeftManaged
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
     private ExecutorService executorService;
+
+    private final ReentrantLock mergerLock = new ReentrantLock();
 
     protected MavenMetadataGenerator()
     {
@@ -368,65 +370,86 @@ public class MavenMetadataGenerator
             logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
             return target;
         }
-        try
+
+        if ( mergerLock.tryLock() )
         {
-            target.lockWrite();
-
-            final Metadata md = generateGroupMetadata( group, members, path );
-            if ( md != null )
+            try
             {
-                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                try
+                logger.debug( "Start metadata generation for the metadata file for this path {} in group {}", path,
+                              group );
+                final Metadata md = generateGroupMetadata( group, members, path );
+                if ( md != null )
                 {
-                    logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(), path );
-                    new MetadataXpp3Writer().write( baos, md );
-
-                    final byte[] merged = baos.toByteArray();
-                    if ( merged != null )
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    try
                     {
-                        OutputStream fos = null;
-                        try
-                        {
-                            fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-                            fos.write( merged );
-                        }
-                        catch ( final IOException e )
-                        {
-                            throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}", e,
-                                                             target, e.getMessage() );
-                        }
-                        finally
-                        {
-                            closeQuietly( fos );
-                        }
+                        logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(),
+                                      path );
+                        new MetadataXpp3Writer().write( baos, md );
 
-                        writeGroupMergeInfo( group, members, toMergePath );
+                        final byte[] merged = baos.toByteArray();
+                        if ( merged != null )
+                        {
+                            OutputStream fos = null;
+                            try
+                            {
+                                fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
+                                fos.write( merged );
+                            }
+                            catch ( final IOException e )
+                            {
+                                throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}",
+                                                                 e, target, e.getMessage() );
+                            }
+                            finally
+                            {
+                                closeQuietly( fos );
+                            }
+
+                            writeGroupMergeInfo( group, members, toMergePath );
+                        }
                     }
-                }
-                catch ( final IOException e )
-                {
-                    logger.error( String.format( "Cannot write consolidated metadata: %s to: %s. Reason: %s", path,
-                                                 group.getKey(), e.getMessage() ), e );
-                }
-
-                if ( exists( target ) )
-                {
-                    //                return target;
-                    // if this is a checksum file, we need to return the original path.
-                    Transfer original = fileManager.getTransfer( group, path );
-                    if ( exists( original ) )
+                    catch ( final IOException e )
                     {
-                        return original;
+                        logger.error( String.format( "Cannot write consolidated metadata: %s to: %s. Reason: %s", path,
+                                                     group.getKey(), e.getMessage() ), e );
                     }
                 }
             }
-
-            return null;
+            finally
+            {
+                mergerLock.unlock();
+            }
         }
-        finally
+        else
         {
-            target.unlock();
+            logger.info(
+                    "The metadata generation is still in process by another thread for the metadata file for this path {} in group {}, so block current thread to wait for result",
+                    path, group );
+            try
+            {
+                //TODO: potential dead lock if the real merging thread is blocked by some underline issues.
+                mergerLock.lock();
+                logger.debug( "Get the lock but do nothing because this is only to wait for the result of working thread for meta merging." );
+            }
+            finally
+            {
+                mergerLock.unlock();
+            }
         }
+
+        if ( exists( target ) )
+        {
+            //                return target;
+            // if this is a checksum file, we need to return the original path.
+            Transfer original = fileManager.getTransfer( group, path );
+            if ( exists( original ) )
+            {
+                return original;
+            }
+        }
+
+        return null;
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
@@ -480,6 +503,7 @@ public class MavenMetadataGenerator
     {
         if ( !canProcess( path ) )
         {
+            logger.error( "The path is not a metadata file: {} ", path );
             return null;
         }
 
@@ -488,8 +512,6 @@ public class MavenMetadataGenerator
         {
             toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
         }
-
-        final String tmp = toMergePath;
 
         Metadata meta = getMetaFromCache( group.getKey(), toMergePath );
 
@@ -518,6 +540,7 @@ public class MavenMetadataGenerator
             return master;
         }
 
+        logger.error( "The group metadata generation is not successful for path: {} in group: {}", path, group );
         return null;
     }
 
