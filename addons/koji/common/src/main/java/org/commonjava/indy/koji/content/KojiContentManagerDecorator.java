@@ -48,7 +48,9 @@ import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
@@ -73,6 +75,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -569,7 +572,10 @@ public abstract class KojiContentManagerDecorator
         if ( !patterns.isEmpty() )
         {
             String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
-            patterns.add( meta );
+            if ( meta != null )
+            {
+                patterns.add( meta );
+            }
         }
         return patterns;
     }
@@ -601,8 +607,16 @@ public abstract class KojiContentManagerDecorator
             logger.trace( "Meta ignored, gId: {}, artiId: {}", gId, artiId );
             return null;
         }
-        String meta = gId.replace( '.', '/' ) + "/" + artiId + "/" + METADATA_NAME;
-        logger.trace( "Meta: {}", meta );
+        String meta = null;
+        try
+        {
+            meta = formatMetadataPath( new SimpleProjectRef( gId, artiId ), METADATA_NAME );
+            logger.trace( "Meta: {}", meta );
+        }
+        catch ( TransferException e )
+        {
+            logger.error( "Format metadata path failed", e );
+        }
         return meta;
     }
 

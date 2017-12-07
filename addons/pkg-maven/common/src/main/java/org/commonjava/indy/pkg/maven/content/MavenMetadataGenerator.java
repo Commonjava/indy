@@ -20,7 +20,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -80,7 +79,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -503,8 +501,6 @@ public class MavenMetadataGenerator
             toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
         }
 
-        final String tmp = toMergePath;
-
         Metadata meta = getMetaFromCache( group.getKey(), toMergePath );
 
         if ( meta != null )
@@ -579,7 +575,7 @@ public class MavenMetadataGenerator
                             Metadata memberMeta = reader.read( new StringReader( content ), false );
                             memberMetas.put( store.getKey(), memberMeta );
 
-                            putToMetadataCache( group.getKey(), toMergePath, memberMeta );
+                            putToMetadataCache( store.getKey(), toMergePath, memberMeta );
                             clearObsoleteFiles( memberMetaTxfr );
                         }
                     }
@@ -709,7 +705,7 @@ public class MavenMetadataGenerator
                             Metadata memberMeta = reader.read( new StringReader( content ), false );
                             memberMetas.put( store.getKey(), memberMeta );
 
-                            putToMetadataCache( group.getKey(), toMergePath, memberMeta );
+                            putToMetadataCache( store.getKey(), toMergePath, memberMeta );
                         }
                     }
                     else

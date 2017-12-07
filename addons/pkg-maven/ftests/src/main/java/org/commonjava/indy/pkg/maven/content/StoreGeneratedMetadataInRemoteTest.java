@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -28,7 +27,9 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 
@@ -61,7 +62,7 @@ import static org.hamcrest.core.IsNull.notNullValue;
  * </ul>
  */
 public class StoreGeneratedMetadataInRemoteTest
-                extends AbstractIndyFunctionalTest //ContentManagementTest
+                extends AbstractIndyFunctionalTest
 {
 
     @Rule
@@ -100,20 +101,15 @@ public class StoreGeneratedMetadataInRemoteTest
     private final String pomContent_2 = "<project><modelVersion>4.0.0</modelVersion>"
                     + "<groupId>org.foo</groupId><artifactId>bar</artifactId><version>2.0</version></project>";
 
-    protected boolean createStandardTestStructures()
-    {
-        return false;
-    }
-
     @Test
     public void run() throws Exception
     {
         server.expect( server.formatUrl( REMOTE, path_1 ), 200, pomContent_1 );
 
-        RemoteRepository remote1 = new RemoteRepository( REMOTE, server.formatUrl( REMOTE ) );
+        RemoteRepository remote1 = new RemoteRepository( MAVEN_PKG_KEY, REMOTE, server.formatUrl( REMOTE ) );
         remote1 = client.stores().create( remote1, "remote A", RemoteRepository.class );
 
-        HostedRepository hosted1 = client.stores().create( new HostedRepository( HOSTED ), "hosted B", HostedRepository.class );
+        HostedRepository hosted1 = client.stores().create( new HostedRepository( MAVEN_PKG_KEY, HOSTED ), "hosted B", HostedRepository.class );
         client.content().store( hosted1.getKey(), path_2, new ByteArrayInputStream( pomContent_2.getBytes() ) );
         client.content().store( hosted1.getKey(), metaPath, new ByteArrayInputStream( metaContent.getBytes() ) );
 
@@ -144,14 +140,24 @@ public class StoreGeneratedMetadataInRemoteTest
         }
 
         // Delete remote A
-        /*client.stores().delete( remote1.getKey(), "delete A" );
+        client.stores().delete( remote1.getKey(), "delete A" );
+
+        /*
+         * Disable it has same effect
+
+        remote1.setDisabled( true );
+        client.stores().update( remote1, "disable A" );
+        */
+
         waitForEventPropagation();
 
-        // Get meta from group again. Contains only version 2
+        // Get meta from group again. Contains only version 2.0, no 1.0
         try (final InputStream stream = client.content().get( g.getKey(), metaPath ))
         {
             assertThat( stream, notNullValue() );
-            logger.debug( "Group meta after deleting A >>>>\n" + IOUtils.toString( stream ) );
-        }*/
+            String meta = IOUtils.toString( stream );
+            logger.debug( "Group meta after deleting A >>>>\n" + meta );
+            assertFalse( meta.contains( "<version>1.0</version>" ) );
+        }
     }
 }
