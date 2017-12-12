@@ -374,7 +374,9 @@ public class MavenMetadataGenerator
             return target;
         }
 
-        if ( mergerLock.tryLock() )
+        final boolean locked = mergerLock.tryLock();
+
+        if ( locked )
         {
             try
             {
