@@ -77,6 +77,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -499,8 +500,18 @@ public class MavenMetadataGenerator
 
     private ReentrantLock getMergerLock( Group group, String path )
     {
-        String key = group.getKey().toString() + "-" + path;
-        return mergerLocks.computeIfAbsent( key, k -> new ReentrantLock() );
+        ReentrantLock lock;
+        synchronized ( mergerLocks )
+        {
+            String targetKey = group.getKey().toString() + "-" + path;
+            lock = mergerLocks.get( targetKey );
+            if ( lock == null )
+            {
+                lock = new ReentrantLock();
+                mergerLocks.put( targetKey, lock );
+            }
+        }
+        return lock;
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
