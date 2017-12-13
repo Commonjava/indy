@@ -16,6 +16,7 @@
 package org.commonjava.indy.pkg.maven.content;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
@@ -44,8 +45,10 @@ import java.util.Set;
 /**
  * This listener will do these tasks:
  * <ul>
- *     <li>When there are member changes for a group, or some members disabled/enabled in a group, delete group metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
- *     <li>When the metadata file changed of a member in a group, delete correspond cache of that file path of the member and group (cascaded)</li>
+ *     <li>When there are member changes for a group, or member disabled/enabled in a group,
+ *     delete group metadata caches to force regeneration of the metadata of the group (cascaded)</li>
+ *     <li>When the metadata file changed of a member in a group,
+ *     delete correspond cache of that file path of the member and group (cascaded)</li>
  * </ul>
  */
 @ApplicationScoped
@@ -65,13 +68,12 @@ public class MetadataMergeListner
     private CacheHandle<StoreKey, Map> versionMetadataCache;
 
     /**
-     * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache due to changed memeber in that event
+     * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache of the changed member in event
      *
      * @param event
      */
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
-
         logger.trace( "Got store-update event: {}", event );
 
         if ( ArtifactStoreUpdateType.UPDATE == event.getType() )
@@ -83,11 +85,33 @@ public class MetadataMergeListner
         }
     }
 
+    public void onStoreDelete( @Observes final ArtifactStoreDeletePreEvent event )
+    {
+        logger.trace( "Got store-delete event: {}", event );
+
+        for ( ArtifactStore store : event )
+        {
+            removeMetadataCache( store );
+        }
+    }
+
+    private void removeMetadataCache( ArtifactStore store )
+    {
+        versionMetadataCache.remove( store.getKey() );
+        try
+        {
+            storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
+        }
+    }
+
     private void removeMetadataCacheContent( final ArtifactStore store,
                                              final Map<ArtifactStore, ArtifactStore> changeMap )
     {
         handleStoreDisableOrEnable( store, changeMap );
-
         handleGroupMembersChanged( store, changeMap );
     }
 
@@ -97,19 +121,7 @@ public class MetadataMergeListner
         final ArtifactStore oldStore = changeMap.get( store );
         if ( store.isDisabled() != oldStore.isDisabled() )
         {
-            final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( store.getKey() );
-            if ( metadataMap != null && !metadataMap.isEmpty() )
-            {
-                versionMetadataCache.remove( store.getKey() );
-                try
-                {
-                    storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
-                }
-                catch ( IndyDataException e )
-                {
-                    logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
-                }
-            }
+            removeMetadataCache( store );
         }
     }
 
@@ -203,8 +215,8 @@ public class MetadataMergeListner
     }
 
     /**
-     * Will clear the both merge path and merge info file of member and group contains that member(cascaded) if that path of file changed in the member of #originatingStore
-     *
+     * Will clear the both merge path and merge info file of member and group contains that member(cascaded)
+     * if that path of file changed in the member of #originatingStore
      */
     @Override
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )

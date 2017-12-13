@@ -20,7 +20,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -80,7 +79,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -89,6 +87,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
+import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -191,8 +190,7 @@ public class MavenMetadataGenerator
         throws IndyWorkflowException
     {
         // metadata merging is something else...don't handle it here.
-        if ( StoreType.group == store.getKey()
-                                     .getType() )
+        if ( StoreType.group == store.getKey().getType() )
         {
             return null;
         }
@@ -347,6 +345,15 @@ public class MavenMetadataGenerator
         return null;
     }
 
+    /**
+     *
+     * @param group
+     * @param members Concrete stores in group
+     * @param path
+     * @param eventMetadata
+     * @return
+     * @throws IndyWorkflowException
+     */
     @Override
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
                     IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEGROUPILECONTENT
@@ -475,7 +482,7 @@ public class MavenMetadataGenerator
      * files will be cached. In terms of cache clearing, see #{@link MetadataMergeListner}
      *
      * @param group
-     * @param members
+     * @param members concrete store in group
      * @param path
      * @return
      * @throws IndyWorkflowException
@@ -494,8 +501,6 @@ public class MavenMetadataGenerator
             toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
         }
 
-        final String tmp = toMergePath;
-
         Metadata meta = getMetaFromCache( group.getKey(), toMergePath );
 
         if ( meta != null )
@@ -506,7 +511,11 @@ public class MavenMetadataGenerator
         Map<StoreKey, Metadata> memberMetas = new ConcurrentHashMap<>( members.size() );
         Set<ArtifactStore> missing = retrieveCachedMemberMetadata( memberMetas, members, toMergePath );
 
-        downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
+        // Try to download missed meta
+        missing = downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
+
+        // Try to generate missed meta
+        missing = generateMissingMemberMetadata( group, missing, memberMetas, toMergePath );
 
         List<Metadata> metas = members.stream()
                                       .map( mem -> memberMetas.get(mem.getKey()) )
@@ -517,13 +526,109 @@ public class MavenMetadataGenerator
 
         if ( master != null )
         {
-            Map<String, MetadataInfo> cacheMap = new HashMap<>();
-            cacheMap.put( toMergePath, new MetadataInfo( master ) );
-            versionMetadataCache.put( group.getKey(), cacheMap );
+            putToMetadataCache( group.getKey(), toMergePath, master );
             return master;
         }
 
         return null;
+    }
+
+    private void putToMetadataCache( StoreKey key, String toMergePath, Metadata meta )
+    {
+        synchronized ( versionMetadataCache )
+        {
+            Map cacheMap = versionMetadataCache.get( key );
+            if ( cacheMap == null )
+            {
+                cacheMap = new HashMap<>();
+                versionMetadataCache.put( key, cacheMap );
+            }
+            cacheMap.put( toMergePath, new MetadataInfo( meta ) );
+        }
+    }
+
+    private Set<ArtifactStore> generateMissingMemberMetadata( Group group, Set<ArtifactStore> missing,
+                                                Map<StoreKey, Metadata> memberMetas, String toMergePath )
+                    throws IndyWorkflowException
+    {
+        Set<ArtifactStore> ret = new HashSet<>(); // return stores which failed generation
+
+        CountDownLatch latch = new CountDownLatch( missing.size() );
+        List<String> errors = new ArrayList<>();
+
+        /* @formatter:off */
+        missing.forEach( (store)->{
+            logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
+            executorService.execute( ()->{
+                try
+                {
+                    logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath);
+                    Transfer memberMetaTxfr = generateFileContent( store, toMergePath, new EventMetadata() );
+
+                    if ( exists( memberMetaTxfr ) )
+                    {
+                        final MetadataXpp3Reader reader = new MetadataXpp3Reader();
+
+                        try (InputStream in = memberMetaTxfr.openInputStream())
+                        {
+                            String content = IOUtils.toString( in );
+                            Metadata memberMeta = reader.read( new StringReader( content ), false );
+                            memberMetas.put( store.getKey(), memberMeta );
+
+                            putToMetadataCache( store.getKey(), toMergePath, memberMeta );
+                            clearObsoleteFiles( memberMetaTxfr );
+                        }
+                    }
+                    else
+                    {
+                        ret.add( store );
+                    }
+                }
+                catch ( final Exception e )
+                {
+                    String msg = String.format( "Failed to generate metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                                                 e.getMessage() );
+                    logger.error( msg, e );
+                    synchronized ( errors )
+                    {
+                        errors.add( msg );
+                    }
+                }
+                finally
+                {
+                    latch.countDown();
+                }
+            } );
+        } );
+        /* @formatter:on */
+
+        waitOnLatch(group, toMergePath, latch);
+
+        if ( !errors.isEmpty() )
+        {
+            throw new IndyWorkflowException( "Failed to generate one or more member metadata files for: %s:%s. Errors were:\n  %s",
+                            group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
+        }
+
+        return ret;
+    }
+
+    /**
+     * Clear obsolete files after a meta is generated. This may be http download metadata, etc.
+     * @param item
+     */
+    private void clearObsoleteFiles( Transfer item )
+    {
+        Transfer httpMeta = item.getSiblingMeta( HTTP_METADATA_EXT );
+        try
+        {
+            httpMeta.delete();
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "Failed to delete {}", httpMeta.getResource() );
+        }
+
     }
 
     private Set<ArtifactStore> retrieveCachedMemberMetadata( final Map<StoreKey, Metadata> memberMetas,
@@ -572,16 +677,18 @@ public class MavenMetadataGenerator
         return missing;
     }
 
-    private void downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missing,
+    private Set<ArtifactStore> downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missing,
                                                 final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
             throws IndyWorkflowException
     {
+        Set<ArtifactStore> ret = new HashSet<>(  ); // return stores which failed download
+
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
         /* @formatter:off */
         missing.forEach( (store)->{
-            logger.debug( "Submitting download task for {} metadata: '{}'", store.getKey(), toMergePath );
+            logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
@@ -598,32 +705,15 @@ public class MavenMetadataGenerator
                             Metadata memberMeta = reader.read( new StringReader( content ), false );
                             memberMetas.put( store.getKey(), memberMeta );
 
-                            Map<String, MetadataInfo> cacheMap = new HashMap<>();
-                            cacheMap.put( toMergePath, new MetadataInfo( memberMeta ) );
-                            versionMetadataCache.putIfAbsent( store.getKey(), cacheMap );
+                            putToMetadataCache( store.getKey(), toMergePath, memberMeta );
                         }
                     }
-                }
-                catch ( final IOException e )
-                {
-                    String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
-                                                 e.getMessage() );
-                    logger.error( msg, e );
-                    synchronized ( errors )
+                    else
                     {
-                        errors.add( msg );
+                        ret.add( store );
                     }
                 }
-                catch ( final XmlPullParserException e )
-                {
-                    String msg = String.format( "Cannot parse metadata: %s:%s. Reason: %s", store.getKey(), toMergePath, e.getMessage() );
-                    logger.error( msg, e );
-                    synchronized ( errors )
-                    {
-                        errors.add( msg );
-                    }
-                }
-                catch ( IndyWorkflowException e )
+                catch ( final Exception e )
                 {
                     String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
                                                  e.getMessage() );
@@ -641,6 +731,20 @@ public class MavenMetadataGenerator
         } );
         /* @formatter:on */
 
+        waitOnLatch(group, toMergePath, latch);
+
+        if ( !errors.isEmpty() )
+        {
+            throw new IndyWorkflowException(
+                    "Failed to retrieve one or more member metadata files for: %s:%s. Errors were:\n  %s",
+                    group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
+        }
+
+        return ret;
+    }
+
+    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch )
+    {
         do
         {
             logger.trace( "Latch count: {}", latch.getCount() );
@@ -656,13 +760,6 @@ public class MavenMetadataGenerator
             }
         }
         while ( latch.getCount() > 0 );
-
-        if ( !errors.isEmpty() )
-        {
-            throw new IndyWorkflowException(
-                    "Failed to retrieve one or more member metadata files for: %s:%s. Errors were:\n  %s",
-                    group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
-        }
     }
 
     private boolean exists( final Transfer target )

@@ -39,11 +39,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+/**
+ * Pre-events (deleting, updating, enabling) are single-threaded (inline to user thread) so there isn't a race
+ * condition between their execution and the target action.
+ * For post-events (deleted, updated, enabled), it's intended that those are less critical and can happen async.
+ *
+ * This also makes them in right order - pre before action and post after action.
+ */
 public class DefaultStoreEventDispatcher
         implements StoreEventDispatcher
 {
 
-    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Event<ArtifactStorePreUpdateEvent> updatePreEvent;
@@ -75,26 +82,23 @@ public class DefaultStoreEventDispatcher
     {
         if ( preDelEvent != null )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.trace( "Firing store pre-delete event for: {}", Arrays.asList( stores ) );
+            logger.trace( "Dispatch pre-delete event for: {}", Arrays.asList( stores ) );
 
-//            executor.execute( () -> {
-                final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
-                for ( final ArtifactStore store : stores )
+            final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
+            for ( final ArtifactStore store : stores )
+            {
+                if ( store == null )
                 {
-                    if ( store == null )
-                    {
-                        continue;
-                    }
-
-                    final Transfer root = fileManager.getStoreRootDirectory( store );
-                    storeRoots.put( store, root );
+                    continue;
                 }
 
-                final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
+                final Transfer root = fileManager.getStoreRootDirectory( store );
+                storeRoots.put( store, root );
+            }
 
-                preDelEvent.fire( event );
-//            } );
+            final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
+
+            preDelEvent.fire( event );
         }
     }
 
@@ -103,12 +107,9 @@ public class DefaultStoreEventDispatcher
     {
         if ( postDelEvent != null )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.trace( "Requesting execution of store post-delete event for: {}", Arrays.asList( stores ) );
+            logger.trace( "Dispatch post-delete event for: {}", Arrays.asList( stores ) );
 
             executor.execute( () -> {
-                logger.trace( "Firing store post-delete event for: {}", Arrays.asList( stores ) );
-
                 final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
                 for ( final ArtifactStore store : stores )
                 {
@@ -133,17 +134,13 @@ public class DefaultStoreEventDispatcher
     public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
                           final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        //        logger.debug( "Trying to fire pre-update event for: {}", new JoinString( ", ", stores ) );
         if ( updatePreEvent != null )
         {
-//            executor.execute( () -> {
-                final ArtifactStorePreUpdateEvent event =
-                        new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
-                //            logger.debug( "Firing pre-update event: {} (for: {}) via:\n  {}", event, new JoinString( ", ", stores ),
-                //                          new JoinString( "\n  ", Thread.currentThread()
-                //                                                        .getStackTrace() ) );
-                updatePreEvent.fire( event );
-//            } );
+            logger.trace( "Dispatch pre-update event for: {}", changeMap );
+
+            final ArtifactStorePreUpdateEvent event =
+                    new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
+            updatePreEvent.fire( event );
         }
     }
 
@@ -153,6 +150,8 @@ public class DefaultStoreEventDispatcher
     {
         if ( updatePostEvent != null )
         {
+            logger.trace( "Dispatch post-update event for: {}", changeMap );
+
             executor.execute( () -> {
                 final ArtifactStorePostUpdateEvent event =
                         new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
@@ -164,12 +163,16 @@ public class DefaultStoreEventDispatcher
     @Override
     public void enabling( EventMetadata eventMetadata, ArtifactStore... stores )
     {
+        logger.trace( "Dispatch pre-enable event for: {}", Arrays.asList( stores ) );
+
         fireEnablement( true, eventMetadata, false, stores );
     }
 
     @Override
     public void enabled( EventMetadata eventMetadata, ArtifactStore... stores )
     {
+        logger.trace( "Dispatch post-enable event for: {}", Arrays.asList( stores ) );
+
         executor.execute( ()->{
             fireEnablement( false, eventMetadata, false, stores );
         } );

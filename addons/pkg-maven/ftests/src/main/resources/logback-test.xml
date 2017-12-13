@@ -21,7 +21,7 @@
   <logger name="org.jboss" level="WARN"/>
   <logger name="com.redhat.red.build.koji.model.xmlrpc.KojiXmlRpcBindery" level="WARN"/>
 
-  <logger name="org.commonjava.indy" level="DEBUG"/>
+  <logger name="org.commonjava.indy" level="TRACE"/>
   <logger name="org.apache.http" level="DEBUG"/>
 
   <!-- Strictly speaking, the level attribute is not necessary since -->

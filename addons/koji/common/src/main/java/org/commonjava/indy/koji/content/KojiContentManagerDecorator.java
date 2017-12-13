@@ -48,7 +48,9 @@ import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
@@ -71,6 +73,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -102,6 +107,8 @@ import java.util.stream.Collectors;
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
+    private Logger logger = LoggerFactory.getLogger( getClass() );
+
     private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
     private static final String NVR = "koji-NVR";
@@ -549,7 +556,7 @@ public abstract class KojiContentManagerDecorator
 
     private Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
     {
-        Set<String> ret = new HashSet<>();
+        Set<String> patterns = new HashSet<>();
         for ( KojiArchiveInfo a : archives )
         {
             if ( !isVerSignedAllowedWithVersion( artifactRef.getVersionStringRaw() ) )
@@ -559,16 +566,22 @@ public abstract class KojiContentManagerDecorator
             String pattern = getPatternString( artifactRef, a );
             if ( pattern != null )
             {
-                ret.add( pattern );
+                patterns.add( pattern );
             }
         }
-        return ret;
+        if ( !patterns.isEmpty() )
+        {
+            String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
+            if ( meta != null )
+            {
+                patterns.add( meta );
+            }
+        }
+        return patterns;
     }
 
     private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         String gId = artifact.getGroupId();
         String artiId = artifact.getArtifactId();
         String ver = artifact.getVersionStringRaw();
@@ -582,6 +595,29 @@ public abstract class KojiContentManagerDecorator
         logger.trace( "Pattern: {}", pattern );
 
         return pattern;
+    }
+
+    private String getMetaString( ArtifactRef artifact )
+    {
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+
+        if ( gId == null || artiId == null )
+        {
+            logger.trace( "Meta ignored, gId: {}, artiId: {}", gId, artiId );
+            return null;
+        }
+        String meta = null;
+        try
+        {
+            meta = formatMetadataPath( new SimpleProjectRef( gId, artiId ), METADATA_NAME );
+            logger.trace( "Meta: {}", meta );
+        }
+        catch ( TransferException e )
+        {
+            logger.error( "Format metadata path failed", e );
+        }
+        return meta;
     }
 
     private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )

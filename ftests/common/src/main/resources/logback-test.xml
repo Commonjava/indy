@@ -18,6 +18,8 @@
     </encoder>
   </appender>
 
+  <logger name="io.swagger" level="ERROR"/>
+
   <root level="TRACE">
     <appender-ref ref="STDOUT" />
   </root>  
