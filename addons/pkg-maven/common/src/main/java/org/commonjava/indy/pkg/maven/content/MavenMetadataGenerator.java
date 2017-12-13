@@ -78,6 +78,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -156,7 +157,7 @@ public class MavenMetadataGenerator
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
     private ExecutorService executorService;
 
-    private final ReentrantLock mergerLock = new ReentrantLock();
+    private final Map<String, ReentrantLock> mergerLocks = new WeakHashMap<>();
 
     private static final int THREAD_WAITING_TIME_SECONDS = 30;
 
@@ -376,8 +377,8 @@ public class MavenMetadataGenerator
             return target;
         }
 
+        final ReentrantLock mergerLock = getMergerLock( group, toMergePath );
         final boolean locked = mergerLock.tryLock();
-
         boolean mergingDone = false;
 
         if ( locked )
@@ -486,6 +487,22 @@ public class MavenMetadataGenerator
         }
 
         return null;
+    }
+
+    private ReentrantLock getMergerLock( Group group, String path )
+    {
+        ReentrantLock lock;
+        synchronized ( mergerLocks )
+        {
+            String targetKey = group.getKey().toString() + "-" + path;
+            lock = mergerLocks.get( targetKey );
+            if ( lock == null )
+            {
+                lock = new ReentrantLock();
+                mergerLocks.put( targetKey, lock );
+            }
+        }
+        return lock;
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
