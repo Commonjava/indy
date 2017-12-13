@@ -31,7 +31,7 @@
   <name>Indy :: Deployments :: Parent</name>
   
   <modules>
-    <module>launchers</module>
+    <module>launcher</module>
   </modules>
 
   <profiles>

@@ -61,6 +61,7 @@ public class IndyMetricsManager
     @PostConstruct
     public void initMetric()
     {
+        logger.warn( "Starting metrics subsystem..." );
 
         if ( !config.isMetricsEnabled() )
             return;
@@ -69,11 +70,13 @@ public class IndyMetricsManager
 
         indyMetricsHealthChecks.forEach( indyHealthCheck ->
                                          {
+                                             logger.info( "Registering health check: {}", indyHealthCheck.getName() );
                                              healthCheckRegistrySet.register( indyHealthCheck.getName(),
                                                                               (HealthCheck) indyHealthCheck );
                                          } );
         try
         {
+            logger.info( "Adding health checks to registry: {}", metricRegistry );
             metricRegistry.register( healthCheckRegistrySet.getName(), healthCheckRegistrySet );
             reporter.initReporter( metricRegistry );
         }
@@ -86,13 +89,13 @@ public class IndyMetricsManager
 
     public Timer getTimer( MetricNamed named )
     {
-        logger.info( "call in IndyMetricsManager.getTimer" );
+        logger.info( "call in IndyMetricsManager.getTimer from registry: {}", metricRegistry );
         return this.metricRegistry.timer( named.name() );
     }
 
     public Meter getMeter( MetricNamed named )
     {
-        logger.info( "call in IndyMetricsManager.getMeter" );
+        logger.info( "call in IndyMetricsManager.getMeter from registry: {}", metricRegistry );
         return metricRegistry.meter( named.name() );
     }
 
