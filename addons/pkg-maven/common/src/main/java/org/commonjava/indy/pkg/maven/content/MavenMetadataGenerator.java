@@ -78,6 +78,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -154,9 +155,9 @@ public class MavenMetadataGenerator
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
     private ExecutorService executorService;
 
-    private final ReentrantLock mergerLock = new ReentrantLock();
+    private final Map<String, ReentrantLock> mergerLocks = new WeakHashMap<>();
 
-    private static final int THREAD_WAITING_TIME_SECONDS = 5;
+    private static final int THREAD_WAITING_TIME_SECONDS = 30;
 
     protected MavenMetadataGenerator()
     {
@@ -373,7 +374,9 @@ public class MavenMetadataGenerator
             return target;
         }
 
+        final ReentrantLock mergerLock = getMergerLock( group, toMergePath );
         final boolean locked = mergerLock.tryLock();
+        boolean mergingDone = false;
 
         if ( locked )
         {
@@ -422,6 +425,7 @@ public class MavenMetadataGenerator
             }
             finally
             {
+                mergingDone = true;
                 mergerLock.unlock();
             }
         }
@@ -437,8 +441,7 @@ public class MavenMetadataGenerator
                 waitingLocked = mergerLock.tryLock( THREAD_WAITING_TIME_SECONDS, TimeUnit.SECONDS );
                 if ( waitingLocked )
                 {
-                    logger.debug(
-                            "Get the lock but do nothing because this is only to wait for the result of working thread for meta merging." );
+                    mergingDone = true;
                 }
             }
             catch ( InterruptedException e )
@@ -465,7 +468,36 @@ public class MavenMetadataGenerator
             }
         }
 
+        if ( mergingDone )
+        {
+            logger.error(
+                    "Merging finished but got some error, which is caused the merging file not created correctly. See merging related error log for details. Merging group: {}, path: {}",
+                    group, path );
+        }
+        else
+        {
+            logger.error(
+                    "Merging not finished but thread waiting timeout, caused current thread will get a null merging result. Try to enlarge the waiting timeout. Merging group: {}, path: {}",
+                    group, path );
+        }
+
         return null;
+    }
+
+    private ReentrantLock getMergerLock( Group group, String path )
+    {
+        ReentrantLock lock;
+        synchronized ( mergerLocks )
+        {
+            String targetKey = group.getKey().toString() + "-" + path;
+            lock = mergerLocks.get( targetKey );
+            if ( lock == null )
+            {
+                lock = new ReentrantLock();
+                mergerLocks.put( targetKey, lock );
+            }
+        }
+        return lock;
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
