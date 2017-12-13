@@ -156,6 +156,8 @@ public class MavenMetadataGenerator
 
     private final ReentrantLock mergerLock = new ReentrantLock();
 
+    private static final int THREAD_WAITING_TIME_SECONDS = 5;
+
     protected MavenMetadataGenerator()
     {
     }
@@ -428,15 +430,27 @@ public class MavenMetadataGenerator
             logger.info(
                     "The metadata generation is still in process by another thread for the metadata file for this path {} in group {}, so block current thread to wait for result",
                     path, group );
+            boolean waitingLocked = false;
             try
             {
-                //TODO: potential dead lock if the real merging thread is blocked by some underline issues.
-                mergerLock.lock();
-                logger.debug( "Get the lock but do nothing because this is only to wait for the result of working thread for meta merging." );
+                //TODO: will let non-working threads wait here for seconds for the result of the working thread processing. Need to evaluate how long should wait here in future.
+                waitingLocked = mergerLock.tryLock( THREAD_WAITING_TIME_SECONDS, TimeUnit.SECONDS );
+                if ( waitingLocked )
+                {
+                    logger.debug(
+                            "Get the lock but do nothing because this is only to wait for the result of working thread for meta merging." );
+                }
+            }
+            catch ( InterruptedException e )
+            {
+                logger.warn( "Thread interrupted by other threads for waiting processing result: {}", e.getMessage() );
             }
             finally
             {
-                mergerLock.unlock();
+                if ( waitingLocked )
+                {
+                    mergerLock.unlock();
+                }
             }
         }
 
