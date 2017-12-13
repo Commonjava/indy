@@ -156,7 +156,7 @@ public class MavenMetadataGenerator
 
     private final ReentrantLock mergerLock = new ReentrantLock();
 
-    private static final int THREAD_WAITING_TIME_SECONDS = 5;
+    private static final int THREAD_WAITING_TIME_SECONDS = 30;
 
     protected MavenMetadataGenerator()
     {
