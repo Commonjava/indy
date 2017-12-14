@@ -159,7 +159,7 @@ public class MavenMetadataGenerator
 
     private final Map<String, ReentrantLock> mergerLocks = new WeakHashMap<>();
 
-    private static final int THREAD_WAITING_TIME_SECONDS = 30;
+    private static final int THREAD_WAITING_TIME_SECONDS = 300;
 
     protected MavenMetadataGenerator()
     {
