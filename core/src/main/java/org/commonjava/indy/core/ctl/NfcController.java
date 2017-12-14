@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -36,18 +35,15 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.inject.AbstractNotFoundCache;
-import org.commonjava.indy.core.inject.NfcKeyedLocation;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 
 @ApplicationScoped
 public class NfcController
@@ -110,13 +106,53 @@ public class NfcController
         return doGetMissing( key, pageIndex, pageSize );
     }
 
+    //Warn: The getMissing is very expensive if group holds thousands of repositories.
+    private final static int MAX_GROUP_MEMBER_SIZE_FOR_GET_MISSING = 300;
+
     private NotFoundCacheDTO doGetMissing( final StoreKey key, int... pagingParams )
                     throws IndyWorkflowException
     {
         final NotFoundCacheDTO dto = new NotFoundCacheDTO();
         if ( key.getType() == group )
         {
-            throw new IndyWorkflowException( SC_UNPROCESSABLE_ENTITY, "Get missing for group is not supported");
+            List<ArtifactStore> stores;
+            try
+            {
+                stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
+            }
+            catch ( final IndyDataException e )
+            {
+                throw new IndyWorkflowException( "Failed to retrieve concrete constituent for: %s.", e, key );
+            }
+
+            if ( stores.size() >= MAX_GROUP_MEMBER_SIZE_FOR_GET_MISSING )
+            {
+                throw new IndyWorkflowException( SC_UNPROCESSABLE_ENTITY,
+                                                 "Get missing for group failed (too many members), size: " + stores.size() );
+            }
+
+            final List<? extends KeyedLocation> locations = toLocations( stores );
+            for ( final KeyedLocation location : locations )
+            {
+                Set<String> missing;
+                if ( pagingParams != null && pagingParams.length > 0 )
+                {
+                    missing = cache.getMissing( location, pagingParams[0], pagingParams[1] );
+                }
+                else
+                {
+                    missing = cache.getMissing( location );
+                }
+
+                if ( missing != null && !missing.isEmpty() )
+                {
+                    final List<String> paths = new ArrayList<>( missing );
+                    Collections.sort( paths );
+
+                    dto.addSection( location.getKey(), paths );
+                }
+            }
+
         }
         else
         {
@@ -142,7 +178,7 @@ public class NfcController
                     missing = cache.getMissing( toLocation( store ) );
                 }
 
-                final List<String> paths = new ArrayList<String>( missing );
+                final List<String> paths = new ArrayList<>( missing );
                 Collections.sort( paths );
 
                 dto.addSection( key, paths );
@@ -225,21 +261,46 @@ public class NfcController
     public NotFoundCacheInfoDTO getInfo( StoreKey key ) throws IndyWorkflowException
     {
         NotFoundCacheInfoDTO dto = new NotFoundCacheInfoDTO();
-        long size;
-        switch ( key.getType() )
+        final AtomicLong size = new AtomicLong( 0);
+        try
         {
-            case group:
+            switch ( key.getType() )
             {
-                throw new IndyWorkflowException( SC_UNPROCESSABLE_ENTITY,
-                                                 "Get missing info for group is not supported" );
+                case group:
+                {
+                    //Warn: This is very expensive if group holds thousands of repositories
+                    final List<StoreKey> stores = storeManager.query()
+                                                              .packageType( key.getPackageType() )
+                                                              .getOrderedConcreteStoresInGroup( key.getName() )
+                                                              .stream()
+                                                              .map( artifactStore -> artifactStore.getKey() )
+                                                              .collect( Collectors.toList() );
+
+                    if ( stores.size() >= MAX_GROUP_MEMBER_SIZE_FOR_GET_MISSING )
+                    {
+                        throw new IndyWorkflowException( SC_UNPROCESSABLE_ENTITY,
+                                                         "Get missing info for group failed (too many members), size: "
+                                                                         + stores.size() );
+                    }
+
+                    for ( final StoreKey storeKey : stores )
+                    {
+                        size.addAndGet( cache.getSize( storeKey ) );
+                    }
+                    break;
+                }
+                default:
+                {
+                    size.addAndGet( cache.getSize( key ) );
+                    break;
+                }
             }
-            default:
-            {
-                size = cache.getSize( key );
-                break;
-            }
+            dto.setSize( size.get() );
+            return dto;
         }
-        dto.setSize( size );
-        return dto;
+        catch ( final IndyDataException e )
+        {
+            throw new IndyWorkflowException( "Failed to get info for ArtifactStore: %s.", e, key );
+        }
     }
 }
