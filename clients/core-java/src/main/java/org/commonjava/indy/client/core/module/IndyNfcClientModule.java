@@ -15,29 +15,68 @@
  */
 package org.commonjava.indy.client.core.module;
 
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.utils.URIBuilder;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.client.core.IndyClientHttp;
 import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
+import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import static org.apache.commons.lang.StringUtils.isBlank;
 
 public class IndyNfcClientModule
         extends IndyClientModule
 {
     private static final String BASE_URL = "/nfc";
 
-    // As nfc get endpoints has been removed in new nfc oom fixes, will make these two methods deprecated.
-    @Deprecated
     public NotFoundCacheDTO getAllNfcContent()
             throws IndyClientException
     {
         return getHttp().get( BASE_URL, NotFoundCacheDTO.class );
     }
 
-    @Deprecated
     public NotFoundCacheDTO getAllNfcContentInStore( final StoreType type, final String name )
             throws IndyClientException
     {
         return getHttp().get( BASE_URL + "/" + type.singularEndpointName() + "/" + name, NotFoundCacheDTO.class );
+    }
+
+    public NotFoundCacheDTO getAllNfcContent( Integer pageIndex, Integer pageSize )
+                    throws IndyClientException
+    {
+        return getPagedNfcContent( BASE_URL, pageIndex, pageSize );
+    }
+
+    public NotFoundCacheDTO getAllNfcContentInStore( final StoreType type, final String name, Integer pageIndex, Integer pageSize  )
+                    throws IndyClientException
+    {
+        return getPagedNfcContent( BASE_URL + "/" + type.singularEndpointName() + "/" + name, pageIndex, pageSize );
+    }
+
+    private NotFoundCacheDTO getPagedNfcContent( String baseUrl, Integer pageIndex, Integer pageSize  )
+                    throws IndyClientException
+    {
+        IndyClientHttp clientHttp = getHttp();
+        HttpGet req = clientHttp.newJsonGet( baseUrl );
+        URI uri = null;
+        try
+        {
+            uri = new URIBuilder( req.getURI() )
+                            .addParameter( "pageIndex", pageIndex.toString() )
+                            .addParameter( "pageSize", pageSize.toString() )
+                            .build();
+        }
+        catch ( URISyntaxException e )
+        {
+            throw new RuntimeException( e );
+        }
+        return clientHttp.get( uri.toString(), NotFoundCacheDTO.class );
     }
 
     public void clearAll()
@@ -49,6 +88,26 @@ public class IndyNfcClientModule
     public void clearInStore( final StoreType type, final String name, final String path )
             throws IndyClientException
     {
-        getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + path );
+        if ( isBlank(path) )
+        {
+            getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name );
+        }
+        else
+        {
+            getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + "/" + path );
+        }
+    }
+
+    public NotFoundCacheInfoDTO getInfo( StoreKey key ) throws IndyClientException
+    {
+        String name = key.getName();
+        StoreType type = key.getType();
+        return getHttp().get( BASE_URL + "/" + key.getPackageType() + "/" + type.singularEndpointName()
+                                              + "/" + name + "/info", NotFoundCacheInfoDTO.class );
+    }
+
+    public NotFoundCacheInfoDTO getInfo( ) throws IndyClientException
+    {
+        return getHttp().get( BASE_URL + "/info", NotFoundCacheInfoDTO.class );
     }
 }

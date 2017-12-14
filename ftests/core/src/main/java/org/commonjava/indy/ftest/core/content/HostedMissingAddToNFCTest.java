@@ -75,8 +75,6 @@ public class HostedMissingAddToNFCTest
         client.content().store( hosted.getKey(), JAR_PATH, new ByteArrayInputStream( "This is the jar".getBytes() ) );
     }
 
-    // Ignore this test since we disabled those NFC endpoints for now
-    @Ignore
     @Test
     public void run()
             throws Exception

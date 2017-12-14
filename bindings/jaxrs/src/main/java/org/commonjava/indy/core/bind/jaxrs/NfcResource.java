@@ -27,6 +27,7 @@ import org.commonjava.indy.core.ctl.NfcController;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
+import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
 import org.commonjava.indy.util.ApplicationContent;
 
 import javax.inject.Inject;
@@ -35,9 +36,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.nio.file.Paths;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotEmpty;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
@@ -71,11 +74,12 @@ public class NfcResource
     @Deprecated
     public Response deprecatedClearStore(
             final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true,
-                             value = "The type of store" ) @PathParam( "type" ) String t,
-            final @ApiParam( name = "name", required = true, value = "The name of the store" ) @PathParam( "name" )
-                    String name,
-            final @ApiParam( name = "path", required = false, value = "The sub-path to clear" ) @PathParam( "path" )
-                    String p )
+                             value = "The type of store" )
+            @PathParam( "type" ) String t,
+            final @ApiParam( name = "name", required = true, value = "The name of the store" )
+            @PathParam( "name" ) String name,
+            final @ApiParam( name = "path", required = false, value = "The sub-path to clear" )
+            @PathParam( "path" ) String p )
     {
 
         Response response;
@@ -85,7 +89,7 @@ public class NfcResource
         final StoreKey key = new StoreKey( type, name );
         try
         {
-            if ( isNotEmpty( p ) )
+            if ( isBlank( p ) )
             {
                 controller.clear( key );
             }
@@ -112,8 +116,8 @@ public class NfcResource
                                                  value = "The type of package (eg. maven, npm, generic-http)" )
                                 @PathParam( "packageType" ) String packageType,
                                 final @ApiParam( allowableValues = "hosted,group,remote", name = "type",
-                                                 required = true, value = "The type of store" ) @PathParam( "type" )
-                                        String t,
+                                                 required = true, value = "The type of store" )
+                                @PathParam( "type" ) String t,
                                 final @ApiParam( name = "name", required = true, value = "The name of the store" )
                                 @PathParam( "name" ) String name,
                                 final @ApiParam( name = "path", required = false, value = "The sub-path to clear" )
@@ -124,7 +128,7 @@ public class NfcResource
         try
         {
             final StoreKey key = new StoreKey( packageType, type, name );
-            if ( isNotEmpty( p ) )
+            if ( isBlank( p ) )
             {
                 controller.clear( key );
             }
@@ -143,18 +147,37 @@ public class NfcResource
         return response;
     }
 
-    /*
-     * Temporary disable them to avoid OOM issue
-     *
     @GET
     @ApiOperation( "Retrieve all not-found cache entries currently tracked" )
     @ApiResponses(
             { @ApiResponse( code = 200, response = NotFoundCacheDTO.class, message = "The full not-found cache" ) } )
     @Produces( ApplicationContent.application_json )
-    public Response getAll()
+    public Response getAll(
+                    final @ApiParam( name = "pageIndex", value = "page index, starts from 0" )
+                    @QueryParam( "pageIndex" ) Integer pageIndex,
+                    final @ApiParam( name = "pageSize", value = "page size" )
+                    @QueryParam( "pageSize" ) Integer pageSize )
     {
-        final NotFoundCacheDTO dto = controller.getAllMissing();
+        NotFoundCacheDTO dto;
+        if ( pageIndex != null && pageIndex >= 0 )
+        {
+            dto = controller.getAllMissing( pageIndex, pageSize );
+        }
+        else {
+            dto = controller.getAllMissing();
+        }
+        return formatOkResponseWithJsonEntity( dto, serializer );
+    }
 
+    @GET
+    @Path( "/info" )
+    @ApiOperation( "Get not-found cache information, e.g., size, etc" )
+    @ApiResponses(
+                    { @ApiResponse( code = 200, response = NotFoundCacheInfoDTO.class, message = "The info of not-found cache" ) } )
+    @Produces( ApplicationContent.application_json )
+    public Response getInfo( )
+    {
+        NotFoundCacheInfoDTO dto = controller.getInfo();
         return formatOkResponseWithJsonEntity( dto, serializer );
     }
 
@@ -165,9 +188,15 @@ public class NfcResource
     @GET
     @Produces( ApplicationContent.application_json )
     public Response deprecatedGetStore(
-            final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true,
-                             value = "The type of store" ) @PathParam( "type" ) String t,
-            final @ApiParam( name = "name", value = "The name of the store" ) @PathParam( "name" ) String name )
+                    final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true,
+                                    value = "The type of store" )
+                    @PathParam( "type" ) String t,
+                    final @ApiParam( name = "name", value = "The name of the store" )
+                    @PathParam( "name" ) String name,
+                    final @ApiParam( name = "pageIndex", value = "page index starts from 0" )
+                    @QueryParam( "pageIndex" ) Integer pageIndex,
+                    final @ApiParam( name = "pageSize", value = "page size" )
+                    @QueryParam( "pageSize" ) Integer pageSize )
     {
         Response response;
         final StoreType type = StoreType.get( t );
@@ -176,8 +205,15 @@ public class NfcResource
         final StoreKey key = new StoreKey( type, name );
         try
         {
-            final NotFoundCacheDTO dto = controller.getMissing( key );
-
+            NotFoundCacheDTO dto;
+            if ( pageIndex != null && pageIndex >= 0 )
+            {
+                dto = controller.getMissing( key, pageIndex, pageSize );
+            }
+            else
+            {
+                dto = controller.getMissing( key );
+            }
             response = formatOkResponseWithJsonEntity( dto, serializer, rb->markDeprecated( rb, altPath ) );
         }
         catch ( final IndyWorkflowException e )
@@ -188,27 +224,26 @@ public class NfcResource
         return response;
     }
 
-    @Path( "/{packageType}/{type: (hosted|group|remote)}/{name}" )
-    @ApiOperation( "Retrieve all not-found cache entries currently tracked for a given store" )
-    @ApiResponses( { @ApiResponse( code = 200, response = NotFoundCacheDTO.class,
-                                   message = "The not-found cache for the specified artifact store" ) } )
+    @Path( "/{packageType}/{type: (hosted|group|remote)}/{name}/info" )
+    @ApiOperation( "Get not-found cache information, e.g., size, etc" )
+    @ApiResponses(
+                    { @ApiResponse( code = 200, response = NotFoundCacheInfoDTO.class, message = "The info of not-found cache" ) } )
     @GET
     @Produces( ApplicationContent.application_json )
-    public Response getStore( final @ApiParam( name = "packageType", required = true,
-                                               value = "The type of package (eg. maven, npm, generic-http)" )
-                              @PathParam( "packageType" ) String packageType,
-                              final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true,
-                                               value = "The type of store" ) @PathParam( "type" ) String t,
-                              final @ApiParam( name = "name", value = "The name of the store" ) @PathParam( "name" )
-                                      String name )
+    public Response getStoreInfo(
+                    final @ApiParam( name = "packageType", required = true, value = "type of package (eg. maven, npm, generic-http)" )
+                    @PathParam( "packageType" ) String packageType,
+                    final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true, value = "type of store" )
+                    @PathParam( "type" ) String t,
+                    final @ApiParam( name = "name", value = "name of the store" )
+                    @PathParam( "name" ) String name )
     {
         Response response;
         final StoreType type = StoreType.get( t );
         final StoreKey key = new StoreKey( packageType, type, name );
         try
         {
-            final NotFoundCacheDTO dto = controller.getMissing( key );
-
+            NotFoundCacheInfoDTO dto = controller.getInfo( key );
             response = formatOkResponseWithJsonEntity( dto, serializer );
         }
         catch ( final IndyWorkflowException e )
@@ -217,5 +252,45 @@ public class NfcResource
         }
         return response;
     }
-    */
+
+    @Path( "/{packageType}/{type: (hosted|group|remote)}/{name}" )
+    @ApiOperation( "Retrieve all not-found cache entries currently tracked for a given store" )
+    @ApiResponses( { @ApiResponse( code = 200, response = NotFoundCacheDTO.class,
+                                   message = "The not-found cache for the specified artifact store" ) } )
+    @GET
+    @Produces( ApplicationContent.application_json )
+    public Response getStore(
+                    final @ApiParam( name = "packageType", required = true, value = "type of package (eg. maven, npm, generic-http)" )
+                    @PathParam( "packageType" ) String packageType,
+                    final @ApiParam( allowableValues = "hosted,group,remote", name = "type", required = true, value = "type of store" )
+                    @PathParam( "type" ) String t,
+                    final @ApiParam( name = "name", value = "name of the store" )
+                    @PathParam( "name" ) String name,
+                    final @ApiParam( name = "pageIndex", value = "page index, starts from 0" )
+                    @QueryParam( "pageIndex" ) Integer pageIndex,
+                    final @ApiParam( name = "pageSize", value = "page size" )
+                    @QueryParam( "pageSize" ) Integer pageSize )
+    {
+        Response response;
+        final StoreType type = StoreType.get( t );
+        final StoreKey key = new StoreKey( packageType, type, name );
+        try
+        {
+            NotFoundCacheDTO dto;
+            if ( pageIndex != null && pageIndex >= 0 )
+            {
+                dto = controller.getMissing( key, pageIndex, pageSize );
+            }
+            else
+            {
+                dto = controller.getMissing( key );
+            }
+            response = formatOkResponseWithJsonEntity( dto, serializer );
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            response = formatResponse( e );
+        }
+        return response;
+    }
 }

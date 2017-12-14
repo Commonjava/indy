@@ -623,7 +623,7 @@ public class IndyClientHttp
     public void delete( final String path )
             throws IndyClientException
     {
-        delete( path, HttpStatus.SC_NO_CONTENT );
+        delete( path, HttpStatus.SC_NO_CONTENT, HttpStatus.SC_OK );
     }
 
     public void delete( final String path, final int... responseCodes )

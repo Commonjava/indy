@@ -50,6 +50,12 @@ public interface IndyConfiguration
      */
     int getNfcExpirationSweepMinutes();
 
+    /**
+     * Page size of NFC getMissing result set
+     * @since 1.3.0
+     */
+    int getNfcMaxResultSetSize();
+
     File getIndyHomeDir();
 
     File getIndyConfDir();

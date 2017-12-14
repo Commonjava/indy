@@ -54,5 +54,14 @@
       <expiration interval="300" />
     </local-cache>
 
+    <local-cache name="nfc">
+      <!--
+          Use both eviction and expiration to guide against OOM, and run expiration thread twice an hour. Refer to
+          http://infinispan.org/docs/8.2.x/user_guide/user_guide.html#configuration
+      -->
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
+      <expiration interval="1800" />
+    </local-cache>
+
   </cache-container>
 </infinispan>
