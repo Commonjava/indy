@@ -20,7 +20,6 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
@@ -67,7 +66,7 @@ class NFCContentListener
         {
             IndexedStorePath isp = e.getValue();
             final StoreKey key =
-                    new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, isp.getStoreType(), isp.getStoreName() );
+                    new StoreKey( isp.getPackageType(), isp.getStoreType(), isp.getStoreName() );
             logger.debug( "New artifact created in store {} of path {}, will start to clear nfc cache for it.", key,
                           isp.getPath() );
             try
@@ -98,7 +97,7 @@ class NFCContentListener
         {
             IndexedStorePath isp = e.getValue();
             final StoreKey key =
-                    new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, isp.getStoreType(), isp.getStoreName() );
+                    new StoreKey( isp.getPackageType(), isp.getStoreType(), isp.getStoreName() );
             // Only care about group level, as remote repo nfc is handled by remote timeout handler(see galley DownloadHandler),
             // and hosted is handled by DownloadManager
             if ( key.getType() == StoreType.group )
