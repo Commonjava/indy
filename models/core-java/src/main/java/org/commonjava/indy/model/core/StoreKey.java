@@ -15,18 +15,14 @@
  */
 package org.commonjava.indy.model.core;
 
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public final class StoreKey
@@ -34,20 +30,11 @@ public final class StoreKey
 {
     private static final long serialVersionUID = 1L;
 
-    // private static final Logger logger = new Logger( StoreKey.class );
-
     private String packageType;
 
     private final StoreType type;
 
     private final String name;
-
-    protected StoreKey()
-    {
-        this.packageType = null;
-        this.type = null;
-        this.name = null;
-    }
 
     public StoreKey( final String packageType, final StoreType type, final String name )
     {

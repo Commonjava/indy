@@ -18,11 +18,15 @@ package org.commonjava.indy.content.index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 /**
  * Created by jdcasey on 3/15/16.
@@ -30,6 +34,7 @@ import java.io.ObjectOutput;
 public class IndexedStorePath
         implements Externalizable
 {
+    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     private StoreType storeType;
 
@@ -41,11 +46,19 @@ public class IndexedStorePath
 
     private String path;
 
+    private String packageType;
+
     // this needs to be public for Infinispan to not throw InvalidClassException with the first httprox request
     public IndexedStorePath(){}
 
     public IndexedStorePath( StoreKey storeKey, String path )
     {
+        this.packageType = storeKey.getPackageType();
+        if ( this.packageType == null )
+        {
+            this.packageType = MAVEN_PKG_KEY;
+        }
+
         this.storeType = storeKey.getType();
         this.storeName = storeKey.getName();
 
@@ -54,24 +67,21 @@ public class IndexedStorePath
 
     public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
     {
-        this.storeType = storeKey.getType();
-        this.storeName = storeKey.getName();
+        this( storeKey, path );
         this.originStoreType = origin.getType();
         this.originStoreName = origin.getName();
-
-        this.path = path;
     }
 
     @JsonIgnore
     public StoreKey getStoreKey()
     {
-        return new StoreKey( storeType, storeName );
+        return new StoreKey( packageType, storeType, storeName );
     }
 
     @JsonIgnore
     public StoreKey getOriginStoreKey()
     {
-        return new StoreKey( originStoreType, originStoreName );
+        return new StoreKey( packageType, originStoreType, originStoreName );
     }
 
     public StoreType getStoreType()
@@ -99,16 +109,24 @@ public class IndexedStorePath
         return originStoreName;
     }
 
+    public String getPackageType()
+    {
+        return packageType;
+    }
+
     @Override
     public String toString()
     {
+        /* @formatter:off */
         return "IndexedStorePath{" +
-                "storeType=" + storeType +
+                "packageType=" + packageType +
+                ", storeType=" + storeType  +
                 ", storeName='" + storeName + '\'' +
                 ", originStoreType=" + originStoreType +
                 ", originStoreName='" + originStoreName + '\'' +
                 ", path='" + path + '\'' +
                 '}';
+        /* @formatter:on */
     }
 
     @Override
@@ -125,6 +143,10 @@ public class IndexedStorePath
 
         IndexedStorePath that = (IndexedStorePath) o;
 
+        if ( !getPackageType().equals( that.getPackageType() ) )
+        {
+            return false;
+        }
         if ( getStoreType() != that.getStoreType() )
         {
             return false;
@@ -141,7 +163,8 @@ public class IndexedStorePath
     @Override
     public int hashCode()
     {
-        int result = getStoreType().hashCode();
+        int result = getPackageType().hashCode();
+        result = 31 * result + getStoreType().hashCode();
         result = 31 * result + getStoreName().hashCode();
         result = 31 * result + getPath().hashCode();
         return result;
@@ -171,6 +194,7 @@ public class IndexedStorePath
             out.writeObject( "" );
         }
         out.writeObject( path );
+        out.writeObject( packageType );
     }
 
     @Override
@@ -184,5 +208,15 @@ public class IndexedStorePath
         final String osNameString = (String) in.readObject();
         originStoreName = "".equals( osNameString ) ? null : osNameString;
         path = (String) in.readObject();
+
+        try
+        {
+            packageType = (String) in.readObject();
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "Read packageType failed (probably reading an old data entry) and set to default 'maven', {}", e );
+            packageType = MAVEN_PKG_KEY;
+        }
     }
 }

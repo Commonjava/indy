@@ -291,6 +291,8 @@ public class IspnNotFoundCache
 
     private String getResourceKey( ConcreteResource resource )
     {
-        return md5Hex( ((KeyedLocation)resource.getLocation()).getKey().toString() + ":" + resource.getPath() );
+        KeyedLocation location = (KeyedLocation) resource.getLocation();
+        StoreKey key = location.getKey();
+        return md5Hex( key.toString() + ":" + resource.getPath() );
     }
 }
