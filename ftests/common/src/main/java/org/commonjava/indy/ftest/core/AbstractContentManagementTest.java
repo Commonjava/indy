@@ -27,12 +27,15 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -140,5 +143,12 @@ public class AbstractContentManagementTest
         }
     }
 
+    protected String getRealLastUpdated ( StoreKey key, String path )
+            throws Exception
+    {
+        InputStream meta = client.content().get( key, path );
+        Metadata merged = new MetadataXpp3Reader().read( meta );
+        return merged.getVersioning().getLastUpdated();
+    }
 
 }
