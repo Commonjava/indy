@@ -45,6 +45,7 @@ import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.ContentsFilteringTransferDecorator;
+import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,12 +54,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.CDI;
 import javax.inject.Inject;
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
@@ -87,7 +84,7 @@ public class DefaultGalleyStorageProvider
     @Inject
     private SpecialPathManager specialPathManager;
 
-    @ExecutorConfig( named = "indy-fast-local-executor", threads = 5, priority = 2, daemon = true )
+    @ExecutorConfig( named = "indy-fast-local-executor", threads = 5, priority = 2 )
     @WeftManaged
     @Inject
     private ExecutorService fastLocalExecutors;
@@ -197,7 +194,8 @@ public class DefaultGalleyStorageProvider
                                                    new Md5GeneratorFactory(), new Sha1GeneratorFactory(),
                                                    new Sha256GeneratorFactory() ),
                 new ContentsFilteringTransferDecorator(),
-                new NoCacheTransferDecorator( specialPathManager ) );
+                new NoCacheTransferDecorator( specialPathManager ),
+                new UploadMetadataGenTransferDecorator( specialPathManager ) );
 
         final File storeRoot = config.getStorageRootDirectory();
 
