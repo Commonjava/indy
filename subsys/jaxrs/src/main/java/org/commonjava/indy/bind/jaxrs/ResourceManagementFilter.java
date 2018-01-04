@@ -94,7 +94,7 @@ public class ResourceManagementFilter
 
             putUserIP( hsr, threadContext );
 
-            logger.info( "START request: {} (from: {})", tn, clientAddr );
+            logger.debug( "START request: {} (from: {})", tn, clientAddr );
 
             Thread.currentThread().setName( tn );
 
@@ -119,7 +119,7 @@ public class ResourceManagementFilter
             Thread.currentThread().setName( name );
             ThreadContext.clearContext();
 
-            logger.info( "END request: {} (from: {})", tn, clientAddr );
+            logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             MDC.clear();
         }

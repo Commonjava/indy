@@ -75,7 +75,7 @@ public class FoloTrackingListener
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
-        logger.debug( "FILE ACCESS: {}", event );
+        logger.trace( "FILE ACCESS: {}", event );
 
         EventMetadata metadata = event.getEventMetadata();
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
