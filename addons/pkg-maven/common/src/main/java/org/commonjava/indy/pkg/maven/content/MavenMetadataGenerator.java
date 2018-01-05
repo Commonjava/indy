@@ -78,7 +78,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -88,6 +87,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
+import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
+import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
+import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -155,7 +158,7 @@ public class MavenMetadataGenerator
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
     private ExecutorService executorService;
 
-    private final Map<String, ReentrantLock> mergerLocks = new WeakHashMap<>();
+    private final Map<String, ReentrantLock> mergerLocks = newSynchronizedContextSensitiveWeakHashMap();
 
     private static final int THREAD_WAITING_TIME_SECONDS = 300;
 
