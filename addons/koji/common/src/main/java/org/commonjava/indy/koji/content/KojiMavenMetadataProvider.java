@@ -59,12 +59,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
@@ -90,7 +90,7 @@ public class KojiMavenMetadataProvider
     @Inject
     private KojiBuildAuthority buildAuthority;
 
-    private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = new WeakHashMap<>();
+    private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = newSynchronizedContextSensitiveWeakHashMap();
 
     protected KojiMavenMetadataProvider(){}
 
@@ -160,16 +160,7 @@ public class KojiMavenMetadataProvider
             return null;
         }
 
-        ReentrantLock lock;
-        synchronized ( versionMetadataLocks )
-        {
-            lock = versionMetadataLocks.get( ga );
-            if ( lock == null )
-            {
-                lock = new ReentrantLock();
-                versionMetadataLocks.put( ga, lock );
-            }
-        }
+        ReentrantLock lock = versionMetadataLocks.computeIfAbsent( ga, k -> new ReentrantLock() );
 
         boolean locked = false;
         try
