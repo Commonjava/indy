@@ -268,7 +268,7 @@ public class ContentAccessHandler
                     // For hosted / group repo, artifacts will also have metadata generated. This will fetch the item by content get method.
                     if ( item == null )
                     {
-                        logger.info( "Retrieving: {}:{} for existence test", sk, path );
+                        logger.debug( "Retrieving: {}:{} for existence test", sk, path );
                         item = contentController.get( sk, path, eventMetadata );
                         logger.debug( "Got retrieved transfer reference: {}", item );
                     }
@@ -375,7 +375,7 @@ public class ContentAccessHandler
         {
             try
             {
-                logger.info( "START: retrieval of content: {}:{}", sk, path );
+                logger.debug( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
 
                 logger.debug( "HANDLE: retrieval of content: {}:{}", sk, path );

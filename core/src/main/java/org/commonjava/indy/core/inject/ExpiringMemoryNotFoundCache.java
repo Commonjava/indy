@@ -96,7 +96,7 @@ public class ExpiringMemoryNotFoundCache
         }
 
         final long tstamp = timeout;
-        logger.info( "[NFC] '{}' will not be checked again until: {}", new Object()
+        logger.debug( "[NFC] '{}' will not be checked again until: {}", new Object()
         {
             @Override
             public String toString()
