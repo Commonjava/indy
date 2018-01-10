@@ -26,7 +26,6 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -57,11 +56,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
@@ -91,7 +90,7 @@ public class PromotionManager
     @Inject
     private PromotionValidator validator;
 
-    private Map<StoreKey, ReentrantLock> byPathTargetLocks = new WeakHashMap<>();
+    private Map<StoreKey, ReentrantLock> byPathTargetLocks = newSynchronizedContextSensitiveWeakHashMap();
 
     private Map<String, StoreKey> targetGroupKeyMap = new HashMap<>( 1 );
 
@@ -369,16 +368,7 @@ public class PromotionManager
     {
         StoreKey targetKey = result.getRequest().getTarget();
 
-        ReentrantLock lock;
-        synchronized ( byPathTargetLocks )
-        {
-            lock = byPathTargetLocks.get( targetKey );
-            if ( lock == null )
-            {
-                lock = new ReentrantLock();
-                byPathTargetLocks.put( targetKey, lock );
-            }
-        }
+        ReentrantLock lock = byPathTargetLocks.computeIfAbsent( targetKey, k -> new ReentrantLock() );
 
         final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
         final Set<String> completed = result.getCompletedPaths();
@@ -485,16 +475,7 @@ public class PromotionManager
 
         StoreKey targetKey= request.getTarget();
 
-        ReentrantLock lock;
-        synchronized ( byPathTargetLocks )
-        {
-            lock = byPathTargetLocks.get( targetKey );
-            if ( lock == null )
-            {
-                lock = new ReentrantLock();
-                byPathTargetLocks.put( targetKey, lock );
-            }
-        }
+        ReentrantLock lock = byPathTargetLocks.computeIfAbsent( targetKey, k -> new ReentrantLock() );
 
         final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
         final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
