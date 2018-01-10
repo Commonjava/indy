@@ -40,11 +40,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
+import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
@@ -56,9 +56,7 @@ public class MemoryStoreDataManager
 
     private final Map<StoreKey, ArtifactStore> stores = new ConcurrentHashMap<>();
 
-    private final Map<StoreKey, ReentrantLock> opLocks = new WeakHashMap<>();
-
-    //    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    private final Map<StoreKey, ReentrantLock> opLocks = newSynchronizedContextSensitiveWeakHashMap();
 
     @Inject
     private StoreEventDispatcher dispatcher;
@@ -179,7 +177,7 @@ public class MemoryStoreDataManager
             throws IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        ReentrantLock opLock = getOpLock( key );
+        ReentrantLock opLock = opLocks.computeIfAbsent( key, k -> new ReentrantLock() );
         try
         {
             logger.info( "DELETE operation starting for store: {}", key );
@@ -291,7 +289,7 @@ public class MemoryStoreDataManager
                            final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        ReentrantLock opLock = getOpLock( store.getKey() );
+        ReentrantLock opLock = opLocks.computeIfAbsent( store.getKey(), k -> new ReentrantLock() );
         try
         {
             opLock.lock();
@@ -327,17 +325,6 @@ public class MemoryStoreDataManager
         {
             opLock.unlock();
         }
-    }
-
-    private ReentrantLock getOpLock( StoreKey key )
-    {
-        ReentrantLock opLock;
-        synchronized ( opLocks )
-        {
-            opLock = opLocks.computeIfAbsent( key, k -> new ReentrantLock() );
-        }
-
-        return opLock;
     }
 
 }
