@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.pkg.maven.change;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
@@ -32,6 +30,7 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
+import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
@@ -42,7 +41,6 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.LocationUtils.getKey;
@@ -68,15 +66,20 @@ public class MetadataMergePomChangeListener
     @MavenVersionMetadataCache
     private CacheHandle<StoreKey, Map> versionMetadataCache;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( daemon = true, priority = 7, named = "indy-events" )
-    private Executor executor;
-
+    /**
+     * this listener will observe both {@link org.commonjava.maven.galley.event.FileStorageEvent}
+     * and {@link org.commonjava.maven.galley.event.FileDeletionEvent} for a pom file, which means
+     * maven meta clear will happen when a version (pom) updates (upload / deletion).
+     */
     public void metaClear( @Observes final FileEvent event )
     {
 
         final String path = event.getTransfer().getPath();
+
+        if ( event instanceof FileErrorEvent )
+        {
+            return;
+        }
 
         if ( event instanceof FileAccessEvent )
         {
@@ -110,7 +113,7 @@ public class MetadataMergePomChangeListener
                                            path, hosted, e.getMessage() ), e );
                 }
 
-                final Set<Group> groups = dataManager.query().getGroupsContaining( key );
+                final Set<Group> groups = dataManager.query().getGroupsAffectedBy( key );
                 if ( groups != null )
                 {
                     for ( final Group group : groups )
@@ -139,16 +142,14 @@ public class MetadataMergePomChangeListener
         }
     }
 
-    private boolean doClear( final ArtifactStore group, final String path )
+    private boolean doClear( final ArtifactStore store, final String path )
             throws IOException
     {
         boolean isCleared = false;
-        logger.trace( "Updating merged metadata file: {} in group: {}", path, group.getKey() );
+        logger.trace( "Updating merged metadata file: {} in store: {}", path, store.getKey() );
 
-        final Transfer[] toDelete = { fileManager.getStorageReference( group, path ),
-                fileManager.getStorageReference( group, path + GroupMergeHelper.MERGEINFO_SUFFIX ),
-                fileManager.getStorageReference( group, path + GroupMergeHelper.SHA_SUFFIX ),
-                fileManager.getStorageReference( group, path + GroupMergeHelper.MD5_SUFFIX ) };
+        final Transfer[] toDelete = { fileManager.getStorageReference( store, path ),
+                fileManager.getStorageReference( store, path + GroupMergeHelper.MERGEINFO_SUFFIX ) };
 
         for ( final Transfer item : toDelete )
         {

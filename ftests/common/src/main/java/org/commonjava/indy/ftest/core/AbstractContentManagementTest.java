@@ -22,6 +22,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -151,4 +152,12 @@ public class AbstractContentManagementTest
         return merged.getVersioning().getLastUpdated();
     }
 
+    protected void deployContent( HostedRepository repo, String pathTemplate, String template, String version )
+            throws IndyClientException
+    {
+        String path = pathTemplate.replaceAll( "%version%", version );
+        client.content()
+              .store( repo.getKey(), path,
+                      new ByteArrayInputStream( template.replaceAll( "%version%", version ).getBytes() ) );
+    }
 }
