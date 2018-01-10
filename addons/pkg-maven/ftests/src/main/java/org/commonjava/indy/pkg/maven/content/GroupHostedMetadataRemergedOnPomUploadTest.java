@@ -54,6 +54,8 @@ public class GroupHostedMetadataRemergedOnPomUploadTest
 {
     private static final String GROUP_G_NAME = "G";
 
+    private static final String GROUP_H_NAME = "H";
+
     private static final String HOSTED_A_NAME = "A";
 
     private static final String HOSTED_B_NAME = "B";
@@ -149,6 +151,8 @@ public class GroupHostedMetadataRemergedOnPomUploadTest
 
     private Group g;
 
+    private Group h;
+
     private HostedRepository a;
 
     private HostedRepository b;
@@ -169,6 +173,7 @@ public class GroupHostedMetadataRemergedOnPomUploadTest
         deployContent( b, METADATA_PATH, REPO_METADATA_TEMPLATE, B_VERSION );
 
         g = client.stores().create( new Group( GROUP_G_NAME, a.getKey(), b.getKey() ), message, Group.class );
+        h = client.stores().create( new Group( GROUP_H_NAME, g.getKey() ), message, Group.class );
     }
 
     @Test
@@ -188,15 +193,9 @@ public class GroupHostedMetadataRemergedOnPomUploadTest
         assertContent( g, METADATA_PATH, AFTER_GROUP_CONTENT.replaceAll( "%lastUpdated%",
                                                                          getRealLastUpdated( g.getKey(),
                                                                                              METADATA_PATH ) ) );
-    }
-
-    private void deployContent( HostedRepository repo, String pathTemplate, String template, String version )
-            throws IndyClientException
-    {
-        String path = pathTemplate.replaceAll( "%version%", version );
-        client.content()
-              .store( repo.getKey(), path,
-                      new ByteArrayInputStream( template.replaceAll( "%version%", version ).getBytes() ) );
+        assertContent( h, METADATA_PATH, AFTER_GROUP_CONTENT.replaceAll( "%lastUpdated%",
+                                                                         getRealLastUpdated( g.getKey(),
+                                                                                             METADATA_PATH ) ) );
     }
 
     @Override

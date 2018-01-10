@@ -171,15 +171,6 @@ public class GroupHostedMetadataRemergedOnNewMemberTest
         assertContent( g, METADATA_PATH, AFTER_GROUP_CONTENT );
     }
 
-    private void deployContent( HostedRepository repo, String pathTemplate, String template, String version )
-            throws IndyClientException
-    {
-        String path = pathTemplate.replaceAll( "%version%", version );
-        client.content()
-              .store( repo.getKey(), path, new ByteArrayInputStream(
-                      template.replaceAll( "%version%", version ).getBytes() ) );
-    }
-
     @Override
     protected boolean createStandardTestStructures()
     {
