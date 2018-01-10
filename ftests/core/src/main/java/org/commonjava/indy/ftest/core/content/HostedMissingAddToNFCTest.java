@@ -66,6 +66,8 @@ public class HostedMissingAddToNFCTest
 
     private static final String POM_PATH = "org/foo/bar/1/bar-1.pom";
 
+    private static final String META_PATH = "org/foo/bar/maven-metadata.xml";
+
     @Before
     public void setupTest()
             throws Exception
@@ -123,6 +125,7 @@ public class HostedMissingAddToNFCTest
                            .findFirst()
                            .orElse( null );
         assertThat( nfcSectionDto, notNullValue() );
-        assertThat( nfcSectionDto.getPaths(), nullValue() );
+        assertThat( nfcSectionDto.getPaths(), notNullValue() );
+        assertThat( nfcSectionDto.getPaths().contains( META_PATH ), equalTo( true ) );
     }
 }
