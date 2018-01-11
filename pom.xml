@@ -66,7 +66,7 @@
     <galleyVersion>0.16.2-SNAPSHOT</galleyVersion>
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
-    <partylineVersion>1.12</partylineVersion>
+    <partylineVersion>1.13-SNAPSHOT</partylineVersion>
     <kojijiVersion>2.0-SNAPSHOT</kojijiVersion>
     <rwxVersion>2.0-SNAPSHOT</rwxVersion>
     <jhttpcVersion>1.7</jhttpcVersion>
