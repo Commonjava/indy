@@ -47,42 +47,45 @@
 </head>
 <body>
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container-fluid">
-			<div class="navbar-header">
-			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse-1">
-			    <span class="sr-only">Toggle navigation</span>
-			    <span class="icon-bar"></span>
-			    <span class="icon-bar"></span>
-			    <span class="icon-bar"></span>
-			  </button>
-			  <a class="navbar-brand" href="#">Indy</a>
-			</div>
-			<div class="collapse navbar-collapse" id="navbar-collapse-1">
-			  <ul class="nav navbar-nav" ng-controller="NavCtl">
-	        <li><a class="fa btn btn-lg" href="#/remote">Remote Repositories</a></li>
-	        <li><a class="fa btn btn-lg" href="#/hosted">Hosted Repositories</a></li>
-	        <li><a class="fa btn btn-lg" href="#/group">Groups</a></li>
-          <li><a class="fa btn btn-lg" href="rest-api.html">REST API</a></li>
-			    <li class="dropdown">
-			      <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <span class="caret"></span></a>
-			      <ul class="dropdown-menu" role="menu">
-                      <li><a class="fa" target="_diag" href="/api/diag/bundle">Diagnostic Bundle</a></li>
-			        <li><a class="fa" href="#/nfc">Not-Found Cache</a></li>
-			        <li class="divider"></li>
-              <li ng-repeat="addon in addon_navs"><a class="fa" href="#{{addon.route}}">{{addon.name}}</a></li>
-			      </ul>
-			    </li>
-			    <li class="dropdown" ng-if="username">
-			      <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{username}}<span class="caret"></span></a>
-			      <ul class="dropdown-menu" role="menu">
-	   		      <li><a class="fa fa-btn btn-lg" href="#/logout">Log Out</a></li>
-  			     </ul>
-			    </li>
-			  </ul>
-			</div>
-    </div>
+      <div class="container-fluid">
+          <div class="navbar-header">
+              <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                      data-target="#navbar-collapse-1">
+                  <span class="sr-only">Toggle navigation</span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+                  <span class="icon-bar"></span>
+              </button>
+              <a class="navbar-brand" href="#">Indy</a>
+          </div>
+          <div class="collapse navbar-collapse" id="navbar-collapse-1">
+              <ul class="nav navbar-nav" ng-controller="NavCtl">
+                  <li><a class="fa btn btn-lg" href="#/remote">Remote Repositories</a></li>
+                  <li><a class="fa btn btn-lg" href="#/hosted">Hosted Repositories</a></li>
+                  <li><a class="fa btn btn-lg" href="#/group">Groups</a></li>
+                  <li><a class="fa btn btn-lg" href="rest-api.html">REST API</a></li>
+                  <li class="dropdown">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <span class="caret"></span></a>
+                      <ul class="dropdown-menu" role="menu">
+                          <li><a class="fa" target="_diag" href="/api/diag/bundle">Diagnostic Bundle</a></li>
+                          <li><a class="fa" href="#/nfc">Not-Found Cache</a></li>
+                          <li><a class="fa" href="#/delete-cache">Delete Cache</a></li>
+                          <li class="divider"></li>
+                          <li ng-repeat="addon in addon_navs"><a class="fa" href="#{{addon.route}}">{{addon.name}}</a>
+                          </li>
+                      </ul>
+                  </li>
+                  <li class="dropdown" ng-if="username">
+                      <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{username}}<span class="caret"></span></a>
+                      <ul class="dropdown-menu" role="menu">
+                          <li><a class="fa fa-btn btn-lg" href="#/logout">Log Out</a></li>
+                      </ul>
+                  </li>
+              </ul>
+          </div>
+      </div>
   </nav>
-  
+
   <div class="content-wrapper">
     <!--[if lt IE 7]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
@@ -104,7 +107,7 @@
       | <span class="stat-label">Built</span> <span class="stat-value">on {{stats["timestamp"]}} by <a target="_new" class="fa fa-btn" href="http://github.com/{{stats['builder']}}">{{stats["builder"]}}</a></span>
     </div>
   </nav>
-  
+
   <script src="js/directives.js"></script>
   <script src="js/filters.js"></script>
   <script src="js/services.js"></script>

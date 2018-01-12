@@ -620,6 +620,15 @@ public class IndyClientHttp
         }
     }
 
+    /**
+     * clean just the cached file (storage of groups and remote repos)
+     */
+    public void deleteCache( final String path )
+                    throws IndyClientException
+    {
+        delete( path + "?cache-only=true" );
+    }
+
     public void delete( final String path )
             throws IndyClientException
     {

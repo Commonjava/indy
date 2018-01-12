@@ -470,6 +470,20 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
   }
 }]);
 
+indyControllers.controller('CacheCtl', ['$scope', '$routeParams', 'CacheSvc', 'ControlSvc', function($scope, $routeParams, CacheSvc, ControlSvc) {
+  $scope.path = '';
+  $scope.data = '';
+  $scope.raw = {
+  };
+  $scope.deleteCache = function(){
+    if ( !$scope.path || $scope.path.length < 1 ){
+      alert( "You must provide a path!" );
+      return;
+    }
+    CacheSvc.remove($scope, $scope.path, ControlSvc);
+  };
+}]);
+
 indyControllers.controller('FooterCtl', ['$scope', 'FooterSvc', function($scope, FooterSvc){
   $scope.stats = FooterSvc.resource.query();
 }]);

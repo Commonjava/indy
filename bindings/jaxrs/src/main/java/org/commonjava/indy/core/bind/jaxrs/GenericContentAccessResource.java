@@ -93,9 +93,10 @@ public class GenericContentAccessResource
     @DELETE
     @Path( "/{path: (.*)}" )
     public Response doDelete(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "path" ) String path )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @PathParam( "path" ) String path,
+            final @ApiParam( name = "cache-only", value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
     {
         return handler.doDelete( GENERIC_PKG_KEY, type, name, path, new EventMetadata() );
     }

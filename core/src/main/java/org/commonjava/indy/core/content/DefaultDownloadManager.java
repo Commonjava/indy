@@ -77,6 +77,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 @javax.enterprise.context.ApplicationScoped
@@ -399,7 +401,7 @@ public class DefaultDownloadManager
                            {
                                final KeyedLocation location = (KeyedLocation) txfr.getLocation();
                                // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
-                               if ( location.getKey().getType() == StoreType.hosted && !txfr.exists() )
+                               if ( location.getKey().getType() == hosted && !txfr.exists() )
                                {
                                    logger.trace( "Resource not found when retrieved; added to NFC: {}",
                                                  txfr.getResource() );
@@ -569,7 +571,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        if ( store.getKey().getType() != StoreType.hosted )
+        if ( store.getKey().getType() != hosted )
         {
             throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
                                              "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
@@ -888,7 +890,7 @@ public class DefaultDownloadManager
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
         Transfer txfr = transfers.getCacheReference( resource );
         // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
-        if ( store.getKey().getType() == StoreType.hosted )
+        if ( store.getKey().getType() == hosted )
         {
             if ( txfr == null || !txfr.exists() )
             {
@@ -929,6 +931,11 @@ public class DefaultDownloadManager
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) )
+        {
+            return deleteCache( store, path, eventMetadata );
+        }
+
         if ( store.getKey().getType() == StoreType.group )
         {
             return false;
@@ -945,7 +952,7 @@ public class DefaultDownloadManager
 
         final boolean deleted = doDelete( item, eventMetadata );
 
-        if ( deleted && store.getKey().getType() == StoreType.hosted )
+        if ( deleted && store.getKey().getType() == hosted )
         {
             final ConcreteResource res = item.getResource();
             logger.trace( "Resource not found for deletion; added to NFC: {}", res );
@@ -953,6 +960,21 @@ public class DefaultDownloadManager
         }
 
         return deleted;
+    }
+
+    /**
+     * clean just the cache (storage of groups and remote repos)
+     */
+    private boolean deleteCache( ArtifactStore store, String path, EventMetadata eventMetadata )
+                    throws IndyWorkflowException
+    {
+        if ( store.getKey().getType() == hosted )
+        {
+            return false;
+        }
+        final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
+        logger.trace( "Delete cache, item: {}", item );
+        return doDelete( item, eventMetadata );
     }
 
     private Boolean doDelete( final Transfer item, final EventMetadata eventMetadata )

@@ -60,7 +60,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 
@@ -483,6 +485,11 @@ public class DefaultContentManager
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) )
+        {
+            return deleteCache( store, path, eventMetadata );
+        }
+
         boolean result = false;
         if ( group == store.getKey().getType() )
         {
@@ -533,6 +540,23 @@ public class DefaultContentManager
         }
 
         return result;
+    }
+
+    /**
+     * clean just the cache (storage of groups and remote repos)
+     */
+    private boolean deleteCache( ArtifactStore store, String path, EventMetadata eventMetadata )
+                    throws IndyWorkflowException
+    {
+        logger.trace( "Delete cache, store:{}, path:{}", store.getName(), path );
+        if ( hosted == store.getKey().getType() )
+        {
+            return false;
+        }
+        else
+        {
+            return downloadManager.delete( store, path, eventMetadata );
+        }
     }
 
     @Override

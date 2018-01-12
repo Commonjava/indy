@@ -31,45 +31,58 @@ indyServices.factory('PackageTypeSvc', ['$resource', '$http',
 
 indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
   return {
+
+    promptForConfirm : function(scope, confirmLabel, confirmText, callback) {
+      scope.raw.confirmLabel=confirmLabel;
+      scope.raw.confirmText=confirmText;
+      ngDialog.openConfirm({template: 'partials/dialogs/confirm-dialog.html', scope: scope }).then(function(data){
+        console.log('callback called');
+        callback();
+      },
+      function(data){
+        console.log("cancelled");
+      });
+    },
+
     promptForChangelog: function(scope, confirmLabel, callback){
       scope.raw.confirmLabel=confirmLabel;
       scope.raw.changelog='';
-      
+
 //      console.log('Confirm label: ' + scope.raw.confirmLabel);
-      
+
       ngDialog.openConfirm({template: 'partials/dialogs/changelog-dialog.html', scope: scope }).then(function(data){
         if ( !scope.raw.changelog || scope.raw.changelog.length < 1 ){
           alert( "You must provide a changelog!" );
           return;
         }
-        
+
         callback(scope.raw.changelog);
-      }, 
+      },
       function(data){
         console.log("cancelled");
       });
     },
-    
+
     addListingControlHrefs: function(scope, location){
       scope.createNew = function(){
         location.path(location.path() + '/new');
       }
     },
-    
+
     addControlHrefs: function(scope, packageType, storeType, storeName, mode, location){
       scope.back = function(){
         location.path('/' + packageType + '/' + storeType);
       }
-      
+
       scope.edit = function(){
         location.path('/' + packageType + '/' + storeType + '/edit/' + storeName);
       }
-      
+
       scope.createNew = function(){
         location.path('/' + packageType + '/' + storeType + '/new');
       }
     },
-    
+
     addStoreControls: function(scope, location, storeType, storeService, StoreUtilSvc, fixups){
       var self=this;
 
@@ -98,7 +111,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
           }
         }
       };
-      
+
       scope.disable = function(){
         console.log("Disable: " + scope.raw.name + " (enabled already? " + scope.raw.enabled + ")");
         if ( scope.raw.enabled ){
@@ -130,7 +143,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         self.promptForChangelog(scope, 'Save', function(changelog){
           scope.store.metadata['changelog'] = changelog;
           scope.store.type = storeType;
-          
+
           if ( fixups && fixups.save){
             fixups.save(scope);
           }
@@ -157,7 +170,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
         console.log("confirm delete");
         self.promptForChangelog(scope, 'Delete', function(changelog){
           console.log("deleting with changelog: " + changelog);
-          
+
           storeService.remove(scope.raw.packageType, scope.raw.name, changelog, {
             success: function(data,status){
               location.path( '/' + storeType );
@@ -191,11 +204,11 @@ indyServices.factory('StoreUtilSvc', function(){
         return 'view';
       }
     },
-    
+
     formatKey: function(packageType, type, name){
       return packageType + ":" + type + ':' + name;
     },
-    
+
     keyLabel: function(key){
       var parts = key.split(':');
       return parts[2] + " (" + parts[1] + "; " + parts[0] + ")";
@@ -251,7 +264,7 @@ indyServices.factory('StoreUtilSvc', function(){
       var parts = key.split(':');
       return "#/" + parts[1] + '/' + parts[0] + "/edit/" + parts[2];
     },
-    
+
     hostedOptionLegend: function(){
       return [
         {icon: 'S', title: 'Snapshots allowed'},
@@ -414,7 +427,7 @@ indyServices.factory('StoreUtilSvc', function(){
       return items.sort(function(a, b){
         var ap = a.key.split(':');
         var bp = b.key.split(':');
-        
+
         var ati = typeOrder.indexOf(ap[1]);
         var bti = typeOrder.indexOf(bp[1]);
 
@@ -517,6 +530,26 @@ indyServices.factory('NfcSvc', ['$resource',
       }),
     };
 }]);
+
+indyServices.factory('CacheSvc', ['$http',
+  function($http){
+    return {
+      remove: function( scope, path, ControlSvc ) {
+        ControlSvc.promptForConfirm(scope, 'Delete', 'delete ' + path, function(){
+          $http.delete(path + '?cache-only=true', {}).then(function(response){
+            if (response.status == 204) {
+              scope.data = 'Deleted ' + path;
+            } else {
+              scope.data = 'Delete failed';
+            }
+          }, function(response) { // second function handles error
+              scope.data = "Something went wrong - " + response.status + ' ' + response.statusText;
+          });
+        });
+      }
+    };
+  }
+]);
 
 indyServices.factory('StoreDisableSvc', ['$resource',
   function($resource) {

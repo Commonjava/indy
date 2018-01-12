@@ -57,6 +57,8 @@ indy.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$filt
   $routeProvider.when('/nfc/view/all', {templateUrl: 'partials/nfc.html'});
   $routeProvider.when('/nfc/view/:packageType/:type/:name', {templateUrl: 'partials/nfc.html'});
 
+  $routeProvider.when('/delete-cache', {templateUrl: 'partials/delete-cache.html'});
+
   $routeProvider.when('/rest-api', {templateUrl: 'partials/rest-api.html'})
   
   $routeProvider.when('/logout', {template: " ", controller: 'LogoutCtl'})
