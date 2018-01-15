@@ -28,8 +28,12 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.event.FileDeletionEvent;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,12 +46,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+
 /**
  * This listener will do these tasks:
  * <ul>
  *     <li>When there are member changes for a group, or member disabled/enabled in a group,
  *     delete group metadata caches to force regeneration of the metadata of the group (cascaded)</li>
- *     <li>When the metadata file changed of a member in a group,
+ *     <li>When the metadata file changed or deleted of a member in a group,
  *     delete correspond cache of that file path of the member and group (cascaded)</li>
  * </ul>
  */
@@ -92,6 +99,53 @@ public class MetadataMergeListner
         for ( ArtifactStore store : event )
         {
             removeMetadataCache( store );
+        }
+    }
+
+    /**
+     * Normally, Indy does not need to handle FileDeletionEvent when the cached metadata files were deleted due to store
+     * enable/disable/delete, etc. Lately we add a force-deletion for group/remote-repo cache files. This requires to
+     * delete affected group metadata files and clear ISPN cache too. We use this method for just this case, i.e.,
+     * only if CHECK_CACHE_ONLY is true.
+     */
+    public void onCacheMetadataFileDelete( @Observes final FileDeletionEvent event )
+    {
+        EventMetadata eventMetadata = event.getEventMetadata();
+        if ( !Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) )
+        {
+            return;
+        }
+
+        logger.trace( "Got file-delete event: {}", event );
+
+        Transfer transfer = event.getTransfer();
+        String path = transfer.getPath();
+
+        if ( !path.endsWith( METADATA_NAME ) )
+        {
+            logger.trace( "Not {} , path: {}", METADATA_NAME, path );
+            return;
+        }
+
+        Location loc = transfer.getLocation();
+
+        if ( !( loc instanceof KeyedLocation ) )
+        {
+            logger.trace( "Ignore FileDeletionEvent, not a KeyedLocation, location: {}", loc );
+            return;
+        }
+
+        KeyedLocation keyedLocation = (KeyedLocation) loc;
+        StoreKey storeKey = keyedLocation.getKey();
+        try
+        {
+            ArtifactStore store = storeManager.getArtifactStore( storeKey );
+            Set<Group> affectedGroups = storeManager.query().getGroupsAffectedBy( store.getKey() );
+            clearMergedPath( store, affectedGroups, path );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Handle FileDeletionEvent failed", e );
         }
     }
 
@@ -221,24 +275,21 @@ public class MetadataMergeListner
     @Override
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
-        if ( originatingStore.getKey().getType() != StoreType.group )
-        {
-            final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
+        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
 
-            if ( metadataMap != null && !metadataMap.isEmpty() )
+        if ( metadataMap != null && !metadataMap.isEmpty() )
+        {
+            if ( metadataMap.get( path ) != null )
             {
-                if ( metadataMap.get( path ) != null )
-                {
-                    metadataMap.remove( path );
-                    affectedGroups.forEach( group -> {
-                        final Map<String, MetadataInfo> grpMetaMap = versionMetadataCache.get( group.getKey() );
-                        if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
-                        {
-                            clearTempMetaFile( group, path );
-                            grpMetaMap.remove( path );
-                        }
-                    } );
-                }
+                metadataMap.remove( path );
+                affectedGroups.forEach( group -> {
+                    final Map<String, MetadataInfo> grpMetaMap = versionMetadataCache.get( group.getKey() );
+                    if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
+                    {
+                        clearTempMetaFile( group, path );
+                        grpMetaMap.remove( path );
+                    }
+                } );
             }
         }
     }

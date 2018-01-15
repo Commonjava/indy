@@ -81,6 +81,8 @@ public abstract class AbstractIndyFunctionalTest
 
     protected File dataDir;
 
+    protected File storageDir;
+
     @SuppressWarnings( "resource" )
     @Before
     public void start()
@@ -184,6 +186,7 @@ public abstract class AbstractIndyFunctionalTest
         logger.info( "Setting up configuration using indy.home == '{}'", fixture.getBootOptions().getIndyHome() );
         etcDir = new File( fixture.getBootOptions().getIndyHome(), "etc/indy" );
         dataDir = new File( fixture.getBootOptions().getIndyHome(), "var/lib/indy/data" );
+        storageDir = new File( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage" );
 
         initBaseTestConfig( fixture );
         initTestConfig( fixture );

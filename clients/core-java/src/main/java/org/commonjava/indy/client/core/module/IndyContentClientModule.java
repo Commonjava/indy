@@ -84,6 +84,12 @@ public class IndyContentClientModule
         return listContents( new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
 
+    public void deleteCache( final StoreKey key, final String path ) // delete cached file for group/remote
+                    throws IndyClientException
+    {
+        http.deleteCache( contentPath( key, path ) );
+    }
+
     public void delete( final StoreKey key, final String path )
             throws IndyClientException
     {

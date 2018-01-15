@@ -18,9 +18,13 @@
 <div class="container-fluid" ng-controller="CacheCtl">
   <div class="control-panel">
     <div class="cp-row">
-      Input the URL of cached file to delete (for group and remote repository storage):
+      This form is to delete broken or invalid cache files for groups and remote repositories, e.g,
+      generated maven-metadata.xml for a group location, broken jar file from a remote repository, etc.
+      There are some unusual cases that could break those files and the easy fix is to delete and regenerate it (in the next request).
     </div>
     <div class="cp-row">
+      <label>Input the the file url to delete:</label>
+      (can be a full url or a relative url like "/api/content/maven/group/central/org/foo/bar/1/bar-1.pom")
       <input style="width: 100%;" ng-model="path">
     </div>
     <div class="cp-row">

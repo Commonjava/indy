@@ -126,7 +126,7 @@ public class NPMContentAccessResource
             final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
             final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "packageName" ) String packageName,
-            final @ApiParam( name = "cache-only", value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
+            final @ApiParam( name = CHECK_CACHE_ONLY, value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
     {
         EventMetadata eventMetadata = new EventMetadata();
         eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );

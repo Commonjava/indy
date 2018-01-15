@@ -95,7 +95,7 @@ public class MavenContentAccessResource
             final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
             final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "path" ) String path,
-            final @ApiParam( name = "cache-only", value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
+            final @ApiParam( name = CHECK_CACHE_ONLY, value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
     {
         EventMetadata metadata = new EventMetadata();
         metadata.set( CHECK_CACHE_ONLY, cacheOnly );

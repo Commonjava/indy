@@ -57,6 +57,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
@@ -626,7 +627,7 @@ public class IndyClientHttp
     public void deleteCache( final String path )
                     throws IndyClientException
     {
-        delete( path + "?cache-only=true" );
+        delete( path + "?" + CHECK_CACHE_ONLY + "=true" );
     }
 
     public void delete( final String path )
