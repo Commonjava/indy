@@ -42,8 +42,12 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.core.model.DefaultPagination;
+import org.commonjava.indy.core.model.Pagination;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class NfcController
@@ -71,10 +75,25 @@ public class NfcController
         return getNotFoundCacheDTO( allMissing );
     }
 
-    public NotFoundCacheDTO getAllMissing( int pageIndex, int pageSize )
+    public Pagination<NotFoundCacheDTO> getAllMissing( int pageIndex, int pageSize )
     {
-        Map<Location, Set<String>> allMissing = cache.getAllMissing( pageIndex, pageSize );
-        return getNotFoundCacheDTO( allMissing );
+        return new DefaultPagination<NotFoundCacheDTO>( pageIndex, pageSize, new PaginationHandler<NotFoundCacheDTO>()
+        {
+
+            @Override
+            public NotFoundCacheDTO getCurrData( int pageIndex, int pageSize )
+            {
+                Map<Location, Set<String>> allMissing = cache.getAllMissing( pageIndex, pageSize );
+                NotFoundCacheDTO dto = getNotFoundCacheDTO( allMissing );
+                return dto;
+            }
+
+            @Override
+            public List<NotFoundCacheDTO> getCurrDataList( int pageIndex, int pageSize )
+            {
+                return null;
+            }
+        } );
     }
 
     private NotFoundCacheDTO getNotFoundCacheDTO( Map<Location, Set<String>> allMissing )
@@ -100,10 +119,33 @@ public class NfcController
         return doGetMissing( key );
     }
 
-    public NotFoundCacheDTO getMissing( final StoreKey key, int pageIndex, int pageSize )
+    public Pagination<NotFoundCacheDTO> getMissing( final StoreKey key, int pageIndex, int pageSize )
                     throws IndyWorkflowException
     {
-        return doGetMissing( key, pageIndex, pageSize );
+        return new DefaultPagination<>( pageIndex, pageSize, new PaginationHandler<NotFoundCacheDTO>()
+        {
+
+            @Override
+            public NotFoundCacheDTO getCurrData( int pageIndex, int pageSize )
+            {
+                try
+                {
+                    return doGetMissing( key, pageIndex, pageSize );
+                }
+                catch ( IndyWorkflowException e )
+                {
+                    Logger logger = LoggerFactory.getLogger( getClass() );
+                    logger.error( e.getMessage(), e );
+                }
+                return null;
+            }
+
+            @Override
+            public List<NotFoundCacheDTO> getCurrDataList( int pageIndex, int pageSize )
+            {
+                return null;
+            }
+        } );
     }
 
     //Warn: The getMissing is very expensive if group holds thousands of repositories.

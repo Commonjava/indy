@@ -167,7 +167,7 @@ td{
   display: inline-block;
   margin-top: 0.5%;
   margin-left: 2%;
-  min-width: 60%;
+  min-width: 70%;
 }
 
 footer{
@@ -460,5 +460,7 @@ label, .label{
 	margin-left: -2%;
 }
 
-
-
+.pagination{
+    float: right;
+    margin-bottom: 6px;
+}

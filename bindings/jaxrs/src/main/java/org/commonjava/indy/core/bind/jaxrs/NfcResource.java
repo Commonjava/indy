@@ -28,7 +28,10 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
+import org.commonjava.indy.core.model.Pagination;
 import org.commonjava.indy.util.ApplicationContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
@@ -41,7 +44,6 @@ import javax.ws.rs.core.Response;
 import java.nio.file.Paths;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
@@ -58,6 +60,8 @@ public class NfcResource
 
     @Inject
     private ObjectMapper serializer;
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @ApiOperation( "Clear all not-found cache entries" )
     @DELETE
@@ -161,7 +165,8 @@ public class NfcResource
         NotFoundCacheDTO dto;
         if ( pageIndex != null && pageIndex >= 0 )
         {
-            dto = controller.getAllMissing( pageIndex, pageSize );
+            Pagination<NotFoundCacheDTO> nfcPagination = controller.getAllMissing( pageIndex, pageSize );
+            dto = nfcPagination.getCurrData();
         }
         else {
             dto = controller.getAllMissing();
@@ -208,7 +213,8 @@ public class NfcResource
             NotFoundCacheDTO dto;
             if ( pageIndex != null && pageIndex >= 0 )
             {
-                dto = controller.getMissing( key, pageIndex, pageSize );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pageIndex, pageSize );
+                dto = nfcPagination.getCurrData();
             }
             else
             {
@@ -279,7 +285,8 @@ public class NfcResource
             NotFoundCacheDTO dto;
             if ( pageIndex != null && pageIndex >= 0 )
             {
-                dto = controller.getMissing( key, pageIndex, pageSize );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pageIndex, pageSize );
+                dto = nfcPagination.getCurrData();
             }
             else
             {
