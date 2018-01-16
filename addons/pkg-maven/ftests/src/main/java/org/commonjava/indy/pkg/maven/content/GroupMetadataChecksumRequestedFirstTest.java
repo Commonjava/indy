@@ -137,15 +137,6 @@ public class GroupMetadataChecksumRequestedFirstTest
         assertThat( checksum, equalTo( DigestUtils.shaHex( metadataContent ) ) );
     }
 
-    private void deployContent( HostedRepository repo, String pathTemplate, String template, String version )
-            throws IndyClientException
-    {
-        String path = pathTemplate.replaceAll( "%version%", version );
-        client.content()
-              .store( repo.getKey(), path, new ByteArrayInputStream(
-                      template.replaceAll( "%version%", version ).getBytes() ) );
-    }
-
     @Override
     protected boolean createStandardTestStructures()
     {
