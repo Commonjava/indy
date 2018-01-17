@@ -59,7 +59,8 @@ public interface PackageContentAccessResource
     @Path( "/{path: (.*)}" )
     Response doDelete(
             @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-            @ApiParam( required = true ) @PathParam( "name" ) String name, @PathParam( "path" ) String path );
+            @ApiParam( required = true ) @PathParam( "name" ) String name, @PathParam( "path" ) String path,
+            @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly);
 
     @ApiOperation( "Store file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ), @ApiResponse( code = 200,

@@ -1,0 +1,37 @@
+<!--
+
+    Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div class="container-fluid" ng-controller="CacheCtl">
+  <div class="control-panel">
+    <div class="cp-row">
+      This form is to delete broken or invalid cache files for groups and remote repositories, e.g,
+      generated maven-metadata.xml for a group location, broken jar file from a remote repository, etc.
+      There are some unusual cases that could break those files and the easy fix is to delete and regenerate it (in the next request).
+    </div>
+    <div class="cp-row">
+      <label>Input the the file url to delete:</label>
+      (can be a full url or a relative url like "/api/content/maven/group/central/org/foo/bar/1/bar-1.pom")
+      <input style="width: 100%;" ng-model="path">
+    </div>
+    <div class="cp-row">
+      <a class="cp-button" href="" ng-click="deleteCache()">Delete</a>
+    </div>
+  </div>
+  <div class="content-panel">
+    <div>{{data}}</div>
+  </div>
+</div>
