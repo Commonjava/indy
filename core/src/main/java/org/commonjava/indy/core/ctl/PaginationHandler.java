@@ -15,14 +15,12 @@
  */
 package org.commonjava.indy.core.ctl;
 
-import java.util.List;
+import org.commonjava.indy.core.model.GenericPagination;
 
 /**
  * Created by yma on 2018/1/15.
  */
 public interface PaginationHandler<T>
 {
-    T getCurrData( int pageIndex, int pageSize );
-
-    List<T> getCurrDataList( int pageIndex, int pageSize );
+    T getCurrData( GenericPagination pagination );
 }

@@ -17,8 +17,6 @@ package org.commonjava.indy.core.model;
 
 import org.commonjava.indy.core.ctl.PaginationHandler;
 
-import java.util.List;
-
 /**
  * Created by yma on 2018/1/15.
  */
@@ -26,23 +24,17 @@ public class DefaultPagination<T>
         implements Pagination<T>
 {
 
-    protected int pageIndex;
+    private GenericPagination pagination;
 
-    protected int pageSize;
+    private PaginationHandler<T> handler;
 
-    protected PaginationHandler<T> handler;
+    private T currData;
 
-    protected T currData;
-
-    protected List<T> currDataList;
-
-    public DefaultPagination( int pageIndex, int pageSize, PaginationHandler<T> handler )
+    public DefaultPagination( GenericPagination pagination, PaginationHandler<T> handler )
     {
-        this.pageIndex = pageIndex;
-        this.pageSize = pageSize;
+        this.pagination = pagination;
         this.handler = handler;
         setCurrData();
-        setCurrDataList();
     }
 
     public DefaultPagination()
@@ -50,25 +42,14 @@ public class DefaultPagination<T>
     }
 
     @Override
-    public int getPageIndex()
+    public GenericPagination getPagination()
     {
-        return pageIndex;
+        return pagination;
     }
 
-    public void setPageIndex( int pageIndex )
+    public void setPagination( GenericPagination pagination )
     {
-        this.pageIndex = pageIndex;
-    }
-
-    @Override
-    public int getPageSize()
-    {
-        return pageSize;
-    }
-
-    public void setPageSize( int pageSize )
-    {
-        this.pageSize = pageSize;
+        this.pagination = pagination;
     }
 
     @Override
@@ -79,17 +60,6 @@ public class DefaultPagination<T>
 
     public void setCurrData()
     {
-        this.currData = handler.getCurrData( pageIndex, pageSize );
-    }
-
-    @Override
-    public List<T> getCurrDataList()
-    {
-        return currDataList;
-    }
-
-    public void setCurrDataList()
-    {
-        this.currDataList = handler.getCurrDataList( pageIndex, pageSize );
+        this.currData = handler.getCurrData( pagination );
     }
 }

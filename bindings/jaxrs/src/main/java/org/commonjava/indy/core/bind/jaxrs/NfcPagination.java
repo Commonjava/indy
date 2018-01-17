@@ -13,13 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.model;
+package org.commonjava.indy.core.bind.jaxrs;
+
+import org.commonjava.indy.core.model.GenericPagination;
 
 /**
- * Created by yma on 2018/1/15.
+ * Created by yma on 2018/1/17.
  */
-public interface Pagination<T>
+public class NfcPagination
+        extends GenericPagination
 {
-    GenericPagination getPagination();
-    T getCurrData();
+    public NfcPagination( int pageIndex, int pageSize )
+    {
+        super( pageIndex, pageSize );
+    }
 }

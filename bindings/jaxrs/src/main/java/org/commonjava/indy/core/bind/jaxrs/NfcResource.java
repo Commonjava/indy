@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.NfcController;
+import org.commonjava.indy.core.model.GenericPagination;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
@@ -157,15 +158,16 @@ public class NfcResource
             { @ApiResponse( code = 200, response = NotFoundCacheDTO.class, message = "The full not-found cache" ) } )
     @Produces( ApplicationContent.application_json )
     public Response getAll(
-                    final @ApiParam( name = "pageIndex", value = "page index, starts from 0" )
+                    final @ApiParam( name = "pageIndex", value = "page index" )
                     @QueryParam( "pageIndex" ) Integer pageIndex,
                     final @ApiParam( name = "pageSize", value = "page size" )
                     @QueryParam( "pageSize" ) Integer pageSize )
     {
         NotFoundCacheDTO dto;
-        if ( pageIndex != null && pageIndex >= 0 )
+        GenericPagination pagination = new NfcPagination(pageIndex, pageSize);
+        if ( pagination != null && pagination.allowPaging() )
         {
-            Pagination<NotFoundCacheDTO> nfcPagination = controller.getAllMissing( pageIndex, pageSize );
+            Pagination<NotFoundCacheDTO> nfcPagination = controller.getAllMissing( pagination );
             dto = nfcPagination.getCurrData();
         }
         else {
@@ -198,7 +200,7 @@ public class NfcResource
                     @PathParam( "type" ) String t,
                     final @ApiParam( name = "name", value = "The name of the store" )
                     @PathParam( "name" ) String name,
-                    final @ApiParam( name = "pageIndex", value = "page index starts from 0" )
+                    final @ApiParam( name = "pageIndex", value = "page index" )
                     @QueryParam( "pageIndex" ) Integer pageIndex,
                     final @ApiParam( name = "pageSize", value = "page size" )
                     @QueryParam( "pageSize" ) Integer pageSize )
@@ -211,9 +213,10 @@ public class NfcResource
         try
         {
             NotFoundCacheDTO dto;
-            if ( pageIndex != null && pageIndex >= 0 )
+            GenericPagination pagination = new NfcPagination(pageIndex, pageSize);
+            if ( pagination != null && pagination.allowPaging() )
             {
-                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pageIndex, pageSize );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pagination );
                 dto = nfcPagination.getCurrData();
             }
             else
@@ -272,7 +275,7 @@ public class NfcResource
                     @PathParam( "type" ) String t,
                     final @ApiParam( name = "name", value = "name of the store" )
                     @PathParam( "name" ) String name,
-                    final @ApiParam( name = "pageIndex", value = "page index, starts from 0" )
+                    final @ApiParam( name = "pageIndex", value = "page index" )
                     @QueryParam( "pageIndex" ) Integer pageIndex,
                     final @ApiParam( name = "pageSize", value = "page size" )
                     @QueryParam( "pageSize" ) Integer pageSize )
@@ -283,10 +286,12 @@ public class NfcResource
         try
         {
             NotFoundCacheDTO dto;
-            if ( pageIndex != null && pageIndex >= 0 )
+            GenericPagination pagination = new NfcPagination(pageIndex, pageSize);
+            if ( pagination != null && pagination.allowPaging() )
             {
-                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pageIndex, pageSize );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pagination );
                 dto = nfcPagination.getCurrData();
+
             }
             else
             {
