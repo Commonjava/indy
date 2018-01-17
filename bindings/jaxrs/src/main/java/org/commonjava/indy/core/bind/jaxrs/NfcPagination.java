@@ -23,7 +23,7 @@ import org.commonjava.indy.core.model.GenericPagination;
 public class NfcPagination
         extends GenericPagination
 {
-    public NfcPagination( int pageIndex, int pageSize )
+    public NfcPagination( Integer pageIndex, Integer pageSize )
     {
         super( pageIndex, pageSize );
     }

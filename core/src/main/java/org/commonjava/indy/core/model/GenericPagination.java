@@ -20,11 +20,11 @@ package org.commonjava.indy.core.model;
  */
 public abstract class GenericPagination
 {
-    protected int pageIndex;
+    protected Integer pageIndex;
 
-    protected int pageSize;
+    protected Integer pageSize;
 
-    public GenericPagination( int pageIndex, int pageSize )
+    public GenericPagination( Integer pageIndex, Integer pageSize )
     {
         this.pageIndex = pageIndex;
         this.pageSize = pageSize;
@@ -34,28 +34,28 @@ public abstract class GenericPagination
     {
     }
 
-    public int getPageIndex()
+    public Integer getPageIndex()
     {
         return pageIndex;
     }
 
-    public void setPageIndex( int pageIndex )
+    public void setPageIndex( Integer pageIndex )
     {
         this.pageIndex = pageIndex;
     }
 
-    public int getPageSize()
+    public Integer getPageSize()
     {
         return pageSize;
     }
 
-    public void setPageSize( int pageSize )
+    public void setPageSize( Integer pageSize )
     {
         this.pageSize = pageSize;
     }
 
     public boolean allowPaging()
     {
-        return ( pageIndex >= 0 ) ? true : false;
+        return ( pageIndex != null && pageIndex >= 0 ) ? true : false;
     }
 }
