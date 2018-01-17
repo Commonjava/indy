@@ -28,10 +28,9 @@ import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
-import org.commonjava.maven.galley.event.FileErrorEvent;
 import org.commonjava.maven.galley.event.FileEvent;
+import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,24 +66,28 @@ public class MetadataMergePomChangeListener
     private CacheHandle<StoreKey, Map> versionMetadataCache;
 
     /**
-     * this listener will observe both {@link org.commonjava.maven.galley.event.FileStorageEvent}
-     * and {@link org.commonjava.maven.galley.event.FileDeletionEvent} for a pom file, which means
-     * maven meta clear will happen when a version (pom) updates (upload / deletion).
+     * this listener observes {@link org.commonjava.maven.galley.event.FileStorageEvent}
+     * for a pom file, which means maven-metadata.xml will be cleared
+     * when a version (pom) is uploaded.
      */
-    public void metaClear( @Observes final FileEvent event )
+    public void onPomStorageEvent( @Observes final FileStorageEvent event )
     {
+        metaClear( event );
+    }
 
+    /**
+     * this listener observes {@link org.commonjava.maven.galley.event.FileDeletionEvent}
+     * for a pom file, which means maven-metadata.xml will be cleared
+     * when a version (pom) is removed.
+     */
+    public void onPomDeletionEvent( @Observes final FileDeletionEvent event )
+    {
+        metaClear( event );
+    }
+
+    private void metaClear( final FileEvent event )
+    {
         final String path = event.getTransfer().getPath();
-
-        if ( event instanceof FileErrorEvent )
-        {
-            return;
-        }
-
-        if ( event instanceof FileAccessEvent )
-        {
-            return;
-        }
 
         if ( !path.endsWith( ".pom" ) )
         {
