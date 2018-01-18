@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.NfcController;
-import org.commonjava.indy.core.model.GenericPagination;
+import org.commonjava.indy.core.model.Page;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
@@ -164,10 +164,10 @@ public class NfcResource
                     @QueryParam( "pageSize" ) Integer pageSize )
     {
         NotFoundCacheDTO dto;
-        GenericPagination pagination = new NfcPagination(pageIndex, pageSize);
-        if ( pagination != null && pagination.allowPaging() )
+        Page page = new Page( pageIndex, pageSize);
+        if ( page != null && page.allowPaging() )
         {
-            Pagination<NotFoundCacheDTO> nfcPagination = controller.getAllMissing( pagination );
+            Pagination<NotFoundCacheDTO> nfcPagination = controller.getAllMissing( page );
             dto = nfcPagination.getCurrData();
         }
         else {
@@ -213,10 +213,10 @@ public class NfcResource
         try
         {
             NotFoundCacheDTO dto;
-            GenericPagination pagination = new NfcPagination(pageIndex, pageSize);
-            if ( pagination != null && pagination.allowPaging() )
+            Page page = new Page(pageIndex, pageSize);
+            if ( page != null && page.allowPaging() )
             {
-                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pagination );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, page );
                 dto = nfcPagination.getCurrData();
             }
             else
@@ -286,10 +286,10 @@ public class NfcResource
         try
         {
             NotFoundCacheDTO dto;
-            GenericPagination pagination = new NfcPagination(pageIndex, pageSize);
-            if ( pagination != null && pagination.allowPaging() )
+            Page page = new Page(pageIndex, pageSize);
+            if ( page != null && page.allowPaging() )
             {
-                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, pagination );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, page );
                 dto = nfcPagination.getCurrData();
 
             }

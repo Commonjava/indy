@@ -35,7 +35,7 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.inject.AbstractNotFoundCache;
-import org.commonjava.indy.core.model.GenericPagination;
+import org.commonjava.indy.core.model.Page;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -76,11 +76,11 @@ public class NfcController
         return getNotFoundCacheDTO( allMissing );
     }
 
-    public Pagination<NotFoundCacheDTO> getAllMissing( GenericPagination pagination )
+    public Pagination<NotFoundCacheDTO> getAllMissing( Page page )
     {
-        return new DefaultPagination<>( pagination, (handler)->
+        return new DefaultPagination<>( page, (handler)->
         {
-            Map<Location, Set<String>> allMissing = cache.getAllMissing( pagination.getPageIndex(), pagination.getPageSize() );
+            Map<Location, Set<String>> allMissing = cache.getAllMissing( page.getPageIndex(), page.getPageSize() );
             NotFoundCacheDTO dto = getNotFoundCacheDTO( allMissing );
             return dto;
         });
@@ -109,14 +109,14 @@ public class NfcController
         return doGetMissing( key );
     }
 
-    public Pagination<NotFoundCacheDTO> getMissing( final StoreKey key, GenericPagination pagination )
+    public Pagination<NotFoundCacheDTO> getMissing( final StoreKey key, Page page )
                     throws IndyWorkflowException
     {
-        return new DefaultPagination<>( pagination, (handler)->
+        return new DefaultPagination<>( page, (handler)->
         {
             try
             {
-                return doGetMissing( key, pagination.getPageIndex(), pagination.getPageSize() );
+                return doGetMissing( key, page.getPageIndex(), page.getPageSize() );
             }
             catch ( IndyWorkflowException e )
             {

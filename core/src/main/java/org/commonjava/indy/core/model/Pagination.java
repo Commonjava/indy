@@ -20,6 +20,6 @@ package org.commonjava.indy.core.model;
  */
 public interface Pagination<T>
 {
-    GenericPagination getPagination();
+    Page getPage();
     T getCurrData();
 }

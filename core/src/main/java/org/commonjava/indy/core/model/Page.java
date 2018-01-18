@@ -18,19 +18,19 @@ package org.commonjava.indy.core.model;
 /**
  * Created by yma on 2018/1/17.
  */
-public abstract class GenericPagination
+public class Page
 {
     protected Integer pageIndex;
 
     protected Integer pageSize;
 
-    public GenericPagination( Integer pageIndex, Integer pageSize )
+    public Page( Integer pageIndex, Integer pageSize )
     {
         this.pageIndex = pageIndex;
         this.pageSize = pageSize;
     }
 
-    public GenericPagination()
+    public Page()
     {
     }
 

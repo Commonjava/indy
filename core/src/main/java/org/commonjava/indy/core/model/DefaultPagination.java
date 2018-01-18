@@ -24,15 +24,15 @@ public class DefaultPagination<T>
         implements Pagination<T>
 {
 
-    private GenericPagination pagination;
+    private Page page;
 
     private PaginationHandler<T> handler;
 
     private T currData;
 
-    public DefaultPagination( GenericPagination pagination, PaginationHandler<T> handler )
+    public DefaultPagination( Page page, PaginationHandler<T> handler )
     {
-        this.pagination = pagination;
+        this.page = page;
         this.handler = handler;
         setCurrData();
     }
@@ -42,14 +42,14 @@ public class DefaultPagination<T>
     }
 
     @Override
-    public GenericPagination getPagination()
+    public Page getPage()
     {
-        return pagination;
+        return page;
     }
 
-    public void setPagination( GenericPagination pagination )
+    public void setPage( Page page )
     {
-        this.pagination = pagination;
+        this.page = page;
     }
 
     @Override
@@ -60,6 +60,6 @@ public class DefaultPagination<T>
 
     public void setCurrData()
     {
-        this.currData = handler.getCurrData( pagination );
+        this.currData = handler.getCurrData( page );
     }
 }
