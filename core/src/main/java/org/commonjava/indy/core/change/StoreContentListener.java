@@ -32,7 +32,6 @@ import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -54,6 +53,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.maven.galley.util.PathUtils.ROOT;
 
 /**
@@ -75,20 +75,36 @@ public class StoreContentListener
     @Inject
     private DirectContentAccess directContentAccess;
 
+    /**
+     * Handles store disable/enablement.
+     */
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
                     IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREDISABLE
                                     + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
                     IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREDISABLE + IndyMetricsNames.METER ) ) )
-    public void onStoreDisable( @Observes final ArtifactStoreEnablementEvent event )
+    public void onStoreEnablement( @Observes final ArtifactStoreEnablementEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Got store-enablement event: {}", event );
 
         if ( event.isPreprocessing() )
         {
-            processAllPaths( event, mergablePathStrings(), false );
+            if ( event.isDisabling() )
+            {
+                /* For disablement, we remove the merged metadata files by paths via listing mergable files in the target repo's local cache.
+                 * We do not cache pom/jar files in affected groups so don't worry about them.
+                 */
+                processAllPaths( event, mergablePathStrings(), false );
+            }
+            else
+            {
+                /* When enabling a repo, we have to clean all (mergable) content from containing groups' cache because
+                 * we don't have complete listing of the enabled repo and listing it is very slow. The only option how to keep
+                 * the cache consistent is to drop everything from it.
+                 */
+                processAllPathsExt( event, mergablePathStrings() );
+            }
         }
-
     }
 
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
@@ -130,7 +146,7 @@ public class StoreContentListener
 
         StoreKey key = store.getKey();
         // we're only interested in groups, since only adjustments to group memberships can invalidate indexed content.
-        if ( StoreType.group == key.getType() )
+        if ( group == key.getType() )
         {
             List<StoreKey> newMembers = ( (Group) store ).getConstituents();
             logger.debug( "New members of: {} are: {}", store, newMembers );
@@ -362,6 +378,12 @@ public class StoreContentListener
         return Collections.emptySet();
     }
 
+    /**
+     * List the mergable paths in target store and clean up the paths in affected groups.
+     * @param stores
+     * @param pathFilter
+     * @param deleteOriginPath
+     */
     private void processAllPaths( final Iterable<ArtifactStore> stores, Predicate<? super String> pathFilter, boolean deleteOriginPath )
     {
         StreamSupport.stream( stores.spliterator(), true ).forEach( ( store ) -> {
@@ -383,6 +405,55 @@ public class StoreContentListener
 
                 clearPaths( paths, key, groups, deleteOriginPath );
             }
+        } );
+    }
+
+    /**
+     * Extensive version for clean up paths. This will clean all mergable files in affected groups regardless whether
+     * the path is in the target store cache or not.
+     * @param stores
+     * @param pathFilter
+     */
+    private void processAllPathsExt( final Iterable<ArtifactStore> stores, Predicate<? super String> pathFilter )
+    {
+        StreamSupport.stream( stores.spliterator(), true ).forEach( ( store ) -> {
+            final StoreKey key = store.getKey();
+            try
+            {
+                Set<Group> groups =
+                                storeDataManager.query().packageType( key.getPackageType() ).getGroupsAffectedBy( key );
+                if ( store instanceof Group )
+                {
+                    groups.add( (Group) store );
+                }
+                clearPaths( groups, pathFilter );
+            }
+            catch ( IndyDataException e )
+            {
+                e.printStackTrace();
+            }
+        } );
+    }
+
+    private void clearPaths( Set<Group> groups, Predicate<? super String> pathFilter )
+                    throws IndyDataException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        groups.parallelStream().forEach( g->{
+            Set<String> paths = listPaths( g.getKey(), pathFilter );
+            logger.trace( "Clear mergable files for group: {}, paths: {}", g.getKey(), paths );
+            paths.forEach( p->{
+                try
+                {
+                    Transfer gt = directContentAccess.getTransfer( g, p );
+                    delete( gt );
+                }
+                catch ( IndyWorkflowException e )
+                {
+                    logger.error( String.format( "Failed to retrieve transfer for: %s in group: %s. Reason: %s", p, g.getName(), e.getMessage() ), e );
+                }
+            } );
         } );
     }
 

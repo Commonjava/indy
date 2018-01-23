@@ -103,12 +103,12 @@ public class MetadataMergeListner
     }
 
     /**
-     * Normally, Indy does not need to handle FileDeletionEvent when the cached metadata files were deleted due to store
+     * Indy normally does not handle FileDeletionEvent when the cached metadata files were deleted due to store
      * enable/disable/delete, etc. Lately we add a force-deletion for group/remote-repo cache files. This requires to
      * delete affected group metadata files and clear ISPN cache too. We use this method for just this case, i.e.,
      * only if CHECK_CACHE_ONLY is true.
      */
-    public void onCacheMetadataFileDelete( @Observes final FileDeletionEvent event )
+    public void onMetadataFileForceDelete( @Observes final FileDeletionEvent event )
     {
         EventMetadata eventMetadata = event.getEventMetadata();
         if ( !Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) )
