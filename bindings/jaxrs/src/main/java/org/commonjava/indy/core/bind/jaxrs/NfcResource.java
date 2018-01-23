@@ -24,11 +24,15 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.NfcController;
+import org.commonjava.indy.core.model.Page;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
+import org.commonjava.indy.core.model.Pagination;
 import org.commonjava.indy.util.ApplicationContent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
@@ -41,7 +45,6 @@ import javax.ws.rs.core.Response;
 import java.nio.file.Paths;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
@@ -58,6 +61,8 @@ public class NfcResource
 
     @Inject
     private ObjectMapper serializer;
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @ApiOperation( "Clear all not-found cache entries" )
     @DELETE
@@ -153,15 +158,17 @@ public class NfcResource
             { @ApiResponse( code = 200, response = NotFoundCacheDTO.class, message = "The full not-found cache" ) } )
     @Produces( ApplicationContent.application_json )
     public Response getAll(
-                    final @ApiParam( name = "pageIndex", value = "page index, starts from 0" )
+                    final @ApiParam( name = "pageIndex", value = "page index" )
                     @QueryParam( "pageIndex" ) Integer pageIndex,
                     final @ApiParam( name = "pageSize", value = "page size" )
                     @QueryParam( "pageSize" ) Integer pageSize )
     {
         NotFoundCacheDTO dto;
-        if ( pageIndex != null && pageIndex >= 0 )
+        Page page = new Page( pageIndex, pageSize);
+        if ( page != null && page.allowPaging() )
         {
-            dto = controller.getAllMissing( pageIndex, pageSize );
+            Pagination<NotFoundCacheDTO> nfcPagination = controller.getAllMissing( page );
+            dto = nfcPagination.getCurrData();
         }
         else {
             dto = controller.getAllMissing();
@@ -193,7 +200,7 @@ public class NfcResource
                     @PathParam( "type" ) String t,
                     final @ApiParam( name = "name", value = "The name of the store" )
                     @PathParam( "name" ) String name,
-                    final @ApiParam( name = "pageIndex", value = "page index starts from 0" )
+                    final @ApiParam( name = "pageIndex", value = "page index" )
                     @QueryParam( "pageIndex" ) Integer pageIndex,
                     final @ApiParam( name = "pageSize", value = "page size" )
                     @QueryParam( "pageSize" ) Integer pageSize )
@@ -206,9 +213,11 @@ public class NfcResource
         try
         {
             NotFoundCacheDTO dto;
-            if ( pageIndex != null && pageIndex >= 0 )
+            Page page = new Page(pageIndex, pageSize);
+            if ( page != null && page.allowPaging() )
             {
-                dto = controller.getMissing( key, pageIndex, pageSize );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, page );
+                dto = nfcPagination.getCurrData();
             }
             else
             {
@@ -266,7 +275,7 @@ public class NfcResource
                     @PathParam( "type" ) String t,
                     final @ApiParam( name = "name", value = "name of the store" )
                     @PathParam( "name" ) String name,
-                    final @ApiParam( name = "pageIndex", value = "page index, starts from 0" )
+                    final @ApiParam( name = "pageIndex", value = "page index" )
                     @QueryParam( "pageIndex" ) Integer pageIndex,
                     final @ApiParam( name = "pageSize", value = "page size" )
                     @QueryParam( "pageSize" ) Integer pageSize )
@@ -277,9 +286,12 @@ public class NfcResource
         try
         {
             NotFoundCacheDTO dto;
-            if ( pageIndex != null && pageIndex >= 0 )
+            Page page = new Page(pageIndex, pageSize);
+            if ( page != null && page.allowPaging() )
             {
-                dto = controller.getMissing( key, pageIndex, pageSize );
+                Pagination<NotFoundCacheDTO> nfcPagination = controller.getMissing( key, page );
+                dto = nfcPagination.getCurrData();
+
             }
             else
             {

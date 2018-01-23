@@ -419,10 +419,47 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
       $location.path(viewPath);
     }
   };
-  
+
+  $scope.pageSizes = [10,25,50,100,200];
+  $scope.currentPageNumber = 1;
+  var scopePageIndex = 0;
+  var scopePageSize = 10;
+
+  $scope.changePageSize = function(currentPageSize){
+    scopePageSize = currentPageSize;
+    queryByPageIndexAndSize(0, scopePageSize);
+    $scope.currentPageNumber = 1;
+  }
+  $scope.changePageNumber = function($event, currentPageNumber){
+    if($event.keyCode == 13) {
+      scopePageIndex = currentPageNumber - 1;
+      queryByPageIndexAndSize(scopePageIndex, scopePageSize);
+    }
+  }
+
+  $scope.prevPage = function(){
+    scopePageIndex--;
+    queryByPageIndexAndSize(scopePageIndex, scopePageSize);
+    $scope.currentPageNumber = scopePageIndex + 1;
+    $scope.prevDisabled = false;
+    if(scopePageIndex <= 0) {
+      $scope.prevDisabled = true;
+    }
+  }
+
+  $scope.nextPage = function(){
+    scopePageIndex++;
+    queryByPageIndexAndSize(scopePageIndex, scopePageSize);
+    $scope.currentPageNumber = scopePageIndex + 1;
+  }
+
   AllEndpointsSvc.resource.query(function(listing){
     var available = [];
     listing.items.each(function(item){
+      if (item.type == ( "group" ))
+      {
+        return;
+      }
       item.key = StoreUtilSvc.formatKey(item.packageType, item.type, item.name);
       item.label = StoreUtilSvc.keyLabel(item.key);
       available.push(item);
@@ -430,44 +467,51 @@ indyControllers.controller('NfcController', ['$scope', '$routeParams', '$locatio
     
     $scope.raw.available = StoreUtilSvc.sortEndpoints( available );
   });
-  
-  if ( window.location.hash == ( "#/nfc/view/all" ) ){
-// alert( "showing all NFC entries");
-    delete $scope.currentKey;
-    
-    NfcSvc.resource.query({}, function(nfc){
-      if ( nfc.sections !== undefined ){
-        nfc.sections.each(function(section){
-          section.label = StoreUtilSvc.keyLabel(section.key);
-          section.paths.sort();
+
+  function queryByPageIndexAndSize(index, size){
+      $scope.prevDisabled = false;
+      if(index <= 0) {
+        $scope.prevDisabled = true;
+      }
+      $scope.paginationHidden = true;
+      if ( window.location.hash == ( "#/nfc/view/all" ) ){
+        // alert( "showing all NFC entries");
+        $scope.paginationHidden = false;
+        delete $scope.currentKey;
+        NfcSvc.resource.query({pageIndex: index , pageSize: size}, function(nfc){
+          if ( nfc.sections !== undefined ){
+            nfc.sections.each(function(section){
+              section.label = StoreUtilSvc.keyLabel(section.key);
+              section.paths.sort();
+            });
+          }
+          $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
         });
       }
+      else{
+        var routePackageType = $routeParams.packageType;
+        var routeType = $routeParams.type;
+        var routeName = $routeParams.name;
+        if ( routeType !== undefined && routeName !== undefined ){
+          $scope.paginationHidden = false;
+          $scope.currentKey = StoreUtilSvc.formatKey(routePackageType, routeType, routeName);
 
-      $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
-    });
-  }
-  else{
-    var routePackageType = $routeParams.packageType;
-    var routeType = $routeParams.type;
-    var routeName = $routeParams.name;
-    
-    if ( routeType !== undefined && routeName !== undefined ){
-      $scope.currentKey = StoreUtilSvc.formatKey(routePackageType, routeType, routeName);
-      
-// alert( "showing NFC entries for: " + $scope.currentKey);
-      
-      NfcSvc.resource.get({packageType: routePackageType, type:routeType, name:routeName}, function(nfc){
-        if ( nfc.sections !== undefined ){
-          nfc.sections.each(function(section){
-            section.label = StoreUtilSvc.keyLabel(section.key);
-            section.paths.sort();
+          // alert( "showing NFC entries for: " + $scope.currentKey);
+          NfcSvc.resource.get({packageType: routePackageType, type:routeType, name:routeName, pageIndex: index, pageSize: size}, function(nfc){
+            if ( nfc.sections !== undefined ){
+              nfc.sections.each(function(section){
+                section.label = StoreUtilSvc.keyLabel(section.key);
+                section.paths.sort();
+              });
+            }
+
+            $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
           });
         }
-
-        $scope.sections = StoreUtilSvc.sortByEmbeddedKey(nfc.sections);
-      });
-    }
+      }
   }
+
+  queryByPageIndexAndSize(0,10);
 }]);
 
 indyControllers.controller('CacheCtl', ['$scope', '$routeParams', 'CacheSvc', 'ControlSvc', function($scope, $routeParams, CacheSvc, ControlSvc) {

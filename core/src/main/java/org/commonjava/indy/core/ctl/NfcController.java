@@ -35,6 +35,7 @@ import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.inject.AbstractNotFoundCache;
+import org.commonjava.indy.core.model.Page;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -42,8 +43,12 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.core.model.DefaultPagination;
+import org.commonjava.indy.core.model.Pagination;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class NfcController
@@ -71,10 +76,14 @@ public class NfcController
         return getNotFoundCacheDTO( allMissing );
     }
 
-    public NotFoundCacheDTO getAllMissing( int pageIndex, int pageSize )
+    public Pagination<NotFoundCacheDTO> getAllMissing( Page page )
     {
-        Map<Location, Set<String>> allMissing = cache.getAllMissing( pageIndex, pageSize );
-        return getNotFoundCacheDTO( allMissing );
+        return new DefaultPagination<>( page, (handler)->
+        {
+            Map<Location, Set<String>> allMissing = cache.getAllMissing( page.getPageIndex(), page.getPageSize() );
+            NotFoundCacheDTO dto = getNotFoundCacheDTO( allMissing );
+            return dto;
+        });
     }
 
     private NotFoundCacheDTO getNotFoundCacheDTO( Map<Location, Set<String>> allMissing )
@@ -100,10 +109,22 @@ public class NfcController
         return doGetMissing( key );
     }
 
-    public NotFoundCacheDTO getMissing( final StoreKey key, int pageIndex, int pageSize )
+    public Pagination<NotFoundCacheDTO> getMissing( final StoreKey key, Page page )
                     throws IndyWorkflowException
     {
-        return doGetMissing( key, pageIndex, pageSize );
+        return new DefaultPagination<>( page, (handler)->
+        {
+            try
+            {
+                return doGetMissing( key, page.getPageIndex(), page.getPageSize() );
+            }
+            catch ( IndyWorkflowException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( e.getMessage(), e );
+            }
+            return null;
+        });
     }
 
     //Warn: The getMissing is very expensive if group holds thousands of repositories.
