@@ -24,11 +24,13 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.core.bind.jaxrs.metrics.IndyMetricsBindingsNames;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +38,11 @@ public class TransferStreamingOutput
     implements StreamingOutput
 {
 
-    private InputStream stream;
+    private final Transfer transfer;
 
-    public TransferStreamingOutput( final InputStream stream )
+    public TransferStreamingOutput( final Transfer transfer )
     {
-        this.stream = stream;
+        this.transfer = transfer;
     }
 
     @Override
@@ -49,19 +51,18 @@ public class TransferStreamingOutput
                                     + IndyMetricsNames.METER ), timers = @MetricNamed( name =
                     IndyMetricsBindingsNames.METHOD_TRANSFERSTREAMING_WRITE + IndyMetricsNames.TIMER ) ) )
     public void write( final OutputStream out )
-        throws IOException, WebApplicationException
+            throws IOException, WebApplicationException
     {
-        try
+        synchronized ( transfer )
         {
-            CountingOutputStream cout = new CountingOutputStream( out );
-            IOUtils.copy( stream, cout );
+            try (InputStream stream = transfer.openInputStream())
+            {
+                CountingOutputStream cout = new CountingOutputStream( out );
+                IOUtils.copy( stream, cout );
 
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "Wrote: {} bytes", cout.getByteCount() );
-        }
-        finally
-        {
-            IOUtils.closeQuietly( stream );
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.debug( "Wrote: {} bytes", cout.getByteCount() );
+            }
         }
     }
 

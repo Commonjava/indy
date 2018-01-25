@@ -419,8 +419,8 @@ public class ContentAccessHandler
                     {
                         logger.debug( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
-                        InputStream in = item.openInputStream( true, eventMetadata );
-                        final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
+//                        InputStream in = item.openInputStream( true, eventMetadata );
+                        final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item ) );
                         setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         if ( builderModifier != null )
@@ -438,7 +438,7 @@ public class ContentAccessHandler
                     }
                 }
             }
-            catch ( final IOException | IndyWorkflowException e )
+            catch ( final IndyWorkflowException e )
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
