@@ -40,6 +40,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -424,12 +425,33 @@ public class DefaultContentManager
                     generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
                 }
             }
+
+            clearNFCEntries(kl, path);
         }
 
         return txfr;
     }
 
-//    @Override
+    private void clearNFCEntries( final KeyedLocation kl, final String path )
+    {
+        try
+        {
+            storeManager.query()
+                        .getGroupsAffectedBy( kl.getKey() )
+                        .stream()
+                        .map( ( g ) -> new ConcreteResource( LocationUtils.toLocation( g ), path ) )
+                        .forEach( ( cr ) -> nfc.clearMissing( cr ) );
+
+            nfc.clearMissing( new ConcreteResource( kl, path ) );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( String.format("Failed to clear NFC entries affected by upload of: %s to: %s. Reason: %s", path,
+                                        kl.getKey(), e.getMessage()), e );
+        }
+    }
+
+    //    @Override
 //    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
 //                           final TransferOperation op )
 //            throws IndyWorkflowException
@@ -463,6 +485,8 @@ public class DefaultContentManager
                 logger.debug( "{} Handling content storage of: {} in: {}", generator, path, transferStore.getKey() );
                 generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
             }
+
+            clearNFCEntries(kl, path);
         }
 
         return txfr;
