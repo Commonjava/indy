@@ -102,13 +102,13 @@ public class CacheProducer
         {
             try
             {
-                logger.info( "Using Infinispan configuration:\n\n{}\n\n", resourceStr );
+                logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
                 cacheManager = new DefaultCacheManager(
                         new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
             }
             catch ( IOException e )
             {
-                throw new RuntimeException( "Cannot read infinispan configuration.", e );
+                throw new RuntimeException( "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
             }
         }
     }
