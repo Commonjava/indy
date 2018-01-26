@@ -24,7 +24,6 @@ import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.core.bind.jaxrs.metrics.IndyMetricsBindingsNames;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
@@ -43,6 +42,7 @@ public class TransferStreamingOutput
     public TransferStreamingOutput( final Transfer transfer )
     {
         this.transfer = transfer;
+        transfer.lockWrite();
     }
 
     @Override
@@ -53,17 +53,19 @@ public class TransferStreamingOutput
     public void write( final OutputStream out )
             throws IOException, WebApplicationException
     {
-        synchronized ( transfer )
+        try (InputStream stream = transfer.openInputStream())
         {
-            try (InputStream stream = transfer.openInputStream())
-            {
-                CountingOutputStream cout = new CountingOutputStream( out );
-                IOUtils.copy( stream, cout );
+            CountingOutputStream cout = new CountingOutputStream( out );
+            IOUtils.copy( stream, cout );
 
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.debug( "Wrote: {} bytes", cout.getByteCount() );
-            }
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Wrote: {} bytes", cout.getByteCount() );
         }
+        finally
+        {
+            transfer.unlock();
+        }
+
     }
 
 }
