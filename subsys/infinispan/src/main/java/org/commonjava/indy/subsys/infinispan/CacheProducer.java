@@ -236,29 +236,23 @@ public class CacheProducer
     private EmbeddedCacheManager mergeIspnConfiguration( String resourceStr, String confStr )
     {
         EmbeddedCacheManager mergedManager = new DefaultCacheManager();
+        addDefinedCachesToMerged( mergedManager, confStr, "CUSTOMER" );
+        addDefinedCachesToMerged( mergedManager, resourceStr, "CLASSPATH" );
+        return mergedManager;
+    }
 
-        ConfigurationBuilderHolder confHolder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( confStr ) );
-        ConfigurationManager confManager = new ConfigurationManager( confHolder );
+    private void addDefinedCachesToMerged( EmbeddedCacheManager merged, String config, String path )
+    {
+        ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
+        ConfigurationManager manager = new ConfigurationManager( holder );
 
-        for ( String name : confManager.getDefinedCaches() )
+        for ( String name : manager.getDefinedCaches() )
         {
-            logger.info( "[ISPN merging] Define cache {} from customer config.", name );
-            mergedManager.defineConfiguration( name, confManager.getConfiguration( name ) );
-        }
-
-        ConfigurationBuilderHolder resourceHolder =
-                ( new ParserRegistry() ).parse( IOUtils.toInputStream( resourceStr ) );
-        ConfigurationManager resourceManager = new ConfigurationManager( resourceHolder );
-
-        for ( String name : resourceManager.getDefinedCaches() )
-        {
-            if ( !mergedManager.getCacheNames().contains( name ) )
+            if ( merged.getCacheNames().isEmpty() || !merged.getCacheNames().contains( name ) )
             {
-                logger.info( "[ISPN merging] Define cache {} from classpath resource config.", name );
-                mergedManager.defineConfiguration( name, resourceManager.getConfiguration( name ) );
+                logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
+                merged.defineConfiguration( name, manager.getConfiguration( name ) );
             }
         }
-
-        return mergedManager;
     }
 }
