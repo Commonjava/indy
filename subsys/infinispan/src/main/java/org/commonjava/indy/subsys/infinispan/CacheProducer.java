@@ -25,7 +25,10 @@ import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
+import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
+import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
@@ -49,6 +52,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CacheProducer
         implements ShutdownAction
 {
+    Logger logger = LoggerFactory.getLogger( getClass() );
+
     private static final String ISPN_XML = "infinispan.xml";
 
     private EmbeddedCacheManager cacheManager;
@@ -60,6 +65,12 @@ public class CacheProducer
 
     protected CacheProducer()
     {
+    }
+
+    public CacheProducer( IndyConfiguration indyConfiguration, EmbeddedCacheManager cacheManager )
+    {
+        this.indyConfiguration = indyConfiguration;
+        this.cacheManager = cacheManager;
     }
 
     @PostConstruct
@@ -76,12 +87,18 @@ public class CacheProducer
         File confDir = indyConfiguration.getIndyConfDir();
         File ispnConf = new File( confDir, ISPN_XML );
 
-        String configuration;
+        InputStream resouceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream( ISPN_XML );
+
+        String resourceStr = interpolateStrFromStream( resouceStream, "CLASSPATH:" + ISPN_XML );
+
         if ( ispnConf.exists() )
         {
             try
             {
-                configuration = FileUtils.readFileToString( ispnConf );
+                InputStream confStream = FileUtils.openInputStream( ispnConf );
+                String confStr = interpolateStrFromStream( confStream, ispnConf.getPath() );
+                mergedCachesFromConfig( confStr, "CUSTOMER" );
+                mergedCachesFromConfig( resourceStr, "CLASSPATH" );
             }
             catch ( IOException e )
             {
@@ -90,39 +107,16 @@ public class CacheProducer
         }
         else
         {
-            try (InputStream stream = Thread.currentThread().getContextClassLoader().getResourceAsStream( ISPN_XML ))
+            try
             {
-                configuration = IOUtils.toString( stream );
+                logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
+                cacheManager = new DefaultCacheManager(
+                        new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
             }
             catch ( IOException e )
             {
-                throw new RuntimeException( "Cannot read infinispan configuration from classpath: " + ISPN_XML, e );
+                throw new RuntimeException( "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
             }
-        }
-
-        StringSearchInterpolator interpolator = new StringSearchInterpolator();
-        interpolator.addValueSource( new PropertiesBasedValueSource( System.getProperties() ) );
-
-        try
-        {
-            configuration = interpolator.interpolate( configuration );
-        }
-        catch ( InterpolationException e )
-        {
-            throw new RuntimeException( "Cannot resolve expressions in infinispan configuration.", e );
-        }
-
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Using Infinispan configuration:\n\n{}\n\n", configuration );
-
-        try
-        {
-            cacheManager = new DefaultCacheManager(
-                    new ByteArrayInputStream( configuration.getBytes( StandardCharsets.UTF_8 ) ) );
-        }
-        catch ( IOException e )
-        {
-            throw new RuntimeException( "Cannot read infinispan configuration.", e );
         }
     }
 
@@ -182,7 +176,6 @@ public class CacheProducer
 
         if ( cacheManager != null )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.info( "Stopping Infinispan caches." );
             cacheManager.stop();
             cacheManager = null;
@@ -199,5 +192,74 @@ public class CacheProducer
     public String getId()
     {
         return "infinispan-caches";
+    }
+
+    private String interpolateStrFromStream( InputStream inputStream, String path )
+    {
+        String configuration;
+        try
+        {
+            configuration = IOUtils.toString( inputStream );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException( "Cannot read infinispan configuration from : " + path, e );
+        }
+
+        StringSearchInterpolator interpolator = new StringSearchInterpolator();
+        interpolator.addValueSource( new PropertiesBasedValueSource( System.getProperties() ) );
+
+        try
+        {
+            configuration = interpolator.interpolate( configuration );
+        }
+        catch ( InterpolationException e )
+        {
+            throw new RuntimeException( "Cannot resolve expressions in infinispan configuration from: " + path, e );
+        }
+        return configuration;
+    }
+
+    /**
+     * For the ISPN merging, we should involve at least two different xml config scopes here,
+     * one is from indy self default resource xml, another one is from customer's config xml.
+     *
+     * To prevent the error of EmbeddedCacheManager instances configured with same JMX domain,
+     * ISPN should enable 'allowDuplicateDomains' attribute for per GlobalConfigurationBuilder build,
+     * that will cost more price there for DefaultCacheManager construct and ConfigurationBuilder build.
+     *
+     * Since what we need here is simply parsing xml inputStreams to the defined configurations that ISPN
+     * could accept, then merging the two stream branches into a entire one.
+     * What classes this method uses from ISPN are:
+     * {@link ConfigurationBuilderHolder}
+     * {@link ParserRegistry}
+     * {@link ConfigurationManager}
+     *
+     * @param config
+     * @param path
+     */
+    private void mergedCachesFromConfig( String config, String path )
+    {
+        if ( cacheManager == null )
+        {
+            cacheManager = new DefaultCacheManager();
+        }
+
+        ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
+        ConfigurationManager manager = new ConfigurationManager( holder );
+
+        for ( String name : manager.getDefinedCaches() )
+        {
+            if ( cacheManager.getCacheNames().isEmpty() || !cacheManager.getCacheNames().contains( name ) )
+            {
+                logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
+                cacheManager.defineConfiguration( name, manager.getConfiguration( name ) );
+            }
+        }
+    }
+
+    public EmbeddedCacheManager getCacheManager()
+    {
+        return cacheManager;
     }
 }
