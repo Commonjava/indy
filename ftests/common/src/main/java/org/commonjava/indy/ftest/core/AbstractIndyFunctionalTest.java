@@ -18,6 +18,7 @@ package org.commonjava.indy.ftest.core;
 import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.boot.BootStatus;
 import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.client.core.Indy;
@@ -172,6 +173,7 @@ public abstract class AbstractIndyFunctionalTest
 
     @After
     public void stop()
+            throws IndyLifecycleException
     {
 //        waitForEventPropagation();
         closeQuietly( fixture );

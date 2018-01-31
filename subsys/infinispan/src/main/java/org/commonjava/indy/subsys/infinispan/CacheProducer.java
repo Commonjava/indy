@@ -67,6 +67,12 @@ public class CacheProducer
     {
     }
 
+    public CacheProducer( IndyConfiguration indyConfiguration, EmbeddedCacheManager cacheManager )
+    {
+        this.indyConfiguration = indyConfiguration;
+        this.cacheManager = cacheManager;
+    }
+
     @PostConstruct
     public void start()
     {
@@ -91,7 +97,8 @@ public class CacheProducer
             {
                 InputStream confStream = FileUtils.openInputStream( ispnConf );
                 String confStr = interpolateStrFromStream( confStream, ispnConf.getPath() );
-                cacheManager = mergeIspnConfiguration( resourceStr, confStr );
+                mergedCachesFromConfig( confStr, "CUSTOMER" );
+                mergedCachesFromConfig( resourceStr, "CLASSPATH" );
             }
             catch ( IOException e )
             {
@@ -228,31 +235,31 @@ public class CacheProducer
      * {@link ParserRegistry}
      * {@link ConfigurationManager}
      *
-     * @param resourceStr
-     * @param confStr
-     * @return
-     * @throws IOException
+     * @param config
+     * @param path
      */
-    private EmbeddedCacheManager mergeIspnConfiguration( String resourceStr, String confStr )
+    private void mergedCachesFromConfig( String config, String path )
     {
-        EmbeddedCacheManager mergedManager = new DefaultCacheManager();
-        addDefinedCachesToMerged( mergedManager, confStr, "CUSTOMER" );
-        addDefinedCachesToMerged( mergedManager, resourceStr, "CLASSPATH" );
-        return mergedManager;
-    }
+        if ( cacheManager == null )
+        {
+            cacheManager = new DefaultCacheManager();
+        }
 
-    private void addDefinedCachesToMerged( EmbeddedCacheManager merged, String config, String path )
-    {
         ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
         ConfigurationManager manager = new ConfigurationManager( holder );
 
         for ( String name : manager.getDefinedCaches() )
         {
-            if ( merged.getCacheNames().isEmpty() || !merged.getCacheNames().contains( name ) )
+            if ( cacheManager.getCacheNames().isEmpty() || !cacheManager.getCacheNames().contains( name ) )
             {
                 logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
-                merged.defineConfiguration( name, manager.getConfiguration( name ) );
+                cacheManager.defineConfiguration( name, manager.getConfiguration( name ) );
             }
         }
+    }
+
+    public EmbeddedCacheManager getCacheManager()
+    {
+        return cacheManager;
     }
 }
