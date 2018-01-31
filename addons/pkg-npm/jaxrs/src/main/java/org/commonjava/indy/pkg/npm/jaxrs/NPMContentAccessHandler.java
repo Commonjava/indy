@@ -127,7 +127,7 @@ public class NPMContentAccessHandler
             if ( temp != null && temp.exists() )
             {
                 stream = new PackageMetadataMerger().merge( temp, tomerge );
-                Transfer merged = contentController.store( sk, path, stream, eventMetadata );
+                contentController.store( sk, path, stream, eventMetadata );
 
                 // for npm group, will not replace with the new http meta when re-upload,
                 // delete the old http meta, will generate the new one with updated CONTENT-LENGTH when npm install
@@ -186,7 +186,7 @@ public class NPMContentAccessHandler
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
 
-        Response response = null;
+        Response response;
 
         logger.info(
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
@@ -266,7 +266,7 @@ public class NPMContentAccessHandler
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
 //                        InputStream in = item.openInputStream( true, eventMetadata );
-                        final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item ) );
+                        final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item, eventMetadata ) );
                         setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
