@@ -89,6 +89,9 @@ public class CacheProducerMergeXmlTest
             throws IndyLifecycleException
 
     {
-        producer.stop();
+        if ( producer != null )
+        {
+            producer.stop();
+        }
     }
 }
