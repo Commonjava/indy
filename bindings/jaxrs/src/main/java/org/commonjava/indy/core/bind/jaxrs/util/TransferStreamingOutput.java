@@ -36,7 +36,6 @@ import org.commonjava.indy.core.bind.jaxrs.metrics.IndyMetricsBindingsNames;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,16 +57,14 @@ public class TransferStreamingOutput
      */
 
     private final Transfer transfer;
-    private final EventMetadata metadata;
 
     //TODO: maybe performance impacting to use this executor. And the priority 1 should not be very suitable
     private static final ExecutorService NONE_WEFT_EXECUTOR =
             Executors.newFixedThreadPool( 8, new NamedThreadFactory( "TSO-exec", false, 1 ) );
 
-    public TransferStreamingOutput( final Transfer transfer, final EventMetadata metadata )
+    public TransferStreamingOutput( final Transfer transfer )
     {
         this.transfer = transfer;
-        this.metadata = metadata;
         transfer.lockWrite();
     }
 
@@ -84,7 +81,7 @@ public class TransferStreamingOutput
         Future<InputStream> task = NONE_WEFT_EXECUTOR.submit( () -> {
             try
             {
-                InputStream stream = transfer.openInputStream( true, metadata );
+                InputStream stream = transfer.openInputStream();
                 logger.trace( "TSO: Stream from partyline {}, current thread: {}, current thread trace:\n{}", stream,
                              Thread.currentThread().getName(),
                              StringUtils.join( Thread.currentThread().getStackTrace(), "\n" ) );

@@ -35,16 +35,20 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Date;
 import java.util.function.Consumer;
@@ -100,7 +104,7 @@ public class ContentAccessHandler
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
-        Response response;
+        Response response = null;
         final Transfer transfer;
         try
         {
@@ -416,7 +420,7 @@ public class ContentAccessHandler
                         logger.debug( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
 //                        InputStream in = item.openInputStream( true, eventMetadata );
-                        final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item, eventMetadata ) );
+                        final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( item ) );
                         setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         if ( builderModifier != null )
