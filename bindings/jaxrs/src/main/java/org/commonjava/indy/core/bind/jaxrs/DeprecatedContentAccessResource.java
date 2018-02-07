@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.maven.galley.event.EventMetadata;
 
@@ -46,6 +47,7 @@ import java.util.function.Supplier;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
+import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
 @Api( value = "DEPRECATED: Content Access and Storage",
       description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
@@ -54,7 +56,6 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 public class DeprecatedContentAccessResource
         implements IndyResources
 {
-
     @Inject
     private ContentAccessHandler handler;
 
@@ -89,7 +90,10 @@ public class DeprecatedContentAccessResource
             markDeprecated( builder, alt );
         };
 
-        return handler.doCreate( packageType, type, name, path, request, new EventMetadata(), uriSupplier, deprecated );
+        final EventMetadata metadata = new EventMetadata().set( STORE_HTTP_HEADERS,
+                                                                RequestUtils.extractRequestHeadersToMap( request ) );
+
+        return handler.doCreate( packageType, type, name, path, request, metadata, uriSupplier, deprecated );
     }
 
     @ApiOperation( "Delete file/artifact content under the given artifact store (type/name) and path." )

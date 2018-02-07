@@ -52,7 +52,7 @@ public final class UrlUtils
 
         final StringBuilder urlBuilder = new StringBuilder();
 
-        final List<String> list = new ArrayList<String>();
+        final List<String> list = new ArrayList<>();
 
         if ( baseUrl != null && !"null".equals( baseUrl ) )
         {

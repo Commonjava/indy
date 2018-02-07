@@ -72,23 +72,25 @@ public class HttpMetadataCleanupGenerator
         return null;
     }
 
+    //This method is out of date which will block aritfacts uploading http-metadata generation, so remove the code
     @Override
+    @Deprecated
     public void handleContentStorage( final ArtifactStore store, final String path, final Transfer result,
                                       final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        final Transfer meta = result.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
-        if ( meta.exists() )
-        {
-            try
-            {
-                meta.delete( false );
-            }
-            catch ( final IOException e )
-            {
-                logger.debug( "Failed to delete HTTP exchange metadata: " + meta, e );
-            }
-        }
+//        final Transfer meta = result.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
+//        if ( meta.exists() )
+//        {
+//            try
+//            {
+//                meta.delete( false );
+//            }
+//            catch ( final IOException e )
+//            {
+//                logger.debug( "Failed to delete HTTP exchange metadata: " + meta, e );
+//            }
+//        }
     }
 
     @Override

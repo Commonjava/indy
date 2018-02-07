@@ -23,6 +23,7 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.junit.Before;
 
@@ -49,16 +50,15 @@ public class AbstractPromotionManagerTest
         System.out.printf( "\n\n\n\nBASE-URL: %s\nPROMOTE-URL: %s\nRESUME-URL: %s\nROLLBACK-URL: %s\n\n\n\n",
                            client.getBaseUrl(), module.promoteUrl(), module.resumeUrl(), module.rollbackUrl() );
 
-        source = new HostedRepository( "source" );
+        source = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, "source" );
         client.stores()
               .create( source, changelog, HostedRepository.class );
 
         client.content()
-              .store( source.getKey().getType(), source.getName(), first,
+              .store( source.getKey(), first,
                       new ByteArrayInputStream( "This is a test".getBytes() ) );
         client.content()
-              .store( source.getKey()
-                            .getType(), source.getName(), second,
+              .store( source.getKey(), second,
                       new ByteArrayInputStream( "This is a test".getBytes() ) );
 
         target = createTarget( changelog );
@@ -67,7 +67,7 @@ public class AbstractPromotionManagerTest
     protected ArtifactStore createTarget( String changelog )
             throws Exception
     {
-        HostedRepository target = new HostedRepository( "target" );
+        HostedRepository target = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, "target" );
         client.stores()
               .create( target, changelog, HostedRepository.class );
 

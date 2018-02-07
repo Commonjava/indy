@@ -20,8 +20,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
+import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -47,6 +47,7 @@ import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_CONTENT_REST_BASE_PATH;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
+import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
 @Api( value = "NPM Content Access and Storage", description = "Handles retrieval and management of NPM artifact content. This is the main point of access for NPM users." )
 @Path( "/api/content/npm/{type: (hosted|group|remote)}/{name}" )
@@ -83,8 +84,9 @@ public class NPMContentAccessResource
             final @PathParam( "packageName" ) String packageName, final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request )
     {
-        EventMetadata eventMetadata = new EventMetadata();
-        eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
+        EventMetadata eventMetadata =
+                new EventMetadata().set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() )
+                                                         .set( STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
 
         return handler.doCreate( NPM_PKG_KEY, type, name, packageName, request, eventMetadata,
                                  () -> uriInfo.getBaseUriBuilder()
