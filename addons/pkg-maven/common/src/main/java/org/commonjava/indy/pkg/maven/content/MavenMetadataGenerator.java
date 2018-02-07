@@ -15,14 +15,13 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.indy.IndyMetricsNames;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
@@ -88,7 +87,6 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
-import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -151,10 +149,10 @@ public class MavenMetadataGenerator
     @Inject
     private MavenMetadataMerger merger;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named="maven-metadata-generator", threads=8 )
-    private ExecutorService executorService;
+//    @Inject
+//    @WeftManaged
+//    @ExecutorConfig( named="maven-metadata-generator", threads=8 )
+    private final ExecutorService executorService = Executors.newFixedThreadPool( 8, new NamedThreadFactory( "maven-metadata-generator", true, 1 ) );
 
     private final Map<String, ReentrantLock> mergerLocks = newSynchronizedContextSensitiveWeakHashMap();
 
@@ -179,10 +177,10 @@ public class MavenMetadataGenerator
     @PostConstruct
     public void start()
     {
-        if ( executorService == null )
-        {
-            executorService = Executors.newFixedThreadPool( 8 );
-        }
+//        if ( executorService == null )
+//        {
+//            executorService = Executors.newFixedThreadPool( 8 );
+//        }
     }
 
     @Override
