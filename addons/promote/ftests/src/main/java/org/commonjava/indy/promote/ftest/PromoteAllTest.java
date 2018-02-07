@@ -25,6 +25,7 @@ import java.util.Set;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
+import org.commonjava.maven.galley.io.SpecialPathConstants;
 import org.junit.Test;
 
 public class PromoteAllTest
@@ -48,15 +49,16 @@ public class PromoteAllTest
 
         final Set<String> completed = result.getCompletedPaths();
         assertThat( completed, notNullValue() );
-        assertThat( completed.size(), equalTo( 2 ) );
+        // Because NOS-1166 implementation, here we will have 4 promotion results: artifacts and their accompanied http metadata
+        assertThat( completed.size(), equalTo( 4 ) );
 
         assertThat( result.getError(), nullValue() );
 
-        assertThat( client.content()
-                          .exists( target.getKey()
-                                         .getType(), target.getName(), first ), equalTo( true ) );
-        assertThat( client.content()
-                          .exists( target.getKey()
-                                         .getType(), target.getName(), second ), equalTo( true ) );
+        assertThat( client.content().exists( target.getKey(), first ), equalTo( true ) );
+        assertThat( client.content().exists( target.getKey(), first + SpecialPathConstants.HTTP_METADATA_EXT ),
+                    equalTo( true ) );
+        assertThat( client.content().exists( target.getKey(), second ), equalTo( true ) );
+        assertThat( client.content().exists( target.getKey(), second + SpecialPathConstants.HTTP_METADATA_EXT ),
+                    equalTo( true ) );
     }
 }
