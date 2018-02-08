@@ -31,6 +31,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -81,6 +82,7 @@ import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE
  * This class is also acted as a cache listener to handle the cache expiration job event to distribute the expiration
  * info through CDI event for the real actor to do the expiration work.
  */
+@SuppressWarnings( "RedundantThrows" )
 @ApplicationScoped
 @Listener
 public class ScheduleManager
@@ -147,7 +149,7 @@ public class ScheduleManager
         } );
     }
 
-    public synchronized void rescheduleSnapshotTimeouts( final HostedRepository deploy )
+    public void rescheduleSnapshotTimeouts( final HostedRepository deploy )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -177,7 +179,7 @@ public class ScheduleManager
         }
     }
 
-    public synchronized void rescheduleProxyTimeouts( final RemoteRepository repo )
+    public void rescheduleProxyTimeouts( final RemoteRepository repo )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -210,7 +212,7 @@ public class ScheduleManager
         }
     }
 
-    public synchronized void setProxyTimeouts( final StoreKey key, final String path )
+    public void setProxyTimeouts( final StoreKey key, final String path )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -269,7 +271,7 @@ public class ScheduleManager
         }
     }
 
-    public synchronized void scheduleForStore( final StoreKey key, final String jobType, final String jobName,
+    public void scheduleForStore( final StoreKey key, final String jobType, final String jobName,
                                                final Object payload, final int startSeconds )
             throws IndySchedulerException
     {
@@ -299,7 +301,7 @@ public class ScheduleManager
         logger.debug( "Scheduled for the key {} with timeout: {} seconds", cacheKey, startSeconds );
     }
 
-    public synchronized void scheduleContentExpiration( final StoreKey key, final String path,
+    public void scheduleContentExpiration( final StoreKey key, final String path,
                                                         final int timeoutSeconds )
             throws IndySchedulerException
     {
@@ -315,7 +317,7 @@ public class ScheduleManager
         scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds );
     }
 
-    public synchronized void setSnapshotTimeouts( final StoreKey key, final String path )
+    public void setSnapshotTimeouts( final StoreKey key, final String path )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -376,7 +378,7 @@ public class ScheduleManager
         }
     }
 
-    public synchronized void rescheduleDisableTimeout( final StoreKey key )
+    public void rescheduleDisableTimeout( final StoreKey key )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -445,7 +447,7 @@ public class ScheduleManager
         return null;
     }
 
-    public synchronized Set<ScheduleKey> cancelAllBefore( final CacheKeyMatcher<ScheduleKey> matcher,
+    public Set<ScheduleKey> cancelAllBefore( final CacheKeyMatcher<ScheduleKey> matcher,
                                                           final long timeout )
             throws IndySchedulerException
     {
@@ -473,13 +475,13 @@ public class ScheduleManager
         return canceled;
     }
 
-    public synchronized Set<ScheduleKey> cancelAll( final CacheKeyMatcher<ScheduleKey> matcher )
+    public Set<ScheduleKey> cancelAll( final CacheKeyMatcher<ScheduleKey> matcher )
             throws IndySchedulerException
     {
         return cancel( matcher, ANY );
     }
 
-    public synchronized Set<ScheduleKey> cancel( final CacheKeyMatcher<ScheduleKey> matcher, final String name )
+    public Set<ScheduleKey> cancel( final CacheKeyMatcher<ScheduleKey> matcher, final String name )
             throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
@@ -493,7 +495,7 @@ public class ScheduleManager
         if ( keys != null && !keys.isEmpty() )
         {
             Set<ScheduleKey> unscheduled = null;
-            if ( name == ANY )
+            if ( ANY.equals( name ) )
             {
                 for ( final ScheduleKey k : keys )
                 {
@@ -523,7 +525,7 @@ public class ScheduleManager
         return canceled;
     }
 
-    public synchronized Expiration findSingleExpiration( final StoreKeyMatcher matcher )
+    public Expiration findSingleExpiration( final StoreKeyMatcher matcher )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -541,7 +543,7 @@ public class ScheduleManager
         return null;
     }
 
-    public synchronized ExpirationSet findMatchingExpirations( final CacheKeyMatcher<ScheduleKey> matcher )
+    public ExpirationSet findMatchingExpirations( final CacheKeyMatcher<ScheduleKey> matcher )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -551,7 +553,7 @@ public class ScheduleManager
 
         final Set<ScheduleKey> keys = matcher.matches( scheduleCache );
         Set<Expiration> expirations = new HashSet<>( keys.size() );
-        if ( keys != null && !keys.isEmpty() )
+        if ( !keys.isEmpty() )
         {
             for ( ScheduleKey key : keys )
             {
@@ -600,7 +602,7 @@ public class ScheduleManager
         return null;
     }
 
-    public synchronized ScheduleKey findFirstMatchingTrigger( final CacheKeyMatcher<ScheduleKey> matcher )
+    public ScheduleKey findFirstMatchingTrigger( final CacheKeyMatcher<ScheduleKey> matcher )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -635,14 +637,14 @@ public class ScheduleManager
             final StoreType type = StoreType.get( parts[0] );
             if ( type != null )
             {
-                return new StoreKey( type, parts[1] );
+                return new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, type, parts[1] );
             }
         }
 
         return null;
     }
 
-    public synchronized boolean deleteJob( final String group, final String name )
+    public boolean deleteJob( final String group, final String name )
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -694,7 +696,7 @@ public class ScheduleManager
         scheduleCache.stop();
     }
 
-    private synchronized void removeCache( final ScheduleKey cacheKey )
+    private void removeCache( final ScheduleKey cacheKey )
     {
         if ( scheduleCache.containsKey( cacheKey ) )
         {
