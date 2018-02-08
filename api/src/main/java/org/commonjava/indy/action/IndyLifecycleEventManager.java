@@ -15,10 +15,12 @@
  */
 package org.commonjava.indy.action;
 
+import org.commonjava.indy.change.event.IndyLifecycleEvent;
+
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
-import org.commonjava.indy.change.event.IndyLifecycleEvent;
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 
 public class IndyLifecycleEventManager
 {
@@ -32,10 +34,7 @@ public class IndyLifecycleEventManager
 
     private void fire( final IndyLifecycleEvent event )
     {
-        if ( events != null )
-        {
-            events.fire( event );
-        }
+        fireEvent( events, event );
     }
 
 }
