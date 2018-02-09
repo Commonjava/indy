@@ -259,15 +259,16 @@ public class MavenMetadataGenerator
 
         if ( snapshotPomInfo != null )
         {
-            logger.debug( "Generating maven-metadata.xml for snapshots" );
+            logger.debug( "Generating maven-metadata.xml for snapshots, store: {}", store.getKey() );
             generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath, eventMetadata );
         }
         else
         {
-            logger.debug( "Generating maven-metadata.xml for releases" );
+            logger.debug( "Generating maven-metadata.xml for releases, store: {}", store.getKey() );
             generated = writeVersionMetadata( firstLevel, store, toGenPath, eventMetadata );
         }
 
+        logger.debug( "[Result] Generating maven-metadata.xml for store: {}, result: {}", store.getKey(), generated );
         return generated ? fileManager.getTransfer( store, path ) : null;
     }
 
@@ -631,13 +632,17 @@ public class MavenMetadataGenerator
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
+        logger.debug( "generateMissingMemberMetadata for {}, missing.size: {}", group.getKey(), missing.size() );
+
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ));
+
         /* @formatter:off */
         missing.forEach( (store)->{
-            logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
+            //logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
-                    logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath);
+                    logger.debug( "Starting metadata generation: {}:{}", store.getKey(), toMergePath);
                     Transfer memberMetaTxfr = generateFileContent( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -671,13 +676,15 @@ public class MavenMetadataGenerator
                 }
                 finally
                 {
+                    logger.debug( "Ending metadata generation: {}:{}", store.getKey(), toMergePath);
+                    remaining.remove( store );
                     latch.countDown();
                 }
             } );
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch);
+        waitOnLatch(group, toMergePath, latch, remaining);
 
         if ( !errors.isEmpty() )
         {
@@ -686,6 +693,26 @@ public class MavenMetadataGenerator
         }
 
         return ret;
+    }
+
+    // Debug only
+    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, Set<ArtifactStore> remaining )
+    {
+        do
+        {
+            logger.trace( "Latch count: {}", latch.getCount() );
+            try
+            {
+                logger.debug( "Waiting for {} member generations of: {}:{}, Remaining: {}", latch.getCount(), group.getKey(), toMergePath, remaining );
+                latch.await( 1000, TimeUnit.MILLISECONDS );
+            }
+            catch ( InterruptedException e )
+            {
+                logger.debug("Interrupted while waiting for member metadata downloads.");
+                break;
+            }
+        }
+        while ( latch.getCount() > 0 );
     }
 
     /**
@@ -898,6 +925,8 @@ public class MavenMetadataGenerator
     {
         ArtifactPathInfo samplePomInfo = null;
 
+        logger.debug( "writeVersionMetadata, firstLevelFiles:{}, store:{}", firstLevelFiles, store.getKey() );
+
         // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including
         // as a valid version
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
@@ -931,8 +960,11 @@ public class MavenMetadataGenerator
 
         if ( versions.isEmpty() )
         {
+            logger.debug( "writeVersionMetadata, versions is empty, store:{}", store.getKey() );
             return false;
         }
+
+        logger.debug( "writeVersionMetadata, versions: {}, store:{}", versions, store.getKey() );
 
         Collections.sort( versions );
 
@@ -1005,6 +1037,7 @@ public class MavenMetadataGenerator
             closeQuietly( stream );
         }
 
+        logger.debug( "writeVersionMetadata, DONE, store: {}", store.getKey() );
         return true;
     }
 
