@@ -581,6 +581,129 @@ public class MavenMetadataGenerator
         return null;
     }
 
+    private void putToMetadataCache( StoreKey key, String toMergePath, Metadata meta )
+    {
+        synchronized ( versionMetadataCache )
+        {
+            Map cacheMap = versionMetadataCache.get( key );
+            if ( cacheMap == null )
+            {
+                cacheMap = new HashMap<>();
+                versionMetadataCache.put( key, cacheMap );
+            }
+            cacheMap.put( toMergePath, new MetadataInfo( meta ) );
+        }
+    }
+
+    private Set<ArtifactStore> generateMissingMemberMetadata( Group group, Set<ArtifactStore> missing,
+                                                Map<StoreKey, Metadata> memberMetas, String toMergePath )
+                    throws IndyWorkflowException
+    {
+        Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed generation
+
+        CountDownLatch latch = new CountDownLatch( missing.size() );
+        List<String> errors = new ArrayList<>();
+
+        logger.debug( "Generate missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
+
+        /* @formatter:off */
+        missing.forEach( (store)->{
+            //logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
+            executorService.execute( ()->{
+                try
+                {
+                    logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath );
+                    Transfer memberMetaTxfr = generateFileContent( store, toMergePath, new EventMetadata() );
+
+                    if ( exists( memberMetaTxfr ) )
+                    {
+                        final MetadataXpp3Reader reader = new MetadataXpp3Reader();
+
+                        try (InputStream in = memberMetaTxfr.openInputStream())
+                        {
+                            String content = IOUtils.toString( in );
+                            Metadata memberMeta = reader.read( new StringReader( content ), false );
+                            memberMetas.put( store.getKey(), memberMeta );
+
+                            putToMetadataCache( store.getKey(), toMergePath, memberMeta );
+                            clearObsoleteFiles( memberMetaTxfr );
+                        }
+                    }
+                    else
+                    {
+                        ret.add( store );
+                    }
+                }
+                catch ( final Exception e )
+                {
+                    String msg = String.format( "Failed to generate metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                                                 e.getMessage() );
+                    logger.error( msg, e );
+                    synchronized ( errors )
+                    {
+                        errors.add( msg );
+                    }
+                }
+                finally
+                {
+                    logger.trace( "Ending metadata generation: {}:{}", store.getKey(), toMergePath );
+                    remaining.remove( store );
+                    latch.countDown();
+                }
+            } );
+        } );
+        /* @formatter:on */
+
+        waitOnLatch( group, toMergePath, latch, remaining, "generations" );
+
+        if ( !errors.isEmpty() )
+        {
+            throw new IndyWorkflowException( "Failed to generate one or more member metadata files for: %s:%s. Errors were:\n  %s",
+                            group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
+        }
+
+        return ret;
+    }
+
+    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, Set<ArtifactStore> remaining,
+                              String operation )
+    {
+        do
+        {
+            try
+            {
+                logger.debug( "Waiting for {} member {} of: {}:{}, Remaining: {}", latch.getCount(), operation,
+                              group.getKey(), toMergePath, remaining );
+                latch.await( 1000, TimeUnit.MILLISECONDS );
+            }
+            catch ( InterruptedException e )
+            {
+                logger.debug( "Interrupted while waiting for member metadata {}.", operation );
+                break;
+            }
+        }
+        while ( latch.getCount() > 0 );
+    }
+
+    /**
+     * Clear obsolete files after a meta is generated. This may be http download metadata, etc.
+     * @param item
+     */
+    private void clearObsoleteFiles( Transfer item )
+    {
+        Transfer httpMeta = item.getSiblingMeta( HTTP_METADATA_EXT );
+        try
+        {
+            httpMeta.delete();
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "Failed to delete {}", httpMeta.getResource() );
+        }
+
+    }
+
     private Set<ArtifactStore> retrieveCachedMemberMetadata( final Map<StoreKey, Metadata> memberMetas,
                                                              final List<ArtifactStore> members, final String toMergePath )
             throws IndyWorkflowException
@@ -627,20 +750,25 @@ public class MavenMetadataGenerator
         return missing;
     }
 
-    private void downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missing,
+    private Set<ArtifactStore> downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missing,
                                                 final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
             throws IndyWorkflowException
     {
+        Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed download
+
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
+        logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
+
         /* @formatter:off */
         missing.forEach( (store)->{
-            logger.debug( "Submitting download task for {} metadata: '{}'", store.getKey(), toMergePath );
+            //logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
-                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );
                     Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -680,27 +808,15 @@ public class MavenMetadataGenerator
                 }
                 finally
                 {
+                    logger.trace( "Ending metadata download: {}:{}", store.getKey(), toMergePath );
+                    remaining.remove( store );
                     latch.countDown();
                 }
             } );
         } );
         /* @formatter:on */
 
-        do
-        {
-            logger.trace( "Latch count: {}", latch.getCount() );
-            try
-            {
-                logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
-                latch.await( 1000, TimeUnit.MILLISECONDS );
-            }
-            catch ( InterruptedException e )
-            {
-                logger.debug("Interrupted while waiting for member metadata downloads.");
-                break;
-            }
-        }
-        while ( latch.getCount() > 0 );
+        waitOnLatch( group, toMergePath, latch, remaining, "downloads" );
 
         if ( !errors.isEmpty() )
         {
@@ -708,6 +824,8 @@ public class MavenMetadataGenerator
                     "Failed to retrieve one or more member metadata files for: %s:%s. Errors were:\n  %s",
                     group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
         }
+
+        return ret;
     }
 
     private boolean exists( final Transfer target )
