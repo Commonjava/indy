@@ -627,14 +627,13 @@ public class MavenMetadataGenerator
                                                 Map<StoreKey, Metadata> memberMetas, String toMergePath )
                     throws IndyWorkflowException
     {
-        Set<ArtifactStore> ret = new HashSet<>(); // return stores which failed generation
+        Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed generation
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
-        logger.debug( "generateMissingMemberMetadata for {}, missing.size: {}", group.getKey(), missing.size() );
-
-        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ));
+        logger.debug( "Generate missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -642,7 +641,7 @@ public class MavenMetadataGenerator
             executorService.execute( ()->{
                 try
                 {
-                    logger.debug( "Starting metadata generation: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath );
                     Transfer memberMetaTxfr = generateFileContent( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -676,7 +675,7 @@ public class MavenMetadataGenerator
                 }
                 finally
                 {
-                    logger.debug( "Ending metadata generation: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Ending metadata generation: {}:{}", store.getKey(), toMergePath );
                     remaining.remove( store );
                     latch.countDown();
                 }
@@ -684,7 +683,7 @@ public class MavenMetadataGenerator
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch, remaining);
+        waitOnLatch( group, toMergePath, latch, remaining, "generations" );
 
         if ( !errors.isEmpty() )
         {
@@ -695,20 +694,20 @@ public class MavenMetadataGenerator
         return ret;
     }
 
-    // Debug only
-    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, Set<ArtifactStore> remaining )
+    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, Set<ArtifactStore> remaining,
+                              String operation )
     {
         do
         {
-            logger.trace( "Latch count: {}", latch.getCount() );
             try
             {
-                logger.debug( "Waiting for {} member generations of: {}:{}, Remaining: {}", latch.getCount(), group.getKey(), toMergePath, remaining );
+                logger.debug( "Waiting for {} member {} of: {}:{}, Remaining: {}", latch.getCount(), operation,
+                              group.getKey(), toMergePath, remaining );
                 latch.await( 1000, TimeUnit.MILLISECONDS );
             }
             catch ( InterruptedException e )
             {
-                logger.debug("Interrupted while waiting for member metadata downloads.");
+                logger.debug( "Interrupted while waiting for member metadata {}.", operation );
                 break;
             }
         }
@@ -783,18 +782,21 @@ public class MavenMetadataGenerator
                                                 final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
             throws IndyWorkflowException
     {
-        Set<ArtifactStore> ret = new HashSet<>(  ); // return stores which failed download
+        Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed download
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
+        logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
+
         /* @formatter:off */
         missing.forEach( (store)->{
-            logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
+            //logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
-                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );
                     Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -827,13 +829,15 @@ public class MavenMetadataGenerator
                 }
                 finally
                 {
+                    logger.trace( "Ending metadata download: {}:{}", store.getKey(), toMergePath );
+                    remaining.remove( store );
                     latch.countDown();
                 }
             } );
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch);
+        waitOnLatch( group, toMergePath, latch, remaining, "downloads" );
 
         if ( !errors.isEmpty() )
         {
@@ -843,25 +847,6 @@ public class MavenMetadataGenerator
         }
 
         return ret;
-    }
-
-    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch )
-    {
-        do
-        {
-            logger.trace( "Latch count: {}", latch.getCount() );
-            try
-            {
-                logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
-                latch.await( 1000, TimeUnit.MILLISECONDS );
-            }
-            catch ( InterruptedException e )
-            {
-                logger.debug("Interrupted while waiting for member metadata downloads.");
-                break;
-            }
-        }
-        while ( latch.getCount() > 0 );
     }
 
     private boolean exists( final Transfer target )
