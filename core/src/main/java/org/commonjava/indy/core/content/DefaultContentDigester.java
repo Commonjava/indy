@@ -88,8 +88,7 @@ public class DefaultContentDigester
 
     public synchronized boolean needsMetadataFor( final Transfer transfer )
     {
-        String cacheKey = generateCacheKey( transfer );
-        return !metadataCache.containsKey( cacheKey );
+        return true;
     }
 
     private String generateCacheKey( final Transfer transfer )
