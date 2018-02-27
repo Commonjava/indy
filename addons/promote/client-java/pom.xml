@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-promote</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.2</version>
   </parent>
   <artifactId>indy-promote-client-java</artifactId>
   <name>Indy :: Add-Ons :: Artifact Promotion :: Java Client</name>
