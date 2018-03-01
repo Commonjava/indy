@@ -77,6 +77,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -258,15 +259,16 @@ public class MavenMetadataGenerator
 
         if ( snapshotPomInfo != null )
         {
-            logger.debug( "Generating maven-metadata.xml for snapshots" );
+            logger.debug( "Generating maven-metadata.xml for snapshots, store: {}", store.getKey() );
             generated = writeSnapshotMetadata( snapshotPomInfo, firstLevel, store, toGenPath, eventMetadata );
         }
         else
         {
-            logger.debug( "Generating maven-metadata.xml for releases" );
+            logger.debug( "Generating maven-metadata.xml for releases, store: {}", store.getKey() );
             generated = writeVersionMetadata( firstLevel, store, toGenPath, eventMetadata );
         }
 
+        logger.debug( "[Result] Generating maven-metadata.xml for store: {}, result: {}", store.getKey(), generated );
         return generated ? fileManager.getTransfer( store, path ) : null;
     }
 
@@ -499,8 +501,18 @@ public class MavenMetadataGenerator
 
     private ReentrantLock getMergerLock( Group group, String path )
     {
-        String key = group.getKey().toString() + "-" + path;
-        return mergerLocks.computeIfAbsent( key, k -> new ReentrantLock() );
+        ReentrantLock lock;
+        synchronized ( mergerLocks )
+        {
+            String targetKey = group.getKey().toString() + "-" + path;
+            lock = mergerLocks.get( targetKey );
+            if ( lock == null )
+            {
+                lock = new ReentrantLock();
+                mergerLocks.put( targetKey, lock );
+            }
+        }
+        return lock;
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
@@ -615,18 +627,21 @@ public class MavenMetadataGenerator
                                                 Map<StoreKey, Metadata> memberMetas, String toMergePath )
                     throws IndyWorkflowException
     {
-        Set<ArtifactStore> ret = new HashSet<>(); // return stores which failed generation
+        Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed generation
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
+        logger.debug( "Generate missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
+
         /* @formatter:off */
         missing.forEach( (store)->{
-            logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
+            //logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
-                    logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath );
                     Transfer memberMetaTxfr = generateFileContent( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -660,13 +675,15 @@ public class MavenMetadataGenerator
                 }
                 finally
                 {
+                    logger.trace( "Ending metadata generation: {}:{}", store.getKey(), toMergePath );
+                    remaining.remove( store );
                     latch.countDown();
                 }
             } );
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch);
+        waitOnLatch( group, toMergePath, latch, remaining, "generations" );
 
         if ( !errors.isEmpty() )
         {
@@ -675,6 +692,26 @@ public class MavenMetadataGenerator
         }
 
         return ret;
+    }
+
+    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, Set<ArtifactStore> remaining,
+                              String operation )
+    {
+        do
+        {
+            try
+            {
+                logger.debug( "Waiting for {} member {} of: {}:{}, Remaining: {}", latch.getCount(), operation,
+                              group.getKey(), toMergePath, remaining );
+                latch.await( 1000, TimeUnit.MILLISECONDS );
+            }
+            catch ( InterruptedException e )
+            {
+                logger.debug( "Interrupted while waiting for member metadata {}.", operation );
+                break;
+            }
+        }
+        while ( latch.getCount() > 0 );
     }
 
     /**
@@ -745,18 +782,21 @@ public class MavenMetadataGenerator
                                                 final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
             throws IndyWorkflowException
     {
-        Set<ArtifactStore> ret = new HashSet<>(  ); // return stores which failed download
+        Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed download
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
         List<String> errors = new ArrayList<>();
 
+        logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
+        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
+
         /* @formatter:off */
         missing.forEach( (store)->{
-            logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
+            //logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
             executorService.execute( ()->{
                 try
                 {
-                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath);
+                    logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );
                     Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
 
                     if ( exists( memberMetaTxfr ) )
@@ -789,13 +829,15 @@ public class MavenMetadataGenerator
                 }
                 finally
                 {
+                    logger.trace( "Ending metadata download: {}:{}", store.getKey(), toMergePath );
+                    remaining.remove( store );
                     latch.countDown();
                 }
             } );
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch);
+        waitOnLatch( group, toMergePath, latch, remaining, "downloads" );
 
         if ( !errors.isEmpty() )
         {
@@ -805,25 +847,6 @@ public class MavenMetadataGenerator
         }
 
         return ret;
-    }
-
-    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch )
-    {
-        do
-        {
-            logger.trace( "Latch count: {}", latch.getCount() );
-            try
-            {
-                logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
-                latch.await( 1000, TimeUnit.MILLISECONDS );
-            }
-            catch ( InterruptedException e )
-            {
-                logger.debug("Interrupted while waiting for member metadata downloads.");
-                break;
-            }
-        }
-        while ( latch.getCount() > 0 );
     }
 
     private boolean exists( final Transfer target )
@@ -887,6 +910,8 @@ public class MavenMetadataGenerator
     {
         ArtifactPathInfo samplePomInfo = null;
 
+        logger.debug( "writeVersionMetadata, firstLevelFiles:{}, store:{}", firstLevelFiles, store.getKey() );
+
         // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including
         // as a valid version
         final List<SingleVersion> versions = new ArrayList<SingleVersion>();
@@ -920,8 +945,11 @@ public class MavenMetadataGenerator
 
         if ( versions.isEmpty() )
         {
+            logger.debug( "writeVersionMetadata, versions is empty, store:{}", store.getKey() );
             return false;
         }
+
+        logger.debug( "writeVersionMetadata, versions: {}, store:{}", versions, store.getKey() );
 
         Collections.sort( versions );
 
@@ -994,6 +1022,7 @@ public class MavenMetadataGenerator
             closeQuietly( stream );
         }
 
+        logger.debug( "writeVersionMetadata, DONE, store: {}", store.getKey() );
         return true;
     }
 

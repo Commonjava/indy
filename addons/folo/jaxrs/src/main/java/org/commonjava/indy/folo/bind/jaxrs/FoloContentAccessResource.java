@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
-import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -43,9 +43,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
+
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
+import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
 /**
  * Collects a tracking ID in addition to store type and name, then hands this off to
@@ -92,7 +94,8 @@ public class FoloContentAccessResource
         final TrackingKey tk = new TrackingKey( id );
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO ).set(
+                        STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
         return handler.doCreate( packageType, type, name, path, request, metadata, () -> uriInfo.getBaseUriBuilder()
                                                                                    .path( getClass() )
                                                                                    .path( path )

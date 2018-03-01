@@ -89,18 +89,9 @@ public class FoloRecordCache
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Trying to add tracking entry: {}", entry );
-        if ( !inProgressRecordCache.containsKey( entry ) )
-        {
-            logger.debug( "Adding tracking entry: {}", entry );
-            inProgressRecordCache.put( entry, entry );
-            return true;
-        }
-        else
-        {
-            logger.debug( "record already contains entry: {} (existing: {})", entry, inProgressRecordCache.get( entry ) );
-        }
-        return false;
+        logger.debug( "Adding tracking entry: {}", entry );
+        inProgressRecordCache.put( entry, entry );
+        return true;
     }
 
     @IndyMetrics( measure = @Measure( meters = @MetricNamed( name = IndyMetricsFoloNames.METHOD_FOLORECORDCACHE_DELETE

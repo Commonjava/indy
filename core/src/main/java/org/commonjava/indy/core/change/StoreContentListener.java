@@ -32,9 +32,12 @@ import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +77,9 @@ public class StoreContentListener
 
     @Inject
     private DirectContentAccess directContentAccess;
+
+    @Inject
+    private NotFoundCache nfc;
 
     /**
      * Handles store disable/enablement.
@@ -410,7 +416,7 @@ public class StoreContentListener
 
     /**
      * Extensive version for clean up paths. This will clean all mergable files in affected groups regardless whether
-     * the path is in the target store cache or not.
+     * the path is in the target store cache or not. It also clears NFC.
      * @param stores
      * @param pathFilter
      */
@@ -427,6 +433,7 @@ public class StoreContentListener
                     groups.add( (Group) store );
                 }
                 clearPaths( groups, pathFilter );
+                nfc.clearMissing( LocationUtils.toLocation( store ) ); // clear NFC for this store
             }
             catch ( IndyDataException e )
             {
@@ -454,6 +461,7 @@ public class StoreContentListener
                     logger.error( String.format( "Failed to retrieve transfer for: %s in group: %s. Reason: %s", p, g.getName(), e.getMessage() ), e );
                 }
             } );
+            nfc.clearMissing( LocationUtils.toLocation( g ) ); // clear NFC for this group
         } );
     }
 

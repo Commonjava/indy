@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
+import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -44,6 +45,7 @@ import javax.ws.rs.core.UriInfo;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_CONTENT_REST_BASE_PATH;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
 @Api( value = "Maven Content Access and Storage",
       description = "Handles retrieval and management of Maven artifact content. This is the main point of access for Maven/Gradle users." )
@@ -78,8 +80,10 @@ public class MavenContentAccessResource
             final @PathParam( "path" ) String path, final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request )
     {
+        final EventMetadata metadata = new EventMetadata().set( STORE_HTTP_HEADERS,
+                                                                RequestUtils.extractRequestHeadersToMap( request ) );
         return handler.doCreate( MAVEN_PKG_KEY, type, name, path, request,
-                                 new EventMetadata(), () -> uriInfo.getBaseUriBuilder()
+                                 metadata, () -> uriInfo.getBaseUriBuilder()
                                                                    .path( getClass() )
                                                                    .path( path )
                                                                    .build( MAVEN_PKG_KEY, type, name ) );

@@ -79,6 +79,7 @@ import java.util.stream.StreamSupport;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 
 @javax.enterprise.context.ApplicationScoped
@@ -1037,7 +1038,7 @@ public class DefaultDownloadManager
 
         private final Transfer start;
 
-        private final Event<ArtifactStoreRescanEvent> rescanEventPublisher;
+        private final Event<ArtifactStoreRescanEvent> rescanEvent;
 
         private final IndyFileEventManager fileEventManager;
 
@@ -1053,7 +1054,7 @@ public class DefaultDownloadManager
             this.start = start;
             this.rescansInProgress = rescansInProgress;
             this.fileEventManager = fileEventManager;
-            this.rescanEventPublisher = rescanEvent;
+            this.rescanEvent = rescanEvent;
             this.eventMetadata = eventMetadata;
         }
 
@@ -1074,17 +1075,11 @@ public class DefaultDownloadManager
 
             try
             {
-                if ( rescanEventPublisher != null )
-                {
-                    rescanEventPublisher.fire( new ArtifactStorePreRescanEvent( eventMetadata, store ) );
-                }
+                fireEvent( rescanEvent, new ArtifactStorePreRescanEvent( eventMetadata, store ) );
 
                 doRescan( start );
 
-                if ( rescanEventPublisher != null )
-                {
-                    rescanEventPublisher.fire( new ArtifactStorePostRescanEvent( eventMetadata, store ) );
-                }
+                fireEvent( rescanEvent, new ArtifactStorePostRescanEvent( eventMetadata, store ) );
             }
             finally
             {

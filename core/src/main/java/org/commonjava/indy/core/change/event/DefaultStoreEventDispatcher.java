@@ -39,6 +39,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import static org.commonjava.indy.change.EventUtils.fireEvent;
+
 /**
  * Pre-events (deleting, updating, enabling) are single-threaded (inline to user thread) so there isn't a race
  * condition between their execution and the target action.
@@ -98,7 +100,7 @@ public class DefaultStoreEventDispatcher
 
             final ArtifactStoreDeletePreEvent event = new ArtifactStoreDeletePreEvent( eventMetadata, storeRoots );
 
-            preDelEvent.fire( event );
+            fireEvent( preDelEvent, event );
         }
     }
 
@@ -125,7 +127,7 @@ public class DefaultStoreEventDispatcher
                 final ArtifactStoreDeletePostEvent event =
                         new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
 
-                postDelEvent.fire( event );
+                fireEvent( postDelEvent, event );
             } );
         }
     }
@@ -134,30 +136,20 @@ public class DefaultStoreEventDispatcher
     public void updating( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
                           final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        if ( updatePreEvent != null )
-        {
-            logger.trace( "Dispatch pre-update event for: {}", changeMap );
-
-            final ArtifactStorePreUpdateEvent event =
-                    new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
-            updatePreEvent.fire( event );
-        }
+        final ArtifactStorePreUpdateEvent event =
+                new ArtifactStorePreUpdateEvent( type, eventMetadata, changeMap );
+        fireEvent( updatePreEvent, event );
     }
 
     @Override
     public void updated( final ArtifactStoreUpdateType type, final EventMetadata eventMetadata,
                          final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        if ( updatePostEvent != null )
-        {
-            logger.trace( "Dispatch post-update event for: {}", changeMap );
-
-            executor.execute( () -> {
-                final ArtifactStorePostUpdateEvent event =
-                        new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
-                updatePostEvent.fire( event );
-            } );
-        }
+        executor.execute( () -> {
+            final ArtifactStorePostUpdateEvent event =
+                    new ArtifactStorePostUpdateEvent( type, eventMetadata, changeMap );
+            fireEvent( updatePostEvent, event );
+        } );
     }
 
     @Override
@@ -197,15 +189,17 @@ public class DefaultStoreEventDispatcher
     {
         if ( enablementEvent != null )
         {
-            final ArtifactStoreEnablementEvent event = new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+            final ArtifactStoreEnablementEvent event =
+                    new ArtifactStoreEnablementEvent( preprocess, eventMetadata, disabling, stores );
+
             if ( preprocess )
             {
-                enablementEvent.fire( event );
+                fireEvent( enablementEvent, event );
             }
             else
             {
                 executor.execute( ()->{
-                    enablementEvent.fire( event );
+                    fireEvent( enablementEvent, event );
                 });
             }
         }
