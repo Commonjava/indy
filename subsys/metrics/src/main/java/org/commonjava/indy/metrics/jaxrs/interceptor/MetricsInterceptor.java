@@ -62,11 +62,15 @@ public class MetricsInterceptor
             return context.proceed();
         }
 
-        logger.debug( "Gathering metrics for: {}", context.getContextData() );
+        logger.debug( "Gathering metrics for: {} (metrics annotation: {})", context.getContextData(), metrics );
 
         Measure measures = metrics.measure();
         List<Timer.Context> timers = Stream.of( measures.timers() )
-                                           .map( named -> util.getTimer( named ).time() )
+                                           .map( named -> {
+                                               Timer.Context tc = util.getTimer( named ).time();
+                                               logger.debug( "START: {} ({})", named, tc );
+                                               return tc;
+                                           } )
                                            .collect( Collectors.toList() );
 
         try
@@ -79,6 +83,7 @@ public class MetricsInterceptor
             Stream.of( me.meters() ).forEach( ( named ) ->
                                               {
                                                   Meter requests = util.getMeter( named );
+                                                  logger.debug( "ERRORS++ {}", named);
                                                   requests.mark();
                                               } );
 
@@ -88,12 +93,16 @@ public class MetricsInterceptor
         {
             if ( timers != null )
             {
-                timers.forEach( Timer.Context::stop );
+                timers.forEach( timer->{
+                    logger.debug( "STOP: {}", timer );
+                    timer.stop();
+                } );
 
             }
             Stream.of( measures.meters() ).forEach( ( named ) ->
                                                     {
                                                         Meter requests = util.getMeter( named );
+                                                        logger.debug( "CALLS++ {}", named);
                                                         requests.mark();
                                                     } );
         }

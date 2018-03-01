@@ -11,12 +11,11 @@
 <assembly>
   <id>etc</id>
   <formats>
-    <format>zip</format>
     <format>tar.gz</format>
   </formats>
   
   <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>indy-etc</baseDirectory>
+  <baseDirectory>etc</baseDirectory>
   
   <dependencySets>
     <!-- configuration sets -->

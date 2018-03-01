@@ -27,6 +27,8 @@ import org.commonjava.indy.metrics.zabbix.reporter.IndyZabbixReporter;
 import org.commonjava.indy.metrics.zabbix.sender.IndyZabbixSender;
 import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import org.elasticsearch.metrics.ElasticsearchReporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -101,6 +103,8 @@ public class ReporterIntializer
 
     private void initELKReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config ) throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Setting up Elasticsearch reporter for Indy metrics" );
         ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
                                                               .hosts( config.getElkHosts().split( ";" ) )
                                                               .index( config.getElkIndex() )
@@ -120,6 +124,8 @@ public class ReporterIntializer
 
     private void initELKReporterForJVMMetric( MetricRegistry metrics, IndyMetricsConfig config ) throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Setting up Elasticsearch reporter for JVM metrics" );
         ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
                                                               .hosts( config.getElkHosts().split( ";" ) )
                                                               .index( config.getElkIndex() )
@@ -142,6 +148,8 @@ public class ReporterIntializer
     private void initELKReporterForHealthCheckMetric( MetricRegistry metrics, IndyMetricsConfig config )
                     throws IOException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Setting up Elasticsearch reporter for Health Check metrics" );
         ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
                                                               .hosts( config.getElkHosts().split( ";" ) )
                                                               .index( config.getElkIndex() )

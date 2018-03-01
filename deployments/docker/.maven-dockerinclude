@@ -1,0 +1,4 @@
+Dockerfile
+scripts/**
+target/dependency/**
+

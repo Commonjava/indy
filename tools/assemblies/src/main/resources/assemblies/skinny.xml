@@ -1,0 +1,111 @@
+<!--
+  Copyright (c) 2014 Red Hat, Inc..
+  All rights reserved. This program and the accompanying materials
+  are made available under the terms of the GNU Public License v3.0
+  which accompanies this distribution, and is available at
+  http://www.gnu.org/licenses/gpl.html
+  
+  Contributors:
+      Red Hat, Inc. - initial API and implementation
+-->
+<assembly>
+  <id>skinny</id>
+  <formats>
+    <format>tar.gz</format>
+  </formats>
+  
+  <includeBaseDirectory>true</includeBaseDirectory>
+  <baseDirectory>indy</baseDirectory>
+  
+  <dependencySets>
+    <!-- this main project artifact -->
+    <dependencySet>
+      <useProjectArtifact>true</useProjectArtifact>
+      <useProjectAttachments>false</useProjectAttachments>
+      <includes>
+        <include>${project.groupId}:${project.artifactId}:jar:${project.version}</include>
+      </includes>
+      <outputDirectory>lib/local</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+
+    <!-- user interface -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+      <includes>
+        <include>org.commonjava.indy.ui*</include>
+      </includes>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
+      <directoryMode>775</directoryMode>
+      <fileMode>664</fileMode>
+      <unpack>true</unpack>
+      <unpackOptions>
+        <excludes>
+          <exclude>META-INF/**</exclude>
+        </excludes>
+      </unpackOptions>
+    </dependencySet>
+    
+    <!-- document sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:docset:*</include>
+      </includes>
+      <outputDirectory>usr/share/doc/indy</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+    <!-- bin sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:binset:*</include>
+      </includes>
+      <outputDirectory>bin</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+    <!-- UI sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:uiset:*</include>
+      </includes>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
+    
+    <!-- aggregated commonjava classes -->
+    <dependencySet>
+      <useProjectArtifact>true</useProjectArtifact>
+      <useProjectAttachments>true</useProjectAttachments>
+      <includes>
+        <include>org.commonjava.indy.embed:*</include>
+      </includes>
+      <outputDirectory>lib</outputDirectory>
+    </dependencySet>
+    
+    <!-- other runtime dependencies -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>runtime</scope>
+      <excludes>
+        <exclude>org.commonjava.indy.embed:*</exclude>
+      </excludes>
+      <outputDirectory>lib/thirdparty</outputDirectory>
+    </dependencySet>
+  </dependencySets>
+  
+  <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}/bin</directory>
+      <outputDirectory>bin</outputDirectory>
+      <fileMode>0755</fileMode>
+      <directoryMode>0755</directoryMode>
+    </fileSet>
+  </fileSets>
+  
+</assembly>

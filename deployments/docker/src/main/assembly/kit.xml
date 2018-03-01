@@ -9,31 +9,30 @@
       Red Hat, Inc. - initial API and implementation
 -->
 <assembly>
-  <id>data</id>
+  <id>kit</id>
   <formats>
     <format>tar.gz</format>
   </formats>
   
   <includeBaseDirectory>true</includeBaseDirectory>
-  <baseDirectory>data</baseDirectory>
-  
-  <dependencySets>
-    <!-- data sets -->
-    <dependencySet>
-      <useProjectArtifact>false</useProjectArtifact>
-      <scope>provided</scope>
-      <includes>
-        <include>*:tar.gz:dataset:*</include>
-      </includes>
-      <outputDirectory>/</outputDirectory>
-      <unpack>true</unpack>
-    </dependencySet>
-  </dependencySets>
+  <baseDirectory>indy-docker-kit</baseDirectory>
   
   <fileSets>
     <fileSet>
-      <directory>${project.build.directory}/var/lib/indy/data</directory>
+      <directory>${project.basedir}</directory>
+      <includes>
+      	<include>Dockerfile</include>
+      	<include>pom.xml</include>
+      	<include>scripts/*</include>
+      </includes>
       <outputDirectory>/</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}/dependency</directory>
+      <includes>
+      	<include>indy-launcher*</include>
+      </includes>
+      <outputDirectory>target/dependency</outputDirectory>
     </fileSet>
   </fileSets>
   

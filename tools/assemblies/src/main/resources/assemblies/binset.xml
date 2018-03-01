@@ -20,6 +20,8 @@
     <fileSet>
       <directory>src/main/bin</directory>
       <outputDirectory>/</outputDirectory>
+      <fileMode>0755</fileMode>
+      <directoryMode>0755</directoryMode>
     </fileSet>
   </fileSets>
 </assembly>
