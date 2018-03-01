@@ -30,9 +30,9 @@ fi
 
 pushd $DIR
 
-pushd $DIR/deployments/launchers/savant/target/
+pushd $DIR/deployments/launcher/target/
 rm -rf indy
-tar -zxvf indy-launcher-savant-*-launcher.tar.gz
+tar -zxvf indy-launcher-*-complete.tar.gz
 
 if [ "x${TEST_REPOS}" != "x" ]; then
   echo "Copying repository/group definitions from: ${TEST_REPOS}"
@@ -87,4 +87,4 @@ fi
 
 popd
 
-exec $DIR/deployments/launchers/savant/target/indy/bin/indy.sh
+exec $DIR/deployments/launcher/target/indy/bin/indy.sh
