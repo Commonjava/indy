@@ -51,10 +51,12 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
+import org.xnio.StreamConnection;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.rmi.Remote;
 
@@ -74,6 +76,10 @@ public final class ProxyResponseWriter
     private static final String TRACKED_USER_SUFFIX = "+tracking";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.topic.httprox.inbound" );
+
+    private final SocketAddress peerAddress;
 
     private Throwable error;
 
@@ -96,7 +102,7 @@ public final class ProxyResponseWriter
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
-                                final ProxyRepositoryCreator repoCreator )
+                                final ProxyRepositoryCreator repoCreator, final StreamConnection streamConnection )
     {
         this.config = config;
         this.contentController = contentController;
@@ -104,6 +110,7 @@ public final class ProxyResponseWriter
         this.proxyAuthenticator = proxyAuthenticator;
         this.cacheProvider = cacheProvider;
         this.repoCreator = repoCreator;
+        this.peerAddress = streamConnection.getPeerAddress();
     }
 
     @Override
@@ -135,11 +142,14 @@ public final class ProxyResponseWriter
             return;
         }
 
+        restLogger.info( "START {} (from: {})", httpRequest.getRequestLine(), peerAddress );
+
         // TODO: Can we handle this?
         final String oldThreadName = Thread.currentThread().getName();
         Thread.currentThread().setName( "PROXY-" + httpRequest.getRequestLine().toString() );
         channel.getCloseSetter().set( ( sinkChannel ) ->
         {
+            restLogger.info( "END {} (from: {})", httpRequest.getRequestLine(), peerAddress );
             logger.debug("sink channel closing.");
             Thread.currentThread().setName( oldThreadName );
         } );

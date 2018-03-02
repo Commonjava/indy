@@ -22,7 +22,7 @@
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
-      <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%X{http-request-preferred-id} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
         <level>WARN</level>
@@ -42,7 +42,7 @@
     </triggeringPolicy>
 
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%X{http-request-preferred-id} %d{HH:mm:ss.SSS} [%thread] %-5level %C{36} - %msg%n</pattern>
     </encoder>
   </appender>
 
@@ -60,15 +60,15 @@
     </triggeringPolicy>
 
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %C{36} - %msg%n</pattern>
+      <pattern>%X{http-request-preferred-id} %d{HH:mm:ss.SSS} [%thread] %-5level %C{36} - %msg%n</pattern>
     </encoder>
   </appender>
 
   <!-- This appender is used for the operation tracking, like delete or http request path tracking -->
-  <appender name="REST-INBOUND" class="ch.qos.logback.core.rolling.RollingFileAppender">
-    <file>${indy.home}/var/log/indy/indy-rest-inbound.log</file>
+  <appender name="INBOUND" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>${indy.home}/var/log/indy/indy-inbound.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-      <fileNamePattern>${indy.home}/var/log/indy/indy-rest-inbound.%i.log</fileNamePattern>
+      <fileNamePattern>${indy.home}/var/log/indy/indy-inbound.%i.log</fileNamePattern>
 
       <maxIndex>20</maxIndex>
     </rollingPolicy>
@@ -78,7 +78,7 @@
     </triggeringPolicy>
 
     <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %C{36} - %msg%n</pattern>
+      <pattern>%X{http-request-preferred-id} %d{HH:mm:ss.SSS} [%thread] %-5level %C{36} - %msg%n</pattern>
     </encoder>
   </appender>
 
@@ -137,7 +137,11 @@
   </logger>
 
   <logger name="org.commonjava.topic.rest.inbound" level="INFO">
-    <appender-ref ref="REST-INBOUND" />
+    <appender-ref ref="INBOUND" />
+  </logger>
+
+  <logger name="org.commonjava.topic.httprox.inbound" level="INFO">
+    <appender-ref ref="INBOUND" />
   </logger>
 
 

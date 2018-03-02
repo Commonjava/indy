@@ -125,7 +125,7 @@ public class ProxyAcceptHandler
 
         final ProxyResponseWriter writer =
                 new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator, cacheProvider,
-                                         creator );
+                                         creator, accepted );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter().set( writer );
