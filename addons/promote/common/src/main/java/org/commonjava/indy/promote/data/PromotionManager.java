@@ -169,8 +169,6 @@ public class PromotionManager
                             HostedRepository source =
                                     (HostedRepository) storeManager.getArtifactStore( request.getSource() );
 
-                            source.setReadonly( true );
-
                             final ChangeSummary readOnlySummary = new ChangeSummary( user,
                                                                                      "Promoting " + request.getSource()
                                                                                              + " into membership of group: "
