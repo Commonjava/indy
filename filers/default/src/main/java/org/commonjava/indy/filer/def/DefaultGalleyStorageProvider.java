@@ -18,6 +18,7 @@ package org.commonjava.indy.filer.def;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
+import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -80,6 +81,9 @@ public class DefaultGalleyStorageProvider
     @NFSOwnerCache
     @Inject
     private CacheHandle<String, String> nfsOwnerCache;
+
+    @Inject
+    private Instance<SpecialPathSetProducer> specialPathSetProducers;
 
     @Inject
     private SpecialPathManager specialPathManager;
@@ -187,6 +191,15 @@ public class DefaultGalleyStorageProvider
             logger.debug( "Advising {} for {} of: {}", result, op, transfer );
             return result;
         };
+
+        if ( specialPathSetProducers != null )
+        {
+            specialPathSetProducers.forEach(
+                    producer -> {
+                        logger.trace( "Adding special paths from: {}", producer.getClass().getName() );
+                        specialPathManager.registerSpecialPathSet( producer.getSpecialPathSet() );
+                    } );
+        }
 
         transferDecorator = new TransferDecoratorPipeline(
                 new ChecksummingTransferDecorator( readAdvisor, writeAdvisor,
