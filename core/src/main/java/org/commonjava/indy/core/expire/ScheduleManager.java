@@ -233,7 +233,7 @@ public class ScheduleManager
 
         int timeout = config.getPassthroughTimeoutSeconds();
         final ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( repo ), path );
-        final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( resource );
+        final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( resource, key.getPackageType() );
         if ( !repo.isPassthrough() )
         {
             if ( ( info != null && info.isMetadata() ) && repo.getMetadataTimeoutSeconds() > 0 )

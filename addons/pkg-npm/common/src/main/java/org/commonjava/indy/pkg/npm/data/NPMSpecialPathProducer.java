@@ -16,6 +16,7 @@
 package org.commonjava.indy.pkg.npm.data;
 
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.maven.galley.io.SpecialPathSet;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -24,26 +25,24 @@ import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_NPM;
 
 /**
- * Created by yma on 5/23/17.
+ * Setup special paths related to NPM packages.
  */
-
 @ApplicationScoped
+@Named
 public class NPMSpecialPathProducer
+        implements SpecialPathSetProducer
 {
 
-    @Inject
-    private SpecialPathManager specialPathManager;
-
-    @PostConstruct
-    public void start()
+    public SpecialPathSet getSpecialPathSet()
     {
-        specialPathManager.registerSpecialPathSet( new NPMSpecialPathSet() );
+        return new NPMSpecialPathSet();
     }
 
     private class NPMSpecialPathSet

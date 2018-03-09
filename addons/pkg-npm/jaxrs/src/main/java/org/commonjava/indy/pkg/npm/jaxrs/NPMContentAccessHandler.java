@@ -32,6 +32,7 @@ import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
+import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -65,6 +66,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
@@ -380,6 +382,7 @@ public class NPMContentAccessHandler
                     handleLocking = true;
                 }
 
+                Transfer origItem = null;
                 try
                 {
                     if ( !item.exists() )
@@ -413,8 +416,16 @@ public class NPMContentAccessHandler
                         if ( item.isDirectory() && StoreType.remote == st )
                         {
                             path = PathUtils.storagePath( path, eventMetadata );
+                            origItem = item;
                             item = contentController.get( sk, path, eventMetadata );
                         }
+
+                        if ( item == null )
+                        {
+                            logger.error( "Retrieval of actual storage path: {} FAILED!", path );
+                            throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
+                        }
+
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
@@ -435,6 +446,10 @@ public class NPMContentAccessHandler
                 {
                     if ( handleLocking )
                     {
+                        if ( origItem != null )
+                        {
+                            origItem.unlock();
+                        }
                         item.unlock();
                     }
                 }

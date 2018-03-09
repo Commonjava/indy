@@ -18,13 +18,16 @@ package org.commonjava.indy.httprox.data;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
+import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.maven.galley.io.SpecialPathSet;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,41 +35,27 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 
 /**
- * Created by ruhan on 4/17/17.
+ * Setup special paths related to generic-http proxies, which are actually specified in the configuration.
  */
+@ApplicationScoped
+@Named
 public class HttProxRegisterSpecialPathStartupAction
-                implements StartupAction
+        implements SpecialPathSetProducer
 {
     @Inject
     private HttproxConfig config;
 
-    @Inject
-    private SpecialPathManager specialPathManager;
-
-    @Override
-    public String getId()
+    public SpecialPathSet getSpecialPathSet()
     {
-        return "HttProx register special path";
+        return new HttpProxSpecialPathSet( config );
     }
 
-    @Override
-    public void start() throws IndyLifecycleException
-    {
-        specialPathManager.registerSpecialPathSet( new HttpProxSpecialPathSet() );
-    }
-
-    @Override
-    public int getStartupPriority()
-    {
-        return 0;
-    }
-
-    private class HttpProxSpecialPathSet
+    private static final class HttpProxSpecialPathSet
                     implements SpecialPathSet
     {
         final List<SpecialPathInfo> notCachableSpecialPaths = new ArrayList<>();
 
-        HttpProxSpecialPathSet()
+        HttpProxSpecialPathSet( HttproxConfig config )
         {
             String s = config.getNoCachePatterns();
             if ( isNotBlank( s ) )
