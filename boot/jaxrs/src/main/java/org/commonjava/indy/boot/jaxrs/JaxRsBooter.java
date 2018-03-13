@@ -148,6 +148,8 @@ public class JaxRsBooter
             bootOptions.setSystemProperties();
 
             weld = new Weld();
+            weld.property("org.jboss.weld.se.archive.isolation", false);
+
             container = weld.initialize();
 
             // injectable version.

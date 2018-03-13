@@ -19,6 +19,7 @@ import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
+import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
@@ -67,4 +68,11 @@ public class MockGalleyProvider
     {
         return pv -> null;
     }
+
+    @Produces
+    public GlobalHttpConfiguration getGlobalHttpConfiguration()
+    {
+        return null;
+    }
+
 }

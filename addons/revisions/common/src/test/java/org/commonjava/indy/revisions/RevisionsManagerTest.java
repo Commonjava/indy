@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
+import javax.inject.Inject;
 
 import org.commonjava.indy.action.IndyLifecycleEventManager;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -34,59 +35,40 @@ import org.commonjava.indy.revisions.testutil.TestProvider;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEvent;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
+import org.commonjava.indy.test.utils.WeldJUnit4Runner;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 
+@RunWith( WeldJUnit4Runner.class )
 public class RevisionsManagerTest
 {
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
+    @Inject
     private RevisionsManager revManager;
 
+    @Inject
     private RevisionsConfig config;
 
+    @Inject
     private DataFileManager dfManager;
 
-    private Weld weld;
-
-    private WeldContainer container;
-
+    @Inject
     private DataFileTestEventListener listener;
 
+    @Inject
     private IndyLifecycleEventManager lcEvents;
 
     @Before
     public void setup()
     {
         TestProvider.setTemporaryFolder( temp );
-
-        weld = new Weld();
-        container = weld.initialize();
-
-        dfManager = container.instance()
-                             .select( DataFileManager.class )
-                             .get();
-
-        config = container.instance().select( RevisionsConfig.class ).get();
         config.setEnabled( true );
-
-        revManager = container.instance()
-                              .select( RevisionsManager.class )
-                              .get();
-
-        listener = container.instance()
-                            .select( DataFileTestEventListener.class )
-                            .get();
-
-        lcEvents = container.instance()
-                            .select( IndyLifecycleEventManager.class )
-                            .get();
     }
 
     @Test
@@ -195,7 +177,7 @@ public class RevisionsManagerTest
     }
 
     @ApplicationScoped
-    static class DataFileTestEventListener
+    public static class DataFileTestEventListener
     {
         private final List<DataFileEvent> events = new ArrayList<>();
 

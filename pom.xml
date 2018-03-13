@@ -53,8 +53,8 @@
     <infinispanVersion>8.2.4.Final</infinispanVersion>
     <luceneVersion>5.3.1</luceneVersion>
     <hibernateVersion>5.6.0.Beta1</hibernateVersion>
-    <resteasyVersion>3.0.9.Final</resteasyVersion>
-    <undertowVersion>1.1.2.Final</undertowVersion>
+    <resteasyVersion>3.0.12.Final</resteasyVersion>
+    <undertowVersion>2.0.1.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
     <keycloakVersion>1.9.8.Final</keycloakVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
@@ -64,7 +64,7 @@
     <!-- commonjava/redhat projects -->
     <atlasVersion>0.17.2</atlasVersion>
     <galleyVersion>0.16.4-SNAPSHOT</galleyVersion>
-    <bomVersion>21</bomVersion>
+    <bomVersion>23-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.13</partylineVersion>
     <kojijiVersion>2.3-SNAPSHOT</kojijiVersion>
@@ -1087,13 +1087,13 @@
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
         <artifactId>weld-se-core</artifactId>
-        <version>2.1.2.Final</version>
+        <version>2.4.6.Final</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
         <artifactId>weld-se</artifactId>
-        <version>2.1.2.Final</version>
+        <version>2.4.6.Final</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -1101,12 +1101,7 @@
         <artifactId>jboss-modules</artifactId>
         <version>1.6.1.Final</version>
       </dependency>
-<!--       <dependency>
-        <groupId>org.javassist</groupId>
-        <artifactId>javassist</artifactId>
-        <version>3.18.1-GA</version>
-      </dependency>
- -->      <dependency>
+      <dependency>
         <groupId>javax.enterprise</groupId>
         <artifactId>cdi-api</artifactId>
         <version>1.2</version>

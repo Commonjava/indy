@@ -17,6 +17,7 @@
   <alternatives>
     <!--<stereotype>org.commonjava.indy.inject.TestData</stereotype>-->
     <class>org.commonjava.indy.mem.data.MemoryStoreDataManager</class>
+    <class>org.commonjava.indy.fixture.MockWeftProvider</class>
     <class>org.commonjava.indy.fixture.MockGalleyProvider</class>
     <class>org.commonjava.indy.fixture.MockContentAdvisor</class>
   </alternatives>
