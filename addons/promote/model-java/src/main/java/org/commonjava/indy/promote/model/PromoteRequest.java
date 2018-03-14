@@ -31,4 +31,6 @@ public interface PromoteRequest<T extends PromoteRequest<T>>
     boolean isDryRun();
 
     T setDryRun( boolean dryRun );
+
+    boolean isFireEvents();
 }

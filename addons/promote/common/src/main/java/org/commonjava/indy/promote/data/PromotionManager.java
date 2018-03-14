@@ -31,6 +31,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.promote.change.event.PathsPromoteCompleteEvent;
+import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.metrics.IndyMetricsPromoteNames;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -46,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +64,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
+import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
@@ -89,6 +93,9 @@ public class PromotionManager
 
     @Inject
     private PromotionValidator validator;
+
+    @Inject
+    private Event<PromoteCompleteEvent> promoteCompleteEvent;
 
     private Map<StoreKey, ReentrantLock> byPathTargetLocks = newSynchronizedContextSensitiveWeakHashMap();
 
@@ -596,7 +603,14 @@ public class PromotionManager
             error = StringUtils.join( errors, "\n" );
         }
 
-        return new PathsPromoteResult( request, pending, complete, skipped, error, validation );
+        PathsPromoteResult result = new PathsPromoteResult( request, pending, complete, skipped, error, validation );
+
+        if ( request.isFireEvents() )
+        {
+            PathsPromoteCompleteEvent evt = new PathsPromoteCompleteEvent( result );
+            fireEvent( promoteCompleteEvent, evt );
+        }
+        return result;
     }
 
     private List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )

@@ -125,6 +125,16 @@ public class TrackedContentEntry
         return index;
     }
 
+    public void setStoreKey( StoreKey storeKey )
+    {
+        this.storeKey = storeKey;
+    }
+
+    public void setOriginUrl( String originUrl )
+    {
+        this.originUrl = originUrl;
+    }
+
     @Override
     public int compareTo( final TrackedContentEntry other )
     {
