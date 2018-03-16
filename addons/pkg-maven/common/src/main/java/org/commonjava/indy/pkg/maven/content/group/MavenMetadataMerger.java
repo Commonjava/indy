@@ -27,6 +27,7 @@ import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
+import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
@@ -346,7 +348,16 @@ public class MavenMetadataMerger
             }
 
             List<SingleVersion> versionObjects =
-                    versioning.getVersions().stream().map( VersionUtils::createSingleVersion ).collect( Collectors.toList() );
+                    versioning.getVersions().stream().map( (v)->{
+                        try
+                        {
+                            return VersionUtils.createSingleVersion( v );
+                        }
+                        catch (InvalidVersionSpecificationException e )
+                        {
+                            return null;
+                        }
+                    } ).filter( Objects::nonNull ).collect( Collectors.toList() );
 
             Collections.sort( versionObjects );
 
