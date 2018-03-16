@@ -1338,6 +1338,9 @@
           <artifactId>license-maven-plugin</artifactId>
           <configuration>
             <excludes>
+              <exclude>**/bin/indy</exclude>
+              <exclude>**/*.properties</exclude>
+              <exclude>**/*.service</exclude>
               <exclude>**/.venv/**</exclude>
               <exclude>**/*.egg-info/**</exclude>
               <exclude>**/*.pyc</exclude>
