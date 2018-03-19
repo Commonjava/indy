@@ -16,6 +16,7 @@
 package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.KojiClientException;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
@@ -307,7 +308,7 @@ public class KojiMavenMetadataProviderTest
     public TemporaryFolder temp = new TemporaryFolder();
 
     private void initKojiClient( String exchangeName, boolean verifyArtifacts )
-            throws IOException, GalleyInitException, IndyDataException
+                    throws IOException, GalleyInitException, IndyDataException, KojiClientException
     {
         StoreDataManager storeDataManager = new MemoryStoreDataManager( true );
 
