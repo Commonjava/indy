@@ -16,6 +16,7 @@
 package org.commonjava.indy.koji.inject;
 
 import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.KojiClientException;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -78,7 +79,14 @@ public class KojijiProvider
             kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
         }
 
-        kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+        try
+        {
+            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+        }
+        catch ( KojiClientException e )
+        {
+            throw new IndyLifecycleException( "Init KojiClient failed", e );
+        }
     }
 
     @Override

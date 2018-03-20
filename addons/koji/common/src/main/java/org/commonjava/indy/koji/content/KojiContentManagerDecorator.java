@@ -76,6 +76,7 @@ import java.util.stream.Collectors;
 
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
+import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -693,9 +694,20 @@ public abstract class KojiContentManagerDecorator
     private String formatStorageUrl( final KojiBuildInfo buildInfo )
             throws MalformedURLException
     {
-        String url =
-                UrlUtils.buildUrl( config.getStorageRootUrl(), "packages", buildInfo.getName(), buildInfo.getVersion(),
-                                   buildInfo.getRelease(), "maven" );
+        String root = config.getStorageRootUrl();
+        String url;
+
+        String volume = buildInfo.getVolumeName();
+        if ( volume == null || "DEFAULT".equals( volume ) )
+        {
+            url = buildUrl( root, "packages", buildInfo.getName(), buildInfo.getVersion(), buildInfo.getRelease(),
+                            "maven" );
+        }
+        else
+        {
+            url = buildUrl( root, "vol", volume, "packages", buildInfo.getName(), buildInfo.getVersion(),
+                            buildInfo.getRelease(), "maven" );
+        }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.info( "Using Koji URL: {}", url );

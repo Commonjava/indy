@@ -67,7 +67,7 @@
     <bomVersion>21</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.13</partylineVersion>
-    <kojijiVersion>2.0</kojijiVersion>
+    <kojijiVersion>2.1-SNAPSHOT</kojijiVersion>
     <rwxVersion>2.0</rwxVersion>
     <jhttpcVersion>1.7</jhttpcVersion>
     <weftVersion>1.6</weftVersion>
