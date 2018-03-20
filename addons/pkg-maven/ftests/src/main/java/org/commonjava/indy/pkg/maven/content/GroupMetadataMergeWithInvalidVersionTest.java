@@ -122,8 +122,8 @@ public class GroupMetadataMergeWithInvalidVersionTest
 
         g = client.stores().create( new Group( GROUP_G_NAME, a.getKey(), b.getKey() ), message, Group.class );
 
-        deployContent( a, METADATA_PATH, REPO_METADATA_TEMPLATE, A_VERSION );
-        deployContent( b, METADATA_PATH, REPO_METADATA_TEMPLATE, B_VERSION );
+        localDeployContent( a, METADATA_PATH, REPO_METADATA_TEMPLATE, A_VERSION );
+        localDeployContent( b, METADATA_PATH, REPO_METADATA_TEMPLATE, B_VERSION );
     }
 
     @Test
@@ -134,7 +134,7 @@ public class GroupMetadataMergeWithInvalidVersionTest
         assertContent( g, METADATA_PATH, GROUP_CONTENT );
     }
 
-    private void deployContent( HostedRepository repo, String path, String template, String version )
+    private void localDeployContent( HostedRepository repo, String path, String template, String version )
             throws IndyClientException
     {
         client.content()
