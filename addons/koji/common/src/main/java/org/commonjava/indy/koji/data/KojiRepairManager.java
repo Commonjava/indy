@@ -1,0 +1,305 @@
+/**
+ * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.commonjava.indy.koji.data;
+
+import com.redhat.red.build.koji.KojiClient;
+import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
+import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.model.KojiRepairRequest;
+import org.commonjava.indy.koji.model.KojiRepairResult;
+import org.commonjava.indy.koji.util.KojiUtils;
+import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+
+import static com.redhat.red.build.koji.model.xmlrpc.messages.Constants.GET_BUILD;
+import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.remote;
+
+/**
+ * Component responsible for repair Koji remote repositories.
+ *
+ * @author ruhan
+ */
+@ApplicationScoped
+public class KojiRepairManager
+{
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    public static final String METADATA_KOJI_BUILD_ID = "koji-build-id"; // metadata key for recording koji build id
+
+    @Inject
+    private IndyKojiConfig config;
+
+    @Inject
+    private StoreDataManager storeManager;
+
+    @Inject
+    private KojiClient kojiClient;
+
+    @Inject
+    private KojiUtils kojiUtils;
+
+    private ReentrantLock opLock = new ReentrantLock(); // operations are synchronized
+
+    protected KojiRepairManager()
+    {
+    }
+
+    public KojiRepairManager( final StoreDataManager storeManager, final IndyKojiConfig config,
+                              final KojiClient kojiClient )
+    {
+        this.storeManager = storeManager;
+        this.config = config;
+        this.kojiClient = kojiClient;
+    }
+
+    public KojiRepairResult repairVol( KojiRepairRequest request, String user, String baseUrl )
+                    throws KojiRepairException
+    {
+        boolean flag = opLock.tryLock();
+        if ( flag )
+        {
+            try
+            {
+                StoreKey storeKey = request.getSource();
+
+                KojiRepairResult ret = new KojiRepairResult( request );
+
+                ArtifactStore store;
+                try
+                {
+                    store = storeManager.getArtifactStore( storeKey );
+                }
+                catch ( IndyDataException e )
+                {
+                    String error = String.format( "Cannot get store: %s, error: %s", storeKey, e );
+                    logger.warn( error, e );
+                    return ret.withError( error );
+                }
+
+                if ( store == null )
+                {
+                    String error = String.format( "No such store: %s.", storeKey );
+                    return ret.withError( error );
+                }
+
+                if ( storeKey.getType() == group )
+                {
+                    return repairGroupVol( request, (Group) store, user );
+                }
+                else if ( storeKey.getType() == remote )
+                {
+                    return repairRemoteRepositoryVol( request, (RemoteRepository) store, user );
+                }
+                else
+                {
+                    String error = String.format( "Not a group or remote koji store: %s", storeKey );
+                    return ret.withError( error );
+                }
+            }
+            finally
+            {
+                opLock.unlock();
+            }
+        }
+        else
+        {
+            throw new KojiRepairException( "opLock held by other" );
+        }
+    }
+
+    private KojiRepairResult repairGroupVol( KojiRepairRequest request, Group group, String user )
+    {
+        KojiRepairResult ret = new KojiRepairResult( request );
+
+        List<StoreKey> stores = group.getConstituents();
+        if ( stores.isEmpty() )
+        {
+            return ret.withNoChange( group.getKey() );
+        }
+
+        List<KojiBuildInfo> buildInfoList;
+        try
+        {
+            buildInfoList = kojiClient.withKojiSession( ( session ) -> {
+                List<Object> args = new ArrayList<>(  );
+                stores.forEach( storeKey -> {
+                    String nvr = kojiUtils.getBuildNvr( storeKey );
+                    if ( nvr != null )
+                    {
+                        args.add( nvr );
+                    }
+                    else
+                    {
+                        ret.withIgnore( storeKey );
+                    }
+                } );
+                return kojiClient.multiCall( GET_BUILD, args, KojiBuildInfo.class, session );
+            } );
+        }
+        catch ( KojiClientException e )
+        {
+            String error = String.format( "Cannot get buildInfoList: %s, error: %s", group.getKey(), e );
+            logger.warn( error, e );
+            return ret.withError( error, e );
+        }
+
+        buildInfoList.forEach( buildInfo -> {
+            try
+            {
+                KojiRepairResult.RepairResult repairResult =
+                                doRepair( group.getPackageType(), null, buildInfo, user, request.isDryRun() );
+                ret.withResult( repairResult );
+            }
+            catch ( KojiRepairException e )
+            {
+                // we do not fail the whole attempt if one store failed
+                logger.debug( "Repair failed", e );
+                ret.withResult( new KojiRepairResult.RepairResult( e.getStoreKey(), e ) );
+            }
+        } );
+
+        return ret;
+    }
+
+    private KojiRepairResult repairRemoteRepositoryVol( KojiRepairRequest request, RemoteRepository repository,
+                                                     String user ) throws KojiRepairException
+    {
+        StoreKey storeKey = repository.getKey();
+
+        KojiRepairResult ret = new KojiRepairResult( request );
+
+        final String nvr = kojiUtils.getBuildNvr( storeKey );
+        if ( nvr == null )
+        {
+            String error = String.format( "Not a koji store: %s", storeKey );
+            return ret.withError( error );
+        }
+
+        KojiBuildInfo buildInfo;
+        try
+        {
+            buildInfo = kojiClient.withKojiSession( ( session ) -> kojiClient.getBuildInfo( nvr, session ) );
+        }
+        catch ( KojiClientException e )
+        {
+            String error = String.format( "Cannot getBuildInfo: %s, error: %s", storeKey, e );
+            logger.debug( error, e );
+            return ret.withError( error, e );
+        }
+
+        KojiRepairResult.RepairResult repairResult =
+                        doRepair( repository.getPackageType(), repository, buildInfo, user,
+                                  request.isDryRun() );
+
+        return ret.withResult( repairResult );
+    }
+
+    /**
+     * Repair one remote repository.
+     * @param packageType
+     * @param repository repository to be repaired. If null, the repository name will be retrieved according to
+     *                         the buildInfo and the naming format in koji.conf.
+     * @param buildInfo koji build which this repository proxies
+     * @param user the user does the repair
+     * @param isDryRun
+     * @return
+     * @throws KojiRepairException
+     */
+    private KojiRepairResult.RepairResult doRepair( String packageType, RemoteRepository repository,
+                                                    KojiBuildInfo buildInfo, String user, boolean isDryRun )
+                    throws KojiRepairException
+    {
+        StoreKey storeKey;
+        if ( repository != null )
+        {
+            storeKey = repository.getKey();
+        }
+        else
+        {
+            String name = kojiUtils.getRepositoryName( buildInfo );
+            storeKey = new StoreKey( packageType, StoreType.remote, name );
+            try
+            {
+                repository = (RemoteRepository) storeManager.getArtifactStore( storeKey );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new KojiRepairException( "Cannot get store: %s. Reason: %s", e, storeKey,
+                                               e.getMessage() );
+            }
+        }
+
+        KojiRepairResult.RepairResult repairResult = new KojiRepairResult.RepairResult( storeKey );
+
+        String url = repository.getUrl();
+
+        String newUrl;
+        try
+        {
+            newUrl = kojiUtils.formatStorageUrl( config.getStorageRootUrl(), buildInfo ); // volume is involved
+        }
+        catch ( MalformedURLException e )
+        {
+            throw new KojiRepairException( "Failed to format storage Url: %s. Reason: %s", e, storeKey,
+                                           e.getMessage() );
+        }
+
+        boolean changed = !url.equals( newUrl );
+        if ( changed )
+        {
+            repairResult.withPropertyChange( "url", url, newUrl );
+
+            if ( !isDryRun )
+            {
+                ChangeSummary changeSummary = new ChangeSummary( user,
+                                                                 "Repair " + storeKey + " url with volume: " + buildInfo
+                                                                                 .getVolumeName() );
+                repository.setUrl( newUrl );
+                //repository.setMetadata( METADATA_KOJI_BUILD_ID, Integer.toString( buildInfo.getId() ) );
+                boolean fireEvents = false;
+                boolean skipIfExists = false;
+                try
+                {
+                    storeManager.storeArtifactStore( repository, changeSummary, skipIfExists, fireEvents, new EventMetadata() );
+                }
+                catch ( IndyDataException e )
+                {
+                    throw new KojiRepairException( "Failed to repair store: %s. Reason: %s", e, storeKey, e.getMessage() );
+                }
+            }
+        }
+        return repairResult;
+    }
+
+}

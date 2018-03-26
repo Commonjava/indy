@@ -95,6 +95,14 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-relate-common</artifactId>
     </dependency>
     <dependency>

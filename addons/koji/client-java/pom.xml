@@ -37,7 +37,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-koji-model-java</artifactId>
+      <artifactId>indy-koji-common</artifactId>
     </dependency>
   </dependencies>
 </project>

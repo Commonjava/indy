@@ -20,7 +20,6 @@ import org.commonjava.indy.action.MigrationAction;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.event.EventMetadata;
 
@@ -28,7 +27,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.commonjava.indy.koji.content.KojiContentManagerDecorator.KOJI_ORIGIN;
+import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
 
 /**
