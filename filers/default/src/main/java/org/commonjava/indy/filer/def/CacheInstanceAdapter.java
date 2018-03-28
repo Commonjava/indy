@@ -17,7 +17,6 @@ package org.commonjava.indy.filer.def;
 
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.cache.infinispan.CacheInstance;
-import org.commonjava.maven.galley.cache.infinispan.SimpleCacheInstance;
 import org.infinispan.Cache;
 
 import javax.transaction.HeuristicMixedException;
@@ -30,12 +29,12 @@ import java.util.function.Function;
 /**
  * Created by jdcasey on 10/6/16.
  */
-public class CacheInstanceAdapter
-        implements CacheInstance<String, String>
+public class CacheInstanceAdapter<K, V>
+        implements CacheInstance<K, V>
 {
-    private CacheHandle<String, String> cacheHandle;
+    private CacheHandle<K, V> cacheHandle;
 
-    public CacheInstanceAdapter( CacheHandle<String, String> cacheHandle )
+    public CacheInstanceAdapter( CacheHandle<K, V> cacheHandle )
     {
         this.cacheHandle = cacheHandle;
     }
@@ -47,7 +46,7 @@ public class CacheInstanceAdapter
     }
 
     @Override
-    public <R> R execute( Function<Cache<String, String>, R> operation )
+    public <R> R execute( Function<Cache<K, V>, R> operation )
     {
         return cacheHandle.execute( operation );
     }
@@ -59,31 +58,31 @@ public class CacheInstanceAdapter
     }
 
     @Override
-    public boolean containsKey( String key )
+    public boolean containsKey( K key )
     {
         return cacheHandle.containsKey( key );
     }
 
     @Override
-    public String put( String key, String value )
+    public V put( K key, V value )
     {
         return cacheHandle.put( key, value );
     }
 
     @Override
-    public String putIfAbsent( String key, String value )
+    public V putIfAbsent( K key, V value )
     {
         return cacheHandle.putIfAbsent( key, value );
     }
 
     @Override
-    public String remove( String key )
+    public V remove( K key )
     {
         return cacheHandle.remove( key );
     }
 
     @Override
-    public String get( String key )
+    public V get( K key )
     {
         return cacheHandle.get( key );
     }
@@ -117,25 +116,26 @@ public class CacheInstanceAdapter
     }
 
     @Override
-    public Object getLockOwner( String key )
+    public Object getLockOwner( K key )
     {
         return cacheHandle.getLockOwner( key );
     }
 
     @Override
-    public boolean isLocked( String key )
+    public boolean isLocked( K key )
     {
         return cacheHandle.isLocked( key );
     }
 
+    @SafeVarargs
     @Override
-    public void lock( String... keys )
+    public final void lock( K... keys )
     {
         cacheHandle.lock( keys );
     }
 
     @Override
-    public void unlock( String s )
+    public void unlock( K key )
     {
         //Not implemented. Just for galley api compatible fix.
     }

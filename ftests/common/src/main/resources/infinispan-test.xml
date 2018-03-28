@@ -39,5 +39,10 @@
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
+
+    <local-cache name="indy-fastlocal-file-delete-cache">
+      <eviction size="200000" strategy="LRU"/>
+      <expiration lifespan="300000" max-idle="300000" interval="30000"/>
+    </local-cache>
   </cache-container>
 </infinispan>

@@ -17,12 +17,13 @@ package org.commonjava.indy.filer.def;
 
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.maven.galley.model.ConcreteResource;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-public class NFSOwnerCacheProducer
+public class FastLocalCacheProducer
 {
     @Inject
     private CacheProducer cacheProducer;
@@ -33,5 +34,13 @@ public class NFSOwnerCacheProducer
     public CacheHandle<String, String> nfsOwnerCacheCfg()
     {
         return cacheProducer.getCache( "indy-nfs-owner-cache", String.class, String.class );
+    }
+
+    @FastLocalFileRemoveCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<String, ConcreteResource> fastLocalFileRemoveCfg()
+    {
+        return cacheProducer.getCache( "indy-fastlocal-file-delete-cache", String.class, ConcreteResource.class );
     }
 }
