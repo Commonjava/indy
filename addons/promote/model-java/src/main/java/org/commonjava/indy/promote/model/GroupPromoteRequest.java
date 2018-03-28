@@ -89,6 +89,13 @@ public class GroupPromoteRequest
         this.dryRun = dryRun;
         return this;
     }
+
+    @Override
+    public boolean isFireEvents()
+    {
+        return false;
+    }
+
     @Override
     public String toString()
     {

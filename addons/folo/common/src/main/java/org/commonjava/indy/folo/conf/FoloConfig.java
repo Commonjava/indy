@@ -29,10 +29,30 @@ public class FoloConfig
     implements IndyConfigInfo
 {
 
+    public static final boolean DEFAULT_ENABLED = true;
+
+    private Boolean enabled;
+
     private Boolean trackGroupContent;
 
     public FoloConfig()
     {
+    }
+
+    public boolean isEnabled()
+    {
+        return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    public Boolean getEnabled()
+    {
+        return enabled;
+    }
+
+    @ConfigName( "enabled")
+    public void setEnabled( final boolean enabled )
+    {
+        this.enabled = enabled;
     }
 
     public boolean isGroupContentTracked()
