@@ -36,6 +36,7 @@ import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.TransferMetadataConsumer;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -81,6 +82,10 @@ public class DefaultGalleyStorageProvider
     @NFSOwnerCache
     @Inject
     private CacheHandle<String, String> nfsOwnerCache;
+
+    @FastLocalFileRemoveCache
+    @Inject
+    private CacheHandle<String, ConcreteResource> fastLocalFileRemoveCache;
 
     @Inject
     private Instance<SpecialPathSetProducer> specialPathSetProducers;
@@ -225,10 +230,23 @@ public class DefaultGalleyStorageProvider
             // nfs root can not be created due to some security reason(like permission), will bypass FastLocal provider and use PartyLine
             if ( nfsBasedir.exists() )
             {
-                final FastLocalCacheProviderFactory fastLocalFac =
-                        new FastLocalCacheProviderFactory( storeRoot, nfsBasedir,
-                                                           new CacheInstanceAdapter( nfsOwnerCache ),
-                                                           fastLocalExecutors );
+
+                final FastLocalCacheProviderFactory fastLocalFac;
+                final CacheInstanceAdapter<String, String> nfsOwnerCacheAdapter =
+                        new CacheInstanceAdapter<>( nfsOwnerCache );
+                if ( fastLocalFileRemoveCache == null )
+                {
+                    fastLocalFac = new FastLocalCacheProviderFactory( storeRoot, nfsBasedir, nfsOwnerCacheAdapter,
+                                                                      fastLocalExecutors );
+                }
+                else
+                {
+                    final CacheInstanceAdapter<String, ConcreteResource> fastLocalFileRemoveCacheAdapter =
+                            new CacheInstanceAdapter<>( fastLocalFileRemoveCache );
+                    fastLocalFac = new FastLocalCacheProviderFactory( storeRoot, nfsBasedir, nfsOwnerCacheAdapter,
+                                                                      fastLocalFileRemoveCacheAdapter,
+                                                                      fastLocalExecutors );
+                }
 
                 cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) ->
                                                                         {
