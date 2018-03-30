@@ -11,6 +11,7 @@
 <assembly>
   <id>dataset</id>
   <formats>
+    <format>jar</format>
     <format>tar.gz</format>
   </formats>
   
