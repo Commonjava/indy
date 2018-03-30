@@ -21,6 +21,7 @@ import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.test.http.expect.ExpectationServer;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,6 +58,7 @@ public class MetaListingRescheduleTimeoutTest
     @Rule
     public ExpectationServer server = new ExpectationServer( "repos" );
 
+    @Ignore // content listing is disabled for now, 2018/4/3
     @Test
     @Category( TimingDependent.class )
     public void timeout()
