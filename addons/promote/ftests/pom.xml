@@ -41,7 +41,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-promote-common</artifactId>
-      <type>tar.gz</type>
       <classifier>dataset</classifier>
       <!-- <scope>provided</scope> -->
     </dependency>
