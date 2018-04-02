@@ -37,9 +37,17 @@ do
   CP=${CP}:${f}
 done
 
+# To avoid jboss logging import from weld with old version.
+jb_logging=$(find $BASEDIR/lib/thirdparty/jboss-logging-*.jar -type f)
+if [ -f $jb_logging ]; then
+  CP=${CP}:$jb_logging
+fi
+
 for f in $(find $BASEDIR/lib/thirdparty -type f)
 do
-  CP=${CP}:${f}
+  if [[ $f != *jboss-logging* ]]; then
+    CP=${CP}:${f}
+  fi
 done
 
 # echo "Classpath: ${CP}"
