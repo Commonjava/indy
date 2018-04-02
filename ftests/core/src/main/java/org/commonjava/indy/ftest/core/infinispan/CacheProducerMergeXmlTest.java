@@ -64,7 +64,6 @@ public class CacheProducerMergeXmlTest
     public void testMerge()
             throws Exception
     {
-        assertThat( manager.getCacheNames().size(), equalTo( 9 ) );
         assertThat( manager.getCacheConfiguration( "local" ).eviction().size(), equalTo( 10000000L ) );
         assertThat( manager.getCacheConfiguration( "koji-maven-version-metadata" ).eviction().size(),
                     equalTo( 10000000L ) );
