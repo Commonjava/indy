@@ -17,6 +17,7 @@ package org.commonjava.indy.client.core.module;
 
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.NotFoundCacheDTO;
 
@@ -43,12 +44,13 @@ public class IndyNfcClientModule
     public void clearAll()
             throws IndyClientException
     {
-        getHttp().delete( BASE_URL );
+        getHttp().delete( BASE_URL, 200 );
     }
 
     public void clearInStore( final StoreType type, final String name, final String path )
             throws IndyClientException
     {
-        getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + path );
+        getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + path, 200 );
     }
+
 }
