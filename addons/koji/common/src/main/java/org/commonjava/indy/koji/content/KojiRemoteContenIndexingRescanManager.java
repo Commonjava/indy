@@ -18,16 +18,12 @@ package org.commonjava.indy.koji.content;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreRescanEvent;
-import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.content.DownloadManager;
-import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.content.index.ContentIndexRescanManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -38,9 +34,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN;
 
 /**
  * This component will handle the content index for the Koji generated remote repo during its rescan. It will rebuild all relevant
@@ -69,7 +66,7 @@ public class KojiRemoteContenIndexingRescanManager implements ContentIndexRescan
         for ( ArtifactStore repo : repos )
         {
             if ( repo.getType() == StoreType.remote && repo.getName()
-                                                           .startsWith( KojiContentManagerDecorator.KOJI_ORIGIN ) )
+                                                           .startsWith( KOJI_ORIGIN ) )
             {
                 LOGGER.trace( "Clear content index for koji remote: {}", repo.getKey() );
                 contentIndexManager.clearAllIndexedPathInStore( repo );
@@ -85,7 +82,7 @@ public class KojiRemoteContenIndexingRescanManager implements ContentIndexRescan
         for ( ArtifactStore repo : repos )
         {
             if ( repo.getType() == StoreType.remote && repo.getName()
-                                                           .startsWith( KojiContentManagerDecorator.KOJI_ORIGIN ) )
+                                                           .startsWith( KOJI_ORIGIN ) )
             {
                 LOGGER.trace( "Rebuild content index for koji remote: {}", repo.getKey() );
                 final RemoteRepository kojiRemote = (RemoteRepository) repo;

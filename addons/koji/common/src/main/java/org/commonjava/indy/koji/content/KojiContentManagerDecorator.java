@@ -23,9 +23,6 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
-import org.codehaus.plexus.interpolation.InterpolationException;
-import org.codehaus.plexus.interpolation.ObjectBasedValueSource;
-import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -35,6 +32,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
+import org.commonjava.indy.koji.util.KojiUtils;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
@@ -43,8 +41,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.subsys.template.IndyGroovyException;
-import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
@@ -56,7 +52,6 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,11 +67,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
+import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN;
+import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN_BINARY;
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
-import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -114,12 +109,6 @@ public abstract class KojiContentManagerDecorator
 
     private static final String NVR = "koji-NVR";
 
-    public static final String KOJI_ORIGIN = "koji";
-
-    public static final String KOJI_ORIGIN_BINARY = "koji-binary";
-
-    private static final String KOJI_REPO_CREATOR_SCRIPT = "koji-repo-creator.groovy";
-
     @Delegate
     @Inject
     private ContentManager delegate;
@@ -131,10 +120,10 @@ public abstract class KojiContentManagerDecorator
     private KojiClient kojiClient;
 
     @Inject
-    private IndyKojiConfig config;
+    private KojiUtils kojiUtils;
 
     @Inject
-    private ScriptEngine scriptEngine;
+    private IndyKojiConfig config;
 
     @Inject
     private NotFoundCache nfc;
@@ -144,24 +133,6 @@ public abstract class KojiContentManagerDecorator
 
     @Inject
     private ContentIndexManager indexManager;
-
-    public KojiRepositoryCreator createRepoCreator()
-    {
-        KojiRepositoryCreator creator = null;
-        try
-        {
-            creator = scriptEngine.parseStandardScriptInstance( ScriptEngine.StandardScriptType.store_creators,
-                                                                KOJI_REPO_CREATOR_SCRIPT, KojiRepositoryCreator.class );
-        }
-        catch ( IndyGroovyException e )
-        {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.error( String.format( "Cannot create KojiRepositoryCreator instance: %s. Disabling Koji support.",
-                                         e.getMessage() ), e );
-            config.setEnabled( false );
-        }
-        return creator;
-    }
 
     @Override
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
@@ -363,7 +334,7 @@ public abstract class KojiContentManagerDecorator
                     }
 
                     boolean buildAllowed = false;
-                    if ( isBinaryBuild(build) )
+                    if ( kojiUtils.isBinaryBuild(build) )
                     {
                         // This is not a real build, it's a binary import.
                         if ( config.isProxyBinaryBuilds() )
@@ -454,11 +425,6 @@ public abstract class KojiContentManagerDecorator
         return Collections.EMPTY_MAP;
     }
 
-    private boolean isBinaryBuild( KojiBuildInfo build )
-    {
-        return build.getTaskId() == null;
-    }
-
     private RemoteRepository createRemoteRepository( StoreKey inStore, ArtifactRef artifactRef, final KojiBuildInfo build,
                                                      final KojiSessionInfo session )
             throws KojiClientException
@@ -469,22 +435,23 @@ public abstract class KojiContentManagerDecorator
             KojiArchiveQuery archiveQuery = new KojiArchiveQuery().withBuildId( build.getId() ).withType( "maven" );
             List<KojiArchiveInfo> archives = kojiClient.listArchives( archiveQuery, session );
 
-            boolean isBinaryBuild = isBinaryBuild( build );
-            String name = getRepositoryName( build, isBinaryBuild );
+            boolean isBinaryBuild = kojiUtils.isBinaryBuild( build );
+            String name = kojiUtils.getRepositoryName( build );
             StoreKey remoteKey = new StoreKey( inStore.getPackageType(), StoreType.remote, name );
 
             RemoteRepository remote = ( RemoteRepository ) storeDataManager.getArtifactStore( remoteKey );
             if ( remote == null )
             {
                 // Using a RemoteRepository allows us to use the higher-level APIs in Indy, as opposed to TransferManager
-                final KojiRepositoryCreator creator = createRepoCreator();
+                final KojiRepositoryCreator creator = kojiUtils.createRepoCreator();
 
                 if ( creator == null )
                 {
                     throw new KojiClientException( "Cannot proceed without a valid KojiRepositoryCreator instance." );
                 }
 
-                remote = creator.createRemoteRepository( inStore.getPackageType(), name, formatStorageUrl( build ),
+                remote = creator.createRemoteRepository( inStore.getPackageType(), name,
+                                                         kojiUtils.formatStorageUrl( config.getStorageRootUrl(), build ),
                                                          config.getDownloadTimeoutSeconds() );
 
                 remote.setServerCertPem( config.getServerPemContent() );
@@ -621,22 +588,6 @@ public abstract class KojiContentManagerDecorator
         return meta;
     }
 
-    private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )
-    {
-        StringSearchInterpolator interpolator = new StringSearchInterpolator();
-        interpolator.addValueSource( new ObjectBasedValueSource( build ) );
-
-        try
-        {
-            return interpolator.interpolate( isBinaryBuild ?
-                    config.getBinayNamingFormat() : config.getNamingFormat() );
-        }
-        catch ( InterpolationException e )
-        {
-            throw new RuntimeException( "Cannot resolve expressions in Koji configuration.", e );
-        }
-    }
-
     private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group group )
             throws IndyWorkflowException
     {
@@ -689,30 +640,6 @@ public abstract class KojiContentManagerDecorator
         return targetGroup;
 
         // TODO: how to index it for the group...?
-    }
-
-    private String formatStorageUrl( final KojiBuildInfo buildInfo )
-            throws MalformedURLException
-    {
-        String root = config.getStorageRootUrl();
-        String url;
-
-        String volume = buildInfo.getVolumeName();
-        if ( volume == null || "DEFAULT".equals( volume ) )
-        {
-            url = buildUrl( root, "packages", buildInfo.getName(), buildInfo.getVersion(), buildInfo.getRelease(),
-                            "maven" );
-        }
-        else
-        {
-            url = buildUrl( root, "vol", volume, "packages", buildInfo.getName(), buildInfo.getVersion(),
-                            buildInfo.getRelease(), "maven" );
-        }
-
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Using Koji URL: {}", url );
-
-        return url;
     }
 
     private interface KojiBuildAction<T>
