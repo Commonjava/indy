@@ -31,6 +31,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.metrics.IndyMetricsPromoteNames;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -39,9 +40,11 @@ import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.validate.PromotionValidator;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,6 +97,9 @@ public class PromotionManager
 
     private Map<String, StoreKey> targetGroupKeyMap = new HashMap<>( 1 );
 
+    @Inject
+    private NotFoundCache nfc;
+
     protected PromotionManager()
     {
     }
@@ -107,6 +113,15 @@ public class PromotionManager
         this.storeManager = storeManager;
         this.config = config;
     }
+
+    public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
+                             final DownloadManager downloadManager, final StoreDataManager storeManager,
+                             PromoteConfig config, NotFoundCache nfc )
+    {
+        this( validator, contentManager, downloadManager, storeManager, config );
+        this.nfc = nfc;
+    }
+
 
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
                     IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP
@@ -163,6 +178,7 @@ public class PromotionManager
                                 + " into membership of group: " + target.getKey() );
 
                         storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
+                        clearStoreNFC( target );
 
                         if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
                         {
@@ -203,7 +219,7 @@ public class PromotionManager
     {
         if ( !targetGroupKeyMap.containsKey( targetName ) )
         {
-            targetGroupKeyMap.put( targetName, new StoreKey( StoreType.group, targetName ) );
+            targetGroupKeyMap.put( targetName, new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, targetName ) );
         }
         return targetGroupKeyMap.get( targetName );
     }
@@ -381,7 +397,7 @@ public class PromotionManager
         }
 
         Set<String> pending = result.getPendingPaths();
-        pending = pending == null ? new HashSet<String>() : new HashSet<String>( pending );
+        pending = pending == null ? new HashSet<>() : new HashSet<>( pending );
 
         String error = null;
         final boolean copyToSource = result.getRequest().isPurgeSource();
@@ -550,14 +566,16 @@ public class PromotionManager
                                 }
                                 catch ( final IOException e )
                                 {
-                                    String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                                e.getMessage() );
+                                    String msg =
+                                            String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                           e.getMessage() );
                                     errors.add( msg );
                                     logger.error( msg, e );
                                 }
                             }
+                            clearStoreNFC( targetStore );
                         }
-                        catch ( final IndyWorkflowException e )
+                        catch ( final IndyWorkflowException | IndyDataException e )
                         {
                             String msg =
                                     String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, targetStore,
@@ -604,7 +622,7 @@ public class PromotionManager
     private List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )
             throws IndyWorkflowException
     {
-        final List<Transfer> contents = new ArrayList<Transfer>();
+        final List<Transfer> contents = new ArrayList<>();
         for ( final String path : paths )
         {
             final Transfer txfr = downloadManager.getStorageReference( source, path );
@@ -619,6 +637,17 @@ public class PromotionManager
         }
 
         return contents;
+    }
+
+    private void clearStoreNFC( ArtifactStore store )
+            throws IndyDataException
+    {
+        nfc.clearMissing( LocationUtils.toLocation( store ) );
+        Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
+        if ( groups != null )
+        {
+            groups.forEach( group -> nfc.clearMissing( LocationUtils.toLocation( group ) ) );
+        }
     }
 
 }
