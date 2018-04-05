@@ -543,7 +543,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                                  else
                                  {
                                      final ArtifactStore store = stores.get( key );
-                                     if ( store != null && !( store.isDisabled() && enabled ) )
+                                     if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( enabled ) ) )
                                      {
                                          result.add( store );
                                      }
