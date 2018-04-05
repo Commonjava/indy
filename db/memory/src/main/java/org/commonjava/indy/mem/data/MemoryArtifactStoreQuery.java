@@ -517,7 +517,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                                final List<ArtifactStore> result, final Set<StoreKey> seen, final boolean includeGroups,
                                final boolean recurseGroups )
     {
-        if ( master == null || master.isDisabled() && enabled )
+        if ( master == null || master.isDisabled() && Boolean.TRUE.equals( enabled ) )
         {
             return;
         }
