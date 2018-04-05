@@ -43,7 +43,7 @@ public class IndyNfcClientModule
     public void clearAll()
             throws IndyClientException
     {
-        getHttp().delete( BASE_URL );
+        getHttp().delete( BASE_URL, 200 );
     }
 
     public void clearInStore( final StoreType type, final String name, final String path )
@@ -51,4 +51,5 @@ public class IndyNfcClientModule
     {
         getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + path );
     }
+
 }
