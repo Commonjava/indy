@@ -82,7 +82,7 @@ public class IndyNfcClientModule
     public void clearAll()
             throws IndyClientException
     {
-        getHttp().delete( BASE_URL );
+        getHttp().delete( BASE_URL, 200 );
     }
 
     public void clearInStore( final StoreType type, final String name, final String path )
@@ -90,11 +90,11 @@ public class IndyNfcClientModule
     {
         if ( isBlank(path) )
         {
-            getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name );
+            getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name, 200 );
         }
         else
         {
-            getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + "/" + path );
+            getHttp().delete( BASE_URL + "/" + type.singularEndpointName() + "/" + name + "/" + path, 200 );
         }
     }
 
@@ -110,4 +110,5 @@ public class IndyNfcClientModule
     {
         return getHttp().get( BASE_URL + "/info", NotFoundCacheInfoDTO.class );
     }
+
 }

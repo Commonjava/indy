@@ -55,6 +55,8 @@ import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
+import org.commonjava.maven.galley.nfc.NoOpNotFoundCache;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -65,6 +67,7 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -169,7 +172,7 @@ public class PromotionManagerTest
 
         PromoteConfig config = new PromoteConfig();
 
-        manager = new PromotionManager( validator, contentManager, downloadManager, storeManager, config );
+        manager = new PromotionManager( validator, contentManager, downloadManager, storeManager, config, nfc );
 
         executor = Executors.newCachedThreadPool();
     }
