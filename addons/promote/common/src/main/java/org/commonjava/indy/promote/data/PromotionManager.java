@@ -121,6 +121,15 @@ public class PromotionManager
         this.config = config;
     }
 
+    public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
+                             final DownloadManager downloadManager, final StoreDataManager storeManager,
+                             PromoteConfig config, NotFoundCache nfc )
+    {
+        this( validator, contentManager, downloadManager, storeManager, config );
+        this.nfc = nfc;
+    }
+
+
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
                     IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP
                                     + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
