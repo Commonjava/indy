@@ -43,8 +43,8 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.indy.koji.IndyKojiConstants.REPAIR_KOJI;
-import static org.commonjava.indy.koji.IndyKojiConstants.VOL;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.REPAIR_KOJI;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.VOL;
 import static org.commonjava.indy.util.ApplicationContent.application_indy_star_json;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 

@@ -1,4 +1,4 @@
-package org.commonjava.indy.koji;
+package org.commonjava.indy.koji.model;
 
 /**
  * Created by ruhan on 3/28/18.
