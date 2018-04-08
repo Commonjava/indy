@@ -138,39 +138,38 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        synchronized ( getTargetKey( request.getTargetGroup() ) )
+        Group target;
+        try
         {
-            Group target;
-            try
-            {
-                target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
-            }
-            catch ( IndyDataException e )
-            {
-                throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
-                                              e.getMessage() );
-            }
+            target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
+                                          e.getMessage() );
+        }
 
-            if ( target == null )
+        if ( target == null )
+        {
+            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            logger.warn( error );
+
+            return new GroupPromoteResult( request, error );
+        }
+
+        ValidationResult validation = new ValidationResult();
+        logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
+                     request.getTargetGroup() );
+
+        validator.validate( request, validation, baseUrl );
+        if ( validation.isValid() )
+        {
+            if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
             {
-                String error = String.format( "No such target group: %s.", request.getTargetGroup() );
-                logger.warn( error );
-
-                return new GroupPromoteResult( request, error );
-            }
-
-            ValidationResult validation = new ValidationResult();
-            logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
-                         request.getTargetGroup() );
-
-            validator.validate( request, validation, baseUrl );
-            if ( validation.isValid() )
-            {
-                if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
+                synchronized ( getTargetKey( request.getTargetGroup() ) )
                 {
                     // give the preUpdate event a different object to compare vs. the original group.
                     target = target.copyOf();
-
                     target.addConstituent( request.getSource() );
                     try
                     {
@@ -198,14 +197,15 @@ public class PromotionManager
                     }
                     catch ( IndyDataException e )
                     {
-                        throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
-                                                      target.getKey(), request.getSource(), e.getMessage() );
+                        throw new PromotionException(
+                                "Failed to store group: %s with additional member: %s. Reason: %s", e, target.getKey(),
+                                request.getSource(), e.getMessage() );
                     }
                 }
             }
-
-            return new GroupPromoteResult( request, validation );
         }
+
+        return new GroupPromoteResult( request, validation );
     }
 
     /**
