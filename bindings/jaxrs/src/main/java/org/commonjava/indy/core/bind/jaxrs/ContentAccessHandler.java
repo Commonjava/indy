@@ -58,6 +58,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFr
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+import static org.commonjava.indy.util.ApplicationStatus.NOT_IMPLEMENTED;
 
 @ApplicationScoped
 public class ContentAccessHandler
@@ -361,6 +362,10 @@ public class ContentAccessHandler
         if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
                 LISTING_HTML_FILE ) )
         {
+            /*
+             * Remove content listing from the normal content handling logic. Next steps after this will involve
+             * creating a proper browsing REST API + javascript / UI support. 2018/3
+             *
             try
             {
                 logger.debug( "Getting listing at: {}", path );
@@ -374,7 +379,8 @@ public class ContentAccessHandler
                 logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
                 response = formatResponse( e, builderModifier );
-            }
+            }*/
+            response = formatResponse( NOT_IMPLEMENTED, null, "Content listing is not implemented", builderModifier );
         }
         else
         {
