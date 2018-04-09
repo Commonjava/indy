@@ -67,7 +67,7 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
      * This is different from GroupMembershipAddMayDisruptMetadataTest to cover another case where the group metadata
      * has been generated but GET request can still get null due to group membership change.
      */
-    static boolean prepareDone = false;
+    static volatile boolean prepareDone = false;
 
     public static boolean isPrepareDone()
     {
@@ -93,7 +93,8 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
             targetClass = "MemoryStoreDataManager",
             targetMethod = "storeArtifactStore",
             targetLocation = "EXIT",
-            action = "debug(\"storeArtifactStore waiting...\"); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
+            condition = "org.commonjava.indy.ftest.core.content.GroupMembershipDeletionMayDisruptMetadataTest.isPrepareDone()",
+            action = "debug(\"storeArtifactStore waiting...\"); waitFor(\"dummy\", 3000); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
     } )
     @Test
     @Category( BytemanTest.class )
@@ -123,12 +124,20 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
         assertThat( metadata, equalTo( null ) ); // return null due to the deletion of B
         assertThat( retCode, equalTo( "OK" ) );
 
+        waitForEventPropagation();
+        
         // get it again and return right metadata
         user1 = fixedPool.submit( groupMetaTask );
         metadata = user1.get();
         assertThat( metadata, equalTo( repoContent_A ) );
 
         fixedPool.shutdown(); // shut down
+    }
+
+    @Override
+    protected int getTestTimeoutMultiplier()
+    {
+        return 3;
     }
 
 }
