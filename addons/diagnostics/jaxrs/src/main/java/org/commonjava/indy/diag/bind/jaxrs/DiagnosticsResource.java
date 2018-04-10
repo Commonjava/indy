@@ -78,4 +78,31 @@ public class DiagnosticsResource
                     "Cannot retrieve log files, or failed to write logs + thread dump to bundle zip.", e );
         }
     }
+
+    @ApiOperation(
+                    "Retrieve a ZIP-compressed file containing all repository definitions." )
+    @ApiResponses( { @ApiResponse( code = 200, response = File.class, message = "ZIP bundle" ),
+                    @ApiResponse( code = 500, message = "Repository files could not be found / accessed" ) } )
+    @GET
+    @Path( "/repo" )
+    @Produces(application_zip)
+    public Response getRepoBundle()
+    {
+        try
+        {
+            File bundle = diagnosticsManager.getRepoBundle();
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.info( "Returning repo bundle: {}", bundle );
+
+            return Response.ok( bundle )
+                           .header( ApplicationHeader.content_disposition.key(),
+                                    "attachment; filename=indy-repo-bundle-" + System.currentTimeMillis() + ".zip" )
+                           .build();
+        }
+        catch ( IOException e )
+        {
+            throw new WebApplicationException(
+                            "Cannot retrieve repository files, or failed to write to bundle zip.", e );
+        }
+    }
 }

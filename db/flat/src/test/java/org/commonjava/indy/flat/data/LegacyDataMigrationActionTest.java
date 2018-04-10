@@ -28,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static org.commonjava.indy.flat.data.DataFileStoreDataManager.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
