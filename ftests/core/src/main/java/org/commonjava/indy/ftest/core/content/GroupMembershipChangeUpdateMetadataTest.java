@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -304,12 +305,17 @@ public class GroupMembershipChangeUpdateMetadataTest
         fixedPool.shutdown(); // shut down
     }
 
-    private void checkGroupMembership( StoreKey ... keys )
+    protected void checkGroupMembership( StoreKey ... keys )
                     throws Exception
+    {
+        List<StoreKey> members = getGroupMembers();
+        assertThat( members.containsAll( Arrays.asList( keys ) ), equalTo( true ) );
+    }
+
+    protected List<StoreKey> getGroupMembers() throws Exception
     {
         Group retrieved = client.stores().listGroups().getItems().stream()
                                 .filter( grp -> grp.getName().equals( g.getName() ) ).findFirst().get();
-        assertThat( retrieved.getConstituents().containsAll( Arrays.asList( keys ) ), equalTo( true ) );
+        return retrieved.getConstituents();
     }
-
 }
