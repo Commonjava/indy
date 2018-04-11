@@ -286,7 +286,7 @@ public class KojiRepairManager
                                                                  "Repair " + storeKey + " url with volume: " + buildInfo
                                                                                  .getVolumeName() );
                 repository.setUrl( newUrl );
-                //repository.setMetadata( METADATA_KOJI_BUILD_ID, Integer.toString( buildInfo.getId() ) );
+                repository.setMetadata( METADATA_KOJI_BUILD_ID, Integer.toString( buildInfo.getId() ) );
                 boolean fireEvents = false;
                 boolean skipIfExists = false;
                 try

@@ -68,8 +68,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN;
-import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN_BINARY;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
 

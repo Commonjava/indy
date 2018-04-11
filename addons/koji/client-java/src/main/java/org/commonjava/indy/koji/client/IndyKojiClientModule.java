@@ -23,7 +23,7 @@ import org.commonjava.indy.koji.model.KojiRepairResult;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 
-import static org.commonjava.indy.koji.IndyKojiConstants.REPAIR_KOJI_VOL;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.REPAIR_KOJI_VOL;
 
 public class IndyKojiClientModule
                 extends IndyClientModule

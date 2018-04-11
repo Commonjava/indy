@@ -37,7 +37,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 
 /**
  * This component will handle the content index for the Koji generated remote repo during its rescan. It will rebuild all relevant

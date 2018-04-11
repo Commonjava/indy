@@ -16,6 +16,9 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.commonjava.indy.ftest.core.category.BytemanTest;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
@@ -25,6 +28,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -125,7 +129,11 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
         assertThat( retCode, equalTo( "OK" ) );
 
         waitForEventPropagation();
-        
+
+        // check remoteB is deleted
+        List<StoreKey> l = getGroupMembers();
+        assertThat( l.size(), equalTo( 1 ) );
+
         // get it again and return right metadata
         user1 = fixedPool.submit( groupMetaTask );
         metadata = user1.get();

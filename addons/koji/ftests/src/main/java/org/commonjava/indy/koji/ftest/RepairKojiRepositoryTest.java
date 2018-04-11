@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
-import static org.commonjava.indy.koji.IndyKojiConstants.KOJI_ORIGIN_BINARY;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.notNullValue;
