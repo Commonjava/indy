@@ -502,18 +502,7 @@ public class MavenMetadataGenerator
 
     private ReentrantLock getMergerLock( Group group, String path )
     {
-        ReentrantLock lock;
-        synchronized ( mergerLocks )
-        {
-            String targetKey = group.getKey().toString() + "-" + path;
-            lock = mergerLocks.get( targetKey );
-            if ( lock == null )
-            {
-                lock = new ReentrantLock();
-                mergerLocks.put( targetKey, lock );
-            }
-        }
-        return lock;
+        return mergerLocks.computeIfAbsent( group.getKey().toString() + "-" + path, k-> new ReentrantLock(  ) );
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
@@ -612,16 +601,13 @@ public class MavenMetadataGenerator
 
     private void putToMetadataCache( StoreKey key, String toMergePath, Metadata meta )
     {
-        synchronized ( versionMetadataCache )
+        Map cacheMap = versionMetadataCache.get( key );
+        if ( cacheMap == null )
         {
-            Map cacheMap = versionMetadataCache.get( key );
-            if ( cacheMap == null )
-            {
-                cacheMap = new HashMap<>();
-                versionMetadataCache.put( key, cacheMap );
-            }
-            cacheMap.put( toMergePath, new MetadataInfo( meta ) );
+            cacheMap = new ConcurrentHashMap();
+            versionMetadataCache.put( key, cacheMap );
         }
+        cacheMap.put( toMergePath, new MetadataInfo( meta ) );
     }
 
     private Set<ArtifactStore> generateMissingMemberMetadata( Group group, Set<ArtifactStore> missing,
