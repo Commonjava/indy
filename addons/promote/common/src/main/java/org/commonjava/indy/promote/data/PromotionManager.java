@@ -505,91 +505,108 @@ public class PromotionManager
         boolean locked = false;
         try
         {
-            ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
-            ArtifactStore targetStore = storeManager.getArtifactStore( request.getTarget() );
-
-            if ( errors.isEmpty() )
+            if ( !storeManager.hasArtifactStore( request.getSource() ) )
             {
-                locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
-                if ( !locked )
-                {
-                    String error= String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
-                                                 config.getLockTimeoutSeconds() );
+                String msg = String.format(
+                        "Failed to retrieve source artifact store: %s. Seems it does not exist in indy store definitions",
+                        request.getSource() );
+                errors.add( msg );
+                logger.error( msg );
+            }
 
-                    errors.add( error );
-                    logger.warn( error );
-                }
+            if ( !storeManager.hasArtifactStore( request.getTarget() ) )
+            {
+                String msg = String.format(
+                        "Failed to retrieve target artifact store: %s. Seems it does not exist in indy store definitions",
+                        request.getSource() );
+                errors.add( msg );
+                logger.error( msg );
             }
 
             if ( errors.isEmpty() )
             {
-                logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
-                             targetStore, request.getTarget() );
+                ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
+                ArtifactStore targetStore = storeManager.getArtifactStore( request.getTarget() );
+                locked = lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+                if ( !locked )
+                {
+                    String error =
+                            String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
+                                           config.getLockTimeoutSeconds() );
 
-                final boolean purgeSource = request.isPurgeSource();
-                contents.forEach( (transfer)->{
-                    final String path = transfer.getPath();
+                    errors.add( error );
+                    logger.warn( error );
+                }
 
-                    if ( !transfer.exists() )
-                    {
-                        pending.remove( path );
-                        skipped.add( path );
-                    }
-                    else
-                    {
-                        try
+                if ( errors.isEmpty() )
+                {
+                    logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore,
+                                 request.getSource(), targetStore, request.getTarget() );
+
+                    final boolean purgeSource = request.isPurgeSource();
+                    contents.forEach( ( transfer ) -> {
+                        final String path = transfer.getPath();
+
+                        if ( !transfer.exists() )
                         {
-                            Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
-                            //                        synchronized ( target )
-                            //                        {
-                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target != null && target.exists() )
+                            pending.remove( path );
+                            skipped.add( path );
+                        }
+                        else
+                        {
+                            try
                             {
-                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                             request.getSource(), request.getTarget() );
-
-                                // TODO: There's no guarantee that the pre-existing content is the same!
-                                pending.remove( path );
-                                skipped.add( path );
-                            }
-                            else
-                            {
-                                try (InputStream stream = transfer.openInputStream( true ))
+                                Transfer target =
+                                        contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
+                                //                        synchronized ( target )
+                                //                        {
+                                // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                                if ( target != null && target.exists() )
                                 {
-                                    contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                          new EventMetadata() );
+                                    logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                                 request.getSource(), request.getTarget() );
 
+                                    // TODO: There's no guarantee that the pre-existing content is the same!
                                     pending.remove( path );
-                                    complete.add( path );
-
-                                    stream.close();
-
-                                    if ( purgeSource )
+                                    skipped.add( path );
+                                }
+                                else
+                                {
+                                    try (InputStream stream = transfer.openInputStream( true ))
                                     {
-                                        contentManager.delete( sourceStore, path, new EventMetadata() );
+                                        contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                              new EventMetadata() );
+
+                                        pending.remove( path );
+                                        complete.add( path );
+
+                                        stream.close();
+
+                                        if ( purgeSource )
+                                        {
+                                            contentManager.delete( sourceStore, path, new EventMetadata() );
+                                        }
+                                    }
+                                    catch ( final IOException e )
+                                    {
+                                        String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
+                                                                    transfer, e.getMessage() );
+                                        errors.add( msg );
+                                        logger.error( msg, e );
                                     }
                                 }
-                                catch ( final IOException e )
-                                {
-                                    String msg =
-                                            String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                           e.getMessage() );
-                                    errors.add( msg );
-                                    logger.error( msg, e );
-                                }
+                                clearStoreNFC( targetStore );
                             }
-                            clearStoreNFC( targetStore );
+                            catch ( final IndyWorkflowException | IndyDataException e )
+                            {
+                                String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
+                                                            targetStore, e.getMessage() );
+                                errors.add( msg );
+                                logger.error( msg, e );
+                            }
                         }
-                        catch ( final IndyWorkflowException | IndyDataException e )
-                        {
-                            String msg =
-                                    String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, targetStore,
-                                                   e.getMessage() );
-                            errors.add( msg );
-                            logger.error( msg, e );
-                        }
-                    }
-                } );
+                    } );
+                }
             }
 
         }
