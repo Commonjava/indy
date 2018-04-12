@@ -601,12 +601,7 @@ public class MavenMetadataGenerator
 
     private void putToMetadataCache( StoreKey key, String toMergePath, Metadata meta )
     {
-        Map cacheMap = versionMetadataCache.get( key );
-        if ( cacheMap == null )
-        {
-            cacheMap = new ConcurrentHashMap();
-            versionMetadataCache.put( key, cacheMap );
-        }
+        Map cacheMap = versionMetadataCache.computeIfAbsent( key, k -> new ConcurrentHashMap() );
         cacheMap.put( toMergePath, new MetadataInfo( meta ) );
     }
 
@@ -772,7 +767,7 @@ public class MavenMetadataGenerator
         Set<ArtifactStore> ret = Collections.synchronizedSet( new HashSet<>() ); // return stores failed download
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
-        List<String> errors = new ArrayList<>();
+        List<String> errors = Collections.synchronizedList( new ArrayList<>() );
 
         logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
         Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
@@ -809,10 +804,7 @@ public class MavenMetadataGenerator
                     String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
                                                  e.getMessage() );
                     logger.error( msg, e );
-                    synchronized ( errors )
-                    {
-                        errors.add( msg );
-                    }
+                    errors.add( msg );
                 }
                 finally
                 {

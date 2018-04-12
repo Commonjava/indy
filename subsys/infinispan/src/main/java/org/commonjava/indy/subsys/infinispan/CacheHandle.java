@@ -107,6 +107,11 @@ public class CacheHandle<K,V>
         return execute( ( c ) -> c.putIfAbsent( key, value ) );
     }
 
+    public V computeIfAbsent( K key, Function<? super K, ? extends V> mappingFunction )
+    {
+        return execute( c -> c.computeIfAbsent( key, mappingFunction ) );
+    }
+
     public V remove( K key )
     {
         return execute( cache -> cache.remove( key ) );
