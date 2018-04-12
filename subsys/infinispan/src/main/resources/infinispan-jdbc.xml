@@ -17,7 +17,7 @@
       <eviction strategy="LRU" size="200000" type="COUNT"/>
       <persistence>
         <jdbc:binary-keyed-jdbc-store fetch-state="false" read-only="false" purge="false">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:connection-pool connection-url="${cache.dburl}" username="${cache.dbuser}" password="${cache.dbpass}" driver="org.postgresql.Driver"/>
           <jdbc:binary-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="BYTEA" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -47,7 +47,7 @@
       <eviction strategy="LRU" size="200000" type="COUNT"/>
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:connection-pool connection-url="${cache.dburl}" username="${cache.dbuser}" password="${cache.dbpass}" driver="org.postgresql.Driver"/>
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -61,7 +61,7 @@
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost/indy" username="indy" password="indy" driver="org.postgresql.Driver"/>
+          <jdbc:connection-pool connection-url="${cache.dburl}" username="${cache.dbuser}" password="${cache.dbpass}" driver="org.postgresql.Driver"/>
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
