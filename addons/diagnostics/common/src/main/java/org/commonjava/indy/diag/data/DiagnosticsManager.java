@@ -19,13 +19,15 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.subsys.datafile.DataFile;
+import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,14 +38,13 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
 
 /**
  * Created by jdcasey on 1/11/17.
@@ -53,11 +54,18 @@ import static org.apache.commons.lang.StringUtils.join;
 @ApplicationScoped
 public class DiagnosticsManager
 {
+    org.slf4j.Logger logger = LoggerFactory.getLogger( getClass() );
+
     private static final String FILE_LOGGER = "FILE";
 
     public static final String THREAD_DUMP_FILE = "thread-dump.txt";
 
     public static final String LOGS_DIR = "logs";
+
+    public static final String REPOS_DIR = "repos";
+
+    @Inject
+    private DataFileManager dataFileManager;
 
     public String getThreadDumpString()
     {
@@ -97,11 +105,7 @@ public class DiagnosticsManager
     public File getDiagnosticBundle()
             throws IOException
     {
-        File out = File.createTempFile(
-                "indy-diags." + new SimpleDateFormat( "yyyy-MM-dd-hh-mm-ss.SSSZ" ).format( new Date() ),  ".zip" );
-
-        org.slf4j.Logger logger = LoggerFactory.getLogger( getClass() );
-
+        File out = createTempFile( "diags" );
         Logger rootLogger = (Logger) LoggerFactory.getLogger( "ROOT" );
 
         logger.info( "Writing diagnostic bundle to: '{}'", out );
@@ -138,5 +142,56 @@ public class DiagnosticsManager
         }
 
         return out;
+    }
+
+    public File getRepoBundle() throws IOException
+    {
+        File out = createTempFile( "repos" );
+        logger.info( "Writing repo bundle to: '{}'", out );
+
+        try (ZipOutputStream zip = new ZipOutputStream( new FileOutputStream( out ) ))
+        {
+            zipRepositoryFiles( zip );
+        }
+        return out;
+    }
+
+    /**
+     * TODO: dump the repo definitions as they exist in the StoreDataManager instead.
+     * Currently, those are the same thing, but when we move to a cluster-enabled Indy implementation we're
+     * going to need to escape the filesystem for things like repo definition storage, and use an ISPN cache
+     * or similar instead.
+     */
+    private void zipRepositoryFiles( ZipOutputStream zip ) throws IOException
+    {
+        DataFile[] packageDirs = dataFileManager.getDataFile( INDY_STORE ).listFiles( ( f ) -> true );
+        for ( DataFile pkgDir : packageDirs )
+        {
+            String pkgDirName = REPOS_DIR + "/" + pkgDir.getName();
+            for ( StoreType type : StoreType.values() )
+            {
+                String typeDirName = pkgDirName + "/" + type.singularEndpointName();
+                DataFile[] files = pkgDir.getChild( type.singularEndpointName() ).listFiles( f -> true );
+                if ( files != null )
+                {
+                    for ( DataFile f : files )
+                    {
+                        final String json = f.readString();
+                        String name = typeDirName + "/" + f.getName();
+                        logger.debug( "Adding {} to repo zip", name );
+                        zip.putNextEntry( new ZipEntry( name ) );
+                        IOUtils.copy( toInputStream( json ), zip );
+                    }
+                }
+            }
+        }
+    }
+
+    private File createTempFile( String name ) throws IOException
+    {
+        return File.createTempFile(
+                        "indy-" + name + "." + new SimpleDateFormat( "yyyy-MM-dd-hh-mm-ss.SSSZ" ).format( new Date() ),
+                        ".zip" );
+
     }
 }

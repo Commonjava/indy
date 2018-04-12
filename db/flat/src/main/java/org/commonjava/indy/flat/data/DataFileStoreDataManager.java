@@ -30,7 +30,6 @@ import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -41,6 +40,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @ApplicationScoped
@@ -48,7 +48,6 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 public class DataFileStoreDataManager
     extends MemoryStoreDataManager
 {
-    public static final String INDY_STORE = "indy";
 
     public static final String LOAD_FROM_DISK = "load-from-disk";
 
@@ -244,8 +243,7 @@ public class DataFileStoreDataManager
 
     public DataFile getDataFile( final StoreKey key )
     {
-        return manager.getDataFile( INDY_STORE, key.getType()
-                                                    .singularEndpointName(), key.getName() + ".json" );
+        return manager.getDataFile( INDY_STORE, key.getType().singularEndpointName(), key.getName() + ".json" );
     }
 
     public DataFileManager getFileManager()

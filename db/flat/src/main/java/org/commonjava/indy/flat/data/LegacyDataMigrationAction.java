@@ -15,21 +15,15 @@
  */
 package org.commonjava.indy.flat.data;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.MigrationAction;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.PackageTypes;
-import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
-import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,13 +33,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.flat.data.DataFileStoreDataManager.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Named( "legacy-storedb-migration" )

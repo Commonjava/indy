@@ -36,6 +36,10 @@
       <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-flat</artifactId>
+    </dependency>
+    <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
     </dependency>
