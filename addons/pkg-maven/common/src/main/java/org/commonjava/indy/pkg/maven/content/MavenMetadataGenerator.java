@@ -78,7 +78,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -209,7 +208,7 @@ public class MavenMetadataGenerator
             return null;
         }
 
-        boolean generated = false;
+        boolean generated;
 
         // TODO: Generation of plugin metadata files (groupId-level) is harder, and requires cracking open the jar file
         // This is because that's the only place the plugin prefix can be reliably retrieved from.
@@ -340,7 +339,7 @@ public class MavenMetadataGenerator
             // We won't worry about this for now.
             if ( samplePomInfo != null )
             {
-                final List<StoreResource> result = new ArrayList<StoreResource>();
+                final List<StoreResource> result = new ArrayList<>();
                 result.add( mdResource );
                 result.add( new StoreResource( LocationUtils.toLocation( store ),
                                                Paths.get( path, MavenMetadataMerger.METADATA_MD5_NAME )
@@ -592,7 +591,7 @@ public class MavenMetadataGenerator
         missing = downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
 
         // Try to generate missed meta
-        missing = generateMissingMemberMetadata( group, missing, memberMetas, toMergePath );
+        generateMissingMemberMetadata( group, missing, memberMetas, toMergePath );
 
         List<Metadata> metas = members.stream()
                                       .map( mem -> memberMetas.get(mem.getKey()) )
@@ -742,7 +741,7 @@ public class MavenMetadataGenerator
 
         for ( ArtifactStore store : members )
         {
-            Metadata memberMeta = null;
+            Metadata memberMeta;
             if ( store.getKey().getType() == StoreType.group )
             {
                 try
@@ -897,7 +896,7 @@ public class MavenMetadataGenerator
                                                               final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        return generateDirectoryContent( group, path, Collections.<StoreResource> emptyList(), eventMetadata );
+        return generateDirectoryContent( group, path, Collections.emptyList(), eventMetadata );
     }
 
     @Override
@@ -916,7 +915,7 @@ public class MavenMetadataGenerator
 
         // first level will contain version directories...for each directory, we need to verify the presence of a .pom file before including
         // as a valid version
-        final List<SingleVersion> versions = new ArrayList<SingleVersion>();
+        final List<SingleVersion> versions = new ArrayList<>();
         nextTopResource: for ( final StoreResource topResource : firstLevelFiles )
         {
             final String topPath = topResource.getPath();
@@ -962,16 +961,16 @@ public class MavenMetadataGenerator
             final Document doc = xml.newDocumentBuilder()
                                     .newDocument();
 
-            final Map<String, String> coordMap = new HashMap<String, String>();
-            coordMap.put( ARTIFACT_ID, samplePomInfo.getArtifactId() );
-            coordMap.put( GROUP_ID, samplePomInfo.getGroupId() );
+            final Map<String, String> coordMap = new HashMap<>();
+            coordMap.put( ARTIFACT_ID, samplePomInfo == null ? null : samplePomInfo.getArtifactId() );
+            coordMap.put( GROUP_ID, samplePomInfo == null ? null : samplePomInfo.getGroupId() );
 
             final String lastUpdated = SnapshotUtils.generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
 
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
 
-            final Map<String, String> versioningMap = new HashMap<String, String>();
+            final Map<String, String> versioningMap = new HashMap<>();
             versioningMap.put( LAST_UPDATED, lastUpdated );
 
             final SingleVersion latest = versions.get( versions.size() - 1 );
@@ -995,7 +994,7 @@ public class MavenMetadataGenerator
 
             xml.createElement( doc, "versioning", versioningMap );
             final Element versionsElem =
-                xml.createElement( doc, "versioning/versions", Collections.<String, String> emptyMap() );
+                xml.createElement( doc, "versioning/versions", Collections.emptyMap() );
 
             for ( final SingleVersion version : versions )
             {
@@ -1034,20 +1033,14 @@ public class MavenMetadataGenerator
         throws IndyWorkflowException
     {
         // first level will contain files that have the timestamp-buildnumber version suffix...for each, we need to parse this info.
-        final Map<SnapshotPart, Set<ArtifactPathInfo>> infosBySnap = new HashMap<SnapshotPart, Set<ArtifactPathInfo>>();
+        final Map<SnapshotPart, Set<ArtifactPathInfo>> infosBySnap = new HashMap<>();
         for ( final StoreResource resource : files )
         {
             final ArtifactPathInfo resInfo = ArtifactPathInfo.parse( resource.getPath() );
             if ( resInfo != null )
             {
                 final SnapshotPart snap = resInfo.getSnapshotInfo();
-                Set<ArtifactPathInfo> infos = infosBySnap.get( snap );
-                if ( infos == null )
-                {
-                    infos = new HashSet<ArtifactPathInfo>();
-                    infosBySnap.put( snap, infos );
-                }
-
+                Set<ArtifactPathInfo> infos = infosBySnap.computeIfAbsent( snap, k -> new HashSet<>() );
                 infos.add( resInfo );
             }
         }
@@ -1057,7 +1050,7 @@ public class MavenMetadataGenerator
             return false;
         }
 
-        final List<SnapshotPart> snaps = new ArrayList<SnapshotPart>( infosBySnap.keySet() );
+        final List<SnapshotPart> snaps = new ArrayList<>( infosBySnap.keySet() );
         Collections.sort( snaps );
 
         final Transfer metadataFile = fileManager.getTransfer( store, path );
@@ -1067,7 +1060,7 @@ public class MavenMetadataGenerator
             final Document doc = xml.newDocumentBuilder()
                                     .newDocument();
 
-            final Map<String, String> coordMap = new HashMap<String, String>();
+            final Map<String, String> coordMap = new HashMap<>();
             coordMap.put( ARTIFACT_ID, info.getArtifactId() );
             coordMap.put( GROUP_ID, info.getGroupId() );
             coordMap.put( VERSION, info.getVersion() );
@@ -1077,10 +1070,10 @@ public class MavenMetadataGenerator
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
 
-            xml.createElement( doc, "versioning", Collections.<String, String> singletonMap( LAST_UPDATED, lastUpdated ) );
+            xml.createElement( doc, "versioning", Collections.singletonMap( LAST_UPDATED, lastUpdated ) );
 
             SnapshotPart snap = snaps.get( snaps.size() - 1 );
-            Map<String, String> snapMap = new HashMap<String, String>();
+            Map<String, String> snapMap = new HashMap<>();
             if ( snap.isLocalSnapshot() )
             {
                 snapMap.put( LOCAL_COPY, Boolean.TRUE.toString() );
@@ -1094,18 +1087,18 @@ public class MavenMetadataGenerator
 
             xml.createElement( doc, "versioning/snapshot", snapMap );
 
-            for ( int i = 0; i < snaps.size(); i++ )
+            for ( SnapshotPart snap1 : snaps )
             {
-                snap = snaps.get( i );
+                snap = snap1;
 
                 // the last one is the most recent.
                 final Set<ArtifactPathInfo> infos = infosBySnap.get( snap );
                 for ( final ArtifactPathInfo pathInfo : infos )
                 {
-                    snapMap = new HashMap<String, String>();
+                    snapMap = new HashMap<>();
 
-                    final TypeAndClassifier
-                            tc = new SimpleTypeAndClassifier( pathInfo.getType(), pathInfo.getClassifier() );
+                    final TypeAndClassifier tc =
+                            new SimpleTypeAndClassifier( pathInfo.getType(), pathInfo.getClassifier() );
 
                     final TypeMapping mapping = typeMapper.lookup( tc );
 

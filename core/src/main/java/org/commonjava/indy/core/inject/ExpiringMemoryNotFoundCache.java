@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -56,7 +57,7 @@ public class ExpiringMemoryNotFoundCache
     protected IndyConfiguration config;
 
     // TODO: Now using a simple hashmap, need to take attention here to see if need ISPN instead if it is a mem eater.
-    protected final Map<ConcreteResource, Long> missingWithTimeout = new HashMap<>();
+    protected final Map<ConcreteResource, Long> missingWithTimeout = new ConcurrentHashMap<>();
 
     private final ScheduledExecutorService evictionService = Executors.newScheduledThreadPool( 1 );
 
@@ -111,10 +112,7 @@ public class ExpiringMemoryNotFoundCache
             }
         } );
 
-        synchronized ( missingWithTimeout )
-        {
-            missingWithTimeout.put( resource, timeout );
-        }
+        missingWithTimeout.put( resource, timeout );
     }
 
     @Override
@@ -140,29 +138,20 @@ public class ExpiringMemoryNotFoundCache
 
         if ( !paths.isEmpty() )
         {
-            synchronized ( missingWithTimeout )
-            {
-                paths.stream().forEach( r->missingWithTimeout.remove(r) );
-            }
+            paths.forEach( r -> missingWithTimeout.remove( r ) );
         }
     }
 
     @Override
     public void clearMissing( final ConcreteResource resource )
     {
-        synchronized ( missingWithTimeout )
-        {
-            missingWithTimeout.remove( resource );
-        }
+        missingWithTimeout.remove( resource );
     }
 
     @Override
     public void clearAllMissing()
     {
-        synchronized ( missingWithTimeout )
-        {
-            this.missingWithTimeout.clear();
-        }
+        this.missingWithTimeout.clear();
     }
 
     @Override
@@ -172,7 +161,7 @@ public class ExpiringMemoryNotFoundCache
         Set<ConcreteResource> paths = keys();
 
         final Map<Location, Set<String>> result = new HashMap<>();
-        paths.stream().forEach( resource->{
+        paths.forEach( resource->{
             final Location loc = resource.getLocation();
             Set<String> locationPaths = result.computeIfAbsent( loc, k -> new HashSet<>() );
 
@@ -195,10 +184,7 @@ public class ExpiringMemoryNotFoundCache
     private Set<ConcreteResource> keys()
     {
         Set<ConcreteResource> paths;
-        synchronized ( missingWithTimeout )
-        {
-            paths = new HashSet<>(missingWithTimeout.keySet());
-        }
+        paths = new HashSet<>(missingWithTimeout.keySet());
 
         return paths;
     }
@@ -221,10 +207,7 @@ public class ExpiringMemoryNotFoundCache
 
             if ( !paths.isEmpty() )
             {
-                synchronized ( missingWithTimeout )
-                {
-                    paths.stream().forEach( r->missingWithTimeout.remove(r) );
-                }
+                paths.forEach( r -> missingWithTimeout.remove( r ) );
             }
         }
         catch ( Throwable error )

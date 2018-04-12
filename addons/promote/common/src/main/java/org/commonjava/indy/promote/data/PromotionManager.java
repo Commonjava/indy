@@ -57,11 +57,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -102,7 +102,9 @@ public class PromotionManager
 
     private Map<StoreKey, ReentrantLock> byPathTargetLocks = newSynchronizedContextSensitiveWeakHashMap();
 
-    private Map<String, StoreKey> targetGroupKeyMap = new HashMap<>( 1 );
+    private Map<StoreKey, ReentrantLock> byGroupTargetLocks = newSynchronizedContextSensitiveWeakHashMap();
+
+    private Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
 
     @Inject
     private NotFoundCache nfc;
@@ -145,72 +147,99 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        synchronized ( getTargetKey( request.getTargetGroup() ) )
+        Group target;
+        try
         {
-            Group target;
-            try
-            {
-                target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
-            }
-            catch ( IndyDataException e )
-            {
-                throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
-                                              e.getMessage() );
-            }
+            target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
+                                          e.getMessage() );
+        }
 
-            if ( target == null )
+        if ( target == null )
+        {
+            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            logger.warn( error );
+
+            return new GroupPromoteResult( request, error );
+        }
+
+        ValidationResult validation = new ValidationResult();
+        logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
+                     request.getTargetGroup() );
+        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
+        final ReentrantLock lock = byGroupTargetLocks.computeIfAbsent( targetKey, k -> new ReentrantLock() );
+        Boolean locked = false;
+        try
+        {
+            locked = lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+            if ( locked )
             {
-                String error = String.format( "No such target group: %s.", request.getTargetGroup() );
-                logger.warn( error );
-
-                return new GroupPromoteResult( request, error );
-            }
-
-            ValidationResult validation = new ValidationResult();
-            logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
-                         request.getTargetGroup() );
-
-            validator.validate( request, validation, baseUrl );
-            if ( validation.isValid() )
-            {
-                if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
+                validator.validate( request, validation, baseUrl );
+                if ( validation.isValid() )
                 {
-                    // give the preUpdate event a different object to compare vs. the original group.
-                    target = target.copyOf();
-
-                    target.addConstituent( request.getSource() );
-                    try
+                    if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
                     {
-                        final ChangeSummary changeSummary = new ChangeSummary( user, "Promoting " + request.getSource()
-                                + " into membership of group: " + target.getKey() );
-
-                        storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
-                        clearStoreNFC( target );
-
-                        if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
+                        // give the preUpdate event a different object to compare vs. the original group.
+                        target = target.copyOf();
+                        target.addConstituent( request.getSource() );
+                        try
                         {
-                            HostedRepository source =
-                                    (HostedRepository) storeManager.getArtifactStore( request.getSource() );
+                            final ChangeSummary changeSummary = new ChangeSummary( user,
+                                                                                   "Promoting " + request.getSource()
+                                                                                           + " into membership of group: "
+                                                                                           + target.getKey() );
 
-                            final ChangeSummary readOnlySummary = new ChangeSummary( user,
-                                                                                     "Promoting " + request.getSource()
-                                                                                             + " into membership of group: "
-                                                                                             + target.getKey() );
+                            storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
+                            clearStoreNFC( target );
 
-                            storeManager.storeArtifactStore( source, readOnlySummary, false, true,
-                                                             new EventMetadata() );
+                            if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
+                            {
+                                HostedRepository source =
+                                        (HostedRepository) storeManager.getArtifactStore( request.getSource() );
+
+                                source.setReadonly( true );
+
+                                final ChangeSummary readOnlySummary = new ChangeSummary( user, "Promoting "
+                                        + request.getSource() + " into membership of group: " + target.getKey() );
+
+                                storeManager.storeArtifactStore( source, readOnlySummary, false, true,
+                                                                 new EventMetadata() );
+                            }
                         }
-                    }
-                    catch ( IndyDataException e )
-                    {
-                        throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
-                                                      target.getKey(), request.getSource(), e.getMessage() );
+                        catch ( IndyDataException e )
+                        {
+                            throw new PromotionException(
+                                    "Failed to store group: %s with additional member: %s. Reason: %s", e,
+                                    target.getKey(), request.getSource(), e.getMessage() );
+                        }
                     }
                 }
             }
-
-            return new GroupPromoteResult( request, validation );
+            else
+            {
+                //FIXME: should we consider to repeat the promote process several times when lock failed?
+                String error = String.format(
+                        "Failed to acquire group promotion lock on target when promote: %s in %d seconds.", targetKey,
+                        config.getLockTimeoutSeconds() );
+                logger.error( error );
+            }
         }
+        catch ( InterruptedException e )
+        {
+            logger.warn( "Interrupted waiting for promotion lock on target: {}", targetKey );
+        }
+        finally
+        {
+            if ( locked )
+            {
+                lock.unlock();
+            }
+        }
+
+        return new GroupPromoteResult( request, validation );
     }
 
     /**
@@ -220,13 +249,11 @@ public class PromotionManager
      * @param targetName the target group name
      * @return the group store key
      */
-    private synchronized StoreKey getTargetKey( final String targetName )
+    private StoreKey getTargetKey( final String targetName )
     {
-        if ( !targetGroupKeyMap.containsKey( targetName ) )
-        {
-            targetGroupKeyMap.put( targetName, new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, targetName ) );
-        }
-        return targetGroupKeyMap.get( targetName );
+        return targetGroupKeyMap.computeIfAbsent( targetName,
+                                                  k -> new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY,
+                                                                     StoreType.group, targetName ) );
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )
@@ -505,91 +532,108 @@ public class PromotionManager
         boolean locked = false;
         try
         {
-            ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
-            ArtifactStore targetStore = storeManager.getArtifactStore( request.getTarget() );
-
-            if ( errors.isEmpty() )
+            if ( !storeManager.hasArtifactStore( request.getSource() ) )
             {
-                locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
-                if ( !locked )
-                {
-                    String error= String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
-                                                 config.getLockTimeoutSeconds() );
+                String msg = String.format(
+                        "Failed to retrieve source artifact store: %s. Seems it does not exist in indy store definitions",
+                        request.getSource() );
+                errors.add( msg );
+                logger.error( msg );
+            }
 
-                    errors.add( error );
-                    logger.warn( error );
-                }
+            if ( !storeManager.hasArtifactStore( request.getTarget() ) )
+            {
+                String msg = String.format(
+                        "Failed to retrieve target artifact store: %s. Seems it does not exist in indy store definitions",
+                        request.getSource() );
+                errors.add( msg );
+                logger.error( msg );
             }
 
             if ( errors.isEmpty() )
             {
-                logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore, request.getSource(),
-                             targetStore, request.getTarget() );
+                ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
+                ArtifactStore targetStore = storeManager.getArtifactStore( request.getTarget() );
+                locked = lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
+                if ( !locked )
+                {
+                    String error =
+                            String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
+                                           config.getLockTimeoutSeconds() );
 
-                final boolean purgeSource = request.isPurgeSource();
-                contents.forEach( (transfer)->{
-                    final String path = transfer.getPath();
+                    errors.add( error );
+                    logger.warn( error );
+                }
 
-                    if ( !transfer.exists() )
-                    {
-                        pending.remove( path );
-                        skipped.add( path );
-                    }
-                    else
-                    {
-                        try
+                if ( errors.isEmpty() )
+                {
+                    logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore,
+                                 request.getSource(), targetStore, request.getTarget() );
+
+                    final boolean purgeSource = request.isPurgeSource();
+                    contents.forEach( ( transfer ) -> {
+                        final String path = transfer.getPath();
+
+                        if ( !transfer.exists() )
                         {
-                            Transfer target = contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
-                            //                        synchronized ( target )
-                            //                        {
-                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target != null && target.exists() )
+                            pending.remove( path );
+                            skipped.add( path );
+                        }
+                        else
+                        {
+                            try
                             {
-                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                             request.getSource(), request.getTarget() );
-
-                                // TODO: There's no guarantee that the pre-existing content is the same!
-                                pending.remove( path );
-                                skipped.add( path );
-                            }
-                            else
-                            {
-                                try (InputStream stream = transfer.openInputStream( true ))
+                                Transfer target =
+                                        contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
+                                //                        synchronized ( target )
+                                //                        {
+                                // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                                if ( target != null && target.exists() )
                                 {
-                                    contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                          new EventMetadata() );
+                                    logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                                 request.getSource(), request.getTarget() );
 
+                                    // TODO: There's no guarantee that the pre-existing content is the same!
                                     pending.remove( path );
-                                    complete.add( path );
-
-                                    stream.close();
-
-                                    if ( purgeSource )
+                                    skipped.add( path );
+                                }
+                                else
+                                {
+                                    try (InputStream stream = transfer.openInputStream( true ))
                                     {
-                                        contentManager.delete( sourceStore, path, new EventMetadata() );
+                                        contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
+                                                              new EventMetadata() );
+
+                                        pending.remove( path );
+                                        complete.add( path );
+
+                                        stream.close();
+
+                                        if ( purgeSource )
+                                        {
+                                            contentManager.delete( sourceStore, path, new EventMetadata() );
+                                        }
+                                    }
+                                    catch ( final IOException e )
+                                    {
+                                        String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
+                                                                    transfer, e.getMessage() );
+                                        errors.add( msg );
+                                        logger.error( msg, e );
                                     }
                                 }
-                                catch ( final IOException e )
-                                {
-                                    String msg =
-                                            String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
-                                                           e.getMessage() );
-                                    errors.add( msg );
-                                    logger.error( msg, e );
-                                }
+                                clearStoreNFC( targetStore );
                             }
-                            clearStoreNFC( targetStore );
+                            catch ( final IndyWorkflowException | IndyDataException e )
+                            {
+                                String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
+                                                            targetStore, e.getMessage() );
+                                errors.add( msg );
+                                logger.error( msg, e );
+                            }
                         }
-                        catch ( final IndyWorkflowException | IndyDataException e )
-                        {
-                            String msg =
-                                    String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, targetStore,
-                                                   e.getMessage() );
-                            errors.add( msg );
-                            logger.error( msg, e );
-                        }
-                    }
-                } );
+                    } );
+                }
             }
 
         }
