@@ -79,6 +79,7 @@ public class AutoCreateRepoAndRetrievePomTest
 
         assertThat( remoteRepo, notNullValue() );
         assertThat( remoteRepo.getUrl(), equalTo( server.getBaseUri() ) );
+        assertThat( remoteRepo.isPassthrough(), equalTo( true ) );
 
         String pomUrl = this.client.content().contentUrl( remoteRepo.getKey(), testRepo, pom.path ) + "?cache-only=true";
         HttpHead head = new HttpHead( pomUrl );
