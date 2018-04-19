@@ -98,7 +98,7 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
             targetMethod = "storeArtifactStore",
             targetLocation = "EXIT",
             condition = "org.commonjava.indy.ftest.core.content.GroupMembershipDeletionMayDisruptMetadataTest.isPrepareDone()",
-            action = "debug(\"storeArtifactStore waiting...\"); waitFor(\"dummy\", 3000); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
+            action = "debug(\"storeArtifactStore waiting...\"); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
     } )
     @Test
     @Category( BytemanTest.class )
@@ -119,6 +119,8 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
         // request for path_P again, this time rendezvous come in
         user1 = fixedPool.submit( groupMetaTask );
 
+        waitForEventPropagation();
+
         Callable<String> deleteTask = new GroupDeleteCallable( remoteRepositoryB.getKey() );
         Future<String> user2 = fixedPool.submit( deleteTask );
 
@@ -127,8 +129,6 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
 
         assertThat( metadata, equalTo( null ) ); // return null due to the deletion of B
         assertThat( retCode, equalTo( "OK" ) );
-
-        waitForEventPropagation();
 
         // check remoteB is deleted
         List<StoreKey> l = getGroupMembers();
