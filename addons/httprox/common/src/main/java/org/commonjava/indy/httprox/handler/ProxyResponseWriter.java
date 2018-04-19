@@ -36,10 +36,10 @@ import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.AccessChannel;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
@@ -59,6 +59,9 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
@@ -159,12 +162,18 @@ public final class ProxyResponseWriter
         {
             try
             {
-                final UserPass proxyUserPass =
-                                UserPass.parse( ApplicationHeader.authorization, httpRequest, null );
+                if ( repoCreator == null )
+                {
+                    throw new IndyDataException( "No valid instance of ProxyRepositoryCreator" );
+                }
 
-                logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass, config.isSecured(), config.getTrackingType() );
+                final UserPass proxyUserPass =
+                                UserPass.parse( ApplicationHeader.proxy_authorization, httpRequest, null );
+
+                logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass,
+                              config.isSecured(), config.getTrackingType() );
                 if ( proxyUserPass == null && ( config.isSecured()
-                        || TrackingType.ALWAYS == config.getTrackingType() ) )
+                                || TrackingType.ALWAYS == config.getTrackingType() ) )
                 {
 
                     http.writeStatus( ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED );
@@ -193,11 +202,6 @@ public final class ProxyResponseWriter
                         }
                     }
 
-                    if ( repoCreator == null )
-                    {
-                        throw new IndyDataException( "No valid instance of ProxyRepositoryCreator" );
-                    }
-
                     if ( authenticated )
                     {
                         final URL url = new URL( requestLine.getUri() );
@@ -207,8 +211,8 @@ public final class ProxyResponseWriter
                             case GET_METHOD:
                             case HEAD_METHOD:
                             {
-                                RemoteRepository repo = getRemoteRepository( trackingId, url );
-                                transfer( http, repo, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
+                                ArtifactStore store = getArtifactStore( trackingId, url );
+                                transfer( http, store, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
                                 break;
                             }
                             case OPTIONS_METHOD:
@@ -277,7 +281,7 @@ public final class ProxyResponseWriter
         }
     }
 
-    private void transfer( final HttpConduitWrapper http, final RemoteRepository repo, final String path,
+    private void transfer( final HttpConduitWrapper http, final ArtifactStore store, final String path,
                            final boolean writeBody, final UserPass proxyUserPass )
                     throws IOException, IndyWorkflowException
     {
@@ -292,12 +296,12 @@ public final class ProxyResponseWriter
             throw new IOException( "Sink channel already closed (or null)!" );
         }
 
-        final EventMetadata eventMetadata = createEventMetadata( writeBody, proxyUserPass, path, repo );
+        final EventMetadata eventMetadata = createEventMetadata( writeBody, proxyUserPass, path, store );
 
         Transfer txfr = null;
         try
         {
-            txfr = contentController.get( repo.getKey(), path, eventMetadata );
+            txfr = contentController.get( store.getKey(), path, eventMetadata );
         }
         catch ( final IndyWorkflowException e )
         {
@@ -316,12 +320,12 @@ public final class ProxyResponseWriter
         }
         else
         {
-            http.writeNotFoundTransfer( repo, path );
+            http.writeNotFoundTransfer( store, path );
         }
     }
 
     private EventMetadata createEventMetadata( final boolean writeBody, final UserPass proxyUserPass, final String path,
-                                               final RemoteRepository repo )
+                                               final ArtifactStore store )
                     throws IndyWorkflowException
     {
         final EventMetadata eventMetadata = new EventMetadata();
@@ -331,19 +335,19 @@ public final class ProxyResponseWriter
 
             if ( tk != null )
             {
-                logger.debug( "TRACKING {} in {} (KEY: {})", path, repo, tk );
+                logger.debug( "TRACKING {} in {} (KEY: {})", path, store, tk );
                 eventMetadata.set( FoloConstants.TRACKING_KEY, tk );
 
                 eventMetadata.set( FoloConstants.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
             }
             else
             {
-                logger.debug( "NOT TRACKING: {} in {}", path, repo );
+                logger.debug( "NOT TRACKING: {} in {}", path, store );
             }
         }
         else
         {
-            logger.debug( "NOT TRACKING non-body request: {} in {}", path, repo );
+            logger.debug( "NOT TRACKING non-body request: {} in {}", path, store );
         }
 
         eventMetadata.setPackageType( PKG_TYPE_GENERIC_HTTP );
@@ -374,8 +378,7 @@ public final class ProxyResponseWriter
                 {
                     final String user = proxyUserPass.getUser();
 
-                    // TODO: Will this always be non-null here? Can we have an unsecured proxy?
-                    if ( user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
+                    if ( user != null && user.endsWith( TRACKED_USER_SUFFIX ) && user.length() > TRACKED_USER_SUFFIX.length() )
                     {
                         tk = new TrackingKey( StringUtils.substring( user, 0, - TRACKED_USER_SUFFIX.length() ) );
                     }
@@ -390,11 +393,9 @@ public final class ProxyResponseWriter
         return tk;
     }
 
-    private RemoteRepository getRemoteRepository( String trackingId, final URL url )
+    private ArtifactStore getArtifactStore( String trackingId, final URL url )
                     throws IndyDataException
     {
-        RemoteRepository remote;
-
         int port = getPort( url );
 
         if ( trackingId != null )
@@ -405,29 +406,25 @@ public final class ProxyResponseWriter
                             storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( Group.class );
 
             Group group = query.getGroup( groupName );
+
             if ( group == null )
             {
                 logger.debug( "Creating repositories (group, hosted, remote) for HTTProx request: {}, trackingId: {}",
                               url, trackingId );
                 ProxyCreationResult result = createRepo( trackingId, url, null );
-                remote = result.getRemote();
+                group = result.getGroup();
             }
-            else
-            {
-                String remoteName = repoCreator.formatId( url.getHost(), port, 0, trackingId, StoreType.remote );
-                StoreKey storeKey = new StoreKey( GENERIC_PKG_KEY, StoreType.remote, remoteName );
-                remote = (RemoteRepository) storeManager.getArtifactStore( storeKey );
-            }
+            return group;
         }
         else
         {
+            RemoteRepository remote;
             final String baseUrl = getBaseUrl( url );
 
             ArtifactStoreQuery<RemoteRepository> query =
                             storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
 
-            remote = query.getAll()
-                          .stream()
+            remote = query.stream()
                           .filter( store -> store.getUrl().equals( baseUrl )
                                           && store.getMetadata( TRACKING_ID ) == null )
                           .findFirst()
@@ -436,12 +433,13 @@ public final class ProxyResponseWriter
             if ( remote == null )
             {
                 logger.debug( "Creating remote repository for HTTProx request: {}", url );
-                String name = getDistinctRemoteName( url );
+                String name = getRemoteRepositoryName( url );
                 ProxyCreationResult result = createRepo( trackingId, url, name );
                 remote = result.getRemote();
             }
+            return remote;
         }
-        return remote;
+
     }
 
     /**
@@ -490,26 +488,36 @@ public final class ProxyResponseWriter
     /**
      * if repo with this name already exists, we need to use a different name
      */
-    private String getDistinctRemoteName( URL url ) throws IndyDataException
+    private String getRemoteRepositoryName( URL url ) throws IndyDataException
     {
-        ArtifactStoreQuery<RemoteRepository> query =
-                        storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
+        final String name = repoCreator.formatId( url.getHost(), getPort( url ), 0, null, StoreType.remote );
 
-        int port = getPort( url );
-        String host = url.getHost();
+        logger.debug( "Looking for remote repo starts with name: {}", name );
 
-        String name = repoCreator.formatId( host, port, 0, null, StoreType.remote );
-
-        logger.debug( "Looking for remote repo with name: {}", name );
-        RemoteRepository remote = query.getByName( name );
-        int i = 1;
-        while ( remote != null )
+        AbstractProxyRepositoryCreator abstractProxyRepositoryCreator = null;
+        if ( repoCreator instanceof AbstractProxyRepositoryCreator )
         {
-            name = repoCreator.formatId( host, port, i++, null, StoreType.remote );
-            logger.debug( "Looking for remote repo with name: {}", name );
-            remote = query.getByName( name );
+            abstractProxyRepositoryCreator = (AbstractProxyRepositoryCreator) repoCreator;
         }
-        return name;
+
+        if ( abstractProxyRepositoryCreator == null )
+        {
+            return name;
+        }
+
+        Predicate<ArtifactStore> filter = abstractProxyRepositoryCreator.getNameFilter( name );
+        List<String> l = storeManager.query()
+                                     .packageType( GENERIC_PKG_KEY )
+                                     .storeType( RemoteRepository.class )
+                                     .stream( filter )
+                                     .map( repository -> repository.getName() )
+                                     .collect( Collectors.toList() );
+
+        if ( l.isEmpty() )
+        {
+            return name;
+        }
+        return abstractProxyRepositoryCreator.getNextName( l );
     }
 
     private int getPort( URL url )

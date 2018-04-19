@@ -73,7 +73,7 @@ public class AutoCreateRepoWithTrackingIdTest
         server.expect( url, 200, pom.pom );
 
         final HttpGet get = new HttpGet( url );
-        CloseableHttpClient client = proxiedHttp();
+        CloseableHttpClient client = proxiedHttp( USER, PASS );
         CloseableHttpResponse response = null;
 
         InputStream stream = null;

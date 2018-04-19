@@ -10,6 +10,10 @@ import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.util.UrlInfo;
 import org.slf4j.Logger;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Predicate;
+
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_REPO_PREFIX;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
@@ -102,4 +106,35 @@ public abstract class AbstractProxyRepositoryCreator
             store.setMetadata( TRACKING_ID, trackingID );
         }
     }
+
+    /**
+     * Get the remote repo names with name starts with base name (PROXY_REPO_PREFIX + host + "_" + port)
+     */
+    public Predicate<ArtifactStore> getNameFilter( String name )
+    {
+        return store -> store.getName().startsWith( name );
+    }
+
+    /**
+     * Get the next distinct name based on the query result by filter of getNameFilter
+     * @param names
+     * @return
+     */
+    public String getNextName( List<String> names )
+    {
+        if ( names.isEmpty() )
+        {
+            return null;
+        }
+        String name0 = names.get( 0 );
+        if ( names.size() == 1 )
+        {
+            return name0 + "_1";
+        }
+        Collections.sort( names );
+        String last = names.get( names.size() - 1 );
+        String index = last.substring( last.lastIndexOf( "_" ) + 1 );
+        return name0 + "_" + ( Integer.parseInt( index ) + 1 );
+    }
+
 }

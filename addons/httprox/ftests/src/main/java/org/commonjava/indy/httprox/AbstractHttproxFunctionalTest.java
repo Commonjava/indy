@@ -25,12 +25,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.AuthCache;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.routing.HttpRoutePlanner;
-import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.BasicAuthCache;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -67,21 +64,31 @@ public class AbstractHttproxFunctionalTest
         final HttpClientContext ctx = HttpClientContext.create();
         ctx.setCredentialsProvider( creds );
 
-        // Create AuthCache instance, generate BASIC scheme object and add it to the local auth cache
-        AuthCache authCache = new BasicAuthCache();
-        BasicScheme basicAuth = new BasicScheme();
-        authCache.put( new HttpHost( HOST, proxyPort ), basicAuth );
-        ctx.setAuthCache( authCache );
-
         return ctx;
     }
 
-    protected CloseableHttpClient proxiedHttp()
-        throws Exception
+    protected CloseableHttpClient proxiedHttp() throws Exception
     {
-        final HttpRoutePlanner planner = new DefaultProxyRoutePlanner( new HttpHost( HOST, proxyPort ) );
+        return proxiedHttp( null, null );
+    }
+
+    protected CloseableHttpClient proxiedHttp( final String user, final String pass ) throws Exception
+    {
+        CredentialsProvider creds = null;
+
+        if ( user != null )
+        {
+            creds = new BasicCredentialsProvider();
+            creds.setCredentials( new AuthScope( HOST, proxyPort ), new UsernamePasswordCredentials( user, pass ) );
+        }
+
+        HttpHost proxy = new HttpHost( HOST, proxyPort );
+
+        final HttpRoutePlanner planner = new DefaultProxyRoutePlanner( proxy );
         return HttpClients.custom()
                           .setRoutePlanner( planner )
+                          .setDefaultCredentialsProvider( creds )
+                          .setProxy( proxy )
                           .build();
     }
 
