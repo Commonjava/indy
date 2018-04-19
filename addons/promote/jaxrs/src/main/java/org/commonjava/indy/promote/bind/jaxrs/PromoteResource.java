@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.promote.bind.jaxrs;
 
-import static org.commonjava.indy.util.ApplicationContent.application_indy_star_json;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,7 +56,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 
 @Api( value="Content Promotion", description = "Promote content from a source repository to a target repository or group." )
 @Path( "/api/promotion" )
-@Produces( { application_json, application_indy_star_json } )
+@Produces( { application_json } )
 public class PromoteResource
         implements IndyResources
 {

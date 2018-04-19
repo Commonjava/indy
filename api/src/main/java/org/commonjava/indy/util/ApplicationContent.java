@@ -22,8 +22,6 @@ import java.util.Map;
 public final class ApplicationContent
 {
 
-    public static final String application_indy_star_json = "application/indy*+json";
-
     public static final String application_json = "application/json";
 
     public static final String application_javascript = "application/javascript";

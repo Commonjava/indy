@@ -108,7 +108,7 @@ public class RevisionsAdminResource
     @ApiOperation(
             "Retrieve the changelog for the Indy data directory content with the specified path, start-index, and number of results" )
     @ApiResponse( code = 200, message = "JSON containing changelog entries", response = ChangeSummaryDTO.class )
-    @Path( "/data/changelog{path: /.*}" )
+    @Path( "/data/changelog/{path: .+}" )
     @GET
     @Produces( ApplicationContent.application_json )
     public Response doGet( final @PathParam( "path" ) String path, final @QueryParam( "start" ) int start,

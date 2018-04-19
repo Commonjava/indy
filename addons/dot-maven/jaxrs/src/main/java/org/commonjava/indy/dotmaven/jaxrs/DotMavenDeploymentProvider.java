@@ -19,11 +19,11 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
 
 import javax.inject.Inject;
 import javax.servlet.Servlet;
-
-import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
+import javax.ws.rs.core.Application;
 
 public class DotMavenDeploymentProvider
     extends IndyDeploymentProvider
@@ -33,7 +33,7 @@ public class DotMavenDeploymentProvider
     DotMavenServlet servlet;
 
     @Override
-    public DeploymentInfo getDeploymentInfo()
+    public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
         final ServletInfo servletInfo = Servlets.servlet( "DotMaven", DotMavenServlet.class )
                                                 .setAsyncSupported( true )

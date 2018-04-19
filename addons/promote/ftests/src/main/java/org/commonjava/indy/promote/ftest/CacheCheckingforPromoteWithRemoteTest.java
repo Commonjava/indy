@@ -16,7 +16,7 @@
 package org.commonjava.indy.promote.ftest;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;

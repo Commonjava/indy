@@ -35,10 +35,14 @@ import io.undertow.servlet.api.ServletInfo;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.Application;
 
 public final class DeploymentInfoUtils
 {
@@ -48,12 +52,13 @@ public final class DeploymentInfoUtils
     {
     }
 
-    public static void mergeFromProviders( final DeploymentInfo into, final Set<IndyDeploymentProvider> fromProviders )
+    public static void mergeFromProviders( final DeploymentInfo into, final Set<IndyDeploymentProvider> fromProviders,
+                                           final String contextRoot, final Application application )
     {
         for ( final IndyDeploymentProvider fromProvider : fromProviders )
         {
             logger.debug( "Merging info from deployment provider: {}", fromProvider );
-            final DeploymentInfo from = fromProvider.getDeploymentInfo();
+            final DeploymentInfo from = fromProvider.getDeploymentInfo( contextRoot, application );
             logger.debug( "Got: {} from: {}", from, fromProvider );
             merge( into, from );
         }
@@ -74,28 +79,33 @@ public final class DeploymentInfoUtils
         {
             for ( final Map.Entry<String, AuthenticationMechanismFactory> entry : authMechs.entrySet() )
             {
+                logger.debug( "Found authentication mechanism: {}", entry.getKey() );
                 into.addAuthenticationMechanism( entry.getKey(), entry.getValue() );
             }
         }
 
         if ( from.getAuthorizationManager() != null )
         {
+            logger.debug( "Found authorization manager: {}", from.getAuthorizationManager() );
             into.setAuthorizationManager( from.getAuthorizationManager() );
         }
 
         if ( from.getConfidentialPortManager() != null )
         {
+            logger.debug( "Found confidential port manager: {}", from.getConfidentialPortManager() );
             into.setConfidentialPortManager( from.getConfidentialPortManager() );
         }
 
         final List<ErrorPage> errorPages = from.getErrorPages();
         if ( errorPages != null )
         {
+            logger.debug( "Found error pages: {}", errorPages );
             into.addErrorPages( errorPages );
         }
 
         if ( from.getExceptionHandler() != null )
         {
+            logger.debug( "Found exception handler: {}", from.getExceptionHandler() );
             into.setExceptionHandler( from.getExceptionHandler() );
         }
 
@@ -108,11 +118,15 @@ public final class DeploymentInfoUtils
                 {
                     case SERVLET:
                     {
+                        logger.debug( "Found servlet-name filter mapping: {} -> {}({})", fmi.getFilterName(),
+                                      fmi.getMapping(), fmi.getDispatcher() );
                         into.addFilterServletNameMapping( fmi.getFilterName(), fmi.getMapping(), fmi.getDispatcher() );
                         break;
                     }
                     default:
                     {
+                        logger.debug( "Found URL filter mapping: {} -> {}({})", fmi.getFilterName(),
+                                      fmi.getMapping(), fmi.getDispatcher() );
                         into.addFilterUrlMapping( fmi.getFilterName(), fmi.getMapping(), fmi.getDispatcher() );
                     }
                 }
@@ -122,11 +136,13 @@ public final class DeploymentInfoUtils
         final Map<String, FilterInfo> filterInfos = from.getFilters();
         if ( filterInfos != null )
         {
+            logger.debug( "Found filters: {}", filterInfos.keySet() );
             into.addFilters( filterInfos.values() );
         }
 
         if ( from.getIdentityManager() != null )
         {
+            logger.debug( "Found identity manager: {}", from.getIdentityManager() );
             into.setIdentityManager( from.getIdentityManager() );
         }
 
@@ -145,6 +161,7 @@ public final class DeploymentInfoUtils
         {
             for ( final LifecycleInterceptor lifecycleInterceptor : lifecycleInterceptors )
             {
+                logger.debug( "Found lifecycle interceptor: {}", lifecycleInterceptor );
                 into.addLifecycleInterceptor( lifecycleInterceptor );
             }
         }
@@ -152,23 +169,32 @@ public final class DeploymentInfoUtils
         final List<ListenerInfo> listeners = from.getListeners();
         if ( listeners != null )
         {
+            logger.debug( "Found listeners: {}", listeners.stream()
+                                                          .map( li -> li.getListenerClass().getName() )
+                                                          .collect( Collectors.toList() ) );
             into.addListeners( listeners );
         }
 
         if ( from.getMetricsCollector() != null )
         {
+            logger.debug( "Found metrics collector: {}", from.getMetricsCollector() );
             into.setMetricsCollector( from.getMetricsCollector() );
         }
 
         final List<MimeMapping> mimeMappings = from.getMimeMappings();
         if ( mimeMappings != null )
         {
+            logger.debug( "Found mime mappings: {}", mimeMappings.stream()
+                                                                 .map( mm -> mm.getMimeType() + " -> "
+                                                                         + mm.getExtension() )
+                                                                 .collect( Collectors.toList() ) );
             into.addMimeMappings( mimeMappings );
         }
 
         final List<NotificationReceiver> notificationReceivers = from.getNotificationReceivers();
         if ( notificationReceivers != null )
         {
+            logger.debug( "Found notification receivers: {}", notificationReceivers );
             into.addNotificationReceivers( notificationReceivers );
         }
 
@@ -177,6 +203,7 @@ public final class DeploymentInfoUtils
         {
             for ( final Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet() )
             {
+                logger.debug( "Found principle-roles mapping: {} -> {}", entry.getKey(), entry.getValue() );
                 into.addPrincipalVsRoleMappings( entry.getKey(), entry.getValue() );
             }
         }
@@ -209,12 +236,14 @@ public final class DeploymentInfoUtils
 
         if ( from.getSecurityContextFactory() != null )
         {
+            logger.debug( "Found security context factory: {}", from.getSecurityContextFactory() );
             into.setSecurityContextFactory( from.getSecurityContextFactory() );
         }
 
         final Set<String> securityRoles = from.getSecurityRoles();
         if ( securityRoles != null )
         {
+            logger.debug( "Found security roles: {}", securityRoles );
             into.addSecurityRoles( securityRoles );
         }
 
@@ -222,6 +251,11 @@ public final class DeploymentInfoUtils
             from.getServletContainerInitializers();
         if ( servletContainerInitializers != null )
         {
+            logger.debug( "Found servlet container initializers: {}", servletContainerInitializers.stream()
+                                                                                                  .map( sci -> sci.getServletContainerInitializerClass()
+                                                                                                                  .getName() )
+                                                                                                  .collect(
+                                                                                                          Collectors.toList() ) );
             into.addServletContainerInitalizers( servletContainerInitializers );
         }
 
@@ -230,6 +264,8 @@ public final class DeploymentInfoUtils
         {
             for ( final Map.Entry<String, Object> entry : servletContextAttributes.entrySet() )
             {
+                logger.debug( "Found servlet context attribute: {} -> {}", entry.getKey(), entry.getValue() );
+
                 into.addServletContextAttribute( entry.getKey(), entry.getValue() );
             }
         }
@@ -239,6 +275,7 @@ public final class DeploymentInfoUtils
         {
             for ( final ServletExtension servletExtension : servletExtensions )
             {
+                logger.debug( "Found servlet extension: {}", servletExtension );
                 into.addServletExtension( servletExtension );
             }
         }
@@ -246,6 +283,10 @@ public final class DeploymentInfoUtils
         final Map<String, ServletInfo> servletInfos = from.getServlets();
         if ( servletInfos != null )
         {
+            logger.debug( "Found servlets: {}", servletInfos.values()
+                                                            .stream()
+                                                            .map( si -> si.getName() + " => " + si.getMappings() )
+                                                            .collect( Collectors.toList() ) );
             into.addServlets( servletInfos.values() );
         }
 
@@ -254,28 +295,33 @@ public final class DeploymentInfoUtils
         {
             for ( final SessionListener sessionListener : sessionListeners )
             {
+                logger.debug( "Found session listener: {}", sessionListener );
                 into.addSessionListener( sessionListener );
             }
         }
 
         if ( from.getSessionManagerFactory() != null )
         {
+            logger.debug( "Found session manager factory: {}", from.getSessionManagerFactory() );
             into.setSessionManagerFactory( from.getSessionManagerFactory() );
         }
 
         if ( from.getSessionPersistenceManager() != null )
         {
+            logger.debug( "Found session persistence manager: {}", from.getSessionPersistenceManager() );
             into.setSessionPersistenceManager( from.getSessionPersistenceManager() );
         }
 
         if ( from.getTempDir() != null )
         {
+            logger.debug( "Found temp dir: {}", from.getTempDir() );
             into.setTempDir( from.getTempDir() );
         }
 
         final List<String> welcomePages = from.getWelcomePages();
         if ( welcomePages != null )
         {
+            logger.debug( "Found welcome pages: {}", welcomePages );
             into.addWelcomePages( welcomePages );
         }
 
@@ -284,6 +330,7 @@ public final class DeploymentInfoUtils
         {
             for ( final HandlerWrapper wrapper : initWrappers )
             {
+                logger.debug( "Found initial handler chain wrapper: {}", wrapper );
                 into.addInitialHandlerChainWrapper( wrapper );
             }
         }
@@ -293,6 +340,7 @@ public final class DeploymentInfoUtils
         {
             for ( final HandlerWrapper wrapper : outerWrappers )
             {
+                logger.debug( "Found outer handler chain wrapper: {}", wrapper );
                 into.addOuterHandlerChainWrapper( wrapper );
             }
         }
@@ -302,6 +350,7 @@ public final class DeploymentInfoUtils
         {
             for ( final HandlerWrapper wrapper : innerWrappers )
             {
+                logger.debug( "Found inner handler chain wrapper: {}", wrapper );
                 into.addInnerHandlerChainWrapper( wrapper );
             }
         }
