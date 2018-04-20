@@ -21,6 +21,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.util.HttpUtils;
@@ -111,12 +112,12 @@ public class HttpConduitWrapper
         sinkChannel.write( b );
     }
 
-    public void writeNotFoundTransfer( RemoteRepository repo, String path )
+    public void writeNotFoundTransfer( ArtifactStore store, String path )
             throws IOException, IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "No transfer found." );
-        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( repo.getKey(), path );
+        final HttpExchangeMetadata metadata = contentController.getHttpMetadata( store.getKey(), path );
         if ( metadata == null )
         {
             logger.debug( "No transfer metadata." );

@@ -48,6 +48,8 @@ public abstract class ArtifactStore
 
     public static final String METADATA_ORIGIN = "origin";
 
+    public static final String TRACKING_ID = "trackingId";
+
     private static final long serialVersionUID = 1L;
 
     @ApiModelProperty( required = true, dataType = "string", value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )

@@ -67,12 +67,28 @@ public class AbstractHttproxFunctionalTest
         return ctx;
     }
 
-    protected CloseableHttpClient proxiedHttp()
-        throws Exception
+    protected CloseableHttpClient proxiedHttp() throws Exception
     {
-        final HttpRoutePlanner planner = new DefaultProxyRoutePlanner( new HttpHost( HOST, proxyPort ) );
+        return proxiedHttp( null, null );
+    }
+
+    protected CloseableHttpClient proxiedHttp( final String user, final String pass ) throws Exception
+    {
+        CredentialsProvider creds = null;
+
+        if ( user != null )
+        {
+            creds = new BasicCredentialsProvider();
+            creds.setCredentials( new AuthScope( HOST, proxyPort ), new UsernamePasswordCredentials( user, pass ) );
+        }
+
+        HttpHost proxy = new HttpHost( HOST, proxyPort );
+
+        final HttpRoutePlanner planner = new DefaultProxyRoutePlanner( proxy );
         return HttpClients.custom()
                           .setRoutePlanner( planner )
+                          .setDefaultCredentialsProvider( creds )
+                          .setProxy( proxy )
                           .build();
     }
 
