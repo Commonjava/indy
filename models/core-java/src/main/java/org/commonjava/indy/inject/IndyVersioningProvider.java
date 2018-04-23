@@ -23,7 +23,7 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Singleton;
 
-import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.stats.IndyDeprecatedApis;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,19 +38,22 @@ public class IndyVersioningProvider
 
     private static final String INDY_VERSIONING_PROPERTIES = "indy-version.properties";
 
+    private static final String INDY_DEPRECATED_APIS_PROPERTIES = "deprecated-apis.properties";
+
     private final IndyVersioning versioning;
+
+    private final IndyDeprecatedApis deprecatedApis;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public IndyVersioningProvider()
     {
+        // Load indy-version
         final Properties props = new Properties();
-        InputStream is = null;
-        try
+        try (InputStream is = Thread.currentThread()
+                                    .getContextClassLoader()
+                                    .getResourceAsStream( INDY_VERSIONING_PROPERTIES ))
         {
-            is = Thread.currentThread()
-                       .getContextClassLoader()
-                       .getResourceAsStream( INDY_VERSIONING_PROPERTIES );
             if ( is != null )
             {
                 props.load( is );
@@ -59,18 +62,37 @@ public class IndyVersioningProvider
         catch ( final IOException e )
         {
             logger.error( "Failed to read Indy versioning information from classpath resource: "
-                + INDY_VERSIONING_PROPERTIES, e );
-        }
-        finally
-        {
-            IOUtils.closeQuietly( is );
+                                          + INDY_VERSIONING_PROPERTIES, e );
         }
 
-        versioning =
-            new IndyVersioning( props.getProperty( "version", "unknown" ), props.getProperty( "builder", "unknown" ),
-                                 props.getProperty( "commit.id", "unknown" ),
-                                 props.getProperty( "timestamp", "unknown" ), props.getProperty( "api-version",
-                                                                                                 "unknown" ) );
+        versioning = new IndyVersioning( props.getProperty( "version", "unknown" ),
+                                         props.getProperty( "builder", "unknown" ),
+                                         props.getProperty( "commit.id", "unknown" ),
+                                         props.getProperty( "timestamp", "unknown" ),
+                                         props.getProperty( "api-version", "unknown" ) );
+
+        // Load deprecated-apis
+        String deprecatedApiFile = System.getProperty( "ENV_DEPRECATED_API_FILE", INDY_DEPRECATED_APIS_PROPERTIES );
+        logger.info( "Get deprecatedApiFile: {}", deprecatedApiFile );
+
+        final Properties deprApis = new Properties();
+        try (InputStream is = Thread.currentThread()
+                                    .getContextClassLoader()
+                                    .getResourceAsStream( deprecatedApiFile ))
+        {
+            if ( is != null )
+            {
+                deprApis.load( is );
+            }
+        }
+        catch ( final IOException e )
+        {
+            logger.error( "Failed to read Indy deprecated api information from classpath resource: "
+                                          + deprecatedApiFile, e );
+        }
+
+        deprecatedApis = new IndyDeprecatedApis( deprApis );
+
     }
 
     @Produces
@@ -78,6 +100,13 @@ public class IndyVersioningProvider
     public IndyVersioning getVersioningInstance()
     {
         return versioning;
+    }
+
+    @Produces
+    @Default
+    public IndyDeprecatedApis getDeprecatedApis()
+    {
+        return deprecatedApis;
     }
 
 }

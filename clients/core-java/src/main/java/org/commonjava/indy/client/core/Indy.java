@@ -23,25 +23,32 @@ import org.commonjava.indy.client.core.module.IndyNfcClientModule;
 import org.commonjava.indy.client.core.module.IndySchedulerClientModule;
 import org.commonjava.indy.client.core.module.IndyStatsClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
+import org.commonjava.indy.inject.IndyVersioningProvider;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 public class Indy
         implements Closeable
 {
 
+    private String apiVersion;
+
     private final IndyClientHttp http;
 
     private final Set<IndyClientModule> moduleRegistry;
 
+    @Deprecated
     public Indy( final String baseUrl, final IndyClientModule... modules )
             throws IndyClientException
     {
@@ -112,8 +119,9 @@ public class Indy
     public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper, final IndyClientModule... modules )
     throws IndyClientException
     {
-        this.http =
-                new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location );
+        loadApiVersion();
+        this.http = new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location,
+                                        getApiVersion() );
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
@@ -134,8 +142,10 @@ public class Indy
     public Indy( SiteConfig location, PasswordManager passwordManager, IndyObjectMapper objectMapper, IndyClientModule... modules )
             throws IndyClientException
     {
-        this.http =
-                new IndyClientHttp( passwordManager, objectMapper == null ? new IndyObjectMapper( true ) : objectMapper, location );
+        loadApiVersion();
+        this.http = new IndyClientHttp( passwordManager,
+                                        objectMapper == null ? new IndyObjectMapper( true ) : objectMapper, location,
+                                        getApiVersion() );
 
         this.moduleRegistry = new HashSet<>();
 
@@ -257,4 +267,13 @@ public class Indy
         }
     }
 
+    public String getApiVersion()
+    {
+        return apiVersion;
+    }
+
+    private void loadApiVersion() throws IndyClientException
+    {
+        this.apiVersion = new IndyVersioningProvider().getVersioningInstance().getApiVersion();
+    }
 }

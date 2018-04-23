@@ -31,7 +31,9 @@ public enum ApplicationStatus
     BAD_REQUEST( 400, "Bad Request" ),
 
     UNAUTHORIZED(401, "Unauthorized"),
-    
+
+    GONE(410, "Gone"),
+
     NOT_FOUND( 404, "Not Found" ), 
     
     METHOD_NOT_ALLOWED(405, "Method Not Allowed" ),

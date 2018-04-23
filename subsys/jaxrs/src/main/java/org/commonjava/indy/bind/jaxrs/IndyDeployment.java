@@ -73,6 +73,9 @@ public class IndyDeployment
     private ResourceManagementFilter resourceManagementFilter;
 
     @Inject
+    private ApiVersioningFilter apiVersioningFilter;
+
+    @Inject
     private IndyVersioning versioning;
 
     private Set<Class<? extends IndyResources>> resourceClasses;
@@ -95,6 +98,7 @@ public class IndyDeployment
         this.ui = ui;
         this.resourceManagementFilter = resourceManagementFilter;
         this.versioning = versioning;
+        this.apiVersioningFilter = new ApiVersioningFilter( versioning );
         this.providerClasses = Collections.emptySet();
     }
 
@@ -140,6 +144,11 @@ public class IndyDeployment
                 Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
                                  new ImmediateInstanceFactory<ResourceManagementFilter>(
                                          this.resourceManagementFilter ) );
+        final FilterInfo apiVersioningFilter =
+                        Servlets.filter( "ApiVersioning", ApiVersioningFilter.class,
+                                         new ImmediateInstanceFactory<ApiVersioningFilter>(
+                                                         this.apiVersioningFilter ) );
+
         final DeploymentInfo di = new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
                                                       //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
                                                       .setContextPath( contextRoot )
@@ -149,6 +158,9 @@ public class IndyDeployment
                                                       .addFilter( resourceManagementFilter )
                                                       .addFilterUrlMapping( resourceManagementFilter.getName(),
                                                                             "/api/*", DispatcherType.REQUEST )
+                                                      .addFilter( apiVersioningFilter )
+                                                      .addFilterUrlMapping( apiVersioningFilter.getName(), "/*",
+                                                                            DispatcherType.REQUEST )
                                                       .setDeploymentName( "Indy" )
                                                       .setClassLoader( ClassLoader.getSystemClassLoader() )
                                                       .addOuterHandlerChainWrapper( new HeaderDebugger.Wrapper() );

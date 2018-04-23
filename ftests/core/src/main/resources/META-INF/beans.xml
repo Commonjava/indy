@@ -21,4 +21,5 @@
     <!-- ContentManagerDirectAccess decorators -->
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
   </decorators>
+
 </beans>

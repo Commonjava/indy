@@ -19,12 +19,20 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Properties;
 
 @Alternative
 @Named
 public class IndyVersioning
 {
+    public final static String HEADER_INDY_API_VERSION = "Indy-API-Version"; // the API version for the requester
+
+    public final static String HEADER_INDY_CUR_API_VERSION = "Indy-Cur-API-Version"; // the current API version for the server
+
+    public final static String HEADER_INDY_MIN_API_VERSION = "Indy-Min-API-Version"; // the lowest supported API version for the server
 
     private String version;
 
@@ -73,26 +81,6 @@ public class IndyVersioning
     public String getTimestamp()
     {
         return timestamp;
-    }
-
-    public void setVersion( final String version )
-    {
-        this.version = version;
-    }
-
-    public void setBuilder( final String builder )
-    {
-        this.builder = builder;
-    }
-
-    public void setCommitId( final String commitId )
-    {
-        this.commitId = commitId;
-    }
-
-    public void setTimestamp( final String timestamp )
-    {
-        this.timestamp = timestamp;
     }
 
     public String getApiVersion()
