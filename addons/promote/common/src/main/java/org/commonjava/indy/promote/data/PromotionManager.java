@@ -64,6 +64,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
@@ -699,12 +700,21 @@ public class PromotionManager
     private void clearStoreNFC( final Set<String> sourcePaths, ArtifactStore store )
             throws IndyDataException
     {
+        Set<String> paths = sourcePaths.stream()
+                                       .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
+                                       .collect( Collectors.toSet() );
+
         nfc.clearMissing( LocationUtils.toLocation( store ) );
         Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
         if ( groups != null )
         {
-            groups.forEach( group -> sourcePaths.forEach(
-                    path -> nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( group ), path ) ) ) );
+            groups.forEach( group -> paths.forEach(
+                    path -> {
+                        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
+
+                        logger.debug( "Clearing NFC path: {} from: {}\n\tResource: {}", path, group.getKey(), resource );
+                        nfc.clearMissing( resource );
+                    } ) );
         }
     }
 
