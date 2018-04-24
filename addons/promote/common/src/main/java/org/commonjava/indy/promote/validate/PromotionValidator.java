@@ -73,14 +73,27 @@ public class PromotionValidator
         this.storeDataMgr = storeDataMgr;
     }
 
+    /**
+     * NOTE: As of Indy 1.2.6, ValidationRequest passed back to enable further post-processing, especially of promotion
+     * paths, after promotion takes place. This enables us to avoid re-executing recursive path discovery, for instance.
+     *
+     * @param request
+     * @param result
+     * @param baseUrl
+     * @return
+     * @throws PromotionValidationException
+     */
     @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
                     IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE
                                     + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
                     IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE + IndyMetricsNames.METER ) ) )
-    public void validate( PromoteRequest request, ValidationResult result, String baseUrl )
+    public ValidationRequest validate( PromoteRequest request, ValidationResult result, String baseUrl )
             throws PromotionValidationException
     {
         ValidationRuleSet set = validationsManager.getRuleSetMatching( request.getTargetKey() );
+
+        final ArtifactStore store = getRequestStore( request, baseUrl );
+        final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         if ( set != null )
@@ -91,10 +104,8 @@ public class PromotionValidator
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
             {
-                final ArtifactStore store = getRequestStore( request, baseUrl );
                 try
                 {
-                    final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
                     for ( String ruleRef : ruleNames )
                     {
                         String ruleName =
@@ -153,12 +164,15 @@ public class PromotionValidator
                         }
                     }
                 }
+
             }
         }
         else
         {
             logger.info( "No validation rule-sets are defined for: {}", request.getTargetKey() );
         }
+
+        return req;
     }
 
     private boolean needTempRepo( PromoteRequest promoteRequest )

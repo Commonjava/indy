@@ -632,7 +632,7 @@ public class MavenMetadataGenerator
             throws IndyWorkflowException
     {
         CountDownLatch latch = new CountDownLatch( missing.size() );
-        List<String> errors = new ArrayList<>();
+        List<String> errors = Collections.synchronizedList( new ArrayList<>() );
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -664,19 +664,13 @@ public class MavenMetadataGenerator
                     String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
                                                  e.getMessage() );
                     logger.error( msg, e );
-                    synchronized ( errors )
-                    {
-                        errors.add( msg );
-                    }
+                    errors.add( msg );
                 }
                 catch ( final XmlPullParserException e )
                 {
                     String msg = String.format( "Cannot parse metadata: %s:%s. Reason: %s", store.getKey(), toMergePath, e.getMessage() );
                     logger.error( msg, e );
-                    synchronized ( errors )
-                    {
-                        errors.add( msg );
-                    }
+                    errors.add( msg );
                 }
                 finally
                 {
