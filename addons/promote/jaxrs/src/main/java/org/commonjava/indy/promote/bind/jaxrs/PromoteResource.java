@@ -200,7 +200,7 @@ public class PromoteResource
     @Path( "/paths/resume" )
     @POST
     @Consumes( ApplicationContent.application_json )
-    public Response resumePaths( @Context final HttpServletRequest request )
+    public Response resumePaths( @Context final HttpServletRequest request, final @Context UriInfo uriInfo )
     {
         PathsPromoteResult result = null;
         Response response = null;
@@ -220,7 +220,18 @@ public class PromoteResource
 
         try
         {
-            result = manager.resumePathsPromote( result );
+            PathsPromoteRequest req = result.getRequest();
+
+            PackageTypeDescriptor packageTypeDescriptor =
+                    PackageTypes.getPackageTypeDescriptor( req.getSource().getPackageType() );
+
+            final String baseUrl = uriInfo.getBaseUriBuilder()
+                                          .path( packageTypeDescriptor.getContentRestBasePath() )
+                                          .build( req.getSource().getType().singularEndpointName(),
+                                                  req.getSource().getName() )
+                                          .toString();
+
+            result = manager.resumePathsPromote( result, baseUrl );
 
             // TODO: Amend response status code based on presence of error? This would have consequences for client API...
             response = formatOkResponseWithJsonEntity( result, mapper );

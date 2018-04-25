@@ -74,23 +74,12 @@ public class ValidationRequest
 
             if ( paths == null )
             {
-                ArtifactStore store = null;
-                try
-                {
-                    store = tools.getArtifactStore( promoteRequest.getSource() );
-                }
-                catch ( IndyDataException e )
-                {
-                    throw new PromotionValidationException( "Failed to retrieve source ArtifactStore: {}. Reason: {}",
-                                                            e, promoteRequest.getSource(), e.getMessage() );
-                }
-
-                if ( store != null )
+                if ( sourceRepository != null )
                 {
                     try
                     {
                         paths = new HashSet<>();
-                        listRecursively( store, "/", paths );
+                        listRecursively( sourceRepository, "/", paths );
                     }
                     catch ( IndyWorkflowException e )
                     {
