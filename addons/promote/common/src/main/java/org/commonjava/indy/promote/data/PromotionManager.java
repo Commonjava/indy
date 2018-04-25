@@ -41,9 +41,12 @@ import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
+import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.promote.validate.PromotionValidator;
+import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
@@ -64,6 +67,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
@@ -177,7 +181,8 @@ public class PromotionManager
             locked = lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
             if ( locked )
             {
-                validator.validate( request, validation, baseUrl );
+                ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
+
                 if ( validation.isValid() )
                 {
                     if ( !request.isDryRun() && !target.getConstituents().contains( request.getSource() ) )
@@ -193,7 +198,7 @@ public class PromotionManager
                                                                                            + target.getKey() );
 
                             storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
-                            clearStoreNFC( target );
+                            clearStoreNFC( validationRequest.getSourcePaths(), target );
 
                             if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
                             {
@@ -356,7 +361,7 @@ public class PromotionManager
         }
 
         ValidationResult validation = new ValidationResult();
-        validator.validate( request, validation, baseUrl );
+        ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
         if ( request.isDryRun() )
         {
             return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
@@ -364,7 +369,8 @@ public class PromotionManager
         }
         else if ( validation.isValid() )
         {
-            return runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents, validation );
+            return runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents,
+                                      validation, validationRequest );
         }
         else
         {
@@ -387,14 +393,16 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
-    public PathsPromoteResult resumePathsPromote( final PathsPromoteResult result )
+    public PathsPromoteResult resumePathsPromote( final PathsPromoteResult result, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
         final List<Transfer> contents =
                 getTransfersForPaths( result.getRequest().getSource(), result.getPendingPaths() );
 
+        ValidationResult validation = new ValidationResult();
+        ValidationRequest validationRequest = validator.validate( result.getRequest(), validation, baseUrl );
         return runPathPromotions( result.getRequest(), result.getPendingPaths(), result.getCompletedPaths(),
-                                  result.getSkippedPaths(), contents, result.getValidations() );
+                                  result.getSkippedPaths(), contents, result.getValidations(), validationRequest );
     }
 
     /**
@@ -514,7 +522,8 @@ public class PromotionManager
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
                                                   final Set<String> prevComplete, final Set<String> prevSkipped,
-                                                  final List<Transfer> contents, ValidationResult validation )
+                                                  final List<Transfer> contents, ValidationResult validation,
+                                                  final ValidationRequest validationRequest )
     {
         if ( pending == null || pending.isEmpty() )
         {
@@ -622,9 +631,9 @@ public class PromotionManager
                                         logger.error( msg, e );
                                     }
                                 }
-                                clearStoreNFC( targetStore );
+                                clearStoreNFC( validationRequest.getSourcePaths(), targetStore );
                             }
-                            catch ( final IndyWorkflowException | IndyDataException e )
+                            catch ( final IndyWorkflowException | IndyDataException | PromotionValidationException e )
                             {
                                 String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
                                                             targetStore, e.getMessage() );
@@ -695,14 +704,37 @@ public class PromotionManager
         return contents;
     }
 
-    private void clearStoreNFC( ArtifactStore store )
+    /**
+     * NOTE: Adding sourcePaths parameter here to cut down on number of paths for clearing from NFC.
+     *
+     * @param sourcePaths The set of paths that need to be cleared from the NFC.
+     * @param store The store whose affected groups should have their NFC entries cleared
+     * @throws IndyDataException
+     */
+    private void clearStoreNFC( final Set<String> sourcePaths, ArtifactStore store )
             throws IndyDataException
     {
-        nfc.clearMissing( LocationUtils.toLocation( store ) );
+        Set<String> paths = sourcePaths.stream()
+                                       .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
+                                       .collect( Collectors.toSet() );
+
+        paths.forEach( path -> {
+            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+
+            logger.debug( "Clearing NFC path: {} from: {}\n\tResource: {}", path, store.getKey(), resource );
+            nfc.clearMissing( resource );
+        } );
+
         Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
         if ( groups != null )
         {
-            groups.forEach( group -> nfc.clearMissing( LocationUtils.toLocation( group ) ) );
+            groups.forEach( group -> paths.forEach(
+                    path -> {
+                        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
+
+                        logger.debug( "Clearing NFC path: {} from: {}\n\tResource: {}", path, group.getKey(), resource );
+                        nfc.clearMissing( resource );
+                    } ) );
         }
     }
 
