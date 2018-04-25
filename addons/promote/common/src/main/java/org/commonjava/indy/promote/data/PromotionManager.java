@@ -711,7 +711,6 @@ public class PromotionManager
             nfc.clearMissing( resource );
         } );
 
-        nfc.clearMissing( LocationUtils.toLocation( store ) );
         Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
         if ( groups != null )
         {
