@@ -704,6 +704,13 @@ public class PromotionManager
                                        .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
                                        .collect( Collectors.toSet() );
 
+        paths.forEach( path -> {
+            ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+
+            logger.debug( "Clearing NFC path: {} from: {}\n\tResource: {}", path, store.getKey(), resource );
+            nfc.clearMissing( resource );
+        } );
+
         nfc.clearMissing( LocationUtils.toLocation( store ) );
         Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
         if ( groups != null )
