@@ -16,11 +16,14 @@
 package org.commonjava.indy.promote.data;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.core.inject.GroupMembershipLocks;
+import org.commonjava.indy.core.inject.StoreContentLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
@@ -65,12 +68,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
@@ -104,9 +105,13 @@ public class PromotionManager
     @Inject
     private Event<PromoteCompleteEvent> promoteCompleteEvent;
 
-    private Map<StoreKey, ReentrantLock> byPathTargetLocks = newSynchronizedContextSensitiveWeakHashMap();
+    @StoreContentLocks
+    @Inject
+    private Locker<StoreKey> byPathTargetLocks;
 
-    private Map<StoreKey, ReentrantLock> byGroupTargetLocks = newSynchronizedContextSensitiveWeakHashMap();
+    @GroupMembershipLocks
+    @Inject
+    private Locker<StoreKey> byGroupTargetLocks;
 
     private Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
 
@@ -118,20 +123,17 @@ public class PromotionManager
     }
 
     public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
-                             final DownloadManager downloadManager, final StoreDataManager storeManager, PromoteConfig config )
+                             final DownloadManager downloadManager, final StoreDataManager storeManager,
+                             Locker<StoreKey> byPathTargetLocks, Locker<StoreKey> byGroupTargetLocks,
+                             PromoteConfig config, NotFoundCache nfc )
     {
         this.validator = validator;
         this.contentManager = contentManager;
         this.downloadManager = downloadManager;
         this.storeManager = storeManager;
+        this.byPathTargetLocks = byPathTargetLocks;
+        this.byGroupTargetLocks = byGroupTargetLocks;
         this.config = config;
-    }
-
-    public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
-                             final DownloadManager downloadManager, final StoreDataManager storeManager,
-                             PromoteConfig config, NotFoundCache nfc )
-    {
-        this( validator, contentManager, downloadManager, storeManager, config );
         this.nfc = nfc;
     }
 
@@ -151,18 +153,9 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        Group target;
-        try
-        {
-            target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
-        }
-        catch ( IndyDataException e )
-        {
-            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
-                                          e.getMessage() );
-        }
+        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
 
-        if ( target == null )
+        if ( !storeManager.hasArtifactStore( targetKey ) )
         {
             String error = String.format( "No such target group: %s.", request.getTargetGroup() );
             logger.warn( error );
@@ -173,13 +166,22 @@ public class PromotionManager
         ValidationResult validation = new ValidationResult();
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
                      request.getTargetGroup() );
-        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
-        final ReentrantLock lock = byGroupTargetLocks.computeIfAbsent( targetKey, k -> new ReentrantLock() );
-        Boolean locked = false;
-        try
-        {
-            locked = lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
-            if ( locked )
+
+        AtomicReference<PromotionException> error = new AtomicReference<>();
+        byGroupTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k-> {
+            Group target;
+            try
+            {
+                target = (Group) storeManager.getArtifactStore( request.getTargetKey() );
+            }
+            catch ( IndyDataException e )
+            {
+                error.set( new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e,
+                                                   request.getTargetGroup(), e.getMessage() ) );
+                return null;
+            }
+
+            try
             {
                 ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
 
@@ -216,32 +218,34 @@ public class PromotionManager
                         }
                         catch ( IndyDataException e )
                         {
-                            throw new PromotionException(
-                                    "Failed to store group: %s with additional member: %s. Reason: %s", e,
-                                    target.getKey(), request.getSource(), e.getMessage() );
+                            error.set( new PromotionException(
+                                    "Failed to store group: %s with additional member: %s. Reason: %s", e, target.getKey(),
+                                    request.getSource(), e.getMessage() ) );
                         }
                     }
                 }
             }
-            else
+            catch ( PromotionValidationException e )
             {
-                //FIXME: should we consider to repeat the promote process several times when lock failed?
-                String error = String.format(
-                        "Failed to acquire group promotion lock on target when promote: %s in %d seconds.", targetKey,
-                        config.getLockTimeoutSeconds() );
-                logger.error( error );
+                error.set( e );
             }
-        }
-        catch ( InterruptedException e )
+
+            return null;
+        }, (k,lock)-> {
+            //FIXME: should we consider to repeat the promote process several times when lock failed?
+            String errorMsg = String.format(
+                    "Failed to acquire group promotion lock on target when promote: %s in %d seconds.", targetKey,
+                    config.getLockTimeoutSeconds() );
+            logger.error( errorMsg );
+            error.set( new PromotionException( errorMsg ) );
+
+            return Boolean.FALSE;
+        } );
+
+        PromotionException e = error.get();
+        if ( e != null )
         {
-            logger.warn( "Interrupted waiting for promotion lock on target: {}", targetKey );
-        }
-        finally
-        {
-            if ( locked )
-            {
-                lock.unlock();
-            }
+            throw e;
         }
 
         return new GroupPromoteResult( request, validation );
@@ -424,8 +428,6 @@ public class PromotionManager
     {
         StoreKey targetKey = result.getRequest().getTarget();
 
-        ReentrantLock lock = byPathTargetLocks.computeIfAbsent( targetKey, k -> new ReentrantLock() );
-
         final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
         final Set<String> completed = result.getCompletedPaths();
         final Set<String> skipped = result.getSkippedPaths();
@@ -436,10 +438,10 @@ public class PromotionManager
             return result;
         }
 
-        Set<String> pending = result.getPendingPaths();
-        pending = pending == null ? new HashSet<>() : new HashSet<>( pending );
+        Set<String> pending =
+                result.getPendingPaths() == null ? new HashSet<>() : new HashSet<>( result.getPendingPaths() );
 
-        String error = null;
+        final AtomicReference<String> error = new AtomicReference<>();
         final boolean copyToSource = result.getRequest().isPurgeSource();
 
         ArtifactStore source = null;
@@ -449,41 +451,38 @@ public class PromotionManager
         }
         catch ( final IndyDataException e )
         {
-            error = String.format( "Failed to retrieve artifact store: %s. Reason: %s",
-                                   result.getRequest().getSource(), e.getMessage() );
-            logger.error( error, e );
+            String msg =
+                    String.format( "Failed to retrieve artifact store: %s. Reason: %s", result.getRequest().getSource(),
+                                   e.getMessage() );
+
+            logger.error( msg, e );
+            error.set( msg );
         }
 
-        boolean locked = false;
-        try
+        AtomicReference<IndyWorkflowException> wfEx = new AtomicReference<>();
+        if ( error.get() == null )
         {
-            if ( error == null )
-            {
-                locked= lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
-                if ( !locked )
-                {
-                    error = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
-                                           config.getLockTimeoutSeconds() );
-                    logger.warn( error );
-                }
-            }
-
-            if ( error == null )
-            {
+            ArtifactStore src = source;
+            byPathTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k->{
                 for ( final Transfer transfer : contents )
                 {
                     if ( transfer != null && transfer.exists() )
                     {
-                        InputStream stream = null;
                         try
                         {
                             if ( copyToSource )
                             {
-                                stream = transfer.openInputStream( true );
                                 final String path = transfer.getPath();
-                                contentManager.store( source, path, stream, TransferOperation.UPLOAD,
-                                                      new EventMetadata() );
-                                stream.close();
+                                try(InputStream stream = transfer.openInputStream( true ))
+                                {
+                                    contentManager.store( src, path, stream, TransferOperation.UPLOAD,
+                                                          new EventMetadata() );
+                                }
+                                catch ( IndyWorkflowException e )
+                                {
+                                    wfEx.set( e );
+                                    return null;
+                                }
                             }
 
                             transfer.delete( true );
@@ -492,32 +491,33 @@ public class PromotionManager
                         }
                         catch ( final IOException e )
                         {
-                            error = String.format( "Failed to rollback path promotion of: %s from: %s. Reason: %s",
+                            String msg = String.format( "Failed to rollback path promotion of: %s from: %s. Reason: %s",
                                                    transfer, result.getRequest().getSource(), e.getMessage() );
-                            logger.error( error, e );
-                        }
-                        finally
-                        {
-                            closeQuietly( stream );
+                            logger.error( msg, e );
+                            error.set( msg );
                         }
                     }
                 }
-            }
-        }
-        catch ( InterruptedException e )
-        {
-            error = String.format( "Interrupted waiting for promotion lock on target: %s", targetKey );
-            logger.warn( error );
-        }
-        finally
-        {
-            if ( locked )
+
+                return null;
+            }, (k,lock)->{
+                String msg = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
+                                       config.getLockTimeoutSeconds() );
+                logger.warn( msg );
+                error.set( msg );
+
+                return false;
+            } );
+
+            IndyWorkflowException wfException = wfEx.get();
+            if ( wfException != null )
             {
-                lock.unlock();
+                throw wfException;
             }
+
         }
 
-        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error, new ValidationResult() );
+        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error.get(), new ValidationResult() );
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
@@ -532,139 +532,121 @@ public class PromotionManager
 
         StoreKey targetKey= request.getTarget();
 
-        ReentrantLock lock = byPathTargetLocks.computeIfAbsent( targetKey, k -> new ReentrantLock() );
-
         final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
         final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
 
         List<String> errors = new ArrayList<>();
-        boolean locked = false;
+
+        ArtifactStore sourceStore = null;
         try
         {
-            if ( !storeManager.hasArtifactStore( request.getSource() ) )
-            {
-                String msg = String.format(
-                        "Failed to retrieve source artifact store: %s. Seems it does not exist in indy store definitions",
-                        request.getSource() );
-                errors.add( msg );
-                logger.error( msg );
-            }
-
-            if ( !storeManager.hasArtifactStore( request.getTarget() ) )
-            {
-                String msg = String.format(
-                        "Failed to retrieve target artifact store: %s. Seems it does not exist in indy store definitions",
-                        request.getSource() );
-                errors.add( msg );
-                logger.error( msg );
-            }
-
-            if ( errors.isEmpty() )
-            {
-                ArtifactStore sourceStore = storeManager.getArtifactStore( request.getSource() );
-                ArtifactStore targetStore = storeManager.getArtifactStore( request.getTarget() );
-                locked = lock.tryLock( config.getLockTimeoutSeconds(), TimeUnit.SECONDS );
-                if ( !locked )
-                {
-                    String error =
-                            String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
-                                           config.getLockTimeoutSeconds() );
-
-                    errors.add( error );
-                    logger.warn( error );
-                }
-
-                if ( errors.isEmpty() )
-                {
-                    logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", sourceStore,
-                                 request.getSource(), targetStore, request.getTarget() );
-
-                    final boolean purgeSource = request.isPurgeSource();
-                    contents.forEach( ( transfer ) -> {
-                        final String path = transfer.getPath();
-
-                        if ( !transfer.exists() )
-                        {
-                            pending.remove( path );
-                            skipped.add( path );
-                        }
-                        else
-                        {
-                            try
-                            {
-                                Transfer target =
-                                        contentManager.getTransfer( targetStore, path, TransferOperation.UPLOAD );
-                                //                        synchronized ( target )
-                                //                        {
-                                // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                                if ( target != null && target.exists() )
-                                {
-                                    logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                                 request.getSource(), request.getTarget() );
-
-                                    // TODO: There's no guarantee that the pre-existing content is the same!
-                                    pending.remove( path );
-                                    skipped.add( path );
-                                }
-                                else
-                                {
-                                    try (InputStream stream = transfer.openInputStream( true ))
-                                    {
-                                        contentManager.store( targetStore, path, stream, TransferOperation.UPLOAD,
-                                                              new EventMetadata() );
-
-                                        pending.remove( path );
-                                        complete.add( path );
-
-                                        stream.close();
-
-                                        if ( purgeSource )
-                                        {
-                                            contentManager.delete( sourceStore, path, new EventMetadata() );
-                                        }
-                                    }
-                                    catch ( final IOException e )
-                                    {
-                                        String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
-                                                                    transfer, e.getMessage() );
-                                        errors.add( msg );
-                                        logger.error( msg, e );
-                                    }
-                                }
-                                clearStoreNFC( validationRequest.getSourcePaths(), targetStore );
-                            }
-                            catch ( final IndyWorkflowException | IndyDataException | PromotionValidationException e )
-                            {
-                                String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
-                                                            targetStore, e.getMessage() );
-                                errors.add( msg );
-                                logger.error( msg, e );
-                            }
-                        }
-                    } );
-                }
-            }
-
+            sourceStore = storeManager.getArtifactStore( request.getSource() );
         }
-        catch ( InterruptedException e )
-        {
-            String error = String.format( "Interrupted waiting for promotion lock on target: %s", targetKey );
-            errors.add( error );
-            logger.warn( error );
-        }
-        catch ( final IndyDataException e )
+        catch ( IndyDataException e )
         {
             String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getSource(),
                                         e.getMessage() );
             errors.add( msg );
             logger.error( msg, e );
         }
-        finally
+
+        ArtifactStore targetStore = null;
+        try
         {
-            if ( locked )
-            {
-                lock.unlock();
-            }
+            targetStore = storeManager.getArtifactStore( request.getTarget() );
+        }
+        catch ( IndyDataException e )
+        {
+            String msg = String.format( "Failed to retrieve artifact store: %s. Reason: %s", request.getTarget(),
+                                        e.getMessage() );
+            errors.add( msg );
+            logger.error( msg, e );
+        }
+
+        if ( errors.isEmpty() )
+        {
+            ArtifactStore src = sourceStore;
+            ArtifactStore tgt = targetStore;
+
+            byPathTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k->{
+                logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", src,
+                             request.getSource(), tgt, request.getTarget() );
+
+                final boolean purgeSource = request.isPurgeSource();
+                contents.forEach( ( transfer ) -> {
+                    final String path = transfer.getPath();
+
+                    if ( !transfer.exists() )
+                    {
+                        pending.remove( path );
+                        skipped.add( path );
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Transfer target =
+                                    contentManager.getTransfer( tgt, path, TransferOperation.UPLOAD );
+                            //                        synchronized ( target )
+                            //                        {
+                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                            if ( target != null && target.exists() )
+                            {
+                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                             request.getSource(), request.getTarget() );
+
+                                // TODO: There's no guarantee that the pre-existing content is the same!
+                                pending.remove( path );
+                                skipped.add( path );
+                            }
+                            else
+                            {
+                                try (InputStream stream = transfer.openInputStream( true ))
+                                {
+                                    contentManager.store( tgt, path, stream, TransferOperation.UPLOAD,
+                                                          new EventMetadata() );
+
+                                    pending.remove( path );
+                                    complete.add( path );
+
+                                    stream.close();
+
+                                    if ( purgeSource )
+                                    {
+                                        contentManager.delete( src, path, new EventMetadata() );
+                                    }
+                                }
+                                catch ( final IOException e )
+                                {
+                                    String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
+                                                                transfer, e.getMessage() );
+                                    errors.add( msg );
+                                    logger.error( msg, e );
+                                }
+                            }
+                            clearStoreNFC( validationRequest.getSourcePaths(), tgt );
+                        }
+                        catch ( final IndyWorkflowException | IndyDataException | PromotionValidationException e )
+                        {
+                            String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
+                                                        tgt, e.getMessage() );
+                            errors.add( msg );
+                            logger.error( msg, e );
+                        }
+                    }
+                } );
+
+                return null;
+            }, (k,lock)->{
+                String error =
+                        String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
+                                       config.getLockTimeoutSeconds() );
+
+                errors.add( error );
+                logger.warn( error );
+
+                return false;
+            } );
         }
 
         String error = null;

@@ -16,6 +16,7 @@
 package org.commonjava.indy.promote.data;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
@@ -34,6 +35,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -172,7 +174,9 @@ public class PromotionManagerTest
 
         PromoteConfig config = new PromoteConfig();
 
-        manager = new PromotionManager( validator, contentManager, downloadManager, storeManager, config, nfc );
+        manager =
+                new PromotionManager( validator, contentManager, downloadManager, storeManager, new Locker<StoreKey>(),
+                                      new Locker<StoreKey>(), config, nfc );
 
         executor = Executors.newCachedThreadPool();
     }
