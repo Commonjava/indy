@@ -133,12 +133,8 @@ public class IspnNotFoundCache
     public void clearMissing( final Location location )
     {
         Cache<String, NfcConcreteResourceWrapper> cache = nfcCache.getCache();
-        cache.entrySet().stream().filter( e ->
-                                          {
-                                              StoreKey storeKey = fromString( e.getValue().getLocation() );
-                                              return storeKey.equals( ( (KeyedLocation) location ).getKey() );
-                                          } )
-             .forEach( e -> cache.remove( e.getKey() ) );
+        Set<String> paths = getMissing( location );
+        paths.forEach( path -> cache.remove( getResourceKey( new ConcreteResource( location, path ) ) ) );
     }
 
     @Override
