@@ -151,7 +151,7 @@ public class KojiMavenMetadataProvider
         }
         catch ( InvalidRefException e )
         {
-            logger.debug( "Not a valid Maven GA: {}:{}. Skipping Koji metadata retrieval.", groupId, artifactId );
+            logger.warn( "Not a valid Maven GA: {}:{}. Skipping Koji metadata retrieval.", groupId, artifactId );
         }
 
         if ( ga == null )
@@ -327,15 +327,16 @@ public class KojiMavenMetadataProvider
                 }
                 catch ( KojiClientException e )
                 {
-                    throw new IndyWorkflowException(
-                            "Failed to retrieve version metadata for: %s from Koji. Reason: %s", e, ga,
-                            e.getMessage() );
+                    logger.error(
+                            String.format( "Failed to retrieve version metadata for: %s from Koji. Reason: %s", ga,
+                                           e.getMessage() ), e );
+                    metadata = null;
                 }
-
-                Metadata md = metadata;
 
                 if ( metadata != null )
                 {
+                    Metadata md = metadata;
+
                     // FIXME: Need a way to listen for cache expiration and re-request this?
                     versionMetadata.execute( ( cache ) -> cache.getAdvancedCache()
                                                                .put( ref, md, kojiConfig.getMetadataTimeoutSeconds(),

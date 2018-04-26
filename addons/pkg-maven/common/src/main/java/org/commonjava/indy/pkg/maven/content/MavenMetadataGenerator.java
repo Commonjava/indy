@@ -572,6 +572,13 @@ public class MavenMetadataGenerator
         // Try to generate missed meta
         missing = generateMissingMemberMetadata( group, missing, memberMetas, toMergePath );
 
+        if ( !missing.isEmpty() )
+        {
+            logger.warn(
+                    "After download and generation attempts, metadata is still missing from the following stores: {}",
+                    missing );
+        }
+
         List<Metadata> metas = members.stream()
                                       .map( mem -> memberMetas.get(mem.getKey()) )
                                       .filter( mmeta -> mmeta != null )
@@ -610,7 +617,7 @@ public class MavenMetadataGenerator
         Set<ArtifactStore> ret = new HashSet<>(); // return stores which failed generation
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
-        List<String> errors = new ArrayList<>();
+//        List<String> errors = new ArrayList<>();
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -642,13 +649,13 @@ public class MavenMetadataGenerator
                 }
                 catch ( final Exception e )
                 {
-                    String msg = String.format( "Failed to generate metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                    String msg = String.format( "EXCLUDING Failed generated metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
                                                  e.getMessage() );
                     logger.error( msg, e );
-                    synchronized ( errors )
-                    {
-                        errors.add( msg );
-                    }
+//                    synchronized ( errors )
+//                    {
+//                        errors.add( msg );
+//                    }
                 }
                 finally
                 {
@@ -660,11 +667,11 @@ public class MavenMetadataGenerator
 
         waitOnLatch(group, toMergePath, latch);
 
-        if ( !errors.isEmpty() )
-        {
-            throw new IndyWorkflowException( "Failed to generate one or more member metadata files for: %s:%s. Errors were:\n  %s",
-                            group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
-        }
+//        if ( !errors.isEmpty() )
+//        {
+//            throw new IndyWorkflowException( "Failed to generate one or more member metadata files for: %s:%s. Errors were:\n  %s",
+//                            group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
+//        }
 
         return ret;
     }
@@ -740,7 +747,7 @@ public class MavenMetadataGenerator
         Set<ArtifactStore> ret = new HashSet<>(  ); // return stores which failed download
 
         CountDownLatch latch = new CountDownLatch( missing.size() );
-        List<String> errors = Collections.synchronizedList( new ArrayList<>() );
+//        List<String> errors = Collections.synchronizedList( new ArrayList<>() );
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -771,10 +778,10 @@ public class MavenMetadataGenerator
                 }
                 catch ( final Exception e )
                 {
-                    String msg = String.format( "Failed to retrieve metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                    String msg = String.format( "EXCLUDING Failed to metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
                                                  e.getMessage() );
                     logger.error( msg, e );
-                    errors.add( msg );
+//                    errors.add( msg );
                 }
                 finally
                 {
@@ -786,12 +793,12 @@ public class MavenMetadataGenerator
 
         waitOnLatch(group, toMergePath, latch);
 
-        if ( !errors.isEmpty() )
-        {
-            throw new IndyWorkflowException(
-                    "Failed to retrieve one or more member metadata files for: %s:%s. Errors were:\n  %s",
-                    group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
-        }
+//        if ( !errors.isEmpty() )
+//        {
+//            throw new IndyWorkflowException(
+//                    "Failed to retrieve one or more member metadata files for: %s:%s. Errors were:\n  %s",
+//                    group.getKey(), toMergePath, new JoinString( "\n  ", errors ) );
+//        }
 
         return ret;
     }
