@@ -3,6 +3,7 @@ package org.commonjava.indy.pkg.maven.content;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -15,16 +16,29 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
 
+/**
+ * This listener will do these tasks:
+ * <ul>
+ *     <li>When there are member changes for a group, or some members disabled/enabled in a group, delete group metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
+ * </ul>
+ */
 @ApplicationScoped
-public class MetadataMembershipListener
+public class MetadataStoreListener
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private MavenMetadataGenerator metadataGenerator;
+
+    @Inject
+    private StoreDataManager storeManager;
 
     @Inject
     @MavenVersionMetadataCache
@@ -51,6 +65,7 @@ public class MetadataMembershipListener
     private void removeMetadataCacheContent( final ArtifactStore store,
                                              final Map<ArtifactStore, ArtifactStore> changeMap )
     {
+        logger.trace( "Processing update event for: {}", store.getKey() );
         handleStoreDisableOrEnable( store, changeMap );
 
         handleGroupMembersChanged( store, changeMap );
@@ -59,22 +74,35 @@ public class MetadataMembershipListener
     // if a store is disabled/enabled, we should clear its metadata cache and all of its affected groups cache too.
     private void handleStoreDisableOrEnable(final ArtifactStore store,
                                             final Map<ArtifactStore, ArtifactStore> changeMap){
+        logger.trace( "Processing en/disable event for: {}", store.getKey() );
+
         final ArtifactStore oldStore = changeMap.get( store );
         if ( store.isDisabled() != oldStore.isDisabled() )
         {
+            logger.trace( "En/disable state changed for: {}", store.getKey() );
+
             final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( store.getKey() );
             if ( metadataMap != null && !metadataMap.isEmpty() )
             {
+                logger.trace( "Removing cached metadata for: {}", store.getKey() );
                 versionMetadataCache.remove( store.getKey() );
-//                try
-//                {
-//                    storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
-//                }
-//                catch ( IndyDataException e )
-//                {
-//                    logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
-//                }
+                try
+                {
+                    storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g, store ) );
+                }
+                catch ( IndyDataException e )
+                {
+                    logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
+                }
             }
+            else
+            {
+                logger.trace( "Cached metadata map is empty or null for: {}", store.getKey() );
+            }
+        }
+        else
+        {
+            logger.trace( "En/disable state has not changed for: {}", store.getKey() );
         }
     }
 
@@ -111,15 +139,16 @@ public class MetadataMembershipListener
 
             if ( membersChanged )
             {
-                clearGroupMetaCache( group );
-                //                try
-                //                {
-                //                    storeManager.query().getGroupsAffectedBy( group.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
-                //                }
-                //                catch ( IndyDataException e )
-                //                {
-                //                    logger.error( String.format( "Can not get affected groups of %s", group.getKey()), e );
-                //                }
+                logger.trace( "Membership change confirmed. Clearing caches for group: {} and groups affected by it.", group.getKey() );
+                clearGroupMetaCache( group, group );
+                try
+                {
+                    storeManager.query().getGroupsAffectedBy( group.getKey() ).forEach( g -> clearGroupMetaCache( g, group ) );
+                }
+                catch ( IndyDataException e )
+                {
+                    logger.error( String.format( "Can not get affected groups of %s", group.getKey() ), e );
+                }
             }
             else
             {
@@ -128,19 +157,32 @@ public class MetadataMembershipListener
         }
     }
 
-    private void clearGroupMetaCache( final Group group )
+    private void clearGroupMetaCache( final Group group, final ArtifactStore store )
     {
         final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( group.getKey() );
+
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Clearing metadata for group: {}\n{}", group.getKey(), metadataMap );
+        logger.trace( "Clearing metadata for group: {} after update of store: {}\n{}", group.getKey(), store.getKey(), metadataMap );
 
-        if ( metadataMap != null && !metadataMap.isEmpty() )
+        if ( metadataMap == null || metadataMap.isEmpty() )
         {
-            String[] paths = new String[metadataMap.size()];
-            paths = metadataMap.keySet().toArray( paths );
-
-            metadataGenerator.clearAllMerged( group, paths );
+            logger.trace( "No cached metadata for: {}", group.getKey() );
+            return;
         }
+
+        String[] paths = new String[metadataMap.size()];
+        paths = metadataMap.keySet().toArray( paths );
+
+        List<String> pathsList = Arrays.asList( paths );
+
+        logger.trace(
+                "Clearing merged paths in MavenMetadataGenerator for: {} as a result of change in: {} (paths: {})",
+                group.getKey(), store.getKey(), pathsList );
+
+        metadataGenerator.clearAllMerged( group, paths );
+
+        logger.trace( "Clearing cached, merged paths for: {} as a result of change in: {} (paths: {})", group.getKey(),
+                      store.getKey(), pathsList );
 
         versionMetadataCache.remove( group.getKey() );
     }

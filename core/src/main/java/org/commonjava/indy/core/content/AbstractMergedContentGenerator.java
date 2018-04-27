@@ -133,12 +133,18 @@ public abstract class AbstractMergedContentGenerator
 
         }
 
-        groups.stream().forEach( group -> Stream.of(paths).forEach( path->clearMergedFile( group, path ) ));
+        groups.parallelStream().forEach( group -> Stream.of(paths).forEach( path->{
+            logger.trace( "Clearing: '{}' in: {}", path, group );
+            clearMergedFile( group, path );
+        } ));
 
         if ( mergedContentActions != null )
         {
             StreamSupport.stream( mergedContentActions.spliterator(), true )
-                         .forEach( action -> Stream.of(paths).forEach( path->action.clearMergedPath( store, groups, path ) ) );
+                         .forEach( action -> Stream.of(paths).forEach( path->{
+                             logger.trace( "Executing clearMergedPath on action: {} for group: {} and path: {}", action, groups, path );
+                             action.clearMergedPath( store, groups, path );
+                         } ) );
         }
     }
 
@@ -157,13 +163,15 @@ public abstract class AbstractMergedContentGenerator
                 {
                     logger.error( "\n\n\n\nDID NOT DELETE merged metadata file at: {} in group: {}\n\n\n\n", path, group.getName() );
                 }
-                helper.deleteChecksumsAndMergeInfo( group, path );
             }
             else
             {
                 ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
                 nfc.clearMissing( resource );
             }
+
+            // make sure we delete these, even if they're left over.
+            helper.deleteChecksumsAndMergeInfo( group, path );
         }
         catch ( final IndyWorkflowException | IOException e )
         {

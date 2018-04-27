@@ -377,7 +377,8 @@ public class MavenMetadataGenerator
         if ( exists( target ) )
         {
             // Means there is no metadata change if this transfer exists, so directly return it.
-            logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
+            logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(),
+                          path );
             return target;
         }
 
@@ -388,7 +389,8 @@ public class MavenMetadataGenerator
             {
                 logger.debug( "Start metadata generation for the metadata file for this path {} in group {}", path,
                               group );
-                final Metadata md = generateGroupMetadata( group, members, path );
+                List<StoreKey> contributing = new ArrayList<>();
+                final Metadata md = generateGroupMetadata( group, members, contributing, path );
                 if ( md != null )
                 {
                     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -417,7 +419,11 @@ public class MavenMetadataGenerator
                                 closeQuietly( fos );
                             }
 
-                            writeGroupMergeInfo( group, members, mergePath );
+                            String mergeInfo = writeGroupMergeInfo( md, group, contributing, mergePath );
+                            MetadataInfo info = new MetadataInfo( md );
+                            info.setMetadataMergeInfo( mergeInfo );
+
+                            putToMetadataCache( group.getKey(), mergePath, info );
                         }
                     }
                     catch ( final IOException e )
@@ -479,55 +485,45 @@ public class MavenMetadataGenerator
         return group.getKey().toString() + "-" + path;
     }
 
-    private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )
+    private String writeGroupMergeInfo( final Metadata md, final Group group, final List<StoreKey> contributingMembers, final String path )
             throws IndyWorkflowException
     {
         logger.trace( "Start write .info file based on if the cache exists for group {} of members {} in path. ",
-                      group.getKey(), members, path );
+                      group.getKey(), contributingMembers, path );
         final Transfer mergeInfoTarget = fileManager.getTransfer( group, path + GroupMergeHelper.MERGEINFO_SUFFIX );
-        if ( !exists( mergeInfoTarget ) )
-        {
-            logger.trace( ".info file not found for {} of members {} in path {}", group.getKey(), members, path );
-            final MetadataInfo metaInfo = getMetaInfoFromCache( group.getKey(), path );
-            if ( metaInfo != null )
-            {
-                String metaMergeInfo = metaInfo.getMetadataMergeInfo();
-                if ( StringUtils.isBlank( metaMergeInfo ) )
-                {
-                    logger.trace(
-                            "metadata merge info not cached for group {} of members {} in path {}, will regenerate.",
-                            group.getKey(), members, path );
-                    final List<Transfer> sources = fileManager.retrieveAllRaw( members, path, new EventMetadata() );
-                    metaMergeInfo = helper.generateMergeInfo( sources );
-                    metaInfo.setMetadataMergeInfo( metaMergeInfo );
-                }
-                logger.trace( "Metadata merge info for {} of members {} in path {} is {}", group.getKey(), members,
-                              path, metaMergeInfo );
-                helper.writeMergeInfo( metaMergeInfo, group, path );
-                logger.trace( ".info file regenerated for group {} of members {} in path. ", group.getKey(), members,
-                              path );
-            }
-        }
-        else
-        {
-            logger.trace( ".info file exists for group {} of members {} in path, no need to regenerate ",
-                          group.getKey(), members, path );
-        }
+        logger.trace( ".info file not found for {} of members {} in path {}", group.getKey(), contributingMembers, path );
+
+        logger.trace(
+                "metadata merge info not cached for group {} of members {} in path {}, will regenerate.",
+                group.getKey(), contributingMembers, path );
+        String metaMergeInfo = helper.generateMergeInfoFromKeys( contributingMembers );
+
+        logger.trace( "Metadata merge info for {} of members {} in path {} is {}", group.getKey(), contributingMembers,
+                      path, metaMergeInfo );
+        helper.writeMergeInfo( metaMergeInfo, group, path );
+        logger.trace( ".info file regenerated for group {} of members {} in path. Full path: {}", group.getKey(), contributingMembers,
+                      path, mergeInfoTarget.getDetachedFile() );
+
+        return metaMergeInfo;
     }
 
     /**
      * Will generate group related files(e.g maven-metadata.xml) from cache level, which means all the generation of the
-     * files will be cached. In terms of cache clearing, see #{@link MetadataMergeListner}
+     * files will be cached. In terms of cache clearing, see #{@link MetadataMergeListener}
      *
      * @param group
      * @param members concrete store in group
      * @param path
+     *
      * @return
+     *
      * @throws IndyWorkflowException
      */
-    private Metadata generateGroupMetadata( final Group group, final List<ArtifactStore> members, final String path )
+    private Metadata generateGroupMetadata( final Group group, final List<ArtifactStore> members,
+                                            final List<StoreKey> contributingMembers, final String path )
             throws IndyWorkflowException
     {
+
         if ( !canProcess( path ) )
         {
             logger.error( "The path is not a metadata file: {} ", path );
@@ -548,7 +544,7 @@ public class MavenMetadataGenerator
         }
 
         Map<StoreKey, Metadata> memberMetas = new ConcurrentHashMap<>( members.size() );
-        Set<ArtifactStore> missing = retrieveCachedMemberMetadata( memberMetas, members, toMergePath );
+        Set<ArtifactStore> missing = retrieveCachedMemberMetadata( memberMetas, members, contributingMembers, toMergePath );
 
         // Try to download missed meta
         missing = downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
@@ -563,16 +559,27 @@ public class MavenMetadataGenerator
                     missing );
         }
 
+        String tmp = toMergePath;
         List<Metadata> metas = members.stream()
-                                      .map( mem -> memberMetas.get(mem.getKey()) )
+                                      .map( mem -> {
+                                          Metadata memberMetadata = memberMetas.get( mem.getKey() );
+                                          if ( memberMetadata != null )
+                                          {
+                                              logger.trace("Recording contributing member: {} for metadata: {} in group: {}", mem.getKey(), tmp, group.getKey() );
+                                              contributingMembers.add( mem.getKey() );
+                                          }
+
+                                          return memberMetadata;
+                                      } )
                                       .filter( mmeta -> mmeta != null )
                                       .collect( Collectors.toList() );
+
+        logger.trace( "Metadata: {} in group: {} was generated from members: {}", toMergePath, group.getKey(), contributingMembers );
 
         final Metadata master = merger.mergeFromMetadatas( metas, group, toMergePath );
 
         if ( master != null )
         {
-            putToMetadataCache( group.getKey(), toMergePath, master );
             return master;
         }
 
@@ -580,7 +587,7 @@ public class MavenMetadataGenerator
         return null;
     }
 
-    private void putToMetadataCache( StoreKey key, String toMergePath, Metadata meta )
+    private void putToMetadataCache( StoreKey key, String toMergePath, MetadataInfo meta )
     {
         synchronized ( versionMetadataCache )
         {
@@ -588,9 +595,12 @@ public class MavenMetadataGenerator
             if ( cacheMap == null )
             {
                 cacheMap = new HashMap<>();
-                versionMetadataCache.put( key, cacheMap );
             }
-            cacheMap.put( toMergePath, new MetadataInfo( meta ) );
+
+            cacheMap.put( toMergePath, meta );
+            versionMetadataCache.put( key, cacheMap );
+
+            logger.trace( "Cached metadata: {} for: {}", toMergePath, key );
         }
     }
 
@@ -622,7 +632,7 @@ public class MavenMetadataGenerator
                             Metadata memberMeta = reader.read( new StringReader( content ), false );
                             memberMetas.put( store.getKey(), memberMeta );
 
-                            putToMetadataCache( group.getKey(), toMergePath, memberMeta );
+                            putToMetadataCache( store.getKey(), toMergePath, new MetadataInfo( memberMeta ) );
                             clearObsoleteFiles( memberMetaTxfr );
                         }
                     }
@@ -679,9 +689,12 @@ public class MavenMetadataGenerator
     }
 
     private Set<ArtifactStore> retrieveCachedMemberMetadata( final Map<StoreKey, Metadata> memberMetas,
-                                                             final List<ArtifactStore> members, final String toMergePath )
+                                                             final List<ArtifactStore> members,
+                                                             final List<StoreKey> contributingMembers,
+                                                             final String toMergePath )
             throws IndyWorkflowException
     {
+
         Set<ArtifactStore> missing = new HashSet<>();
 
         for ( ArtifactStore store : members )
@@ -697,7 +710,7 @@ public class MavenMetadataGenerator
                                                                                    .stream()
                                                                                    .filter( st -> !st.isDisabled() )
                                                                                    .collect( Collectors.toList() ),
-                                                        toMergePath );
+                                                        contributingMembers, toMergePath );
                     memberMetas.put( store.getKey(), memberMeta );
                 }
                 catch ( IndyDataException e )
@@ -752,7 +765,7 @@ public class MavenMetadataGenerator
                             Metadata memberMeta = reader.read( new StringReader( content ), false );
                             memberMetas.put( store.getKey(), memberMeta );
 
-                            putToMetadataCache( group.getKey(), toMergePath, memberMeta );
+                            putToMetadataCache( store.getKey(), toMergePath, new MetadataInfo( memberMeta ) );
                         }
                     }
                     else
@@ -816,6 +829,7 @@ public class MavenMetadataGenerator
         final MetadataInfo metaMergeInfo = getMetaInfoFromCache( key, path );
         if ( metaMergeInfo != null )
         {
+            logger.trace( "FOUND metadata: {} in group: {} with merge info:\n\n{}\n\n", path, key, metaMergeInfo.getMetadataMergeInfo() );
             return metaMergeInfo.getMetadata();
         }
         return null;

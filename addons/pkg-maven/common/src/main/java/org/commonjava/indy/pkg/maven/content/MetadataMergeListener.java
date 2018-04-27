@@ -44,12 +44,11 @@ import java.util.Set;
 /**
  * This listener will do these tasks:
  * <ul>
- *     <li>When there are member changes for a group, or some members disabled/enabled in a group, delete group metadata caches to force next regeneration of the metadata files of the group(cascaded)</li>
  *     <li>When the metadata file changed of a member in a group, delete correspond cache of that file path of the member and group (cascaded)</li>
  * </ul>
  */
 @ApplicationScoped
-public class MetadataMergeListner
+public class MetadataMergeListener
         implements MergedContentAction
 {
     final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -58,44 +57,8 @@ public class MetadataMergeListner
     private DirectContentAccess fileManager;
 
     @Inject
-    private StoreDataManager storeManager;
-
-    @Inject
     @MavenVersionMetadataCache
     private CacheHandle<StoreKey, Map> versionMetadataCache;
-
-    private void clearTempMetaFile( final Group group, final String path )
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Clearing merged metadata: {} from group: {}", path, group );
-
-        try
-        {
-            final Transfer tempMetaTxfr = fileManager.getTransfer( group, path );
-            if ( tempMetaTxfr != null && tempMetaTxfr.exists() )
-            {
-                tempMetaTxfr.delete();
-            }
-        }
-        catch ( IndyWorkflowException | IOException e )
-        {
-            logger.error( "Can not delete temp metadata file for group. Group: {}, file path: {}", group, path );
-        }
-
-        try
-        {
-            final Transfer tempMetaMergeInfoTxfr =
-                    fileManager.getTransfer( group, path + GroupMergeHelper.MERGEINFO_SUFFIX );
-            if ( tempMetaMergeInfoTxfr != null && tempMetaMergeInfoTxfr.exists() )
-            {
-                tempMetaMergeInfoTxfr.delete();
-            }
-        }
-        catch ( IndyWorkflowException | IOException e )
-        {
-            logger.error( "Can not delete temp metadata file for group. Group: {}, file path: {}", group, path );
-        }
-    }
 
     /**
      * Will clear the both merge path and merge info file of member and group contains that member(cascaded) if that path of file changed in the member of #originatingStore
