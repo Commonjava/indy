@@ -21,13 +21,16 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
+import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
+import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
 import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
 import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -60,11 +63,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
@@ -90,7 +91,9 @@ public class KojiMavenMetadataProvider
     @Inject
     private KojiBuildAuthority buildAuthority;
 
-    private final Map<ProjectRef, ReentrantLock> versionMetadataLocks = newSynchronizedContextSensitiveWeakHashMap();
+    @KojiMavenVersionMetadataLocks
+    @Inject
+    private Locker<ProjectRef> versionMetadataLocks;
 
     protected KojiMavenMetadataProvider(){}
 
@@ -144,186 +147,30 @@ public class KojiMavenMetadataProvider
         String groupId = groupDir.getPath().replace( File.separatorChar, '.' );
         String artifactId = artifactDir.getName();
 
-        ProjectRef ga = null;
+        ProjectRef ref = null;
         try
         {
-            ga = new SimpleProjectRef( groupId, artifactId );
+            ref = new SimpleProjectRef( groupId, artifactId );
         }
         catch ( InvalidRefException e )
         {
             logger.warn( "Not a valid Maven GA: {}:{}. Skipping Koji metadata retrieval.", groupId, artifactId );
         }
 
-        if ( ga == null )
+        if ( ref == null )
         {
             logger.debug( "Could not render a valid Maven GA for path: '{}'", path );
             return null;
         }
 
-        ReentrantLock lock = versionMetadataLocks.computeIfAbsent( ga, k -> new ReentrantLock() );
-
-        boolean locked = false;
-        try
-        {
-            locked = lock.tryLock( kojiConfig.getLockTimeoutSeconds(), TimeUnit.SECONDS );
-            if ( !locked )
-            {
-                throw new IndyWorkflowException(
-                        "Failed to acquire Koji GA version metadata lock on: %s in %d seconds.", ga,
-                        kojiConfig.getLockTimeoutSeconds() );
-            }
-
+        ProjectRef ga = ref;
+        return versionMetadataLocks.lockAnd( ga, kojiConfig.getLockTimeoutSeconds(), k -> {
             Metadata metadata = versionMetadata.get( ga );
-            ProjectRef ref = ga;
             if ( metadata == null )
             {
                 try
                 {
-                    metadata = kojiClient.withKojiSession( ( session ) -> {
-
-                        // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
-                        Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
-                        Set<Integer> seenBuilds = new HashSet<>();
-
-                        List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ref, session );
-
-                        Set<SingleVersion> versions = new HashSet<>();
-                        for ( KojiArchiveInfo archive : archives )
-                        {
-                            if ( !archive.getFilename().endsWith( ".pom" ) )
-                            {
-                                logger.debug( "Skipping non-POM: {}", archive.getFilename() );
-                                continue;
-                            }
-
-                            if ( !isVerSignedAllowed( archive.getVersion() ) )
-                            {
-                                logger.debug( "version filter pattern not matched: {}", archive.getVersion() );
-                                continue;
-                            }
-
-                            SingleVersion singleVersion = null;
-                            try
-                            {
-                                singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
-                            }
-                            catch ( InvalidVersionSpecificationException ivse )
-                            {
-                                logger.warn( "Skipping mal-formatted version: {}, relPath: {}, buildId: {}",
-                                             archive.getVersion(), archive.getRelPath(), archive.getBuildId() );
-                                continue;
-                            }
-
-                            if ( versions.contains( singleVersion ) )
-                            {
-                                logger.debug( "Skipping already collected version: {}", archive.getVersion() );
-                                continue;
-                            }
-
-                            KojiBuildInfo build;
-                            if ( seenBuilds.contains( archive.getBuildId() ) )
-                            {
-                                logger.debug( "Skipping already seen build: {}", archive.getBuildId() );
-                                continue;
-                            }
-                            else
-                            {
-                                build = kojiClient.getBuildInfo( archive.getBuildId(), session );
-                                seenBuilds.add( archive.getBuildId() );
-                            }
-
-                            if ( build == null )
-                            {
-                                logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(),
-                                              archive.getFilename() );
-                                continue;
-                            }
-
-                            if ( build.getBuildState() != KojiBuildState.COMPLETE )
-                            {
-                                logger.debug( "Build: {} is not completed. The state is {}. Skipping.",
-                                              build.getNvr(), build.getBuildState() );
-                                continue;
-                            }
-
-                            if ( build.getTaskId() == null )
-                            {
-                                logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.",
-                                              build.getNvr() );
-                                // This is not a real build, it's a binary import.
-                                continue;
-                            }
-
-                            boolean buildAllowed = false;
-                            if ( !kojiConfig.isTagPatternsEnabled() )
-                            {
-                                buildAllowed = true;
-                            }
-                            else
-                            {
-                                logger.trace( "Checking for builds/tags of: {}", archive );
-
-                                List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
-                                for ( KojiTagInfo tag : tags )
-                                {
-                                    if ( kojiConfig.isTagAllowed( tag.getName() ) )
-                                    {
-                                        logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
-                                        buildAllowed = true;
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
-                                    }
-                                }
-                            }
-
-                            logger.debug(
-                                    "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
-
-                            if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ref, build, session, seenBuildArchives ) )
-                            {
-                                try
-                                {
-                                    logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
-                                    versions.add( singleVersion );
-                                }
-                                catch ( InvalidVersionSpecificationException e )
-                                {
-                                    logger.warn( String.format(
-                                            "Encountered invalid version: %s for archive: %s. Reason: %s",
-                                            archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
-                                }
-                            }
-                        }
-
-                        if ( versions.isEmpty() )
-                        {
-                            logger.debug( "No versions found in Koji builds for metadata: {}", path );
-                            return null;
-                        }
-
-                        List<SingleVersion> sortedVersions = new ArrayList<>( versions );
-                        Collections.sort( sortedVersions );
-
-                        Metadata md = new Metadata();
-                        md.setGroupId( ref.getGroupId() );
-                        md.setArtifactId( ref.getArtifactId() );
-
-                        Versioning versioning = new Versioning();
-                        versioning.setRelease( sortedVersions.get( versions.size() - 1 ).renderStandard() );
-                        versioning.setLatest( sortedVersions.get( versions.size() - 1 ).renderStandard() );
-                        versioning.setVersions(
-                                sortedVersions.stream().map( SingleVersion::renderStandard ).collect( Collectors.toList() ) );
-
-                        Date lastUpdated = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).getTime();
-                        versioning.setLastUpdated( new SimpleDateFormat( LAST_UPDATED_FORMAT ).format( lastUpdated ) );
-
-                        md.setVersioning( versioning );
-
-                        return md;
-                    } );
+                    metadata = executeKojiMetadataLookup( ga, path );
                 }
                 catch ( KojiClientException e )
                 {
@@ -339,27 +186,231 @@ public class KojiMavenMetadataProvider
 
                     // FIXME: Need a way to listen for cache expiration and re-request this?
                     versionMetadata.execute( ( cache ) -> cache.getAdvancedCache()
-                                                               .put( ref, md, kojiConfig.getMetadataTimeoutSeconds(),
+                                                               .put( ga, md, kojiConfig.getMetadataTimeoutSeconds(),
                                                                      TimeUnit.SECONDS ) );
+                }
+                else
+                {
+                    logger.debug( "Returning null metadata result for unknown reason (path: '{}')", path );
                 }
             }
 
             return metadata;
-        }
-        catch ( InterruptedException e )
-        {
-            logger.warn( "Interrupted waiting for Koji GA version metadata lock on target: {}", ga );
-        }
-        finally
-        {
-            if ( locked )
+        }, (k,lock) -> {
+            logger.error( "Failed to acquire Koji GA version metadata lock on: '{}' in {} seconds.", ga,
+                          kojiConfig.getLockTimeoutSeconds() );
+            return false;
+        } );
+    }
+
+    private Metadata executeKojiMetadataLookup(ProjectRef ga, String path )
+            throws KojiClientException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        return kojiClient.withKojiSession( ( session ) -> {
+
+            // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
+            Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
+            Set<Integer> seenBuilds = new HashSet<>();
+
+            List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ga, session );
+
+            Set<SingleVersion> versions = new HashSet<>();
+            for ( KojiArchiveInfo archive : archives )
             {
-                lock.unlock();
+                ArchiveScan scan = scanArchive( archive, session, versions, seenBuilds );
+                if ( scan.isDisqualified() )
+                {
+                    continue;
+                }
+
+                KojiBuildInfo build = scan.getBuild();
+                SingleVersion singleVersion = scan.getSingleVersion();
+
+                boolean buildAllowed = false;
+                if ( !kojiConfig.isTagPatternsEnabled() )
+                {
+                    buildAllowed = true;
+                }
+                else
+                {
+                    logger.trace( "Checking for builds/tags of: {}", archive );
+
+                    List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
+                    for ( KojiTagInfo tag : tags )
+                    {
+                        if ( kojiConfig.isTagAllowed( tag.getName() ) )
+                        {
+                            logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
+                            buildAllowed = true;
+                            break;
+                        }
+                        else
+                        {
+                            logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
+                        }
+                    }
+                }
+
+                logger.debug(
+                        "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
+
+                if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ga, build,
+                                                                  session, seenBuildArchives ) )
+                {
+                    try
+                    {
+                        logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
+                        versions.add( singleVersion );
+                    }
+                    catch ( InvalidVersionSpecificationException e )
+                    {
+                        logger.warn( String.format(
+                                "Encountered invalid version: %s for archive: %s. Reason: %s",
+                                archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
+                    }
+                }
             }
+
+            if ( versions.isEmpty() )
+            {
+                logger.debug( "No versions found in Koji builds for metadata: {}", path );
+                return null;
+            }
+
+            List<SingleVersion> sortedVersions = new ArrayList<>( versions );
+            Collections.sort( sortedVersions );
+
+            Metadata md = new Metadata();
+            md.setGroupId( ga.getGroupId() );
+            md.setArtifactId( ga.getArtifactId() );
+
+            Versioning versioning = new Versioning();
+            versioning.setRelease( sortedVersions.get( versions.size() - 1 ).renderStandard() );
+            versioning.setLatest( sortedVersions.get( versions.size() - 1 ).renderStandard() );
+            versioning.setVersions( sortedVersions.stream()
+                                                  .map( SingleVersion::renderStandard )
+                                                  .collect( Collectors.toList() ) );
+
+            Date lastUpdated = Calendar.getInstance( TimeZone.getTimeZone( "UTC" ) ).getTime();
+            versioning.setLastUpdated( new SimpleDateFormat( LAST_UPDATED_FORMAT ).format( lastUpdated ) );
+
+            md.setVersioning( versioning );
+
+            return md;
+        } );
+    }
+
+    private ArchiveScan scanArchive( final KojiArchiveInfo archive, final KojiSessionInfo session,
+                                       final Set<SingleVersion> versions, final Set<Integer> seenBuilds )
+            throws KojiClientException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        ArchiveScan scan = new ArchiveScan();
+
+        if ( !archive.getFilename().endsWith( ".pom" ) )
+        {
+            logger.debug( "Skipping non-POM: {}", archive.getFilename() );
+            scan.setDisqualified( true );
         }
 
-        logger.debug( "Returning null metadata result for unknown reason (path: '{}')", path );
-        return null;
+        if ( !isVerSignedAllowed( archive.getVersion() ) )
+        {
+            logger.debug( "version filter pattern not matched: {}", archive.getVersion() );
+            scan.setDisqualified( true );
+        }
+
+        SingleVersion singleVersion = null;
+        try
+        {
+            singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
+            scan.setSingleVersion( singleVersion );
+        }
+        catch ( InvalidVersionSpecificationException ivse )
+        {
+            logger.warn( "Skipping mal-formatted version: {}, relPath: {}, buildId: {}", archive.getVersion(),
+                         archive.getRelPath(), archive.getBuildId() );
+            scan.setDisqualified( true );
+        }
+
+        if ( versions.contains( singleVersion ) )
+        {
+            logger.debug( "Skipping already collected version: {}", archive.getVersion() );
+            scan.setDisqualified( true );
+        }
+
+        KojiBuildInfo build = null;
+        if ( seenBuilds.contains( archive.getBuildId() ) )
+        {
+            logger.debug( "Skipping already seen build: {}", archive.getBuildId() );
+            scan.setDisqualified( true );
+        }
+        else
+        {
+            build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+            seenBuilds.add( archive.getBuildId() );
+            scan.setBuild( build );
+        }
+
+        if ( build == null )
+        {
+            logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(), archive.getFilename() );
+            scan.setDisqualified( true );
+        }
+
+        if ( build.getBuildState() != KojiBuildState.COMPLETE )
+        {
+            logger.debug( "Build: {} is not completed. The state is {}. Skipping.", build.getNvr(),
+                          build.getBuildState() );
+            scan.setDisqualified( true );
+        }
+
+        if ( build.getTaskId() == null )
+        {
+            logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.", build.getNvr() );
+            // This is not a real build, it's a binary import.
+            scan.setDisqualified( true );
+        }
+
+        return scan;
+    }
+
+    private static final class ArchiveScan
+    {
+        private boolean disqualified = false;
+        private KojiBuildInfo build;
+        private SingleVersion singleVersion;
+
+        public boolean isDisqualified()
+        {
+            return disqualified;
+        }
+
+        public void setDisqualified( final boolean disqualified )
+        {
+            this.disqualified = disqualified;
+        }
+
+        public KojiBuildInfo getBuild()
+        {
+            return build;
+        }
+
+        public void setBuild( final KojiBuildInfo build )
+        {
+            this.build = build;
+        }
+
+        public SingleVersion getSingleVersion()
+        {
+            return singleVersion;
+        }
+
+        public void setSingleVersion( final SingleVersion singleVersion )
+        {
+            this.singleVersion = singleVersion;
+        }
     }
 
     private boolean isVerSignedAllowed ( String version )

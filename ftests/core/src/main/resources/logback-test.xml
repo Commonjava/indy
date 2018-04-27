@@ -18,7 +18,9 @@
     </encoder>
   </appender>
 
-  <root level="TRACE">
+  <logger name="org.commonjava.indy" level="TRACE" />
+
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
   </root>
 

@@ -26,11 +26,13 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.ObjectBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.ContentIndexManager;
+import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
@@ -67,10 +69,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -138,6 +142,10 @@ public abstract class KojiContentManagerDecorator
 
     @Inject
     private ContentIndexManager indexManager;
+
+    @GroupMembershipLocks
+    @Inject
+    private Locker<StoreKey> groupMembershipLocker;
 
     public KojiRepositoryCreator createRepoCreator()
     {
@@ -591,7 +599,7 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
-    private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group group )
+    private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group srcGroup )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -599,50 +607,71 @@ public abstract class KojiContentManagerDecorator
         // try to lookup the group -> targetGroup mapping in config, using the
         // entry-point group as the lookup key. If that returns null, the targetGroup is
         // the entry-point group.
-        Group targetGroup = group;
-
         boolean isBinaryBuild = KOJI_ORIGIN_BINARY.equals( buildRepo.getMetadata( ArtifactStore.METADATA_ORIGIN) );
 
-        String targetName = isBinaryBuild ? config.getTargetBinaryGroup( group.getName() )
-                : config.getTargetGroup( group.getName() );
+        String targetName = isBinaryBuild ? config.getTargetBinaryGroup( srcGroup.getName() )
+                : config.getTargetGroup( srcGroup.getName() );
+
+        StoreKey targetKey = srcGroup.getKey();
 
         if ( targetName != null )
         {
+            targetKey = new StoreKey( srcGroup.getPackageType(), group, targetName );
+        }
+
+        StoreKey tk = targetKey;
+        AtomicReference<IndyWorkflowException> wfEx = new AtomicReference<>();
+
+        Group result = groupMembershipLocker.lockAnd( targetKey, config.getLockTimeoutSeconds(), k->{
+            Group targetGroup = null;
             try
             {
-                targetGroup = storeDataManager.query().packageType( group.getPackageType() ).getGroup( targetName );
+                targetGroup = (Group) storeDataManager.getArtifactStore( tk );
             }
             catch ( IndyDataException e )
             {
-                throw new IndyWorkflowException(
+                wfEx.set( new IndyWorkflowException(
                         "Cannot lookup koji-addition target group: %s (source group: %s). Reason: %s", e, targetName,
-                        group.getName(), e.getMessage() );
+                        srcGroup.getName(), e.getMessage() ) );
+
+                return null;
             }
-        }
 
-        logger.info( "Adding Koji build proxy: {} to group: {}", buildRepo.getKey(), targetGroup.getKey() );
+            logger.info( "Adding Koji build proxy: {} to group: {}", buildRepo.getKey(), targetGroup.getKey() );
 
-        // Append the new remote repo as a member of the targetGroup.
-        targetGroup.addConstituent( buildRepo );
-        try
+            // Append the new remote repo as a member of the targetGroup.
+            targetGroup.addConstituent( buildRepo );
+            try
+            {
+                final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                       "Adding remote repository for Koji build: "
+                                                                               + buildRepo.getMetadata( NVR ) );
+
+                storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
+            }
+            catch ( IndyDataException e )
+            {
+                wfEx.set( new IndyWorkflowException( "Cannot store target-group: %s changes for: %s. Error: %s", e,
+                                                        targetGroup.getName(), buildRepo.getMetadata( NVR ),
+                                                        e.getMessage() ) );
+                return null;
+            }
+
+            logger.info( "Retrieving GAV: {} from: {}", buildRepo.getMetadata( CREATION_TRIGGER_GAV ), buildRepo );
+
+            return targetGroup;
+        }, (k, lock)->{
+            return false;
+        } );
+
+        IndyWorkflowException ex = wfEx.get();
+        if ( ex != null )
         {
-            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                   "Adding remote repository for Koji build: "
-                                                                           + buildRepo.getMetadata( NVR ) );
-
-            storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
+            throw ex;
         }
-        catch ( IndyDataException e )
-        {
-            throw new IndyWorkflowException( "Cannot store target-group: %s changes for: %s. Error: %s", e,
-                                             targetGroup.getName(), buildRepo.getMetadata( NVR ), e.getMessage() );
-        }
-
-        logger.info( "Retrieving GAV: {} from: {}", buildRepo.getMetadata( CREATION_TRIGGER_GAV ), buildRepo );
-
-        return targetGroup;
 
         // TODO: how to index it for the group...?
+        return result;
     }
 
     private String formatStorageUrl( final KojiBuildInfo buildInfo )

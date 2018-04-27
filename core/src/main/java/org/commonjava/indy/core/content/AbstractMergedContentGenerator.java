@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
@@ -110,8 +111,7 @@ public abstract class AbstractMergedContentGenerator
 
     protected abstract String getMergedMetadataName();
 
-    protected void clearAllMerged( final ArtifactStore store, final String path )
-            throws IndyWorkflowException
+    protected void clearAllMerged( final ArtifactStore store, final String... paths )
     {
         final Set<Group> groups = new HashSet<>();
 
@@ -133,12 +133,12 @@ public abstract class AbstractMergedContentGenerator
 
         }
 
-        groups.stream().forEach( group -> clearMergedFile( group, path ) );
+        groups.stream().forEach( group -> Stream.of(paths).forEach( path->clearMergedFile( group, path ) ));
 
         if ( mergedContentActions != null )
         {
             StreamSupport.stream( mergedContentActions.spliterator(), true )
-                         .forEach( action -> action.clearMergedPath( store, groups, path ) );
+                         .forEach( action -> Stream.of(paths).forEach( path->action.clearMergedPath( store, groups, path ) ) );
         }
     }
 

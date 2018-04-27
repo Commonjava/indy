@@ -21,6 +21,7 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
@@ -46,7 +47,6 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier;
 import org.commonjava.maven.atlas.ident.ref.TypeAndClassifier;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
-import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.atlas.ident.util.SnapshotUtils;
 import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
@@ -83,11 +83,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -154,7 +153,8 @@ public class MavenMetadataGenerator
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
     private ExecutorService executorService;
 
-    private final Map<String, ReentrantLock> mergerLocks = newSynchronizedContextSensitiveWeakHashMap();
+    // don't need to inject since it's only used internally
+    private final Locker<String> mergerLocks = new Locker<>();
 
     private static final int THREAD_WAITING_TIME_SECONDS = 300;
 
@@ -181,6 +181,11 @@ public class MavenMetadataGenerator
         {
             executorService = Executors.newFixedThreadPool( 8 );
         }
+    }
+
+    public void clearAllMerged( ArtifactStore store, String...paths )
+    {
+        super.clearAllMerged( store, paths );
     }
 
     @Override
@@ -376,12 +381,9 @@ public class MavenMetadataGenerator
             return target;
         }
 
-        final ReentrantLock mergerLock = getMergerLock( group, toMergePath );
-        final boolean locked = mergerLock.tryLock();
-        boolean mergingDone = false;
-
-        if ( locked )
-        {
+        AtomicReference<IndyWorkflowException> wfEx = new AtomicReference<>();
+        String mergePath = toMergePath;
+        boolean mergingDone = mergerLocks.ifUnlocked( computeKey(group, toMergePath), p->{
             try
             {
                 logger.debug( "Start metadata generation for the metadata file for this path {} in group {}", path,
@@ -415,7 +417,7 @@ public class MavenMetadataGenerator
                                 closeQuietly( fos );
                             }
 
-                            writeGroupMergeInfo( group, members, toMergePath );
+                            writeGroupMergeInfo( group, members, mergePath );
                         }
                     }
                     catch ( final IOException e )
@@ -425,43 +427,29 @@ public class MavenMetadataGenerator
                     }
                 }
             }
-            finally
+            catch ( IndyWorkflowException e )
             {
-                mergingDone = true;
-                mergerLock.unlock();
+                wfEx.set( e );
+                return false;
             }
-        }
-        else
-        {
+
+            return true;
+        }, (p,mergerLock)->{
             logger.info(
                     "The metadata generation is still in process by another thread for the metadata file for this path {} in group {}, so block current thread to wait for result",
                     path, group );
-            boolean waitingLocked = false;
-            try
-            {
-                //TODO: will let non-working threads wait here for seconds for the result of the working thread processing. Need to evaluate how long should wait here in future.
-                waitingLocked = mergerLock.tryLock( THREAD_WAITING_TIME_SECONDS, TimeUnit.SECONDS );
-                if ( waitingLocked )
-                {
-                    mergingDone = true;
-                }
-            }
-            catch ( InterruptedException e )
-            {
-                logger.warn( "Thread interrupted by other threads for waiting processing result: {}", e.getMessage() );
-            }
-            finally
-            {
-                if ( waitingLocked )
-                {
-                    mergerLock.unlock();
-                }
-            }
+
+            return mergerLocks.waitForLock( THREAD_WAITING_TIME_SECONDS, mergerLock );
+        } );
+
+        IndyWorkflowException ex = wfEx.get();
+        if ( ex != null )
+        {
+            throw ex;
         }
 
         if ( exists( target ) )
         {
-            //                return target;
             // if this is a checksum file, we need to return the original path.
             Transfer original = fileManager.getTransfer( group, path );
             if ( exists( original ) )
@@ -486,13 +474,9 @@ public class MavenMetadataGenerator
         return null;
     }
 
-    private ReentrantLock getMergerLock( Group group, String path )
+    private String computeKey( final Group group, final String path )
     {
-        synchronized ( mergerLocks )
-        {
-            String targetKey = group.getKey().toString() + "-" + path;
-            return mergerLocks.computeIfAbsent( targetKey, t -> new ReentrantLock() );
-        }
+        return group.getKey().toString() + "-" + path;
     }
 
     private void writeGroupMergeInfo( final Group group, final List<ArtifactStore> members, final String path )

@@ -17,11 +17,13 @@ package org.commonjava.indy.koji.inject;
 
 import com.redhat.red.build.koji.KojiClient;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.rwx.binding.error.BindException;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
@@ -49,6 +51,8 @@ public class KojijiProvider
 
     private PasswordManager kojiPasswordManager;
 
+    private Locker<ProjectRef> versionMetadataLocks;
+
     @Inject
     @WeftManaged
     @ExecutorConfig( named = "koji-queries", threads = 4 )
@@ -58,6 +62,14 @@ public class KojijiProvider
     public KojiClient getKojiClient()
     {
         return kojiClient;
+    }
+
+    @KojiMavenVersionMetadataLocks
+    @Produces
+    @ApplicationScoped
+    public Locker<ProjectRef> getVersionMetadataLocks()
+    {
+        return versionMetadataLocks;
     }
 
     @Override
@@ -88,6 +100,8 @@ public class KojijiProvider
         {
             throw new IndyLifecycleException( "Failed to start koji client: %s", e, e.getMessage() );
         }
+
+        versionMetadataLocks = new Locker<>();
     }
 
     @Override

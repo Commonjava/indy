@@ -64,116 +64,11 @@ public class MetadataMergeListner
     @MavenVersionMetadataCache
     private CacheHandle<StoreKey, Map> versionMetadataCache;
 
-    /**
-     * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache due to changed memeber in that event
-     *
-     * @param event
-     */
-    public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
-    {
-
-        logger.trace( "Got store-update event: {}", event );
-
-        if ( ArtifactStoreUpdateType.UPDATE == event.getType() )
-        {
-            for ( ArtifactStore store : event )
-            {
-                removeMetadataCacheContent( store, event.getChangeMap() );
-            }
-        }
-    }
-
-    private void removeMetadataCacheContent( final ArtifactStore store,
-                                             final Map<ArtifactStore, ArtifactStore> changeMap )
-    {
-        handleStoreDisableOrEnable( store, changeMap );
-
-        handleGroupMembersChanged( store, changeMap );
-    }
-
-    // if a store is disabled/enabled, we should clear its metadata cache and all of its affected groups cache too.
-    private void handleStoreDisableOrEnable(final ArtifactStore store,
-                                            final Map<ArtifactStore, ArtifactStore> changeMap){
-        final ArtifactStore oldStore = changeMap.get( store );
-        if ( store.isDisabled() != oldStore.isDisabled() )
-        {
-            final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( store.getKey() );
-            if ( metadataMap != null && !metadataMap.isEmpty() )
-            {
-                versionMetadataCache.remove( store.getKey() );
-                try
-                {
-                    storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
-                }
-                catch ( IndyDataException e )
-                {
-                    logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
-                }
-            }
-        }
-    }
-
-    // If group members changed, should clear the cascading groups metadata cache
-    private void handleGroupMembersChanged(final ArtifactStore store,
-                                           final Map<ArtifactStore, ArtifactStore> changeMap){
-        final StoreKey key = store.getKey();
-        if ( StoreType.group == key.getType() )
-        {
-            final List<StoreKey> newMembers = ( (Group) store ).getConstituents();
-            logger.trace( "New members of: {} are: {}", store.getKey(), newMembers );
-
-            final Group group = (Group) changeMap.get( store );
-            final List<StoreKey> oldMembers = group.getConstituents();
-            logger.trace( "Old members of: {} are: {}", group.getName(), oldMembers );
-
-            boolean membersChanged = false;
-
-            if ( newMembers.size() != oldMembers.size() )
-            {
-                membersChanged = true;
-            }
-            else
-            {
-                for ( StoreKey storeKey : newMembers )
-                {
-                    if ( !oldMembers.contains( storeKey ) )
-                    {
-                        membersChanged = true;
-                    }
-                }
-            }
-
-            if ( membersChanged )
-            {
-                clearGroupMetaCache( group );
-                try
-                {
-                    storeManager.query().getGroupsAffectedBy( group.getKey() ).forEach( g -> clearGroupMetaCache( g ) );
-                }
-                catch ( IndyDataException e )
-                {
-                    logger.error( String.format( "Can not get affected groups of %s", group.getKey()), e );
-                }
-            }
-        }
-    }
-
-    private void clearGroupMetaCache( final Group group )
-    {
-        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( group.getKey() );
-
-        if ( metadataMap != null && !metadataMap.isEmpty() )
-        {
-            metadataMap.keySet().parallelStream().forEach( path -> {
-                clearTempMetaFile( group, path );
-            } );
-        }
-
-        versionMetadataCache.remove( group.getKey() );
-    }
-
     private void clearTempMetaFile( final Group group, final String path )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Clearing merged metadata: {} from group: {}", path, group );
+
         try
         {
             final Transfer tempMetaTxfr = fileManager.getTransfer( group, path );
@@ -222,7 +117,7 @@ public class MetadataMergeListner
                         final Map<String, MetadataInfo> grpMetaMap = versionMetadataCache.get( group.getKey() );
                         if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
                         {
-                            clearTempMetaFile( group, path );
+//                            clearTempMetaFile( group, path );
                             grpMetaMap.remove( path );
                         }
                     } );
