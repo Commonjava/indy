@@ -18,6 +18,10 @@
     </encoder>
   </appender>
 
+  <logger name="io.swagger" level="ERROR"/>
+  <logger name="org.commonjava.util.partyline" level="ERROR"/>
+  <logger name="org.commonjava.maven.galley.io.checksum" level="ERROR"/>
+
   <root level="TRACE">
     <appender-ref ref="STDOUT" />
   </root>  

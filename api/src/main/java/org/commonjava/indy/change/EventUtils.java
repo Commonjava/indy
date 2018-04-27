@@ -32,21 +32,21 @@ public class EventUtils
 {
     public static <T> void fireEvent( Event<T> dispatcher, T event )
     {
+        Logger logger = LoggerFactory.getLogger( EventUtils.class );
         try
         {
             if ( dispatcher != null )
             {
+                logger.trace( "Firing event: {}", event );
                 dispatcher.fire( event );
             }
             else
             {
-                Logger logger = LoggerFactory.getLogger( EventUtils.class );
                 logger.error( "Cannot fire event: {}. Reason: Event dispatcher is null!", event );
             }
         }
         catch ( RuntimeException e )
         {
-            Logger logger = LoggerFactory.getLogger( EventUtils.class );
             logger.error( String.format( "Error processing event: %s. Reason: %s", event, e.getMessage() ), e );
         }
     }

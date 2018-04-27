@@ -26,11 +26,13 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.codehaus.plexus.interpolation.InterpolationException;
 import org.codehaus.plexus.interpolation.ObjectBasedValueSource;
 import org.codehaus.plexus.interpolation.StringSearchInterpolator;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.ContentIndexManager;
+import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
@@ -47,6 +49,7 @@ import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -66,7 +69,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -98,6 +106,8 @@ import java.util.stream.Collectors;
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
+    private Logger logger = LoggerFactory.getLogger( getClass() );
+
     private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
     private static final String NVR = "koji-NVR";
@@ -133,6 +143,10 @@ public abstract class KojiContentManagerDecorator
     @Inject
     private ContentIndexManager indexManager;
 
+    @GroupMembershipLocks
+    @Inject
+    private Locker<StoreKey> groupMembershipLocker;
+
     public KojiRepositoryCreator createRepoCreator()
     {
         KojiRepositoryCreator creator = null;
@@ -161,7 +175,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial existence check for: {}/{}", store.getKey(), path );
         boolean result = delegate.exists( store, path );
-        if ( !result && StoreType.group == store.getKey().getType() )
+        if ( !result && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
             Group group = (Group) store;
 
@@ -199,7 +213,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial retrieval attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.retrieve( store, path, eventMetadata );
-        if ( result == null && StoreType.group == store.getKey().getType() )
+        if ( result == null && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
@@ -253,7 +267,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial getTransfer() attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.getTransfer( store, path, operation );
-        if ( result == null && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
+        if ( result == null && isVerSignedAllowedWithPath( path ) && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
@@ -514,6 +528,61 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
+    private Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
+    {
+        Set<String> patterns = new HashSet<>();
+        for ( KojiArchiveInfo a : archives )
+        {
+            if ( !isVerSignedAllowedWithVersion( artifactRef.getVersionStringRaw() ) )
+            {
+                continue;
+            }
+            String pattern = getPatternString( artifactRef, a );
+            if ( pattern != null )
+            {
+                patterns.add( pattern );
+            }
+        }
+        if ( !patterns.isEmpty() )
+        {
+            String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
+            patterns.add( meta );
+        }
+        return patterns;
+    }
+
+    private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
+    {
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+        String ver = artifact.getVersionStringRaw();
+
+        if ( gId == null || artiId == null || ver == null )
+        {
+            logger.trace( "Pattern ignored, gId: {}, artiId: {}, ver: {}", gId, artiId, ver );
+            return null;
+        }
+        String pattern = gId.replace( '.', '/' ) + "/" + artiId + "/" + ver + "/" + a.getFilename();
+        logger.trace( "Pattern: {}", pattern );
+
+        return pattern;
+    }
+
+    private String getMetaString( ArtifactRef artifact )
+    {
+        String gId = artifact.getGroupId();
+        String artiId = artifact.getArtifactId();
+
+        if ( gId == null || artiId == null )
+        {
+            logger.trace( "Meta ignored, gId: {}, artiId: {}", gId, artiId );
+            return null;
+        }
+        String meta = gId.replace( '.', '/' ) + "/" + artiId + "/" + METADATA_NAME;
+        logger.trace( "Meta: {}", meta );
+        return meta;
+    }
+
     private String getRepositoryName( final KojiBuildInfo build, final boolean isBinaryBuild )
     {
         StringSearchInterpolator interpolator = new StringSearchInterpolator();
@@ -530,7 +599,7 @@ public abstract class KojiContentManagerDecorator
         }
     }
 
-    private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group group )
+    private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group srcGroup )
             throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -538,50 +607,71 @@ public abstract class KojiContentManagerDecorator
         // try to lookup the group -> targetGroup mapping in config, using the
         // entry-point group as the lookup key. If that returns null, the targetGroup is
         // the entry-point group.
-        Group targetGroup = group;
-
         boolean isBinaryBuild = KOJI_ORIGIN_BINARY.equals( buildRepo.getMetadata( ArtifactStore.METADATA_ORIGIN) );
 
-        String targetName = isBinaryBuild ? config.getTargetBinaryGroup( group.getName() )
-                : config.getTargetGroup( group.getName() );
+        String targetName = isBinaryBuild ? config.getTargetBinaryGroup( srcGroup.getName() )
+                : config.getTargetGroup( srcGroup.getName() );
+
+        StoreKey targetKey = srcGroup.getKey();
 
         if ( targetName != null )
         {
+            targetKey = new StoreKey( srcGroup.getPackageType(), group, targetName );
+        }
+
+        StoreKey tk = targetKey;
+        AtomicReference<IndyWorkflowException> wfEx = new AtomicReference<>();
+
+        Group result = groupMembershipLocker.lockAnd( targetKey, config.getLockTimeoutSeconds(), k->{
+            Group targetGroup = null;
             try
             {
-                targetGroup = storeDataManager.query().packageType( group.getPackageType() ).getGroup( targetName );
+                targetGroup = (Group) storeDataManager.getArtifactStore( tk );
             }
             catch ( IndyDataException e )
             {
-                throw new IndyWorkflowException(
+                wfEx.set( new IndyWorkflowException(
                         "Cannot lookup koji-addition target group: %s (source group: %s). Reason: %s", e, targetName,
-                        group.getName(), e.getMessage() );
+                        srcGroup.getName(), e.getMessage() ) );
+
+                return null;
             }
-        }
 
-        logger.info( "Adding Koji build proxy: {} to group: {}", buildRepo.getKey(), targetGroup.getKey() );
+            logger.info( "Adding Koji build proxy: {} to group: {}", buildRepo.getKey(), targetGroup.getKey() );
 
-        // Append the new remote repo as a member of the targetGroup.
-        targetGroup.addConstituent( buildRepo );
-        try
+            // Append the new remote repo as a member of the targetGroup.
+            targetGroup.addConstituent( buildRepo );
+            try
+            {
+                final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                       "Adding remote repository for Koji build: "
+                                                                               + buildRepo.getMetadata( NVR ) );
+
+                storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
+            }
+            catch ( IndyDataException e )
+            {
+                wfEx.set( new IndyWorkflowException( "Cannot store target-group: %s changes for: %s. Error: %s", e,
+                                                        targetGroup.getName(), buildRepo.getMetadata( NVR ),
+                                                        e.getMessage() ) );
+                return null;
+            }
+
+            logger.info( "Retrieving GAV: {} from: {}", buildRepo.getMetadata( CREATION_TRIGGER_GAV ), buildRepo );
+
+            return targetGroup;
+        }, (k, lock)->{
+            return false;
+        } );
+
+        IndyWorkflowException ex = wfEx.get();
+        if ( ex != null )
         {
-            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                   "Adding remote repository for Koji build: "
-                                                                           + buildRepo.getMetadata( NVR ) );
-
-            storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
+            throw ex;
         }
-        catch ( IndyDataException e )
-        {
-            throw new IndyWorkflowException( "Cannot store target-group: %s changes for: %s. Error: %s", e,
-                                             targetGroup.getName(), buildRepo.getMetadata( NVR ), e.getMessage() );
-        }
-
-        logger.info( "Retrieving GAV: {} from: {}", buildRepo.getMetadata( CREATION_TRIGGER_GAV ), buildRepo );
-
-        return targetGroup;
 
         // TODO: how to index it for the group...?
+        return result;
     }
 
     private String formatStorageUrl( final KojiBuildInfo buildInfo )
@@ -601,6 +691,37 @@ public abstract class KojiContentManagerDecorator
     {
         T execute( StoreKey inStore, ArtifactRef artifactRef, KojiBuildInfo build, KojiSessionInfo session )
                 throws KojiClientException;
+    }
+
+    private boolean isVerSignedAllowedWithPath ( String path )
+    {
+
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+
+        // skip those files without standard GAV format path
+        if ( pathInfo == null )
+        {
+            return true;
+        }
+
+        ProjectVersionRef versionRef = pathInfo.getProjectId();
+        return isVerSignedAllowedWithVersion( versionRef.getVersionStringRaw() );
+    }
+
+    private boolean isVerSignedAllowedWithVersion ( String version )
+    {
+        final String versionFilter = config.getVersionFilter();
+
+        if ( versionFilter == null )
+        {
+            return true;
+        }
+
+        if ( Pattern.compile( versionFilter ).matcher( version ).matches())
+        {
+            return true;
+        }
+        return false;
     }
 
 }

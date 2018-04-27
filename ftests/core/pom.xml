@@ -72,6 +72,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-pkg-maven-common</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
       <scope>compile</scope>
