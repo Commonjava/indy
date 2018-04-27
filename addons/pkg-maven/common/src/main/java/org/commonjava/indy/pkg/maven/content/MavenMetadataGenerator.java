@@ -491,16 +491,18 @@ public class MavenMetadataGenerator
         logger.trace( "Start write .info file based on if the cache exists for group {} of members {} in path. ",
                       group.getKey(), contributingMembers, path );
         final Transfer mergeInfoTarget = fileManager.getTransfer( group, path + GroupMergeHelper.MERGEINFO_SUFFIX );
-        logger.trace( ".info file not found for {} of members {} in path {}", group.getKey(), contributingMembers, path );
 
         logger.trace(
-                "metadata merge info not cached for group {} of members {} in path {}, will regenerate.",
+                "Regenerating metadata merge info for group {} of members {} in path {}",
                 group.getKey(), contributingMembers, path );
+
         String metaMergeInfo = helper.generateMergeInfoFromKeys( contributingMembers );
 
         logger.trace( "Metadata merge info for {} of members {} in path {} is {}", group.getKey(), contributingMembers,
                       path, metaMergeInfo );
+
         helper.writeMergeInfo( metaMergeInfo, group, path );
+
         logger.trace( ".info file regenerated for group {} of members {} in path. Full path: {}", group.getKey(), contributingMembers,
                       path, mergeInfoTarget.getDetachedFile() );
 
