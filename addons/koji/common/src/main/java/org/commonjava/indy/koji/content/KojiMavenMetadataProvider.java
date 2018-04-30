@@ -174,9 +174,16 @@ public class KojiMavenMetadataProvider
                 }
                 catch ( KojiClientException e )
                 {
+                    Throwable cause = e.getCause();
                     logger.error(
                             String.format( "Failed to retrieve version metadata for: %s from Koji. Reason: %s", ga,
                                            e.getMessage() ), e );
+
+                    if ( cause instanceof RuntimeException )
+                    {
+                        logger.error( "Previous exception's nested cause was a RuntimeException variant:", cause );
+                    }
+
                     metadata = null;
                 }
 
@@ -313,12 +320,14 @@ public class KojiMavenMetadataProvider
         {
             logger.debug( "Skipping non-POM: {}", archive.getFilename() );
             scan.setDisqualified( true );
+            return scan;
         }
 
         if ( !isVerSignedAllowed( archive.getVersion() ) )
         {
             logger.debug( "version filter pattern not matched: {}", archive.getVersion() );
             scan.setDisqualified( true );
+            return scan;
         }
 
         SingleVersion singleVersion = null;
@@ -332,12 +341,14 @@ public class KojiMavenMetadataProvider
             logger.warn( "Skipping mal-formatted version: {}, relPath: {}, buildId: {}", archive.getVersion(),
                          archive.getRelPath(), archive.getBuildId() );
             scan.setDisqualified( true );
+            return scan;
         }
 
         if ( versions.contains( singleVersion ) )
         {
             logger.debug( "Skipping already collected version: {}", archive.getVersion() );
             scan.setDisqualified( true );
+            return scan;
         }
 
         KojiBuildInfo build = null;
@@ -345,6 +356,7 @@ public class KojiMavenMetadataProvider
         {
             logger.debug( "Skipping already seen build: {}", archive.getBuildId() );
             scan.setDisqualified( true );
+            return scan;
         }
         else
         {
@@ -357,6 +369,7 @@ public class KojiMavenMetadataProvider
         {
             logger.debug( "Cannot retrieve build info: {}. Skipping: {}", archive.getBuildId(), archive.getFilename() );
             scan.setDisqualified( true );
+            return scan;
         }
 
         if ( build.getBuildState() != KojiBuildState.COMPLETE )
@@ -364,6 +377,7 @@ public class KojiMavenMetadataProvider
             logger.debug( "Build: {} is not completed. The state is {}. Skipping.", build.getNvr(),
                           build.getBuildState() );
             scan.setDisqualified( true );
+            return scan;
         }
 
         if ( build.getTaskId() == null )
@@ -371,6 +385,7 @@ public class KojiMavenMetadataProvider
             logger.debug( "Build: {} is not a real build. It looks like a binary import. Skipping.", build.getNvr() );
             // This is not a real build, it's a binary import.
             scan.setDisqualified( true );
+            return scan;
         }
 
         return scan;
