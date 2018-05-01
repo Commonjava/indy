@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
   
   <name>Indy :: Project Root</name>
-  <inceptionYear>2011-2017</inceptionYear>
+  <inceptionYear>2011-2018</inceptionYear>
   
   <scm>
     <connection>scm:git:https://github.com/Commonjava/indy.git</connection>
