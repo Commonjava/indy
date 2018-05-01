@@ -37,7 +37,7 @@
   
   <modules>
     <module>savant</module>
-    <module>rest-min</module>
+    <!-- <module>rest-min</module> -->
   </modules>
   
   <dependencies>

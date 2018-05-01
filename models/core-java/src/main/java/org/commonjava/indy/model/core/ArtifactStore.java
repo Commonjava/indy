@@ -107,16 +107,16 @@ public abstract class ArtifactStore
     public abstract ArtifactStore copyOf( String packageType, String name );
 
     @Override
-    public int hashCode()
+    public final int hashCode()
     {
         final int prime = 31;
         int result = super.hashCode();
-        result = prime * result + ( ( key == null ) ? 0 : key.hashCode() );
+        result = prime * result + ( ( key == null ) ? 19 : key.hashCode() );
         return result;
     }
 
     @Override
-    public boolean equals( final Object obj )
+    public final boolean equals( final Object obj )
     {
         if ( this == obj )
         {

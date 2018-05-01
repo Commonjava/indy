@@ -92,18 +92,18 @@ public final class StoreKey
     }
 
     @Override
-    public int hashCode()
+    public final int hashCode()
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ( ( packageType == null ) ? 0 : packageType.hashCode() );
-        result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
-        result = prime * result + ( ( type == null ) ? 0 : type.hashCode() );
+        result = prime * result + ( ( packageType == null ) ? 7 : packageType.hashCode() );
+        result = prime * result + ( ( name == null ) ? 13 : name.hashCode() );
+        result = prime * result + ( ( type == null ) ? 17 : type.hashCode() );
         return result;
     }
 
     @Override
-    public boolean equals( final Object obj )
+    public final boolean equals( final Object obj )
     {
         if ( this == obj )
         {

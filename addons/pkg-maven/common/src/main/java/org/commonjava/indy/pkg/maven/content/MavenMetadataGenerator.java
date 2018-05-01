@@ -548,6 +548,11 @@ public class MavenMetadataGenerator
         Map<StoreKey, Metadata> memberMetas = new ConcurrentHashMap<>( members.size() );
         Set<ArtifactStore> missing = retrieveCachedMemberMetadata( memberMetas, members, contributingMembers, toMergePath );
 
+        // this is weird, but I found duplicates in the missing set! De-duplicating here before proceeding...
+        Map<StoreKey, ArtifactStore> missingMap = new HashMap<>();
+        missing.forEach( m->missingMap.put(m.getKey(), m) );
+        missing = new HashSet<>( missingMap.values() );
+
         // Try to download missed meta
         missing = downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
 
@@ -606,14 +611,16 @@ public class MavenMetadataGenerator
         }
     }
 
-    private Set<ArtifactStore> generateMissingMemberMetadata( Group group, Set<ArtifactStore> missing,
+    private Set<ArtifactStore> generateMissingMemberMetadata( Group group, Set<ArtifactStore> missingOrig,
                                                 Map<StoreKey, Metadata> memberMetas, String toMergePath )
                     throws IndyWorkflowException
     {
         Set<ArtifactStore> ret = new HashSet<>(); // return stores which failed generation
 
+        Set<ArtifactStore> missing = Collections.synchronizedSet( new HashSet<>( missingOrig ) );
         CountDownLatch latch = new CountDownLatch( missing.size() );
-//        List<String> errors = new ArrayList<>();
+
+        logger.trace( "Initial latch size: {}; initial missing size: {}", latch.getCount(), missing.size() );
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -661,7 +668,7 @@ public class MavenMetadataGenerator
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch);
+        waitOnLatch( group, toMergePath, latch, "GENERATE" );
 
 //        if ( !errors.isEmpty() )
 //        {
@@ -739,14 +746,14 @@ public class MavenMetadataGenerator
         return missing;
     }
 
-    private Set<ArtifactStore> downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missing,
+    private Set<ArtifactStore> downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missingOrig,
                                                 final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
             throws IndyWorkflowException
     {
         Set<ArtifactStore> ret = new HashSet<>(  ); // return stores which failed download
 
+        Set<ArtifactStore> missing = Collections.synchronizedSet( new HashSet<>( missingOrig ) );
         CountDownLatch latch = new CountDownLatch( missing.size() );
-//        List<String> errors = Collections.synchronizedList( new ArrayList<>() );
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -777,7 +784,7 @@ public class MavenMetadataGenerator
                 }
                 catch ( final Exception e )
                 {
-                    String msg = String.format( "EXCLUDING Failed to metadata: %s:%s. Reason: %s", store.getKey(), toMergePath,
+                    String msg = String.format( "EXCLUDING Failed metadata download: %s:%s. Reason: %s", store.getKey(), toMergePath,
                                                  e.getMessage() );
                     logger.error( msg, e );
 //                    errors.add( msg );
@@ -790,7 +797,7 @@ public class MavenMetadataGenerator
         } );
         /* @formatter:on */
 
-        waitOnLatch(group, toMergePath, latch);
+        waitOnLatch( group, toMergePath, latch, "DOWNLOAD" );
 
 //        if ( !errors.isEmpty() )
 //        {
@@ -802,14 +809,13 @@ public class MavenMetadataGenerator
         return ret;
     }
 
-    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch )
+    private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, String step )
     {
         do
         {
-            logger.trace( "Latch count: {}", latch.getCount() );
             try
             {
-                logger.debug( "Waiting for {} member downloads of: {}:{}", latch.getCount(), group.getKey(), toMergePath );
+                logger.debug( "[{} Step] Waiting for {} member downloads of: {}:{}", step, latch.getCount(), group.getKey(), toMergePath );
                 latch.await( 1000, TimeUnit.MILLISECONDS );
             }
             catch ( InterruptedException e )
