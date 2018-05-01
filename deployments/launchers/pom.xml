@@ -32,7 +32,7 @@
   
   <modules>
     <module>base</module>
-    <module>rest-min</module>
+    <!-- <module>rest-min</module> -->
     <module>savant</module>
   </modules>
   
