@@ -89,13 +89,13 @@ public class IndyMetricsManager
 
     public Timer getTimer( MetricNamed named )
     {
-        logger.info( "call in IndyMetricsManager.getTimer from registry: {}", metricRegistry );
+        logger.trace( "call in IndyMetricsManager.getTimer" );
         return this.metricRegistry.timer( named.name() );
     }
 
     public Meter getMeter( MetricNamed named )
     {
-        logger.info( "call in IndyMetricsManager.getMeter from registry: {}", metricRegistry );
+        logger.trace( "call in IndyMetricsManager.getMeter" );
         return metricRegistry.meter( named.name() );
     }
 

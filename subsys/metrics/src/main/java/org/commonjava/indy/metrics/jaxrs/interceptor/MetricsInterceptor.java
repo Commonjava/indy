@@ -62,7 +62,7 @@ public class MetricsInterceptor
             return context.proceed();
         }
 
-        logger.debug( "Gathering metrics for: {} (metrics annotation: {})", context.getContextData(), metrics );
+        logger.trace( "Gathering metrics for: {}", context.getContextData() );
 
         Measure measures = metrics.measure();
         List<Timer.Context> timers = Stream.of( measures.timers() )
