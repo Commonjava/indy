@@ -1423,7 +1423,7 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <mavenExecutorId>forked-path</mavenExecutorId>
             <useReleaseProfile>false</useReleaseProfile>
-            <arguments>-Prelease,run-its</arguments>
+            <arguments>-Prelease,run-its -DskipTests=true</arguments>
           </configuration>
         </plugin>
         <plugin>

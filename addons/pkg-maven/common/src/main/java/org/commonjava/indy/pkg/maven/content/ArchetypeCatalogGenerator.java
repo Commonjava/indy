@@ -116,22 +116,14 @@ public class ArchetypeCatalogGenerator
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
-                OutputStream fos = null;
-                try
+                try(OutputStream fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata ))
                 {
-                    fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
                     fos.write( merged );
                 }
                 catch ( final IOException e )
                 {
                     throw new IndyWorkflowException( "Failed to write merged archetype catalog to: {}.\nError: {}", e, target, e.getMessage() );
                 }
-                finally
-                {
-                    closeQuietly( fos );
-                }
-
-                //                helper.writeChecksumsAndMergeInfo( merged, sources, group, toMergePath );
             }
         }
 

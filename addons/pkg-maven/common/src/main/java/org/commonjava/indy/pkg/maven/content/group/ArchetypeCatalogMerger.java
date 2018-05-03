@@ -60,16 +60,14 @@ public class ArchetypeCatalogMerger
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();
         final FileReader fr = null;
-        InputStream stream = null;
-
         boolean merged = false;
 
         final Set<String> seen = new HashSet<String>();
         for ( final Transfer src : sources )
         {
-            try
+            try(InputStream stream = src.openInputStream())
             {
-                stream = src.openInputStream();
+
                 final ArchetypeCatalog catalog = reader.read( stream, false );
 
                 for ( final Archetype arch : catalog.getArchetypes() )
