@@ -30,11 +30,11 @@ public class ISPNDBConfiguration
         implements IndyConfigInfo, SystemPropertyProvider
 {
 
-    private static final String INDY_CACHE_DB_URL = "cache.dburl";
+    private static final String INDY_CACHE_DB_URL = "indyCacheDburl";
 
-    private static final String INDY_CACHE_DB_USER = "cache.dbuser";
+    private static final String INDY_CACHE_DB_USER = "indyCacheDbuser";
 
-    private static final String INDY_CACHE_DB_PASS = "cache.dbpass";
+    private static final String INDY_CACHE_DB_PASS = "indyCacheDbpass";
 
     private static final String DEFAULT_INDY_CACHE_DB_URL = "jdbc:postgresql://localhost/indy";
 
@@ -57,7 +57,7 @@ public class ISPNDBConfiguration
         return cacheDBUrl == null ? DEFAULT_INDY_CACHE_DB_URL : cacheDBUrl;
     }
 
-    @ConfigName( "cache.dburl" )
+    @ConfigName( INDY_CACHE_DB_URL )
     public void setCacheDBUrl( String cacheDBUrl )
     {
         this.cacheDBUrl = cacheDBUrl;
@@ -68,7 +68,7 @@ public class ISPNDBConfiguration
         return cacheDBUser == null ? DEFAULT_INDY_CACHE_DB_USER : cacheDBUser;
     }
 
-    @ConfigName( "cache.dbuser" )
+    @ConfigName( INDY_CACHE_DB_USER )
     public void setCacheDBUser( String cacheDBUser )
     {
         this.cacheDBUser = cacheDBUser;
@@ -79,7 +79,7 @@ public class ISPNDBConfiguration
         return cacheDBPassword == null ? DEFAULT_INDY_CACHE_DB_PASS : cacheDBPassword;
     }
 
-    @ConfigName( "cache.dbpass" )
+    @ConfigName( INDY_CACHE_DB_PASS )
     public void setCacheDBPassword( String cacheDBPassword )
     {
         this.cacheDBPassword = cacheDBPassword;
@@ -101,10 +101,23 @@ public class ISPNDBConfiguration
     public Properties getSystemProperties()
     {
         Properties properties = new Properties();
-        properties.setProperty( INDY_CACHE_DB_URL, getCacheDBUrl() );
-        properties.setProperty( INDY_CACHE_DB_USER, getCacheDBUser() );
-        properties.setProperty( INDY_CACHE_DB_PASS, getCacheDBPassword() );
+        preparePropertyInSysEnv( properties, INDY_CACHE_DB_URL, getCacheDBUrl() );
+        preparePropertyInSysEnv( properties, INDY_CACHE_DB_USER, getCacheDBUser() );
+        preparePropertyInSysEnv( properties, INDY_CACHE_DB_PASS, getCacheDBPassword() );
 
         return properties;
+    }
+
+    private void preparePropertyInSysEnv( Properties props, String propName, String ifNotInSysEnv )
+    {
+        final String envVal = System.getenv( propName );
+        if ( envVal != null )
+        {
+            props.setProperty( propName, envVal );
+        }
+        else
+        {
+            props.setProperty( propName, ifNotInSysEnv );
+        }
     }
 }
