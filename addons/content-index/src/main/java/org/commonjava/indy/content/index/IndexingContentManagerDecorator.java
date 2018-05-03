@@ -361,7 +361,7 @@ public abstract class IndexingContentManagerDecorator
             ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
             if ( store.isDisabled() )
             {
-                logger.info( "Content not available in index caching layer due to store disabled for {} in group {}",
+                logger.debug( "Content not available in index caching layer due to store disabled for {} in group {}",
                              storeKey, topKey );
                 return null;
             }
