@@ -791,11 +791,6 @@
 
       <dependency>
         <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-cdi-embedded</artifactId>
-        <version>${infinispanVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.infinispan</groupId>
         <artifactId>infinispan-embedded</artifactId>
         <version>${infinispanVersion}</version>
       </dependency>

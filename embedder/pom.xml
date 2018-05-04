@@ -27,7 +27,7 @@
   <groupId>org.commonjava.indy.embed</groupId>
   <artifactId>indy-embedder</artifactId>
 
-  <name>Indy :: Embedders</name>
+  <name>Indy :: Embedder</name>
 
   <properties>
     <skipMainFTests>${skipITs}</skipMainFTests>
@@ -170,11 +170,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-implied-repos-common</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-koji-common</artifactId>
-    </dependency>
-
 
 
     <dependency>
@@ -186,10 +181,6 @@
       <artifactId>atlas-relationships-api</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-cdi-embedded</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-embedded</artifactId>

@@ -47,10 +47,6 @@
     </dependency>
     <dependency>
       <groupId>org.infinispan</groupId>
-      <artifactId>infinispan-cdi-embedded</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.infinispan</groupId>
       <artifactId>infinispan-embedded-query</artifactId>
     </dependency>
     <dependency>
