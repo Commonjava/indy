@@ -70,6 +70,8 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
+import static org.commonjava.indy.util.ApplicationHeader.proxy_authenticate;
+import static org.commonjava.indy.util.ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 
 public final class ProxyResponseWriter
@@ -176,9 +178,14 @@ public final class ProxyResponseWriter
                                 || TrackingType.ALWAYS == config.getTrackingType() ) )
                 {
 
-                    http.writeStatus( ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED );
-                    http.writeHeader( ApplicationHeader.proxy_authenticate,
-                                      String.format( PROXY_AUTHENTICATE_FORMAT, config.getProxyRealm() ) );
+                    String realmInfo = String.format( PROXY_AUTHENTICATE_FORMAT, config.getProxyRealm() );
+
+                    logger.info( "Not authenticated to proxy. Sending response: {} / {}: {}",
+                                 PROXY_AUTHENTICATION_REQUIRED, proxy_authenticate, realmInfo );
+
+                    http.writeStatus( PROXY_AUTHENTICATION_REQUIRED );
+                    http.writeHeader( proxy_authenticate,
+                                      realmInfo );
                 }
                 else
                 {
