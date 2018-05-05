@@ -176,6 +176,7 @@ public final class ProxyResponseWriter
                                         "Passing BASIC authentication credentials to Keycloak bearer-token translation authenticator" );
                                 if ( !proxyAuthenticator.authenticate( proxyUserPass, http ) )
                                 {
+                                    logger.warn("Proxy authentication failed for this request: {}", requestLine.toString());
                                     break;
                                 }
                             }
