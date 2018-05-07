@@ -58,7 +58,7 @@ public class MetaListingRescheduleTimeoutTest
     @Rule
     public ExpectationServer server = new ExpectationServer( "repos" );
 
-    @Ignore // content listing is disabled for now, 2018/4/3
+//    @Ignore // content listing is disabled for now, 2018/4/3
     @Test
     @Category( TimingDependent.class )
     public void timeout()
