@@ -17,9 +17,18 @@ package org.commonjava.indy.bind.jaxrs;
 
 import io.undertow.servlet.api.DeploymentInfo;
 
+import javax.ws.rs.core.Application;
+import java.util.Collections;
+import java.util.Set;
+
 public abstract class IndyDeploymentProvider
 {
 
-    public abstract DeploymentInfo getDeploymentInfo();
+    public abstract DeploymentInfo getDeploymentInfo( final String contextRoot, final Application application );
+
+    public Set<Class<?>> getAdditionalClasses()
+    {
+        return Collections.emptySet();
+    }
 
 }

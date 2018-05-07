@@ -56,7 +56,9 @@ public class UIServlet
                                                                                                       "/js/*",
                                                                                                       "/css/*",
                                                                                                       "/partials/*",
-                                                                                                      "/ui-addons/*" ) );
+                                                                                                      "/ui-addons/*",
+                                                                                                      "/swagger.json",
+                                                                                                      "/swagger.yaml" ) );
 
     public static final Collection<String> METHODS = Collections.unmodifiableCollection( Arrays.asList( "GET", "HEAD",
                                                                                                         "OPTIONS" ) );

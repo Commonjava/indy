@@ -126,6 +126,7 @@
     <module>embedder</module>
     <module>uis</module>
     <module>ftests</module>
+    <module>rest</module>
     <module>clients</module>
     
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
@@ -764,6 +765,23 @@
         <version>1.3.0-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.indy.rest</groupId>
+        <artifactId>indy-rest-api</artifactId>
+        <type>yaml</type>
+        <version>1.3.0-SNAPSHOT</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.rest</groupId>
+        <artifactId>indy-rest-api</artifactId>
+        <type>json</type>
+        <version>1.3.0-SNAPSHOT</version>
+        <scope>provided</scope>
+      </dependency>
+
+
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
@@ -772,6 +790,11 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
+        <version>${jackson-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.fasterxml.jackson.jaxrs</groupId>
+        <artifactId>jackson-jaxrs-json-provider</artifactId>
         <version>${jackson-version}</version>
       </dependency>
       <!-- DO NOT REMOVE: append::depMgmt -->
@@ -1326,6 +1349,11 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>3.0.0</version>
+        </plugin>
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>

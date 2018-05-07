@@ -34,6 +34,10 @@ public class UIConfiguration
 
     public static final File DEFAULT_DIR = new File( System.getProperty( "indy.home", "/var/lib/indy" ), "ui" );
 
+    private static final Boolean DEFAULT_ENABLED = Boolean.TRUE;
+
+    private Boolean enabled;
+
     private File uiDir;
 
     public UIConfiguration()
@@ -70,4 +74,13 @@ public class UIConfiguration
         this.uiDir = uiDir;
     }
 
+    public Boolean getEnabled()
+    {
+        return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    public void setEnabled( final Boolean enabled )
+    {
+        this.enabled = enabled;
+    }
 }

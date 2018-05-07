@@ -70,9 +70,10 @@ public class ExpiringMemoryNotFoundCacheTest
         nfc.addMissing( res );
         assertThat( nfc.isMissing( res ), equalTo( true ) );
 
-        Thread.sleep( TimeUnit.SECONDS.toMillis( 1 ) );
+        Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 
         Set<String> locMissing = nfc.getMissing( res.getLocation() );
+        System.out.println( locMissing );
         assertThat( locMissing == null || locMissing.isEmpty(), equalTo( true ) );
 
         Map<Location, Set<String>> allMissing = nfc.getAllMissing();

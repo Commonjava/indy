@@ -53,6 +53,11 @@
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-maven</artifactId>
     </dependency>
+    
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>

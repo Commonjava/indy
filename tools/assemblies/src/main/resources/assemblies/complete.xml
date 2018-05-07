@@ -46,6 +46,17 @@
         </excludes>
       </unpackOptions>
     </dependencySet>
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>org.commonjava.indy.rest*</include>
+      </includes>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
+      <outputFileNameMapping>swagger.${artifact.extension}</outputFileNameMapping>
+      <fileMode>664</fileMode>
+      <unpack>false</unpack>
+    </dependencySet>
     
     <!-- data sets -->
     <dependencySet>

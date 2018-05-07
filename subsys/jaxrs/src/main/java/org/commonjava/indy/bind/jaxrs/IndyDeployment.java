@@ -16,9 +16,6 @@
 package org.commonjava.indy.bind.jaxrs;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
-import io.swagger.jaxrs.config.BeanConfig;
-import io.swagger.jaxrs.listing.ApiListingResource;
-import io.swagger.jaxrs.listing.SwaggerSerializers;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
@@ -28,6 +25,7 @@ import org.commonjava.indy.bind.jaxrs.ui.UIServlet;
 import org.commonjava.indy.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
+import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
@@ -67,6 +65,9 @@ public class IndyDeployment
 
     @Inject
     private UIServlet ui;
+
+    @Inject
+    private UIConfiguration uiConfiguration;
 
     @Inject
     private ResourceManagementFilter resourceManagementFilter;
@@ -133,17 +134,7 @@ public class IndyDeployment
                                                     .addMapping( "/api*" )
                                                     .addMapping( "/api/*" )
                                                     .addMapping( "/api-docs*" )
-                                                    .addMapping( "/api-docs/*" )
-                                                    .addMapping( "/swagger.json" )
-                                                    .addMapping( "/swagger.yaml" );
-
-        final BeanConfig beanConfig = new BeanConfig();
-        beanConfig.setResourcePackage( "org.commonjava.indy" );
-        beanConfig.setBasePath( "/" );
-        beanConfig.setLicense( "ASLv2" );
-        beanConfig.setLicenseUrl( "http://www.apache.org/licenses/LICENSE-2.0" );
-        beanConfig.setScan( true );
-        beanConfig.setVersion( versioning.getApiVersion() );
+                                                    .addMapping( "/api-docs/*" );
 
         final FilterInfo resourceManagementFilter =
                 Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
@@ -164,17 +155,20 @@ public class IndyDeployment
 
         if ( deploymentProviders != null )
         {
-            DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders );
+            DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders, contextRoot, this );
         }
 
-        // Add UI servlet at the end so its mappings don't obscure any from add-ons.
-        final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
-                                              .setAsyncSupported( true )
-                                              .setLoadOnStartup( 99 )
-                                              .addMappings( UIServlet.PATHS );
+        if ( uiConfiguration.getEnabled() )
+        {
+            // Add UI servlet at the end so its mappings don't obscure any from add-ons.
+            final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
+                                                  .setAsyncSupported( true )
+                                                  .setLoadOnStartup( 99 )
+                                                  .addMappings( UIServlet.PATHS );
 
-        uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
-        di.addServlet( uiServlet );
+            uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
+            di.addServlet( uiServlet );
+        }
 
         return di;
     }
@@ -185,7 +179,7 @@ public class IndyDeployment
         final Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll( providerClasses );
         classes.addAll( resourceClasses );
-        classes.addAll( Arrays.asList( ApiListingResource.class, SwaggerSerializers.class ) );
+        deploymentProviders.forEach( di -> classes.addAll( di.getAdditionalClasses() ) );
         classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class ) );
 //        classes.add( UnhandledRuntimeExceptionHandler.class );
         return classes;

@@ -21,11 +21,6 @@ import io.undertow.servlet.api.SecurityConstraint;
 import io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic;
 import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.util.ImmediateAuthenticationMechanismFactory;
-
-import java.io.File;
-
-import javax.inject.Inject;
-
 import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
 import org.commonjava.indy.bind.jaxrs.ui.UIServlet;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
@@ -33,6 +28,10 @@ import org.commonjava.indy.subsys.keycloak.conf.KeycloakSecurityBindings;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakSecurityConstraint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.ws.rs.core.Application;
+import java.io.File;
 
 public class KeycloakDeploymentProvider
     extends IndyDeploymentProvider
@@ -56,7 +55,7 @@ public class KeycloakDeploymentProvider
     private BasicAuthenticationOAuthTranslator basicAuthInjector;
 
     @Override
-    public DeploymentInfo getDeploymentInfo()
+    public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
         logger.debug( "Keycloak deployment provider triggered." );
 
