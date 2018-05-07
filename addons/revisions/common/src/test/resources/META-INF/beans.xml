@@ -16,6 +16,7 @@
   
   <alternatives>
     <class>org.commonjava.indy.flat.data.DataFileStoreDataManager</class>
+    <class>org.commonjava.indy.test.fixture.core.MockWeftProvider</class>
     <class>org.commonjava.indy.test.fixture.core.MockGalleyProvider</class>
     <class>org.commonjava.indy.test.fixture.core.MockContentAdvisor</class>
     <stereotype>org.commonjava.indy.inject.TestData</stereotype>

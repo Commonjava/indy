@@ -40,10 +40,15 @@ public class WeldJUnit4Runner
         throws Exception
     {
         this.weld = new Weld();
+
+        // Use a "flat" deployment structure.
+        // Bean archive isolation is supported (and enabled by default) from version 2.2.0.Final.
+        // Previous versions only operated with the "flat" deployment structure.
+        // ref http://docs.jboss.org/weld/reference/latest/en-US/html/environments.html#_bean_archive_isolation_2
+        this.weld.property("org.jboss.weld.se.archive.isolation", false);
+
         this.container = weld.initialize();
-        return container.instance()
-                        .select( getTestClass().getJavaClass() )
-                        .get();
+        return container.select( getTestClass().getJavaClass() ).get();
     }
 
     @Override

@@ -16,12 +16,14 @@
 package org.commonjava.indy.subsys.template.fixture;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
+import org.commonjava.cdi.util.weft.config.WeftConfig;
+import org.commonjava.indy.action.UserLifecycleManager;
+import org.commonjava.indy.action.fixture.AlternativeUserLifecycleManager;
 import org.commonjava.indy.content.IndyPathGenerator;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.model.galley.IndyLocationResolver;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
@@ -30,7 +32,7 @@ import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.maven.galley.transport.htcli.Http;
+import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
 import org.junit.rules.TemporaryFolder;
 
 import javax.annotation.PostConstruct;
@@ -48,7 +50,6 @@ import static org.junit.Assert.fail;
 @ApplicationScoped
 public class TestProvider
 {
-
     @Inject
     private IndyPathGenerator indyPathGenerator;
 
@@ -68,11 +69,11 @@ public class TestProvider
 
     private TemporaryFolder temp;
 
-//    private Http http;
-//
-//    private IndyLocationExpander locationExpander;
-//
-//    private IndyLocationResolver locationResolver;
+    private WeftConfig weftConfig;
+
+    private GlobalHttpConfiguration globalHttpConfiguration;
+
+    private UserLifecycleManager userLifecycleManager;
 
     @PostConstruct
     public void setup()
@@ -83,6 +84,9 @@ public class TestProvider
         fileEventManager = new NoOpFileEventManager();
         transferDecorator = new NoOpTransferDecorator();
         transportManagerConfig = new TransportManagerConfig();
+        weftConfig = new DefaultWeftConfig();
+        globalHttpConfiguration = new GlobalHttpConfiguration();
+        userLifecycleManager = new AlternativeUserLifecycleManager();
 
         temp = new TemporaryFolder();
         try
@@ -149,5 +153,23 @@ public class TestProvider
     public TransportManagerConfig getTransportManagerConfig()
     {
         return transportManagerConfig;
+    }
+
+    @Produces
+    public WeftConfig getWeftConfig()
+    {
+        return weftConfig;
+    }
+
+    @Produces
+    public GlobalHttpConfiguration getGlobalHttpConfiguration()
+    {
+        return globalHttpConfiguration;
+    }
+
+    @Produces
+    public UserLifecycleManager getUserLifecycleManager()
+    {
+        return userLifecycleManager;
     }
 }

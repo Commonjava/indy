@@ -16,28 +16,21 @@
 package org.commonjava.indy.core.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
-import org.commonjava.maven.galley.config.TransportManagerConfig;
-import org.commonjava.maven.galley.maven.GalleyMavenException;
-import org.commonjava.maven.galley.maven.model.view.PluginDependencyView;
-import org.commonjava.maven.galley.maven.model.view.PluginView;
-import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
-import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
+import org.commonjava.indy.test.utils.WeldJUnit4Runner;
 import org.commonjava.web.config.ConfigUtils;
 import org.commonjava.web.config.ConfigurationException;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
 
-import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -45,20 +38,21 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by jdcasey on 3/9/16.
  */
+@RunWith( WeldJUnit4Runner.class )
 public class DefaultIndyConfigFactoryTest
 {
 
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
+    @Inject
+    private Instance<IndyConfigInfo> instance;
+
     @Test
     public void weldInjection_IterateIndyConfigurators()
     {
-        Weld weld = new Weld();
-        WeldContainer container = weld.initialize();
-
         List<String> sections = new ArrayList<>();
-        container.instance().select( IndyConfigInfo.class ).iterator().forEachRemaining( ( instance)->{
+        instance.iterator().forEachRemaining( ( instance)->{
             String section = ConfigUtils.getSectionName( instance );
             System.out.printf( "Got instance: %s with section: %s\n", instance, section );
             sections.add( section );
@@ -71,15 +65,13 @@ public class DefaultIndyConfigFactoryTest
         assertThat( sections.contains( "storage-default" ), equalTo( true ) );
     }
 
+    @Inject
+    private DefaultIndyConfigFactory factory;
+
     @Test
     public void weldInjection_writeDefaults()
             throws IOException, ConfigurationException
     {
-        Weld weld = new Weld();
-        WeldContainer container = weld.initialize();
-
-        DefaultIndyConfigFactory factory = container.instance().select( DefaultIndyConfigFactory.class ).get();
-
         File dir = temp.newFolder( "indy-config" );
         dir.mkdirs();
 

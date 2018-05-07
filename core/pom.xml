@@ -140,6 +140,7 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-test-utils</artifactId>
+      <scope>test</scope>
     </dependency>
       <dependency>
           <groupId>org.commonjava.indy</groupId>
