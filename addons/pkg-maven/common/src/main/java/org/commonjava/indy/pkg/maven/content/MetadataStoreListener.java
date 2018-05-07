@@ -206,23 +206,16 @@ public class MetadataStoreListener
 
     private void removeMetadataCache( ArtifactStore store )
     {
-        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( store.getKey() );
-        if ( metadataMap != null && !metadataMap.isEmpty() )
+        logger.trace( "Removing cached metadata for: {}", store.getKey() );
+
+        versionMetadataCache.remove( store.getKey() );
+        try
         {
-            logger.trace( "Removing cached metadata for: {}", store.getKey() );
-            versionMetadataCache.remove( store.getKey() );
-            try
-            {
-                storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g, store ) );
-            }
-            catch ( IndyDataException e )
-            {
-                logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
-            }
+            storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g, store ) );
         }
-        else
+        catch ( IndyDataException e )
         {
-            logger.trace( "Cached metadata map is empty or null for: {}", store.getKey() );
+            logger.error( String.format( "Can not get affected groups of %s", store.getKey() ), e );
         }
     }
 
