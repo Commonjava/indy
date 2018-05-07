@@ -68,10 +68,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.indy.audit.ChangeSummary.SYSTEM_USER;
 
 @ApplicationScoped
 public class GitManager
@@ -207,8 +207,9 @@ public class GitManager
 
         if ( preExistingFromCreate != null && preExistingFromCreate.length > 0 )
         {
-            addAndCommitPaths( new ChangeSummary( ChangeSummary.SYSTEM_USER, "Committing pre-existing files." ),
+            addPaths( new ChangeSummary( SYSTEM_USER, "Committing pre-existing files." ),
                                preExistingFromCreate );
+            commit();
         }
 
         if ( checkUpdate )
@@ -217,13 +218,13 @@ public class GitManager
         }
     }
 
-    public GitManager addAndCommitFiles( final ChangeSummary summary, final File... files )
+    public GitManager addFiles( final ChangeSummary summary, final File... files )
         throws GitSubsystemException
     {
-        return addAndCommitFiles( summary, Arrays.asList( files ) );
+        return addFiles( summary, Arrays.asList( files ) );
     }
 
-    public GitManager addAndCommitFiles( final ChangeSummary summary, final Collection<File> files )
+    public GitManager addFiles( final ChangeSummary summary, final Collection<File> files )
         throws GitSubsystemException
     {
         final Set<String> paths = new HashSet<>();
@@ -235,10 +236,9 @@ public class GitManager
             {
                 paths.add( path );
             }
-
         }
 
-        return addAndCommitPaths( summary, paths );
+        return addPaths( summary, paths );
     }
 
     private String relativize( final File f )
@@ -248,13 +248,13 @@ public class GitManager
                     .toString();
     }
 
-    public GitManager addAndCommitPaths( final ChangeSummary summary, final String... paths )
+    public GitManager addPaths( final ChangeSummary summary, final String... paths )
         throws GitSubsystemException
     {
-        return addAndCommitPaths( summary, Arrays.asList( paths ) );
+        return addPaths( summary, Arrays.asList( paths ) );
     }
 
-    public GitManager addAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
+    public GitManager addPaths( final ChangeSummary summary, final Collection<String> paths )
         throws GitSubsystemException
     {
         lockAnd(me->{
@@ -276,8 +276,7 @@ public class GitManager
                 logger.info( "Adding:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
 
                 add.call();
-
-                commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
+                changelogEntries.add( new ChangelogEntry( summary.getUser(), buildMessage( summary, paths ), paths ) );
             }
             catch ( final NoFilepatternException e )
             {
@@ -361,24 +360,68 @@ public class GitManager
 
     private String buildMessage( final ChangeSummary summary, final Collection<String> paths )
     {
-        final StringBuilder message = new StringBuilder().append( summary.getSummary() );
+        final StringBuilder message =
+                        new StringBuilder().append( summary.getSummary() );
         if ( config.isCommitFileManifestsEnabled() )
         {
             message.append( "\n\nFiles changed:\n" )
                    .append( join( paths, "\n" ) );
-
         }
 
         return message.toString();
     }
 
-    public GitManager deleteAndCommit( final ChangeSummary summary, final File... deleted )
-        throws GitSubsystemException
+    public final static String COMMIT_CHANGELOG_ENTRIES = "Commit changelog entries";
+
+    /*
+     * For each modification/deletion event, GitManager add/rm those files in the current status BUT NOT COMMIT.
+     * It append a new entry to the list of changelog entries pending for the next commit.
+     */
+    private List<ChangelogEntry> changelogEntries = Collections.synchronizedList( new ArrayList<>(  ) );
+
+    /**
+     * Commit the changelog entries
+     * @return size of changelog entries being committed
+     */
+    public int commit()
+                    throws GitSubsystemException
     {
-        return deleteAndCommit( summary, Arrays.asList( deleted ) );
+        int committed = lockAnd(me->{
+            final int size = changelogEntries.size();
+            if ( !changelogEntries.isEmpty() )
+            {
+                try
+                {
+                    CommitCommand commit = git.commit();
+                    StringBuilder sb = new StringBuilder().append( COMMIT_CHANGELOG_ENTRIES + "\n\n" );
+                    for ( ChangelogEntry et : changelogEntries )
+                    {
+                        sb.append( et.getUsername() + " " + et.getTimestamp() + " " + et.getMessage() );
+                        sb.append( "\n\n" );
+                    }
+                    String message = sb.toString();
+                    logger.info( message );
+                    commit.setMessage( message ).setAuthor( SYSTEM_USER, email ).call();
+                    changelogEntries.clear();
+                }
+                catch ( final JGitInternalException | GitAPIException e )
+                {
+                    throw new GitSubsystemException( "Cannot commit to git: " + e.getMessage(), e );
+                }
+            }
+            return size;
+        });
+
+        return committed;
     }
 
-    public GitManager deleteAndCommit( final ChangeSummary summary, final Collection<File> files )
+    public GitManager delete( final ChangeSummary summary, final File... deleted )
+        throws GitSubsystemException
+    {
+        return delete( summary, Arrays.asList( deleted ) );
+    }
+
+    public GitManager delete( final ChangeSummary summary, final Collection<File> files )
         throws GitSubsystemException
     {
         final Set<String> paths = new HashSet<>();
@@ -390,38 +433,34 @@ public class GitManager
             {
                 paths.add( path );
             }
-
         }
 
-        return deleteAndCommitPaths( summary, paths );
+        return deletePaths( summary, paths );
     }
 
-    public GitManager deleteAndCommitPaths( final ChangeSummary summary, final String... paths )
+    public GitManager deletePaths( final ChangeSummary summary, final String... paths )
         throws GitSubsystemException
     {
-        return deleteAndCommitPaths( summary, Arrays.asList( paths ) );
+        return deletePaths( summary, Arrays.asList( paths ) );
     }
 
-    public GitManager deleteAndCommitPaths( final ChangeSummary summary, final Collection<String> paths )
+    public GitManager deletePaths( final ChangeSummary summary, final Collection<String> paths )
         throws GitSubsystemException
     {
         lockAnd(me->{
             try
             {
                 RmCommand rm = git.rm();
-                CommitCommand commit = git.commit();
 
                 for ( final String path : paths )
                 {
                     rm = rm.addFilepattern( path );
-                    commit = commit.setOnly( path );
                 }
 
                 logger.info( "Deleting:\n  " + join( paths, "\n  " ) + "\n\nSummary: " + summary );
-
                 rm.call();
 
-                commit.setMessage( buildMessage( summary, paths ) ).setAuthor( summary.getUser(), email ).call();
+                changelogEntries.add( new ChangelogEntry( summary.getUser(), buildMessage( summary, paths ), paths ) );
             }
             catch ( final NoFilepatternException e )
             {
@@ -630,27 +669,11 @@ public class GitManager
                   .getString( "remote", "origin", "url" );
     }
 
-    public GitManager commitModifiedFiles( final ChangeSummary changeSummary )
-        throws GitSubsystemException
+    public GitManager addExternallyChangedFiles( final ChangeSummary changeSummary )
+                    throws GitSubsystemException
     {
         lockAnd((me)->{
-            Status status;
-            try
-            {
-                status = git.status()
-                            .call();
-            }
-            catch ( NoWorkTreeException | GitAPIException e )
-            {
-                throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir, e.getMessage() );
-            }
-
-            final Map<String, StageState> css = status.getConflictingStageState();
-            if ( !css.isEmpty() )
-            {
-                throw new GitSubsystemException( "%s contains conflicts. Cannot auto-commit.\n  %s", rootDir,
-                                                 new JoinString( "\n  ", css.entrySet() ) );
-            }
+            Status status = getStatus();
 
             final Set<String> toAdd = new HashSet<>();
             final Set<String> modified = status.getModified();
@@ -669,22 +692,54 @@ public class GitManager
             if ( untrackedFolders != null && !untrackedFolders.isEmpty() )
             {
                 toAdd.addAll( untrackedFolders );
-
-                //            for ( String folderPath : untrackedFolders )
-                //            {
-                //                File dir = new File( rootDir, folderPath );
-                //                Files.walkFileTree( null, null )
-                //            }
             }
 
             if ( !toAdd.isEmpty() )
             {
-                addAndCommitPaths( changeSummary, toAdd );
+                addPaths( changeSummary, toAdd );
             }
             return me;
         });
 
         return this;
+    }
+
+    public GitManager deleteExternallyRemovedFiles( final ChangeSummary changeSummary )
+        throws GitSubsystemException
+    {
+        lockAnd((me)->{
+            Status status = getStatus();
+
+            final Set<String> removed = status.getRemoved();
+            if ( removed != null && !removed.isEmpty() )
+            {
+                deletePaths( changeSummary, removed );
+            }
+            return me;
+        });
+
+        return this;
+    }
+
+    private Status getStatus() throws GitSubsystemException
+    {
+        Status status;
+        try
+        {
+            status = git.status().call();
+        }
+        catch ( NoWorkTreeException | GitAPIException e )
+        {
+            throw new GitSubsystemException( "Failed to retrieve status of: %s. Reason: %s", e, rootDir, e.getMessage() );
+        }
+
+        final Map<String, StageState> css = status.getConflictingStageState();
+        if ( !css.isEmpty() )
+        {
+            throw new GitSubsystemException( "%s contains conflicts. Cannot auto-commit.\n  %s", rootDir,
+                                             new JoinString( "\n  ", css.entrySet() ) );
+        }
+        return status;
     }
 
     private interface GitFunction<T>
