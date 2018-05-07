@@ -2,6 +2,7 @@ package org.commonjava.indy.core.inject;
 
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
@@ -12,7 +13,7 @@ import org.hibernate.search.annotations.Indexed;
 @Indexed
 public class NfcConcreteResourceWrapper
 {
-    @Field( index = Index.YES )
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String location;
 
     @Field ( index = Index.YES )

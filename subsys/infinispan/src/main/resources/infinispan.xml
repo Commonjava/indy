@@ -70,6 +70,9 @@
       -->
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <expiration interval="1800" />
+      <indexing index="LOCAL">
+        <property name="default.directory_provider">ram</property>
+      </indexing>
     </local-cache>
 
   </cache-container>
