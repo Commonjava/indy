@@ -17,12 +17,15 @@ package org.commonjava.indy.revisions;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.indy.audit.ChangeSummary.SYSTEM_USER;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -51,7 +54,9 @@ public class RevisionsManager
 
     private static final String[] DATA_DIR_GITIGNORES = { "depgraph", "scheduler" };
 
-    public static final String CATCHUP_CHANGELOG = "Committing files modified outside of the Indy UI.";
+    public static final String CATCHUP_CHANGELOG_MODIFIED = "Add files modified outside of the Indy UI.";
+
+    public static final String CATCHUP_CHANGELOG_DELETED = "Delete files removed outside of the Indy UI.";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -98,6 +103,29 @@ public class RevisionsManager
                                                                                     .setUserEmail( revisionsConfig.getUserEmail() );
 
             dataFileGit = new GitManager( dataConf );
+
+            // we need a TimerTask that will commit modifications periodically
+            Timer timer = new Timer( true);
+            timer.scheduleAtFixedRate( new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    try
+                    {
+                        int committed = commitDataUpdates();
+                        if ( committed > 0 )
+                        {
+                            logger.info( "Commit and push data updates, size: " + committed );
+                            pushDataUpdates();
+                        }
+                    }
+                    catch ( GitSubsystemException e )
+                    {
+                        logger.warn( "Failed to push data updates", e );
+                    }
+                }
+            }, 1000, 60 * 1000 ); // every 1 min
         }
         catch ( GitSubsystemException | IOException e )
         {
@@ -123,8 +151,13 @@ public class RevisionsManager
             {
                 logger.info( "Indy started; committing externally changed files." );
 
-                final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, CATCHUP_CHANGELOG );
-                dataFileGit.commitModifiedFiles( summary );
+                ChangeSummary summary = new ChangeSummary( SYSTEM_USER, CATCHUP_CHANGELOG_MODIFIED );
+                dataFileGit.addExternallyChangedFiles( summary );
+
+                summary = new ChangeSummary( SYSTEM_USER, CATCHUP_CHANGELOG_DELETED );
+                dataFileGit.deleteExternallyRemovedFiles( summary );
+
+                dataFileGit.commit();
 
                 if ( revisionsConfig.isPushEnabled() )
                 {
@@ -161,16 +194,11 @@ public class RevisionsManager
 
             if ( event.getType() == DataFileEventType.deleted )
             {
-                dataFileGit.deleteAndCommit( event.getSummary(), event.getFile() );
+                dataFileGit.delete( event.getSummary(), event.getFile() );
             }
             else
             {
-                dataFileGit.addAndCommitFiles( event.getSummary(), event.getFile() );
-            }
-
-            if ( revisionsConfig.isPushEnabled() )
-            {
-                dataFileGit.pushUpdates();
+                dataFileGit.addFiles( event.getSummary(), event.getFile() );
             }
         }
         catch ( final GitSubsystemException e )
@@ -190,7 +218,17 @@ public class RevisionsManager
         dataFileGit.pullUpdates( revisionsConfig.getConflictStrategy() );
 
         // FIXME: fire events to signal data owners to reload...
-        // FIXME: Return some sort of status
+    }
+
+    public int commitDataUpdates()
+                    throws GitSubsystemException
+    {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return 0;
+        }
+
+        return dataFileGit.commit();
     }
 
     public void pushDataUpdates()
@@ -201,8 +239,10 @@ public class RevisionsManager
             return;
         }
 
-        dataFileGit.pushUpdates();
-        // FIXME: Return some sort of status
+        if ( revisionsConfig.isPushEnabled() )
+        {
+            dataFileGit.pushUpdates();
+        }
     }
 
     public List<ChangeSummary> getDataChangeLog( final StoreKey key, final int start, final int count )

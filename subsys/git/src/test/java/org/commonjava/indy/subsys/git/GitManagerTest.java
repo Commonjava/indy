@@ -17,6 +17,7 @@ package org.commonjava.indy.subsys.git;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.indy.audit.ChangeSummary.SYSTEM_USER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -76,16 +77,17 @@ public class GitManagerTest extends AbstractGitManagerTest
 
         final String user = "test";
         final String log = "test commit";
-        git.addAndCommitFiles( new ChangeSummary( user, log ), f );
+        git.addFiles( new ChangeSummary( user, log ), f );
+        git.commit();
 
         final List<ChangeSummary> changelog = git.getChangelog( f, 0, 1 );
 
         assertThat( changelog, notNullValue() );
         assertThat( changelog.size(), equalTo( 1 ) );
         assertThat( changelog.get( 0 )
-                             .getUser(), equalTo( user ) );
+                             .getUser(), equalTo( SYSTEM_USER ) );
         assertThat( changelog.get( 0 )
-                             .getSummary(), equalTo( log ) );
+                             .getSummary().contains( log ), equalTo( true ) );
     }
 
 
