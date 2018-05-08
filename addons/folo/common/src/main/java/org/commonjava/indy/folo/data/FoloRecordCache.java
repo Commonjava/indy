@@ -28,7 +28,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.Cache;
-import org.infinispan.cdi.ConfigureCache;
+import org.infinispan.cdi.embedded.ConfigureCache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;

@@ -28,7 +28,7 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.infinispan.cdi.ConfigureCache;
+import org.infinispan.cdi.embedded.ConfigureCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

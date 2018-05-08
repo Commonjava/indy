@@ -15,40 +15,20 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
-import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
-import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
-import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
-import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.core.content.group.GroupMergeHelper;
-import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.event.FileDeletionEvent;
-import org.commonjava.maven.galley.model.Location;
-import org.commonjava.maven.galley.model.Transfer;
-import org.infinispan.cdi.ConfigureCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 
 /**
  * This listener will do these tasks:
