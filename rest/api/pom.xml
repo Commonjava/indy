@@ -88,11 +88,11 @@
               <configuration>
                 <artifacts>
                   <artifact>
-                    <file>${project.build.directory}/indy-rest-api.yaml</file>
+                    <file>${project.build.directory}/classes/indy-rest-api.yaml</file>
                     <type>yaml</type>
                   </artifact>
                   <artifact>
-                    <file>${project.build.directory}/indy-rest-api.json</file>
+                    <file>${project.build.directory}/classes/indy-rest-api.json</file>
                     <type>json</type>
                   </artifact>
                 </artifacts>
