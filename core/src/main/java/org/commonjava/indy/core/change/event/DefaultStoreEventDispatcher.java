@@ -27,6 +27,7 @@ import org.commonjava.indy.change.event.CoreEventManagerConstants;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
@@ -36,8 +37,10 @@ import javax.enterprise.event.Event;
 import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 
@@ -109,25 +112,40 @@ public class DefaultStoreEventDispatcher
     {
         if ( postDelEvent != null )
         {
-            logger.trace( "Dispatch post-delete event for: {}", Arrays.asList( stores ) );
+            final List<StoreKey> storeList =
+                    Arrays.asList( stores ).stream().map( store -> store.getKey() ).collect( Collectors.toList() );
+
+            logger.trace( "Dispatch post-delete event for: {}", storeList );
 
             executor.execute( () -> {
-                final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
-                for ( final ArtifactStore store : stores )
+                String oldName = Thread.currentThread().getName();
+                try
                 {
-                    if ( store == null )
+                    Thread.currentThread().setName( "POST-DELETE-EVENT: " + storeList );
+                    final Map<ArtifactStore, Transfer> storeRoots = new HashMap<>();
+                    for ( final ArtifactStore store : stores )
                     {
-                        continue;
+                        if ( store == null )
+                        {
+                            continue;
+                        }
+
+                        final Transfer root = fileManager.getStoreRootDirectory( store );
+                        storeRoots.put( store, root );
                     }
 
-                    final Transfer root = fileManager.getStoreRootDirectory( store );
-                    storeRoots.put( store, root );
+                    final ArtifactStoreDeletePostEvent event =
+                            new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
+
+                    fireEvent( postDelEvent, event );
                 }
-
-                final ArtifactStoreDeletePostEvent event =
-                        new ArtifactStoreDeletePostEvent( eventMetadata, storeRoots );
-
-                fireEvent( postDelEvent, event );
+                finally
+                {
+                    if ( oldName != null )
+                    {
+                        Thread.currentThread().setName( oldName );
+                    }
+                }
             } );
         }
     }

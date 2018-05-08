@@ -17,6 +17,8 @@ package org.commonjava.indy.change.event;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 
+import java.util.Collection;
+
 /**
  * Marker interface for events related to changes in {@link ArtifactStore} instances.
  */
@@ -24,4 +26,5 @@ public interface IndyStoreEvent
     extends Iterable<ArtifactStore>
 {
 
+    Collection<ArtifactStore> getStores();
 }

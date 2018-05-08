@@ -18,6 +18,7 @@ package org.commonjava.indy.change.event;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -55,6 +56,12 @@ public abstract class AbstractStoreDeleteEvent
     public Map<ArtifactStore, Transfer> getStoreRoots()
     {
         return storeRoots;
+    }
+
+    @Override
+    public Set<ArtifactStore> getStores()
+    {
+        return storeRoots.keySet();
     }
 
     @Override

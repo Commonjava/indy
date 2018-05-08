@@ -114,22 +114,21 @@ public class ImpliedReposQueryDelegate
             throws IndyDataException
     {
         ArtifactStore store = dataManager.getArtifactStore( key );
-        if ( store == null )
+        if ( store != null )
         {
-            return Collections.emptySet();
+            boolean storeIsImplied = IMPLIED_REPO_ORIGIN.equals( store.getMetadata( METADATA_ORIGIN ) );
+            Set<Group> delegateGroups = delegate().getGroupsContaining( key );
+            if ( !storeIsImplied || delegateGroups == null || delegateGroups.isEmpty() )
+            {
+                return delegateGroups;
+            }
+
+            return delegateGroups.stream()
+                                              .filter( ( group ) -> config.isEnabledForGroup( group.getName() ) )
+                                              .collect( Collectors.toSet() );
         }
 
-        boolean storeIsImplied = IMPLIED_REPO_ORIGIN.equals( store.getMetadata( METADATA_ORIGIN ) );
-        Set<Group> delegateGroups = delegate().getGroupsContaining( key );
-        if ( !storeIsImplied || delegateGroups == null || delegateGroups.isEmpty() )
-        {
-            return delegateGroups;
-        }
-
-        Set<Group> result = delegateGroups.stream()
-                      .filter( ( group ) -> config.isEnabledForGroup( group.getName() ) )
-                      .collect( Collectors.toSet());
-
-        return result;
+        return delegate().getGroupsContaining( key );
     }
+
 }

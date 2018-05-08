@@ -48,6 +48,7 @@ public class GroupConsistencyListener
         try
         {
             final Set<Group> groups = storeDataManager.query().getGroupsContaining( key );
+            logger.trace( "For repo: {}, containing groups are: {}", key, groups );
             for ( final Group group : groups )
             {
                 logger.debug( "Removing {} from membership of group: {}", key, group.getKey() );
@@ -71,9 +72,10 @@ public class GroupConsistencyListener
 
     public void storeDeleted( @Observes final ArtifactStoreDeletePostEvent event )
     {
-        //        logger.info( "Processing proxy-manager store deletion: {}", event );
+        logger.trace( "Processing proxy-manager store deletion: {}", event.getStores() );
         for ( final ArtifactStore store : event )
         {
+            logger.trace( "Processing deletion of: {}", store.getKey() );
             processChanged( store );
         }
     }
