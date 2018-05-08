@@ -49,7 +49,7 @@ public class SwaggerExportTest
                 assertThat( response.getStatusLine().getStatusCode(), equalTo( 200 ) );
 
                 String content = IOUtils.toString( response.getEntity().getContent() );
-                FileUtils.write( new File( "target/indy-rest-api." + ext ), content );
+                FileUtils.write( new File( "target/classes/indy-rest-api." + ext ), content );
             }
             catch ( IOException e )
             {
