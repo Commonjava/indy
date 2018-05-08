@@ -88,7 +88,8 @@ public class GitManagerConcurrentTest
         FileUtils.write( f, "This is a test" );
 
         final String user = "testAddAndCommit";
-        git.addAndCommitFiles( new ChangeSummary( user, "first commit"), f );
+        git.addFiles( new ChangeSummary( user, "first commit"), f );
+        git.commit();
 
         pool.execute( () -> {
             try
@@ -110,7 +111,8 @@ public class GitManagerConcurrentTest
             try
             {
                 FileUtils.write( f, "This is another test" );
-                git.addAndCommitFiles( new ChangeSummary( user, "second commit"), f );
+                git.addFiles( new ChangeSummary( user, "second commit"), f );
+                git.commit();
             }
             catch ( Exception e )
             {
@@ -159,7 +161,8 @@ public class GitManagerConcurrentTest
 
                     final String user = "test" + j;
                     final String log = "test commit " + j;
-                    git.addAndCommitFiles( new ChangeSummary( user, log ), f );
+                    git.addFiles( new ChangeSummary( user, log ), f );
+                    git.commit();
                 }
                 catch ( Exception e )
                 {
@@ -203,7 +206,8 @@ public class GitManagerConcurrentTest
 
                 final String user = "test" + i;
                 final String log = "test commit " + i;
-                git.addAndCommitFiles( new ChangeSummary( user, log ), f );
+                git.addFiles( new ChangeSummary( user, log ), f );
+                git.commit();
             }
             catch ( Exception e )
             {
@@ -225,7 +229,8 @@ public class GitManagerConcurrentTest
 
                     final String user = "test" + j;
                     final String log = "delete test" + j + ".txt";
-                    git.deleteAndCommit( new ChangeSummary( user, log ), f );
+                    git.delete( new ChangeSummary( user, log ), f );
+                    git.commit();
                 }
                 catch ( Exception e )
                 {
