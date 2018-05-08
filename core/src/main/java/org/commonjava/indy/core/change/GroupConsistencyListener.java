@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.change;
 
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -68,7 +69,7 @@ public class GroupConsistencyListener
         }
     }
 
-    public void storeDeleted( @Observes final ArtifactStoreDeletePreEvent event )
+    public void storeDeleted( @Observes final ArtifactStoreDeletePostEvent event )
     {
         //        logger.info( "Processing proxy-manager store deletion: {}", event );
         for ( final ArtifactStore store : event )

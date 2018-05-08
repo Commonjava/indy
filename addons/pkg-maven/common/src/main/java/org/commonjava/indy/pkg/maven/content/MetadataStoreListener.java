@@ -239,7 +239,7 @@ public class MetadataStoreListener
         final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( group.getKey() );
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Clearing metadata for group: {} after update of store: {}\n{}", group.getKey(), store.getKey(), metadataMap );
+        logger.trace( "Clearing metadata for group: {} on store update: {}\n{}", group.getKey(), store.getKey(), metadataMap );
 
         if ( metadataMap == null || metadataMap.isEmpty() )
         {
