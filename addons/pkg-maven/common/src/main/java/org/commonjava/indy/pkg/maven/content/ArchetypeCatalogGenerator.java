@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -116,22 +116,14 @@ public class ArchetypeCatalogGenerator
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
-                OutputStream fos = null;
-                try
+                try(OutputStream fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata ))
                 {
-                    fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
                     fos.write( merged );
                 }
                 catch ( final IOException e )
                 {
                     throw new IndyWorkflowException( "Failed to write merged archetype catalog to: {}.\nError: {}", e, target, e.getMessage() );
                 }
-                finally
-                {
-                    closeQuietly( fos );
-                }
-
-                //                helper.writeChecksumsAndMergeInfo( merged, sources, group, toMergePath );
             }
         }
 

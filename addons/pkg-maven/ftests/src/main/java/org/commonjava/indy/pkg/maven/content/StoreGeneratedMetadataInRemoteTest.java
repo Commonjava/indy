@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ public class StoreGeneratedMetadataInRemoteTest
         client.content().store( hosted1.getKey(), path_2, new ByteArrayInputStream( pomContent_2.getBytes() ) );
         client.content().store( hosted1.getKey(), metaPath, new ByteArrayInputStream( metaContent.getBytes() ) );
 
-        Group g = new Group( GROUP, remote1.getKey(), hosted1.getKey() );
+        Group g = new Group( MAVEN_PKG_KEY, GROUP, remote1.getKey(), hosted1.getKey() );
         g = client.stores().create( g, "group G", Group.class );
 
         // MUST hit the .pom first. This is needed to populate org/foo/bar/1.0 folder in order to generate metadata.xml

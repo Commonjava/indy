@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,13 @@ package org.commonjava.indy.koji.inject;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
@@ -48,6 +50,8 @@ public class KojijiProvider
 
     private PasswordManager kojiPasswordManager;
 
+    private Locker<ProjectRef> versionMetadataLocks;
+
     @Inject
     @WeftManaged
     @ExecutorConfig( named = "koji-queries", threads = 4 )
@@ -57,6 +61,14 @@ public class KojijiProvider
     public KojiClient getKojiClient()
     {
         return kojiClient;
+    }
+
+    @KojiMavenVersionMetadataLocks
+    @Produces
+    @ApplicationScoped
+    public Locker<ProjectRef> getVersionMetadataLocks()
+    {
+        return versionMetadataLocks;
     }
 
     @Override
@@ -87,6 +99,8 @@ public class KojijiProvider
         {
             throw new IndyLifecycleException( "Init KojiClient failed", e );
         }
+
+        versionMetadataLocks = new Locker<>();
     }
 
     @Override

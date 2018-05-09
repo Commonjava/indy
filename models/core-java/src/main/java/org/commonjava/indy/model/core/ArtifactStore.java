@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,14 +113,16 @@ public abstract class ArtifactStore
     public abstract ArtifactStore copyOf( String packageType, String name );
 
     @Override
-    public int hashCode()
+    public final int hashCode()
     {
         final int prime = 31;
-        return prime + ( ( key == null ) ? 0 : key.hashCode() );
+        int result = super.hashCode();
+        result = prime * result + ( ( key == null ) ? 19 : key.hashCode() );
+        return result;
     }
 
     @Override
-    public boolean equals( final Object obj )
+    public final boolean equals( final Object obj )
     {
         if ( this == obj )
         {

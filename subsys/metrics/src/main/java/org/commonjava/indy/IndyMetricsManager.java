@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,13 +89,13 @@ public class IndyMetricsManager
 
     public Timer getTimer( MetricNamed named )
     {
-        logger.info( "call in IndyMetricsManager.getTimer from registry: {}", metricRegistry );
+        logger.trace( "call in IndyMetricsManager.getTimer" );
         return this.metricRegistry.timer( named.name() );
     }
 
     public Meter getMeter( MetricNamed named )
     {
-        logger.info( "call in IndyMetricsManager.getMeter from registry: {}", metricRegistry );
+        logger.trace( "call in IndyMetricsManager.getMeter" );
         return metricRegistry.meter( named.name() );
     }
 

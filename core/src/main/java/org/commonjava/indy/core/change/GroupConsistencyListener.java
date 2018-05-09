@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.change;
 
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -47,6 +48,7 @@ public class GroupConsistencyListener
         try
         {
             final Set<Group> groups = storeDataManager.query().getGroupsContaining( key );
+            logger.trace( "For repo: {}, containing groups are: {}", key, groups );
             for ( final Group group : groups )
             {
                 logger.debug( "Removing {} from membership of group: {}", key, group.getKey() );
@@ -68,11 +70,12 @@ public class GroupConsistencyListener
         }
     }
 
-    public void storeDeleted( @Observes final ArtifactStoreDeletePreEvent event )
+    public void storeDeleted( @Observes final ArtifactStoreDeletePostEvent event )
     {
-        //        logger.info( "Processing proxy-manager store deletion: {}", event );
+        logger.trace( "Processing proxy-manager store deletion: {}", event.getStores() );
         for ( final ArtifactStore store : event )
         {
+            logger.trace( "Processing deletion of: {}", store.getKey() );
             processChanged( store );
         }
     }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,16 +60,14 @@ public class ArchetypeCatalogMerger
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();
         final FileReader fr = null;
-        InputStream stream = null;
-
         boolean merged = false;
 
         final Set<String> seen = new HashSet<String>();
         for ( final Transfer src : sources )
         {
-            try
+            try(InputStream stream = src.openInputStream())
             {
-                stream = src.openInputStream();
+
                 final ArchetypeCatalog catalog = reader.read( stream, false );
 
                 for ( final Archetype arch : catalog.getArchetypes() )

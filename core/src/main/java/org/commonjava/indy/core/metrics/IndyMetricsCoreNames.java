@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,24 @@ import org.commonjava.indy.IndyMetricsNames;
  */
 public class IndyMetricsCoreNames extends IndyMetricsNames
 {
+    private static final String DOWNLOAD_MANAGER_PREFIX = "org.commonjava.indy.core.download-manager.";
+
+    public static final String DOWNLOADMGR_LIST = DOWNLOAD_MANAGER_PREFIX + "list";
+
+    public static final String DOWNLOADMGR_LIST_RECURSIVE = "list-recursive";
+
+    public static final String DOWNLOADMGR_RETRIEVE = DOWNLOAD_MANAGER_PREFIX + "retrieve";
+
+    public static final String DOWNLOADMGR_RETRIEVE_ALL = DOWNLOAD_MANAGER_PREFIX + "retrieve-all";
+
+    public static final String DOWNLOADMGR_RETRIEVE_FIRST = DOWNLOAD_MANAGER_PREFIX + "retrieve-first";
+
+    public static final String DOWNLOADMGR_STORE = DOWNLOAD_MANAGER_PREFIX + "store";
+
+    public static final String DOWNLOADMGR_EXISTS = DOWNLOAD_MANAGER_PREFIX + "exists";
+
+    public static final String DOWNLOADMGR_GET_TRANSFER = DOWNLOAD_MANAGER_PREFIX + "get-transfer";
+
     private static final String MODULE_PREFIX_NAME = "org.commonjava.indy.core";
 
     private static final String MODULE_DEFAULTCONTENTMANAGER_PREFIX_NAME = ".defaultContentManager.";

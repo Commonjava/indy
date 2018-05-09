@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -70,6 +70,11 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-folo-model-java</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-pkg-maven-common</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>xmlunit</groupId>

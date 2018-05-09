@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,15 @@
  */
 package org.commonjava.indy.mem.data;
 
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -41,10 +42,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static org.commonjava.cdi.util.weft.ContextSensitiveWeakHashMap.newSynchronizedContextSensitiveWeakHashMap;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
@@ -52,11 +52,14 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 public class MemoryStoreDataManager
         implements StoreDataManager
 {
+    private static final long LOCK_TIMEOUT_SECONDS = 10;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Map<StoreKey, ArtifactStore> stores = new ConcurrentHashMap<>();
 
-    private final Map<StoreKey, ReentrantLock> opLocks = newSynchronizedContextSensitiveWeakHashMap();
+    // no need to inject since this is only used internally.
+    private final Locker<StoreKey> opLocks = new Locker<>();
 
     @Inject
     private StoreEventDispatcher dispatcher;
@@ -177,37 +180,47 @@ public class MemoryStoreDataManager
             throws IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        ReentrantLock opLock = opLocks.computeIfAbsent( key, k -> new ReentrantLock() );
-        try
-        {
-            logger.info( "DELETE operation starting for store: {}", key );
-            opLock.lock();
-
-            final ArtifactStore store = stores.get( key );
-            if ( store == null )
+        AtomicReference<IndyDataException> error = new AtomicReference<>();
+        opLocks.lockAnd( key, LOCK_TIMEOUT_SECONDS, k->{
+            try
             {
-                logger.warn( "No store found for: {}", key );
-                return;
+                final ArtifactStore store = stores.get( key );
+                if ( store == null )
+                {
+                    logger.warn( "No store found for: {}", key );
+                    return null;
+                }
+
+                if ( isReadonly( store ) )
+                {
+                    throw new IndyDataException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
+                                                 "The store {} is readonly. If you want to delete this store, please modify it to non-readonly",
+                                                 store.getKey() );
+                }
+
+                preDelete( store, summary, true, eventMetadata );
+
+                ArtifactStore removed = stores.remove( key );
+                logger.info( "REMOVED store: {}", removed );
+
+                postDelete( store, summary, true, eventMetadata );
+            }
+            catch ( IndyDataException e )
+            {
+                error.set( e );
             }
 
-            if ( isReadonly( store ) )
-            {
-                throw new IndyDataException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
-                                             "The store {} is readonly. If you want to delete this store, please modify it to non-readonly",
-                                             store.getKey() );
-            }
+            return null;
+        }, (k,lock)->{
+            error.set( new IndyDataException( "Failed to lock: %s for DELETE after %d seconds.", key,
+                                              LOCK_TIMEOUT_SECONDS ) );
+            return false;
+        } );
 
-            preDelete( store, summary, true, eventMetadata );
-
-            ArtifactStore removed = stores.remove( key );
-            logger.info( "REMOVED store: {}", removed );
-
-            postDelete( store, summary, true, eventMetadata );
-        }
-        finally
+        IndyDataException ex = error.get();
+        if ( ex != null )
         {
-            opLock.unlock();
-            logger.trace( "Delete operation complete: {}", key );
+            throw ex;
         }
     }
 
@@ -289,11 +302,8 @@ public class MemoryStoreDataManager
                            final boolean fireEvents, final EventMetadata eventMetadata )
             throws IndyDataException
     {
-        ReentrantLock opLock = opLocks.computeIfAbsent( store.getKey(), k -> new ReentrantLock() );
-        try
-        {
-            opLock.lock();
-
+        AtomicReference<IndyDataException> error = new AtomicReference<>();
+        boolean result = opLocks.lockAnd( store.getKey(), LOCK_TIMEOUT_SECONDS, k-> {
             ArtifactStore original = stores.get( store.getKey() );
             if ( original == store )
             {
@@ -305,7 +315,16 @@ public class MemoryStoreDataManager
 
             if ( !skipIfExists || original == null )
             {
-                preStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                try
+                {
+                    preStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                }
+                catch ( IndyDataException e )
+                {
+                    error.set( e );
+                    return false;
+                }
+
                 final ArtifactStore old = stores.put( store.getKey(), store );
                 try
                 {
@@ -320,11 +339,19 @@ public class MemoryStoreDataManager
             }
 
             return false;
-        }
-        finally
+        }, (k,lock)->{
+            error.set( new IndyDataException( "Failed to lock: %s for STORE after %d seconds.", k,
+                                              LOCK_TIMEOUT_SECONDS ) );
+            return false;
+        });
+
+        IndyDataException ex = error.get();
+        if ( ex != null )
         {
-            opLock.unlock();
+            throw ex;
         }
+
+        return result;
     }
 
 }

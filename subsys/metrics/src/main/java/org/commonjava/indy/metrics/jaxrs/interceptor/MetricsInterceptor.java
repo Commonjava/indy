@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class MetricsInterceptor
             return context.proceed();
         }
 
-        logger.debug( "Gathering metrics for: {} (metrics annotation: {})", context.getContextData(), metrics );
+        logger.trace( "Gathering metrics for: {}", context.getContextData() );
 
         Measure measures = metrics.measure();
         List<Timer.Context> timers = Stream.of( measures.timers() )

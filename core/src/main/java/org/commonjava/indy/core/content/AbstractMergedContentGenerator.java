@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2017 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
@@ -110,8 +111,7 @@ public abstract class AbstractMergedContentGenerator
 
     protected abstract String getMergedMetadataName();
 
-    protected void clearAllMerged( final ArtifactStore store, final String path )
-            throws IndyWorkflowException
+    protected void clearAllMerged( final ArtifactStore store, final String... paths )
     {
         final Set<Group> groups = new HashSet<>();
 
@@ -133,12 +133,18 @@ public abstract class AbstractMergedContentGenerator
 
         }
 
-        groups.stream().forEach( group -> clearMergedFile( group, path ) );
+        groups.parallelStream().forEach( group -> Stream.of(paths).forEach( path->{
+            logger.trace( "Clearing: '{}' in: {}", path, group );
+            clearMergedFile( group, path );
+        } ));
 
         if ( mergedContentActions != null )
         {
             StreamSupport.stream( mergedContentActions.spliterator(), true )
-                         .forEach( action -> action.clearMergedPath( store, groups, path ) );
+                         .forEach( action -> Stream.of(paths).forEach( path->{
+                             logger.trace( "Executing clearMergedPath on action: {} for group: {} and path: {}", action, groups, path );
+                             action.clearMergedPath( store, groups, path );
+                         } ) );
         }
     }
 
@@ -174,6 +180,9 @@ public abstract class AbstractMergedContentGenerator
                 ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
                 nfc.clearMissing( resource );
             }
+
+            // make sure we delete these, even if they're left over.
+            helper.deleteChecksumsAndMergeInfo( group, path );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
