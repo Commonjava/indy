@@ -16,7 +16,7 @@ public class NfcConcreteResourceWrapper
     @Field( index = Index.YES, analyze = Analyze.NO )
     private String location;
 
-    @Field ( index = Index.YES )
+    @Field ( index = Index.YES, analyze = Analyze.NO )
     private String path;
 
     @Field

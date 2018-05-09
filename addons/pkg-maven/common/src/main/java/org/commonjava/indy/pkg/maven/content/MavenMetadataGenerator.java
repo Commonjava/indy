@@ -58,7 +58,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.infinispan.cdi.ConfigureCache;
+import org.infinispan.cdi.embedded.ConfigureCache;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
