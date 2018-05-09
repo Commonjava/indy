@@ -16,6 +16,8 @@
 package org.commonjava.indy.revisions;
 
 import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.indy.audit.ChangeSummary.SYSTEM_USER;
+import static org.commonjava.indy.subsys.git.GitManager.COMMIT_CHANGELOG_ENTRIES;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -81,11 +83,15 @@ public class RevisionsManagerTest
 
         final DataFile f2 = dfManager.getDataFile( "test/bar.txt" );
         f2.writeString( "this is a test", "UTF-8", new ChangeSummary( "test-user", "test for second file." ) );
+
+        revManager.commitDataUpdates();
+
         f2.writeString( "this is another test", "UTF-8", new ChangeSummary( "test-user", "test (2) for second file." ) );
 
         final List<DataFileEvent> events = listener.waitForEvents( 3 );
         System.out.println( "Got events:\n  " + join( events, "\n  " ) );
 
+        revManager.commitDataUpdates();
         final List<ChangeSummary> changeLog = revManager.getDataChangeLog( f2.getPath(), 0, -1 );
         assertThat( changeLog, notNullValue() );
         assertThat( changeLog.size(), equalTo( 2 ) );
@@ -109,6 +115,7 @@ public class RevisionsManagerTest
         events = listener.waitForEvents( 1 );
         System.out.println( "Got events:\n  " + join( events, "\n  " ) );
 
+        revManager.commitDataUpdates();
         final List<ChangeSummary> changeLog = revManager.getDataChangeLog( f1.getPath(), 0, -1 );
         assertThat( changeLog, notNullValue() );
         assertThat( changeLog.size(), equalTo( 1 ) );
@@ -137,19 +144,21 @@ public class RevisionsManagerTest
 
         System.out.println( "Got events:\n  " + join( events, "\n  " ) );
 
+        revManager.commitDataUpdates();
         List<ChangeSummary> changeLog = revManager.getDataChangeLog( f1.getPath(), 0, -1 );
         assertThat( changeLog, notNullValue() );
         assertThat( changeLog.size(), equalTo( 0 ) );
 
         lcEvents.fireStarted();
 
+        revManager.commitDataUpdates();
         changeLog = revManager.getDataChangeLog( f1.getPath(), 0, -1 );
         assertThat( changeLog, notNullValue() );
         assertThat( changeLog.size(), equalTo( 1 ) );
 
         assertThat( changeLog.get( 0 )
                              .getSummary()
-                             .contains( RevisionsManager.CATCHUP_CHANGELOG ), equalTo( true ) );
+                             .contains( RevisionsManager.CATCHUP_CHANGELOG_MODIFIED ), equalTo( true ) );
     }
 
     @Test
@@ -167,13 +176,14 @@ public class RevisionsManagerTest
 
         listener.waitForEvents( 3 );
 
-        final List<ChangeSummary> changeLog = revManager.getDataChangeLog( f2.getPath(), 1, 1 );
+        revManager.commitDataUpdates();
+        final List<ChangeSummary> changeLog = revManager.getDataChangeLog( f2.getPath(), 0, 1 );
         assertThat( changeLog, notNullValue() );
         assertThat( changeLog.size(), equalTo( 1 ) );
 
         final ChangeSummary summary = changeLog.get( 0 );
         assertThat( summary.getSummary()
-                           .startsWith( testSummary ), equalTo( true ) );
+                           .contains( testSummary ), equalTo( true ) );
     }
 
     @ApplicationScoped
