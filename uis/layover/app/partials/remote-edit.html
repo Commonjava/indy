@@ -73,6 +73,23 @@
               <ap-duration-hint></ap-duration-hint>
             </div>
           </div>
+
+          <div class="sub-fields">
+            <div class="detail-field">
+              <label>Pre-fetching Priority:</label>
+              <input type="text" ng-model="store.prefetch_priority" size="5"/>
+              <ap-pre-fetch-hint></ap-pre-fetch-hint>
+            </div>
+            <div class="detail-field">
+              <span><input type="checkbox" ng-model="store.prefetch_rescan"/></span>
+              <label>Allow Pre-fetching Rescan?</label>
+            </div>
+            <div class="detail-field">
+              <label>Pre-fetching Listing Type:</label>
+              <input type="radio" ng-model="store.prefetch_listing_type" value="html"/> <span>html</span>
+              <input type="radio" ng-model="store.prefetch_listing_type" value="koji"/> <span>koji</span>
+            </div>
+          </div>
       </div>
 
 
