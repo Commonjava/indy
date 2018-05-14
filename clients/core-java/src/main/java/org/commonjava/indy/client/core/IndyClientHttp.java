@@ -35,6 +35,7 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -52,8 +53,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -61,6 +64,7 @@ import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
+import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_API_VERSION;
 
 public class IndyClientHttp
         implements Closeable
@@ -77,48 +81,58 @@ public class IndyClientHttp
 
     private final String baseUrl;
 
-    private final URL url;
+    private final String apiVersion;
+
+    private List<Header> defaultHeaders;
 
     public IndyClientHttp( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
-                           SiteConfig location )
+                           SiteConfig location, String apiVersion )
             throws IndyClientException
     {
         this.objectMapper = mapper;
         this.location = location;
-
+        this.apiVersion = apiVersion;
         baseUrl = location.getUri();
-
-        try
-        {
-            url = new URL( baseUrl );
-        }
-        catch ( final MalformedURLException e )
-        {
-            throw new IndyClientException( "Invalid base-url: {}", e, baseUrl );
-        }
+        checkBaseUrl( baseUrl );
+        setDefaultHeaders();
 
         factory = new HttpFactory( authenticator );
     }
 
     public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
-                           SiteConfig location )
+                           SiteConfig location, String apiVersion )
             throws IndyClientException
     {
         this.objectMapper = mapper;
         this.location = location;
-
+        this.apiVersion = apiVersion;
         baseUrl = location.getUri();
+        checkBaseUrl( baseUrl );
+        setDefaultHeaders();
 
+        factory = new HttpFactory( passwordManager );
+    }
+
+    private void setDefaultHeaders()
+    {
+        if ( apiVersion != null )
+        {
+            Header header = new BasicHeader( HEADER_INDY_API_VERSION, apiVersion );
+            defaultHeaders = new ArrayList();
+            defaultHeaders.add( header );
+        }
+    }
+
+    private void checkBaseUrl( String baseUrl ) throws IndyClientException
+    {
         try
         {
-            url = new URL( baseUrl );
+            new URL( baseUrl );
         }
         catch ( final MalformedURLException e )
         {
             throw new IndyClientException( "Invalid base-url: {}", e, baseUrl );
         }
-
-        factory = new HttpFactory( passwordManager );
     }
 
     /**
@@ -317,10 +331,14 @@ public class IndyClientHttp
     {
         connect();
 
-        CloseableHttpResponse response = null;
+        CloseableHttpResponse response;
         try
         {
             final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
+            if ( headers != null )
+            {
+                headers.forEach( (k, v) -> { req.setHeader( k, v );} );
+            }
             final CloseableHttpClient client = newClient();
 
             response = client.execute( req, newContext() );
@@ -780,7 +798,7 @@ public class IndyClientHttp
     {
         try
         {
-            return factory.createClient( location );
+            return factory.createClient( location, defaultHeaders );
         }
         catch ( JHttpCException e )
         {
@@ -821,12 +839,6 @@ public class IndyClientHttp
         return req;
     }
 
-    public void addJsonHeaders( final HttpUriRequest req )
-    {
-        req.addHeader( "Accept", "application/json" );
-        req.addHeader( "Content-Type", "application/json" );
-    }
-
     public HttpDelete newDelete( final String url )
     {
         final HttpDelete req = new HttpDelete( url );
@@ -858,6 +870,12 @@ public class IndyClientHttp
         final HttpPost req = new HttpPost( url );
         req.addHeader( "Content-Type", "application/json" );
         return req;
+    }
+
+    protected void addJsonHeaders( final HttpUriRequest req )
+    {
+        req.addHeader( "Accept", "application/json" );
+        req.addHeader( "Content-Type", "application/json" );
     }
 
     public IndyObjectMapper getObjectMapper()

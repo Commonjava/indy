@@ -61,20 +61,96 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-    
     <dependency>
       <groupId>org.commonjava.atservice</groupId>
       <artifactId>atservice-annotation</artifactId>
     </dependency>
-    
     <dependency>
       <groupId>org.commonjava.atservice</groupId>
       <artifactId>atservice-processor</artifactId>
     </dependency>
-    
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>
+                      org.codehaus.enunciate
+                    </groupId>
+                    <artifactId>
+                      maven-enunciate-slim-plugin
+                    </artifactId>
+                    <versionRange>[1.24,)</versionRange>
+                    <goals>
+                      <goal>docs</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore />
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+    <plugins>
+      <plugin>
+        <groupId>ru.concerteza.buildnumber</groupId>
+        <artifactId>maven-jgit-buildnumber-plugin</artifactId>
+        <version>1.2.9</version>
+        <executions>
+          <execution>
+            <id>git-buildnumber</id>
+            <goals>
+              <goal>extract-buildnumber</goal>
+            </goals>
+            <phase>initialize</phase>
+            <configuration>
+              <runOnlyAtExecutionRoot>false</runOnlyAtExecutionRoot>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>buildnumber-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <id>buildnumbers</id>
+            <phase>initialize</phase>
+            <goals>
+              <goal>create</goal>
+            </goals>
+            <configuration>
+              <timestampFormat>{0,date,yyyy-MM-dd HH:mm Z}</timestampFormat>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
 </project>
