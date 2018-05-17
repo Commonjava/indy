@@ -69,5 +69,10 @@
       <artifactId>indy-subsys-http</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-metrics</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

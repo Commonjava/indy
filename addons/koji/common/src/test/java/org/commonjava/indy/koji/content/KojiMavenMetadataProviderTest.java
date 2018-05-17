@@ -330,7 +330,7 @@ public class KojiMavenMetadataProviderTest
         GalleyCore galley = new GalleyCoreBuilder(
                 new FileCacheProviderFactory( temp.newFolder( "cache" ) ) ).withEnabledTransports(
                 new HttpClientTransport( new HttpImpl( new org.commonjava.maven.galley.auth.MemoryPasswordManager() ),
-                                         new IndyObjectMapper( true ), new GlobalHttpConfiguration() ) ).build();
+                                         new IndyObjectMapper( true ), new GlobalHttpConfiguration(), null, null ) ).build();
 
         DownloadManager downloadManager = new DefaultDownloadManager( storeDataManager, galley.getTransferManager(),
                                                                       new IndyLocationExpander( storeDataManager ) );

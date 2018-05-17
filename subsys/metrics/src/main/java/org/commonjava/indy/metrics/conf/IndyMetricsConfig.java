@@ -20,73 +20,83 @@ import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.inject.Singleton;
 import java.io.InputStream;
+
+import static org.commonjava.indy.metrics.conf.IndyMetricsConfig.SECTION;
 
 /**
  * Created by xiabai on 3/17/17.
  */
-@SectionName( IndyMetricsConfig.SECTION )
+@SectionName( SECTION )
 @ApplicationScoped
 public class IndyMetricsConfig
                 implements IndyConfigInfo
 {
     public static final String SECTION = "metrics";
 
-    public final static String INDY_METRICS_REPORTER = "reporter";
+    private final static String INDY_METRICS_REPORTER = "reporter";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME = "graphite.hostname";
+    private final static String INDY_METRICS_REPORTER_CONSOLE_PERIOD = "console.reporter.period";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT = "graphite.port";
+    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME = "graphite.hostname";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX = "graphite.reporter.prefix";
+    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT = "graphite.port";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_SIMPLE_PERIOD = "graphite.reporter.simple.period";
+    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX = "graphite.reporter.prefix";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_JVM_PERIOD = "graphite.reporter.jvm.period";
+    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_SIMPLE_PERIOD = "graphite.reporter.simple.period";
 
-    public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HEALTHCHECK_PERIOD =
+    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_JVM_PERIOD = "graphite.reporter.jvm.period";
+
+    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HEALTHCHECK_PERIOD =
                     "graphite.reporter.healthcheck.period";
 
-    public final static int INDY_METRICS_REPORTER_GRPHITEREPORTER_DEFAULT_PERIOD = 30;
+    private final static String INDY_METRICS_ISENABLED = "enabled";
 
-    public final static String INDY_METRICS_ISENABLED = "enabled";
+    private final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
 
-    public final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL = "zabbix.api.url";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL = "zabbix.api.url";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT = "zabbix.sender.port";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT = "zabbix.sender.port";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST = "zabbix.sender.host";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST = "zabbix.sender.host";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_USER = "zabbix.user";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_USER = "zabbix.user";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD = "zabbix.pwd";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD = "zabbix.pwd";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME = "zabbix.indy.host";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME = "zabbix.indy.host";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX = "zabbix.reporter.prefix";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX = "zabbix.reporter.prefix";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD = "zabbix.reporter.simple.period";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD = "zabbix.reporter.simple.period";
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD = "zabbix.reporter.jvm.period";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD = "zabbix.reporter.jvm.period";
-
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD =
+    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD =
                     "zabbix.reporter.healthcheck.period";
 
-    public final static String INDY_METRICS_REPORTER_ELKREPORTER_PREFIX = "elk.reporter.prefix";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_PREFIX = "elk.reporter.prefix";
 
-    public final static String INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD = "elk.reporter.simple.period";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD = "elk.reporter.simple.period";
 
-    public final static String INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD = "elk.reporter.jvm.period";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD = "elk.reporter.jvm.period";
 
-    public final static String INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD = "elk.reporter.healthcheck.period";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD = "elk.reporter.healthcheck.period";
 
-    public final static String INDY_METRICS_REPORTER_ELKREPORTER_INDEX = "elk.reporter.index";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_INDEX = "elk.reporter.index";
 
-    public final static String INDY_METRICS_REPORTER_ELKREPORTER_HOSTS = "elk.reporter.hosts";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_HOSTS = "elk.reporter.hosts";
+
+    private static final String INDY_METRICS_MEASURE_TRANSPORT = "measure.transport";
+
+    private static final String INDY_METRICS_MEASURE_TRANSPORT_REPOS = "measure.transport.repos";
+
+    private boolean measureTransport;
+
+    private String measureTransportRepos;
+
+    private int consolePeriod = 30; // default
 
     private String elkPrefix;
 
@@ -138,13 +148,45 @@ public class IndyMetricsConfig
 
     private boolean reporterEnabled;
 
+    public boolean isMeasureTransport()
+    {
+        return measureTransport;
+    }
+
+    @ConfigName( INDY_METRICS_MEASURE_TRANSPORT )
+    public void setMeasureTransport( boolean measureTransport )
+    {
+        this.measureTransport = measureTransport;
+    }
+
+    public String getMeasureTransportRepos()
+    {
+        return measureTransportRepos;
+    }
+
+    @ConfigName( INDY_METRICS_MEASURE_TRANSPORT_REPOS )
+    public void setMeasureTransportRepos( String measureTransportRepos )
+    {
+        this.measureTransportRepos = measureTransportRepos;
+    }
+
+    public int getConsolePeriod()
+    {
+        return consolePeriod;
+    }
+
+    @ConfigName( INDY_METRICS_REPORTER_CONSOLE_PERIOD )
+    public void setConsolePeriod( int consolePeriod )
+    {
+        this.consolePeriod = consolePeriod;
+    }
 
     public String getElkPrefix()
     {
         return elkPrefix;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_PREFIX )
+    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_PREFIX )
     public void setElkPrefix( String elkPrefix )
     {
         this.elkPrefix = elkPrefix;
@@ -155,7 +197,7 @@ public class IndyMetricsConfig
         return elkSimplePriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD )
     public void setElkSimplePriod( int elkSimplePriod )
     {
         this.elkSimplePriod = elkSimplePriod;
@@ -166,7 +208,7 @@ public class IndyMetricsConfig
         return elkJVMPriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD )
     public void setElkJVMPriod( int elkJVMPriod )
     {
         this.elkJVMPriod = elkJVMPriod;
@@ -177,7 +219,7 @@ public class IndyMetricsConfig
         return elkHealthCheckPriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD )
     public void setElkHealthCheckPriod( int elkHealthCheckPriod )
     {
         this.elkHealthCheckPriod = elkHealthCheckPriod;
@@ -188,7 +230,7 @@ public class IndyMetricsConfig
         return elkHosts;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_HOSTS )
+    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_HOSTS )
     public void setElkHosts( String elkHosts )
     {
         this.elkHosts = elkHosts;
@@ -199,7 +241,7 @@ public class IndyMetricsConfig
         return elkIndex;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ELKREPORTER_INDEX )
+    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_INDEX )
     public void setElkIndex( String elkIndex )
     {
         this.elkIndex = elkIndex;
@@ -209,7 +251,7 @@ public class IndyMetricsConfig
     {
         return zabbixPrefix;
     }
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX )
     public void setZabbixPrefix( String zabbixPrefix )
     {
         this.zabbixPrefix = zabbixPrefix;
@@ -220,7 +262,7 @@ public class IndyMetricsConfig
         return zabbixSimplePriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD )
     public void setZabbixSimplePriod( int zabbixSimplePriod )
     {
         this.zabbixSimplePriod = zabbixSimplePriod;
@@ -231,7 +273,7 @@ public class IndyMetricsConfig
         return zabbixJVMPriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD )
     public void setZabbixJVMPriod( int zabbixJVMPriod )
     {
         this.zabbixJVMPriod = zabbixJVMPriod;
@@ -242,7 +284,7 @@ public class IndyMetricsConfig
         return zabbixHealthcheckPeriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD )
     public void setZabbixHealthcheckPeriod( int zabbixHealthcheckPeriod )
     {
         this.zabbixHealthcheckPeriod = zabbixHealthcheckPeriod;
@@ -253,7 +295,7 @@ public class IndyMetricsConfig
         return zabbixApiHostUrl;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL )
     public void setZabbixApiHostUrl( String zabbixApiHostUrl )
     {
         this.zabbixApiHostUrl = zabbixApiHostUrl;
@@ -264,7 +306,7 @@ public class IndyMetricsConfig
         return zabbixHost;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST )
     public void setZabbixHost( String zabbixHost )
     {
         this.zabbixHost = zabbixHost;
@@ -275,7 +317,7 @@ public class IndyMetricsConfig
         return zabbixPort;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT )
     public void setZabbixPort( int zabbixPort )
     {
         this.zabbixPort = zabbixPort;
@@ -286,7 +328,7 @@ public class IndyMetricsConfig
         return zabbixUser;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_USER )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_USER )
     public void setZabbixUser( String zabbixUser )
     {
         this.zabbixUser = zabbixUser;
@@ -297,7 +339,7 @@ public class IndyMetricsConfig
         return zabbixPwd;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD )
     public void setZabbixPwd( String zabbixPwd )
     {
         this.zabbixPwd = zabbixPwd;
@@ -308,7 +350,7 @@ public class IndyMetricsConfig
         return zabbixLocalHostName;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME )
+    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME )
     public void setZabbixLocalHostName( String zabbixLocalHostName )
     {
         this.zabbixLocalHostName = zabbixLocalHostName;
@@ -319,7 +361,7 @@ public class IndyMetricsConfig
         return reporterEnabled;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_ISENABLED )
+    @ConfigName( INDY_METRICS_REPORTER_ISENABLED )
     public void setReporterEnabled( boolean reporterEnabled )
     {
         this.reporterEnabled = reporterEnabled;
@@ -330,7 +372,7 @@ public class IndyMetricsConfig
         return metricsEnabled;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_ISENABLED )
+    @ConfigName( INDY_METRICS_ISENABLED )
     public void setMetricsEnabled( boolean metricsEnabled )
     {
         this.metricsEnabled = metricsEnabled;
@@ -341,7 +383,7 @@ public class IndyMetricsConfig
         return reporter;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER )
+    @ConfigName( INDY_METRICS_REPORTER )
     public void setReporter( String reporter )
     {
         this.reporter = reporter;
@@ -352,7 +394,7 @@ public class IndyMetricsConfig
         return grphiterHostName;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME )
+    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME )
     public void setGrphiterHostName( String grphiterHostName )
     {
         this.grphiterHostName = grphiterHostName;
@@ -363,7 +405,7 @@ public class IndyMetricsConfig
         return grphiterPort;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT )
+    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT )
     public void setGrphiterPort( int grphiterPort )
     {
         this.grphiterPort = grphiterPort;
@@ -374,7 +416,7 @@ public class IndyMetricsConfig
         return grphiterPrefix;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX )
+    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX )
     public void setGrphiterPrefix( String grphiterPrefix )
     {
         this.grphiterPrefix = grphiterPrefix;
@@ -385,7 +427,7 @@ public class IndyMetricsConfig
         return grphiterSimplePriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_SIMPLE_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_SIMPLE_PERIOD )
     public void setGrphiterSimplePriod( int grphiterSimplePriod )
     {
         this.grphiterSimplePriod = grphiterSimplePriod;
@@ -396,7 +438,7 @@ public class IndyMetricsConfig
         return grphiterJVMPriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_JVM_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_JVM_PERIOD )
     public void setGrphiterJVMPriod( int grphiterJVMPriod )
     {
         this.grphiterJVMPriod = grphiterJVMPriod;
@@ -407,7 +449,7 @@ public class IndyMetricsConfig
         return grphiterHealthcheckPeriod;
     }
 
-    @ConfigName( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_HEALTHCHECK_PERIOD )
+    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_HEALTHCHECK_PERIOD )
     public void setGrphiterHealthcheckPeriod( int grphiterHealthcheckPeriod )
     {
         this.grphiterHealthcheckPeriod = grphiterHealthcheckPeriod;

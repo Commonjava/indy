@@ -45,7 +45,7 @@ public class ExpiringMemoryNotFoundCacheTest
         nfc.addMissing( res );
         assertThat( nfc.isMissing( res ), equalTo( true ) );
 
-        Thread.sleep( TimeUnit.SECONDS.toMillis( 1 ) );
+        Thread.sleep( TimeUnit.SECONDS.toMillis( 2 ) );
 
         assertThat( nfc.isMissing( res ), equalTo( false ) );
 

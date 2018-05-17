@@ -173,7 +173,7 @@ public class ReporterIntializer
     {
         ConsoleReporter.forRegistry( metrics )
                        .build()
-                       .start( IndyMetricsConfig.INDY_METRICS_REPORTER_GRPHITEREPORTER_DEFAULT_PERIOD,
+                       .start( config.getConsolePeriod(),
                                TimeUnit.SECONDS );
     }
 

@@ -373,7 +373,6 @@
               <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
               <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
-              <!--<dependency>org.commonjava.indy:indy-ftests-metrics</dependency>-->
             </dependenciesToScan>
           </configuration>
           <executions>
