@@ -98,6 +98,8 @@ public class IndyMetricsConfig
 
     private int consolePeriod = 30; // default
 
+    private final static String INDY_METRICS_KOJI_ENABLED = "koji.enabled";
+
     private String elkPrefix;
 
     private int elkSimplePriod;
@@ -147,6 +149,8 @@ public class IndyMetricsConfig
     private boolean metricsEnabled;
 
     private boolean reporterEnabled;
+
+    private boolean kojiMetricEnabled;
 
     public boolean isMeasureTransport()
     {
@@ -453,6 +457,17 @@ public class IndyMetricsConfig
     public void setGrphiterHealthcheckPeriod( int grphiterHealthcheckPeriod )
     {
         this.grphiterHealthcheckPeriod = grphiterHealthcheckPeriod;
+    }
+
+    @ConfigName( INDY_METRICS_KOJI_ENABLED )
+    public void setKojiMetricEnabled( boolean kojiMetricEnabled )
+    {
+        this.kojiMetricEnabled = kojiMetricEnabled;
+    }
+
+    public boolean isKojiMetricEnabled()
+    {
+        return kojiMetricEnabled;
     }
 
     public String getDefaultConfigFileName()
