@@ -24,8 +24,7 @@
     <version>1.3.0-SNAPSHOT</version>
   </parent>
   <artifactId>indy-subsys-keycloak</artifactId>
-  <name>Indy :: Keycloak Subsystem</name>
-
+  <name>Indy :: Subsystems :: Keycloak</name>
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
