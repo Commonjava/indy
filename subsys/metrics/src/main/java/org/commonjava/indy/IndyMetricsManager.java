@@ -87,16 +87,16 @@ public class IndyMetricsManager
         }
     }
 
-    public Timer getTimer( MetricNamed named )
+    public Timer getTimer( String name )
     {
         logger.trace( "call in IndyMetricsManager.getTimer" );
-        return this.metricRegistry.timer( named.name() );
+        return this.metricRegistry.timer( name );
     }
 
-    public Meter getMeter( MetricNamed named )
+    public Meter getMeter( String name )
     {
         logger.trace( "call in IndyMetricsManager.getMeter" );
-        return metricRegistry.meter( named.name() );
+        return metricRegistry.meter( name );
     }
 
 }
