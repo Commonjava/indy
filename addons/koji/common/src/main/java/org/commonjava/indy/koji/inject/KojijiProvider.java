@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.koji.inject;
 
+import com.codahale.metrics.MetricRegistry;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
@@ -24,6 +25,7 @@ import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
@@ -51,6 +53,12 @@ public class KojijiProvider
     private PasswordManager kojiPasswordManager;
 
     private Locker<ProjectRef> versionMetadataLocks;
+
+    @Inject
+    private IndyMetricsConfig indyMetricsConfig;
+
+    @Inject
+    private MetricRegistry metricRegistry;
 
     @Inject
     @WeftManaged
@@ -93,7 +101,14 @@ public class KojijiProvider
 
         try
         {
-            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+            if ( indyMetricsConfig.isKojiMetricEnabled() )
+            {
+                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
+            }
+            else
+            {
+                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+            }
         }
         catch ( KojiClientException e )
         {
