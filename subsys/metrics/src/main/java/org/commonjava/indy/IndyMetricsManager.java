@@ -19,16 +19,14 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheckRegistrySet;
 import org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
-import org.commonjava.indy.model.core.PackageTypes;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet;
 import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.model.Location;
 import org.slf4j.Logger;
@@ -41,11 +39,13 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
 
 /**
  * Created by xiabai on 2/27/17.
@@ -65,6 +65,9 @@ public class IndyMetricsManager
 
     @Inject
     ReporterIntializer reporter;
+
+    @Inject
+    private CacheProducer cacheProducer;
 
     @Inject
     @IndyMetricsNamed
@@ -97,10 +100,22 @@ public class IndyMetricsManager
                                              healthCheckRegistrySet.register( indyHealthCheck.getName(),
                                                                               (HealthCheck) indyHealthCheck );
                                          } );
+
+        logger.info( "Adding health checks to registry: {}", metricRegistry );
+        metricRegistry.register( healthCheckRegistrySet.getName(), healthCheckRegistrySet );
+
+        if ( config.isIspnMetricsEnabled() )
+        {
+            setUpIspnMetrics();
+        }
+
+        if ( config.isMeasureTransport() )
+        {
+            setUpTransportMetricConfig();
+        }
+
         try
         {
-            logger.info( "Adding health checks to registry: {}", metricRegistry );
-            metricRegistry.register( healthCheckRegistrySet.getName(), healthCheckRegistrySet );
             reporter.initReporter( metricRegistry );
         }
         catch ( Exception e )
@@ -108,60 +123,72 @@ public class IndyMetricsManager
             logger.error( e.getMessage() );
             throw new RuntimeException( e );
         }
+    }
 
-        // Set up TransportMetricConfig
-        if ( config.isMeasureTransport() )
+    private void setUpIspnMetrics()
+    {
+        logger.info( "Adding ISPN checks to registry: {}", metricRegistry );
+        String gauges = config.getIspnGauges();
+        List<String> list = null;
+        if ( gauges != null )
         {
-            final String measureRepos = config.getMeasureTransportRepos();
-            final List<String> list = new ArrayList<>();
-            if ( isNotBlank( measureRepos ) )
+            list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
+        }
+        metricRegistry.register( INDY_METRIC_ISPN, new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list ) );
+    }
+
+    private void setUpTransportMetricConfig()
+    {
+        logger.info( "Adding transport metrics to registry: {}", metricRegistry );
+        final String measureRepos = config.getMeasureTransportRepos();
+        final List<String> list = new ArrayList<>();
+        if ( isNotBlank( measureRepos ) )
+        {
+            String[] toks = measureRepos.split( "," );
+            for ( String s : toks )
             {
-                String[] toks = measureRepos.split( "," );
-                for ( String s : toks )
+                s = s.trim();
+                if ( isNotBlank( s ) )
                 {
-                    s = s.trim();
-                    if ( isNotBlank( s ) )
+                    if ( s.indexOf( ":" ) < 0 )
                     {
-                        if ( s.indexOf( ":" ) < 0 )
-                        {
-                            s = MAVEN_PKG_KEY + ":" + remote.singularEndpointName() + ":" + s; // use default
-                        }
-                        list.add( s );
+                        s = MAVEN_PKG_KEY + ":" + remote.singularEndpointName() + ":" + s; // use default
                     }
+                    list.add( s );
                 }
             }
-            transportMetricConfig = new TransportMetricConfig()
+        }
+        transportMetricConfig = new TransportMetricConfig()
+        {
+            @Override
+            public boolean isEnabled()
             {
-                @Override
-                public boolean isEnabled()
-                {
-                    return true;
-                }
+                return true;
+            }
 
-                @Override
-                public String getMetricUniqueName( Location location )
+            @Override
+            public String getMetricUniqueName( Location location )
+            {
+                String locationName = location.getName();
+                for ( String s : list )
                 {
-                    String locationName = location.getName();
-                    for ( String s : list )
+                    if ( s.equals( locationName ) )
                     {
-                        if ( s.equals( locationName ) )
-                        {
-                            return normalizeName( s );
-                        }
+                        return normalizeName( s );
+                    }
 
-                        if ( s.endsWith( "*" ) ) // handle wildcard
+                    if ( s.endsWith( "*" ) ) // handle wildcard
+                    {
+                        String prefix = s.substring( 0, s.length() - 1 );
+                        if ( locationName.startsWith( prefix ) )
                         {
-                            String prefix = s.substring( 0, s.length() - 1 );
-                            if ( locationName.startsWith( prefix ) )
-                            {
-                                return normalizeName( prefix );
-                            }
+                            return normalizeName( prefix );
                         }
                     }
-                    return null;
                 }
-            };
-        }
+                return null;
+            }
+        };
     }
 
     private String normalizeName( String name )
@@ -171,13 +198,11 @@ public class IndyMetricsManager
 
     public Timer getTimer( String name )
     {
-        logger.trace( "call in IndyMetricsManager.getTimer" );
         return this.metricRegistry.timer( name );
     }
 
     public Meter getMeter( String name )
     {
-        logger.trace( "call in IndyMetricsManager.getMeter" );
         return metricRegistry.meter( name );
     }
 
