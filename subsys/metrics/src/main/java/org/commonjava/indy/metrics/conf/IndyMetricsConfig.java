@@ -53,6 +53,10 @@ public class IndyMetricsConfig
 
     private final static String INDY_METRICS_ISENABLED = "enabled";
 
+    private final static String INDY_METRICS_ISPN_ENABLED = "ispn.enabled";
+
+    private final static String INDY_METRICS_ISPN_GAUGES = "ispn.gauges";
+
     private final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
 
     private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL = "zabbix.api.url";
@@ -91,6 +95,10 @@ public class IndyMetricsConfig
     private static final String INDY_METRICS_MEASURE_TRANSPORT = "measure.transport";
 
     private static final String INDY_METRICS_MEASURE_TRANSPORT_REPOS = "measure.transport.repos";
+
+    private boolean ispnMetricsEnabled;
+
+    private String ispnGauges;
 
     private boolean measureTransport;
 
@@ -468,6 +476,28 @@ public class IndyMetricsConfig
     public boolean isKojiMetricEnabled()
     {
         return kojiMetricEnabled;
+    }
+
+    @ConfigName( INDY_METRICS_ISPN_ENABLED )
+    public void setIspnMetricsEnabled( boolean ispnMetricsEnabled )
+    {
+        this.ispnMetricsEnabled = ispnMetricsEnabled;
+    }
+
+    public boolean isIspnMetricsEnabled()
+    {
+        return ispnMetricsEnabled;
+    }
+
+    @ConfigName( INDY_METRICS_ISPN_GAUGES )
+    public void setIspnGauges( String ispnGauges )
+    {
+        this.ispnGauges = ispnGauges;
+    }
+
+    public String getIspnGauges()
+    {
+        return ispnGauges;
     }
 
     public String getDefaultConfigFileName()
