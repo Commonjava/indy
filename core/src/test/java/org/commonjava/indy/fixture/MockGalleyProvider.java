@@ -36,7 +36,7 @@ public class MockGalleyProvider
     @Produces
     public TransportManagerConfig getTransportManagerConfig()
     {
-        return new TransportManagerConfig(  );
+        return new TransportManagerConfig();
     }
 
     @Produces
