@@ -15,23 +15,33 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
+import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
+
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class PrefetchFrontier
 {
-    private List<PrioritizedResource> resourceQueue = new ArrayList<>();
+    private final Map<RemoteRepository, List<String>> resourceMap = new HashMap<>();
+
+    private final List<RemoteRepository> repoQueue = new ArrayList<>();
 
     private volatile boolean shouldSchedule = true;
 
-    private static final Comparator<PrioritizedResource> comparator = ( r1, r2 ) -> {
+    private volatile boolean hasMore = false;
+
+    private static final Comparator<RemoteRepository> repoComparator = ( r1, r2 ) -> {
         if ( r1 == null )
         {
             return 1;
@@ -40,58 +50,100 @@ public class PrefetchFrontier
         {
             return -1;
         }
-        return r2.getPriority() - r1.getPriority();
+        return r2.getPrefetchPriority() - r1.getPrefetchPriority();
     };
 
     private final ReentrantLock mutex = new ReentrantLock();
 
-    public void scheduleResources( final List<PrioritizedResource> resources )
+    void initRepoCache()
+    {
+        lockAnd( () -> {
+            if ( !resourceMap.isEmpty() )
+            {
+                repoQueue.addAll( resourceMap.keySet() );
+                sortRepoQueue();
+            }
+            hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+            return null;
+        } );
+    }
+
+    public void scheduleRepo( final RemoteRepository repo, final List<String> paths )
     {
         if ( shouldSchedule )
         {
             lockAnd( () -> {
-                resourceQueue.addAll( resources.stream().filter( Objects::nonNull ).collect( Collectors.toList() ) );
-                if ( resourceQueue.size() >= 2 )
+                if ( !repoQueue.contains( repo ) )
                 {
-                    resourceQueue.sort( comparator );
+                    repoQueue.add( repo );
+                    sortRepoQueue();
                 }
+
+                List<String> repoPaths = resourceMap.get( repo );
+
+                if ( repoPaths == null )
+                {
+                    repoPaths = new ArrayList<>( paths.size() );
+                    resourceMap.put( repo, repoPaths );
+                }
+                repoPaths.addAll( paths );
+                hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
                 return null;
             } );
         }
     }
 
-    public List<PrioritizedResource> remove( final int size )
+    public Map<RemoteRepository, List<ConcreteResource>> remove( final int size )
     {
         return lockAnd( () -> {
-            List<PrioritizedResource> resources = new ArrayList<>( size );
-            for ( int i = 0; i < size; i++ )
+            Map<RemoteRepository, List<ConcreteResource>> resources = new HashMap<>( 2 );
+            int removedSize = 0;
+            final List<RemoteRepository> repoQueueCopy = new ArrayList<>( repoQueue );
+            for ( RemoteRepository repo : repoQueueCopy )
             {
-                if ( !resourceQueue.isEmpty() )
+                List<String> paths = resourceMap.get( repo );
+                List<String> pathsCopy = new ArrayList<>( paths );
+                List<ConcreteResource> res = new ArrayList<>( size );
+                for ( String path : pathsCopy )
                 {
-                    resources.add( resourceQueue.remove( 0 ) );
+                    res.add( new StoreResource( LocationUtils.toLocation( repo ), path ) );
+                    paths.remove( path );
+                    if ( paths.isEmpty() )
+                    {
+                        resourceMap.remove( repo );
+                        repoQueue.remove( repo );
+                        sortRepoQueue();
+                        hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+                    }
                 }
-                else
+                resources.put( repo, res );
+                if ( removedSize >= size )
                 {
-                    break;
+                    return resources;
                 }
             }
             return resources;
         } );
     }
 
-    public List<PrioritizedResource> get( final int size )
+    public Map<RemoteRepository, List<ConcreteResource>> get( final int size )
     {
         return lockAnd( () -> {
-            List<PrioritizedResource> resources = new ArrayList<>( size );
-            for ( int i = 0; i < size; i++ )
+            Map<RemoteRepository, List<ConcreteResource>> resources = new HashMap<>( 2 );
+            int removedSize = 0;
+            for ( RemoteRepository repo : repoQueue )
             {
-                if ( !resourceQueue.isEmpty() )
+                List<String> paths = resourceMap.get( repo );
+                List<String> pathsCopy = new ArrayList<>( paths );
+                List<ConcreteResource> res = new ArrayList<>( size );
+                for ( String path : pathsCopy )
                 {
-                    resources.add( resourceQueue.get( i ) );
+                    res.add( new StoreResource( LocationUtils.toLocation( repo ), path ) );
                 }
-                else
+                resources.put( repo, res );
+                if ( removedSize >= size )
                 {
-                    break;
+                    return resources;
                 }
             }
             return resources;
@@ -100,7 +152,15 @@ public class PrefetchFrontier
 
     public boolean hasMore()
     {
-        return lockAnd( () -> !resourceQueue.isEmpty() );
+        return hasMore;
+    }
+
+    private void sortRepoQueue()
+    {
+        if ( repoQueue.size() > 1 )
+        {
+            repoQueue.sort( repoComparator );
+        }
     }
 
     private <T> T lockAnd( Supplier<T> action )

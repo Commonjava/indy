@@ -18,6 +18,7 @@ package org.commonjava.indy.subsys.prefetch;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,7 @@ public class KojiContentListBuilder
     private static final Logger logger = LoggerFactory.getLogger( HtmlContentListBuilder.class );
 
     @Override
-    public List<StoreResource> buildContent( RemoteRepository repository )
+    public List<ConcreteResource> buildContent( RemoteRepository repository )
     {
         if ( PREFETCH_LISTING_TYPE_HTML.equals( repository.getPrefetchListingType() )
                 || repository.getPrefetchPriority() <= 0 )

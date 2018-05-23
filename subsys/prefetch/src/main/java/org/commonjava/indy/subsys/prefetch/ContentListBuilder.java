@@ -1,9 +1,10 @@
 package org.commonjava.indy.subsys.prefetch;
 
-import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.maven.galley.model.ConcreteResource;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Used for generate the root content for remote repository, which provide the initial downloading list to {@link PrefetchManager}
@@ -11,7 +12,12 @@ import java.util.List;
  */
 public interface ContentListBuilder
 {
-    List<StoreResource> buildContent( final RemoteRepository repository);
+    List<ConcreteResource> buildContent( final RemoteRepository repository);
+
+    default List<String> buildPaths( RemoteRepository repository )
+    {
+        return buildContent( repository ).stream().map( r -> r.getPath() ).collect( Collectors.toList() );
+    }
 
     String type();
 }

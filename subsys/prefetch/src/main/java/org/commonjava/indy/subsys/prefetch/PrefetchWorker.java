@@ -15,18 +15,20 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
-import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class PrefetchWorker
         implements Runnable
@@ -37,15 +39,15 @@ public class PrefetchWorker
 
     private PrefetchFrontier frontier;
 
-    private List<PrioritizedResource> resources;
+    private Map<RemoteRepository, List<ConcreteResource>> resources;
 
     private final Logger logger;
 
     private static final String LISTING_HTML_FILE = "index.html";
 
     public PrefetchWorker( final TransferManager transfers, final PrefetchFrontier frontier,
-                           List<PrioritizedResource> resources, final PrefetchManager prefetchManager,
-                           final Logger logger )
+                           Map<RemoteRepository, List<ConcreteResource>> resources,
+                           final PrefetchManager prefetchManager, final Logger logger )
     {
         this.transfers = transfers;
         this.frontier = frontier;
@@ -59,40 +61,52 @@ public class PrefetchWorker
     {
         if ( resources == null || resources.isEmpty() )
         {
-            logger.trace( "No resources for downloading" );
+            logger.info( "No resources for downloading" );
             return;
         }
 
-        logger.trace( "Start downloading: {}", resources );
-        resources.forEach( r -> {
-            try
-            {
-                final String path = r.getResource().getPath();
-                if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        logger.info( "Start downloading: {}", resources );
+        final AtomicBoolean scheduled = new AtomicBoolean( false );
+        for ( Map.Entry<RemoteRepository, List<ConcreteResource>> entry : resources.entrySet() )
+        {
+            final RemoteRepository repo = entry.getKey();
+            final List<ConcreteResource> res = entry.getValue();
+            res.forEach( r -> {
+                try
                 {
-                    List<PrioritizedResource> dirResources = buildContent( r );
-                    logger.trace( "{} is dir, will use it to schedule new Resources {}", r, dirResources );
-                    frontier.scheduleResources( dirResources );
-                    prefetchManager.triggerWorkers();
-                }
-                else
-                {
-                    logger.trace( "{} is not dir", r );
-                    final Transfer tr = transfers.retrieve( r.getResource() );
-                    if ( !exists( tr ) )
+                    final String path = r.getPath();
+                    if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith(
+                            LISTING_HTML_FILE ) )
                     {
-                        logger.warn( "Download failed during prefetch for {}, reason is resource not exists",
-                                     r.getResource() );
+                        List<String> dirPaths = buildPaths( r );
+                        logger.info( "{} is folder, will use it to schedule new Resources {}", r, dirPaths );
+                        frontier.scheduleRepo( repo, dirPaths );
+                        scheduled.set( true );
                     }
+                    else
+                    {
+                        logger.info( "{} is file", r );
+                        final Transfer tr = transfers.retrieve( r );
+                        if ( !exists( tr ) )
+                        {
+                            logger.warn( "Download failed during prefetch for {}, reason is resource not exists", r );
+                        }
 
+                    }
                 }
-            }
-            catch ( TransferException e )
-            {
-                logger.error( "Download failed during prefetch because of transfer getting failed for {}, Reason: {}",
-                              r.getResource(), e.getMessage() );
-            }
-        } );
+                catch ( TransferException e )
+                {
+                    logger.error(
+                            "Download failed during prefetch because of transfer getting failed for {}, Reason: {}", r,
+                            e.getMessage() );
+                }
+            } );
+        }
+
+        if ( scheduled.get() )
+        {
+            prefetchManager.triggerWorkers();
+        }
     }
 
     private boolean exists( final Transfer transfer )
@@ -100,33 +114,30 @@ public class PrefetchWorker
         return transfer != null && transfer.exists();
     }
 
-    private List<PrioritizedResource> buildContent( final PrioritizedResource resource )
+    private List<String> buildPaths( final ConcreteResource resource )
     {
         try
         {
-            final ConcreteResource r = resource.getResource();
-            ListingResult lr = transfers.list( resource.getResource() );
+            ListingResult lr = transfers.list( resource );
             if ( lr != null && lr.getListing() != null )
             {
                 String[] files = lr.getListing();
-                List<PrioritizedResource> resources = new ArrayList<>( files.length );
+                List<String> paths = new ArrayList<>( files.length );
                 for ( final String file : files )
                 {
-                    resources.add( new PrioritizedResource(
-                            new StoreResource( (KeyedLocation) lr.getLocation(), r.getPath(), file ),
-                            resource.getPriority() ) );
+                    paths.add( PathUtils.normalize( resource.getPath(), file ) );
                 }
-                return resources;
+                return paths;
             }
             else
             {
-                logger.trace( "No content found for {}", resource.getResource() );
+                logger.info( "No content found for {}", resource );
             }
         }
         catch ( TransferException e )
         {
             logger.error( "List content failed during prefetch because of transfer getting failed for {}, Reason: {}",
-                          resource.getResource(), e.getMessage() );
+                          resource, e.getMessage() );
         }
         return Collections.emptyList();
     }

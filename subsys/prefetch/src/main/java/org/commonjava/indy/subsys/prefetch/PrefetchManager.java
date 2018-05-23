@@ -21,7 +21,9 @@ import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.subsys.prefetch.conf.PrefetchConfig;
 import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
@@ -48,12 +51,13 @@ public class PrefetchManager
     @Inject
     private PrefetchFrontier frontier;
 
+    @Inject
+    private PrefetchConfig config;
+
     @WeftManaged
     @ExecutorConfig( named = "prefetch-worker", threads = 5, priority = 1 )
     @Inject
     private Executor executor;
-
-    private static final int BATCH_SIZE = 10;
 
     @Inject
     private Instance<ContentListBuilder> listBuilders;
@@ -61,33 +65,39 @@ public class PrefetchManager
     @PostConstruct
     public void initPrefetch()
     {
-        logger.info( "PrefetchManager Started" );
-        triggerWorkers();
+        if(config.isEnabled())
+        {
+            frontier.initRepoCache();
+            logger.info( "PrefetchManager Started" );
+            triggerWorkers();
+        }
     }
 
     public void registerPrefetchStores( @Observes final ArtifactStorePostUpdateEvent updateEvent )
     {
-        logger.trace( "Post update triggered for scheduling of prefetch: {}", updateEvent );
-        Collection<ArtifactStore> stores = updateEvent.getStores();
-        boolean scheduled = false;
-        for ( ArtifactStore store : stores )
+        if(config.isEnabled())
         {
-            if ( store.getType() == StoreType.remote )
+            logger.info( "Post update triggered for scheduling of prefetch: {}", updateEvent );
+            final Collection<ArtifactStore> stores = updateEvent.getStores();
+            boolean scheduled = false;
+            for ( ArtifactStore store : stores )
             {
-                RemoteRepository remote = (RemoteRepository) store;
-                if ( remote.getPrefetchPriority() > 0 )
+                if ( store.getType() == StoreType.remote )
                 {
-                    logger.trace( "Store updated for scheduling of prefetch: {}", store );
-                    List<PrioritizedResource> resources = buildResources( remote );
-                    logger.trace( "Schedule resources {}", resources );
-                    frontier.scheduleResources( resources );
-                    scheduled = true;
+                    final RemoteRepository remote = (RemoteRepository) store;
+                    if ( remote.getPrefetchPriority() > 0 )
+                    {
+                        List<String> paths = buildPahts( remote );
+                        logger.info( "Schedule resources: repo: {}, paths {}", remote, paths );
+                        frontier.scheduleRepo( remote, paths );
+                        scheduled = true;
+                    }
                 }
             }
-        }
-        if ( scheduled )
-        {
-            triggerWorkers();
+            if ( scheduled )
+            {
+                triggerWorkers();
+            }
         }
     }
 
@@ -96,8 +106,8 @@ public class PrefetchManager
         logger.info( "Trigger works now" );
         while ( frontier.hasMore() )
         {
-            List<PrioritizedResource> resources = frontier.remove( BATCH_SIZE );
-            logger.trace( "Start to trigger threads to download {}", resources );
+            Map<RemoteRepository, List<ConcreteResource>> resources = frontier.remove( config.getBatchSize() );
+            logger.info( "Start to trigger threads to download {}", resources );
             executor.execute( new PrefetchWorker( transfers, frontier, resources, PrefetchManager.this, logger ) );
         }
     }
@@ -108,7 +118,7 @@ public class PrefetchManager
         {
             if ( repository.getPrefetchListingType().equals( builder.type() ) )
             {
-                logger.trace( "Use {} for {}", builder, repository.getName() );
+                logger.info( "Use {} for {}", builder, repository.getName() );
                 return builder.buildContent( repository )
                               .stream()
                               .map( s -> new PrioritizedResource( s, repository.getPrefetchPriority() ) )
@@ -118,8 +128,24 @@ public class PrefetchManager
         return Collections.emptyList();
     }
 
+    private List<String> buildPahts( final RemoteRepository repository )
+    {
+        for ( ContentListBuilder builder : listBuilders )
+        {
+            if ( repository.getPrefetchListingType().equals( builder.type() ) )
+            {
+                logger.info( "Use {} for {}", builder, repository.getName() );
+                return builder.buildPaths( repository );
+            }
+        }
+
+        // By default, we will use html content list builder if no builder matched.
+        return new HtmlContentListBuilder().buildPaths( repository );
+    }
+
     @PreDestroy
-    public void stopPrefeching(){
+    public void stopPrefeching()
+    {
         frontier.stopSchedulingMore();
     }
 }

@@ -21,6 +21,7 @@ import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +57,7 @@ public class HtmlContentListBuilder
     }
 
     @Override
-    public List<StoreResource> buildContent( RemoteRepository repository )
+    public List<ConcreteResource> buildContent( RemoteRepository repository )
     {
         if ( repository.getPrefetchPriority() <= 0 )
         {
@@ -79,7 +80,7 @@ public class HtmlContentListBuilder
             if ( lr != null && lr.getListing() != null )
             {
                 String[] files = lr.getListing();
-                List<StoreResource> resources = new ArrayList<>( files.length );
+                List<ConcreteResource> resources = new ArrayList<>( files.length );
                 for ( final String file : lr.getListing() )
                 {
                     resources.add( new StoreResource( loc, rootPath, file ) );
@@ -94,7 +95,6 @@ public class HtmlContentListBuilder
         return Collections.emptyList();
 
     }
-
 
     @Override
     public String type()
