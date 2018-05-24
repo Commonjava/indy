@@ -68,7 +68,7 @@ public class PrefetchManager
         if(config.isEnabled())
         {
             frontier.initRepoCache();
-            logger.info( "PrefetchManager Started" );
+            logger.trace( "PrefetchManager Started" );
             triggerWorkers();
         }
     }
@@ -77,7 +77,7 @@ public class PrefetchManager
     {
         if(config.isEnabled())
         {
-            logger.info( "Post update triggered for scheduling of prefetch: {}", updateEvent );
+            logger.trace( "Post update triggered for scheduling of prefetch: {}", updateEvent );
             final Collection<ArtifactStore> stores = updateEvent.getStores();
             boolean scheduled = false;
             for ( ArtifactStore store : stores )
@@ -88,7 +88,7 @@ public class PrefetchManager
                     if ( remote.getPrefetchPriority() > 0 )
                     {
                         List<String> paths = buildPahts( remote );
-                        logger.info( "Schedule resources: repo: {}, paths {}", remote, paths );
+                        logger.trace( "Schedule resources: repo: {}, paths {}", remote, paths );
                         frontier.scheduleRepo( remote, paths );
                         scheduled = true;
                     }
@@ -103,29 +103,13 @@ public class PrefetchManager
 
     void triggerWorkers()
     {
-        logger.info( "Trigger works now" );
+        logger.trace( "Trigger works now" );
         while ( frontier.hasMore() )
         {
             Map<RemoteRepository, List<ConcreteResource>> resources = frontier.remove( config.getBatchSize() );
-            logger.info( "Start to trigger threads to download {}", resources );
+            logger.trace( "Start to trigger threads to download {}", resources );
             executor.execute( new PrefetchWorker( transfers, frontier, resources, PrefetchManager.this, logger ) );
         }
-    }
-
-    private List<PrioritizedResource> buildResources( final RemoteRepository repository )
-    {
-        for ( ContentListBuilder builder : listBuilders )
-        {
-            if ( repository.getPrefetchListingType().equals( builder.type() ) )
-            {
-                logger.info( "Use {} for {}", builder, repository.getName() );
-                return builder.buildContent( repository )
-                              .stream()
-                              .map( s -> new PrioritizedResource( s, repository.getPrefetchPriority() ) )
-                              .collect( Collectors.toList() );
-            }
-        }
-        return Collections.emptyList();
     }
 
     private List<String> buildPahts( final RemoteRepository repository )
@@ -134,7 +118,7 @@ public class PrefetchManager
         {
             if ( repository.getPrefetchListingType().equals( builder.type() ) )
             {
-                logger.info( "Use {} for {}", builder, repository.getName() );
+                logger.trace( "Use {} for {}", builder, repository.getName() );
                 return builder.buildPaths( repository );
             }
         }

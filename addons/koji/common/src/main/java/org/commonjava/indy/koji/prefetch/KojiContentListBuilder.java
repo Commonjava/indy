@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.prefetch;
+package org.commonjava.indy.koji.prefetch;
 
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.subsys.prefetch.ContentListBuilder;
+import org.commonjava.indy.subsys.prefetch.HtmlContentListBuilder;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.slf4j.Logger;
@@ -30,7 +32,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.RemoteRepository.PREFETCH_LISTING_TYPE_HTML;
-import static org.commonjava.indy.model.core.RemoteRepository.PREFETCH_LISTING_TYPE_KOJI;
 
 /**
  * Used for koji proxy remote repo, which will contain a path-mask that can directly provide the downloading list.
@@ -41,6 +42,8 @@ public class KojiContentListBuilder
         implements ContentListBuilder
 {
     private static final Logger logger = LoggerFactory.getLogger( HtmlContentListBuilder.class );
+
+    public static final String PREFETCH_LISTING_TYPE_KOJI = "koji";
 
     @Override
     public List<ConcreteResource> buildContent( RemoteRepository repository )

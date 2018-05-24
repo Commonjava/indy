@@ -61,11 +61,11 @@ public class PrefetchWorker
     {
         if ( resources == null || resources.isEmpty() )
         {
-            logger.info( "No resources for downloading" );
+            logger.trace( "No resources for downloading" );
             return;
         }
 
-        logger.info( "Start downloading: {}", resources );
+        logger.trace( "Start downloading: {}", resources );
         final AtomicBoolean scheduled = new AtomicBoolean( false );
         for ( Map.Entry<RemoteRepository, List<ConcreteResource>> entry : resources.entrySet() )
         {
@@ -79,19 +79,14 @@ public class PrefetchWorker
                             LISTING_HTML_FILE ) )
                     {
                         List<String> dirPaths = buildPaths( r );
-                        logger.info( "{} is folder, will use it to schedule new Resources {}", r, dirPaths );
+                        logger.trace( "{} is folder, will use it to schedule new Resources {}", r, dirPaths );
                         frontier.scheduleRepo( repo, dirPaths );
                         scheduled.set( true );
                     }
                     else
                     {
-                        logger.info( "{} is file", r );
-                        final Transfer tr = transfers.retrieve( r );
-                        if ( !exists( tr ) )
-                        {
-                            logger.warn( "Download failed during prefetch for {}, reason is resource not exists", r );
-                        }
-
+                        logger.trace( "{} is file", r );
+                        transfers.retrieve( r );
                     }
                 }
                 catch ( TransferException e )
@@ -131,7 +126,7 @@ public class PrefetchWorker
             }
             else
             {
-                logger.info( "No content found for {}", resource );
+                logger.trace( "No content found for {}", resource );
             }
         }
         catch ( TransferException e )

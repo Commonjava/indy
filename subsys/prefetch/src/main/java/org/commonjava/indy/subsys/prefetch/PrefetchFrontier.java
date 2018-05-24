@@ -15,20 +15,19 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
+import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
+import java.util.function.Function;
 
 @ApplicationScoped
 public class PrefetchFrontier
@@ -39,6 +38,7 @@ public class PrefetchFrontier
 
     private volatile boolean shouldSchedule = true;
 
+    // Use this volatile to avoid lock on hasMore calling
     private volatile boolean hasMore = false;
 
     private static final Comparator<RemoteRepository> repoComparator = ( r1, r2 ) -> {
@@ -53,11 +53,13 @@ public class PrefetchFrontier
         return r2.getPrefetchPriority() - r1.getPrefetchPriority();
     };
 
-    private final ReentrantLock mutex = new ReentrantLock();
+    private final Locker<String> mutex = new Locker<>();
+
+    private static final String MUTEX_KEY = "mutex";
 
     void initRepoCache()
     {
-        lockAnd( () -> {
+        lockAnd( t -> {
             if ( !resourceMap.isEmpty() )
             {
                 repoQueue.addAll( resourceMap.keySet() );
@@ -72,7 +74,7 @@ public class PrefetchFrontier
     {
         if ( shouldSchedule )
         {
-            lockAnd( () -> {
+            lockAnd( t -> {
                 if ( !repoQueue.contains( repo ) )
                 {
                     repoQueue.add( repo );
@@ -95,28 +97,35 @@ public class PrefetchFrontier
 
     public Map<RemoteRepository, List<ConcreteResource>> remove( final int size )
     {
-        return lockAnd( () -> {
+        return lockAnd( t -> {
             Map<RemoteRepository, List<ConcreteResource>> resources = new HashMap<>( 2 );
             int removedSize = 0;
             final List<RemoteRepository> repoQueueCopy = new ArrayList<>( repoQueue );
             for ( RemoteRepository repo : repoQueueCopy )
             {
                 List<String> paths = resourceMap.get( repo );
-                List<String> pathsCopy = new ArrayList<>( paths );
                 List<ConcreteResource> res = new ArrayList<>( size );
-                for ( String path : pathsCopy )
+                List<String> pathsRemoved = new ArrayList<>( size );
+                for ( String path : paths )
                 {
                     res.add( new StoreResource( LocationUtils.toLocation( repo ), path ) );
-                    paths.remove( path );
-                    if ( paths.isEmpty() )
+                    pathsRemoved.add( path );
+                    if ( ++removedSize >= size )
                     {
-                        resourceMap.remove( repo );
-                        repoQueue.remove( repo );
-                        sortRepoQueue();
-                        hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+                        break;
                     }
                 }
                 resources.put( repo, res );
+
+                paths.removeAll( pathsRemoved );
+                if ( paths.isEmpty() )
+                {
+                    resourceMap.remove( repo );
+                    repoQueue.remove( repo );
+                    sortRepoQueue();
+                    hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+                }
+
                 if ( removedSize >= size )
                 {
                     return resources;
@@ -128,15 +137,14 @@ public class PrefetchFrontier
 
     public Map<RemoteRepository, List<ConcreteResource>> get( final int size )
     {
-        return lockAnd( () -> {
+        return lockAnd( t -> {
             Map<RemoteRepository, List<ConcreteResource>> resources = new HashMap<>( 2 );
             int removedSize = 0;
             for ( RemoteRepository repo : repoQueue )
             {
                 List<String> paths = resourceMap.get( repo );
-                List<String> pathsCopy = new ArrayList<>( paths );
                 List<ConcreteResource> res = new ArrayList<>( size );
-                for ( String path : pathsCopy )
+                for ( String path : paths )
                 {
                     res.add( new StoreResource( LocationUtils.toLocation( repo ), path ) );
                 }
@@ -163,20 +171,9 @@ public class PrefetchFrontier
         }
     }
 
-    private <T> T lockAnd( Supplier<T> action )
+    private <T> T lockAnd( Function<String, T> function )
     {
-        try
-        {
-            mutex.lock();
-            return action.get();
-        }
-        finally
-        {
-            if ( mutex.isLocked() )
-            {
-                mutex.unlock();
-            }
-        }
+        return mutex.lockAnd( MUTEX_KEY, Integer.MAX_VALUE, function, ( k, lock ) -> true );
     }
 
     public void stopSchedulingMore()

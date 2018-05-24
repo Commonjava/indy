@@ -33,7 +33,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.commonjava.indy.model.core.RemoteRepository.PREFETCH_LISTING_TYPE_HTML;
-import static org.commonjava.indy.model.core.RemoteRepository.PREFETCH_LISTING_TYPE_KOJI;
 
 /**
  * The normal and default content list builder, which will build the content list from a web page in external repo.
@@ -61,14 +60,9 @@ public class HtmlContentListBuilder
     {
         if ( repository.getPrefetchPriority() <= 0 )
         {
-            logger.error( "The repository {} prefetch disabled, can not use html content listing",
+            logger.warn( "The repository {} prefetch disabled, can not use html content listing",
                           repository.getName() );
             return Collections.emptyList();
-        }
-        if ( PREFETCH_LISTING_TYPE_KOJI.equals( repository.getPrefetchListingType() ) )
-        {
-            logger.warn( "Will start to use normal html content listing for the koji proxy remote {}",
-                         repository.getName() );
         }
 
         final String rootPath = "/";

@@ -38,8 +38,6 @@ public class RemoteRepository
 
     private static final Logger LOGGER = LoggerFactory.getLogger( RemoteRepository.class );
 
-    public static final String PREFETCH_LISTING_TYPE_KOJI = "koji";
-
     public static final String PREFETCH_LISTING_TYPE_HTML = "html";
 
     @ApiModelProperty( required = true, value = "The remote URL to proxy" )
@@ -439,6 +437,9 @@ public class RemoteRepository
         repo.setTimeoutSeconds( getTimeoutSeconds() );
         repo.setUser( getUser() );
         repo.setPassword( getPassword() );
+        repo.setPrefetchListingType( getPrefetchListingType() );
+        repo.setPrefetchPriority( getPrefetchPriority() );
+        repo.setPrefetchRescan( isPrefetchRescan() );
 
         copyRestrictions( repo );
         copyBase( repo );
