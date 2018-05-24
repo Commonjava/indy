@@ -84,12 +84,13 @@ public class IndyMetricsManager
     @PostConstruct
     public void initMetric()
     {
-        logger.warn( "Starting metrics subsystem..." );
-
         if ( !config.isMetricsEnabled() )
         {
+            logger.info( "Indy metrics subsystem not enabled" );
             return;
         }
+
+        logger.info( "Init metrics subsystem..." );
 
         IndyJVMInstrumentation.init( metricRegistry );
         IndyHealthCheckRegistrySet healthCheckRegistrySet = new IndyHealthCheckRegistrySet();
@@ -113,16 +114,16 @@ public class IndyMetricsManager
         {
             setUpTransportMetricConfig();
         }
+    }
 
-        try
+    public void startReporter() throws Exception
+    {
+        if ( !config.isMetricsEnabled() )
         {
-            reporter.initReporter( metricRegistry );
+            return;
         }
-        catch ( Exception e )
-        {
-            logger.error( e.getMessage() );
-            throw new RuntimeException( e );
-        }
+        logger.info( "Start metrics reporters" );
+        reporter.initReporter( metricRegistry );
     }
 
     private void setUpIspnMetrics()
