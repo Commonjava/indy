@@ -11,17 +11,17 @@
       "methods" : [ "POST", "PUT", "DELETE" ]
     },
     {
-      "role" : "pnc-orchestrator",
+      "role" : "system-user",
       "urlPattern" : "/api/promotion/*",
       "methods" : [ "POST", "GET", "PUT", "DELETE", "OPTIONS", "HEAD" ]
     },
     {
-      "role" : "pnc-orchestrator",
+      "role" : "system-user",
       "urlPattern" : "/api/admin/stores/*",
       "methods" : [ "POST", "PUT", "DELETE" ]
     },
     {
-      "role" : "pnc-orchestrator",
+      "role" : "system-user",
       "urlPattern" : "/api/content/*",
       "methods" : [ "DELETE" ]
     }
