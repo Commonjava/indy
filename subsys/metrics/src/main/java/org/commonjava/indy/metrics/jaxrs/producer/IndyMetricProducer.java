@@ -16,7 +16,9 @@
 package org.commonjava.indy.metrics.jaxrs.producer;
 
 import com.codahale.metrics.MetricRegistry;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.IndyMetricsManager;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.StartupAction;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
@@ -25,8 +27,10 @@ import javax.inject.Inject;
 /**
  * Created by xiabai on 2/27/17.
  */
-public class IndyProducer
+public class IndyMetricProducer implements StartupAction
 {
+
+    private static final String METRIC_ID = "metric";
 
     @ApplicationScoped
     @Produces
@@ -35,4 +39,31 @@ public class IndyProducer
         return new MetricRegistry();
     }
 
+    @Override
+    public String getId()
+    {
+        return METRIC_ID;
+    }
+
+    @Inject
+    private IndyMetricsManager indyMetricsManager;
+
+    @Override
+    public void start() throws IndyLifecycleException
+    {
+        try
+        {
+            indyMetricsManager.startReporter();
+        }
+        catch ( Exception e )
+        {
+            throw new IndyLifecycleException( "Failed while attempting to start Metric reporters.", e );
+        }
+    }
+
+    @Override
+    public int getStartupPriority()
+    {
+        return 10;
+    }
 }

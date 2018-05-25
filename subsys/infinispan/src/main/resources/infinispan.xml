@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
-    xmlns="urn:infinispan:config:8.2">
+    xsi:schemaLocation="urn:infinispan:config:9.1 http://www.infinispan.org/schemas/infinispan-config-9.1.xsd"
+    xmlns="urn:infinispan:config:9.1">
 
-  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT">
-    <local-cache-configuration name="local-template">
+  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
+    <local-cache-configuration name="local-template" statistics="true">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache-configuration>
 
     <local-cache name="local" configuration="local-template"/>
 
-    <local-cache name="koji-maven-version-metadata" >
+    <local-cache name="koji-maven-version-metadata" configuration="local-template">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
 
-    <local-cache name="folo-in-progress" >
+    <local-cache name="folo-in-progress" configuration="local-template">
       <eviction size="200000" type="COUNT" strategy="LRU"/>
       <indexing index="LOCAL">
         <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
@@ -24,22 +24,22 @@
       </indexing>
     </local-cache>
 
-    <local-cache name="folo-sealed">
+    <local-cache name="folo-sealed" configuration="local-template">
       <eviction size="1000" type="COUNT" strategy="LRU"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
     </local-cache>
 
-    <local-cache name="content-index">
+    <local-cache name="content-index" configuration="local-template">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
 
-    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000">
+    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
     </local-cache>
 
-    <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
+    <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">
       <eviction size="200000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
@@ -49,12 +49,12 @@
         This cache works for delete the fast local cache of the NFS supported repo cache on local. With the expiration,
         it will make all cache entries expired after 1 day, and trigger the purge of the expired cache every 30 mins
     -->
-    <local-cache name="indy-fastlocal-file-delete-cache">
+    <local-cache name="indy-fastlocal-file-delete-cache" configuration="local-template">
       <eviction size="200000" strategy="LRU"/>
       <expiration lifespan="86400000" max-idle="86400000" interval="1800000"/>
     </local-cache>
 
-    <local-cache name="schedule-expire-cache">
+    <local-cache name="schedule-expire-cache" configuration="local-template">
       <!--
           this expiration interval is used to trigger the purge threads of ISPN to let it purge the cache, which will
           trigger the cache expire event to happen. Did not find a way to let the expire event automatically happen
@@ -63,7 +63,7 @@
       <expiration interval="300" />
     </local-cache>
 
-    <local-cache name="nfc">
+    <local-cache name="nfc" configuration="local-template">
       <!--
           Use both eviction and expiration to guide against OOM, and run expiration thread twice an hour. Refer to
           http://infinispan.org/docs/8.2.x/user_guide/user_guide.html#configuration

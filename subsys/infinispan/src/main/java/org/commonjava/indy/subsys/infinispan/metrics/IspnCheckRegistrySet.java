@@ -19,6 +19,8 @@ public class IspnCheckRegistrySet
 {
     public static final String INDY_METRIC_ISPN = "indy.ispn";
 
+    private static final String SIZE = "size";
+
     private static final String CURRENT_NUMBER_OF_ENTRIES = "CurrentNumberOfEntries";
 
     private static final String CURRENT_NUMBER_OF_ENTRIES_IN_MEMORY = "CurrentNumberOfEntriesInMemory";
@@ -52,6 +54,11 @@ public class IspnCheckRegistrySet
            {
                Cache<Object, Object> cache = cacheManager.getCache( n );
                AdvancedCache<Object, Object> advancedCache = cache.getAdvancedCache();
+
+               gauges.put( name( cache.getName(), SIZE ), (Gauge) () -> advancedCache.size() ); // default
+
+               // TODO: below are advanced gauges via advancedCache.getStats().
+               // Unfortunately all methods return -1 (tested on infinispan 9.1.7). we need to watch it with new releases.
 
                if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES ) )
                {
