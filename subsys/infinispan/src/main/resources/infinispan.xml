@@ -75,5 +75,12 @@
       </indexing>
     </local-cache>
 
+    <local-cache name="prefetch-cache">
+      <eviction size="20000" type="COUNT" strategy="LRU"/>
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/prefetch"/>
+      </persistence>
+    </local-cache>
+
   </cache-container>
 </infinispan>

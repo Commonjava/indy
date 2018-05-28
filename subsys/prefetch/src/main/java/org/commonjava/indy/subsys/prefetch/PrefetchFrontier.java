@@ -18,10 +18,12 @@ package org.commonjava.indy.subsys.prefetch;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,7 +34,9 @@ import java.util.function.Function;
 @ApplicationScoped
 public class PrefetchFrontier
 {
-    private final Map<RemoteRepository, List<String>> resourceMap = new HashMap<>();
+    @Inject
+    @PrefetchCache
+    private CacheHandle<RemoteRepository, List> resourceCache;
 
     private final List<RemoteRepository> repoQueue = new ArrayList<>();
 
@@ -60,12 +64,18 @@ public class PrefetchFrontier
     void initRepoCache()
     {
         lockAnd( t -> {
-            if ( !resourceMap.isEmpty() )
+            if ( !resourceCache.isEmpty() )
             {
-                repoQueue.addAll( resourceMap.keySet() );
+                for ( RemoteRepository repo : resourceCache.execute( c -> c.keySet() ) )
+                {
+                    if ( !repoQueue.contains( repo ) )
+                    {
+                        repoQueue.add( repo );
+                    }
+                }
                 sortRepoQueue();
             }
-            hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+            hasMore = !repoQueue.isEmpty() && !resourceCache.isEmpty();
             return null;
         } );
     }
@@ -81,15 +91,15 @@ public class PrefetchFrontier
                     sortRepoQueue();
                 }
 
-                List<String> repoPaths = resourceMap.get( repo );
+                List<String> repoPaths = resourceCache.get( repo );
 
                 if ( repoPaths == null )
                 {
                     repoPaths = new ArrayList<>( paths.size() );
-                    resourceMap.put( repo, repoPaths );
+                    resourceCache.put( repo, repoPaths );
                 }
                 repoPaths.addAll( paths );
-                hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+                hasMore = !repoQueue.isEmpty() && !resourceCache.isEmpty();
                 return null;
             } );
         }
@@ -103,7 +113,7 @@ public class PrefetchFrontier
             final List<RemoteRepository> repoQueueCopy = new ArrayList<>( repoQueue );
             for ( RemoteRepository repo : repoQueueCopy )
             {
-                List<String> paths = resourceMap.get( repo );
+                List<String> paths = resourceCache.get( repo );
                 List<ConcreteResource> res = new ArrayList<>( size );
                 List<String> pathsRemoved = new ArrayList<>( size );
                 for ( String path : paths )
@@ -120,10 +130,10 @@ public class PrefetchFrontier
                 paths.removeAll( pathsRemoved );
                 if ( paths.isEmpty() )
                 {
-                    resourceMap.remove( repo );
+                    resourceCache.remove( repo );
                     repoQueue.remove( repo );
                     sortRepoQueue();
-                    hasMore = !repoQueue.isEmpty() && !resourceMap.isEmpty();
+                    hasMore = !repoQueue.isEmpty() && !resourceCache.isEmpty();
                 }
 
                 if ( removedSize >= size )
@@ -142,7 +152,7 @@ public class PrefetchFrontier
             int removedSize = 0;
             for ( RemoteRepository repo : repoQueue )
             {
-                List<String> paths = resourceMap.get( repo );
+                List<String> paths = resourceCache.get( repo );
                 List<ConcreteResource> res = new ArrayList<>( size );
                 for ( String path : paths )
                 {
