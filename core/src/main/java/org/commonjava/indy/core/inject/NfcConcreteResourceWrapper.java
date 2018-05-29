@@ -7,12 +7,16 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 
+import java.io.Serializable;
+
 /**
  * Created by ruhan on 11/29/17.
  */
 @Indexed
-public class NfcConcreteResourceWrapper
+public class NfcConcreteResourceWrapper implements Serializable
 {
+    private static final long serialVersionUID = 1L;
+
     @Field( index = Index.YES, analyze = Analyze.NO )
     private String location;
 

@@ -35,6 +35,8 @@ public class IspnCheckRegistrySet
 
     private static final String EVICTIONS = "Evictions";
 
+    private static final String OFF_HEAP_MEMORY_USED = "OffHeapMemoryUsed";
+
     private EmbeddedCacheManager cacheManager;
 
     private List<String> ispnGauges;
@@ -57,8 +59,7 @@ public class IspnCheckRegistrySet
 
                gauges.put( name( cache.getName(), SIZE ), (Gauge) () -> advancedCache.size() ); // default
 
-               // TODO: below are advanced gauges via advancedCache.getStats().
-               // Unfortunately all methods return -1 (tested on infinispan 9.1.7). we need to watch it with new releases.
+               // Below are advanced gauges via advancedCache.getStats().
 
                if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES ) )
                {
@@ -94,6 +95,11 @@ public class IspnCheckRegistrySet
                {
                    gauges.put( name( cache.getName(), EVICTIONS ),
                                (Gauge) () -> advancedCache.getStats().getEvictions() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( OFF_HEAP_MEMORY_USED ) )
+               {
+                   gauges.put( name( cache.getName(), OFF_HEAP_MEMORY_USED ),
+                               (Gauge) () -> advancedCache.getStats().getOffHeapMemoryUsed() );
                }
            } );
         return gauges;

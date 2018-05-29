@@ -17,7 +17,6 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -45,7 +44,7 @@ import java.util.function.Consumer;
  */
 @ApplicationScoped
 public class ContentIndexManager
-        implements BootupAction, ShutdownAction
+                implements BootupAction
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
@@ -99,23 +98,9 @@ public class ContentIndexManager
     }
 
     @Override
-    public void stop()
-            throws IndyLifecycleException
-    {
-        logger.debug( "Shutdown index cache" );
-        contentIndex.stop();
-    }
-
-    @Override
     public int getBootPriority()
     {
         return 80;
-    }
-
-    @Override
-    public int getShutdownPriority()
-    {
-        return 95;
     }
 
     public boolean removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
@@ -192,7 +177,7 @@ public class ContentIndexManager
 
     /**
      * <b>NOT Recursive</b>. This assumes you've recursed the group membership structure beforehand, using
-     * {@link StoreDataManager#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
+     * {@link StoreDataManager#query()#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
      * the path should be cleared.
      */
     public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
