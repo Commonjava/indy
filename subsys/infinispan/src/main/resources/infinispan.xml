@@ -11,7 +11,7 @@
           Limits the cache to this by the amount of entries in the cache.
           If choose memory or off-heap, make sure the key/value objects implements Serializable
         -->
-        <object size="1000000"/>
+        <object size="200000"/>
       </memory>
     </local-cache-configuration>
 
@@ -27,7 +27,10 @@
     </local-cache>
 
     <local-cache name="folo-sealed" configuration="local-template">
-      <persistence passivation="false">
+      <memory>
+        <object size="1000"/>
+      </memory>
+      <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="true" path="${indy.data}/folo"/>
       </persistence>
     </local-cache>
@@ -36,7 +39,11 @@
 
     <local-cache name="content-index" configuration="local-template"/>
 
-    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template"/>
+    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
+      <memory>
+        <object size="10000000"/>
+      </memory>
+    </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">
       <transaction protocol="DEFAULT" transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup" locking="PESSIMISTIC"/>
@@ -50,11 +57,14 @@
     </local-cache>
 
     <local-cache name="schedule-expire-cache" configuration="local-template">
-      <expiration interval="300000" /><!-- run expiration every 5 minutes -->
+      <expiration interval="300" />
     </local-cache>
 
     <local-cache name="nfc" configuration="local-template">
-      <expiration interval="1800000" /><!-- run expiration every 30 minutes -->
+      <!--
+        Delete NFC cache entries. It expires entries in 1 hour and run expiration every 15 minutes.
+      -->
+      <expiration lifespan="3600000" max-idle="3600000" interval="900000" />
       <indexing index="LOCAL">
         <property name="default.directory_provider">ram</property>
       </indexing>

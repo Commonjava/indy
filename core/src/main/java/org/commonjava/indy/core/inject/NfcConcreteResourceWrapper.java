@@ -23,14 +23,10 @@ public class NfcConcreteResourceWrapper implements Serializable
     @Field ( index = Index.YES, analyze = Analyze.NO )
     private String path;
 
-    @Field
-    private long timeout;
-
-    public NfcConcreteResourceWrapper( ConcreteResource resource, long timeout )
+    public NfcConcreteResourceWrapper( ConcreteResource resource )
     {
         this.location = ( (KeyedLocation) resource.getLocation() ).getKey().toString();
         this.path = resource.getPath();
-        this.timeout = timeout;
     }
 
     public String getLocation()
@@ -43,8 +39,4 @@ public class NfcConcreteResourceWrapper implements Serializable
         return path;
     }
 
-    public long getTimeout()
-    {
-        return timeout;
-    }
 }

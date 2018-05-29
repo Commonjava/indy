@@ -16,7 +16,10 @@
     <local-cache name="local" configuration="local-template"/>
 
     <local-cache name="nfc" configuration="local-template">
-      <expiration interval="900000" /><!-- run expiration every 15 minutes -->
+      <!--
+        Delete NFC cache entries. It expires entries in 1 hour and run expiration every 15 minutes.
+      -->
+      <expiration lifespan="3600000" max-idle="3600000" interval="900000" />
       <indexing index="LOCAL">
         <property name="default.directory_provider">ram</property>
       </indexing>

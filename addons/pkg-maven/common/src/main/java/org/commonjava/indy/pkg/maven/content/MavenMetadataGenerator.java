@@ -612,11 +612,10 @@ public class MavenMetadataGenerator
             if ( cacheMap == null )
             {
                 cacheMap = new HashMap<>();
+                versionMetadataCache.put( key, cacheMap );
             }
 
             cacheMap.put( toMergePath, meta );
-            versionMetadataCache.put( key, cacheMap );
-
             logger.trace( "Cached metadata: {} for: {}", toMergePath, key );
         }
     }

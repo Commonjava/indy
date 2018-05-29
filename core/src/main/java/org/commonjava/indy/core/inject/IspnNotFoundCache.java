@@ -18,7 +18,6 @@ package org.commonjava.indy.core.inject;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
-import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
@@ -34,14 +33,11 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.commonjava.indy.model.core.StoreKey.fromString;
@@ -52,8 +48,6 @@ public class IspnNotFoundCache
                 extends AbstractNotFoundCache
 {
 
-    private static final String TIMEOUT_FORMAT = "yyyy-MM-dd HH:mm:ss z";
-
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
@@ -62,9 +56,7 @@ public class IspnNotFoundCache
 
     private QueryFactory queryFactory;
 
-    private int maxResultSetSize;
-
-    // limit the max size for REST endpoint getMissing to avoid OOM
+    private int maxResultSetSize; // limit the max size for REST endpoint getMissing to avoid OOM
 
     @Inject
     protected IndyConfiguration config;
@@ -85,34 +77,11 @@ public class IspnNotFoundCache
         maxResultSetSize = config.getNfcMaxResultSetSize();
     }
 
-    private int getTimeoutInSeconds( ConcreteResource resource )
-    {
-        int timeoutInSeconds = config.getNotFoundCacheTimeoutSeconds();
-        Location loc = resource.getLocation();
-        Integer to = loc.getAttribute( RepositoryLocation.ATTR_NFC_TIMEOUT_SECONDS, Integer.class );
-        if ( to != null && to > 0 )
-        {
-            timeoutInSeconds = to;
-        }
-        return timeoutInSeconds;
-    }
-
     @Override
     public void addMissing( final ConcreteResource resource )
     {
-        final int timeoutInSeconds = getTimeoutInSeconds( resource );
-        long timeout = Long.MAX_VALUE;
-        if ( timeoutInSeconds > 0 )
-        {
-            timeout = System.currentTimeMillis() + ( timeoutInSeconds * 1000 );
-        }
-        logger.debug( "[NFC] '{}' will not be checked again until {}", resource,
-                      new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( timeout ) ) );
-
         final String key = getResourceKey( resource );
-        final long f_timeout = timeout;
-        nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, f_timeout ), timeoutInSeconds,
-                                              TimeUnit.SECONDS ) );
+        nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource ) ) );
     }
 
     @Override
@@ -120,12 +89,12 @@ public class IspnNotFoundCache
     {
         String key = getResourceKey( resource );
         NfcConcreteResourceWrapper obj = nfcCache.get( key );
-        boolean missing = ( obj != null && obj.getTimeout() > System.currentTimeMillis() );
-        if ( obj != null && missing )
+        boolean missing = false;
+        if ( obj != null )
         {
-            nfcCache.remove( key );
+            missing = true;
         }
-        logger.debug( "NFC check: {} result is: {}", resource, missing );
+        logger.debug( "NFC check: {}, result is: {}", resource, missing );
         return missing;
     }
 
@@ -183,7 +152,6 @@ public class IspnNotFoundCache
                                   .maxResults( maxResultSetSize )
                                   .having( "location" )
                                   .eq( ( (KeyedLocation) location ).getKey().toString() )
-                                  .toBuilder()
                                   .build();
 
         List<NfcConcreteResourceWrapper> matches = query.list();
@@ -244,7 +212,6 @@ public class IspnNotFoundCache
                                   .orderBy( "path" )
                                   .having( "location" )
                                   .eq( ( (KeyedLocation) location ).getKey().toString() )
-                                  .toBuilder()
                                   .build();
 
         List<NfcConcreteResourceWrapper> matches = query.list();
@@ -261,7 +228,6 @@ public class IspnNotFoundCache
                                   .select( Expression.count( "path" ) )
                                   .having( "location" )
                                   .eq( storeKey.toString() )
-                                  .toBuilder()
                                   .build();
 
         List<Object> result = query.list();

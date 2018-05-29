@@ -86,8 +86,11 @@ public class CacheProducerMergeXmlTest
 
         assertThat( manager.getCacheConfiguration( local ).memory().size(), equalTo( 20971520L ) );
 
-        assertThat( manager.getCacheConfiguration( folo_in_progress ).memory().size(), equalTo( 1000000L ) );
+        assertThat( manager.getCacheConfiguration( folo_in_progress ).memory().size(), equalTo( 200000L ) );
         assertThat( manager.getCacheConfiguration( folo_in_progress ).memory().evictionType(), equalTo( COUNT ) );
+
+        assertThat( manager.getCacheConfiguration( maven_version_metadata_cache ).memory().size(), equalTo( 10000000L ) );
+        assertThat( manager.getCacheConfiguration( maven_version_metadata_cache ).memory().evictionType(), equalTo( COUNT ) );
     }
 
     @Override

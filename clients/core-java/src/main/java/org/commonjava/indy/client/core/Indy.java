@@ -207,6 +207,12 @@ public class Indy
         return module( IndyStatsClientModule.class );
     }
 
+    public IndyNfcClientModule nfc()
+            throws IndyClientException
+    {
+        return module( IndyNfcClientModule.class );
+    }
+
     public <T extends IndyClientModule> T module( final Class<T> type )
             throws IndyClientException
     {
