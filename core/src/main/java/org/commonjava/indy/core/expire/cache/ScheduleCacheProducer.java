@@ -18,18 +18,14 @@ package org.commonjava.indy.core.expire.cache;
 import org.commonjava.indy.core.expire.ScheduleKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.notifications.Listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This ISPN cache producer is used to generate {@link ScheduleCache}. This type of cache is used as a job control center

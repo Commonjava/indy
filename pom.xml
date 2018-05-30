@@ -51,8 +51,8 @@
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.6.1</slf4j-version>
     <infinispanVersion>9.1.7.Final</infinispanVersion>
-    <luceneVersion>7.3.0</luceneVersion>
-    <hibernateVersion>5.9.1.Final</hibernateVersion>
+    <!--<luceneVersion>7.3.0</luceneVersion>-->
+    <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.0.1.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
@@ -814,12 +814,22 @@
 
       <dependency>
         <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-embedded</artifactId>
+        <artifactId>infinispan-commons</artifactId>
         <version>${infinispanVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
-        <artifactId>infinispan-embedded-query</artifactId>
+        <artifactId>infinispan-core</artifactId>
+        <version>${infinispanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-cdi-embedded</artifactId>
+        <version>${infinispanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-query</artifactId>
         <version>${infinispanVersion}</version>
       </dependency>
       <dependency>
@@ -1232,12 +1242,14 @@
         <version>1.8.3</version>
       </dependency>
 
+      <!--
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
         <version>${luceneVersion}</version>
       </dependency>
-      
+      -->
+
       <!-- Define Keycloak deps -->
       <dependency>
         <groupId>org.keycloak</groupId>
