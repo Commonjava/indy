@@ -32,7 +32,6 @@ import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.model.Transfer;
-import org.infinispan.cdi.embedded.ConfigureCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +61,6 @@ public class MetadataMergePomChangeListener
     @Inject
     private IndyFileEventManager fileEvent;
 
-    @ConfigureCache( "maven-version-metadata-cache" )
     @Inject
     @MavenVersionMetadataCache
     private CacheHandle<StoreKey, Map> versionMetadataCache;

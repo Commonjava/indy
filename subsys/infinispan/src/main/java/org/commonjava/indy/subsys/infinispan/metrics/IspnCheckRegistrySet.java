@@ -65,11 +65,6 @@ public class IspnCheckRegistrySet
                    gauges.put( name( cache.getName(), CURRENT_NUMBER_OF_ENTRIES ),
                                (Gauge) () -> advancedCache.getStats().getCurrentNumberOfEntries() );
                }
-               if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES_IN_MEMORY ) )
-               {
-                   gauges.put( name( cache.getName(), CURRENT_NUMBER_OF_ENTRIES_IN_MEMORY ),
-                               (Gauge) () -> advancedCache.getStats().getCurrentNumberOfEntriesInMemory() );
-               }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_NUMBER_OF_ENTRIES ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_NUMBER_OF_ENTRIES ),
