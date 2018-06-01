@@ -17,6 +17,7 @@ package org.commonjava.indy.test.fixture.core;
 
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
+import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
@@ -32,6 +33,12 @@ import javax.enterprise.inject.Produces;
 @Alternative
 public class MockGalleyProvider
 {
+    @Produces
+    public MavenModelProcessor getMavenModelProcessor()
+    {
+        return null;
+    }
+
     @Produces
     public TransportManagerConfig getTransportManagerConfig()
     {

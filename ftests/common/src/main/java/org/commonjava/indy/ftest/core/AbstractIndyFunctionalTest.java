@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -247,12 +248,23 @@ public abstract class AbstractIndyFunctionalTest
     protected void writeDataFile( String path, String contents )
             throws IOException
     {
-        File confFile = new File( dataDir, path );
+        File file = new File( dataDir, path );
 
-        logger.info( "Writing data file to: {}\n\n{}\n\n", confFile, contents );
-        confFile.getParentFile().mkdirs();
+        logger.info( "Writing data file to: {}\n\n{}\n\n", file, contents );
+        file.getParentFile().mkdirs();
 
-        FileUtils.write( confFile, contents );
+        FileUtils.write( file, contents );
+    }
+
+    protected void copyToDataFile( String resourcePath, String path ) throws IOException
+    {
+        File file = new File( dataDir, path );
+
+        logger.info( "Writing data file to: {}, from: {}", file, resourcePath );
+        file.getParentFile().mkdirs();
+
+        FileUtils.copyInputStreamToFile(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
     }
 
     protected Collection<Module> getAdditionalMapperModules()

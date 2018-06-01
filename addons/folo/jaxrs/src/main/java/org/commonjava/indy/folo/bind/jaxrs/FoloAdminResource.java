@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -46,6 +47,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +55,9 @@ import java.util.Set;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.indy.folo.ctl.FoloConstants.ALL;
+import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.IN_PROGRESS;
+import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.SEALED;
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
 
 @Api( value = "FOLO Tracking Record Access", description = "Manages FOLO tracking records." )
@@ -265,16 +270,7 @@ public class FoloAdminResource
             @ApiParam( "Report type, should be in_progress|sealed|all" ) final @PathParam( "type" ) String type )
     {
         Response response;
-        Set<FoloConstants.TRACKING_TYPE> types = new HashSet<>();
-
-        if ( "in_progress".equals( type ) || "all".equals( type ) )
-        {
-            types.add( FoloConstants.TRACKING_TYPE.IN_PROGRESS );
-        }
-        if ( "sealed".equals( type ) || "all".equals( type ) )
-        {
-            types.add( FoloConstants.TRACKING_TYPE.SEALED );
-        }
+        Set<FoloConstants.TRACKING_TYPE> types = getRequiredTypes( type );
 
         TrackingIdsDTO ids = controller.getTrackingIds( types );
         if ( ids != null )
@@ -287,6 +283,63 @@ public class FoloAdminResource
         }
 
         return response;
+    }
+
+
+    @ApiOperation( "Export the records as a ZIP file." )
+    @ApiResponses( { @ApiResponse( code = 200, response = File.class, message = "ZIP content" ) } )
+    @Path( "/report/export" )
+    @GET
+    @Produces( application_zip )
+    public File exportReport()
+    {
+        try
+        {
+            return controller.renderReportZip();
+        }
+        catch ( IndyWorkflowException e )
+        {
+            throwError( e );
+        }
+
+        return null;
+    }
+
+    @ApiOperation( "Import records from a ZIP file." )
+    @ApiResponses( { @ApiResponse( code = 201, message = "Import ZIP content" ) } )
+    @Path( "/report/import" )
+    @PUT
+    public Response importReport( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    {
+        try
+        {
+            controller.importRecordZip( request.getInputStream() );
+        }
+        catch ( IndyWorkflowException e )
+        {
+            throwError( e );
+        }
+        catch ( IOException e )
+        {
+            throwError( new IndyWorkflowException( "IO error", e ) );
+        }
+
+        return Response.created( uriInfo.getRequestUri() ).build();
+    }
+
+    private Set<FoloConstants.TRACKING_TYPE> getRequiredTypes( String type )
+    {
+        Set<FoloConstants.TRACKING_TYPE> types = new HashSet<>();
+
+        if ( IN_PROGRESS.getValue().equals( type ) || ALL.equals( type ) )
+        {
+            types.add( IN_PROGRESS );
+        }
+        if ( SEALED.getValue().equals( type ) || ALL.equals( type ) )
+        {
+            types.add( SEALED );
+        }
+        return types;
     }
 
 }

@@ -28,7 +28,11 @@ import java.io.File;
 public class FoloFiler
 {
 
-    private static final String DATA_DIR = "folo";
+    public static final String FOLO_DIR = "folo";
+
+    public static final String FOLO_SEALED_ZIP = "folo-sealed.zip";
+
+    public static final String FOLO_SEALED_DAT = "folo-sealed.dat";
 
     @Inject
     private DataFileManager dataFileManager;
@@ -48,13 +52,22 @@ public class FoloFiler
     private DataFile getDataFile( TrackingKey key, String ext )
     {
         final String fname = String.format( "%s.%s", key.getId(), ext );
-
-        return dataFileManager.getDataFile( DATA_DIR, fname );
+        return dataFileManager.getDataFile( FOLO_DIR, fname );
     }
 
     public DataFile getRepositoryZipFile( final TrackingKey key )
     {
         return getDataFile( key, FoloFileTypes.REPO_ZIP );
+    }
+
+    public DataFile getSealedZipFile()
+    {
+        return dataFileManager.getDataFile( FOLO_DIR, FOLO_SEALED_ZIP );
+    }
+
+    public DataFile getSealedDataFile()
+    {
+        return dataFileManager.getDataFile( FOLO_DIR, FOLO_SEALED_DAT );
     }
 
     public void deleteFiles( TrackingKey key )
