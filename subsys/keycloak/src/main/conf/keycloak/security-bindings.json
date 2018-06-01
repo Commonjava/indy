@@ -11,17 +11,17 @@
       "methods" : [ "POST", "PUT", "DELETE" ]
     },
     {
-      "role" : "system-user",
+      "role" : "power-user",
       "urlPattern" : "/api/promotion/*",
       "methods" : [ "POST", "GET", "PUT", "DELETE", "OPTIONS", "HEAD" ]
     },
     {
-      "role" : "system-user",
+      "role" : "power-user",
       "urlPattern" : "/api/admin/stores/*",
       "methods" : [ "POST", "PUT", "DELETE" ]
     },
     {
-      "role" : "system-user",
+      "role" : "power-user",
       "urlPattern" : "/api/content/*",
       "methods" : [ "DELETE" ]
     }
