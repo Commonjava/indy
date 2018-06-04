@@ -55,21 +55,15 @@
     </local-cache>
 
     <local-cache name="schedule-expire-cache" configuration="local-template">
-      <!--
-          this expiration interval is used to trigger the purge threads of ISPN to let it purge the cache, which will
-          trigger the cache expire event to happen. Did not find a way to let the expire event automatically happen
-          without this. See http://infinispan.org/docs/stable/faqs/faqs.html#eviction_and_expiration_questions for more
-       -->
       <expiration interval="300" />
     </local-cache>
 
     <local-cache name="nfc" configuration="local-template">
-      <!--
-          Use both eviction and expiration to guide against OOM, and run expiration thread twice an hour. Refer to
-          http://infinispan.org/docs/8.2.x/user_guide/user_guide.html#configuration
-      -->
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
-      <expiration interval="1800" />
+      <!--
+        Delete NFC cache entries. It expires entries in 1 hour and run expiration every 15 minutes.
+      -->
+      <expiration lifespan="3600000" max-idle="3600000" interval="900000" />
       <indexing index="LOCAL">
         <property name="default.directory_provider">ram</property>
       </indexing>
