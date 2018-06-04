@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:9.1 http://www.infinispan.org/schemas/infinispan-config-9.1.xsd"
-    xmlns="urn:infinispan:config:9.1">
+    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
+    xmlns="urn:infinispan:config:8.2">
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
@@ -34,6 +34,8 @@
     <local-cache name="content-index" configuration="local-template">
       <eviction strategy="LRU" size="200000" type="COUNT"/>
     </local-cache>
+
+    <local-cache name="content-metadata" configuration="local-template"/>
 
     <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
       <eviction size="10000000" type="COUNT" strategy="LRU"/>
