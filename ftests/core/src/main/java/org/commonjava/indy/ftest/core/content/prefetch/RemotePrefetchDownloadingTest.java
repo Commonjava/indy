@@ -139,12 +139,22 @@ public class RemotePrefetchDownloadingTest
         assertThat( fileJar.exists(), equalTo( false ) );
         assertThat( fileSrc.exists(), equalTo( false ) );
 
+        remote1.setNfcTimeoutSeconds( 120 );
+        client.stores().update( remote1, "change nfc timeout" );
+
+        final int THREAD_SLEEP_INTERVAL = 2000;
+
+        Thread.sleep( THREAD_SLEEP_INTERVAL );
+
+        assertThat( fileMeta.exists(), equalTo( false ) );
+        assertThat( fileJar.exists(), equalTo( false ) );
+        assertThat( fileSrc.exists(), equalTo( false ) );
+
         remote1.setPrefetchListingType( RemoteRepository.PREFETCH_LISTING_TYPE_HTML );
         remote1.setPrefetchPriority( 1 );
+        client.stores().update( remote1, "change prefetch priority" );
 
-        client.stores().update( remote1, "adding remote" );
-
-        Thread.sleep( 5000 );
+        Thread.sleep( THREAD_SLEEP_INTERVAL );
 
         assertThat( fileMeta.exists(), equalTo( true ) );
         assertThat( fileJar.exists(), equalTo( true ) );

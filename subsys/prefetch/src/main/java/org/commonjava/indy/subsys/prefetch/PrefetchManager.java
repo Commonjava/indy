@@ -33,6 +33,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import java.rmi.Remote;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -80,16 +81,19 @@ public class PrefetchManager
             logger.trace( "Post update triggered for scheduling of prefetch: {}", updateEvent );
             final Collection<ArtifactStore> stores = updateEvent.getStores();
             boolean scheduled = false;
-            for ( ArtifactStore store : stores )
+            for ( ArtifactStore changedStore : stores )
             {
-                if ( store.getType() == StoreType.remote )
+                if ( changedStore.getType() == StoreType.remote )
                 {
-                    final RemoteRepository remote = (RemoteRepository) store;
-                    if ( remote.getPrefetchPriority() > 0 )
+                    ArtifactStore origStore = updateEvent.getOriginal( changedStore );
+                    final RemoteRepository changedRemote = (RemoteRepository) changedStore;
+                    final RemoteRepository origRemote = (RemoteRepository ) origStore;
+                    if ( !origRemote.getPrefetchPriority().equals( changedRemote.getPrefetchPriority() )
+                            && changedRemote.getPrefetchPriority() > 0 )
                     {
-                        List<String> paths = buildPahts( remote );
-                        logger.trace( "Schedule resources: repo: {}, paths {}", remote, paths );
-                        frontier.scheduleRepo( remote, paths );
+                        List<String> paths = buildPahts( changedRemote );
+                        logger.trace( "Schedule resources: repo: {}, paths {}", changedRemote, paths );
+                        frontier.scheduleRepo( changedRemote, paths );
                         scheduled = true;
                     }
                 }
