@@ -191,3 +191,21 @@ directives.directive('apGroupAvailable', ['$timeout', function( timer ) {
     },
   };
 }]);
+
+directives.directive('apPreFetchHint', ['$timeout',function(timer) {
+  return {
+    restrict: 'E',
+    link: function(scope, element, attributes){
+      var run=function(){
+        var suggestion = element.text();
+        if ( suggestion == '' ){
+          suggestion = "Integer to indicate the pre-fetching priority of the remote, higher means more eager to do the pre-fetching of the content in the repo, 0 or below means disable the pre-fecthing. ";
+        }
+
+        element.html('<span class="hint">(' + suggestion + ')</span>');
+      };
+
+      timer(run, 0);
+    }
+  };
+}]);

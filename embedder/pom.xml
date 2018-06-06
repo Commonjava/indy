@@ -65,6 +65,10 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-prefetch</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-filer-default</artifactId>
     </dependency>
     <dependency>

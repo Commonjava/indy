@@ -62,6 +62,22 @@
         <span>{{store.metadata_timeout_seconds | duration}}</span>
       </div>
     </div>
+
+    <div class="sub-fields">
+      <div class="detail-field">
+        <label>Pre-fetching Priority:</label>
+        <span>{{store.prefetch_priority}}</span>
+        <ap-pre-fetch-hint></ap-pre-fetch-hint>
+      </div>
+      <div class="detail-field">
+        <span>{{store.prefetch_rescan | checkmark}}</span>
+        <label>Allow Pre-fetching Rescan?</label>
+      </div>
+      <div class="detail-field">
+        <label>Pre-fetching Listing Type:</label>
+        <span>{{store.prefetch_listing_type}}</span>
+      </div>
+    </div>
 </div>
 
 <div class="fieldset-caption">Description</div>

@@ -278,4 +278,8 @@ public class CacheHandle<K,V>
         return this.cache.keySet().stream().filter( filter ).collect( Collectors.toSet() );
     }
 
+    public boolean isEmpty(){
+        return execute( c->c.isEmpty() );
+    }
+
 }
