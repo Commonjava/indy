@@ -104,6 +104,10 @@ public class RemoteRepository
     @JsonProperty( "prefetch_listing_type" )
     private String prefetchListingType = PREFETCH_LISTING_TYPE_HTML;
 
+
+    @JsonProperty( "prefetch_rescan_time" )
+    private String prefetchRescanTimestamp;
+
     RemoteRepository()
     {
     }
@@ -410,6 +414,17 @@ public class RemoteRepository
         this.prefetchListingType = prefetchListingType;
     }
 
+    @JsonIgnore
+    public String getPrefetchRescanTimestamp()
+    {
+        return prefetchRescanTimestamp;
+    }
+
+    public void setPrefetchRescanTimestamp( String prefetchRescanTimestamp )
+    {
+        this.prefetchRescanTimestamp = prefetchRescanTimestamp;
+    }
+
     @Override
     public RemoteRepository copyOf()
     {
@@ -440,6 +455,7 @@ public class RemoteRepository
         repo.setPrefetchListingType( getPrefetchListingType() );
         repo.setPrefetchPriority( getPrefetchPriority() );
         repo.setPrefetchRescan( isPrefetchRescan() );
+        repo.setPrefetchRescanTimestamp( getPrefetchRescanTimestamp() );
 
         copyRestrictions( repo );
         copyBase( repo );

@@ -31,13 +31,19 @@ public class PrefetchConfig
 
     private static final String INDY_PREFETCH_BATCH_SIZE = "prefetch.batchsize";
 
+    private static final String INDY_PREFETCH_RESCAN_INTERVAL_SECONDS = "prefetch.rescan.interval.seconds";
+
     private static final boolean DEFAULT_ENABLED = false;
 
     private static final int DEFAULT_BATCH_SIZE = 5;
 
+    private static final int DEFAULT_INTERNAL_SECONDS = 24 * 3600;
+
     private Boolean enabled;
 
     private Integer batchSize;
+
+    private Integer intervalSeconds;
 
     public PrefetchConfig()
     {
@@ -63,6 +69,17 @@ public class PrefetchConfig
     public void setBatchSize( Integer batchSize )
     {
         this.batchSize = batchSize;
+    }
+
+    public Integer getIntervalSeconds()
+    {
+        return intervalSeconds == null || intervalSeconds <= 0 ? DEFAULT_INTERNAL_SECONDS : intervalSeconds;
+    }
+
+    @ConfigName( INDY_PREFETCH_RESCAN_INTERVAL_SECONDS )
+    public void setIntervalSeconds( Integer intervalSeconds )
+    {
+        this.intervalSeconds = intervalSeconds;
     }
 
     @Override

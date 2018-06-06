@@ -1,6 +1,7 @@
 package org.commonjava.indy.subsys.prefetch;
 
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.subsys.prefetch.models.RescanablePath;
 import org.commonjava.maven.galley.model.ConcreteResource;
 
 import java.util.List;
@@ -12,11 +13,21 @@ import java.util.stream.Collectors;
  */
 public interface ContentListBuilder
 {
-    List<ConcreteResource> buildContent( final RemoteRepository repository);
+    List<ConcreteResource> buildContent( final RemoteRepository repository, boolean isRescan);
+
+    default List<ConcreteResource> buildContent( final RemoteRepository repository )
+    {
+        return buildContent( repository, false );
+    }
 
     default List<String> buildPaths( RemoteRepository repository )
     {
         return buildContent( repository ).stream().map( r -> r.getPath() ).collect( Collectors.toList() );
+    }
+
+    default List<RescanablePath> buildPaths( RemoteRepository repository, boolean isRescan )
+    {
+        return buildContent( repository, isRescan ).stream().map( r -> new RescanablePath( r.getPath(), isRescan ) ).collect( Collectors.toList() );
     }
 
     String type();
