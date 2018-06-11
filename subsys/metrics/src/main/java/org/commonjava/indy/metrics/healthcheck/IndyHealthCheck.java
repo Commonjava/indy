@@ -17,6 +17,8 @@ package org.commonjava.indy.metrics.healthcheck;
 
 import com.codahale.metrics.health.HealthCheck;
 
+import static org.commonjava.indy.metrics.util.NameUtils.getAbbreviatedName;
+
 /**
  * Created by xiabai on 3/10/17.
  */
@@ -24,5 +26,9 @@ public abstract class IndyHealthCheck
                 extends HealthCheck
 {
 
-    public abstract String getName();
+    public String getName()
+    {
+        return getAbbreviatedName( this.getClass() );
+    }
+
 }
