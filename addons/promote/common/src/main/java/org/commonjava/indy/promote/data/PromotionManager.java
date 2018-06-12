@@ -26,7 +26,6 @@ import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.core.inject.StoreContentLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -138,10 +137,10 @@ public class PromotionManager
     }
 
 
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP + IndyMetricsNames.METER ) )
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException
     {
@@ -337,10 +336,10 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS + IndyMetricsNames.METER ) )
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {

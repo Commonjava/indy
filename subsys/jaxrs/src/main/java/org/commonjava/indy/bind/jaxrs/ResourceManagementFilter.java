@@ -18,7 +18,6 @@ package org.commonjava.indy.bind.jaxrs;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.bind.jaxrs.metrics.IndyMetricsJaxrsNames;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
@@ -67,10 +66,10 @@ public class ResourceManagementFilter
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
+    @Measure( meters = @MetricNamed(
                     IndyMetricsJaxrsNames.METHOD_RESOURCEMANAGEMENT_DOFILTERE
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsJaxrsNames.METHOD_RESOURCEMANAGEMENT_DOFILTERE + IndyMetricsNames.EXCEPTION ) ) )
+                                    + IndyMetricsNames.METER ), exceptions = @MetricNamed(
+                    IndyMetricsJaxrsNames.METHOD_RESOURCEMANAGEMENT_DOFILTERE + IndyMetricsNames.EXCEPTION ) )
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {

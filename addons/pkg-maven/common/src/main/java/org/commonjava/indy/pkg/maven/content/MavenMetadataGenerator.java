@@ -29,7 +29,6 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
 import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.data.IndyDataException;
@@ -192,11 +191,11 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEFILECONTENT
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
                     IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEFILECONTENT
-                                    + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.METER ) )
     public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -367,11 +366,11 @@ public class MavenMetadataGenerator
      * @throws IndyWorkflowException
      */
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEGROUPILECONTENT
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
                     IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEGROUPILECONTENT
-                                    + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.METER ) )
     public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException

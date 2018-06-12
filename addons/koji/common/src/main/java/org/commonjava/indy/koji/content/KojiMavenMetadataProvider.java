@@ -32,7 +32,6 @@ import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
 import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.StoreKey;
@@ -107,10 +106,10 @@ public class KojiMavenMetadataProvider
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA + IndyMetricsNames.METER ) )
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {

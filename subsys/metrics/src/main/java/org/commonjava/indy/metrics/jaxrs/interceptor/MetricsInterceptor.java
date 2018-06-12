@@ -20,7 +20,6 @@ import com.codahale.metrics.Timer;
 import org.commonjava.indy.IndyMetricsManager;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
@@ -44,7 +43,7 @@ import static org.commonjava.indy.IndyMetricsNames.TIMER;
  * Created by xiabai on 2/27/17.
  */
 @Interceptor
-@IndyMetrics
+@Measure
 public class MetricsInterceptor
 {
 
@@ -63,8 +62,8 @@ public class MetricsInterceptor
         if ( !config.isMetricsEnabled() )
             return context.proceed();
 
-        IndyMetrics metrics = context.getMethod().getAnnotation( IndyMetrics.class );
-        if ( metrics == null )
+        Measure measure = context.getMethod().getAnnotation( Measure.class );
+        if ( measure == null )
         {
             return context.proceed();
         }
@@ -75,8 +74,7 @@ public class MetricsInterceptor
         String method = context.getMethod().getName();
         String defaultName = name( cls, method );
 
-        Measure measures = metrics.measure();
-        List<Timer.Context> timers = Stream.of( measures.timers() )
+        List<Timer.Context> timers = Stream.of( measure.timers() )
                                            .map( named -> {
                                                String name = getName( named, defaultName, TIMER );
                                                Timer.Context tc = util.getTimer( name ).time();
@@ -91,8 +89,7 @@ public class MetricsInterceptor
         }
         catch ( Exception e )
         {
-            Measure me = metrics.exceptions();
-            Stream.of( me.meters() ).forEach( ( named ) ->
+            Stream.of( measure.exceptions() ).forEach( ( named ) ->
                                               {
                                                   String name = getName( named, defaultName, EXCEPTION );
                                                   Meter requests = util.getMeter( name );
@@ -112,7 +109,7 @@ public class MetricsInterceptor
                 } );
 
             }
-            Stream.of( measures.meters() ).forEach( ( named ) ->
+            Stream.of( measure.meters() ).forEach( ( named ) ->
                                                     {
                                                         String name = getName( named, defaultName, METER );
                                                         Meter requests = util.getMeter( name );
@@ -124,7 +121,7 @@ public class MetricsInterceptor
 
     private String getName( MetricNamed named, String defaultName, String suffix )
     {
-        String name = named.name();
+        String name = named.value();
         if ( isNotBlank( name ) )
         {
             return name;

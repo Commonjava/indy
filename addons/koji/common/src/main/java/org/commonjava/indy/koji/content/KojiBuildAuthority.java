@@ -30,7 +30,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -139,10 +138,10 @@ public class KojiBuildAuthority
         return isAuthorized( path, eventMetadata, ref, build, session, new HashMap<>() );
     }
 
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED + IndyMetricsNames.METER ) )
     public boolean isAuthorized( String path, EventMetadata eventMetadata, ProjectRef ref, KojiBuildInfo build,
                                  KojiSessionInfo session, Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
             throws KojiClientException

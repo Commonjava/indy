@@ -35,7 +35,6 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
 import org.commonjava.indy.koji.util.KojiUtils;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -143,9 +142,9 @@ public abstract class KojiContentManagerDecorator
     private Locker<StoreKey> groupMembershipLocker;
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
-                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS + IndyMetricsNames.METER ) ) )
+    @Measure( timers = @MetricNamed( IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
+                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS + IndyMetricsNames.METER ) )
     public boolean exists( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
@@ -181,9 +180,9 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE
-                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE + IndyMetricsNames.METER ) ) )
+    @Measure( timers = @MetricNamed( IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE
+                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE + IndyMetricsNames.METER ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -269,12 +268,12 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
                     IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND + IndyMetricsNames.EXCEPTION ) ) )
+                                    + IndyMetricsNames.METER ), exceptions = @MetricNamed(
+                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND + IndyMetricsNames.EXCEPTION ) )
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {

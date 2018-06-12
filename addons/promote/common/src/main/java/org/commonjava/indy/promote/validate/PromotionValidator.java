@@ -21,7 +21,6 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -83,10 +82,10 @@ public class PromotionValidator
      * @return
      * @throws PromotionValidationException
      */
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
+    @Measure( timers = @MetricNamed(
                     IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE + IndyMetricsNames.METER ) ) )
+                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
+                    IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE + IndyMetricsNames.METER ) )
     public ValidationRequest validate( PromoteRequest request, ValidationResult result, String baseUrl )
             throws PromotionValidationException
     {

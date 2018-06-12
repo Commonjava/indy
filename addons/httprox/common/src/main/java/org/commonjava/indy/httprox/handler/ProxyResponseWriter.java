@@ -32,7 +32,6 @@ import org.commonjava.indy.httprox.conf.TrackingType;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.metrics.IndyMetricsHttpProxyNames;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.AccessChannel;
@@ -119,8 +118,8 @@ public final class ProxyResponseWriter
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsHttpProxyNames.METHOD_PROXYRESPONSEWRITER_HANDLEEVENT + IndyMetricsNames.METER ) ) )
+    @Measure( meters = @MetricNamed(
+                    IndyMetricsHttpProxyNames.METHOD_PROXYRESPONSEWRITER_HANDLEEVENT + IndyMetricsNames.METER ) )
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
         HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );

@@ -28,7 +28,6 @@ import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
 import org.commonjava.indy.core.metrics.IndyMetricsCoreNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -66,8 +65,8 @@ public class StoreEnablementManager
     private IndyConfiguration config;
 
     //FIXME: Convert to using ArtifactStoreEnablementEvent.
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREENABLEMENTCHANGE + IndyMetricsNames.METER ) ) )
+    @Measure( meters = @MetricNamed(
+                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREENABLEMENTCHANGE + IndyMetricsNames.METER ) )
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
         if ( event.isPreprocessing() )
@@ -128,8 +127,8 @@ public class StoreEnablementManager
 //        }
 //    }
 
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREEERROR + IndyMetricsNames.METER ) ) )
+    @Measure( meters = @MetricNamed(
+                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREEERROR + IndyMetricsNames.METER ) )
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -170,8 +169,8 @@ public class StoreEnablementManager
         }
     }
 
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDESABLETIMEOUT + IndyMetricsNames.METER ) ) )
+    @Measure( meters = @MetricNamed(
+                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDESABLETIMEOUT + IndyMetricsNames.METER ) )
     public void onDisableTimeout( @Observes SchedulerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
