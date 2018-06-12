@@ -17,6 +17,7 @@ package org.commonjava.indy.metrics.jaxrs.interceptor;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.commons.lang3.ClassUtils;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
@@ -25,6 +26,7 @@ import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -54,6 +56,14 @@ public class MetricsInterceptor
     @IndyMetricsNamed
     IndyMetricsConfig config;
 
+    private String nodePrefix;
+
+    @PostConstruct
+    void setUp()
+    {
+        nodePrefix = config.getNodePrefix();
+    }
+
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
@@ -68,9 +78,7 @@ public class MetricsInterceptor
 
         logger.trace( "Gathering metrics for: {}", context.getContextData() );
 
-        String cls = context.getMethod().getDeclaringClass().getName();
-        String method = context.getMethod().getName();
-        String defaultName = name( cls, method );
+        String defaultName = getDefaultName( context );
 
         List<Timer.Context> timers = Stream.of( measure.timers() )
                                            .map( named -> {
@@ -118,6 +126,17 @@ public class MetricsInterceptor
     }
 
     /**
+     * Get default metric name. Use abbreviated package name, e.g., foo.bar.ClassA.methodB -> f.b.ClassA.methodB
+     */
+    private String getDefaultName( InvocationContext context )
+    {
+        // len 1 is the minimum len which will shorten the whole package name and keep class name
+        String cls = ClassUtils.getAbbreviatedName( context.getMethod().getDeclaringClass().getName(), 1 );
+        String method = context.getMethod().getName();
+        return name( cls, method );
+    }
+
+    /**
      * Get the metric fullname. If user specified name, return name + suffix. If not, use defaultName + suffix.
      * @param named user specified name
      * @param defaultName 'class name + method name', not null.
@@ -128,9 +147,9 @@ public class MetricsInterceptor
         String name = named.value();
         if ( isBlank( name ) || name.equals( DEFAULT ) )
         {
-            return name( defaultName, suffix );
+            name = defaultName;
         }
-        return name( name, suffix );
+        return name( nodePrefix, name, suffix );
     }
 
 }
