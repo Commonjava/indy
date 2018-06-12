@@ -20,31 +20,33 @@ import com.codahale.metrics.jvm.*;
 
 import java.lang.management.ManagementFactory;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 /**
  * Created by xiabai on 3/10/17.
  */
 public class IndyJVMInstrumentation
 {
-    private static final String INDY_METRIC_JVM_MEMORY = "jvm.memory";
+    private static final String JVM_MEMORY = "jvm.memory";
 
-    private static final String INDY_METRIC_JVM_GARBAGE = "jvm.garbage";
+    private static final String JVM_GARBAGE = "jvm.garbage";
 
-    private static final String INDY_METRIC_JVM_THREADS = "jvm.threads";
+    private static final String JVM_THREADS = "jvm.threads";
 
-    private static final String INDY_METRIC_JVM_FILES = "jvm.files";
+    private static final String JVM_FILES = "jvm.files";
 
-    private static final String INDY_METRIC_JVM_BUFFERS = "jvm.buffers";
+    private static final String JVM_BUFFERS = "jvm.buffers";
 
-    private static final String INDY_METRIC_JVM_CLASSLOADING = "jvm.classloading";
+    private static final String JVM_CLASSLOADING = "jvm.classloading";
 
-    public static void init( MetricRegistry metricRegistry )
+    public static void registerJvmMetric( String nodePrefix, MetricRegistry registry )
     {
-        metricRegistry.register( INDY_METRIC_JVM_MEMORY, new MemoryUsageGaugeSet() );
-        metricRegistry.register( INDY_METRIC_JVM_GARBAGE, new GarbageCollectorMetricSet() );
-        metricRegistry.register( INDY_METRIC_JVM_THREADS, new ThreadStatesGaugeSet() );
-        metricRegistry.register( INDY_METRIC_JVM_FILES, new FileDescriptorRatioGauge() );
-        metricRegistry.register( INDY_METRIC_JVM_CLASSLOADING, new ClassLoadingGaugeSet() );
-        metricRegistry.register( INDY_METRIC_JVM_BUFFERS,
-                                 new BufferPoolMetricSet( ManagementFactory.getPlatformMBeanServer() ) );
+        registry.register( name( nodePrefix, JVM_MEMORY ), new MemoryUsageGaugeSet() );
+        registry.register( name( nodePrefix, JVM_GARBAGE ), new GarbageCollectorMetricSet() );
+        registry.register( name( nodePrefix, JVM_THREADS ), new ThreadStatesGaugeSet() );
+        registry.register( name( nodePrefix, JVM_FILES ), new FileDescriptorRatioGauge() );
+        registry.register( name( nodePrefix, JVM_CLASSLOADING ), new ClassLoadingGaugeSet() );
+        registry.register( name( nodePrefix, JVM_BUFFERS ),
+                           new BufferPoolMetricSet( ManagementFactory.getPlatformMBeanServer() ) );
     }
 }

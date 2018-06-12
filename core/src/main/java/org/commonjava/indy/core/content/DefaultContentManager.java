@@ -228,7 +228,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ), exceptions = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -358,7 +358,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ), exceptions = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -486,7 +486,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ), exceptions = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -621,7 +621,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ), exceptions = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {

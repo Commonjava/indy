@@ -136,7 +136,7 @@ public class PromotionManager
     }
 
 
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException
     {
@@ -332,7 +332,7 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {

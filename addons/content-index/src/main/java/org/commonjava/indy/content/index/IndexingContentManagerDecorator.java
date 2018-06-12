@@ -342,7 +342,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer != null && transfer.exists();
     }
 
-    @Measure( meters = @MetricNamed( DEFAULT ), timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
@@ -456,7 +456,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    @Measure( meters = @MetricNamed( DEFAULT ), timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     @Deprecated
     public Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
                                                ContentManagementFunction func )

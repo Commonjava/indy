@@ -157,7 +157,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -287,7 +287,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -343,7 +343,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -395,7 +395,7 @@ public class DefaultDownloadManager
      * @see org.commonjava.indy.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -444,7 +444,7 @@ public class DefaultDownloadManager
      * java.lang.String)
      */
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -522,7 +522,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public boolean exists(final ArtifactStore store, String path)
             throws IndyWorkflowException
     {
@@ -571,7 +571,7 @@ public class DefaultDownloadManager
      * java.lang.String, java.io.InputStream)
      */
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -865,7 +865,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed(  DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -875,7 +875,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer getStorageReference( final StoreKey key, final String... path )
             throws IndyWorkflowException
     {
@@ -1132,7 +1132,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public List<Transfer> listRecursively( final StoreKey src, final String startPath )
             throws IndyWorkflowException
     {

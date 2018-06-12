@@ -57,9 +57,6 @@ public class IspnCheckRegistrySet
 
                gauges.put( name( cache.getName(), SIZE ), (Gauge) () -> advancedCache.size() ); // default
 
-               // TODO: below are advanced gauges via advancedCache.getStats().
-               // Unfortunately all methods return -1 (tested on infinispan 9.1.7). we need to watch it with new releases.
-
                if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES ) )
                {
                    gauges.put( name( cache.getName(), CURRENT_NUMBER_OF_ENTRIES ),

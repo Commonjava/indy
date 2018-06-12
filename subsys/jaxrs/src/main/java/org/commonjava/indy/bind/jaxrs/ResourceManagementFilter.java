@@ -66,7 +66,7 @@ public class ResourceManagementFilter
     }
 
     @Override
-    @Measure( meters = @MetricNamed(DEFAULT ), exceptions = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {

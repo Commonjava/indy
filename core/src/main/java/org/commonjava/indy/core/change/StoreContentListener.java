@@ -81,7 +81,7 @@ public class StoreContentListener
     /**
      * Handles store disable/enablement.
      */
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void onStoreEnablement( @Observes final ArtifactStoreEnablementEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -107,7 +107,7 @@ public class StoreContentListener
         }
     }
 
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void onStoreDeletion( @Observes final ArtifactStoreDeletePreEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -116,7 +116,7 @@ public class StoreContentListener
         processAllPaths( event, p->true, true );
     }
 
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

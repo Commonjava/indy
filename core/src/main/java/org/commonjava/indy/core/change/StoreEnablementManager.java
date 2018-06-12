@@ -65,7 +65,7 @@ public class StoreEnablementManager
     private IndyConfiguration config;
 
     //FIXME: Convert to using ArtifactStoreEnablementEvent.
-    @Measure( meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
         if ( event.isPreprocessing() )
@@ -126,7 +126,7 @@ public class StoreEnablementManager
 //        }
 //    }
 
-    @Measure( meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -167,7 +167,7 @@ public class StoreEnablementManager
         }
     }
 
-    @Measure( meters = @MetricNamed(DEFAULT) )
+    @Measure( timers = @MetricNamed( DEFAULT) )
     public void onDisableTimeout( @Observes SchedulerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

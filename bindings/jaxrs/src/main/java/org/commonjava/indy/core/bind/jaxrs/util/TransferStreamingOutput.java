@@ -43,7 +43,7 @@ public class TransferStreamingOutput
     }
 
     @Override
-    @Measure( meters = @MetricNamed( DEFAULT ), timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void write( final OutputStream out )
         throws IOException, WebApplicationException
     {

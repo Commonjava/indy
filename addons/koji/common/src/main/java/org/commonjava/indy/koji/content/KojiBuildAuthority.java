@@ -137,7 +137,7 @@ public class KojiBuildAuthority
         return isAuthorized( path, eventMetadata, ref, build, session, new HashMap<>() );
     }
 
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public boolean isAuthorized( String path, EventMetadata eventMetadata, ProjectRef ref, KojiBuildInfo build,
                                  KojiSessionInfo session, Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
             throws KojiClientException

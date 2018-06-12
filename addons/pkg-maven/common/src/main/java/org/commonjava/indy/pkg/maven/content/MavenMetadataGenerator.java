@@ -190,7 +190,7 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -361,7 +361,7 @@ public class MavenMetadataGenerator
      * @throws IndyWorkflowException
      */
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException

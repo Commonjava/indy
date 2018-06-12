@@ -141,7 +141,7 @@ public abstract class KojiContentManagerDecorator
     private Locker<StoreKey> groupMembershipLocker;
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public boolean exists( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
@@ -177,7 +177,7 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -263,7 +263,7 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ), exceptions = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {

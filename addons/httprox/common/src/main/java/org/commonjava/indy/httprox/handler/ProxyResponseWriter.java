@@ -117,7 +117,7 @@ public final class ProxyResponseWriter
     }
 
     @Override
-    @Measure( meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
         HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );

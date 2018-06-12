@@ -31,8 +31,8 @@ fi
 pushd $DIR
 
 pushd $DIR/deployments/launcher/target/
-#rm -rf indy
-#tar -zxvf indy-launcher-*-complete.tar.gz
+rm -rf indy
+tar -zxvf indy-launcher-*-complete.tar.gz
 
 if [ "x${TEST_REPOS}" != "x" ]; then
   echo "Copying repository/group definitions from: ${TEST_REPOS}"

@@ -105,7 +105,7 @@ public class KojiMavenMetadataProvider
     }
 
     @Override
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {

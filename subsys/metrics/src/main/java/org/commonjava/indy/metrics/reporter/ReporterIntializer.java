@@ -17,10 +17,8 @@ package org.commonjava.indy.metrics.reporter;
 
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.ScheduledReporter;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
-import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.zabbix.cache.ZabbixCacheStorage;
 import org.commonjava.indy.metrics.zabbix.reporter.IndyZabbixReporter;
@@ -57,14 +55,13 @@ public class ReporterIntializer
     public final static String INDY_METRICS_REPORTER_ELKEPORTER = "elasticsearch";
 
     @Inject
-    IndyHttpProvider indyHttpProvider;
+    private IndyHttpProvider indyHttpProvider;
 
     @Inject
-    ZabbixCacheStorage cache;
+    private ZabbixCacheStorage cache;
 
     @Inject
-    @IndyMetricsNamed
-    IndyMetricsConfig config;
+    private IndyMetricsConfig config;
 
     public void initReporter( MetricRegistry metrics ) throws Exception
     {

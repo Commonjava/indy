@@ -82,7 +82,7 @@ public class PromotionValidator
      * @return
      * @throws PromotionValidationException
      */
-    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public ValidationRequest validate( PromoteRequest request, ValidationResult result, String baseUrl )
             throws PromotionValidationException
     {
