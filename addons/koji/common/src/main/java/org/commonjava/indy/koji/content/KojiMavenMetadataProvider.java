@@ -26,12 +26,10 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.commonjava.cdi.util.weft.Locker;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
-import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.StoreKey;
@@ -65,6 +63,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
@@ -106,10 +105,7 @@ public class KojiMavenMetadataProvider
     }
 
     @Override
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsKojiNames.METHOD_MAVENMETADATA_GETMETADATA + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {

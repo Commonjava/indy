@@ -16,7 +16,6 @@
 package org.commonjava.indy.core.change;
 
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
@@ -25,7 +24,6 @@ import org.commonjava.indy.core.expire.IndySchedulerException;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
 import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
-import org.commonjava.indy.core.metrics.IndyMetricsCoreNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -41,6 +39,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
+
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 @ApplicationScoped
 public class StoreEnablementManager
@@ -65,8 +65,7 @@ public class StoreEnablementManager
     private IndyConfiguration config;
 
     //FIXME: Convert to using ArtifactStoreEnablementEvent.
-    @Measure( meters = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREENABLEMENTCHANGE + IndyMetricsNames.METER ) )
+    @Measure( meters = @MetricNamed(DEFAULT ) )
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
         if ( event.isPreprocessing() )
@@ -127,8 +126,7 @@ public class StoreEnablementManager
 //        }
 //    }
 
-    @Measure( meters = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDSTOREEERROR + IndyMetricsNames.METER ) )
+    @Measure( meters = @MetricNamed(DEFAULT ) )
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -169,8 +167,7 @@ public class StoreEnablementManager
         }
     }
 
-    @Measure( meters = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STOREENABLEMENT_ONDESABLETIMEOUT + IndyMetricsNames.METER ) )
+    @Measure( meters = @MetricNamed(DEFAULT) )
     public void onDisableTimeout( @Observes SchedulerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

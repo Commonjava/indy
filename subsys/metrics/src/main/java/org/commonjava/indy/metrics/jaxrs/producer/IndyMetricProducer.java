@@ -16,7 +16,7 @@
 package org.commonjava.indy.metrics.jaxrs.producer;
 
 import com.codahale.metrics.MetricRegistry;
-import org.commonjava.indy.IndyMetricsManager;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
 

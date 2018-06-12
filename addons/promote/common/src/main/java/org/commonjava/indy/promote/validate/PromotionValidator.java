@@ -16,7 +16,6 @@
 package org.commonjava.indy.promote.validate;
 
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.data.IndyDataException;
@@ -25,7 +24,6 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.promote.metrics.IndyMetricsPromoteNames;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PromoteRequest;
@@ -43,6 +41,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -82,10 +82,7 @@ public class PromotionValidator
      * @return
      * @throws PromotionValidationException
      */
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONVALIDATOR_VALIDATE + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public ValidationRequest validate( PromoteRequest request, ValidationResult result, String baseUrl )
             throws PromotionValidationException
     {

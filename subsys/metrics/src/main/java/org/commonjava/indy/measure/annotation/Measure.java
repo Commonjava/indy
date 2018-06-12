@@ -23,15 +23,11 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * Created by xiabai on 3/2/17.
- */
 @InterceptorBinding
 @Target( { METHOD, TYPE } )
 @Retention( RUNTIME )
 public @interface Measure
 {
-
     MetricNamed[] meters() default {};
 
     MetricNamed[] timers() default {};

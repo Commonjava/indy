@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.httprox.metrics;
+package org.commonjava.indy.metrics;
 
-import org.commonjava.indy.IndyMetricsNames;
-
-/**
- * Created by xiabai on 6/1/17.
- */
-public class IndyMetricsHttpProxyNames extends IndyMetricsNames
+public class IndyMetricsConstants
 {
-    private static final String MODULE_PREFIX_NAME = "org.commonjava.indy.httpProxy";
+    public static final String EXCEPTION = "exception";
 
-    private static final String MODULE_PROXYRESPONSEWRITER_PREFIX_NAME = ".ProxyResponseWriter.";
+    public static final String METER = "meter";
 
-    public static final String METHOD_PROXYRESPONSEWRITER_HANDLEEVENT =
-                    MODULE_PREFIX_NAME + MODULE_PROXYRESPONSEWRITER_PREFIX_NAME + "handleEvent.";
+    public static final String TIMER = "timer";
+
 }

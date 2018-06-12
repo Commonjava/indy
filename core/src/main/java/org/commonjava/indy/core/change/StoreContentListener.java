@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.core.change;
 
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
@@ -23,7 +22,6 @@ import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
-import org.commonjava.indy.core.metrics.IndyMetricsCoreNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -54,6 +52,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.maven.galley.util.PathUtils.ROOT;
 
@@ -82,10 +81,7 @@ public class StoreContentListener
     /**
      * Handles store disable/enablement.
      */
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREDISABLE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREDISABLE + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public void onStoreEnablement( @Observes final ArtifactStoreEnablementEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -111,10 +107,7 @@ public class StoreContentListener
         }
     }
 
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREDELETION
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREDELETION + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public void onStoreDeletion( @Observes final ArtifactStoreDeletePreEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -123,10 +116,7 @@ public class StoreContentListener
         processAllPaths( event, p->true, true );
     }
 
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREUPDATE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsCoreNames.METHOD_STORECONTENTLISTENER_ONSTOREUPDATE + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

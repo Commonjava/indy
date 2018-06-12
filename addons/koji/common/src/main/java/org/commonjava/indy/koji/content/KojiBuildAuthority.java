@@ -22,14 +22,12 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildArchiveCollection;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -60,6 +58,7 @@ import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang.StringUtils.contains;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.trimToEmpty;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**
@@ -138,10 +137,7 @@ public class KojiBuildAuthority
         return isAuthorized( path, eventMetadata, ref, build, session, new HashMap<>() );
     }
 
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsKojiNames.METHOD_BUILDAUTHORITY_ISAUTHORIZED + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public boolean isAuthorized( String path, EventMetadata eventMetadata, ProjectRef ref, KojiBuildInfo build,
                                  KojiSessionInfo session, Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
             throws KojiClientException

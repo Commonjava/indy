@@ -17,7 +17,7 @@ package org.commonjava.indy.metrics.jaxrs.interceptor;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import org.commonjava.indy.IndyMetricsManager;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -34,14 +34,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.commonjava.indy.IndyMetricsNames.EXCEPTION;
-import static org.commonjava.indy.IndyMetricsNames.METER;
-import static org.commonjava.indy.IndyMetricsNames.TIMER;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
-/**
- * Created by xiabai on 2/27/17.
- */
 @Interceptor
 @Measure
 public class MetricsInterceptor
@@ -78,7 +76,7 @@ public class MetricsInterceptor
                                            .map( named -> {
                                                String name = getName( named, defaultName, TIMER );
                                                Timer.Context tc = util.getTimer( name ).time();
-                                               logger.debug( "START: {} ({})", name, tc );
+                                               logger.trace( "START: {} ({})", name, tc );
                                                return tc;
                                            } )
                                            .collect( Collectors.toList() );
@@ -93,7 +91,7 @@ public class MetricsInterceptor
                                               {
                                                   String name = getName( named, defaultName, EXCEPTION );
                                                   Meter requests = util.getMeter( name );
-                                                  logger.debug( "ERRORS++ {}", name );
+                                                  logger.trace( "ERRORS++ {}", name );
                                                   requests.mark();
                                               } );
 
@@ -113,20 +111,26 @@ public class MetricsInterceptor
                                                     {
                                                         String name = getName( named, defaultName, METER );
                                                         Meter requests = util.getMeter( name );
-                                                        logger.debug( "CALLS++ {}", name );
+                                                        logger.trace( "CALLS++ {}", name );
                                                         requests.mark();
                                                     } );
         }
     }
 
+    /**
+     * Get the metric fullname. If user specified name, return name + suffix. If not, use defaultName + suffix.
+     * @param named user specified name
+     * @param defaultName 'class name + method name', not null.
+     * @param suffix
+     */
     private String getName( MetricNamed named, String defaultName, String suffix )
     {
         String name = named.value();
-        if ( isNotBlank( name ) )
+        if ( isBlank( name ) || name.equals( DEFAULT ) )
         {
-            return name;
+            return name( defaultName, suffix );
         }
-        return name( defaultName, suffix );
+        return name( name, suffix );
     }
 
 }

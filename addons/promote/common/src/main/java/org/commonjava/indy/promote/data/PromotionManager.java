@@ -17,7 +17,6 @@ package org.commonjava.indy.promote.data;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.Locker;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
@@ -37,7 +36,6 @@ import org.commonjava.indy.promote.change.event.PathsPromoteCompleteEvent;
 import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.conf.PromoteConfig;
-import org.commonjava.indy.promote.metrics.IndyMetricsPromoteNames;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -72,6 +70,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
@@ -137,10 +136,7 @@ public class PromotionManager
     }
 
 
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTTOGROUP + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException
     {
@@ -336,10 +332,7 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsPromoteNames.METHOD_PROMOTIONMANAGER_PROMOTEPATHS + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {

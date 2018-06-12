@@ -18,7 +18,6 @@ package org.commonjava.indy.httprox.handler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.core.ctl.ContentController;
@@ -30,7 +29,6 @@ import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.conf.TrackingType;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
-import org.commonjava.indy.httprox.metrics.IndyMetricsHttpProxyNames;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
@@ -67,6 +65,7 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.indy.util.ApplicationHeader.proxy_authenticate;
@@ -118,8 +117,7 @@ public final class ProxyResponseWriter
     }
 
     @Override
-    @Measure( meters = @MetricNamed(
-                    IndyMetricsHttpProxyNames.METHOD_PROXYRESPONSEWRITER_HANDLEEVENT + IndyMetricsNames.METER ) )
+    @Measure( meters = @MetricNamed(DEFAULT ) )
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
         HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );

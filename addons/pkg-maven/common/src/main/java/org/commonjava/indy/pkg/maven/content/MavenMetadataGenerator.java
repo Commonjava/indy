@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
-import org.commonjava.indy.IndyMetricsNames;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
@@ -38,7 +37,6 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.metrics.IndyMetricsPkgMavenNames;
 import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
@@ -87,6 +85,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -191,11 +190,7 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEFILECONTENT
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEFILECONTENT
-                                    + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -366,11 +361,7 @@ public class MavenMetadataGenerator
      * @throws IndyWorkflowException
      */
     @Override
-    @Measure( timers = @MetricNamed(
-                    IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEGROUPILECONTENT
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed(
-                    IndyMetricsPkgMavenNames.METHOD_MAVENMETADATAGENERATOR_GENERATEGROUPILECONTENT
-                                    + IndyMetricsNames.METER ) )
+    @Measure( timers = @MetricNamed(DEFAULT ), meters = @MetricNamed(DEFAULT ) )
     public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException
