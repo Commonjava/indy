@@ -565,7 +565,7 @@ public class PromotionManager
                              request.getSource(), tgt, request.getTarget() );
 
                 final boolean purgeSource = request.isPurgeSource();
-                contents.parallelStream().forEach( ( transfer ) -> {
+                contents.forEach( ( transfer ) -> {
                     final String path = transfer.getPath();
 
                     if ( !transfer.exists() )
@@ -691,11 +691,11 @@ public class PromotionManager
     private void clearStoreNFC( final Set<String> sourcePaths, ArtifactStore store )
             throws IndyDataException
     {
-        Set<String> paths = sourcePaths.parallelStream()
+        Set<String> paths = sourcePaths.stream()
                                        .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
                                        .collect( Collectors.toSet() );
 
-        paths.parallelStream().forEach( path -> {
+        paths.forEach( path -> {
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
 
             logger.debug( "Clearing NFC path: {} from: {}\n\tResource: {}", path, store.getKey(), resource );
@@ -705,7 +705,7 @@ public class PromotionManager
         Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
         if ( groups != null )
         {
-            groups.parallelStream().forEach( group -> paths.forEach(
+            groups.forEach( group -> paths.forEach(
                     path -> {
                         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
 
