@@ -565,7 +565,7 @@ public class PromotionManager
                              request.getSource(), tgt, request.getTarget() );
 
                 final boolean purgeSource = request.isPurgeSource();
-                contents.forEach( ( transfer ) -> {
+                contents.parallelStream().forEach( ( transfer ) -> {
                     final String path = transfer.getPath();
 
                     if ( !transfer.exists() )
@@ -616,9 +616,9 @@ public class PromotionManager
                                     logger.error( msg, e );
                                 }
                             }
-                            clearStoreNFC( validationRequest.getSourcePaths(), tgt );
+
                         }
-                        catch ( final IndyWorkflowException | IndyDataException | PromotionValidationException e )
+                        catch ( final IndyWorkflowException  e )
                         {
                             String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
                                                         tgt, e.getMessage() );
@@ -628,6 +628,16 @@ public class PromotionManager
                     }
                 } );
 
+                try
+                {
+                    clearStoreNFC( validationRequest.getSourcePaths(), tgt );
+                }
+                catch ( IndyDataException | PromotionValidationException e )
+                {
+                    String msg = String.format( "Failed to promote to: %s. Reason: %s", tgt, e.getMessage() );
+                    errors.add( msg );
+                    logger.error( msg, e );
+                }
                 return null;
             }, (k,lock)->{
                 String error =
@@ -681,11 +691,11 @@ public class PromotionManager
     private void clearStoreNFC( final Set<String> sourcePaths, ArtifactStore store )
             throws IndyDataException
     {
-        Set<String> paths = sourcePaths.stream()
+        Set<String> paths = sourcePaths.parallelStream()
                                        .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
                                        .collect( Collectors.toSet() );
 
-        paths.forEach( path -> {
+        paths.parallelStream().forEach( path -> {
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
 
             logger.debug( "Clearing NFC path: {} from: {}\n\tResource: {}", path, store.getKey(), resource );
@@ -695,7 +705,7 @@ public class PromotionManager
         Set<Group> groups = storeManager.query().getGroupsAffectedBy( store.getKey() );
         if ( groups != null )
         {
-            groups.forEach( group -> paths.forEach(
+            groups.parallelStream().forEach( group -> paths.forEach(
                     path -> {
                         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
 
