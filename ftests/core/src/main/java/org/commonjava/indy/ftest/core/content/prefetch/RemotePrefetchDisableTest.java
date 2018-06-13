@@ -40,23 +40,22 @@ import static org.junit.Assert.assertThat;
  *     <li>The external repo has hierarchy dirs with each html page listing</li>
  *     <li>The external repo has 3 files in different dirs</li>
  *     <li>The indy remote is not set with prefetch enabled</li>
+ *     <li>Indy prefetch module is not enabled</li>
  * </ul>
  *
  * <br/>
  * <b>WHEN:</b>
  * <ul>
- *     <li>Case 1: The indy remote repo is updated with some fields which are not prefetch priority</li>
- *     <li>Case 1: The indy remote repo is updated with prefetch enabled (prefetch priority changed to positive number)</li>
+ *     <li>The indy remote repo is updated with prefetch enabled</li>
  * </ul>
  *
  * <br/>
  * <b>THEN:</b>
  * <ul>
- *     <li>For case 1: no remote files will be downloaded</li>
- *     <li>For case 2: The 3 remote files will be downloaded automatically after a while without an explicit retrieve through API.(Means by background prefetch)</li>
+ *     <li>No remote files will be downloaded because of prefetch disabled in indy level</li>
  * </ul>
  */
-public class RemotePrefetchDownloadingTest
+public class RemotePrefetchDisableTest
         extends AbstractContentManagementTest
 {
     @Rule
@@ -66,8 +65,6 @@ public class RemotePrefetchDownloadingTest
     public void run()
             throws Exception
     {
-        final int THREAD_SLEEP_INTERVAL = 1000;
-
         final String repo1 = "repo1";
         final String pathOrg = "org/";
         final String pathFoo = pathOrg + "foo/";
@@ -143,24 +140,15 @@ public class RemotePrefetchDownloadingTest
         assertThat( fileJar.exists(), equalTo( false ) );
         assertThat( fileSrc.exists(), equalTo( false ) );
 
-        // Only when prefetch priority change to positive number will trigger prefetch
-        remote1.setNfcTimeoutSeconds( 120 );
-        client.stores().update( remote1, "change nfc timeout" );
-        Thread.sleep( THREAD_SLEEP_INTERVAL );
-        assertThat( fileMeta.exists(), equalTo( false ) );
-        assertThat( fileJar.exists(), equalTo( false ) );
-        assertThat( fileSrc.exists(), equalTo( false ) );
-
         remote1.setPrefetchListingType( RemoteRepository.PREFETCH_LISTING_TYPE_HTML );
         remote1.setPrefetchPriority( 1 );
         client.stores().update( remote1, "change prefetch priority" );
-        Thread.sleep( THREAD_SLEEP_INTERVAL );
-        assertThat( fileMeta.exists(), equalTo( true ) );
-        assertThat( fileJar.exists(), equalTo( true ) );
-        assertThat( fileSrc.exists(), equalTo( true ) );
-        assertContent( fileMeta, contentMeta );
-        assertContent( fileJar, contentJar );
-        assertContent( fileSrc, contentSrc );
+
+        Thread.sleep( 2000 );
+
+        assertThat( fileMeta.exists(), equalTo( false ) );
+        assertThat( fileJar.exists(), equalTo( false ) );
+        assertThat( fileSrc.exists(), equalTo( false ) );
     }
 
     private void assertContent( File file, String content )
@@ -180,6 +168,6 @@ public class RemotePrefetchDownloadingTest
             throws IOException
     {
         super.initTestConfig( fixture );
-        writeConfigFile( "conf.d/prefetch.conf", "[prefetch]\nenabled=true\nprefetch.batchsize=3" );
+        writeConfigFile( "conf.d/prefetch.conf", "[prefetch]\nenabled=false\nprefetch.batchsize=3" );
     }
 }

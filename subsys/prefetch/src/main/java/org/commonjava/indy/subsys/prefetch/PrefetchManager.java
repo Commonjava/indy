@@ -25,7 +25,6 @@ import org.commonjava.indy.subsys.prefetch.conf.PrefetchConfig;
 import org.commonjava.indy.subsys.prefetch.models.RescanablePath;
 import org.commonjava.indy.subsys.prefetch.models.RescanableResourceWrapper;
 import org.commonjava.maven.galley.TransferManager;
-import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,7 +61,7 @@ public class PrefetchManager
     @Inject
     private Executor executor;
 
-    private final Thread schedulingThread = new Thread( () -> {
+    private final Thread rescanSchedulingThread = new Thread( () -> {
         while ( true )
         {
             if ( !frontier.hasMore() )
@@ -76,10 +75,11 @@ public class PrefetchManager
             }
             catch ( InterruptedException e )
             {
-                e.printStackTrace();
+                logger.warn(
+                        "Prefetch scheduling daemon has been interrupted. No more rescan enabled remote repos will be triggered for further downloading. " );
             }
         }
-    }, "Prefetch-Scheduling" );
+    }, "Prefetch-Rescan-Scheduler" );
 
     @PostConstruct
     public void initPrefetch()
@@ -88,9 +88,9 @@ public class PrefetchManager
         {
             frontier.initRepoCache();
             logger.trace( "PrefetchManager Started" );
-            schedulingThread.setDaemon( true );
+            rescanSchedulingThread.setDaemon( true );
             logger.trace( "Scheduling thread start" );
-            schedulingThread.start();
+            rescanSchedulingThread.start();
 
 //            triggerWorkers();
         }
@@ -98,7 +98,7 @@ public class PrefetchManager
 
     public void registerPrefetchStores( @Observes final ArtifactStorePostUpdateEvent updateEvent )
     {
-        if(config.isEnabled())
+        if ( config.isEnabled() )
         {
             logger.trace( "Post update triggered for scheduling of prefetch: {}", updateEvent );
             final Collection<ArtifactStore> stores = updateEvent.getStores();
@@ -164,7 +164,7 @@ public class PrefetchManager
         if ( config.isEnabled() )
         {
             frontier.stopSchedulingMore();
-            schedulingThread.interrupt();
+            rescanSchedulingThread.interrupt();
         }
     }
 }
