@@ -624,9 +624,9 @@ public class PromotionManager
                                     logger.error( msg, e );
                                 }
                             }
-                            clearStoreNFC( validationRequest.getSourcePaths(), tgt );
+
                         }
-                        catch ( final IndyWorkflowException | IndyDataException | PromotionValidationException e )
+                        catch ( final IndyWorkflowException  e )
                         {
                             String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
                                                         tgt, e.getMessage() );
@@ -636,6 +636,16 @@ public class PromotionManager
                     }
                 } );
 
+                try
+                {
+                    clearStoreNFC( validationRequest.getSourcePaths(), tgt );
+                }
+                catch ( IndyDataException | PromotionValidationException e )
+                {
+                    String msg = String.format( "Failed to promote to: %s. Reason: %s", tgt, e.getMessage() );
+                    errors.add( msg );
+                    logger.error( msg, e );
+                }
                 return null;
             }, (k,lock)->{
                 String error =
