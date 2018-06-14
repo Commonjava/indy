@@ -34,6 +34,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
 
@@ -64,6 +66,24 @@ public class IndyFoloAdminClientModule
         throws IndyClientException
     {
         return http.get( UrlUtils.buildUrl( "/folo/admin", trackingId, "report" ), TrackedContentDTO.class );
+    }
+
+    public InputStream exportTrackingReportZip() throws IndyClientException, IOException
+    {
+        HttpResources resources = http.getRaw( UrlUtils.buildUrl( "folo/admin/report/export" ) );
+        if ( resources.getStatusCode() != HttpStatus.SC_OK )
+        {
+            throw new IndyClientException( resources.getStatusCode(), "Error retrieving record zip: %s",
+                                           new IndyResponseErrorDetails( resources.getResponse() ) );
+        }
+
+        return resources.getResponseEntityContent();
+    }
+
+
+    public void importTrackingReportZip( InputStream stream ) throws IndyClientException, IOException
+    {
+        http.putWithStream( UrlUtils.buildUrl( "folo/admin/report/import" ), stream );
     }
 
     @Deprecated

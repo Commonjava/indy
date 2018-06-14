@@ -48,8 +48,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,8 @@ import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
-import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.folo.FoloUtils.readZipInputStreamAnd;
+import static org.commonjava.indy.folo.FoloUtils.zipTrackedContent;
 
 @ApplicationScoped
 public class FoloAdminController
@@ -104,6 +107,41 @@ public class FoloAdminController
     {
         TrackingKey tk = new TrackingKey( id );
         return constructContentDTO( recordManager.seal( tk ), baseUrl );
+    }
+
+    public void importRecordZip( InputStream stream ) throws IndyWorkflowException
+    {
+        try
+        {
+            int count = readZipInputStreamAnd( stream, (record) -> recordManager.addSealedRecord( record ) );
+            logger.debug( "Import records done, size: {}", count );
+        }
+        catch ( Exception e )
+        {
+            throw new IndyWorkflowException("Failed to import zip file", e);
+        }
+    }
+
+    public File renderReportZip() throws IndyWorkflowException
+    {
+        Set<TrackedContent> sealed = recordManager.getSealed(); // only care about sealed records
+        try
+        {
+            File file = filer.getSealedZipFile().getDetachedFile();
+            if ( file.exists() )
+            {
+                file.delete();
+            }
+            file.getParentFile().mkdirs(); // make dirs if not exist
+
+            zipTrackedContent( file, sealed );
+
+            return file;
+        }
+        catch ( IOException e )
+        {
+            throw new IndyWorkflowException("Failed to create zip file", e);
+        }
     }
 
     public File renderRepositoryZip( final String id )
@@ -372,4 +410,5 @@ public class FoloAdminController
                                         entry.getEffect(), artifactData.getSize(), digests.get( ContentDigest.MD5 ),
                                         digests.get( ContentDigest.SHA_1 ), digests.get( ContentDigest.SHA_256 ) );
     }
+
 }

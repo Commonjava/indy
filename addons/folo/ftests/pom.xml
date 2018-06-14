@@ -67,6 +67,14 @@
       <artifactId>indy-ftests-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>http-testserver</artifactId>
       <scope>provided</scope>

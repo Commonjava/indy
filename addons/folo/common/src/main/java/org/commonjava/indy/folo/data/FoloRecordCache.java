@@ -17,7 +17,6 @@ package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.metrics.IndyMetricsFoloNames;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
@@ -191,6 +190,11 @@ public class FoloRecordCache
         return sealedRecordCache.execute( Cache::keySet );
     }
 
+    public Set<TrackedContent> getSealed()
+    {
+        return sealedRecordCache.execute( Cache::entrySet ).stream().map( (et) -> et.getValue() ).collect( Collectors.toSet() );
+    }
+
     private <R> R inProgressByTrackingKey( final TrackingKey key, final BiFunction<QueryBuilder, CacheHandle<TrackedContentEntry, TrackedContentEntry>, R> operation )
     {
         return inProgressRecordCache.execute( ( cache ) -> {
@@ -206,4 +210,8 @@ public class FoloRecordCache
         } );
     }
 
+    public void addSealedRecord( TrackedContent record )
+    {
+        sealedRecordCache.put( record.getKey(), record );
+    }
 }
