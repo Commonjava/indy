@@ -15,6 +15,24 @@ import static org.commonjava.indy.folo.data.FoloFiler.FOLO_SEALED_ZIP;
 import static org.commonjava.indy.folo.ftest.report.ExportAndImportTrackingReportTest.checkIdsDTO;
 import static org.junit.Assert.assertNotNull;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>There is a folo-sealed.zip file under indy/data/folo folder</li>
+ * </ul>
+ *
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Indy starts</li>
+ * </ul>
+ *
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The records in the zip file are imported to sealed</li>
+ *     <li>The folo-sealed.dat is backed up to folo-sealed.dat.bak</li>
+ *     <li>The folo-sealed.zip is rename to folo-sealed.zip.loaded after migration is done</li>
+ * </ul>
+ */
 public class RecordsMigrationTest
                 extends AbstractTrackingReportTest
 {

@@ -29,6 +29,43 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>Three are 2 sealed Folo records</li>
+ * </ul>
+ *
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Export tracking report Zip</li>
+ * </ul>
+ *
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The exported zip file contains the 2 sealed records</li>
+ * </ul>
+ *
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Execute clearTrackingRecord to clear all sealed records</li>
+ * </ul>
+ *
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>All records are cleared</li>
+ * </ul>
+ *
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Execute importTrackingReportZip to import the Zip</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The 2 records are restored</li>
+ * </ul>
+ */
 @Category( EventDependent.class )
 public class ExportAndImportTrackingReportTest
                 extends RetrieveFileAndVerifyInTrackingReportTest

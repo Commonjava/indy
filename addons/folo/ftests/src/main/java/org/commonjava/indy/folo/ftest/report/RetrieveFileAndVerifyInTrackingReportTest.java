@@ -40,6 +40,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>Repo A and path P</li>
+ * </ul>
+ *
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Retrieve the P from A through Folo trackingId</li>
+ *     <li>Seal the trackingId</li>
+ *     <li>Get the download records by trackingId</li>
+ * </ul>
+ *
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The download record contains path P on store A</li>
+ * </ul>
+ */
 @Category( EventDependent.class )
 public class RetrieveFileAndVerifyInTrackingReportTest
     extends AbstractTrackingReportTest
