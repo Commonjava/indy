@@ -18,11 +18,10 @@ package org.commonjava.indy;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.health.HealthCheck;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
-import org.commonjava.indy.metrics.healthcheck.IndyHealthCheckRegistrySet;
 import org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -61,7 +60,9 @@ public class IndyMetricsManager
 
     @Inject
     @Any
-    Instance<IndyHealthCheck> indyMetricsHealthChecks;
+    Instance<IndyHealthCheck> indyHealthChecks;
+
+    public static final HealthCheckRegistry HEALTH_CHECK_REGISTRY = new HealthCheckRegistry();
 
     @Inject
     ReporterIntializer reporter;
@@ -93,17 +94,10 @@ public class IndyMetricsManager
         logger.info( "Init metrics subsystem..." );
 
         IndyJVMInstrumentation.init( metricRegistry );
-        IndyHealthCheckRegistrySet healthCheckRegistrySet = new IndyHealthCheckRegistrySet();
 
-        indyMetricsHealthChecks.forEach( indyHealthCheck ->
-                                         {
-                                             logger.info( "Registering health check: {}", indyHealthCheck.getName() );
-                                             healthCheckRegistrySet.register( indyHealthCheck.getName(),
-                                                                              (HealthCheck) indyHealthCheck );
-                                         } );
-
-        logger.info( "Adding health checks to registry: {}", metricRegistry );
-        metricRegistry.register( healthCheckRegistrySet.getName(), healthCheckRegistrySet );
+        // Health checks
+        indyHealthChecks.forEach( indyHealthCheck -> HEALTH_CHECK_REGISTRY.register( indyHealthCheck.getName(),
+                                                                                     indyHealthCheck ) );
 
         if ( config.isIspnMetricsEnabled() )
         {

@@ -57,10 +57,12 @@ public final class DeploymentInfoUtils
     {
         for ( final IndyDeploymentProvider fromProvider : fromProviders )
         {
-            logger.debug( "Merging info from deployment provider: {}", fromProvider );
             final DeploymentInfo from = fromProvider.getDeploymentInfo( contextRoot, application );
-            logger.debug( "Got: {} from: {}", from, fromProvider );
-            merge( into, from );
+            logger.debug( "Merging info from deployment provider: {}, info: {}", fromProvider, from );
+            if ( from != null )
+            {
+                merge( into, from );
+            }
         }
     }
 
