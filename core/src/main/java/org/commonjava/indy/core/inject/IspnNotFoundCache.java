@@ -106,7 +106,7 @@ public class IspnNotFoundCache
         {
             timeout = System.currentTimeMillis() + ( timeoutInSeconds * 1000 );
         }
-        logger.debug( "[NFC] '{}' will not be checked again until {}", resource,
+        logger.debug( "[NFC] {} will not be checked again until {}", resource,
                       new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( timeout ) ) );
 
         final String key = getResourceKey( resource );
@@ -120,12 +120,13 @@ public class IspnNotFoundCache
     {
         String key = getResourceKey( resource );
         NfcConcreteResourceWrapper obj = nfcCache.get( key );
-        boolean missing = ( obj != null && obj.getTimeout() > System.currentTimeMillis() );
-        if ( obj != null && missing )
+        boolean timeout = ( obj != null && obj.getTimeout() < System.currentTimeMillis() );
+        boolean missing = ( obj != null && !timeout );
+        if ( timeout )
         {
             nfcCache.remove( key );
         }
-        logger.debug( "NFC check: {} result is: {}", resource, missing );
+        logger.trace( "NFC check: {}, obj: {}, timeout: {}, missing: {}", resource, obj, timeout, missing );
         return missing;
     }
 
