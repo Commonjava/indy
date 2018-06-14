@@ -113,33 +113,31 @@ public class PrefetchFrontier
 
     public void rescheduleForRescan()
     {
-        if ( shouldSchedule )
+        if ( shouldSchedule && !hasMore )
         {
             lockAnd( t -> {
-                if ( !hasMore )
+                for ( RemoteRepository repo : repoQueue )
                 {
-                    for ( RemoteRepository repo : repoQueue )
+                    if ( repo.isPrefetchRescan() )
                     {
-                        if ( repo.isPrefetchRescan() )
+                        String rescanTime = repo.getPrefetchRescanTimestamp();
+                        if ( StringUtils.isBlank( rescanTime ) || isNowAfter( rescanTime ) )
                         {
-                            String rescanTime = repo.getPrefetchRescanTimestamp();
-                            if ( StringUtils.isBlank( rescanTime ) || isNowAfter( rescanTime ) )
+                            repo.setPrefetchRescanTimestamp(
+                                    getNextRescanTimeFromNow( config.getRescanIntervalSeconds() ) );
+                            logger.trace( "repo's current rescan time: {}", rescanTime );
+                            logger.trace( "repo's next rescan time: {}", repo.getPrefetchRescanTimestamp() );
+                            final boolean isScheduledRescan =
+                                    StringUtils.isNotBlank( rescanTime ) && isNowAfter( rescanTime );
+                            if ( isScheduledRescan )
                             {
-                                repo.setPrefetchRescanTimestamp( getNextRescanTimeFromNow( config.getIntervalSeconds() ) );
-                                logger.trace( "repo's current rescan time: {}", rescanTime );
-                                logger.trace( "repo's next rescan time: {}", repo.getPrefetchRescanTimestamp() );
-                                final boolean isScheduledRescan =
-                                        StringUtils.isNotBlank( rescanTime ) && isNowAfter( rescanTime );
-                                if ( isScheduledRescan )
-                                {
-                                    List<RescanablePath> rootPaths = buildPaths( repo, true );
-                                    logger.trace( "Schedule rescan enabled resources: repo: {}, paths {}", repo,
-                                                  rootPaths );
-                                    scheduleRepo( repo, rootPaths );
-                                }
+                                List<RescanablePath> rootPaths = buildPaths( repo, true );
+                                logger.trace( "Schedule rescan enabled resources: repo: {}, paths {}", repo,
+                                              rootPaths );
+                                scheduleRepo( repo, rootPaths );
                             }
-                            break;
                         }
+                        break;
                     }
                 }
 

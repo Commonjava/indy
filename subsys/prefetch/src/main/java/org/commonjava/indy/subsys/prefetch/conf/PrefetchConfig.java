@@ -33,17 +33,23 @@ public class PrefetchConfig
 
     private static final String INDY_PREFETCH_RESCAN_INTERVAL_SECONDS = "prefetch.rescan.interval.seconds";
 
+    private static final String INDY_PREFETCH_RESCAN_SCHEDULE_SECONDS = "prefetch.rescan.schedule.seconds";
+
     private static final boolean DEFAULT_ENABLED = false;
 
     private static final int DEFAULT_BATCH_SIZE = 5;
 
     private static final int DEFAULT_INTERNAL_SECONDS = 24 * 3600;
 
+    private static final int DEFAULT_SCHEDULE_SECONDS = 500;
+
     private Boolean enabled;
 
     private Integer batchSize;
 
-    private Integer intervalSeconds;
+    private Integer rescanIntervalSeconds;
+
+    private Integer rescanScheduleSeconds;
 
     public PrefetchConfig()
     {
@@ -71,15 +77,30 @@ public class PrefetchConfig
         this.batchSize = batchSize;
     }
 
-    public Integer getIntervalSeconds()
+    public Integer getRescanIntervalSeconds()
     {
-        return intervalSeconds == null || intervalSeconds <= 0 ? DEFAULT_INTERNAL_SECONDS : intervalSeconds;
+        return rescanIntervalSeconds == null || rescanIntervalSeconds <= 0 ?
+                DEFAULT_INTERNAL_SECONDS :
+                rescanIntervalSeconds;
     }
 
     @ConfigName( INDY_PREFETCH_RESCAN_INTERVAL_SECONDS )
-    public void setIntervalSeconds( Integer intervalSeconds )
+    public void setRescanIntervalSeconds( Integer rescanIntervalSeconds )
     {
-        this.intervalSeconds = intervalSeconds;
+        this.rescanIntervalSeconds = rescanIntervalSeconds;
+    }
+
+    public Integer getRescanScheduleSeconds()
+    {
+        return rescanScheduleSeconds == null || rescanIntervalSeconds < 0 ?
+                DEFAULT_SCHEDULE_SECONDS :
+                rescanScheduleSeconds;
+    }
+
+    @ConfigName( INDY_PREFETCH_RESCAN_SCHEDULE_SECONDS )
+    public void setRescanScheduleSeconds( Integer rescanScheduleSeconds )
+    {
+        this.rescanScheduleSeconds = rescanScheduleSeconds;
     }
 
     @Override

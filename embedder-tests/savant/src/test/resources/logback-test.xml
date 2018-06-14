@@ -21,7 +21,7 @@
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
-      <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
   
@@ -42,7 +42,9 @@
       </encoder>
     </appender>
 
-  <root level="DEBUG">
+  <logger name="org.commonjava.indy.subsys.prefetch" level="TRACE"/>
+
+  <root level="ROOT">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
   </root>

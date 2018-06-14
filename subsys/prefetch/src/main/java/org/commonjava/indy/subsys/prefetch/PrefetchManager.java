@@ -15,8 +15,7 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -37,7 +36,8 @@ import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @ApplicationScoped
 public class PrefetchManager
@@ -56,43 +56,54 @@ public class PrefetchManager
     @Inject
     private SpecialPathManager specialPathManager;
 
-    @WeftManaged
-    @ExecutorConfig( named = "prefetch-worker", threads = 5, priority = 1 )
-    @Inject
-    private Executor executor;
+    private volatile boolean stopped;
 
-    private final Thread rescanSchedulingThread = new Thread( () -> {
-        while ( true )
+    private final ExecutorService prefetchExecutor =
+            Executors.newFixedThreadPool( 5, new NamedThreadFactory( "Prefetch-Worker", true, 1 ) );
+
+    private final ExecutorService rescanScheduleExecutor =
+            Executors.newSingleThreadExecutor( new NamedThreadFactory( "Prefetch-Rescan-Scheduler", true, 1 ) );
+
+    private final Runnable rescanSchedulingTask = () -> {
+        if ( config.isEnabled() )
         {
-            if ( !frontier.hasMore() )
+            while ( !stopped )
             {
-                frontier.rescheduleForRescan();
-                triggerWorkers();
+                if ( !frontier.hasMore() )
+                {
+                    frontier.rescheduleForRescan();
+                    //TODO need to think use a flag to control the triggerWorkers(), and not invoke it in main thread in registerPrefetchStores
+                    triggerWorkers();
+                }
+                try
+                {
+                    Thread.sleep( config.getRescanScheduleSeconds() );
+                }
+                catch ( InterruptedException e )
+                {
+                    logger.warn(
+                            "Prefetch scheduling daemon has been interrupted. No more rescan enabled remote repos will be triggered for further downloading. " );
+                }
             }
-            try
-            {
-                Thread.sleep( 500 );
-            }
-            catch ( InterruptedException e )
-            {
-                logger.warn(
-                        "Prefetch scheduling daemon has been interrupted. No more rescan enabled remote repos will be triggered for further downloading. " );
-            }
+            logger.warn(
+                    "Prefetch module has been stopped due to some reasons(maybe indy shut down). No more rescan enabled remote repos will be triggered for further downloading. " );
         }
-    }, "Prefetch-Rescan-Scheduler" );
+    };
 
     @PostConstruct
     public void initPrefetch()
     {
-        if(config.isEnabled())
+        if ( config.isEnabled() )
         {
+            stopped = false;
             frontier.initRepoCache();
             logger.trace( "PrefetchManager Started" );
-            rescanSchedulingThread.setDaemon( true );
-            logger.trace( "Scheduling thread start" );
-            rescanSchedulingThread.start();
-
-//            triggerWorkers();
+            rescanScheduleExecutor.execute( rescanSchedulingTask );
+//            final Thread scheduleThread = new Thread( rescanSchedulingTask );
+//            scheduleThread.setDaemon( true );
+//            scheduleThread.setPriority( 1 );
+//            scheduleThread.setName( "Prefetch-Rescan-Scheduler"  );
+//            scheduleThread.start();
         }
     }
 
@@ -150,12 +161,11 @@ public class PrefetchManager
             }
             if ( hasResourceDownload )
             {
-                executor.execute( new PrefetchWorker( transfers, frontier, resources, PrefetchManager.this,
-                                                      specialPathManager ) );
+                prefetchExecutor.execute( new PrefetchWorker( transfers, frontier, resources, PrefetchManager.this,
+                                                              specialPathManager ) );
             }
         }
     }
-
 
 
     @PreDestroy
@@ -163,8 +173,11 @@ public class PrefetchManager
     {
         if ( config.isEnabled() )
         {
+            stopped = true;
             frontier.stopSchedulingMore();
-            rescanSchedulingThread.interrupt();
+            prefetchExecutor.shutdown();
+            rescanScheduleExecutor.shutdown();
+            logger.info( "Indy prefetch process has been set to stopped. " );
         }
     }
 }
