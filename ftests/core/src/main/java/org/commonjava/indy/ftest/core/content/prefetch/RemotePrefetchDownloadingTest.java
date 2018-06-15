@@ -46,7 +46,7 @@ import static org.junit.Assert.assertThat;
  * <b>WHEN:</b>
  * <ul>
  *     <li>Case 1: The indy remote repo is updated with some fields which are not prefetch priority</li>
- *     <li>Case 1: The indy remote repo is updated with prefetch enabled (prefetch priority changed to positive number)</li>
+ *     <li>Case 2: The indy remote repo is updated with prefetch enabled (prefetch priority changed to positive number)</li>
  * </ul>
  *
  * <br/>

@@ -1,3 +1,5 @@
+package org.commonjava.indy.subsys.prefetch;
+
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.subsys.prefetch.PrefetchRepoComparator;
@@ -40,15 +42,15 @@ public class PrefetchRepoComparatorTest
         repo2.setPrefetchPriority( 3 );
         assertTrue( repoComparator.compare( repo1, repo2 ) > 0 );
 
-        repo2.setPrefetchRescanTimestamp( "2018-06-08T11:09:42.704Z[UTC]" );
+        repo2.setPrefetchRescanTimestamp( "2018-06-08 11:09:42 'UTC'Z" );
         assertTrue( repoComparator.compare( repo1, repo2 ) < 0 );
 
-        repo1.setPrefetchRescanTimestamp( "2018-06-08T10:09:42.704Z[UTC]" );
+        repo1.setPrefetchRescanTimestamp( "2018-06-08 10:09:42 'UTC'Z" );
         repo2.setPrefetchRescanTimestamp( null );
         assertTrue( repoComparator.compare( repo1, repo2 ) > 0 );
 
         repo2.setPrefetchPriority( 1 );
-        repo2.setPrefetchRescanTimestamp( "2018-06-08T11:09:42.704Z[UTC]" );
+        repo2.setPrefetchRescanTimestamp( "2018-06-08 11:09:42 'UTC'Z" );
         assertTrue( repoComparator.compare( repo1, repo2 ) < 0 );
 
     }
@@ -76,23 +78,23 @@ public class PrefetchRepoComparatorTest
         list.sort( repoComparator );
         assertEquals( repo3, list.get( 0 ) );
 
-        repo3.setPrefetchRescanTimestamp("2018-06-08T11:09:42.704Z[UTC]"  );
+        repo3.setPrefetchRescanTimestamp("2018-06-08 11:09:42 'UTC'Z"  );
         list.sort( repoComparator );
         assertEquals( repo2, list.get( 0 ) );
 
-        repo2.setPrefetchRescanTimestamp("2018-06-08T09:09:42.704Z[UTC]"  );
+        repo2.setPrefetchRescanTimestamp("2018-06-08 09:09:42 'UTC'Z"  );
         list.sort( repoComparator );
         assertEquals( repo1, list.get( 0 ) );
 
-        repo1.setPrefetchRescanTimestamp("2018-06-08T08:09:42.704Z[UTC]"  );
+        repo1.setPrefetchRescanTimestamp("2018-06-08 08:09:42 'UTC'Z"  );
         list.sort( repoComparator );
         assertEquals( repo1, list.get( 0 ) );
 
-        repo2.setPrefetchRescanTimestamp("2018-06-08T08:09:42.704Z[UTC]"  );
+        repo2.setPrefetchRescanTimestamp("2018-06-08 08:09:42 'UTC'Z"  );
         list.sort( repoComparator );
         assertEquals( repo2, list.get( 0 ) );
 
-        repo3.setPrefetchRescanTimestamp("2018-06-08T08:09:42.704Z[UTC]"  );
+        repo3.setPrefetchRescanTimestamp("2018-06-08 08:09:42 'UTC'Z"  );
         list.sort( repoComparator );
         assertEquals( repo3, list.get( 0 ) );
     }

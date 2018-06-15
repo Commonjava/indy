@@ -41,7 +41,7 @@ public class PrefetchConfig
 
     private static final int DEFAULT_INTERNAL_SECONDS = 24 * 3600;
 
-    private static final int DEFAULT_SCHEDULE_SECONDS = 500;
+    private static final int DEFAULT_SCHEDULE_SECONDS = 1;
 
     private Boolean enabled;
 

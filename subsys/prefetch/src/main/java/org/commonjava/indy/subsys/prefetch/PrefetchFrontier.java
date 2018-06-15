@@ -17,13 +17,17 @@ package org.commonjava.indy.subsys.prefetch;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.prefetch.conf.PrefetchConfig;
 import org.commonjava.indy.subsys.prefetch.models.RescanablePath;
 import org.commonjava.indy.subsys.prefetch.models.RescanableResourceWrapper;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +54,9 @@ public class PrefetchFrontier
 
     @Inject
     private PrefetchConfig config;
+
+    @Inject
+    private StoreDataManager storeDataManager;
 
     private final List<RemoteRepository> repoQueue = new ArrayList<>();
 
@@ -121,12 +128,24 @@ public class PrefetchFrontier
                     if ( repo.isPrefetchRescan() )
                     {
                         String rescanTime = repo.getPrefetchRescanTimestamp();
+                        logger.trace( "repo's current rescan time: {}", rescanTime );
                         if ( StringUtils.isBlank( rescanTime ) || isNowAfter( rescanTime ) )
                         {
                             repo.setPrefetchRescanTimestamp(
                                     getNextRescanTimeFromNow( config.getRescanIntervalSeconds() ) );
-                            logger.trace( "repo's current rescan time: {}", rescanTime );
-                            logger.trace( "repo's next rescan time: {}", repo.getPrefetchRescanTimestamp() );
+                            try
+                            {
+                                // Will not send store update event to avoid recursive rescheduling
+                                storeDataManager.storeArtifactStore( repo, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                              "Update store for prefetch rescan update" ),
+                                                                     false, false, new EventMetadata() );
+                            }
+                            catch ( IndyDataException e )
+                            {
+                                logger.error( String.format( "Can not update store in prefetching rescan for repo: %s",
+                                                             repo ), e );
+                            }
+                            logger.trace( "Rescan time set. Repo's next rescan time: {}", repo.getPrefetchRescanTimestamp() );
                             final boolean isScheduledRescan =
                                     StringUtils.isNotBlank( rescanTime ) && isNowAfter( rescanTime );
                             if ( isScheduledRescan )

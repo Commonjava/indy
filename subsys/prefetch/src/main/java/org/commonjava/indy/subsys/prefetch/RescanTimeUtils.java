@@ -21,14 +21,17 @@ import java.time.format.DateTimeFormatter;
 
 public class RescanTimeUtils
 {
+    static final DateTimeFormatter UTC_TIME_FORMATTER =
+            DateTimeFormatter.ofPattern( "yyyy-MM-dd HH:mm:ss 'UTC'Z" );
+
     static String getNextRescanTimeFromNow( final Integer intervalSeconds )
     {
-        return ZonedDateTime.now( ZoneId.of( "UTC" ) )
-                            .plusSeconds( intervalSeconds )
-                            .format( DateTimeFormatter.ISO_ZONED_DATE_TIME );
+
+        return ZonedDateTime.now( ZoneId.of( "UTC" ) ).plusSeconds( intervalSeconds ).format( UTC_TIME_FORMATTER );
     }
 
-    static Boolean isNowAfter( final String rescanTime ){
-        return ZonedDateTime.now( ZoneId.of( "UTC" ) ).isAfter( ZonedDateTime.parse( rescanTime, DateTimeFormatter.ISO_ZONED_DATE_TIME ));
+    static Boolean isNowAfter( final String rescanTime )
+    {
+        return ZonedDateTime.now( ZoneId.of( "UTC" ) ).isAfter( ZonedDateTime.parse( rescanTime, UTC_TIME_FORMATTER ) );
     }
 }

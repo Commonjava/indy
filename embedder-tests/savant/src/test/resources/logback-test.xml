@@ -42,9 +42,7 @@
       </encoder>
     </appender>
 
-  <logger name="org.commonjava.indy.subsys.prefetch" level="TRACE"/>
-
-  <root level="ROOT">
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
   </root>

@@ -57,9 +57,9 @@ public class PrefetchRepoComparator<T extends RemoteRepository>
         }
 
         final ZonedDateTime rescanTime1 =
-                ZonedDateTime.parse( r1.getPrefetchRescanTimestamp(), DateTimeFormatter.ISO_ZONED_DATE_TIME );
+                ZonedDateTime.parse( r1.getPrefetchRescanTimestamp(), RescanTimeUtils.UTC_TIME_FORMATTER );
         final ZonedDateTime rescanTime2 =
-                ZonedDateTime.parse( r2.getPrefetchRescanTimestamp(), DateTimeFormatter.ISO_ZONED_DATE_TIME );
+                ZonedDateTime.parse( r2.getPrefetchRescanTimestamp(), RescanTimeUtils.UTC_TIME_FORMATTER  );
 
         if ( rescanTime1.isBefore( rescanTime2 ) )
         {
