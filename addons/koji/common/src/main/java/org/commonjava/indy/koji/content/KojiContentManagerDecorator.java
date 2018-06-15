@@ -24,7 +24,6 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.commonjava.cdi.util.weft.Locker;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
@@ -33,9 +32,7 @@ import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.indy.koji.metrics.IndyMetricsKojiNames;
 import org.commonjava.indy.koji.util.KojiUtils;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -73,6 +70,7 @@ import java.util.regex.Pattern;
 
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
@@ -143,9 +141,7 @@ public abstract class KojiContentManagerDecorator
     private Locker<StoreKey> groupMembershipLocker;
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
-                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS + IndyMetricsNames.METER ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public boolean exists( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
@@ -181,9 +177,7 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE
-                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_RETRIEVE + IndyMetricsNames.METER ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -269,12 +263,7 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_EXISTS
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsKojiNames.METHOD_CONTENTMANAGER_FINDKOJIBUILDAND + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {

@@ -15,14 +15,11 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
-import org.commonjava.indy.content.metrics.IndyMetricsContentIndexNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -55,6 +52,7 @@ import java.util.Set;
 
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 /**
  * Decorator for ContentManager which uses Infinispan to index content to avoid having to iterate all members of large
@@ -344,13 +342,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer != null && transfer.exists();
     }
 
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER
-                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
-                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER
-                                    + IndyMetricsNames.TIMER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDTRANSFER
-                                    + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
@@ -464,13 +456,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER
-                                    + IndyMetricsNames.METER ), timers = @MetricNamed( name =
-                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER
-                                    + IndyMetricsNames.TIMER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsContentIndexNames.METHOD_INDEXINGCONTENTMANAGER_GETINDEXEDMEMBERTRANSFER
-                                    + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     @Deprecated
     public Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
                                                ContentManagementFunction func )

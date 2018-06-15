@@ -17,20 +17,16 @@ package org.commonjava.indy.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.IndyMetricsNames;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.core.metrics.IndyMetricsCoreNames;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -38,7 +34,6 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -62,6 +57,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
@@ -232,12 +228,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_RETRIEVE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_RETRIEVE
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_RETRIEVE + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -367,12 +358,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_STORE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_STORE
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_STORE + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -500,12 +486,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_DELETE
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_DELETE
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_DELETE + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -640,12 +621,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_LIST
-                                    + IndyMetricsNames.TIMER ), meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_LIST
-                                    + IndyMetricsNames.METER ) ), exceptions = @Measure( meters = @MetricNamed( name =
-                    IndyMetricsCoreNames.METHOD_DEFAULTCONTENTMANAGER_LIST + IndyMetricsNames.EXCEPTION ) ) )
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {

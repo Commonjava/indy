@@ -34,6 +34,8 @@ public class IndyMetricsConfig
 {
     public static final String SECTION = "metrics";
 
+    private final static String INDY_METRICS_NODE_PREFIX = "node.prefix";
+
     private final static String INDY_METRICS_REPORTER = "reporter";
 
     private final static String INDY_METRICS_REPORTER_CONSOLE_PERIOD = "console.reporter.period";
@@ -96,6 +98,8 @@ public class IndyMetricsConfig
 
     private static final String INDY_METRICS_MEASURE_TRANSPORT_REPOS = "measure.transport.repos";
 
+    private final static String INDY_METRICS_KOJI_ENABLED = "koji.enabled";
+
     private boolean ispnMetricsEnabled;
 
     private String ispnGauges;
@@ -105,8 +109,6 @@ public class IndyMetricsConfig
     private String measureTransportRepos;
 
     private int consolePeriod = 30; // default
-
-    private final static String INDY_METRICS_KOJI_ENABLED = "koji.enabled";
 
     private String elkPrefix;
 
@@ -160,9 +162,22 @@ public class IndyMetricsConfig
 
     private boolean kojiMetricEnabled;
 
+    private String nodePrefix;
+
     public boolean isMeasureTransport()
     {
         return measureTransport;
+    }
+
+    @ConfigName( INDY_METRICS_NODE_PREFIX )
+    public void setNodePrefix( String nodePrefix )
+    {
+        this.nodePrefix = nodePrefix;
+    }
+
+    public String getNodePrefix()
+    {
+        return nodePrefix;
     }
 
     @ConfigName( INDY_METRICS_MEASURE_TRANSPORT )

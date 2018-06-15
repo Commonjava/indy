@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy;
+package org.commonjava.indy.metrics;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
-import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
-import org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet;
@@ -41,7 +39,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
@@ -71,8 +71,7 @@ public class IndyMetricsManager
     private CacheProducer cacheProducer;
 
     @Inject
-    @IndyMetricsNamed
-    IndyMetricsConfig config;
+    private IndyMetricsConfig config;
 
     private TransportMetricConfig transportMetricConfig;
 
@@ -83,7 +82,7 @@ public class IndyMetricsManager
     }
 
     @PostConstruct
-    public void initMetric()
+    public void init()
     {
         if ( !config.isMetricsEnabled() )
         {
@@ -93,7 +92,7 @@ public class IndyMetricsManager
 
         logger.info( "Init metrics subsystem..." );
 
-        IndyJVMInstrumentation.init( metricRegistry );
+        registerJvmMetric( config.getNodePrefix(), metricRegistry );
 
         // Health checks
         indyHealthChecks.forEach( indyHealthCheck -> HEALTH_CHECK_REGISTRY.register( indyHealthCheck.getName(),
@@ -129,7 +128,8 @@ public class IndyMetricsManager
         {
             list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
         }
-        metricRegistry.register( INDY_METRIC_ISPN, new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list ) );
+        metricRegistry.register( name( config.getNodePrefix(), INDY_METRIC_ISPN ),
+                                 new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list ) );
     }
 
     private void setUpTransportMetricConfig()
@@ -159,6 +159,12 @@ public class IndyMetricsManager
             public boolean isEnabled()
             {
                 return true;
+            }
+
+            @Override
+            public String getNodePrefix()
+            {
+                return config.getNodePrefix();
             }
 
             @Override

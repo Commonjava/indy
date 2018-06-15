@@ -17,10 +17,9 @@ package org.commonjava.indy.metrics.jaxrs.interceptor;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import org.commonjava.indy.IndyMetricsManager;
+import org.apache.commons.lang3.ClassUtils;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.metrics.conf.annotation.IndyMetricsNamed;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
@@ -30,60 +29,58 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.commonjava.indy.IndyMetricsNames.EXCEPTION;
-import static org.commonjava.indy.IndyMetricsNames.METER;
-import static org.commonjava.indy.IndyMetricsNames.TIMER;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
-/**
- * Created by xiabai on 2/27/17.
- */
 @Interceptor
-@IndyMetrics
+@Measure
 public class MetricsInterceptor
 {
-
-    private static final Logger logger = LoggerFactory.getLogger( MetricsInterceptor.class );
-
-    @Inject
-    IndyMetricsManager util;
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    @IndyMetricsNamed
-    IndyMetricsConfig config;
+    private IndyMetricsManager metricsManager;
+
+    @Inject
+    private IndyMetricsConfig config;
 
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
         if ( !config.isMetricsEnabled() )
-            return context.proceed();
-
-        IndyMetrics metrics = context.getMethod().getAnnotation( IndyMetrics.class );
-        if ( metrics == null )
         {
             return context.proceed();
         }
 
+        Method method = context.getMethod();
+        Measure measure = method.getAnnotation( Measure.class );
+        if ( measure == null )
+        {
+            measure = method.getDeclaringClass().getAnnotation( Measure.class );
+        }
+
         logger.trace( "Gathering metrics for: {}", context.getContextData() );
+        String nodePrefix = config.getNodePrefix();
 
-        String cls = context.getMethod().getDeclaringClass().getName();
-        String method = context.getMethod().getName();
-        String defaultName = name( cls, method );
+        String defaultName = getDefaultName( context );
 
-        Measure measures = metrics.measure();
-        List<Timer.Context> timers = Stream.of( measures.timers() )
-                                           .map( named -> {
-                                               String name = getName( named, defaultName, TIMER );
-                                               Timer.Context tc = util.getTimer( name ).time();
-                                               logger.debug( "START: {} ({})", name, tc );
-                                               return tc;
-                                           } )
-                                           .collect( Collectors.toList() );
+        List<Timer.Context> timers = Stream.of( measure.timers() ).map( named ->
+                                        {
+                                            String name = getName( nodePrefix, named, defaultName );
+                                            Timer.Context tc = metricsManager.getTimer( name ).time();
+                                            logger.trace( "START: {} ({})", name, tc );
+                                            return tc;
+                                        } )
+                                        .collect( Collectors.toList() );
 
         try
         {
@@ -91,14 +88,13 @@ public class MetricsInterceptor
         }
         catch ( Exception e )
         {
-            Measure me = metrics.exceptions();
-            Stream.of( me.meters() ).forEach( ( named ) ->
-                                              {
-                                                  String name = getName( named, defaultName, EXCEPTION );
-                                                  Meter requests = util.getMeter( name );
-                                                  logger.debug( "ERRORS++ {}", name );
-                                                  requests.mark();
-                                              } );
+            Stream.of( measure.exceptions() ).forEach( ( named ) ->
+                                        {
+                                            String name = getName( nodePrefix, named, defaultName, EXCEPTION );
+                                            Meter meter = metricsManager.getMeter( name );
+                                            logger.trace( "ERRORS++ {}", name );
+                                            meter.mark();
+                                        } );
 
             throw e;
         }
@@ -107,29 +103,50 @@ public class MetricsInterceptor
             if ( timers != null )
             {
                 timers.forEach( timer->{
-                    logger.debug( "STOP: {}", timer );
+                    logger.trace( "STOP: {}", timer );
                     timer.stop();
                 } );
 
             }
-            Stream.of( measures.meters() ).forEach( ( named ) ->
-                                                    {
-                                                        String name = getName( named, defaultName, METER );
-                                                        Meter requests = util.getMeter( name );
-                                                        logger.debug( "CALLS++ {}", name );
-                                                        requests.mark();
-                                                    } );
+            Stream.of( measure.meters() ).forEach( ( named ) ->
+                                        {
+                                            String name = getName( nodePrefix, named, defaultName );
+                                            Meter meter = metricsManager.getMeter( name );
+                                            logger.trace( "CALLS++ {}", name );
+                                            meter.mark();
+                                        } );
         }
     }
 
-    private String getName( MetricNamed named, String defaultName, String suffix )
+    /**
+     * Get default metric name. Use abbreviated package name, e.g., foo.bar.ClassA.methodB -> f.b.ClassA.methodB
+     */
+    private String getDefaultName( InvocationContext context )
     {
-        String name = named.name();
-        if ( isNotBlank( name ) )
+        // minimum len 1 shortens the package name and keeps class name
+        String cls = ClassUtils.getAbbreviatedName( context.getMethod().getDeclaringClass().getName(), 1 );
+        String method = context.getMethod().getName();
+        return name( cls, method );
+    }
+
+    /**
+     * Get the metric fullname.
+     * @param named user specified name
+     * @param defaultName 'class name + method name', not null.
+     */
+    private String getName( String nodePrefix, MetricNamed named, String defaultName )
+    {
+        String name = named.value();
+        if ( isBlank( name ) || name.equals( DEFAULT ) )
         {
-            return name;
+            name = defaultName;
         }
-        return name( defaultName, suffix );
+        return name( nodePrefix, name );
+    }
+
+    private String getName( String nodePrefix, MetricNamed named, String defaultName, String suffix )
+    {
+        return name( getName( nodePrefix, named, defaultName ), suffix );
     }
 
 }

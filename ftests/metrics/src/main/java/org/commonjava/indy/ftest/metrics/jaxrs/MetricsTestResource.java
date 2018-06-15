@@ -19,7 +19,6 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
-import org.commonjava.indy.measure.annotation.IndyMetrics;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.slf4j.Logger;
@@ -64,7 +63,7 @@ public class MetricsTestResource
         Meter meter = null;
         try
         {
-            meter = metricRegistry.meter("testTimerRequestWithException" );
+            meter = metricRegistry.meter("testTimerRequestWithException.exception" );
         }
         catch ( Throwable t )
         {
@@ -86,14 +85,14 @@ public class MetricsTestResource
     public Response getMeterCountWithException()
     {
         Meter meter =
-                metricRegistry.meter( "testMeterRequestException" );
+                metricRegistry.meter( "testMeterRequestException.exception" );
         return Response.ok( meter.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 
     @GET
     @Path( "/timer/{isException :[a-zA-Z]+}" )
-    @IndyMetrics( measure = @Measure( timers = @MetricNamed( name = "testTimerRequest" ) ),
-                  exceptions = @Measure( meters = @MetricNamed( name = "testTimerRequestWithException" ) ) )
+    @Measure( timers = @MetricNamed( "testTimerRequest" ),
+                  exceptions = @MetricNamed( "testTimerRequestWithException" ) )
     public Response getTimer( @PathParam( "isException" ) String isException )
             throws Exception
     {
@@ -109,8 +108,8 @@ public class MetricsTestResource
 
     @GET
     @Path( "/meter/{isException :[a-zA-Z]+}" )
-    @IndyMetrics( measure = @Measure( meters = @MetricNamed( name = "testMeterRequest" ) ),
-                  exceptions = @Measure( meters = @MetricNamed( name = "testMeterRequestException" ) ) )
+    @Measure( meters = @MetricNamed( "testMeterRequest" ),
+                  exceptions = @MetricNamed( "testMeterRequestException" ) )
     public Response getMeter( @PathParam( "isException" ) String isException )
             throws Exception
     {
