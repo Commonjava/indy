@@ -63,7 +63,7 @@ public class MetricsTestResource
         Meter meter = null;
         try
         {
-            meter = metricRegistry.meter("testTimerRequestWithException" );
+            meter = metricRegistry.meter("testTimerRequestWithException.exception" );
         }
         catch ( Throwable t )
         {
@@ -85,7 +85,7 @@ public class MetricsTestResource
     public Response getMeterCountWithException()
     {
         Meter meter =
-                metricRegistry.meter( "testMeterRequestException" );
+                metricRegistry.meter( "testMeterRequestException.exception" );
         return Response.ok( meter.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 

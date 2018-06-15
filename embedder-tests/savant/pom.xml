@@ -117,6 +117,7 @@
           <dependenciesToScan>
             <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
             <dependency>org.commonjava.indy:indy-ftests-core</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
             <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
             <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
             <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
