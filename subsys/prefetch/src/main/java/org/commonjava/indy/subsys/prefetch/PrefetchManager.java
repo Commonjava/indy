@@ -22,8 +22,10 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.prefetch.conf.PrefetchConfig;
+import org.commonjava.indy.subsys.prefetch.models.RescanablePath;
+import org.commonjava.indy.subsys.prefetch.models.RescanableResourceWrapper;
 import org.commonjava.maven.galley.TransferManager;
-import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,14 +33,14 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.stream.Collectors;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class PrefetchManager
@@ -54,42 +56,75 @@ public class PrefetchManager
     @Inject
     private PrefetchConfig config;
 
-    @WeftManaged
-    @ExecutorConfig( named = "prefetch-worker", threads = 5, priority = 1 )
     @Inject
-    private Executor executor;
+    private SpecialPathManager specialPathManager;
 
+    private volatile boolean stopped;
+
+    //TODO: Here met a weird problem: When using weft-managed thread pool, the running thread is not from
+    //     this executor pool, but through the calling thread(ArtifactStorePostUpdateEvent thread),
+    //     which is shown in thread part in log. Not sure if this is caused by weft Context switch in
+    //     ThreadContext or anywhere else.
+    @WeftManaged
     @Inject
-    private Instance<ContentListBuilder> listBuilders;
+    @ExecutorConfig( named = "Prefetch-Worker",priority = 1, threads = 5, daemon = true)
+    private ExecutorService prefetchExecutor;
+
+    private final Timer rescanSchedulingTimer = new Timer("Prefetch-Rescan-Scheduler", true);
+
+    private final TimerTask rescanSchedulingTask = new TimerTask()
+    {
+        @Override
+        public void run()
+        {
+            if ( config.isEnabled() )
+            {
+                if ( !frontier.hasMore() )
+                {
+                    frontier.rescheduleForRescan();
+                    //TODO need to think use a flag to control the triggerWorkers(), and not invoke it in main thread in registerPrefetchStores
+                    triggerWorkers();
+                }
+
+            }
+        }
+    };
 
     @PostConstruct
     public void initPrefetch()
     {
-        if(config.isEnabled())
+        if ( config.isEnabled() )
         {
+            stopped = false;
             frontier.initRepoCache();
             logger.trace( "PrefetchManager Started" );
-            triggerWorkers();
+            rescanSchedulingTimer.schedule( rescanSchedulingTask, 0,config.getRescanScheduleSeconds() * 1000 );
         }
     }
 
     public void registerPrefetchStores( @Observes final ArtifactStorePostUpdateEvent updateEvent )
     {
-        if(config.isEnabled())
+        if ( config.isEnabled() )
         {
             logger.trace( "Post update triggered for scheduling of prefetch: {}", updateEvent );
             final Collection<ArtifactStore> stores = updateEvent.getStores();
             boolean scheduled = false;
-            for ( ArtifactStore store : stores )
+            for ( ArtifactStore changedStore : stores )
             {
-                if ( store.getType() == StoreType.remote )
+                if ( changedStore.getType() == StoreType.remote )
                 {
-                    final RemoteRepository remote = (RemoteRepository) store;
-                    if ( remote.getPrefetchPriority() > 0 )
+                    ArtifactStore origStore = updateEvent.getOriginal( changedStore );
+                    final RemoteRepository changedRemote = (RemoteRepository) changedStore;
+                    final RemoteRepository origRemote = (RemoteRepository ) origStore;
+                    final boolean remotePrefetchEnabled = ( origRemote != null && !origRemote.getPrefetchPriority()
+                                                                                             .equals(
+                                                                                                     changedRemote.getPrefetchPriority() ) )
+                            && changedRemote.getPrefetchPriority() > 0;
+                    if ( remotePrefetchEnabled )
                     {
-                        List<String> paths = buildPahts( remote );
-                        logger.trace( "Schedule resources: repo: {}, paths {}", remote, paths );
-                        frontier.scheduleRepo( remote, paths );
+                        List<RescanablePath> paths = frontier.buildPaths( changedRemote, false );
+                        logger.trace( "Schedule resources: repo: {}, paths {}", changedRemote, paths );
+                        frontier.scheduleRepo( changedRemote, paths );
                         scheduled = true;
                     }
                 }
@@ -104,32 +139,44 @@ public class PrefetchManager
     void triggerWorkers()
     {
         logger.trace( "Trigger works now" );
+
+        //TODO: should use a separated thread here to loop this resource working to avoid main thread holding here.
         while ( frontier.hasMore() )
         {
-            Map<RemoteRepository, List<ConcreteResource>> resources = frontier.remove( config.getBatchSize() );
+            Map<RemoteRepository, List<RescanableResourceWrapper>> resources = frontier.remove( config.getBatchSize() );
             logger.trace( "Start to trigger threads to download {}", resources );
-            executor.execute( new PrefetchWorker( transfers, frontier, resources, PrefetchManager.this, logger ) );
+            prefetchExecutor.execute( new PrefetchWorker( transfers, frontier, resources, PrefetchManager.this,
+                                                              specialPathManager ) );
         }
     }
 
-    private List<String> buildPahts( final RemoteRepository repository )
-    {
-        for ( ContentListBuilder builder : listBuilders )
-        {
-            if ( repository.getPrefetchListingType().equals( builder.type() ) )
-            {
-                logger.trace( "Use {} for {}", builder, repository.getName() );
-                return builder.buildPaths( repository );
-            }
-        }
-
-        // By default, we will use html content list builder if no builder matched.
-        return new HtmlContentListBuilder().buildPaths( repository );
-    }
 
     @PreDestroy
     public void stopPrefeching()
     {
-        frontier.stopSchedulingMore();
+        if ( config.isEnabled() )
+        {
+            stopPrefetchWorkers();
+            rescanSchedulingTimer.cancel();
+            frontier.stopSchedulingMore();
+            stopped = true;
+            logger.info( "Indy prefetch process has been set to stopped. " );
+        }
+    }
+
+    private void stopPrefetchWorkers(){
+        prefetchExecutor.shutdown();
+        try
+        {
+            logger.info( "Waiting for the prefetch workers to terminate..." );
+                if ( prefetchExecutor.awaitTermination( 10, TimeUnit.MINUTES ) )
+            {
+                logger.info( "Prefetch workers terminated successfully." );
+            }
+        }
+        catch ( InterruptedException e )
+        {
+            logger.warn( "Prefetch workers shutdown process interrupted..." );
+        }
     }
 }

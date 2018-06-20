@@ -16,13 +16,18 @@
 package org.commonjava.indy.subsys.prefetch;
 
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.subsys.prefetch.models.RescanablePath;
+import org.commonjava.indy.subsys.prefetch.models.RescanableResourceWrapper;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,27 +38,30 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class PrefetchWorker
         implements Runnable
 {
+    private static final Logger logger = LoggerFactory.getLogger( PrefetchWorker.class );
+
     private TransferManager transfers;
 
     private PrefetchManager prefetchManager;
 
     private PrefetchFrontier frontier;
 
-    private Map<RemoteRepository, List<ConcreteResource>> resources;
+    private Map<RemoteRepository, List<RescanableResourceWrapper>> resources;
 
-    private final Logger logger;
+    private SpecialPathManager specialPathManager;
+
 
     private static final String LISTING_HTML_FILE = "index.html";
 
     public PrefetchWorker( final TransferManager transfers, final PrefetchFrontier frontier,
-                           Map<RemoteRepository, List<ConcreteResource>> resources,
-                           final PrefetchManager prefetchManager, final Logger logger )
+                           Map<RemoteRepository, List<RescanableResourceWrapper>> resources,
+                           final PrefetchManager prefetchManager, final SpecialPathManager specialPathManager)
     {
         this.transfers = transfers;
         this.frontier = frontier;
         this.resources = resources;
         this.prefetchManager = prefetchManager;
-        this.logger = logger;
+        this.specialPathManager = specialPathManager;
     }
 
     @Override
@@ -67,26 +75,41 @@ public class PrefetchWorker
 
         logger.trace( "Start downloading: {}", resources );
         final AtomicBoolean scheduled = new AtomicBoolean( false );
-        for ( Map.Entry<RemoteRepository, List<ConcreteResource>> entry : resources.entrySet() )
+        for ( Map.Entry<RemoteRepository, List<RescanableResourceWrapper>> entry : resources.entrySet() )
         {
             final RemoteRepository repo = entry.getKey();
-            final List<ConcreteResource> res = entry.getValue();
+            final List<RescanableResourceWrapper> res = entry.getValue();
             res.forEach( r -> {
                 try
                 {
-                    final String path = r.getPath();
+                    final String path = r.getResource().getPath();
                     if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith(
                             LISTING_HTML_FILE ) )
                     {
-                        List<String> dirPaths = buildPaths( r );
+                        // If this is a rescan prefetch, we need to clear the listing cache and re-fetch from external
+                        if ( r.isRescan() )
+                        {
+                            transfers.delete(
+                                    new ConcreteResource( r.getResource().getLocation(), path, ".listing.txt" ) );
+                        }
+                        final List<RescanablePath> dirPaths = buildPaths( r.getResource(), r.isRescan() );
                         logger.trace( "{} is folder, will use it to schedule new Resources {}", r, dirPaths );
                         frontier.scheduleRepo( repo, dirPaths );
                         scheduled.set( true );
                     }
                     else
                     {
+                        // If this is a rescan prefetch, and artifact is metadata, we need to clear it and re-fetch from external
+                        if ( r.isRescan() )
+                        {
+                            final SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( r.getResource() );
+                            if ( spi != null && spi.isMetadata() )
+                            {
+                                transfers.delete( r.getResource() );
+                            }
+                        }
                         logger.trace( "{} is file", r );
-                        transfers.retrieve( r );
+                        transfers.retrieve( r.getResource() );
                     }
                 }
                 catch ( TransferException e )
@@ -109,7 +132,7 @@ public class PrefetchWorker
         return transfer != null && transfer.exists();
     }
 
-    private List<String> buildPaths( final ConcreteResource resource )
+    private List<RescanablePath> buildPaths( final ConcreteResource resource, final boolean isRescan )
     {
         try
         {
@@ -117,10 +140,10 @@ public class PrefetchWorker
             if ( lr != null && lr.getListing() != null )
             {
                 String[] files = lr.getListing();
-                List<String> paths = new ArrayList<>( files.length );
+                List<RescanablePath> paths = new ArrayList<>( files.length );
                 for ( final String file : files )
                 {
-                    paths.add( PathUtils.normalize( resource.getPath(), file ) );
+                    paths.add( new RescanablePath( PathUtils.normalize( resource.getPath(), file ), isRescan ) );
                 }
                 return paths;
             }

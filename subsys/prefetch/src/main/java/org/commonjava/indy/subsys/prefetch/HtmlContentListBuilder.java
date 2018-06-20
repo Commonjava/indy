@@ -56,7 +56,7 @@ public class HtmlContentListBuilder
     }
 
     @Override
-    public List<ConcreteResource> buildContent( RemoteRepository repository )
+    public List<ConcreteResource> buildContent( final RemoteRepository repository, final boolean isRescan )
     {
         if ( repository.getPrefetchPriority() <= 0 )
         {
@@ -70,6 +70,11 @@ public class HtmlContentListBuilder
         final StoreResource res = new StoreResource( loc, rootPath );
         try
         {
+            // If this is a rescan prefetch, we need to clear the listing cache and re-fetch from external
+            if ( isRescan )
+            {
+                transferManager.delete( new StoreResource( loc, "/.listing.txt" ) );
+            }
             final ListingResult lr = transferManager.list( res );
             if ( lr != null && lr.getListing() != null )
             {

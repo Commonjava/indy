@@ -46,7 +46,7 @@ public class KojiContentListBuilder
     public static final String PREFETCH_LISTING_TYPE_KOJI = "koji";
 
     @Override
-    public List<ConcreteResource> buildContent( RemoteRepository repository )
+    public List<ConcreteResource> buildContent( final RemoteRepository repository, final boolean isRescan )
     {
         if ( PREFETCH_LISTING_TYPE_HTML.equals( repository.getPrefetchListingType() )
                 || repository.getPrefetchPriority() <= 0 )
