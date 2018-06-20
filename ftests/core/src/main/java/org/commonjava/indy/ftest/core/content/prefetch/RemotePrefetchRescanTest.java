@@ -15,13 +15,9 @@
  */
 package org.commonjava.indy.ftest.core.content.prefetch;
 
-import org.apache.commons.io.FileUtils;
-import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.File;
@@ -60,10 +56,8 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class RemotePrefetchRescanTest
-        extends AbstractContentManagementTest
+        extends AbstractRemotePrefetchTest
 {
-    @Rule
-    public ExpectationServer server = new ExpectationServer();
 
     @Test
     public void run()
@@ -219,18 +213,6 @@ public class RemotePrefetchRescanTest
         assertContent( fileJar2, contentJar2 );
         assertContent( fileSrc2, contentSrc2 );
         assertContent( fileMeta, contentMeta2 );
-    }
-
-    private void assertContent( File file, String content )
-            throws IOException
-    {
-        assertThat( FileUtils.readFileToString( file ), equalTo( content ) );
-    }
-
-    @Override
-    protected boolean createStandardTestStructures()
-    {
-        return false;
     }
 
     @Override
