@@ -1223,6 +1223,9 @@ public class DefaultDownloadManager
                 return true;
             }
         }
+
+        logger.debug( "Listing for path {} not enabled by path mask {} of repo {}", path, maskPatterns, repo );
+
         return false;
     }
 
@@ -1262,6 +1265,9 @@ public class DefaultDownloadManager
                 return true;
             }
         }
+
+        logger.debug( "Path {} not available in path mask {} of repo {}", path, maskPatterns, repo );
+
         return false;
     }
 
