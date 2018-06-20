@@ -34,7 +34,7 @@ public class IndyMetricsConfig
 {
     public static final String SECTION = "metrics";
 
-    private final static String INDY_METRICS_NODE_PREFIX = "node.prefix";
+    public final static String INDY_METRICS_NODE_PREFIX = "node.prefix";
 
     private final static String INDY_METRICS_REPORTER = "reporter";
 

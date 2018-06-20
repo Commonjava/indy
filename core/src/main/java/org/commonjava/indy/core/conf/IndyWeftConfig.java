@@ -27,6 +27,8 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import java.io.InputStream;
 
+import static org.commonjava.indy.metrics.conf.IndyMetricsConfig.INDY_METRICS_NODE_PREFIX;
+
 @ApplicationScoped
 @SectionName( IndyWeftConfig.SECTION_NAME )
 public class IndyWeftConfig
@@ -41,6 +43,8 @@ public class IndyWeftConfig
     public static final String DEFAULT_PRIORITY = "defaultPriority";
 
     public static final String ENABLED = "enabled";
+
+    public static final String NODE_PREFIX = INDY_METRICS_NODE_PREFIX;
 
     public static final String THREADS_SUFFIX = ".threads";
 
@@ -82,6 +86,10 @@ public class IndyWeftConfig
             else if ( ENABLED.equals( name ) )
             {
                 weftConfig.configureEnabled( Boolean.parseBoolean( value ) );
+            }
+            else if ( NODE_PREFIX.equals( name ) )
+            {
+                weftConfig.configureNodePrefix( value );
             }
             else
             {
