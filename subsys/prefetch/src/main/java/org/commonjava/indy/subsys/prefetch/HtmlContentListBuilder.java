@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.prefetch;
 
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.PathMaskChecker;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.LocationUtils;
@@ -23,6 +24,7 @@ import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
+import org.omg.PortableInterceptor.USER_EXCEPTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,8 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.RemoteRepository.PREFETCH_LISTING_TYPE_HTML;
 
@@ -61,35 +65,52 @@ public class HtmlContentListBuilder
         if ( repository.getPrefetchPriority() <= 0 )
         {
             logger.warn( "The repository {} prefetch disabled, can not use html content listing",
-                          repository.getName() );
+                         repository.getName() );
             return Collections.emptyList();
         }
 
-        final String rootPath = "/";
-        final KeyedLocation loc = LocationUtils.toLocation( repository );
-        final StoreResource res = new StoreResource( loc, rootPath );
-        try
+        final Set<String> pathMasks = repository.getPathMaskPatterns();
+        boolean useDefault = true;
+        if ( pathMasks != null && !pathMasks.isEmpty() )
         {
-            // If this is a rescan prefetch, we need to clear the listing cache and re-fetch from external
-            if ( isRescan )
+            useDefault = pathMasks.stream().anyMatch( p -> PathMaskChecker.isRegexPattern( p ) );
+        }
+
+        if ( useDefault )
+        {
+            final String rootPath = "/";
+            final KeyedLocation loc = LocationUtils.toLocation( repository );
+            final StoreResource res = new StoreResource( loc, rootPath );
+            try
             {
-                transferManager.delete( new StoreResource( loc, "/.listing.txt" ) );
-            }
-            final ListingResult lr = transferManager.list( res );
-            if ( lr != null && lr.getListing() != null )
-            {
-                String[] files = lr.getListing();
-                List<ConcreteResource> resources = new ArrayList<>( files.length );
-                for ( final String file : lr.getListing() )
+                // If this is a rescan prefetch, we need to clear the listing cache and re-fetch from external
+                if ( isRescan )
                 {
-                    resources.add( new StoreResource( loc, rootPath, file ) );
+                    transferManager.delete( new StoreResource( loc, "/.listing.txt" ) );
                 }
-                return resources;
+                final ListingResult lr = transferManager.list( res );
+                if ( lr != null && lr.getListing() != null )
+                {
+                    String[] files = lr.getListing();
+                    List<ConcreteResource> resources = new ArrayList<>( files.length );
+                    for ( final String file : lr.getListing() )
+                    {
+                        resources.add( new StoreResource( loc, rootPath, file ) );
+                    }
+                    return resources;
+                }
+            }
+            catch ( TransferException e )
+            {
+                logger.error( String.format( "Can not get transfer for repository %s", repository ), e );
             }
         }
-        catch ( TransferException e )
+        else
         {
-            logger.error( String.format( "Can not get transfer for repository %s", repository ), e );
+            // if all path mask patterns are plaintext, we will use these as the download list directly.
+            return pathMasks.stream()
+                            .map( p -> new StoreResource( LocationUtils.toLocation( repository ), p ) )
+                            .collect( Collectors.toList() );
         }
         return Collections.emptyList();
 

@@ -29,7 +29,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -71,7 +70,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
@@ -207,7 +205,7 @@ public class DefaultDownloadManager
         }
         else
         {
-            if ( ! checkListingMask( store, path ) )
+            if ( ! PathMaskChecker.checkListingMask( store, path ) )
             {
                 return result; // if list not permitted for the path, return empty list
             }
@@ -460,7 +458,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        if ( !checkMask(store, path))
+        if ( !PathMaskChecker.checkMask( store, path))
         {
             return null;
         }
@@ -526,7 +524,7 @@ public class DefaultDownloadManager
     public boolean exists(final ArtifactStore store, String path)
             throws IndyWorkflowException
     {
-        if ( !checkMask( store, path ) )
+        if ( !PathMaskChecker.checkMask( store, path ) )
         {
             return false;
         }
@@ -1184,91 +1182,6 @@ public class DefaultDownloadManager
         return null;
     }
 
-    // path mask checking
-    private boolean checkListingMask( final ArtifactStore store, final String path )
-    {
-        if ( !( store instanceof AbstractRepository ) )
-        {
-            return true;
-        }
-
-        AbstractRepository repo = (AbstractRepository) store;
-        Set<String> maskPatterns = repo.getPathMaskPatterns();
-
-        logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
-        logger.trace( "Mask patterns in {}: {}", repo.getName(), maskPatterns );
-
-        if (maskPatterns == null || maskPatterns.isEmpty())
-        {
-            logger.trace( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
-            return true;
-        }
-
-        for ( String pattern : maskPatterns )
-        {
-            if ( isRegexPattern( pattern ) )
-            {
-                // if there is a regexp pattern we cannot check presence of directory listing, because we would have to
-                // check only the beginning of the regexp and that's impossible, so we have to assume that the path is
-                // present
-                return true;
-            }
-        }
-
-        for ( String pattern : maskPatterns )
-        {
-            if ( path.startsWith( pattern ) || pattern.startsWith( path ) )
-            {
-                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // slightly different from checkListingMask in that for regex pattern the pattern.match() is called
-    private boolean checkMask( final ArtifactStore store, final String path )
-    {
-        if ( !( store instanceof AbstractRepository ) )
-        {
-            return true;
-        }
-
-        AbstractRepository repo = (AbstractRepository) store;
-        Set<String> maskPatterns = repo.getPathMaskPatterns();
-
-        logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
-        logger.trace( "Mask patterns in {}: {}", repo.getName(), maskPatterns );
-
-        if (maskPatterns == null || maskPatterns.isEmpty())
-        {
-            logger.trace( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
-            return true;
-        }
-
-        for ( String pattern : maskPatterns )
-        {
-            // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
-            if ( isRegexPattern( pattern ) )
-            {
-                if ( path.matches( pattern.substring( 2, pattern.length() - 1 ) ) )
-                {
-                    return true;
-                }
-            }
-            else if ( path.startsWith( pattern ) )
-            {
-                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean isRegexPattern( String pattern )
-    {
-        return pattern != null && pattern.startsWith( "r|" ) && pattern.endsWith( "|" );
-    }
 
     private void fireIndyStoreErrorEvent( TransferLocationException e )
     {

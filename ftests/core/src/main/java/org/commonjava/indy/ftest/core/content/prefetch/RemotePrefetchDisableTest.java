@@ -136,9 +136,7 @@ public class RemotePrefetchDisableTest
         remote1.setPrefetchListingType( RemoteRepository.PREFETCH_LISTING_TYPE_HTML );
         remote1.setPrefetchPriority( 1 );
         client.stores().update( remote1, "change prefetch priority" );
-
-        Thread.sleep( 2000 );
-
+        waitForEventPropagationWithMultiplier( 2 );
         assertThat( fileMeta.exists(), equalTo( false ) );
         assertThat( fileJar.exists(), equalTo( false ) );
         assertThat( fileSrc.exists(), equalTo( false ) );

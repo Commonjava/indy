@@ -23,6 +23,8 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -36,29 +38,24 @@ import static org.junit.Assert.assertThat;
  *     <li>The external repo has hierarchy dirs with each html page listing</li>
  *     <li>The external repo has 3 files in different dirs</li>
  *     <li>The indy remote is not set with prefetch enabled</li>
- *     <li>The indy prefetch rescan interval set to 5s</li>
  * </ul>
  *
  * <br/>
  * <b>WHEN:</b>
  * <ul>
- *     <li>1. The indy remote repo is updated with prefetch enabled</li>
- *     <li>2. The indy remote repo is updated with prefetch rescan enabled</li>
- *     <li>3. The external repo added new files after a while(4~5s)</li>
+ *     <li>The indy remote repo is updated with a regex path mask</li>
+ *     <li>The indy remote repo is updated with prefetch enabled (prefetch priority changed to positive number)</li>
  * </ul>
  *
  * <br/>
  * <b>THEN:</b>
  * <ul>
- *     <li>The old remote files will be downloaded automatically after a while without an explicit retrieve through API.(Means by background prefetch)</li>
- *     <li>The new added files will not be downloaded before interval(5s)</li>
- *     <li>After 10s the new added files will be downloaded</li>
+ *     <li>Only the files match the path mask will be downloaded automatically after a while without an explicit retrieve through API.</li>
  * </ul>
  */
-public class RemotePrefetchRescanTest
+public class RemotePrefetchDownloadWithPathMaskRegsTest
         extends AbstractRemotePrefetchTest
 {
-
     @Test
     public void run()
             throws Exception
@@ -67,13 +64,10 @@ public class RemotePrefetchRescanTest
         final String pathOrg = "org/";
         final String pathFoo = pathOrg + "foo/";
         final String pathBar = pathFoo + "bar/";
+        final String pathVer = pathBar + "1.0/";
         final String pathMeta = pathBar + "maven-metadata.xml";
-        final String pathVer1 = pathBar + "1.0/";
-        final String pathJar1 = pathVer1 + "foo-bar-1.0.jar";
-        final String pathSrc1 = pathVer1 + "foo-bar-1.0-sources.jar";
-        final String pathVer2 = pathBar + "2.0/";
-        final String pathJar2 = pathVer2 + "foo-bar-2.0.jar";
-        final String pathSrc2 = pathVer2 + "foo-bar-2.0-sources.jar";
+        final String pathJar = pathVer + "foo-bar-1.0.jar";
+        final String pathSrc = pathVer + "foo-bar-1.0-sources.jar";
 
         // @formatter:off
         final String rootHtml = "<!DOCTYPE html><html><body>"
@@ -98,7 +92,7 @@ public class RemotePrefetchRescanTest
                 + "<a href=\"foo-bar-1.0.jar\" title=\"foo-bar-1.0.jar\">foo-bar-1.0.jar</a>"
                 + "<a href=\"foo-bar-1.0-sources.jar\" title=\"foo-bar-1.0-sources.jar\">foo-bar-1.0-sources.jar</a>"
                 + "</body></html>";
-        final String contentMeta1 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+        final String contentMeta = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                                     + "<metadata>"
                                     + "<groupId>org.foo</groupId>"
                                     + "<artifactId>bar</artifactId>"
@@ -111,23 +105,24 @@ public class RemotePrefetchRescanTest
                                     + "<lastUpdated>20150722164334</lastUpdated>"
                                     + "</versioning>"
                                     + "</metadata>";
-        final String contentJar1 = "This is content for jar1";
-        final String contentSrc1 = "This is content for src1";
-        final String contentJar2 = "This is content for jar2";
-        final String contentSrc2 = "This is content for src2";
+        final String contentJar = "This is content for jar";
+        final String contentSrc = "This is content for src";
         // @formatter:on
 
         server.expect( server.formatUrl( repo1, "/" ), 200, rootHtml );
         server.expect( server.formatUrl( repo1, pathOrg ), 200, orgHtml );
         server.expect( server.formatUrl( repo1, pathFoo ), 200, fooHtml );
         server.expect( server.formatUrl( repo1, pathBar ), 200, barHtml );
-        server.expect( server.formatUrl( repo1, pathVer1 ), 200, verHtml );
-        server.expect( server.formatUrl( repo1, pathMeta ), 200, contentMeta1 );
-        server.expect( server.formatUrl( repo1, pathJar1 ), 200, contentJar1 );
-        server.expect( server.formatUrl( repo1, pathSrc1 ), 200, contentSrc1 );
+        server.expect( server.formatUrl( repo1, pathVer ), 200, verHtml );
+        server.expect( server.formatUrl( repo1, pathMeta ), 200, contentMeta );
+        server.expect( server.formatUrl( repo1, pathJar ), 200, contentJar );
+        server.expect( server.formatUrl( repo1, pathSrc ), 200, contentSrc );
 
         RemoteRepository remote1 =
                 new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, repo1, server.formatUrl( repo1 ) );
+        Set<String> pathMasks = new HashSet<>( 1 );
+        pathMasks.add( "r|.+\\d\\.\\d\\.jar|" );
+        remote1.setPathMaskPatterns( pathMasks );
         client.stores().create( remote1, "adding remote", RemoteRepository.class );
 
         System.out.println( String.format( "Indy HOME:%s", fixture.getBootOptions().getIndyHome() ) );
@@ -135,84 +130,22 @@ public class RemotePrefetchRescanTest
         File fileMeta = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                    remote.singularEndpointName() + "-" + repo1, pathMeta ).toFile();
         File fileJar = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                  remote.singularEndpointName() + "-" + repo1, pathJar1 ).toFile();
+                                  remote.singularEndpointName() + "-" + repo1, pathJar ).toFile();
         File fileSrc = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                  remote.singularEndpointName() + "-" + repo1, pathSrc1 ).toFile();
-        File fileJar2 = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                  remote.singularEndpointName() + "-" + repo1, pathJar2 ).toFile();
-        File fileSrc2 = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                  remote.singularEndpointName() + "-" + repo1, pathSrc2 ).toFile();
-
+                                  remote.singularEndpointName() + "-" + repo1, pathSrc ).toFile();
 
         assertThat( fileMeta.exists(), equalTo( false ) );
         assertThat( fileJar.exists(), equalTo( false ) );
         assertThat( fileSrc.exists(), equalTo( false ) );
-        assertThat( fileJar2.exists(), equalTo( false ) );
-        assertThat( fileSrc2.exists(), equalTo( false ) );
-
 
         remote1.setPrefetchListingType( RemoteRepository.PREFETCH_LISTING_TYPE_HTML );
         remote1.setPrefetchPriority( 1 );
-        remote1.setPrefetchRescan( true );
         client.stores().update( remote1, "change prefetch priority" );
-        waitForEventPropagationWithMultiplier( 2 );
-        assertThat( fileMeta.exists(), equalTo( true ) );
+        waitForEventPropagation();
         assertThat( fileJar.exists(), equalTo( true ) );
-        assertThat( fileSrc.exists(), equalTo( true ) );
-        assertContent( fileMeta, contentMeta1 );
-        assertContent( fileJar, contentJar1 );
-        assertContent( fileSrc, contentSrc1 );
-        assertThat( fileJar2.exists(), equalTo( false ) );
-        assertThat( fileSrc2.exists(), equalTo( false ) );
-
-        waitForEventPropagationWithMultiplier( 2 );
-
-        // @formatter:off
-        final String bar2Html="<!DOCTYPE html><html><body>"
-                + "<a href=\"../\">../</a>"
-                + "<a href=\"1.0/\" title=\"1.0/\">1.0/</a>"
-                + "<a href=\"2.0/\" title=\"2.0/\">2.0/</a>"
-                + "<a href=\"maven-metadata.xml\" title=\"maven-metadata.xml\">maven-metadata.xml</a>"
-                + "</body></html>";
-        final String ver2Html="<!DOCTYPE html><html><body>"
-                + "<a href=\"../\">../</a>"
-                + "<a href=\"foo-bar-2.0.jar\" title=\"foo-bar-2.0.jar\">foo-bar-2.0.jar</a>"
-                + "<a href=\"foo-bar-2.0-sources.jar\" title=\"foo-bar-2.0-sources.jar\">foo-bar-2.0-sources.jar</a>"
-                + "</body></html>";
-        final String contentMeta2 = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-                + "<metadata>"
-                + "<groupId>org.foo</groupId>"
-                + "<artifactId>bar</artifactId>"
-                + "<versioning>"
-                + "<latest>2.0</latest>"
-                + "<release>2.0</release>"
-                + "<versions>"
-                + "<version>1.0</version>"
-                + "<version>2.0</version>"
-                + "</versions>"
-                + "<lastUpdated>20160921184754</lastUpdated>"
-                + "</versioning>"
-                + "</metadata>";
-        // @formatter:on
-
-        server.expect( server.formatUrl( repo1, pathBar ), 200, bar2Html );
-        server.expect( server.formatUrl( repo1, pathVer2 ), 200, ver2Html );
-        server.expect( server.formatUrl( repo1, pathMeta ), 200, contentMeta2 );
-        server.expect( server.formatUrl( repo1, pathJar2 ), 200, contentJar2 );
-        server.expect( server.formatUrl( repo1, pathSrc2 ), 200, contentSrc2 );
-
-        waitForEventPropagationWithMultiplier( 6 );
-
-        assertThat( fileJar.exists(), equalTo( true ) );
-        assertThat( fileSrc.exists(), equalTo( true ) );
-        assertContent( fileJar, contentJar1 );
-        assertContent( fileSrc, contentSrc1 );
-        assertThat( fileJar2.exists(), equalTo( true ) );
-        assertThat( fileSrc2.exists(), equalTo( true ) );
-        assertThat( fileMeta.exists(), equalTo( true ) );
-        assertContent( fileJar2, contentJar2 );
-        assertContent( fileSrc2, contentSrc2 );
-        assertContent( fileMeta, contentMeta2 );
+        assertContent( fileJar, contentJar );
+        assertThat( fileSrc.exists(), equalTo( false ) );
+        assertThat( fileMeta.exists(), equalTo( false ) );
     }
 
     @Override
@@ -220,6 +153,7 @@ public class RemotePrefetchRescanTest
             throws IOException
     {
         super.initTestConfig( fixture );
-        writeConfigFile( "conf.d/prefetch.conf", "[prefetch]\nenabled=true\nprefetch.batchsize=3\nprefetch.rescan.interval.seconds=5" );
+        writeConfigFile( "conf.d/prefetch.conf", "[prefetch]\nenabled=true\nprefetch.batchsize=3" );
     }
+
 }

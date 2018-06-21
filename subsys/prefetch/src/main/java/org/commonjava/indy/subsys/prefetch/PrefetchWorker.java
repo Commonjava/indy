@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
+import org.commonjava.indy.core.content.PathMaskChecker;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.prefetch.models.RescanablePath;
 import org.commonjava.indy.subsys.prefetch.models.RescanableResourceWrapper;
@@ -99,17 +100,26 @@ public class PrefetchWorker
                     }
                     else
                     {
-                        // If this is a rescan prefetch, and artifact is metadata, we need to clear it and re-fetch from external
-                        if ( r.isRescan() )
+                        // if repo has path masks, we need to check that first to only download path mask enabled artifacts.
+                        if ( PathMaskChecker.checkMask( repo, path ) )
                         {
-                            final SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( r.getResource() );
-                            if ( spi != null && spi.isMetadata() )
+                            // If this is a rescan prefetch, and artifact is metadata, we need to clear it and re-fetch from external
+                            if ( r.isRescan() )
                             {
-                                transfers.delete( r.getResource() );
+                                final SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( r.getResource() );
+                                if ( spi != null && spi.isMetadata() )
+                                {
+                                    transfers.delete( r.getResource() );
+                                }
                             }
+                            logger.trace( "{} is file", r );
+                            transfers.retrieve( r.getResource() );
                         }
-                        logger.trace( "{} is file", r );
-                        transfers.retrieve( r.getResource() );
+                        else
+                        {
+                            logger.trace( "Path {} in repo {} not available for path mask {}", path, repo,
+                                          repo.getPathMaskPatterns() );
+                        }
                     }
                 }
                 catch ( TransferException e )
