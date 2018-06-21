@@ -61,10 +61,6 @@ public class PrefetchManager
 
     private volatile boolean stopped;
 
-    //TODO: Here met a weird problem: When using weft-managed thread pool, the running thread is not from
-    //     this executor pool, but through the calling thread(ArtifactStorePostUpdateEvent thread),
-    //     which is shown in thread part in log. Not sure if this is caused by weft Context switch in
-    //     ThreadContext or anywhere else.
     @WeftManaged
     @Inject
     @ExecutorConfig( named = "Prefetch-Worker",priority = 1, threads = 5, daemon = true)
@@ -164,19 +160,27 @@ public class PrefetchManager
         }
     }
 
-    private void stopPrefetchWorkers(){
+    private void stopPrefetchWorkers()
+    {
         prefetchExecutor.shutdown();
+        final long TIMEOUT_MINS = 10;
         try
         {
             logger.info( "Waiting for the prefetch workers to terminate..." );
-                if ( prefetchExecutor.awaitTermination( 10, TimeUnit.MINUTES ) )
+            if ( prefetchExecutor.awaitTermination( TIMEOUT_MINS, TimeUnit.MINUTES ) )
             {
                 logger.info( "Prefetch workers terminated successfully." );
+            }
+            else
+            {
+                logger.warn( "Prefetch workers shutdown process not finished in {} mins, will shutdown with no wait", TIMEOUT_MINS );
+                prefetchExecutor.shutdownNow();
             }
         }
         catch ( InterruptedException e )
         {
-            logger.warn( "Prefetch workers shutdown process interrupted..." );
+            logger.warn( "Prefetch workers shutdown process interrupted, will shutdown with no wait" );
+            prefetchExecutor.shutdownNow();
         }
     }
 }

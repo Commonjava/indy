@@ -174,36 +174,48 @@ public class PrefetchFrontier
             for ( RemoteRepository repo : repoQueueCopy )
             {
                 List<RescanablePath> paths = resourceCache.get( repo );
-                List<RescanableResourceWrapper> res = new ArrayList<>( size );
-                List<RescanablePath> pathsRemoved = new ArrayList<>( size );
-                for ( RescanablePath path : paths )
+                if ( paths != null )
                 {
-                    res.add( new RescanableResourceWrapper(
-                            new StoreResource( LocationUtils.toLocation( repo ), path.getPath() ), path.isRescan() ) );
-                    pathsRemoved.add( path );
-                    if ( ++removedSize >= size )
+                    List<RescanableResourceWrapper> res = new ArrayList<>( size );
+                    List<RescanablePath> pathsRemoved = new ArrayList<>( size );
+                    for ( RescanablePath path : paths )
                     {
-                        break;
+                        res.add( new RescanableResourceWrapper(
+                                new StoreResource( LocationUtils.toLocation( repo ), path.getPath() ),
+                                path.isRescan() ) );
+                        pathsRemoved.add( path );
+                        if ( ++removedSize >= size )
+                        {
+                            break;
+                        }
+                    }
+                    resources.put( repo, res );
+
+                    paths.removeAll( pathsRemoved );
+
+                    if ( paths.isEmpty() )
+                    {
+                        resourceCache.remove( repo );
+                        if ( !repo.isPrefetchRescan() )
+                        {
+                            repoQueue.remove( repo );
+                            sortRepoQueue();
+                        }
+                        hasMore = !repoQueue.isEmpty() && !resourceCache.isEmpty();
+                    }
+
+                    if ( removedSize >= size )
+                    {
+                        return resources;
                     }
                 }
-                resources.put( repo, res );
-
-                paths.removeAll( pathsRemoved );
-
-                if ( paths.isEmpty() )
+                else
                 {
-                    resourceCache.remove( repo );
                     if ( !repo.isPrefetchRescan() )
                     {
                         repoQueue.remove( repo );
                         sortRepoQueue();
                     }
-                    hasMore = !repoQueue.isEmpty() && !resourceCache.isEmpty();
-                }
-
-                if ( removedSize >= size )
-                {
-                    return resources;
                 }
             }
             return resources;
@@ -218,15 +230,18 @@ public class PrefetchFrontier
             for ( RemoteRepository repo : repoQueue )
             {
                 List<RescanablePath> paths = resourceCache.get( repo );
-                List<ConcreteResource> res = new ArrayList<>( size );
-                for ( RescanablePath path : paths )
+                if ( paths != null && !paths.isEmpty() )
                 {
-                    res.add( new StoreResource( LocationUtils.toLocation( repo ), path.getPath() ) );
-                }
-                resources.put( repo, res );
-                if ( removedSize >= size )
-                {
-                    return resources;
+                    List<ConcreteResource> res = new ArrayList<>( size );
+                    for ( RescanablePath path : paths )
+                    {
+                        res.add( new StoreResource( LocationUtils.toLocation( repo ), path.getPath() ) );
+                    }
+                    resources.put( repo, res );
+                    if ( removedSize >= size )
+                    {
+                        return resources;
+                    }
                 }
             }
             return resources;

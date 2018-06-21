@@ -144,7 +144,12 @@ public abstract class AbstractIndyFunctionalTest
 
     protected void waitForEventPropagation()
     {
-        long ms = 1000 * getTestTimeoutMultiplier();
+        waitForEventPropagationWithMultiplier( getTestTimeoutMultiplier() );
+    }
+
+    protected void waitForEventPropagationWithMultiplier( int multiplier )
+    {
+        long ms = 1000 * multiplier;
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.info( "Waiting {}ms for Indy server events to clear.", ms );
@@ -156,7 +161,7 @@ public abstract class AbstractIndyFunctionalTest
         catch ( InterruptedException e )
         {
             e.printStackTrace();
-            fail( "Thread interrupted while waiting for server events to propagate.");
+            fail( "Thread interrupted while waiting for server events to propagate." );
         }
 
         logger.info( "Resuming test" );

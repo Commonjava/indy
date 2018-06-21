@@ -57,9 +57,17 @@ public class KojiContentListBuilder
             return Collections.emptyList();
         }
         Set<String> paths = repository.getPathMaskPatterns();
-        return paths.stream()
-                    .map( p -> new StoreResource( LocationUtils.toLocation( repository ), p ) )
-                    .collect( Collectors.toList() );
+        // Koji list builder only cares paths in the path masks
+        if ( paths != null && !paths.isEmpty() )
+        {
+            return paths.stream()
+                        .map( p -> new StoreResource( LocationUtils.toLocation( repository ), p ) )
+                        .collect( Collectors.toList() );
+        }
+        else
+        {
+            return Collections.emptyList();
+        }
     }
 
     @Override
