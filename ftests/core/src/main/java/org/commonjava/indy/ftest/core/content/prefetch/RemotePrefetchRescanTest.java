@@ -155,7 +155,7 @@ public class RemotePrefetchRescanTest
         remote1.setPrefetchPriority( 1 );
         remote1.setPrefetchRescan( true );
         client.stores().update( remote1, "change prefetch priority" );
-        Thread.sleep( 1000 );
+        waitForEventPropagation();
         assertThat( fileMeta.exists(), equalTo( true ) );
         assertThat( fileJar.exists(), equalTo( true ) );
         assertThat( fileSrc.exists(), equalTo( true ) );
@@ -165,7 +165,7 @@ public class RemotePrefetchRescanTest
         assertThat( fileJar2.exists(), equalTo( false ) );
         assertThat( fileSrc2.exists(), equalTo( false ) );
 
-        Thread.sleep( 1500 );
+        waitForEventPropagation();
 
         // @formatter:off
         final String bar2Html="<!DOCTYPE html><html><body>"
@@ -201,7 +201,7 @@ public class RemotePrefetchRescanTest
         server.expect( server.formatUrl( repo1, pathJar2 ), 200, contentJar2 );
         server.expect( server.formatUrl( repo1, pathSrc2 ), 200, contentSrc2 );
 
-        Thread.sleep( 5000 );
+        waitForEventPropagation();
 
         assertThat( fileJar.exists(), equalTo( true ) );
         assertThat( fileSrc.exists(), equalTo( true ) );

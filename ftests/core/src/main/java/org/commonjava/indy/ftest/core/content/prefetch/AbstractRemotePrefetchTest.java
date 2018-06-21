@@ -52,4 +52,9 @@ public abstract class AbstractRemotePrefetchTest
         super.initTestConfig( fixture );
         writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=true" );
     }
+
+    protected int getTestTimeoutMultiplier()
+    {
+        return 2;
+    }
 }
