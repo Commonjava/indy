@@ -59,8 +59,6 @@ public class RemotePrefetchDownloadingTest
     public void run()
             throws Exception
     {
-        final int THREAD_SLEEP_INTERVAL = 1000;
-
         final String repo1 = "repo1";
         final String pathOrg = "org/";
         final String pathFoo = pathOrg + "foo/";
@@ -139,7 +137,7 @@ public class RemotePrefetchDownloadingTest
         // Only when prefetch priority change to positive number will trigger prefetch
         remote1.setNfcTimeoutSeconds( 120 );
         client.stores().update( remote1, "change nfc timeout" );
-        Thread.sleep( THREAD_SLEEP_INTERVAL );
+        waitForEventPropagation();
         assertThat( fileMeta.exists(), equalTo( false ) );
         assertThat( fileJar.exists(), equalTo( false ) );
         assertThat( fileSrc.exists(), equalTo( false ) );
@@ -147,7 +145,7 @@ public class RemotePrefetchDownloadingTest
         remote1.setPrefetchListingType( RemoteRepository.PREFETCH_LISTING_TYPE_HTML );
         remote1.setPrefetchPriority( 1 );
         client.stores().update( remote1, "change prefetch priority" );
-        Thread.sleep( THREAD_SLEEP_INTERVAL );
+        waitForEventPropagation();
         assertThat( fileMeta.exists(), equalTo( true ) );
         assertThat( fileJar.exists(), equalTo( true ) );
         assertThat( fileSrc.exists(), equalTo( true ) );
@@ -155,8 +153,6 @@ public class RemotePrefetchDownloadingTest
         assertContent( fileJar, contentJar );
         assertContent( fileSrc, contentSrc );
     }
-
-
 
     @Override
     protected void initTestConfig( CoreServerFixture fixture )
