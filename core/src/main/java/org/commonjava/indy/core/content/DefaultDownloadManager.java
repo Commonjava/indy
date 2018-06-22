@@ -463,8 +463,14 @@ public class DefaultDownloadManager
             return null;
         }
 
-        Transfer target;
         final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
+
+        if ( nfc.isMissing( res ) )
+        {
+            return null;
+        }
+
+        Transfer target;
         try
         {
             if ( store instanceof RemoteRepository )
@@ -481,27 +487,12 @@ public class DefaultDownloadManager
                     target = null;
                 }
             }
-
-            //            if ( target != null && target.exists() )
-            //            {
-            //                //                logger.info( "Using stored copy from artifact store: {} for: {}", store.getName(), path );
-            //                final Transfer item = getStorageReference( store.getKey(), path );
-            //
-            //                return item;
-            //            }
-            //            else
-            //            {
-            //                return null;
-            //            }
         }
         catch ( final TransferLocationException e )
         {
             fileEventManager.fire( new IndyStoreErrorEvent( store.getKey(), e ) );
             logger.warn( "Timeout / bad gateway: " + res + ". Reason: " + e.getMessage(), e );
             target = null;
-            //            throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(),
-            //                                              "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
-            //                                              e.getMessage() );
         }
         catch ( final TransferContentException e )
         {
@@ -899,6 +890,7 @@ public class DefaultDownloadManager
     private Transfer getCacheReferenceWithNFC( final ArtifactStore store, final String... path )
     {
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+
         Transfer txfr = transfers.getCacheReference( resource );
         // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
         if ( store.getKey().getType() == hosted )

@@ -34,6 +34,7 @@ import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.nfc.NoOpNotFoundCache;
 import org.commonjava.maven.galley.testing.core.transport.job.TestDownload;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.junit.Before;
@@ -62,7 +63,8 @@ public class DownloadManagerTest
     {
         data = new MemoryStoreDataManager( true );
 
-        downloader = new DefaultDownloadManager( data, fixture.getTransferManager(), new IndyLocationExpander( data ) );
+        downloader = new DefaultDownloadManager( data, fixture.getTransferManager(), new IndyLocationExpander( data ),
+                                                 null, new NoOpNotFoundCache() );
     }
 
     @Test
