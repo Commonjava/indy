@@ -891,6 +891,12 @@ public class DefaultDownloadManager
     {
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
 
+        if ( nfc.isMissing( resource ) )
+        {
+            logger.debug( "Resource {} is still in nfc, return null", resource );
+            return null;
+        }
+
         Transfer txfr = transfers.getCacheReference( resource );
         // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
         if ( store.getKey().getType() == hosted )
