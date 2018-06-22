@@ -74,6 +74,12 @@ public class ResourceManagementFilter
         String clientAddr = request.getRemoteAddr();
 
         final HttpServletRequest hsr = (HttpServletRequest) request;
+        final String xForwardFor = hsr.getHeader( X_FORWARDED_FOR );
+        if ( xForwardFor != null )
+        {
+            clientAddr = xForwardFor; // OSE proxy use HTTP header 'x-forwarded-for' to represent user IP
+        }
+
         String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         String qs = hsr.getQueryString();
         try
@@ -88,7 +94,7 @@ public class ResourceManagementFilter
 
             putRequestIDs( hsr, threadContext );
 
-            putUserIP( hsr, threadContext );
+            putUserIP( clientAddr, threadContext );
 
             logger.debug( "START request: {} (from: {})", tn, clientAddr );
 
@@ -121,17 +127,14 @@ public class ResourceManagementFilter
         }
     }
 
-    public static String X_FORWARDED_FOR = "x-forwarded-for";
+    private final static String X_FORWARDED_FOR = "x-forwarded-for";
 
-    /* Openshift/Kubernetes proxy adds the HTTP header 'x-forwarded-for' representing user IP */
-    private void putUserIP( HttpServletRequest hsr, ThreadContext threadContext )
+    private final static String CLIENT_ADDR = "client-addr";
+
+    private void putUserIP( String userIp, ThreadContext threadContext )
     {
-        String userIp = hsr.getHeader( X_FORWARDED_FOR );
-        if ( userIp != null )
-        {
-            MDC.put( X_FORWARDED_FOR, userIp );
-            threadContext.put( X_FORWARDED_FOR, userIp );
-        }
+        MDC.put( CLIENT_ADDR, userIp );
+        threadContext.put( CLIENT_ADDR, userIp );
     }
 
     public static final String HTTP_REQUEST_EXTERNAL_ID = "http-request-external-id";
