@@ -286,4 +286,9 @@ public class PrefetchFrontier
         shouldSchedule = false;
     }
 
+    public void stop(){
+        stopSchedulingMore();
+        resourceCache.stop();
+    }
+
 }
