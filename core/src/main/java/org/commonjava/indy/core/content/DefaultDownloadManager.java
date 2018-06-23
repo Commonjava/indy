@@ -82,6 +82,8 @@ import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
+import static org.commonjava.maven.galley.model.TransferOperation.DOWNLOAD;
+import static org.commonjava.maven.galley.model.TransferOperation.LISTING;
 
 @javax.enterprise.context.ApplicationScoped
 public class DefaultDownloadManager
@@ -758,12 +760,18 @@ public class DefaultDownloadManager
                 suitableFound = true;
 
                 logger.trace( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
-                             op );
+                              op );
 
-                transfer = getStorageReference( store, path );
+                if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
+                {
+                    transfer = getStorageReferenceWithNFC( store, path );
+                }
+                else
+                {
+                    transfer = getStorageReference( store, path );
+                }
                 logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
-                if ( transfer != null && !transfer.exists() && ( op == TransferOperation.DOWNLOAD
-                        || op == TransferOperation.LISTING ) )
+                if ( transfer != null && !transfer.exists() && ( op == DOWNLOAD || op == LISTING ) )
                 {
                     transfer = null;
                 }
@@ -783,6 +791,23 @@ public class DefaultDownloadManager
         }
 
         return transfer;
+    }
+
+    private Transfer getStorageReferenceWithNFC( final ArtifactStore store, final String... path )
+    {
+        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+        if ( nfc.isMissing( resource ) )
+        {
+            logger.trace( "Resource {} is missing, return null", resource );
+            return null;
+        }
+        Transfer txfr = transfers.getCacheReference( resource );
+        if ( txfr == null || !txfr.exists() )
+        {
+            logger.trace( "Resource not found when retrieving cached reference; added to NFC: {}", resource );
+            nfc.addMissing( resource );
+        }
+        return txfr;
     }
 
     private boolean storeIsSuitableFor( final ArtifactStore store, final ContentQuality pathQuality,
@@ -841,11 +866,17 @@ public class DefaultDownloadManager
     public Transfer getStorageReference( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         final ContentQuality quality = getQuality( path );
         if ( storeIsSuitableFor( store, quality, op ) )
         {
-            return getStorageReference( store, path );
+            if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
+            {
+                return getStorageReferenceWithNFC( store, path );
+            }
+            else
+            {
+                return getStorageReference( store, path );
+            }
         }
 
         logger.warn( "Store {} not suitable for: {}", store, op );
@@ -860,7 +891,8 @@ public class DefaultDownloadManager
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Retrieving cache reference (Transfer) to: {} in: {}", Arrays.asList( path ), store.getKey() );
 
-        return getCacheReferenceWithNFC( store, path );
+        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+        return transfers.getCacheReference( resource );
     }
 
     @Override
@@ -884,24 +916,7 @@ public class DefaultDownloadManager
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
-        return getCacheReferenceWithNFC( store, path );
-    }
-
-    private Transfer getCacheReferenceWithNFC( final ArtifactStore store, final String... path )
-    {
-        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
-
-        Transfer txfr = transfers.getCacheReference( resource );
-        // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
-        if ( store.getKey().getType() == hosted )
-        {
-            if ( txfr == null || !txfr.exists() )
-            {
-                logger.trace( "Resource not found when retrieving cached reference; added to NFC: {}", resource );
-                nfc.addMissing( resource );
-            }
-        }
-        return txfr;
+        return getStorageReference( store, path );
     }
 
     @Override

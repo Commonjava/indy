@@ -125,7 +125,11 @@ public class HostedMissingAddToNFCTest
                            .findFirst()
                            .orElse( null );
         assertThat( nfcSectionDto, notNullValue() );
-        assertThat( nfcSectionDto.getPaths(), notNullValue() );
-        assertThat( nfcSectionDto.getPaths().contains( META_PATH ), equalTo( true ) );
+        assertThat( nfcSectionDto.getPaths(), nullValue() );
+
+        try (InputStream inputStream = client.content().get( hosted.getKey(), META_PATH ))
+        {
+            assertThat( inputStream, notNullValue() );
+        }
     }
 }

@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.commonjava.indy.model.core.StoreKey.fromString;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
 @Default
@@ -100,19 +101,37 @@ public class IspnNotFoundCache
     @Override
     public void addMissing( final ConcreteResource resource )
     {
-        final int timeoutInSeconds = getTimeoutInSeconds( resource );
-        long timeout = Long.MAX_VALUE;
-        if ( timeoutInSeconds > 0 )
+        boolean withTimeout = true;
+        if ( ( (KeyedLocation) resource.getLocation() ).getKey().getType() == hosted )
         {
-            timeout = System.currentTimeMillis() + ( timeoutInSeconds * 1000 );
+            withTimeout = false;
         }
-        logger.debug( "[NFC] {} will not be checked again until {}", resource,
-                      new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( timeout ) ) );
+        addMissing( resource, withTimeout );
+    }
 
+    private void addMissing( final ConcreteResource resource, final boolean withTimeout )
+    {
         final String key = getResourceKey( resource );
-        final long f_timeout = timeout;
-        nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, f_timeout ), timeoutInSeconds,
-                                              TimeUnit.SECONDS ) );
+        if ( withTimeout )
+        {
+            final int timeoutInSeconds = getTimeoutInSeconds( resource );
+            long timeout = Long.MAX_VALUE;
+            if ( timeoutInSeconds > 0 )
+            {
+                timeout = System.currentTimeMillis() + ( timeoutInSeconds * 1000 );
+            }
+            logger.debug( "[NFC] {} will not be checked again until {}", resource,
+                          new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( timeout ) ) );
+
+            final long f_timeout = timeout;
+            nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, f_timeout ),
+                                                  timeoutInSeconds, TimeUnit.SECONDS ) );
+        }
+        else
+        {
+            logger.debug( "[NFC] {} will not be checked again", resource );
+            nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, -1 ) ) );
+        }
     }
 
     @Override
