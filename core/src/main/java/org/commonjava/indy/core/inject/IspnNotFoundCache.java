@@ -130,7 +130,7 @@ public class IspnNotFoundCache
         else
         {
             logger.debug( "[NFC] {} will not be checked again", resource );
-            nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, -1 ) ) );
+            nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, Long.MAX_VALUE ) ) );
         }
     }
 
