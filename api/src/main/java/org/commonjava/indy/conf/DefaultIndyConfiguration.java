@@ -33,7 +33,7 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
 
-    public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 300;
+    public static final int DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS = 10800; // 3 hours
 
     public static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 30; // 5 seconds (previous) is crazy on most normal networks
 
