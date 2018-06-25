@@ -154,7 +154,7 @@ public class PrefetchManager
         {
             stopPrefetchWorkers();
             rescanSchedulingTimer.cancel();
-            frontier.stopSchedulingMore();
+            frontier.stop();
             stopped = true;
             logger.info( "Indy prefetch process has been set to stopped. " );
         }
