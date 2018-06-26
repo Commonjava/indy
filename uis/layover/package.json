@@ -11,7 +11,7 @@
     "karma": "~0.10",
     "protractor": "~0.20.1",
     "http-server": "^0.6.1",
-    "bower": "1.7.9",
+    "bower": "1.8.4",
     "shelljs": "^0.2.6",
     "karma-junit-reporter": "^0.2.2"
   },
