@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
@@ -61,13 +62,16 @@ public class ProxyAcceptHandler
     @Inject
     private ScriptEngine scriptEngine;
 
+    @Inject
+    private MDCManager mdcManager;
+
     protected ProxyAcceptHandler()
     {
     }
 
     public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager, ContentController contentController,
                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
-                               ScriptEngine scriptEngine )
+                               ScriptEngine scriptEngine, MDCManager mdcManager )
     {
         this.config = config;
         this.storeManager = storeManager;
@@ -75,6 +79,7 @@ public class ProxyAcceptHandler
         this.proxyAuthenticator = proxyAuthenticator;
         this.cacheProvider = cacheProvider;
         this.scriptEngine = scriptEngine;
+        this.mdcManager = mdcManager;
     }
 
     public ProxyRepositoryCreator createRepoCreator()
@@ -124,8 +129,8 @@ public class ProxyAcceptHandler
         final ProxyRepositoryCreator creator = createRepoCreator();
 
         final ProxyResponseWriter writer =
-                new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator, cacheProvider,
-                                         creator, accepted );
+                        new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator,
+                                                 cacheProvider, mdcManager, creator, accepted );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter().set( writer );

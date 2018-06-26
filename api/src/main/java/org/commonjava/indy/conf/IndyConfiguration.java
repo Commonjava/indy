@@ -51,6 +51,12 @@ public interface IndyConfiguration
     int getNfcExpirationSweepMinutes();
 
     /**
+     * List of http headers to look for and include in the MDC.
+     * @since 1.3
+     */
+    String getMdcHeaders();
+
+    /**
      * Page size of NFC getMissing result set
      * @since 1.3.0
      */

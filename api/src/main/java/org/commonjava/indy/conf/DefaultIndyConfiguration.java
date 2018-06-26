@@ -55,6 +55,8 @@ public class DefaultIndyConfiguration
 
     private Integer nfcMaxResultSetSize;
 
+    private String mdcHeaders;
+
     public DefaultIndyConfiguration()
     {
     }
@@ -75,6 +77,18 @@ public class DefaultIndyConfiguration
     public void setNotFoundCacheTimeoutSeconds( final int seconds )
     {
         notFoundCacheTimeoutSeconds = seconds;
+    }
+
+    @ConfigName( "mdc.headers" )
+    public void setMDCHeaders( final String headers )
+    {
+        mdcHeaders = headers;
+    }
+
+    @Override
+    public String getMdcHeaders()
+    {
+        return mdcHeaders;
     }
 
     @Override

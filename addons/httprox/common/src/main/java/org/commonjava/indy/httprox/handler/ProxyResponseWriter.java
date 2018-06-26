@@ -20,6 +20,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
@@ -102,9 +103,12 @@ public final class ProxyResponseWriter
 
     private HttpRequest httpRequest;
 
+    private MDCManager mdcManager;
+
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
+                                final MDCManager mdcManager,
                                 final ProxyRepositoryCreator repoCreator, final StreamConnection streamConnection )
     {
         this.config = config;
@@ -112,6 +116,7 @@ public final class ProxyResponseWriter
         this.storeManager = storeManager;
         this.proxyAuthenticator = proxyAuthenticator;
         this.cacheProvider = cacheProvider;
+        this.mdcManager = mdcManager;
         this.repoCreator = repoCreator;
         this.peerAddress = streamConnection.getPeerAddress();
     }
@@ -168,6 +173,12 @@ public final class ProxyResponseWriter
 
                 final UserPass proxyUserPass =
                                 UserPass.parse( ApplicationHeader.proxy_authorization, httpRequest, null );
+
+                mdcManager.putExtraHeaders( httpRequest );
+                if ( proxyUserPass != null )
+                {
+                    mdcManager.putExternalID( proxyUserPass.getUser() );
+                }
 
                 logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass,
                               config.isSecured(), config.getTrackingType() );
@@ -238,6 +249,10 @@ public final class ProxyResponseWriter
             catch ( final Throwable e )
             {
                 error = e;
+            }
+            finally
+            {
+                mdcManager.clear();
             }
         }
 
