@@ -38,21 +38,21 @@
     <dependency>
       <groupId>org.commonjava.indy.launch</groupId>
       <artifactId>indy-launcher</artifactId>
-      <version>${indyVersion}</version>
+      <version>${project.version}</version>
       <type>tar.gz</type>
       <classifier>skinny</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy.launch</groupId>
       <artifactId>indy-launcher</artifactId>
-      <version>${indyVersion}</version>
+      <version>${project.version}</version>
       <type>tar.gz</type>
       <classifier>data</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy.launch</groupId>
       <artifactId>indy-launcher</artifactId>
-      <version>${indyVersion}</version>
+      <version>${project.version}</version>
       <type>tar.gz</type>
       <classifier>etc</classifier>
     </dependency>
