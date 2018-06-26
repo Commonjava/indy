@@ -371,7 +371,7 @@ public abstract class IndexingContentManagerDecorator
 
         if ( storePath != null )
         {
-            Transfer transfer = delegate.getTransfer( storeKey, path, op );
+            Transfer transfer = delegate.getTransfer( storePath.getStoreKey(), path, op );
             if ( transfer == null || !transfer.exists() )
             {
                 logger.trace( "Found obsolete index entry: {}. De-indexing from: {} and {}", storeKey, topKey );
@@ -647,6 +647,26 @@ public abstract class IndexingContentManagerDecorator
             {
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
             }
+            // We should deIndex the path for all parent groups because the new content of the path
+            // may change the content index sequence based on the constituents sequence in parent groups
+            if ( store.getType() == StoreType.hosted )
+            {
+                try
+                {
+                    Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
+                    if ( groups != null && !groups.isEmpty() )
+                    {
+                        groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
+                    }
+                }
+                catch ( IndyDataException e )
+                {
+                    throw new IndyWorkflowException(
+                            "Failed to get groups which contains: %s for NFC handling. Reason: %s", e, store.getKey(),
+                            e.getMessage() );
+                }
+
+            }
         }
 //        nfcClearByContaining( store, path );
 
@@ -674,6 +694,9 @@ public abstract class IndexingContentManagerDecorator
             {
                 ArtifactStore topStore = storeDataManager.getArtifactStore( topKey );
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( topStore ), path ) );
+                // We should deIndex the path for all parent groups because the new content of the path
+                // may change the content index sequence based on the constituents sequence in parent groups
+                indexManager.deIndexStorePath( topKey, path );
             }
             catch ( IndyDataException e )
             {
