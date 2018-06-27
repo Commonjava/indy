@@ -75,7 +75,7 @@ public class MetricsInterceptor
 
         List<Timer.Context> timers = Stream.of( measure.timers() ).map( named ->
                                         {
-                                            String name = getName( nodePrefix, named, defaultName );
+                                            String name = getName( nodePrefix, named, defaultName, TIMER );
                                             Timer.Context tc = metricsManager.getTimer( name ).time();
                                             logger.trace( "START: {} ({})", name, tc );
                                             return tc;
@@ -110,7 +110,7 @@ public class MetricsInterceptor
             }
             Stream.of( measure.meters() ).forEach( ( named ) ->
                                         {
-                                            String name = getName( nodePrefix, named, defaultName );
+                                            String name = getName( nodePrefix, named, defaultName, METER );
                                             Meter meter = metricsManager.getMeter( name );
                                             logger.trace( "CALLS++ {}", name );
                                             meter.mark();
@@ -134,19 +134,14 @@ public class MetricsInterceptor
      * @param named user specified name
      * @param defaultName 'class name + method name', not null.
      */
-    private String getName( String nodePrefix, MetricNamed named, String defaultName )
+    private String getName( String nodePrefix, MetricNamed named, String defaultName, String suffix )
     {
         String name = named.value();
         if ( isBlank( name ) || name.equals( DEFAULT ) )
         {
             name = defaultName;
         }
-        return name( nodePrefix, name );
-    }
-
-    private String getName( String nodePrefix, MetricNamed named, String defaultName, String suffix )
-    {
-        return name( getName( nodePrefix, named, defaultName ), suffix );
+        return name( nodePrefix, name, suffix );
     }
 
 }

@@ -52,7 +52,7 @@ public class MetricsTestResource
     @Path( "/metricRegistry/timer" )
     public Response getTimerCount()
     {
-        Timer timer = metricRegistry.timer( "testTimerRequest" );
+        Timer timer = metricRegistry.timer( "testTimerRequest.timer" );
         return Response.ok( timer.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 
@@ -76,7 +76,7 @@ public class MetricsTestResource
     @Path( "/metricRegistry/meter" )
     public Response getMeterCount()
     {
-        Meter meter = metricRegistry.meter( "testMeterRequest" );
+        Meter meter = metricRegistry.meter( "testMeterRequest.meter" );
         return Response.ok( meter.getCount(), MediaType.APPLICATION_JSON ).build();
     }
 
