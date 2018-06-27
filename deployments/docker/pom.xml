@@ -110,6 +110,7 @@
                 
                 <tags>
                   <tag>latest</tag>
+                  <tag>${project.version}</tag>
                 </tags>
               </build>
             </image>
