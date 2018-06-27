@@ -40,11 +40,7 @@ import java.util.concurrent.TimeUnit;
 @ApplicationScoped
 public class ReporterIntializer
 {
-    private final static String FILTER_SIMPLE = "org.commonjava.indy";
-
     private final static String FILTER_JVM = "jvm";
-
-    private final static String FILTER_HEALTHCHECK = "healthcheck";
 
     public final static String INDY_METRICS_REPORTER_GRPHITEREPORTER = "graphite";
 
@@ -75,12 +71,10 @@ public class ReporterIntializer
         {
             initGraphiteReporterForSimpleMetric( metrics, config );
             initGraphiteReporterForJVMMetric( metrics, config );
-            initGraphiteReporterForHealthCheckMetric( metrics, config );
         }
 
         if ( this.isExistReporter( INDY_METRICS_REPORTER_ZABBIXREPORTER ) )
         {
-            this.initZabbixReporterForHealthCheckMetric( metrics, config );
             this.initZabbixReporterForJVMMetric( metrics, config );
             this.initZabbixReporterForSimpleMetric( metrics, config );
         }
@@ -94,8 +88,17 @@ public class ReporterIntializer
         {
             initELKReporterForSimpleMetric( metrics, config );
             initELKReporterForJVMMetric( metrics, config );
-            initELKReporterForHealthCheckMetric( metrics, config );
         }
+    }
+
+    private boolean isJvmMetric( String name )
+    {
+        return name.contains( FILTER_JVM );
+    }
+
+    private boolean isApplicationMetric( String name )
+    {
+        return !isJvmMetric( name );
     }
 
     private void initELKReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config ) throws IOException
@@ -106,14 +109,7 @@ public class ReporterIntializer
                                                               .hosts( config.getElkHosts().split( ";" ) )
                                                               .index( config.getElkIndex() )
                                                               .indexDateFormat( "YYYY-MM-dd" )
-                                                              .filter( ( name, metric ) ->
-                                                                       {
-                                                                           if ( name.contains( FILTER_SIMPLE ) )
-                                                                           {
-                                                                               return true;
-                                                                           }
-                                                                           return false;
-                                                                       } )
+                                                              .filter( ( name, metric ) -> isApplicationMetric( name ) )
                                                               .build();
 
         reporter.start( config.getElkSimplePriod(), TimeUnit.SECONDS );
@@ -127,43 +123,10 @@ public class ReporterIntializer
                                                               .hosts( config.getElkHosts().split( ";" ) )
                                                               .index( config.getElkIndex() )
                                                               .indexDateFormat( "YYYY-MM-dd" )
-                                                              .filter( ( name, metric ) ->
-                                                                       {
-                                                                           if ( !name.contains( FILTER_SIMPLE )
-                                                                                           && name.contains(
-                                                                                           FILTER_JVM ) )
-                                                                           {
-                                                                               return true;
-                                                                           }
-                                                                           return false;
-                                                                       } )
+                                                              .filter( ( name, metric ) -> isJvmMetric( name ) )
                                                               .build();
 
         reporter.start( config.getElkJVMPriod(), TimeUnit.SECONDS );
-    }
-
-    private void initELKReporterForHealthCheckMetric( MetricRegistry metrics, IndyMetricsConfig config )
-                    throws IOException
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Setting up Elasticsearch reporter for Health Check metrics" );
-        ElasticsearchReporter reporter = ElasticsearchReporter.forRegistry( metrics )
-                                                              .hosts( config.getElkHosts().split( ";" ) )
-                                                              .index( config.getElkIndex() )
-                                                              .indexDateFormat( "YYYY-MM-dd" )
-                                                              .filter( ( name, metric ) ->
-                                                                       {
-                                                                           if ( !name.contains( FILTER_SIMPLE )
-                                                                                           && name.contains(
-                                                                                           FILTER_HEALTHCHECK ) )
-                                                                           {
-                                                                               return true;
-                                                                           }
-                                                                           return false;
-                                                                       } )
-                                                              .build();
-
-        reporter.start( config.getElkHealthCheckPriod(), TimeUnit.SECONDS );
     }
 
     private void initConsoleReporter( MetricRegistry metrics, IndyMetricsConfig config )
@@ -182,14 +145,7 @@ public class ReporterIntializer
                                                           .prefixedWith( config.getGrphiterPrefix() )
                                                           .convertRatesTo( TimeUnit.SECONDS )
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                                          .filter( ( name, metric ) ->
-                                                                   {
-                                                                       if ( name.contains( FILTER_SIMPLE ) )
-                                                                       {
-                                                                           return true;
-                                                                       }
-                                                                       return false;
-                                                                   } )
+                                                          .filter( ( name, metric ) -> isApplicationMetric( name ) )
                                                           .build( graphite );
         reporter.start( config.getGrphiterSimplePriod(), TimeUnit.SECONDS );
     }
@@ -202,39 +158,9 @@ public class ReporterIntializer
                                                           .prefixedWith( config.getGrphiterPrefix() )
                                                           .convertRatesTo( TimeUnit.SECONDS )
                                                           .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                                          .filter( ( name, metric ) ->
-                                                                   {
-                                                                       if ( !name.contains( FILTER_SIMPLE )
-                                                                                       && name.contains( FILTER_JVM ) )
-                                                                       {
-                                                                           return true;
-                                                                       }
-                                                                       return false;
-                                                                   } )
+                                                          .filter( ( name, metric ) -> isJvmMetric( name ) )
                                                           .build( graphite );
         reporter.start( config.getGrphiterJVMPriod(), TimeUnit.SECONDS );
-    }
-
-    private void initGraphiteReporterForHealthCheckMetric( MetricRegistry metrics, IndyMetricsConfig config )
-    {
-        final Graphite graphite =
-                        new Graphite( new InetSocketAddress( config.getGrphiterHostName(), config.getGrphiterPort() ) );
-        final GraphiteReporter reporter = GraphiteReporter.forRegistry( metrics )
-                                                          .prefixedWith( config.getGrphiterPrefix() )
-                                                          .convertRatesTo( TimeUnit.SECONDS )
-                                                          .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                                          .filter( ( name, metric ) ->
-                                                                   {
-                                                                       if ( !name.contains( FILTER_SIMPLE )
-                                                                                       && name.contains(
-                                                                                       FILTER_HEALTHCHECK ) )
-                                                                       {
-                                                                           return true;
-                                                                       }
-                                                                       return false;
-                                                                   } )
-                                                          .build( graphite );
-        reporter.start( config.getGrphiterHealthcheckPeriod(), TimeUnit.SECONDS );
     }
 
     private boolean isExistReporter( String reporter )
@@ -245,51 +171,20 @@ public class ReporterIntializer
 
     private void initZabbixReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config )
     {
-        IndyZabbixReporter reporter = initZabbixReporter( metrics, config ).filter( ( name, metric ) ->
-                                                                                    {
-                                                                                        if ( name.contains(
-                                                                                                        FILTER_SIMPLE ) )
-                                                                                        {
-                                                                                            return true;
-                                                                                        }
-                                                                                        return false;
-                                                                                    } ).build( initZabbixSender() );
+        IndyZabbixReporter reporter = initZabbixReporter( metrics, config )
+                        .filter( ( name, metric ) -> isApplicationMetric( name ) )
+                        .build( initZabbixSender() );
 
         reporter.start( config.getZabbixSimplePriod(), TimeUnit.SECONDS );
     }
 
     private void initZabbixReporterForJVMMetric( MetricRegistry metrics, IndyMetricsConfig config )
     {
-        IndyZabbixReporter reporter = initZabbixReporter( metrics, config ).filter( ( name, metric ) ->
-                                                                                    {
-                                                                                        if ( !name.contains(
-                                                                                                        FILTER_SIMPLE )
-                                                                                                        && name.contains(
-                                                                                                        FILTER_JVM ) )
-                                                                                        {
-                                                                                            return true;
-                                                                                        }
-                                                                                        return false;
-                                                                                    } ).build( initZabbixSender() );
+        IndyZabbixReporter reporter = initZabbixReporter( metrics, config )
+                        .filter( ( name, metric ) -> isJvmMetric( name ) )
+                        .build( initZabbixSender() );
 
         reporter.start( config.getZabbixJVMPriod(), TimeUnit.SECONDS );
-    }
-
-    private void initZabbixReporterForHealthCheckMetric( MetricRegistry metrics, IndyMetricsConfig config )
-    {
-        IndyZabbixReporter reporter = initZabbixReporter( metrics, config ).filter( ( name, metric ) ->
-                                                                                    {
-                                                                                        if ( !name.contains(
-                                                                                                        FILTER_SIMPLE )
-                                                                                                        && name.contains(
-                                                                                                        FILTER_HEALTHCHECK ) )
-                                                                                        {
-                                                                                            return true;
-                                                                                        }
-                                                                                        return false;
-                                                                                    } ).build( initZabbixSender() );
-
-        reporter.start( config.getZabbixHealthcheckPeriod(), TimeUnit.SECONDS );
     }
 
     private IndyZabbixReporter.Builder initZabbixReporter( MetricRegistry metrics, IndyMetricsConfig config )
