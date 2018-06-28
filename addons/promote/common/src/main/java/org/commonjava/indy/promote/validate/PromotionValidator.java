@@ -16,6 +16,8 @@
 package org.commonjava.indy.promote.validate;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.data.IndyDataException;
@@ -24,6 +26,8 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PromoteRequest;
@@ -41,6 +45,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
@@ -59,6 +67,14 @@ public class PromotionValidator
 
     @Inject
     private StoreDataManager storeDataMgr;
+
+    @Inject
+    private PromoteConfig config;
+
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "promote-validation-rules-runner", threads = 8, priority = 5 )
+    private ExecutorService validationExecutor;
 
     protected PromotionValidator()
     {
@@ -102,41 +118,85 @@ public class PromotionValidator
             {
                 try
                 {
+                    final CountDownLatch latch = new CountDownLatch( ruleNames.size() );
+                    final AtomicReference<PromotionValidationException> exceptionHolder = new AtomicReference<>();
                     for ( String ruleRef : ruleNames )
                     {
-                        String ruleName =
-                                new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
-
-                        ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
-                        if ( rule != null )
-                        {
+                        validationExecutor.execute( () -> {
                             try
                             {
-                                logger.debug( "Running promotion validation rule: {}", rule.getName() );
-                                String error = rule.getRule().validate( req );
-                                if ( StringUtils.isNotEmpty( error ) )
-                                {
-                                    logger.debug( "{} failed", rule.getName() );
-                                    result.addValidatorError( rule.getName(), error );
-                                }
-                                else
-                                {
-                                    logger.debug( "{} succeeded", rule.getName() );
-                                }
-                            }
-                            catch ( Exception e )
-                            {
-                                if ( e instanceof PromotionValidationException )
-                                {
-                                    throw (PromotionValidationException) e;
-                                }
+                                String ruleName =
+                                        new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
 
-                                throw new PromotionValidationException(
-                                        "Failed to run validation rule: {} for request: {}. Reason: {}", e,
-                                        rule.getName(), request, e );
+                                ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
+                                if ( rule != null )
+                                {
+                                    try
+                                    {
+                                        logger.debug( "Running promotion validation rule: {}", rule.getName() );
+                                        String error = rule.getRule().validate( req );
+                                        if ( StringUtils.isNotEmpty( error ) )
+                                        {
+                                            logger.debug( "{} failed", rule.getName() );
+                                            result.addValidatorError( rule.getName(), error );
+                                        }
+                                        else
+                                        {
+                                            logger.debug( "{} succeeded", rule.getName() );
+                                        }
+                                    }
+                                    catch ( Exception e )
+                                    {
+                                        if ( e instanceof PromotionValidationException )
+                                        {
+                                            exceptionHolder.set( (PromotionValidationException) e );
+                                        }
+
+                                        exceptionHolder.set( new PromotionValidationException(
+                                                "Failed to run validation rule: {} for request: {}. Reason: {}", e,
+                                                rule.getName(), request, e ) );
+                                    }
+                                }
                             }
+                            finally
+                            {
+                                latch.countDown();
+                            }
+                        } );
+                    }
+                    int timeout = 0;
+                    final int LATCH_INTERVAL_SECONDS = 1;
+                    boolean executionSuccess = false;
+                    while ( timeout < config.getLockTimeoutSeconds() )
+                    {
+                        if ( latch.await( LATCH_INTERVAL_SECONDS, TimeUnit.SECONDS ) )
+                        {
+                            executionSuccess = true;
+                            break;
+                        }
+                        else
+                        {
+                            if ( exceptionHolder.get() != null )
+                            {
+                                throw exceptionHolder.get();
+                            }
+                            timeout += LATCH_INTERVAL_SECONDS;
                         }
                     }
+                    if ( exceptionHolder.get() != null )
+                    {
+                        throw exceptionHolder.get();
+                    }
+                    if ( !executionSuccess )
+                    {
+                        throw new PromotionValidationException( String.format(
+                                "Failed to do promotion validation: validation took more than %s seconds and is timeout",
+                                timeout ) );
+                    }
+                }
+                catch ( InterruptedException e )
+                {
+                    throw new PromotionValidationException( "Failed to do promotion validation: validation execution has been interrupted ", e );
                 }
                 finally
                 {

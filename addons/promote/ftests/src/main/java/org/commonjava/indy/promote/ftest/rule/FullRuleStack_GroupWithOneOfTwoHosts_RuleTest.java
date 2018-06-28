@@ -234,4 +234,13 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
 
         return ruleSet;
     }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/promote.conf", "[promote]\nlock.timeout.seconds=60" );
+        writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=true" );
+    }
 }
