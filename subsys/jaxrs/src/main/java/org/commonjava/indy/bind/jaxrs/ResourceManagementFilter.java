@@ -21,7 +21,6 @@ import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -35,6 +34,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.UUID;
 
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.X_FORWARDED_FOR;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 @ApplicationScoped
@@ -50,6 +54,9 @@ public class ResourceManagementFilter
 
     @Inject
     private CacheProvider cacheProvider;
+
+    @Inject
+    private MDCManager mdcManager;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -82,19 +89,25 @@ public class ResourceManagementFilter
 
         String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         String qs = hsr.getQueryString();
+
         try
         {
             ThreadContext.clearContext();
             ThreadContext threadContext = ThreadContext.getContext( true );
+
             threadContext.put( ORIGINAL_THREAD_NAME, name );
 
             threadContext.put( HTTP_REQUEST, hsr );
 
             threadContext.put( METHOD_PATH_TIME, tn );
 
-            putRequestIDs( hsr, threadContext );
+            threadContext.put( CLIENT_ADDR, clientAddr );
 
-            putUserIP( clientAddr, threadContext );
+            putRequestIDs( hsr, threadContext, mdcManager );
+
+            mdcManager.putUserIP( clientAddr );
+
+            mdcManager.putExtraHeaders( hsr );
 
             logger.debug( "START request: {} (from: {})", tn, clientAddr );
 
@@ -123,28 +136,14 @@ public class ResourceManagementFilter
 
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
-            MDC.clear();
+            mdcManager.clear();
         }
     }
-
-    private final static String X_FORWARDED_FOR = "x-forwarded-for";
-
-    private final static String CLIENT_ADDR = "client-addr";
-
-    private void putUserIP( String userIp, ThreadContext threadContext )
-    {
-        MDC.put( CLIENT_ADDR, userIp );
-        threadContext.put( CLIENT_ADDR, userIp );
-    }
-
-    public static final String HTTP_REQUEST_EXTERNAL_ID = "http-request-external-id";
-    public static final String HTTP_REQUEST_INTERNAL_ID = "http-request-internal-id";
-    public static final String HTTP_REQUEST_PREFERRED_ID = "http-request-preferred-id";
 
     /**
      * Put to MDC / threadContext request IDs.
     */
-    private void putRequestIDs( HttpServletRequest hsr, ThreadContext threadContext )
+    private void putRequestIDs( HttpServletRequest hsr, ThreadContext threadContext, MDCManager mdcManager )
     {
         /* We would always generate internalID and provide that in the MDC.
          * If the calling service supplies an externalID, we'd map that under its own key.
@@ -153,26 +152,21 @@ public class ResourceManagementFilter
          * and whenever possible it'll reflect the externally supplied ID.
          */
         String internalID = UUID.randomUUID().toString();
-        String externalID = hsr.getHeader( HTTP_REQUEST_EXTERNAL_ID );
+        String externalID = hsr.getHeader( EXTERNAL_ID );
         String preferredID = externalID != null ? externalID : internalID;
 
-        MDC.put( HTTP_REQUEST_INTERNAL_ID, internalID );
-        if ( externalID != null )
-        {
-            MDC.put( HTTP_REQUEST_EXTERNAL_ID , externalID );
-        }
-        MDC.put( HTTP_REQUEST_PREFERRED_ID , preferredID );
+        mdcManager.putRequestIDs( internalID, externalID, preferredID );
 
         /*
          * We should also put the same values in the ThreadContext map, so we can reference them from code without
          * having to go through the logging framework
          */
-        threadContext.put( HTTP_REQUEST_INTERNAL_ID, internalID );
+        threadContext.put( INTERNAL_ID, internalID );
         if ( externalID != null )
         {
-            threadContext.put(HTTP_REQUEST_EXTERNAL_ID, externalID);
+            threadContext.put( EXTERNAL_ID, externalID );
         }
-        threadContext.put( HTTP_REQUEST_PREFERRED_ID , preferredID );
+        threadContext.put( PREFERRED_ID, preferredID );
     }
 
     @Override

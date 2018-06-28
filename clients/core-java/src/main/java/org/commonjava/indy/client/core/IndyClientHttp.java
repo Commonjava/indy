@@ -83,7 +83,7 @@ public class IndyClientHttp
 
     private final String apiVersion;
 
-    private List<Header> defaultHeaders;
+    private List<Header> defaultHeaders = new ArrayList();
 
     public IndyClientHttp( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
                            SiteConfig location, String apiVersion )
@@ -118,7 +118,6 @@ public class IndyClientHttp
         if ( apiVersion != null )
         {
             Header header = new BasicHeader( HEADER_INDY_API_VERSION, apiVersion );
-            defaultHeaders = new ArrayList();
             defaultHeaders.add( header );
         }
     }
@@ -888,5 +887,10 @@ public class IndyClientHttp
         return new SiteConfigBuilder( "indy", baseUrl ).withRequestTimeoutSeconds( 30 )
                                                        .withMaxConnections( IndyClientHttp.GLOBAL_MAX_CONNECTIONS )
                                                        .build();
+    }
+
+    public void addDefaultHeader( String key, String value )
+    {
+        defaultHeaders.add( new BasicHeader( key, value ) );
     }
 }

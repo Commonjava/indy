@@ -30,6 +30,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.boot.BootOptions;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
@@ -197,7 +198,7 @@ public class HttpProxyTest
 
         proxy = new HttpProxy( config, bootOpts,
                                new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache(),
-                                                       scriptEngine ) );
+                                                       scriptEngine, new MDCManager() ) );
         proxy.start();
     }
 

@@ -38,6 +38,8 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
+
 public class Indy
         implements Closeable
 {
@@ -265,6 +267,18 @@ public class Indy
         {
             http.getObjectMapper().registerModules( serMods );
         }
+    }
+
+    // DA, Builder, Orchestrator, etc. If available, this will be sent as a request header.
+    public void setComponentId( String componentId )
+    {
+        http.addDefaultHeader( HEADER_COMPONENT_ID, componentId );
+    }
+
+    // Default headers will be sent along with each request
+    public void addDefaultHeader( String key, String value )
+    {
+        http.addDefaultHeader( key, value );
     }
 
     public String getApiVersion()
