@@ -479,8 +479,8 @@ public abstract class KojiContentManagerDecorator
                                                                                .getNvr() );
 
                 storeDataManager.storeArtifactStore( remote, changeSummary, false, true, new EventMetadata() );
-
-                logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
+                logger.info( "Koji {}: Set path masks {} with artifact {} to repo: {}", name, patterns, artifactRef, remote );
+//                logger.debug( "Koji {}, add pathMaskPatterns: {}", name, patterns );
             }
             else
             {
