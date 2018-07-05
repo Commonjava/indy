@@ -16,14 +16,22 @@
 package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
-public class ScheduleKey
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
+
+public class ScheduleKey implements Externalizable, Serializable
 {
-    private final StoreKey storeKey;
+    private StoreKey storeKey;
 
-    private final String type;
+    private String type;
 
-    private final String name;
+    private String name;
 
     public ScheduleKey( final StoreKey storeKey, final String type, final String name )
     {
@@ -100,5 +108,32 @@ public class ScheduleKey
     public boolean exists()
     {
         return this.storeKey != null && this.type != null;
+    }
+
+    @Override
+    public void writeExternal( ObjectOutput out )
+            throws IOException
+    {
+        out.writeObject( storeKey.getName() );
+        out.writeObject( storeKey.getType().name() );
+        out.writeObject( storeKey.getPackageType() );
+        out.writeObject( type );
+        out.writeObject( name );
+    }
+
+    @Override
+    public void readExternal( ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        final String storeKeyName = (String) in.readObject();
+        final StoreType storeType = StoreType.get( (String) in.readObject() );
+        final String packageType = (String)in.readObject();
+        storeKey = new StoreKey( packageType, storeType, storeKeyName );
+
+        final String typeStr = (String) in.readObject();
+        type = "".equals( typeStr ) ? null : typeStr;
+
+        final String nameStr = (String) in.readObject();
+        name = "".equals( nameStr ) ? null : nameStr;
     }
 }
