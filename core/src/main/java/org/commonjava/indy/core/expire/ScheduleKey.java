@@ -17,7 +17,6 @@ package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -32,6 +31,10 @@ public class ScheduleKey implements Externalizable, Serializable
     private String type;
 
     private String name;
+
+    public ScheduleKey()
+    {
+    }
 
     public ScheduleKey( final StoreKey storeKey, final String type, final String name )
     {
