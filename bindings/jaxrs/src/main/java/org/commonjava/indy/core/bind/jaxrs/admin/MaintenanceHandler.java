@@ -22,6 +22,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
@@ -34,6 +35,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.core.ctl.IspnCacheController;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
@@ -167,6 +169,30 @@ public class MaintenanceHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
+            response = formatResponse( e );
+        }
+        return response;
+    }
+
+    @Inject
+    private IspnCacheController ispnCacheController;
+
+    @ApiOperation( "Clean the specified Infinispan cache." )
+    @ApiResponse( code = 200, message = "Clean complete." )
+    @Path( "/infinispan/cache/{name}" )
+    @DELETE
+    public Response cleanInfinispanCache(
+                    @ApiParam( "The name of cache to clean, 'all' for all caches" ) @PathParam( "name" ) final String name )
+    {
+        Response response;
+        try
+        {
+            ispnCacheController.clean( name );
+            response = Response.ok().build();
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( String.format( "Failed to clean: %s. Reason: %s", name, e.getMessage() ), e );
             response = formatResponse( e );
         }
         return response;
