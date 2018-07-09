@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
@@ -81,9 +82,7 @@ public class IndyClientHttp
 
     private final String baseUrl;
 
-    private final String apiVersion;
-
-    private List<Header> defaultHeaders = new ArrayList();
+    private List<Header> defaultHeaders;
 
     public IndyClientHttp( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
                            SiteConfig location, String apiVersion )
@@ -91,10 +90,9 @@ public class IndyClientHttp
     {
         this.objectMapper = mapper;
         this.location = location;
-        this.apiVersion = apiVersion;
         baseUrl = location.getUri();
         checkBaseUrl( baseUrl );
-        setDefaultHeaders();
+        addApiVersionHeader( apiVersion );
 
         factory = new HttpFactory( authenticator );
     }
@@ -105,20 +103,18 @@ public class IndyClientHttp
     {
         this.objectMapper = mapper;
         this.location = location;
-        this.apiVersion = apiVersion;
         baseUrl = location.getUri();
         checkBaseUrl( baseUrl );
-        setDefaultHeaders();
+        addApiVersionHeader( apiVersion );
 
         factory = new HttpFactory( passwordManager );
     }
 
-    private void setDefaultHeaders()
+    private void addApiVersionHeader( String apiVersion )
     {
-        if ( apiVersion != null )
+        if ( isNotBlank( apiVersion ) )
         {
-            Header header = new BasicHeader( HEADER_INDY_API_VERSION, apiVersion );
-            defaultHeaders.add( header );
+            addDefaultHeader( HEADER_INDY_API_VERSION, apiVersion );
         }
     }
 
@@ -891,6 +887,10 @@ public class IndyClientHttp
 
     public void addDefaultHeader( String key, String value )
     {
+        if ( defaultHeaders == null )
+        {
+            defaultHeaders = new ArrayList<>();
+        }
         defaultHeaders.add( new BasicHeader( key, value ) );
     }
 }
