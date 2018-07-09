@@ -17,6 +17,7 @@ package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
@@ -392,6 +393,11 @@ public class MavenMetadataGenerator
                 final Metadata md = generateGroupMetadata( group, members, contributing, path );
                 if ( md != null )
                 {
+                    final Versioning versioning = md.getVersioning();
+                    logger.trace(
+                            "Regenerated Metadata for group {} of path {}: latest version: {}, versioning versions:{}",
+                            group.getKey(), mergePath, versioning != null ? versioning.getLatest() : null,
+                            versioning != null ? versioning.getVersions() : null );
                     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     try
                     {
@@ -571,11 +577,10 @@ public class MavenMetadataGenerator
                                           if ( memberMetadata != null )
                                           {
                                               logger.trace( "Recording contributing member: {} for metadata: {} in group: {}", mem.getKey(), tmp, group.getKey() );
-                                              logger.trace( "Metadata version: {}, versioning:{}",
-                                                            memberMetadata.getVersion(),
-                                                            memberMetadata.getVersioning() != null ?
-                                                                    memberMetadata.getVersioning().getVersions() :
-                                                                    null );
+                                              final Versioning versioning = memberMetadata.getVersioning();
+                                              logger.trace( "Metadata latest version: {}, versioning versions:{}",
+                                                            versioning != null ? versioning.getLatest() : null,
+                                                            versioning != null ? versioning.getVersions() : null );
                                               contributingMembers.add( mem.getKey() );
                                           }
 
