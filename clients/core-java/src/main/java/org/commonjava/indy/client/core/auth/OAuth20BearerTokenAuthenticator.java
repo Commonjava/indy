@@ -15,12 +15,16 @@
  */
 package org.commonjava.indy.client.core.auth;
 
+import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 
 import org.apache.http.Header;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.HttpContext;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.util.jhttpc.JHttpCException;
 
@@ -52,11 +56,19 @@ public class OAuth20BearerTokenAuthenticator
     }
 
     @Override
-    public HttpClientBuilder decorateClientBuilder(HttpClientBuilder builder)
-            throws JHttpCException
+    public HttpClientBuilder decorateClientBuilder( HttpClientBuilder builder ) throws JHttpCException
     {
-        final Header header = new BasicHeader( AUTHORIZATION_HEADER, String.format( BEARER_FORMAT, token ) );
-        return builder.setDefaultHeaders( Collections.<Header> singleton( header ) );
+        builder.addInterceptorFirst( new HttpRequestInterceptor()
+        {
+            @Override
+            public void process( HttpRequest httpRequest, HttpContext httpContext ) throws HttpException, IOException
+            {
+                final Header header = new BasicHeader( AUTHORIZATION_HEADER, String.format( BEARER_FORMAT, token ) );
+                httpRequest.addHeader( header );
+            }
+        } );
+
+        return builder;
     }
 
 }
