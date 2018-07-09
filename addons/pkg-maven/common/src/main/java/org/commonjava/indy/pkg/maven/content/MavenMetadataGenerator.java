@@ -570,7 +570,12 @@ public class MavenMetadataGenerator
                                           Metadata memberMetadata = memberMetas.get( mem.getKey() );
                                           if ( memberMetadata != null )
                                           {
-                                              logger.trace("Recording contributing member: {} for metadata: {} in group: {}", mem.getKey(), tmp, group.getKey() );
+                                              logger.trace( "Recording contributing member: {} for metadata: {} in group: {}", mem.getKey(), tmp, group.getKey() );
+                                              logger.trace( "Metadata version: {}, versioning:{}",
+                                                            memberMetadata.getVersion(),
+                                                            memberMetadata.getVersioning() != null ?
+                                                                    memberMetadata.getVersioning().getVersions() :
+                                                                    null );
                                               contributingMembers.add( mem.getKey() );
                                           }
 
