@@ -547,9 +547,9 @@ public abstract class KojiContentManagerDecorator
 
     private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
     {
-        String gId = artifact.getGroupId();
-        String artiId = artifact.getArtifactId();
-        String ver = artifact.getVersionStringRaw();
+        String gId = a.getGroupId();
+        String artiId = a.getArtifactId();
+        String ver = a.getVersion();
 
         if ( gId == null || artiId == null || ver == null )
         {
