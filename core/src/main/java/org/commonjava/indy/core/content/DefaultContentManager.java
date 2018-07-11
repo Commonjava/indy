@@ -294,7 +294,7 @@ public class DefaultContentManager
             item = doRetrieve( store, path, eventMetadata );
         }
 
-        logger.info( "Returning transfer: {}", item );
+        logger.info( "Returning transfer {} from {}", item, store.getKey() );
 
         return item;
     }
