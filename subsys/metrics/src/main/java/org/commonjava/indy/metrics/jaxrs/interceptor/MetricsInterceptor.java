@@ -40,6 +40,7 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.*;
 
 @Interceptor
 @Measure
@@ -71,11 +72,11 @@ public class MetricsInterceptor
         logger.trace( "Gathering metrics for: {}", context.getContextData() );
         String nodePrefix = config.getNodePrefix();
 
-        String defaultName = getDefaultName( context );
+        String defaultName = getDefaultName( context.getMethod().getDeclaringClass(), context.getMethod().getName() );
 
         List<Timer.Context> timers = Stream.of( measure.timers() ).map( named ->
                                         {
-                                            String name = getName( nodePrefix, named, defaultName, TIMER );
+                                            String name = getName( nodePrefix, named.value(), defaultName, TIMER );
                                             Timer.Context tc = metricsManager.getTimer( name ).time();
                                             logger.trace( "START: {} ({})", name, tc );
                                             return tc;
@@ -90,7 +91,7 @@ public class MetricsInterceptor
         {
             Stream.of( measure.exceptions() ).forEach( ( named ) ->
                                         {
-                                            String name = getName( nodePrefix, named, defaultName, EXCEPTION );
+                                            String name = getName( nodePrefix, named.value(), defaultName, EXCEPTION );
                                             Meter meter = metricsManager.getMeter( name );
                                             logger.trace( "ERRORS++ {}", name );
                                             meter.mark();
@@ -110,38 +111,12 @@ public class MetricsInterceptor
             }
             Stream.of( measure.meters() ).forEach( ( named ) ->
                                         {
-                                            String name = getName( nodePrefix, named, defaultName, METER );
+                                            String name = getName( nodePrefix, named.value(), defaultName, METER );
                                             Meter meter = metricsManager.getMeter( name );
                                             logger.trace( "CALLS++ {}", name );
                                             meter.mark();
                                         } );
         }
-    }
-
-    /**
-     * Get default metric name. Use abbreviated package name, e.g., foo.bar.ClassA.methodB -> f.b.ClassA.methodB
-     */
-    private String getDefaultName( InvocationContext context )
-    {
-        // minimum len 1 shortens the package name and keeps class name
-        String cls = ClassUtils.getAbbreviatedName( context.getMethod().getDeclaringClass().getName(), 1 );
-        String method = context.getMethod().getName();
-        return name( cls, method );
-    }
-
-    /**
-     * Get the metric fullname.
-     * @param named user specified name
-     * @param defaultName 'class name + method name', not null.
-     */
-    private String getName( String nodePrefix, MetricNamed named, String defaultName, String suffix )
-    {
-        String name = named.value();
-        if ( isBlank( name ) || name.equals( DEFAULT ) )
-        {
-            name = defaultName;
-        }
-        return name( nodePrefix, name, suffix );
     }
 
 }

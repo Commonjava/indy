@@ -429,7 +429,10 @@ public class NPMContentAccessHandler
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
-                        final Response.ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
+
+                        final Response.ResponseBuilder builder =
+                                Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
+
                         setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
