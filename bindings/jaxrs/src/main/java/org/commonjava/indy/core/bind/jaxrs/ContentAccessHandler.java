@@ -15,12 +15,15 @@
  */
 package org.commonjava.indy.core.bind.jaxrs;
 
+import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -74,6 +77,13 @@ public class ContentAccessHandler
 
     @Inject
     protected JaxRsRequestHelper jaxRsRequestHelper;
+
+    @Inject
+    protected IndyMetricsManager metricsManager;
+
+    @Inject
+    protected IndyMetricsConfig metricsConfig;
+
 
     protected ContentAccessHandler()
     {
@@ -426,7 +436,9 @@ public class ContentAccessHandler
                         logger.debug( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
-                        final ResponseBuilder builder = Response.ok( new TransferStreamingOutput( in ) );
+                        final ResponseBuilder builder = Response.ok(
+                                new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
+
                         setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         if ( builderModifier != null )

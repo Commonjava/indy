@@ -15,6 +15,15 @@
  */
 package org.commonjava.indy.metrics;
 
+import org.apache.commons.lang3.ClassUtils;
+import org.commonjava.indy.measure.annotation.MetricNamed;
+
+import javax.interceptor.InvocationContext;
+
+import static com.codahale.metrics.MetricRegistry.name;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
+
 public class IndyMetricsConstants
 {
     public static final String EXCEPTION = "exception";
@@ -22,5 +31,30 @@ public class IndyMetricsConstants
     public static final String METER = "meter";
 
     public static final String TIMER = "timer";
+
+    /**
+     * Get default metric name. Use abbreviated package name, e.g., foo.bar.ClassA.methodB -> f.b.ClassA.methodB
+     */
+    public static String getDefaultName( Class<?> declaringClass, String method )
+    {
+        // minimum len 1 shortens the package name and keeps class name
+        String cls = ClassUtils.getAbbreviatedName( declaringClass.getName(), 1 );
+        return name( cls, method );
+    }
+
+    /**
+     * Get the metric fullname.
+     * @param name user specified name
+     * @param defaultName 'class name + method name', not null.
+     */
+    public static String getName( String nodePrefix, String name, String defaultName, String suffix )
+    {
+        if ( isBlank( name ) || name.equals( DEFAULT ) )
+        {
+            name = defaultName;
+        }
+        return name( nodePrefix, name, suffix );
+    }
+
 
 }

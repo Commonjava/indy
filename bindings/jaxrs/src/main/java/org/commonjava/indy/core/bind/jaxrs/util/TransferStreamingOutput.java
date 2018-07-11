@@ -18,28 +18,45 @@ package org.commonjava.indy.core.bind.jaxrs.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 
 public class TransferStreamingOutput
     implements StreamingOutput
 {
 
+    private static final String TRANSFER_METRIC_NAME = "transferred";
+
     private InputStream stream;
 
-    public TransferStreamingOutput( final InputStream stream )
+    private IndyMetricsManager metricsManager;
+
+    private IndyMetricsConfig metricsConfig;
+
+    public TransferStreamingOutput( final InputStream stream, final IndyMetricsManager metricsManager,
+                                    final IndyMetricsConfig metricsConfig )
     {
         this.stream = stream;
+        this.metricsManager = metricsManager;
+        this.metricsConfig = metricsConfig;
     }
 
     @Override
@@ -53,7 +70,13 @@ public class TransferStreamingOutput
             IOUtils.copy( stream, cout );
 
             Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "Wrote: {} bytes", cout.getByteCount() );
+            logger.trace( "Wrote: {} bytes", cout.getByteCount() );
+
+            String name = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME,
+                                   getDefaultName( TransferStreamingOutput.class, "write" ), METER );
+
+            Meter meter = metricsManager.getMeter( name );
+            meter.mark( cout.getByteCount() );
         }
         finally
         {
