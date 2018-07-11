@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -37,6 +38,8 @@ public class IspnCheckRegistrySet
     private static final String SIZE = "size";
 
     private static final String CURRENT_NUMBER_OF_ENTRIES = "CurrentNumberOfEntries";
+
+    private static final String NUMBER_OF_ENTRIES_ADDED = "NumberOfEntriesAdded";
 
     private static final String CURRENT_NUMBER_OF_ENTRIES_IN_MEMORY = "CurrentNumberOfEntriesInMemory";
 
@@ -72,6 +75,7 @@ public class IspnCheckRegistrySet
 
                gauges.put( name( cache.getName(), SIZE ), (Gauge) () -> advancedCache.size() ); // default
 
+               // These give the current sizes of the cache.
                if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES ) )
                {
                    gauges.put( name( cache.getName(), CURRENT_NUMBER_OF_ENTRIES ),
@@ -82,27 +86,57 @@ public class IspnCheckRegistrySet
                    gauges.put( name( cache.getName(), TOTAL_NUMBER_OF_ENTRIES ),
                                (Gauge) () -> advancedCache.getStats().getTotalNumberOfEntries() );
                }
+
+               // The rest of these should show the RATES at which the cache is changing, or is being used.
+               if ( ispnGauges == null || ispnGauges.contains( NUMBER_OF_ENTRIES_ADDED ) )
+               {
+                   gauges.put( name( cache.getName(), NUMBER_OF_ENTRIES_ADDED ),
+                               new RecentCountGauge( () -> (long) advancedCache.getStats().getCurrentNumberOfEntries() ) );
+               }
                if ( ispnGauges == null || ispnGauges.contains( HITS ) )
                {
                    gauges.put( name( cache.getName(), HITS ),
-                               (Gauge) () -> advancedCache.getStats().getHits() );
+                               new RecentCountGauge( () -> advancedCache.getStats().getHits() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( MISSES ) )
                {
                    gauges.put( name( cache.getName(), MISSES ),
-                               (Gauge) () -> advancedCache.getStats().getMisses() );
+                               new RecentCountGauge( () -> advancedCache.getStats().getMisses() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( RETRIEVALS ) )
                {
                    gauges.put( name( cache.getName(), RETRIEVALS ),
-                               (Gauge) () -> advancedCache.getStats().getRetrievals() );
+                               new RecentCountGauge( () -> advancedCache.getStats().getRetrievals() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( EVICTIONS ) )
                {
                    gauges.put( name( cache.getName(), EVICTIONS ),
-                               (Gauge) () -> advancedCache.getStats().getEvictions() );
+                               new RecentCountGauge( () -> advancedCache.getStats().getEvictions() ) );
                }
            } );
         return gauges;
+    }
+
+    private static final class RecentCountGauge implements Gauge<Long>
+    {
+
+        private Supplier<Long> supplier;
+
+        private long last = 0L;
+
+        private RecentCountGauge( Supplier<Long> supplier )
+        {
+            this.supplier = supplier;
+        }
+
+        @Override
+        public Long getValue()
+        {
+            long next = supplier.get();
+            long ret = next - last;
+            last = next;
+
+            return ret;
+        }
     }
 }
