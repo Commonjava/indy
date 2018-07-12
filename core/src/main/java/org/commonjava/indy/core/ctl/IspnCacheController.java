@@ -50,8 +50,18 @@ public class IspnCacheController
         if ( ALL_CACHES.equals( name ) ) // clean all caches
         {
             Set<String> names = cacheManager.getCacheNames();
-            names.forEach( ( n ) -> cacheManager.getCache( n ).clear() );
+            names.forEach( ( n ) -> {
+                if ( !isFoloCache( n ) ) // Prohibit clear of folo caches
+                {
+                   cacheManager.getCache( n ).clear();
+                }
+            } );
             return;
+        }
+
+        if ( isFoloCache( name ) )
+        {
+            throw new IndyWorkflowException( "Can not clean folo caches, name: " + name );
         }
 
         // clean named cache
@@ -61,5 +71,10 @@ public class IspnCacheController
             throw new IndyWorkflowException( "Cache not found, name: " + name );
         }
         cache.clear();
+    }
+
+    private boolean isFoloCache( String name )
+    {
+        return name != null && name.startsWith( "folo" );
     }
 }
