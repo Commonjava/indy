@@ -19,15 +19,14 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import javax.enterprise.inject.spi.CDI;
-import java.io.IOException;
 import java.io.InputStream;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -40,6 +39,7 @@ import static org.junit.Assert.assertThat;
  * <b>GIVEN:</b>
  * <ul>
  *     <li>Remote repository A</li>
+ *     <li>Group G, containing repository A</li>
  *     <li>Path P in repository A that has not yet been downloaded</li>
  *     <li>ContentIndexManager does NOT contain entry for path P in repo A</li>
  * </ul>
@@ -47,18 +47,18 @@ import static org.junit.Assert.assertThat;
  * <br/>
  * <b>WHEN:</b>
  * <ul>
- *     <li>Fetch path P from repository A twice</li>
+ *     <li>Fetch path P from repository A</li>
+ *     <li>Fetch path P from group B</li>
  * </ul>
  *
  * <br/>
  * <b>THEN:</b>
  * <ul>
  *     <li>After first retrieval of Path P, ContentIndexManager should contain entry for path P in repo A</li>
- *     <li>After second retrieval of Path P, ContentIndexManager should contain THE SAME entry for path P in repo A</li>
- *     <li>IndexedStorePath instances from after first and second retrievals should be the same literal object</li>
+ *     <li>After second retrieval of Path P, ContentIndexManager should containentry for path P in group B</li>
  * </ul>
  */
-public class ContentIndexRemoteRepoUsageTest
+public class ContentIndexGroupUsageTest
         extends AbstractIndyFunctionalTest
 {
 
@@ -87,6 +87,10 @@ public class ContentIndexRemoteRepoUsageTest
 
         server.expect( server.formatUrl( repoName, FIRST_PATH ), 200, FIRST_PATH_CONTENT );
 
+        String groupName = newName();
+        Group group = new Group( MAVEN_PKG_KEY, groupName, repo.getKey() );
+        group = client.stores().create( group, name.getMethodName(), Group.class );
+
         IndexedStorePath indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
         logger.info( "\n\n\nBEFORE: Indexed path entry: " + indexedPath + "\n\n\n\n");
         assertThat( indexedPath, nullValue() );
@@ -97,18 +101,20 @@ public class ContentIndexRemoteRepoUsageTest
         }
 
         indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER 1: Indexed path entry: " + indexedPath + "\n\n\n\n");
+        logger.info( "\n\n\nAFTER remote: Remote-level indexed path entry: " + indexedPath + "\n\n\n\n");
         assertThat( indexedPath, notNullValue() );
 
-        try (InputStream first = client.content().get( repo.getKey(), FIRST_PATH ))
+        try (InputStream first = client.content().get( group.getKey(), FIRST_PATH ))
         {
             assertThat( IOUtils.toString( first ), equalTo( FIRST_PATH_CONTENT ) );
         }
 
-        IndexedStorePath indexedPath2 = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER 2: Indexed path entry: " + indexedPath2 + "\n\n\n\n");
+        IndexedStorePath indexedPath2 = indexManager.getIndexedStorePath( group.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER group: Group-level indexed path entry: " + indexedPath2 + "\n\n\n\n");
+        assertThat( indexedPath2, notNullValue() );
 
-        // object equality should work since we haven't persisted this anywhere yet.
-        assertThat( indexedPath == indexedPath2, equalTo( true ) );
+        indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER group: Remote-level indexed path entry: " + indexedPath + "\n\n\n\n");
+        assertThat( indexedPath, notNullValue() );
     }
 }

@@ -48,11 +48,17 @@ public class IndexedStorePath
 
     private String packageType;
 
+    private transient StoreKey storeKey;
+
+    private transient StoreKey originKey;
+
     // this needs to be public for Infinispan to not throw InvalidClassException with the first httprox request
     public IndexedStorePath(){}
 
     public IndexedStorePath( StoreKey storeKey, String path )
     {
+        this.storeKey = storeKey;
+
         this.packageType = storeKey.getPackageType();
         if ( this.packageType == null )
         {
@@ -68,6 +74,8 @@ public class IndexedStorePath
     public IndexedStorePath( StoreKey storeKey, StoreKey origin, String path )
     {
         this( storeKey, path );
+        this.originKey = origin;
+
         this.originStoreType = origin.getType();
         this.originStoreName = origin.getName();
     }
@@ -75,13 +83,13 @@ public class IndexedStorePath
     @JsonIgnore
     public StoreKey getStoreKey()
     {
-        return new StoreKey( packageType, storeType, storeName );
+        return storeKey != null ? storeKey : new StoreKey( packageType, storeType, storeName );
     }
 
     @JsonIgnore
     public StoreKey getOriginStoreKey()
     {
-        return new StoreKey( packageType, originStoreType, originStoreName );
+        return originKey != null ? originKey : new StoreKey( packageType, originStoreType, originStoreName );
     }
 
     public StoreType getStoreType()
@@ -119,13 +127,15 @@ public class IndexedStorePath
     {
         /* @formatter:off */
         return "IndexedStorePath{" +
-                "packageType=" + packageType +
-                ", storeType=" + storeType  +
-                ", storeName='" + storeName + '\'' +
-                ", originStoreType=" + originStoreType +
-                ", originStoreName='" + originStoreName + '\'' +
-                ", path='" + path + '\'' +
-                '}';
+                "\n  object ref: " + super.hashCode() +
+                "\n  hashcode: " + hashCode() +
+                "\n  packageType=" + packageType +
+                "\n  storeType=" + storeType  +
+                "\n  storeName=" + storeName +
+                "\n  originStoreType=" + originStoreType +
+                "\n  originStoreName=" + originStoreName +
+                "\n  path='" + path + '\'' +
+                "\n}";
         /* @formatter:on */
     }
 
