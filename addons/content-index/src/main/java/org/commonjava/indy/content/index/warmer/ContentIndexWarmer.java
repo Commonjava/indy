@@ -85,18 +85,25 @@ public class ContentIndexWarmer
                 storeDataManager.query().storeType( Group.class ).stream().forEach( g-> executor.submit(() -> {
                     StoreKey gkey = g.getKey();
 
-                    g.getConstituents()
-                     .stream()
-                     .filter( m -> m.getType() != StoreType.group && transferMap.containsKey( m ) )
-                     .forEach( m -> {
-                         List<Transfer> txfrs = transferMap.get( m );
-                         txfrs.forEach( t -> {
-                             if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
-                             {
-                                 indexManager.indexTransferIn( t, gkey );
-                             }
+                    try
+                    {
+                        List<ArtifactStore> stores =
+                                storeDataManager.query().getOrderedConcreteStoresInGroup( g.getName() );
+
+                        stores.forEach( s -> {
+                             List<Transfer> txfrs = transferMap.get( s.getKey() );
+                             txfrs.forEach( t -> {
+                                 if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
+                                 {
+                                     indexManager.indexTransferIn( t, gkey );
+                                 }
+                             } );
                          } );
-                     } );
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        logger.warn( "Failed to get ordered concrete stores for group: " + g.getName(), e );
+                    }
                 } ) );
             }
             catch ( IndyDataException e )
