@@ -7,6 +7,7 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -16,9 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 
 @ApplicationScoped
@@ -42,26 +45,67 @@ public class ContentIndexWarmer
 
     public void warmCaches()
     {
-        try
-        {
-            storeDataManager.query()
-                            .stream( ( store ) -> store.getType() != StoreType.group )
-                            .forEach( store -> executor.submit( () -> {
+        executor.submit( ()->{
+            Map<StoreKey, List<Transfer>> transferMap = new ConcurrentHashMap<>();
+
+            try
+            {
+                List<ArtifactStore> concreteStores = storeDataManager.query().storeTypes( StoreType.hosted, StoreType.remote ).getAll();
+
+                CountDownLatch latch = new CountDownLatch( concreteStores.size() );
+
+                concreteStores.forEach( store -> executor.submit( () -> {
+                    try
+                    {
+                        List<Transfer> transfers = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
+                        transferMap.put( store.getKey(), transfers );
+                        transfers.forEach( t->indexManager.indexTransferIn( t, store.getKey() ) );
+                    }
+                    catch ( IndyWorkflowException e )
+                    {
+                        logger.warn( "Failed to retrieve root directory of storage for: " + store.getKey(),
+                                     e );
+                    }
+                    finally
+                    {
+                        latch.countDown();
+                    }
+                } ) );
+
                 try
                 {
-                    List<Transfer> transfers = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
-                    transfers.forEach( t->indexManager.indexTransferIn( t, store.getKey() ) );
+                    latch.await();
                 }
-                catch ( IndyWorkflowException e )
+                catch ( InterruptedException e )
                 {
-                    logger.warn( "Failed to retrieve root directory of storage for: " + store.getKey(),
-                                 e );
+                    logger.info("Manager thread interrupted while waiting for concrete store indexing to complete.");
+                    return;
                 }
-            } ) );
-        }
-        catch ( IndyDataException e )
-        {
-            logger.warn( "Content index warm-up failed: %s", e, e.getMessage() );
-        }
+
+                storeDataManager.query().storeType( Group.class ).stream().forEach( g-> executor.submit(() -> {
+                    StoreKey gkey = g.getKey();
+
+                    g.getConstituents()
+                     .stream()
+                     .filter( m -> m.getType() != StoreType.group && transferMap.containsKey( m ) )
+                     .forEach( m -> {
+                         List<Transfer> txfrs = transferMap.get( m );
+                         txfrs.forEach( t -> {
+                             if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
+                             {
+                                 indexManager.indexTransferIn( t, gkey );
+                             }
+                         } );
+                     } );
+                } ) );
+            }
+            catch ( IndyDataException e )
+            {
+                logger.warn( "Content index warm-up failed: %s", e, e.getMessage() );
+            }
+
+            logger.info( "Content index cache has been re-established." );
+
+        } );
     }
 }
