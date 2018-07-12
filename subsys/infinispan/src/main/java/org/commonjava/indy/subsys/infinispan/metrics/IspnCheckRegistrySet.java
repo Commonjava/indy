@@ -53,6 +53,18 @@ public class IspnCheckRegistrySet
 
     private static final String EVICTIONS = "Evictions";
 
+    private static final String TOTAL_HITS = "TotalHits";
+
+    private static final String TOTAL_MISSES = "TotalMisses";
+
+    private static final String TOTAL_RETRIEVALS = "TotalRetrievals";
+
+    private static final String TOTAL_EVICTIONS = "TotalEvictions";
+
+    private static final String REMOVALS = "Removals";
+
+    private static final String TOTAL_REMOVALS = "TotalRemovals";
+
     private EmbeddedCacheManager cacheManager;
 
     private List<String> ispnGauges;
@@ -86,6 +98,31 @@ public class IspnCheckRegistrySet
                    gauges.put( name( cache.getName(), TOTAL_NUMBER_OF_ENTRIES ),
                                (Gauge) () -> advancedCache.getStats().getTotalNumberOfEntries() );
                }
+               if ( ispnGauges == null || ispnGauges.contains( TOTAL_HITS ) )
+               {
+                   gauges.put( name( cache.getName(), TOTAL_HITS ),
+                               (Gauge) () -> advancedCache.getStats().getHits() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( TOTAL_MISSES ) )
+               {
+                   gauges.put( name( cache.getName(), TOTAL_MISSES ),
+                               (Gauge) () -> advancedCache.getStats().getMisses() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( TOTAL_RETRIEVALS ) )
+               {
+                   gauges.put( name( cache.getName(), TOTAL_RETRIEVALS ),
+                               (Gauge) () -> advancedCache.getStats().getRetrievals() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( TOTAL_EVICTIONS ) )
+               {
+                   gauges.put( name( cache.getName(), TOTAL_EVICTIONS ),
+                               (Gauge) () -> advancedCache.getStats().getEvictions() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( TOTAL_REMOVALS ) )
+               {
+                   gauges.put( name( cache.getName(), TOTAL_REMOVALS ),
+                               (Gauge) () -> advancedCache.getStats().getRemoveHits() );
+               }
 
                // The rest of these should show the RATES at which the cache is changing, or is being used.
                if ( ispnGauges == null || ispnGauges.contains( NUMBER_OF_ENTRIES_ADDED ) )
@@ -113,6 +150,11 @@ public class IspnCheckRegistrySet
                    gauges.put( name( cache.getName(), EVICTIONS ),
                                new RecentCountGauge( () -> advancedCache.getStats().getEvictions() ) );
                }
+               if ( ispnGauges == null || ispnGauges.contains( REMOVALS ) )
+               {
+                   gauges.put( name( cache.getName(), REMOVALS ),
+                               new RecentCountGauge( () -> advancedCache.getStats().getRemoveHits() ) );
+               }
            } );
         return gauges;
     }
@@ -122,7 +164,8 @@ public class IspnCheckRegistrySet
 
         private Supplier<Long> supplier;
 
-        private long last = 0L;
+        private long lastSize = 0L;
+        private long lastTime = System.currentTimeMillis();
 
         private RecentCountGauge( Supplier<Long> supplier )
         {
@@ -133,10 +176,14 @@ public class IspnCheckRegistrySet
         public Long getValue()
         {
             long next = supplier.get();
-            long ret = next - last;
-            last = next;
+            long ret = next - lastSize;
+            lastSize = next;
 
-            return ret;
+            long nextTime = System.currentTimeMillis();
+            long rate = ret / (nextTime - lastTime);
+            lastTime = nextTime;
+
+            return rate;
         }
     }
 }

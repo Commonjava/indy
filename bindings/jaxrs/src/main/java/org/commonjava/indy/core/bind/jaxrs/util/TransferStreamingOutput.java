@@ -43,7 +43,7 @@ public class TransferStreamingOutput
     implements StreamingOutput
 {
 
-    private static final String TRANSFER_METRIC_NAME = "transferred";
+    private static final String TRANSFER_METRIC_NAME = "indy.transferred";
 
     private InputStream stream;
 
