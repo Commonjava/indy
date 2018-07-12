@@ -34,7 +34,7 @@ public class ContentIndexWarmer
     private DownloadManager downloadManager;
 
     @WeftManaged
-    @ExecutorConfig( named = "content-index-warmer", priority = 6, threads = 8 )
+    @ExecutorConfig( named = "content-index-warmer", priority = 6, threads = 12 )
     @Inject
     private ExecutorService executor;
 
@@ -44,15 +44,12 @@ public class ContentIndexWarmer
     {
         try
         {
-            Map<StoreKey, List<Transfer>> transferMap = new ConcurrentHashMap<>();
-
             storeDataManager.query()
                             .stream( ( store ) -> store.getType() != StoreType.group )
                             .forEach( store -> executor.submit( () -> {
                 try
                 {
                     List<Transfer> transfers = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
-                    transferMap.put( store.getKey(), transfers );
                     transfers.forEach( t->indexManager.indexTransferIn( t, store.getKey() ) );
                 }
                 catch ( IndyWorkflowException e )
@@ -60,23 +57,6 @@ public class ContentIndexWarmer
                     logger.warn( "Failed to retrieve root directory of storage for: " + store.getKey(),
                                  e );
                 }
-            } ) );
-
-            storeDataManager.query().storeType( Group.class ).stream().forEach( g -> executor.submit( () -> {
-                StoreKey gkey = g.getKey();
-
-                g.getConstituents()
-                 .stream()
-                 .filter( m -> m.getType() != StoreType.group && transferMap.containsKey( m ) )
-                 .forEach( m -> {
-                     List<Transfer> txfrs = transferMap.get( m );
-                     txfrs.forEach( t -> {
-                         if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
-                         {
-                             indexManager.indexTransferIn( t, gkey );
-                         }
-                     } );
-                 } );
             } ) );
         }
         catch ( IndyDataException e )
