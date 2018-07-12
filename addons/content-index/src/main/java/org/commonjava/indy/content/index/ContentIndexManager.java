@@ -164,7 +164,7 @@ public class ContentIndexManager
             keySet.forEach( (key)->{
                 IndexedStorePath isp = new IndexedStorePath( key, originKey, path );
                 logger.trace( "Indexing path: {} in: {} via member: {}", path, key, originKey );
-                contentIndex.put( isp, isp );
+                contentIndex.put( isp, origin );
             } );
     }
 
