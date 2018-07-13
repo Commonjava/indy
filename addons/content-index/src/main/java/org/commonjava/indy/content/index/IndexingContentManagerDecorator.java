@@ -24,6 +24,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -195,7 +196,7 @@ public abstract class IndexingContentManagerDecorator
             logger.debug( "Found indexed transfer: {}. Returning.", transfer );
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() && !store.isRescanInProgress() )
+        else if ( isAuthoritativelyMissing( store ) )
         {
             logger.debug(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -297,6 +298,13 @@ public abstract class IndexingContentManagerDecorator
 
         logger.debug( "Returning transfer: {}", transfer );
         return transfer;
+    }
+
+    private boolean isAuthoritativelyMissing( final ArtifactStore store )
+    {
+        return indexCfg.isAuthoritativeIndex() && ( store.isAuthoritativeIndex()
+                || ( ( store instanceof HostedRepository ) && ( (HostedRepository) store ).isReadonly() ) )
+                && !store.isRescanInProgress();
     }
 
     /**
@@ -403,7 +411,7 @@ public abstract class IndexingContentManagerDecorator
         {
             return transfer;
         }
-        else if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() && !store.isRescanInProgress() )
+        else if ( isAuthoritativelyMissing( store ) )
         {
             logger.info(
                     "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
@@ -544,7 +552,7 @@ public abstract class IndexingContentManagerDecorator
                                              storeKey, e.getMessage() );
         }
 
-        if ( indexCfg.isAuthoritativeIndex() && store.isAuthoritativeIndex() && !store.isRescanInProgress() )
+        if ( isAuthoritativelyMissing( store ) )
         {
             logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null." );
             return null;
