@@ -190,7 +190,7 @@ public class ContentIndexManager
 
     /**
      * <b>NOT Recursive</b>. This assumes you've recursed the group membership structure beforehand, using
-     * {@link StoreDataManager#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
+     * {@link StoreDataManager#query()#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
      * the path should be cleared.
      */
     public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )

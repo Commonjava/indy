@@ -346,7 +346,7 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        logger.trace( "Looking for indexed path: {} in: {} (entry point: {})", path, storeKey, topKey );
+        logger.debug( "Looking for indexed path: {} in: {} (entry point: {})", path, storeKey, topKey );
 
         try
         {
@@ -371,21 +371,22 @@ public abstract class IndexingContentManagerDecorator
 
         if ( storePath != null )
         {
-            Transfer transfer = delegate.getTransfer( storePath.getStoreKey(), path, op );
+            Transfer transfer = delegate.getTransfer( storeKey, path, op );
             if ( transfer == null || !transfer.exists() )
             {
-                logger.trace( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
+                logger.debug( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
                               topKey );
                 // something happened to the underlying Transfer...de-index it, and don't return it.
                 indexManager.deIndexStorePath( storeKey, path );
                 if ( topKey != null )
                 {
+                    logger.debug( "{} Not found in: {}. De-indexing from: {} (topKey)", path, storeKey, topKey );
                     indexManager.deIndexStorePath( topKey, path );
                 }
             }
             else
             {
-                logger.trace( "Found it!" );
+                logger.debug( "Found it: {}", transfer );
                 return transfer;
             }
         }
