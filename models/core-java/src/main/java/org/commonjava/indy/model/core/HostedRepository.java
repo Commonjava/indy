@@ -89,6 +89,18 @@ public class HostedRepository
     }
 
     @Override
+    public boolean isAuthoritativeIndex()
+    {
+        return super.isAuthoritativeIndex() || this.isReadonly();
+    }
+
+    @Override
+    public void setAuthoritativeIndex( boolean authoritativeIndex )
+    {
+        super.setAuthoritativeIndex( authoritativeIndex || this.isReadonly() );
+    }
+
+    @Override
     public HostedRepository copyOf()
     {
         return copyOf( getPackageType(), getName() );

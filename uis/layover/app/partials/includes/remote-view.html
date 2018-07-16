@@ -30,6 +30,11 @@
         <label>Enabled?</label>
         <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration | dateFormat}}</span>
     </div>
+    <div class="detail-field">
+      <span>{{store.authoritative_index | checkmark}}</span>
+      <label>Authoritative index enabled?</label>
+      <span class="hint" ng-if="!store.authoritative_index">Make the content index authoritative to this repository</span>
+    </div>
     <div class="sub-fields">
       <div class="detail-field">
         <label>Disable Timeout:</label>
@@ -99,11 +104,11 @@
 <div class="fieldset-caption">Capabilities</div>
 <div class="fieldset">
     <div ng-if="(store.allow_releases || store.allow_snapshots)" class="detail-field">
-    <span>{{store.allow_releases | checkmark}}</span>
+        <span>{{store.allow_releases | checkmark}}</span>
         <label>Allow Releases</label>
     </div>
     <div ng-if="(store.allow_releases || store.allow_snapshots)" class="detail-field">
-    <span>{{store.allow_snapshots | checkmark}}</span>
+        <span>{{store.allow_snapshots | checkmark}}</span>
         <label>Snapshots Allowed?</label>
     </div>
 </div>
