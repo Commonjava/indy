@@ -45,6 +45,11 @@
           <label>Readonly?</label>
           <span class="hint">If set to readonly, all uploading and deleting operations to this repo are prohibited</span>
         </div>
+        <div class="detail-field">
+          <input type="checkbox" ng-model="store.authoritative_index" />
+          <label>Authoritative content Index?</label>
+          <span class="hint">Make the content index authoritative to this repository(when readonly, this will be enabled automatically)</span>
+        </div>
 
         <div class="sub-fields">
           <div class="detail-field">
