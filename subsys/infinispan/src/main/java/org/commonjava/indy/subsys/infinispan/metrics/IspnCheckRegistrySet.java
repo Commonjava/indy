@@ -53,6 +53,8 @@ public class IspnCheckRegistrySet
 
     private static final String EVICTIONS = "Evictions";
 
+    private static final String REMOVALS = "Removals";
+
     private static final String TOTAL_HITS = "TotalHits";
 
     private static final String TOTAL_MISSES = "TotalMisses";
@@ -60,8 +62,6 @@ public class IspnCheckRegistrySet
     private static final String TOTAL_RETRIEVALS = "TotalRetrievals";
 
     private static final String TOTAL_EVICTIONS = "TotalEvictions";
-
-    private static final String REMOVALS = "Removals";
 
     private static final String TOTAL_REMOVALS = "TotalRemovals";
 
@@ -128,59 +128,59 @@ public class IspnCheckRegistrySet
                if ( ispnGauges == null || ispnGauges.contains( NUMBER_OF_ENTRIES_ADDED ) )
                {
                    gauges.put( name( cache.getName(), NUMBER_OF_ENTRIES_ADDED ),
-                               new RecentCountGauge( () -> (long) advancedCache.getStats().getCurrentNumberOfEntries() ) );
+                               new RecentCountGauge( () -> (float) advancedCache.getStats().getCurrentNumberOfEntries() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( HITS ) )
                {
                    gauges.put( name( cache.getName(), HITS ),
-                               new RecentCountGauge( () -> advancedCache.getStats().getHits() ) );
+                               new RecentCountGauge( () -> (float) advancedCache.getStats().getHits() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( MISSES ) )
                {
                    gauges.put( name( cache.getName(), MISSES ),
-                               new RecentCountGauge( () -> advancedCache.getStats().getMisses() ) );
+                               new RecentCountGauge( () -> (float) advancedCache.getStats().getMisses() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( RETRIEVALS ) )
                {
                    gauges.put( name( cache.getName(), RETRIEVALS ),
-                               new RecentCountGauge( () -> advancedCache.getStats().getRetrievals() ) );
+                               new RecentCountGauge( () -> (float) advancedCache.getStats().getRetrievals() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( EVICTIONS ) )
                {
                    gauges.put( name( cache.getName(), EVICTIONS ),
-                               new RecentCountGauge( () -> advancedCache.getStats().getEvictions() ) );
+                               new RecentCountGauge( () -> (float) advancedCache.getStats().getEvictions() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( REMOVALS ) )
                {
                    gauges.put( name( cache.getName(), REMOVALS ),
-                               new RecentCountGauge( () -> advancedCache.getStats().getRemoveHits() ) );
+                               new RecentCountGauge( () -> (float) advancedCache.getStats().getRemoveHits() ) );
                }
            } );
         return gauges;
     }
 
-    private static final class RecentCountGauge implements Gauge<Long>
+    private static final class RecentCountGauge implements Gauge<Float>
     {
 
-        private Supplier<Long> supplier;
+        private Supplier<Float> supplier;
 
-        private long lastSize = 0L;
+        private float lastSize = 0L;
         private long lastTime = System.currentTimeMillis();
 
-        private RecentCountGauge( Supplier<Long> supplier )
+        private RecentCountGauge( Supplier<Float> supplier )
         {
             this.supplier = supplier;
         }
 
         @Override
-        public Long getValue()
+        public Float getValue()
         {
-            long next = supplier.get();
-            long ret = next - lastSize;
+            float next = supplier.get();
+            float ret = next - lastSize;
             lastSize = next;
 
             long nextTime = System.currentTimeMillis();
-            long rate = ret / (nextTime - lastTime);
+            float rate = ret / ((nextTime - lastTime) / 1000);
             lastTime = nextTime;
 
             return rate;
