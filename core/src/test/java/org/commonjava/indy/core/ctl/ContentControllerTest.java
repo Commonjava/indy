@@ -17,7 +17,6 @@ package org.commonjava.indy.core.ctl;
 
 import groovy.text.GStringTemplateEngine;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
@@ -44,8 +43,9 @@ import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.testing.core.CoreFixture;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfiguration;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -74,8 +74,10 @@ public class ContentControllerTest
     @BeforeClass
     public static void setupClass()
     {
+        GlobalConfiguration globalConfiguration =
+                new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build();
         cacheManager =
-                new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+                new DefaultCacheManager( globalConfiguration, new ConfigurationBuilder().simpleCache( true ).build() );
 
         contentMetadata = cacheManager.getCache( "content-metadata", true );
 
