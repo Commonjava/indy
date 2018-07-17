@@ -18,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,103 +48,110 @@ public class ContentIndexWarmer
 
     public void warmCaches()
     {
-        executor.submit( ()->{
-            boolean oldAuthIdx = indexConfig.isAuthoritativeIndex();
-            indexConfig.setAuthoritativeIndex( false );
-            try
-            {
-                Map<StoreKey, List<Transfer>> transferMap = new ConcurrentHashMap<>();
-
+        if ( indexConfig.isWarmerEnabled() )
+        {
+            logger.info( "Content index warmer enabled, will load all indexes from existed repos." );
+            executor.submit( () -> {
+                boolean oldAuthIdx = indexConfig.isAuthoritativeIndex();
+                indexConfig.setAuthoritativeIndex( false );
                 try
                 {
-                    List<ArtifactStore> concreteStores =
-                            storeDataManager.query().storeTypes( StoreType.hosted, StoreType.remote ).getAll();
-
-                    CountDownLatch latch = new CountDownLatch( concreteStores.size() );
-
-                    concreteStores.forEach( store -> executor.submit( () -> {
-                        try
-                        {
-                            List<Transfer> transfers = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
-                            transferMap.put( store.getKey(), transfers );
-                            transfers.forEach( t -> indexManager.indexTransferIn( t, store.getKey() ) );
-                        }
-                        catch ( IndyWorkflowException e )
-                        {
-                            logger.warn( "Failed to retrieve root directory of storage for: " + store.getKey(), e );
-                        }
-                        finally
-                        {
-                            latch.countDown();
-                        }
-                    } ) );
+                    Map<StoreKey, List<Transfer>> transferMap = new ConcurrentHashMap<>();
 
                     try
                     {
-                        latch.await();
-                    }
-                    catch ( InterruptedException e )
-                    {
-                        logger.info(
-                                "Manager thread interrupted while waiting for concrete store indexing to complete." );
-                        return;
-                    }
+                        List<ArtifactStore> concreteStores =
+                                storeDataManager.query().storeTypes( StoreType.hosted, StoreType.remote ).getAll();
 
-                    List<Group> groups = storeDataManager.query().storeType( Group.class ).getAll();
-                    CountDownLatch groupLatch = new CountDownLatch( groups.size() );
+                        CountDownLatch latch = new CountDownLatch( concreteStores.size() );
 
-                    groups.forEach( g -> executor.submit( () -> {
-                        StoreKey gkey = g.getKey();
+                        concreteStores.forEach( store -> executor.submit( () -> {
+                            try
+                            {
+                                List<Transfer> transfers =
+                                        downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
+                                transferMap.put( store.getKey(), transfers );
+                                transfers.forEach( t -> indexManager.indexTransferIn( t, store.getKey() ) );
+                            }
+                            catch ( IndyWorkflowException e )
+                            {
+                                logger.warn( "Failed to retrieve root directory of storage for: " + store.getKey(), e );
+                            }
+                            finally
+                            {
+                                latch.countDown();
+                            }
+                        } ) );
 
                         try
                         {
-                            List<ArtifactStore> stores =
-                                    storeDataManager.query().getOrderedConcreteStoresInGroup( g.getName() );
+                            latch.await();
+                        }
+                        catch ( InterruptedException e )
+                        {
+                            logger.info(
+                                    "Manager thread interrupted while waiting for concrete store indexing to complete." );
+                            return;
+                        }
 
-                            stores.forEach( s -> {
-                                List<Transfer> txfrs = transferMap.get( s.getKey() );
-                                txfrs.forEach( t -> {
-                                    if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
-                                    {
-                                        indexManager.indexTransferIn( t, gkey );
-                                    }
+                        List<Group> groups = storeDataManager.query().storeType( Group.class ).getAll();
+                        CountDownLatch groupLatch = new CountDownLatch( groups.size() );
+
+                        groups.forEach( g -> executor.submit( () -> {
+                            StoreKey gkey = g.getKey();
+
+                            try
+                            {
+                                List<ArtifactStore> stores = storeDataManager.query().getOrderedConcreteStoresInGroup( g.getName() );
+
+                                stores.forEach( s -> {
+                                    List<Transfer> txfrs = transferMap.get( s.getKey() );
+                                    txfrs.forEach( t -> {
+                                        if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
+                                        {
+                                            indexManager.indexTransferIn( t, gkey );
+                                        }
+                                    } );
                                 } );
-                            } );
-                        }
-                        catch ( IndyDataException e )
-                        {
-                            logger.warn( "Failed to get ordered concrete stores for group: " + g.getName(), e );
-                        }
-                        finally
-                        {
-                            groupLatch.countDown();
-                        }
-                    } ) );
+                            }
+                            catch ( IndyDataException e )
+                            {
+                                logger.warn( "Failed to get ordered concrete stores for group: " + g.getName(), e );
+                            }
+                            finally
+                            {
+                                groupLatch.countDown();
+                            }
+                        } ) );
 
-                    try
-                    {
-                        groupLatch.await();
+                        try
+                        {
+                            groupLatch.await();
+                        }
+                        catch ( InterruptedException e )
+                        {
+                            logger.info( "Manager thread interrupted while waiting for group indexing to complete." );
+                            return;
+                        }
+
                     }
-                    catch ( InterruptedException e )
+                    catch ( IndyDataException e )
                     {
-                        logger.info(
-                                "Manager thread interrupted while waiting for group indexing to complete." );
-                        return;
+                        logger.warn( "Content index warm-up failed: %s", e, e.getMessage() );
                     }
 
+                    logger.info( "Content index cache has been re-established." );
                 }
-                catch ( IndyDataException e )
+                finally
                 {
-                    logger.warn( "Content index warm-up failed: %s", e, e.getMessage() );
+                    indexConfig.setAuthoritativeIndex( oldAuthIdx );
                 }
 
-                logger.info( "Content index cache has been re-established." );
-            }
-            finally
-            {
-                indexConfig.setAuthoritativeIndex( oldAuthIdx );
-            }
-
-        } );
+            } );
+        }
+        else
+        {
+            logger.info( "Content index warmer is not enabled." );
+        }
     }
 }
