@@ -149,7 +149,10 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
           }
 
           if ( scope.mode == 'edit' ){
-            alert("Saving " + scope.raw.packageType + "/" + scope.raw.name );
+            alert("Saving " + scope.raw.packageType + "/" + scope.raw.name + ", type=" + storeType );
+            if ( storeType != 'group' && scope.raw.pathMaskPatterns && scope.raw.pathMaskPatterns.replace(/^\s+|\s+$/gm,'') !== '' ) {
+              scope.store.path_mask_patterns = JSON.parse(scope.raw.pathMaskPatterns);
+            }
             storeService.resource.update({packageType: scope.raw.packageType, name: scope.raw.name}, scope.store, function(){
               location.path( StoreUtilSvc.detailPath(scope.store.key) );
             });
@@ -218,6 +221,10 @@ indyServices.factory('StoreUtilSvc', function(){
 //      alert("Parsing name from:\n" + JSON.stringify(key, undefined, 2));
       var parts = key.split(':');
       return parts[parts.length-1];
+    },
+
+    pathMaskPatterns: function(path_mask_patterns){
+      return JSON.stringify(path_mask_patterns, null, "  ");
     },
 
     typeFromKey: function(key){

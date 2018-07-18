@@ -43,6 +43,7 @@ import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -85,10 +86,9 @@ public class DefaultDownloadManagerTest
     @BeforeClass
     public static void setupClass()
     {
-        cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
-
+        cacheManager = new DefaultCacheManager(
+                        new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build() );
         contentMetadata = cacheManager.getCache( "content-metadata", true );
-
     }
 
     @Before
