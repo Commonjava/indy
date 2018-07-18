@@ -150,7 +150,7 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
 
           if ( scope.mode == 'edit' ){
             alert("Saving " + scope.raw.packageType + "/" + scope.raw.name + ", type=" + storeType );
-            if ( storeType != 'group' && scope.raw.pathMaskPatterns && scope.raw.pathMaskPatterns.replace(/^\s+|\s+$/gm,'') !== '' ) {
+            if ( storeType != 'group' ) {
               scope.store.path_mask_patterns = JSON.parse(scope.raw.pathMaskPatterns);
             }
             storeService.resource.update({packageType: scope.raw.packageType, name: scope.raw.name}, scope.store, function(){
