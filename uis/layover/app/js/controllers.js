@@ -117,7 +117,6 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.packageType = StoreUtilSvc.packageTypeFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
-      $scope.raw.pathMaskPatterns = StoreUtilSvc.pathMaskPatterns(store.path_mask_patterns);
 
       $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
       $scope.raw.timeout_seconds = StoreUtilSvc.secondsToDuration(store.timeout_seconds);
@@ -221,7 +220,6 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.packageType = StoreUtilSvc.packageTypeFromKey(store.key);
       $scope.raw.storeHref = StoreUtilSvc.storeHref(store.key);
       $scope.raw.description = StoreUtilSvc.defaultDescription(store.description);
-      $scope.raw.pathMaskPatterns = StoreUtilSvc.pathMaskPatterns(store.path_mask_patterns);
       $scope.raw.snapshotTimeoutSeconds = StoreUtilSvc.secondsToDuration(store.snapshotTimeoutSeconds);
 
       StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
