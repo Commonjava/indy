@@ -31,9 +31,15 @@ public class ContentIndexConfig
 
     public static final String AUTH_INDEX_PARAM = "support.authoritative.indexes";
 
+    public static final String ENABLE_INDEX_WARMER = "index.warmer.enable";
+
     private static final Boolean DEFAULT_AUTHORITATIVE_INDEXES = Boolean.FALSE;
 
+    private static final Boolean DEFAULT_WARMER_ENABLED = Boolean.FALSE;
+
     private Boolean authoritativeIndex;
+
+    private Boolean warmerEnabled;
 
     public ContentIndexConfig()
     {
@@ -53,6 +59,17 @@ public class ContentIndexConfig
     public void setAuthoritativeIndex( Boolean authoritativeIndex )
     {
         this.authoritativeIndex = authoritativeIndex;
+    }
+
+    public Boolean isWarmerEnabled()
+    {
+        return warmerEnabled == null ? DEFAULT_WARMER_ENABLED : warmerEnabled;
+    }
+
+    @ConfigName( ContentIndexConfig.ENABLE_INDEX_WARMER )
+    public void setWarmerEnabled( Boolean warmerEnabled )
+    {
+        this.warmerEnabled = warmerEnabled;
     }
 
     @Override
