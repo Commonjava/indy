@@ -41,11 +41,13 @@
         <module>docker</module>
       </modules>
     </profile>
+    <!--
     <profile>
       <id>release</id>
       <modules>
         <module>docker</module>
       </modules>
     </profile>
+    -->
   </profiles>
 </project>
