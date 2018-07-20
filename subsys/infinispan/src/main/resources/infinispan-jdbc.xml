@@ -16,14 +16,14 @@
     <local-cache name="koji-maven-version-metadata" >
       <eviction strategy="LRU" size="200000" type="COUNT"/>
       <persistence>
-        <jdbc:binary-keyed-jdbc-store fetch-state="false" read-only="false" purge="false">
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" key-to-string-mapper="org.commonjava.indy.koji.inject.KojiProjectRefStringKey2StringMapper">
           <jdbc:connection-pool connection-url="${indyCacheDburl}" username="${indyCacheDbuser}" password="${indyCacheDbpass}" driver="org.postgresql.Driver"/>
-          <jdbc:binary-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="BYTEA" />
             <jdbc:data-column name="data_column" type="BYTEA" />
             <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
-          </jdbc:binary-keyed-table>
-        </jdbc:binary-keyed-jdbc-store>
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
       </persistence>
     </local-cache>
 
