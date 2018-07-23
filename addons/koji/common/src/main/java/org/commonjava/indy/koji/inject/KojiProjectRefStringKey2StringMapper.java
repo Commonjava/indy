@@ -15,8 +15,7 @@
  */
 package org.commonjava.indy.koji.inject;
 
-import org.apache.commons.lang3.StringUtils;
-import org.commonjava.indy.koji.content.KojiMavenMetadataProvider;
+import org.commonjava.maven.atlas.ident.ref.InvalidRefException;
 import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.slf4j.Logger;
@@ -30,19 +29,16 @@ public class KojiProjectRefStringKey2StringMapper
     @Override
     public Object getKeyMapping( String stringKey )
     {
-        String[] parts = stringKey.split( SPLITTER );
-
-        final String groupId = parts[0];
-        final String artifactId = parts[1];
-
-        if ( StringUtils.isNotBlank( groupId ) && StringUtils.isNotBlank( artifactId ) )
+        try
         {
-            return KojiMavenMetadataProvider.newProjectRef( groupId, artifactId );
+            return SimpleProjectRef.parse( stringKey );
         }
-
-        logger.warn(
-                "Koji meta cache JDBC store error: invalid groupId {} or artifact {} when deserializing from database",
-                groupId, artifactId );
+        catch ( InvalidRefException e )
+        {
+            logger.warn(
+                    "Koji meta cache JDBC store error: invalid groupId or artifact when deserializing from database: {}",
+                    e.getMessage() );
+        }
 
         return null;
     }
@@ -58,19 +54,7 @@ public class KojiProjectRefStringKey2StringMapper
     {
         if ( key instanceof SimpleProjectRef )
         {
-            StringBuilder builder = new StringBuilder();
-            SimpleProjectRef projectRef = (SimpleProjectRef) key;
-            if ( projectRef.getGroupId() == null || projectRef.getArtifactId() == null)
-            {
-                logger.warn(
-                        "Koji meta cache JDBC store error: ProjectRef has invalid value for groupId or artifactId" );
-                return null;
-            }
-            builder.append( projectRef.getGroupId() )
-                   .append( SPLITTER )
-                   .append( projectRef.getArtifactId() );
-            return builder.toString();
-
+            return key.toString();
         }
         logger.warn( "Koji meta cache JDBC store error: Not supported key type {}",
                       key == null ? null : key.getClass() );

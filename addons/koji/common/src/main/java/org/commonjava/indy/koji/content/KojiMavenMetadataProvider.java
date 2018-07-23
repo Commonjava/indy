@@ -145,7 +145,7 @@ public class KojiMavenMetadataProvider
         ProjectRef ref = null;
         try
         {
-            ref = newProjectRef( groupId, artifactId );
+            ref = new SimpleProjectRef( groupId, artifactId );
         }
         catch ( InvalidRefException e )
         {
@@ -437,9 +437,5 @@ public class KojiMavenMetadataProvider
             return true;
         }
         return false;
-    }
-
-    public static SimpleProjectRef newProjectRef(final String groupId, final String artifactId){
-        return new SimpleProjectRef( groupId, artifactId );
     }
 }
