@@ -141,7 +141,7 @@ public class RemotePrefetchDownloadWithPathMaskRegsTest
         remote1.setPrefetchListingType( RemoteRepository.PREFETCH_LISTING_TYPE_HTML );
         remote1.setPrefetchPriority( 1 );
         client.stores().update( remote1, "change prefetch priority" );
-        waitForEventPropagation();
+        waitForEventPropagationWithMultiplier(3);
         assertThat( fileJar.exists(), equalTo( true ) );
         assertContent( fileJar, contentJar );
         assertThat( fileSrc.exists(), equalTo( false ) );
