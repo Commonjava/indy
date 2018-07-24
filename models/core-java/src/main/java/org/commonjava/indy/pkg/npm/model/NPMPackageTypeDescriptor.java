@@ -17,7 +17,7 @@ package org.commonjava.indy.pkg.npm.model;
 
 import org.commonjava.indy.model.core.PackageTypeDescriptor;
 
-import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_NPM;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 
 /**
  * {@link PackageTypeDescriptor} implementation for NPM content.
