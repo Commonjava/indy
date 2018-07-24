@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.model.core;
 
-import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
-import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_MAVEN;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
 /**
  * Enumeration to distinguish between different access channels to stores.

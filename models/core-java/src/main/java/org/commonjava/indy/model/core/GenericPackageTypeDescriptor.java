@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.model.core;
 
-import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 
 /**
  * Package type to handle generic http content, as is used by httprox.

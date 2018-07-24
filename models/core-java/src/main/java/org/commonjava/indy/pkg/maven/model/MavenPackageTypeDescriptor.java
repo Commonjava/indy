@@ -17,7 +17,7 @@ package org.commonjava.indy.pkg.maven.model;
 
 import org.commonjava.indy.model.core.PackageTypeDescriptor;
 
-import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_MAVEN;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
 /**
  * {@link PackageTypeDescriptor} implementation for Maven content.
