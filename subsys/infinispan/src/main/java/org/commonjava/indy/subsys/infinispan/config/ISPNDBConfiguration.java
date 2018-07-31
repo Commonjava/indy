@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan.config;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.web.config.annotation.ConfigName;
@@ -30,19 +31,31 @@ public class ISPNDBConfiguration
         implements IndyConfigInfo, SystemPropertyProvider
 {
 
-    private static final String INDY_CACHE_DB_URL = "indyCacheDburl";
+    private static final String INDY_CACHE_DB_NAME = "datasource_name";
 
-    private static final String INDY_CACHE_DB_USER = "indyCacheDbuser";
+    private static final String INDY_CACHE_DB_SERVER = "datasource_server";
 
-    private static final String INDY_CACHE_DB_PASS = "indyCacheDbpass";
+    private static final String INDY_CACHE_DB_PORT = "datasource_port";
 
-    private static final String DEFAULT_INDY_CACHE_DB_URL = "jdbc:postgresql://localhost/indy";
+    private static final String INDY_CACHE_DB_USER = "datasource_user";
+
+    private static final String INDY_CACHE_DB_PASS = "datasource_password";
+
+    private static final String DEFAULT_INDY_CACHE_DB_SERVER = "localhost";
+
+    private static final String DEFAULT_INDY_CACHE_DB_PORT = "5432";
+
+    private static final String DEFAULT_INDY_CACHE_DB_NAME = "indy";
 
     private static final String DEFAULT_INDY_CACHE_DB_USER = "indy";
 
     private static final String DEFAULT_INDY_CACHE_DB_PASS = "indy";
 
-    private String cacheDBUrl;
+    private String cacheDbServer;
+
+    private String cacheDbPort;
+
+    private String cacheDbName;
 
     private String cacheDBUser;
 
@@ -52,15 +65,37 @@ public class ISPNDBConfiguration
     {
     }
 
-    public String getCacheDBUrl()
+    public String getCacheDbServer()
     {
-        return cacheDBUrl == null ? DEFAULT_INDY_CACHE_DB_URL : cacheDBUrl;
+        return cacheDbServer == null ? DEFAULT_INDY_CACHE_DB_SERVER : cacheDbServer;
     }
 
-    @ConfigName( INDY_CACHE_DB_URL )
-    public void setCacheDBUrl( String cacheDBUrl )
+    @ConfigName( INDY_CACHE_DB_SERVER )
+    public void setCacheDbServer( String cacheDbServer )
     {
-        this.cacheDBUrl = cacheDBUrl;
+        this.cacheDbServer = cacheDbServer;
+    }
+
+    public String getCacheDbPort()
+    {
+        return cacheDbPort == null ? DEFAULT_INDY_CACHE_DB_PORT : cacheDbPort;
+    }
+
+    @ConfigName( INDY_CACHE_DB_PORT )
+    public void setCacheDbPort( String cacheDbPort )
+    {
+        this.cacheDbPort = cacheDbPort;
+    }
+
+    public String getCacheDbName()
+    {
+        return cacheDbName == null ? DEFAULT_INDY_CACHE_DB_NAME : cacheDbName;
+    }
+
+    @ConfigName( INDY_CACHE_DB_NAME )
+    public void setCacheDbName( String cacheDbName )
+    {
+        this.cacheDbName = cacheDbName;
     }
 
     public String getCacheDBUser()
@@ -101,7 +136,9 @@ public class ISPNDBConfiguration
     public Properties getSystemProperties()
     {
         Properties properties = new Properties();
-        preparePropertyInSysEnv( properties, INDY_CACHE_DB_URL, getCacheDBUrl() );
+        preparePropertyInSysEnv( properties, INDY_CACHE_DB_SERVER, getCacheDbServer() );
+        preparePropertyInSysEnv( properties, INDY_CACHE_DB_PORT, getCacheDbPort() );
+        preparePropertyInSysEnv( properties, INDY_CACHE_DB_NAME, getCacheDbName() );
         preparePropertyInSysEnv( properties, INDY_CACHE_DB_USER, getCacheDBUser() );
         preparePropertyInSysEnv( properties, INDY_CACHE_DB_PASS, getCacheDBPassword() );
 
@@ -110,8 +147,12 @@ public class ISPNDBConfiguration
 
     private void preparePropertyInSysEnv( Properties props, String propName, String ifNotInSysEnv )
     {
-        final String envVal = System.getenv( propName );
-        if ( envVal != null )
+        String envVal = System.getenv( propName );
+        if ( StringUtils.isBlank( envVal ) )
+        {
+            envVal = System.getProperty( propName );
+        }
+        if ( StringUtils.isNotBlank( envVal ) )
         {
             props.setProperty( propName, envVal );
         }
