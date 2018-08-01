@@ -18,6 +18,7 @@ package org.commonjava.indy.model.core;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -69,6 +70,9 @@ public abstract class ArtifactStore
 
     @JsonProperty( "path_style" )
     private PathStyle pathStyle;
+
+    @JsonProperty( "path_mask_patterns" )
+    private Set<String> pathMaskPatterns;
 
     // This field controls if this repo should be authoritative indexing enabled. This means if it is enabled,
     // the content in this repo will be content-indexing dependent forcibly, which will be treated as missing if
@@ -235,6 +239,7 @@ public abstract class ArtifactStore
         store.setTransientMetadata( getTransientMetadata() );
         store.setPathStyle( getPathStyle() );
         store.setDisableTimeout( getDisableTimeout() );
+        store.setPathMaskPatterns( getPathMaskPatterns() );
     }
 
     protected void setTransientMetadata( Map<String, Object> transientMetadata )
@@ -271,6 +276,16 @@ public abstract class ArtifactStore
     public void setPathStyle( PathStyle pathStyle )
     {
         this.pathStyle = pathStyle;
+    }
+
+    public Set<String> getPathMaskPatterns()
+    {
+        return pathMaskPatterns;
+    }
+
+    public void setPathMaskPatterns( Set<String> pathMaskPatterns )
+    {
+        this.pathMaskPatterns = pathMaskPatterns;
     }
 
     public boolean isAuthoritativeIndex()
