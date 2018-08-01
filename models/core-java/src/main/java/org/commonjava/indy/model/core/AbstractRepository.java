@@ -17,8 +17,6 @@ package org.commonjava.indy.model.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Set;
-
 public abstract class AbstractRepository
     extends ArtifactStore
 {
@@ -30,9 +28,6 @@ public abstract class AbstractRepository
 
     @JsonProperty( "allow_releases" )
     private boolean allowReleases = true;
-
-    @JsonProperty( "path_mask_patterns" )
-    private Set<String> pathMaskPatterns;
 
 
     AbstractRepository()
@@ -64,15 +59,10 @@ public abstract class AbstractRepository
         this.allowReleases = allowReleases;
     }
 
-    public Set<String> getPathMaskPatterns() { return pathMaskPatterns; }
-
-    public void setPathMaskPatterns(Set<String> pathMaskPatterns) { this.pathMaskPatterns = pathMaskPatterns; }
-
     protected void copyRestrictions( AbstractRepository repo )
     {
         repo.setAllowReleases( isAllowReleases() );
         repo.setAllowSnapshots( isAllowSnapshots() );
-        repo.setPathMaskPatterns( getPathMaskPatterns() );
     }
 
 }
