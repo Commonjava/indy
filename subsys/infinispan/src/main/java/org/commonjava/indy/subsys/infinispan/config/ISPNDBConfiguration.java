@@ -147,18 +147,19 @@ public class ISPNDBConfiguration
 
     private void preparePropertyInSysEnv( Properties props, String propName, String ifNotInSysEnv )
     {
-        String envVal = System.getenv( propName );
-        if ( StringUtils.isBlank( envVal ) )
+        String propVal = System.getenv( propName );
+        if ( StringUtils.isBlank( propVal ) )
         {
-            envVal = System.getProperty( propName );
+            propVal = System.getProperty( propName );
         }
-        if ( StringUtils.isNotBlank( envVal ) )
+        if ( StringUtils.isBlank( propVal ) )
         {
-            props.setProperty( propName, envVal );
+            propVal = ifNotInSysEnv;
         }
-        else
-        {
-            props.setProperty( propName, ifNotInSysEnv );
-        }
+
+        propVal = propVal.replace( "\"", "&quot;" );
+        propVal = propVal.replace( "'", "&apos;" );
+
+        props.setProperty( propName, propVal );
     }
 }
