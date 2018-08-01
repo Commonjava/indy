@@ -26,20 +26,7 @@ public class PathMaskChecker
 {
     private static final Logger logger = LoggerFactory.getLogger( PathMaskChecker.class );
 
-    // slightly different from checkListingMask in that for regex pattern the pattern.match() is called
-    public static boolean checkMask( final ArtifactStore store, final String path )
-    {
-        if ( !( store instanceof AbstractRepository ) )
-        {
-            return true;
-        }
-
-        AbstractRepository repo = (AbstractRepository) store;
-
-        return checkMask( repo, path );
-    }
-
-    public static boolean checkMask(final AbstractRepository repo, final String path){
+    public static boolean checkMask(final ArtifactStore repo, final String path){
         Set<String> maskPatterns = repo.getPathMaskPatterns();
 
         logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
