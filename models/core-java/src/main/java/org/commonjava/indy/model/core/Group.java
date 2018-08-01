@@ -34,12 +34,14 @@ public class Group
 
     Group()
     {
+        setUseNfc( true );
     }
 
     public Group( final String packageType, final String name, final List<StoreKey> constituents )
     {
         super( packageType, StoreType.group, name );
         this.constituents = new ArrayList<>( constituents );
+        setUseNfc( true );
     }
 
     @Deprecated
