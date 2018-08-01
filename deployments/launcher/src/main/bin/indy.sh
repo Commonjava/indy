@@ -59,6 +59,34 @@ if [ $? != 0 ]; then
   JAVA=${JAVA_HOME}/bin/java
 fi
 
+#Set up indy database secrets
+SECRETS_PATH="/mnt/secrets"
+SECRETS=""
+if [ -d ${SECRETS_PATH} ]; then
+  for entry in "${SECRETS_PATH}"/*
+  do
+    if [ -f ${entry} ]; then
+      echo "Processing variable: ${entry}"
+
+      # get filename only, without path information
+      filename=$(basename ${entry})
+
+      # replace filename of type 'haha.hihi' to 'haha_hihi'
+      filename=$(echo ${filename} | sed 's|\.|_|')
+
+      # get content of file (the secret)
+      secret=$(cat ${entry})
+
+      # export the filename as an env variable, with as value the secret
+      SECRETS="$SECRETS -D${filename}=${secret}"
+    fi
+  done
+fi
+
+
+#echo  ${SECRETS}
+
+
 INDY_ENV=${INDY_ENV:-${BASEDIR}/etc/indy/env.sh}
 test -f ${INDY_ENV} && source ${INDY_ENV}
 
@@ -67,4 +95,4 @@ JAVA_OPTS="$JAVA_OPTS $JAVA_DEBUG_OPTS"
 
 MAIN_CLASS=org.commonjava.indy.boot.jaxrs.JaxRsBooter
 
-exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties -Dorg.jboss.logging.provider=slf4j -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2 ${MAIN_CLASS}  "$@"
+exec "$JAVA" ${JAVA_OPTS} -cp "${CP}" ${SECRETS} -Dindy.home="${BASEDIR}" -Dindy.boot.defaults=${BASEDIR}/bin/boot.properties -Dorg.jboss.logging.provider=slf4j -Dhttps.protocols=TLSv1,TLSv1.1,TLSv1.2 ${MAIN_CLASS}  "$@"
