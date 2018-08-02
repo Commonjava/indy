@@ -60,4 +60,5 @@ public interface IndyConfiguration
 
     File getIndyConfDir();
 
+    boolean isNfcEnabled();
 }

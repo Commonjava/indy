@@ -43,6 +43,8 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 10000; // 10,000
 
+    public static final boolean DEFAULT_NFC_ENABLED = true; // true
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -54,6 +56,8 @@ public class DefaultIndyConfiguration
     private Integer nfcExpirationSweepMinutes;
 
     private Integer nfcMaxResultSetSize;
+
+    private Boolean nfcEnabled;
 
     public DefaultIndyConfiguration()
     {
@@ -113,6 +117,12 @@ public class DefaultIndyConfiguration
         this.nfcMaxResultSetSize = size;
     }
 
+    @ConfigName( "nfc.enabled" )
+    public void setNfcEnabled( final boolean enabled )
+    {
+        this.nfcEnabled = enabled;
+    }
+
     @Override
     public int getNfcExpirationSweepMinutes()
     {
@@ -135,6 +145,12 @@ public class DefaultIndyConfiguration
     public File getIndyConfDir()
     {
         return getSyspropDir( IndyConfigFactory.CONFIG_DIR_PROP );
+    }
+
+    @Override
+    public boolean isNfcEnabled()
+    {
+        return nfcEnabled == null ? DEFAULT_NFC_ENABLED : nfcEnabled;
     }
 
     private File getSyspropDir( final String property )
