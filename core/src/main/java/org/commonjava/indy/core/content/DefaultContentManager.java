@@ -270,21 +270,24 @@ public class DefaultContentManager
 
             if ( !generated )
             {
-                for ( final ArtifactStore member : members )
+                if ( PathMaskChecker.checkMask( store, path ) )
                 {
-                    try
+                    for ( final ArtifactStore member : members )
                     {
-                        item = doRetrieve( member, path, eventMetadata );
-                    }
-                    catch ( IndyWorkflowException e )
-                    {
-                        logger.error( "Failed to retrieve artifact from for path {} from {} in group {}, error is: {}",
-                                      path, member, store, e.getMessage() );
-                    }
-                    if ( item != null )
-                    {
-                        // get the item from the first member store
-                        break;
+                        try
+                        {
+                            item = doRetrieve( member, path, eventMetadata );
+                        }
+                        catch ( IndyWorkflowException e )
+                        {
+                            logger.error( "Failed to retrieve artifact from for path {} from {} in group {}, error is: {}",
+                                          path, member, store, e.getMessage() );
+                        }
+                        if ( item != null )
+                        {
+                            // get the item from the first member store
+                            break;
+                        }
                     }
                 }
             }

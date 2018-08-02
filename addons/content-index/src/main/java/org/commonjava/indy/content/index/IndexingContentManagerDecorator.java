@@ -18,6 +18,7 @@ package org.commonjava.indy.content.index;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
+import org.commonjava.indy.core.content.PathMaskChecker;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -234,35 +235,42 @@ public abstract class IndexingContentManagerDecorator
 
             if ( specialPathInfo == null || !specialPathInfo.isMergable() )
             {
-                transfer = getTransferFromConstituents( ( (Group) store ).getConstituents(), resource, path, store,
-                                                        memberKey -> {
-                                                            try
-                                                            {
-                                                                ArtifactStore member =
-                                                                        storeDataManager.getArtifactStore( memberKey );
-
-                                                                if ( member == null )
+                if ( PathMaskChecker.checkMask( store, path ) )
+                {
+                    transfer = getTransferFromConstituents( ( (Group) store ).getConstituents(), resource, path, store,
+                                                            memberKey -> {
+                                                                try
                                                                 {
-                                                                    logger.trace( "Cannot find store for key: {}",
-                                                                                  memberKey );
-                                                                }
-                                                                else
-                                                                {
-                                                                    return retrieve( member, path, eventMetadata );
-                                                                }
-                                                            }
-                                                            catch ( IndyDataException e )
-                                                            {
-                                                                logger.error( String.format(
-                                                                        "Failed to lookup store: %s (in membership of: %s). Reason: %s",
-                                                                        memberKey, store.getKey(), e.getMessage() ),
-                                                                              e );
-                                                            }
+                                                                    ArtifactStore member =
+                                                                            storeDataManager.getArtifactStore( memberKey );
 
-                                                            return null;
-                                                        } );
-                nfcForGroup( store, transfer, resource );
-                return transfer;
+                                                                    if ( member == null )
+                                                                    {
+                                                                        logger.trace( "Cannot find store for key: {}",
+                                                                                      memberKey );
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        return retrieve( member, path, eventMetadata );
+                                                                    }
+                                                                }
+                                                                catch ( IndyDataException e )
+                                                                {
+                                                                    logger.error( String.format(
+                                                                            "Failed to lookup store: %s (in membership of: %s). Reason: %s",
+                                                                            memberKey, store.getKey(), e.getMessage() ),
+                                                                                  e );
+                                                                }
+
+                                                                return null;
+                                                            } );
+                    nfcForGroup( store, transfer, resource );
+                    return transfer;
+                }
+                else
+                {
+                    return null;
+                }
             }
             else
             {
