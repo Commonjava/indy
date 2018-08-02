@@ -157,8 +157,10 @@ public class ISPNDBConfiguration
             propVal = ifNotInSysEnv;
         }
 
-        propVal = propVal.replace( "\"", "&quot;" );
-        propVal = propVal.replace( "'", "&apos;" );
+        propVal = propVal.replace( "\"", "&quot;" )
+                         .replace( "'", "&apos;" )
+                         .replace( "<", "&lt;" )
+                         .replace( ">", "&gt;" );
 
         props.setProperty( propName, propVal );
     }
