@@ -44,14 +44,14 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -65,8 +65,11 @@ import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.indy.folo.FoloUtils.backupTrackedContent;
 import static org.commonjava.indy.folo.FoloUtils.readZipInputStreamAnd;
+import static org.commonjava.indy.folo.FoloUtils.toInputStream;
 import static org.commonjava.indy.folo.FoloUtils.zipTrackedContent;
+import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.SEALED;
 
 @ApplicationScoped
 public class FoloAdminController
@@ -141,6 +144,20 @@ public class FoloAdminController
         catch ( IOException e )
         {
             throw new IndyWorkflowException("Failed to create zip file", e);
+        }
+    }
+
+    public void doInitialBackUpForSealed() throws IndyWorkflowException
+    {
+        Set<TrackedContent> sealed = recordManager.getSealed();
+        File dir = filer.getBackupDir( SEALED.getValue() ).getDetachedFile(); // data/folo/bak/sealed
+        try
+        {
+            backupTrackedContent( dir, sealed );
+        }
+        catch ( IOException e )
+        {
+            throw new IndyWorkflowException("Failed to backup sealed", e);
         }
     }
 
@@ -411,4 +428,23 @@ public class FoloAdminController
                                         digests.get( ContentDigest.SHA_1 ), digests.get( ContentDigest.SHA_256 ) );
     }
 
+    public void saveToSerialized( TrackingKey key, TrackedContent value ) throws IOException
+    {
+        File dir = filer.getBackupDir( SEALED.getValue() ).getDetachedFile();
+        File file = new File( dir, key.getId() );
+        try ( OutputStream fos = new FileOutputStream( file ) )
+        {
+            copy( toInputStream( value ), fos );
+        }
+    }
+
+    public void removeFromSerialized( TrackingKey key )
+    {
+        File dir = filer.getBackupDir( SEALED.getValue() ).getDetachedFile();
+        File file = new File( dir, key.getId() );
+        if ( file.exists() )
+        {
+            file.delete();
+        }
+    }
 }

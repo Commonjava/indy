@@ -27,6 +27,7 @@ import java.io.File;
  */
 public class FoloFiler
 {
+    public static final String BAK_DIR = "bak";
 
     public static final String FOLO_DIR = "folo";
 
@@ -82,4 +83,8 @@ public class FoloFiler
         }
     }
 
+    public DataFile getBackupDir( String type )
+    {
+        return dataFileManager.getDataFile( FOLO_DIR, BAK_DIR, type ); // data/folo/bak/sealed
+    }
 }
