@@ -101,6 +101,11 @@ public class IspnNotFoundCache
     @Override
     public void addMissing( final ConcreteResource resource )
     {
+        if ( !config.isNfcEnabled() )
+        {
+            return;
+        }
+
         boolean withTimeout = true;
         if ( ( (KeyedLocation) resource.getLocation() ).getKey().getType() == hosted )
         {
@@ -137,6 +142,11 @@ public class IspnNotFoundCache
     @Override
     public boolean isMissing( final ConcreteResource resource )
     {
+        if ( !config.isNfcEnabled() )
+        {
+            return false;
+        }
+
         String key = getResourceKey( resource );
         NfcConcreteResourceWrapper obj = nfcCache.get( key );
         boolean timeout = ( obj != null && obj.getTimeout() < System.currentTimeMillis() );
