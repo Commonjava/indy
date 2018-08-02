@@ -16,6 +16,8 @@
 package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.core.expire.ScheduleManager;
+import org.commonjava.indy.folo.change.FoloBackupListener;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
@@ -31,6 +33,7 @@ import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.List;
@@ -57,6 +60,18 @@ public class FoloRecordCache
 
     protected FoloRecordCache()
     {
+    }
+
+    @Inject
+    private FoloBackupListener foloBackupListener;
+
+    @PostConstruct
+    private void init()
+    {
+        sealedRecordCache.execute( (cache) -> {
+            cache.addListener( foloBackupListener );
+            return null;
+        } );
     }
 
     public FoloRecordCache( final Cache<TrackedContentEntry, TrackedContentEntry> inProgressRecordCache,

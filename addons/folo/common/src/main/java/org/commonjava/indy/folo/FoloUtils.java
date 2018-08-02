@@ -60,6 +60,17 @@ public class FoloUtils
         }
     }
 
+    public static void backupTrackedContent( File dir, Set<TrackedContent> sealed ) throws IOException
+    {
+        logger.info( "Backup sealed to: '{}', size: {}", dir.getAbsolutePath(), sealed.size() );
+        for ( TrackedContent f : sealed )
+        {
+            String name = f.getKey().getId();
+            logger.trace( "Adding {} to {}", name, dir );
+            copy( toInputStream( f ), new FileOutputStream( new File( dir, name ) ) );
+        }
+    }
+
     /**
      * Read records from input stream and execute consumer function.
      * @param inputStream
@@ -94,7 +105,7 @@ public class FoloUtils
         return count;
     }
 
-    private static InputStream toInputStream( TrackedContent f ) throws IOException
+    public static InputStream toInputStream( TrackedContent f ) throws IOException
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
