@@ -32,6 +32,7 @@
     <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
 
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
+    <class>org.commonjava.indy.core.inject.NFCMetricsDecorator</class>
   </decorators>
       
 </beans>

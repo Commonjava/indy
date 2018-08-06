@@ -44,6 +44,8 @@
     <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
     <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
     <!--<class>org.commonjava.indy.implrepo.data.ValidRemoteStoreDataManagerDecorator</class>-->
+    
+    <class>org.commonjava.indy.core.inject.NFCMetricsDecorator</class>
   </decorators>
       
 </beans>
