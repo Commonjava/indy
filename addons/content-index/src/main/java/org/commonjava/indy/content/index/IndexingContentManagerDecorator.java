@@ -278,7 +278,7 @@ public abstract class IndexingContentManagerDecorator
                     {
                         ; // metadata generated/exists but missing due to membership change, not add to nfc so next req can retry
                     }
-                    else
+                    else if ( StoreType.hosted != type ) // don't track NFC for hosted repos
                     {
                         nfc.addMissing( resource );
                     }
@@ -597,7 +597,7 @@ public abstract class IndexingContentManagerDecorator
 
     private void nfcForGroup( final ArtifactStore store, final Transfer transfer, final ConcreteResource resource )
     {
-        if ( store.getKey().getType() == StoreType.group )
+        if ( StoreType.group == store.getType() )
         {
             if ( exists( transfer ) )
             {
