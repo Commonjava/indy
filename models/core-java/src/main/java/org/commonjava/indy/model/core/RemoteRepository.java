@@ -110,12 +110,14 @@ public class RemoteRepository
 
     RemoteRepository()
     {
+        setUseNfc( true );
     }
 
     @Deprecated
     public RemoteRepository( final String name, final String remoteUrl )
     {
         this( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, name, remoteUrl );
+        setUseNfc( true );
     }
 
     public RemoteRepository( final String packageType, String name, String remoteUrl )
@@ -123,6 +125,7 @@ public class RemoteRepository
         super( packageType, remote, name );
         this.url = remoteUrl;
         calculateFields();
+        setUseNfc( true );
     }
 
     public String getUrl()

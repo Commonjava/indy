@@ -76,6 +76,9 @@ public abstract class ArtifactStore
     @JsonProperty("authoritative_index")
     private Boolean authoritativeIndex;
 
+    @JsonProperty( "use_nfc" )
+    private boolean useNfc;
+
     @JsonIgnore
     private Boolean rescanInProgress = false;
 
@@ -235,6 +238,7 @@ public abstract class ArtifactStore
         store.setTransientMetadata( getTransientMetadata() );
         store.setPathStyle( getPathStyle() );
         store.setDisableTimeout( getDisableTimeout() );
+        store.setUseNfc( isUseNfc() );
     }
 
     protected void setTransientMetadata( Map<String, Object> transientMetadata )
@@ -281,6 +285,16 @@ public abstract class ArtifactStore
     public void setAuthoritativeIndex( boolean authoritativeIndex )
     {
         this.authoritativeIndex = authoritativeIndex;
+    }
+
+    public boolean isUseNfc()
+    {
+        return useNfc;
+    }
+
+    public void setUseNfc( boolean useNfc )
+    {
+        this.useNfc = useNfc;
     }
 
     public Boolean isRescanInProgress()

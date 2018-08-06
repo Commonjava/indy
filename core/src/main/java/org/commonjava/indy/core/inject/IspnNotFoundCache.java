@@ -16,6 +16,9 @@
 package org.commonjava.indy.core.inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.galley.RepositoryLocation;
@@ -63,6 +66,9 @@ public class IspnNotFoundCache
 
     private QueryFactory queryFactory;
 
+    @Inject
+    private StoreDataManager storeDataManager;
+
     private int maxResultSetSize;
 
     // limit the max size for REST endpoint getMissing to avoid OOM
@@ -98,6 +104,23 @@ public class IspnNotFoundCache
         return timeoutInSeconds;
     }
 
+    private boolean storeUsesNfc( KeyedLocation location )
+    {
+        StoreKey storeKey = location.getKey();
+        ArtifactStore artifactStore;
+        try
+        {
+            artifactStore = storeDataManager.getArtifactStore( storeKey );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Unable to find artifact store with key " + storeKey + " when working with NFC.", e );;
+            return false;
+        }
+        boolean useNfc = artifactStore.isUseNfc();
+        return useNfc;
+    }
+
     @Override
     public void addMissing( final ConcreteResource resource )
     {
@@ -111,42 +134,57 @@ public class IspnNotFoundCache
 
     private void addMissing( final ConcreteResource resource, final boolean withTimeout )
     {
-        final String key = getResourceKey( resource );
-        if ( withTimeout )
-        {
-            final int timeoutInSeconds = getTimeoutInSeconds( resource );
-            long timeout = Long.MAX_VALUE;
-            if ( timeoutInSeconds > 0 )
+        KeyedLocation location = (KeyedLocation) resource.getLocation();
+        if ( storeUsesNfc( location ) ) {
+            final String key = getResourceKey( resource );
+            if ( withTimeout )
             {
-                timeout = System.currentTimeMillis() + ( timeoutInSeconds * 1000 );
-            }
-            logger.debug( "[NFC] {} will not be checked again until {}", resource,
-                          new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( timeout ) ) );
+                final int timeoutInSeconds = getTimeoutInSeconds( resource );
+                long timeout = Long.MAX_VALUE;
+                if ( timeoutInSeconds > 0 )
+                {
+                    timeout = System.currentTimeMillis() + ( timeoutInSeconds * 1000 );
+                }
+                logger.debug( "[NFC] {} will not be checked again until {}", resource,
+                              new SimpleDateFormat( TIMEOUT_FORMAT ).format( new Date( timeout ) ) );
 
-            final long f_timeout = timeout;
-            nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, f_timeout ),
-                                                  timeoutInSeconds, TimeUnit.SECONDS ) );
+                final long f_timeout = timeout;
+                nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, f_timeout ),
+                                                      timeoutInSeconds, TimeUnit.SECONDS ) );
+            }
+            else
+            {
+                logger.debug( "[NFC] {} will not be checked again", resource );
+                nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, Long.MAX_VALUE ) ) );
+            }
         }
         else
         {
-            logger.debug( "[NFC] {} will not be checked again", resource );
-            nfcCache.execute( cache -> cache.put( key, new NfcConcreteResourceWrapper( resource, Long.MAX_VALUE ) ) );
+            logger.debug( "[NFC] {} addition skipped because the store does not allow using NFC" );
         }
     }
+
 
     @Override
     public boolean isMissing( final ConcreteResource resource )
     {
-        String key = getResourceKey( resource );
-        NfcConcreteResourceWrapper obj = nfcCache.get( key );
-        boolean timeout = ( obj != null && obj.getTimeout() < System.currentTimeMillis() );
-        boolean missing = ( obj != null && !timeout );
-        if ( timeout )
-        {
-            nfcCache.remove( key );
+        KeyedLocation location = (KeyedLocation) resource.getLocation();
+        if ( storeUsesNfc( location ) ) {
+            String key = getResourceKey( resource );
+            NfcConcreteResourceWrapper obj = nfcCache.get( key );
+            boolean timeout = ( obj != null && obj.getTimeout() < System.currentTimeMillis() );
+            boolean missing = ( obj != null && !timeout );
+            if ( timeout )
+            {
+                nfcCache.remove( key );
+            }
+            logger.trace( "NFC check: {}, obj: {}, timeout: {}, missing: {}", resource, obj, timeout, missing );
+            return missing;
         }
-        logger.trace( "NFC check: {}, obj: {}, timeout: {}, missing: {}", resource, obj, timeout, missing );
-        return missing;
+        else
+        {
+            return false;
+        }
     }
 
     @Override
