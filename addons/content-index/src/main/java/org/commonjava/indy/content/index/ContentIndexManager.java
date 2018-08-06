@@ -119,9 +119,9 @@ public class ContentIndexManager
     public boolean removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
         IndexedStorePath topPath = new IndexedStorePath( key, path );
-//        logger.trace( "Attempting to remove indexed path: {}", topPath );
         if ( contentIndex.remove( topPath ) != null )
         {
+            logger.trace( "Remove index, key: {}", topPath );
             if ( pathConsumer != null )
             {
                 pathConsumer.accept( topPath );
@@ -129,18 +129,23 @@ public class ContentIndexManager
             return true;
         }
 
+        logger.trace( "Remove index (NOT FOUND), key: {}", topPath );
         return false;
     }
 
     public void deIndexStorePath( final StoreKey key, final String path )
     {
         IndexedStorePath toRemove = new IndexedStorePath( key, path );
-        contentIndex.remove( toRemove );
+        IndexedStorePath val = contentIndex.remove( toRemove );
+        logger.trace( "De index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), toRemove );
     }
 
     public IndexedStorePath getIndexedStorePath( final StoreKey key, final String path )
     {
-        return contentIndex.get( new IndexedStorePath( key, path ) );
+        IndexedStorePath ispKey = new IndexedStorePath( key, path );
+        IndexedStorePath val = contentIndex.get( ispKey );
+        logger.trace( "Get index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), ispKey );
+        return val;
     }
 
     public void indexTransferIn( Transfer transfer, StoreKey...topKeys )
@@ -157,13 +162,13 @@ public class ContentIndexManager
     public void indexPathInStores( String path, StoreKey originKey, StoreKey... topKeys )
     {
             IndexedStorePath origin = new IndexedStorePath( originKey, path );
-            logger.trace( "Indexing path: {} in: {}", path, originKey );
+            logger.trace( "Index, key: {}", origin );
             contentIndex.put( origin, origin );
 
             Set<StoreKey> keySet = new HashSet<>( Arrays.asList( topKeys ) );
             keySet.forEach( (key)->{
                 IndexedStorePath isp = new IndexedStorePath( key, originKey, path );
-                logger.trace( "Indexing path: {} in: {} via member: {}", path, key, originKey );
+                logger.trace( "Index, key: {}, origin: {}", isp, originKey );
                 contentIndex.put( isp, origin );
             } );
     }
@@ -176,6 +181,7 @@ public class ContentIndexManager
         {
             isps.forEach( isp -> contentIndex.remove( isp ) );
         }
+        logger.trace( "Clear all indices in: {}, size: {}", store.getKey(), ( isps != null ? isps.size() : 0 ) );
     }
 
     public void clearAllIndexedPathWithOriginalStore( ArtifactStore originalStore )
@@ -186,11 +192,12 @@ public class ContentIndexManager
         {
             isps.forEach( isp -> contentIndex.remove( isp ) );
         }
+        logger.trace( "Clear all indices with origin: {}, size: {}", originalStore.getKey(), ( isps != null ? isps.size() : 0 ) );
     }
 
     /**
      * <b>NOT Recursive</b>. This assumes you've recursed the group membership structure beforehand, using
-     * {@link StoreDataManager#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
+     * {@link org.commonjava.indy.data.ArtifactStoreQuery#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
      * the path should be cleared.
      */
     public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
@@ -200,10 +207,8 @@ public class ContentIndexManager
             return;
         }
 
-//        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
-
         groups.forEach( (group)->{
-            logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
+            logger.trace( "Clearing path: '{}' from content index, group: {}", path, group.getName() );
 
             // if we remove an indexed path, it SHOULD mean there was content. If not, we should delete the NFC entry.
             if ( !removeIndexedStorePath( path, group.getKey(), pathConsumer ) )
