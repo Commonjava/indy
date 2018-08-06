@@ -405,17 +405,7 @@ public class DefaultDownloadManager
             List<Transfer> txfrs = transfers.retrieveAll(
                     locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ),
                     eventMetadata );
-            txfrs.forEach( txfr ->
-                           {
-                               final KeyedLocation location = (KeyedLocation) txfr.getLocation();
-                               // Only care about hosted missing case to add in NFC. Remote one need another type of checking.
-                               if ( location.getKey().getType() == hosted && !txfr.exists() )
-                               {
-                                   logger.trace( "Resource not found when retrieved; added to NFC: {}",
-                                                 txfr.getResource() );
-                                   nfc.addMissing( txfr.getResource() );
-                               }
-                           } );
+
             return txfrs;
         }
         catch ( final TransferException e )
@@ -484,8 +474,6 @@ public class DefaultDownloadManager
                 target = transfers.getCacheReference( res );
                 if ( target == null || !target.exists() )
                 {
-                    logger.trace( "Resource not found when retrieved; added to NFC: {}", res );
-                    nfc.addMissing( res );
                     target = null;
                 }
             }
@@ -801,12 +789,14 @@ public class DefaultDownloadManager
             logger.trace( "Resource {} is missing, return null", resource );
             return null;
         }
+
         Transfer txfr = transfers.getCacheReference( resource );
-        if ( txfr == null || !txfr.exists() )
+        if ( StoreType.hosted == store.getType() && ( txfr == null || !txfr.exists() ) )
         {
             logger.trace( "Resource not found when retrieving cached reference; added to NFC: {}", resource );
             nfc.addMissing( resource );
         }
+
         return txfr;
     }
 
@@ -969,13 +959,6 @@ public class DefaultDownloadManager
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
 
         final boolean deleted = doDelete( item, eventMetadata );
-
-        if ( deleted && store.getKey().getType() == hosted )
-        {
-            final ConcreteResource res = item.getResource();
-            logger.trace( "Resource not found for deletion; added to NFC: {}", res );
-            nfc.addMissing( res );
-        }
 
         return deleted;
     }
