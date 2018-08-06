@@ -107,7 +107,10 @@ class NFCContentListener
                     final ArtifactStore store = storeDataManager.getArtifactStore( key );
                     final ConcreteResource r = new ConcreteResource( LocationUtils.toLocation( store ), isp.getPath() );
                     logger.debug( "Add NFC of resource {} in store {}", r, store );
-                    nfc.addMissing( r );
+                    if ( StoreType.hosted != key.getType() )
+                    {
+                        nfc.addMissing( r );
+                    }
                 }
                 catch ( IndyDataException ex )
                 {
