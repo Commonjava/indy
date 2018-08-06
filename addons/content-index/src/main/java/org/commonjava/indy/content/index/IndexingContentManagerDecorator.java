@@ -392,7 +392,6 @@ public abstract class IndexingContentManagerDecorator
             Transfer transfer = delegate.getTransfer( storePath.getStoreKey(), path, op );
             if ( transfer == null || !transfer.exists() )
             {
-<<<<<<< HEAD
                 if ( storePath.getStoreKey().getType() == StoreType.remote )
                 {
                     // Transfer not existing may be caused by not cached for remote repo, so we should trigger downloading
@@ -415,10 +414,7 @@ public abstract class IndexingContentManagerDecorator
                         logger.warn( "Error to get store {} caused by {}", storePath.getStoreKey(), e.getMessage() );
                     }
                 }
-                logger.debug( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
-=======
                 logger.trace( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
->>>>>>> switch to trace logging
                               topKey );
                 // something happened to the underlying Transfer...de-index it, and don't return it.
                 indexManager.deIndexStorePath( storeKey, path );

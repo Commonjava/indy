@@ -48,8 +48,8 @@ public interface ContentIndexManager
 
     /**
      * <b>NOT Recursive</b>. This assumes you've recursed the group membership structure beforehand, using
-     * {@link StoreDataManager#query()#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
-      * the path should be cleared.
+     * {@link org.commonjava.indy.data.ArtifactStoreQuery#getGroupsAffectedBy(Collection)} to find the set of {@link Group} instances for which
+     * the path should be cleared.
      */
     void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer );
 
