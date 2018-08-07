@@ -453,7 +453,11 @@ public class NPMContentAccessHandler
                         {
                             origItem.unlock();
                         }
-                        item.unlock();
+
+                        if ( item != null )
+                        {
+                            item.unlock();
+                        }
                     }
                 }
             }
