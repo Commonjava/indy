@@ -15,19 +15,20 @@
       <eviction size="10000000" type="COUNT"/>
     </local-cache>
 
-    <local-cache name="folo-in-progress" >
-      <eviction strategy="LRU" size="10000000" type="COUNT"/>
-    </local-cache>
-
-    <local-cache name="folo-sealed">
-      <eviction size="1000" type="COUNT" strategy="LRU"/>
-      <persistence passivation="false">
-        <file-store shared="false" preload="false" fetch-state="true" path="/var/lib/indy/data/folo/sealed" />
-      </persistence>
+    <local-cache name="folo-in-progress" configuration="local-template">
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <indexing index="LOCAL">
         <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
-        <property name="hibernate.search.default.indexBase">/var/lib/indy/data/folo/sealed/index-base</property>
+        <property name="default.directory_provider">ram</property>
+        <!-- <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property> -->
       </indexing>
+    </local-cache>
+
+    <local-cache name="folo-sealed" configuration="local-template">
+      <eviction size="1000" type="COUNT" strategy="LRU"/>
+      <persistence passivation="false">
+        <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/folo"/>
+      </persistence>
     </local-cache>
 
     <local-cache name="content-index">
