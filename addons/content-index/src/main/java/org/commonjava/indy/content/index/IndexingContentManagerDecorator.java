@@ -388,8 +388,13 @@ public abstract class IndexingContentManagerDecorator
 
         if ( storePath != null )
         {
-            logger.debug( "Cached target store {} found for path {}, will get it", storePath.getStoreKey(), path );
-            Transfer transfer = delegate.getTransfer( storePath.getStoreKey(), path, op );
+            StoreKey actualStorageKey = storePath.getOriginStoreKey();
+            if ( actualStorageKey == null )
+            {
+                actualStorageKey = storePath.getStoreKey();
+            }
+
+            Transfer transfer = delegate.getTransfer( actualStorageKey, path, op );
             if ( transfer == null || !transfer.exists() )
             {
                 if ( storePath.getStoreKey().getType() == StoreType.remote )

@@ -89,7 +89,16 @@ public class IndexedStorePath
     @JsonIgnore
     public StoreKey getOriginStoreKey()
     {
-        return originKey != null ? originKey : new StoreKey( packageType, originStoreType, originStoreName );
+        if ( originKey != null )
+        {
+            return originKey;
+        }
+        else if ( originStoreName != null )
+        {
+            return new StoreKey( packageType, originStoreType, originStoreName );
+        }
+
+        return null;
     }
 
     public StoreType getStoreType()
