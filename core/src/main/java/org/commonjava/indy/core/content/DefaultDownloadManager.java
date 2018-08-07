@@ -457,7 +457,7 @@ public class DefaultDownloadManager
 
         final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
 
-        if ( nfc.isMissing( res ) )
+        if ( store.getType() != hosted && nfc.isMissing( res ) )
         {
             return null;
         }
@@ -750,14 +750,15 @@ public class DefaultDownloadManager
                 logger.trace( "Attempting to retrieve storage reference in: {} for: {} (operation: {})", store, path,
                               op );
 
-                if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
-                {
-                    transfer = getStorageReferenceWithNFC( store, path );
-                }
-                else
-                {
+                // [jdcasey]: We don't want to use NFC for hosted repos any more...consumes memory and isn't much faster than filesystem
+//                if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
+//                {
+//                    transfer = getStorageReferenceWithNFC( store, path );
+//                }
+//                else
+//                {
                     transfer = getStorageReference( store, path );
-                }
+//                }
                 logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
                 if ( transfer != null && !transfer.exists() && ( op == DOWNLOAD || op == LISTING ) )
                 {
@@ -784,14 +785,14 @@ public class DefaultDownloadManager
     private Transfer getStorageReferenceWithNFC( final ArtifactStore store, final String... path )
     {
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
-        if ( nfc.isMissing( resource ) )
+        if ( store.getType() != hosted && nfc.isMissing( resource ) )
         {
             logger.trace( "Resource {} is missing, return null", resource );
             return null;
         }
 
         Transfer txfr = transfers.getCacheReference( resource );
-        if ( StoreType.hosted == store.getType() && ( txfr == null || !txfr.exists() ) )
+        if ( txfr == null || !txfr.exists() )
         {
             logger.trace( "Resource not found when retrieving cached reference; added to NFC: {}", resource );
             nfc.addMissing( resource );
@@ -859,14 +860,15 @@ public class DefaultDownloadManager
         final ContentQuality quality = getQuality( path );
         if ( storeIsSuitableFor( store, quality, op ) )
         {
-            if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
-            {
-                return getStorageReferenceWithNFC( store, path );
-            }
-            else
-            {
+            // [jdcasey]: We don't want to use NFC for hosted repos any more...consumes memory and isn't much faster than filesystem
+//            if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
+//            {
+//                return getStorageReferenceWithNFC( store, path );
+//            }
+//            else
+//            {
                 return getStorageReference( store, path );
-            }
+//            }
         }
 
         logger.warn( "Store {} not suitable for: {}", store, op );

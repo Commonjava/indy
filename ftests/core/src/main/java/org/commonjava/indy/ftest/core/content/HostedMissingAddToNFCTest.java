@@ -55,6 +55,7 @@ import static org.junit.Assert.assertThat;
  *     <li>After store the missing content, entry in NFC for this content removed</li>
  * </ul>
  */
+@Ignore( "Not adding hosted repo paths to NFC any more since performance is not much better than hitting the filesystem, and it consumes memory" )
 public class HostedMissingAddToNFCTest
         extends AbstractContentManagementTest
 {
