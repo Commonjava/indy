@@ -13,25 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.ftest.core.content.contentindex;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.content.index.ContentIndexCache;
 import org.commonjava.indy.content.index.ContentIndexCacheProducer;
 import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.util.AnnotationLiteral;
-import java.io.IOException;
 import java.io.InputStream;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
