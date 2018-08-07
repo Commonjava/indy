@@ -371,7 +371,13 @@ public abstract class IndexingContentManagerDecorator
 
         if ( storePath != null )
         {
-            Transfer transfer = delegate.getTransfer( storePath.getStoreKey(), path, op );
+            StoreKey actualStorageKey = storePath.getOriginStoreKey();
+            if ( actualStorageKey == null )
+            {
+                actualStorageKey = storePath.getStoreKey();
+            }
+
+            Transfer transfer = delegate.getTransfer( actualStorageKey, path, op );
             if ( transfer == null || !transfer.exists() )
             {
                 logger.trace( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
