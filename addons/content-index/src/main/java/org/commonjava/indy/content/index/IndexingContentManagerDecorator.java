@@ -191,7 +191,7 @@ public abstract class IndexingContentManagerDecorator
 
         logger.trace( "Looking for indexed path: {} in: {}", path, store.getKey() );
 
-        Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
+        Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD, eventMetadata );
         if ( transfer != null )
         {
             logger.debug( "Found indexed transfer: {}. Returning.", transfer );
@@ -359,7 +359,8 @@ public abstract class IndexingContentManagerDecorator
     }
 
     @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
-    public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path, final TransferOperation op )
+    public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path,
+                                        final TransferOperation op, final EventMetadata metadata )
             throws IndyWorkflowException
     {
         logger.debug( "Looking for indexed path: {} in: {} (entry point: {})", path, storeKey, topKey );
@@ -396,6 +397,29 @@ public abstract class IndexingContentManagerDecorator
             Transfer transfer = delegate.getTransfer( actualStorageKey, path, op );
             if ( transfer == null || !transfer.exists() )
             {
+                if ( storePath.getStoreKey().getType() == StoreType.remote )
+                {
+                    // Transfer not existing may be caused by not cached for remote repo, so we should trigger downloading
+                    // immediately to check if it really exists.
+                    logger.debug( "Will trigger downloading of path {} from store {} from content index level", path,
+                                  storePath.getStoreKey() );
+                    try
+                    {
+                        transfer =
+                                delegate.retrieve( storeDataManager.getArtifactStore( storePath.getStoreKey() ), path,
+                                                   metadata );
+                        if ( transfer != null && transfer.exists() )
+                        {
+                            logger.debug( "Downloaded and found it: {}", transfer );
+                            return transfer;
+                        }
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        logger.warn( "Error to get store {} caused by {}", storePath.getStoreKey(), e.getMessage() );
+                    }
+                }
+
                 logger.trace( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
                               topKey );
                 // something happened to the underlying Transfer...de-index it, and don't return it.
@@ -420,7 +444,7 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD );
+        Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD, new EventMetadata(  ) );
         if ( exists( transfer ) )
         {
             return transfer;
@@ -483,7 +507,7 @@ public abstract class IndexingContentManagerDecorator
     @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     @Deprecated
     public Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
-                                               ContentManagementFunction func )
+                                               ContentManagementFunction func, final EventMetadata metadata )
             throws IndyWorkflowException
     {
         StoreKey topKey = group.getKey();
@@ -514,7 +538,7 @@ public abstract class IndexingContentManagerDecorator
                 continue;
             }
 
-            Transfer transfer = getIndexedTransfer( key, topKey, path, op );
+            Transfer transfer = getIndexedTransfer( key, topKey, path, op, metadata );
             if ( transfer == null && StoreType.group != key.getType() )
             {
                 // don't call this for constituents that are groups...we'll manually traverse the membership below...
@@ -548,7 +572,7 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final StoreKey storeKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
-        Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD );
+        Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD, new EventMetadata(  ) );
         if ( exists( transfer ) )
         {
             logger.debug( "Returning indexed transfer: {}", transfer );

@@ -18,6 +18,9 @@ package org.commonjava.indy.util;
 
 import java.io.File;
 
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
+import static org.commonjava.maven.galley.util.PathUtils.parentPath;
+
 public final class PathUtils
 {
     private PathUtils()
@@ -82,5 +85,14 @@ public final class PathUtils
     public static String removeExtraSlash( String path )
     {
         return path.replaceAll( "/+", "/" );
+    }
+
+    public static String getCurrentDirPath( String path )
+    {
+        if ( path.trim().endsWith( "/" ) )
+        {
+            return path;
+        }
+        return normalize( normalize( parentPath( path ) ), "/" );
     }
 }
