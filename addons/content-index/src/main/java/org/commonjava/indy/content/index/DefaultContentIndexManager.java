@@ -31,12 +31,17 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -66,18 +71,39 @@ public class DefaultContentIndexManager
     @Inject
     private NFCContentListener listener;
 
+    @Inject
+    private Instance<PackageIndexingStrategy> indexingStrategyComponents;
+
+    private Map<String, PackageIndexingStrategy> indexingStrategies;
+
     protected DefaultContentIndexManager()
     {
     }
 
     public DefaultContentIndexManager( StoreDataManager storeDataManager, SpecialPathManager specialPathManager,
                                 CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex,
+                                Map<String, PackageIndexingStrategy> indexingStrategies,
                                 NotFoundCache nfc )
     {
         this.storeDataManager = storeDataManager;
         this.specialPathManager = specialPathManager;
         this.contentIndex = contentIndex;
+        this.indexingStrategies = indexingStrategies;
         this.nfc = nfc;
+    }
+
+    @PostConstruct
+    public void constructed()
+    {
+        if ( indexingStrategyComponents != null )
+        {
+            Map<String, PackageIndexingStrategy> strats = new HashMap<>();
+            indexingStrategyComponents.forEach( comp->{
+                strats.put( comp.getPackageType(), comp );
+            } );
+
+            this.indexingStrategies = Collections.unmodifiableMap( strats );
+        }
     }
 
     @Override
@@ -122,10 +148,11 @@ public class DefaultContentIndexManager
     }
 
     @Override
-    public boolean removeIndexedStorePath( String path, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
+    public boolean removeIndexedStorePath( String rawPath, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
+        String path = getStrategyPath( key, rawPath );
         IndexedStorePath topPath = new IndexedStorePath( key, path );
-//        logger.trace( "Attempting to remove indexed path: {}", topPath );
+        logger.trace( "Attempting to remove indexed path: {}", topPath );
         if ( contentIndex.remove( topPath ) != null )
         {
             if ( pathConsumer != null )
@@ -135,20 +162,41 @@ public class DefaultContentIndexManager
             return true;
         }
 
+        logger.trace( "Remove index (NOT FOUND), key: {}", topPath );
         return false;
     }
 
-    @Override
-    public void deIndexStorePath( final StoreKey key, final String path )
+    public String getStrategyPath( final StoreKey key, final String rawPath )
     {
-        IndexedStorePath toRemove = new IndexedStorePath( key, path );
-        contentIndex.remove( toRemove );
+        PackageIndexingStrategy strategy = indexingStrategies.get( key.getPackageType() );
+        if ( strategy == null )
+        {
+            logger.trace( "Cannot find indexing strategy for package-type: {}. Using raw path for indexing.",
+                          key.getPackageType() );
+
+            return rawPath;
+        }
+
+        return strategy.getIndexPath( rawPath );
     }
 
     @Override
-    public IndexedStorePath getIndexedStorePath( final StoreKey key, final String path )
+    public void deIndexStorePath( final StoreKey key, final String rawPath )
     {
-        return contentIndex.get( new IndexedStorePath( key, path ) );
+        String path = getStrategyPath( key, rawPath );
+        IndexedStorePath toRemove = new IndexedStorePath( key, path );
+        IndexedStorePath val = contentIndex.remove( toRemove );
+        logger.trace( "De index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), toRemove );
+    }
+
+    @Override
+    public IndexedStorePath getIndexedStorePath( final StoreKey key, final String rawPath )
+    {
+        String path = getStrategyPath( key, rawPath );
+        IndexedStorePath ispKey = new IndexedStorePath( key, path );
+        IndexedStorePath val = contentIndex.get( ispKey );
+        logger.trace( "Get index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), ispKey );
+        return val;
     }
 
     @Override
@@ -156,7 +204,9 @@ public class DefaultContentIndexManager
     {
         if ( transfer != null && transfer.exists() )
         {
-            indexPathInStores( transfer.getPath(), LocationUtils.getKey( transfer ), topKeys );
+            StoreKey key = LocationUtils.getKey( transfer );
+            String path = getStrategyPath( key, transfer.getPath() );
+            indexPathInStores( path, key, topKeys );
         }
     }
 
@@ -164,8 +214,10 @@ public class DefaultContentIndexManager
      * When we store or retrieve content, index it for faster reference next time.
      */
     @Override
-    public void indexPathInStores( String path, StoreKey originKey, StoreKey... topKeys )
+    public void indexPathInStores( String rawPath, StoreKey originKey, StoreKey... topKeys )
     {
+        String path = getStrategyPath( originKey, rawPath );
+
         IndexedStorePath origin = new IndexedStorePath( originKey, path );
         logger.trace( "Indexing path: {} in: {}", path, originKey );
         contentIndex.put( origin, origin );
@@ -187,6 +239,7 @@ public class DefaultContentIndexManager
         {
             isps.forEach( isp -> contentIndex.remove( isp ) );
         }
+        logger.trace( "Clear all indices in: {}, size: {}", store.getKey(), ( isps != null ? isps.size() : 0 ) );
     }
 
     @Override
@@ -198,6 +251,7 @@ public class DefaultContentIndexManager
         {
             isps.forEach( isp -> contentIndex.remove( isp ) );
         }
+        logger.trace( "Clear all indices with origin: {}, size: {}", originalStore.getKey(), ( isps != null ? isps.size() : 0 ) );
     }
 
     @Override
@@ -218,7 +272,7 @@ public class DefaultContentIndexManager
      * the path should be cleared.
      */
     @Override
-    public void clearIndexedPathFrom( String path, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
+    public void clearIndexedPathFrom( String rawPath, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
         if ( groups == null || groups.isEmpty() )
         {
@@ -228,6 +282,8 @@ public class DefaultContentIndexManager
 //        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
 
         groups.forEach( (group)->{
+            String path = getStrategyPath( group.getKey(), rawPath );
+
             logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
 
             // if we remove an indexed path, it SHOULD mean there was content. If not, we should delete the NFC entry.

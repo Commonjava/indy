@@ -37,9 +37,6 @@
     <class>org.commonjava.indy.koji.content.KojiContentManagerDecorator</class>
     <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
 
-    <!-- ContentIndexManager decorators -->
-    <class>org.commonjava.indy.content.index.DirectoryLvContentIndexManagerDecorator</class>
-
     <!-- ContentManagerDirectAccess decorators -->
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
 
