@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.core.content;
 
-import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,20 +25,7 @@ public class PathMaskChecker
 {
     private static final Logger logger = LoggerFactory.getLogger( PathMaskChecker.class );
 
-    // slightly different from checkListingMask in that for regex pattern the pattern.match() is called
-    public static boolean checkMask( final ArtifactStore store, final String path )
-    {
-        if ( !( store instanceof AbstractRepository ) )
-        {
-            return true;
-        }
-
-        AbstractRepository repo = (AbstractRepository) store;
-
-        return checkMask( repo, path );
-    }
-
-    public static boolean checkMask(final AbstractRepository repo, final String path){
+    public static boolean checkMask(final ArtifactStore repo, final String path){
         Set<String> maskPatterns = repo.getPathMaskPatterns();
 
         logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
@@ -76,20 +62,14 @@ public class PathMaskChecker
     // path mask checking
     public static boolean checkListingMask( final ArtifactStore store, final String path )
     {
-        if ( !( store instanceof AbstractRepository ) )
-        {
-            return true;
-        }
+        Set<String> maskPatterns = store.getPathMaskPatterns();
 
-        AbstractRepository repo = (AbstractRepository) store;
-        Set<String> maskPatterns = repo.getPathMaskPatterns();
-
-        logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
-        logger.trace( "Mask patterns in {}: {}", repo.getName(), maskPatterns );
+        logger.trace( "Checking mask in: {}", store.getKey() );
+        logger.trace( "Mask patterns in {}: {}", store.getName(), maskPatterns );
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
-            logger.trace( "Checking mask in: {}, - NO PATTERNS", repo.getName() );
+            logger.trace( "Checking mask in: {}, - NO PATTERNS", store.getName() );
             return true;
         }
 
@@ -108,12 +88,12 @@ public class PathMaskChecker
         {
             if ( path.startsWith( pattern ) || pattern.startsWith( path ) )
             {
-                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
+                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", store.getName(), pattern );
                 return true;
             }
         }
 
-        logger.debug( "Listing for path {} not enabled by path mask {} of repo {}", path, maskPatterns, repo );
+        logger.debug( "Listing for path {} not enabled by path mask {} of repo {}", path, maskPatterns, store.getKey() );
 
         return false;
     }
