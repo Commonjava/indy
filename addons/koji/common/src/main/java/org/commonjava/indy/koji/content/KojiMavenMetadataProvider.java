@@ -99,7 +99,7 @@ public class KojiMavenMetadataProvider
     private Locker<ProjectRef> versionMetadataLocks;
 
     @WeftManaged
-    @ExecutorConfig( threads=8, priority=3, named="koji-metadata" )
+    @ExecutorConfig( threads=8, priority=8, named="koji-metadata" )
     @Inject
     private ExecutorService executorService;
 
