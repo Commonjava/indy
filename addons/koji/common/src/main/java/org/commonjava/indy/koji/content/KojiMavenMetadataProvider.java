@@ -62,6 +62,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -224,13 +225,14 @@ public class KojiMavenMetadataProvider
         return kojiClient.withKojiSession( ( session ) -> {
 
             // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
-            Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new HashMap<>();
-            Set<Integer> seenBuilds = new HashSet<>();
-
             List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ga, session );
 
-            CountDownLatch latch = new CountDownLatch( archives.size() );
+            Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new ConcurrentHashMap<>();
+            Set<Integer> seenBuilds = new ConcurrentHashSet<>();
             Set<SingleVersion> versions = new ConcurrentHashSet<>();
+
+            CountDownLatch latch = new CountDownLatch( archives.size() );
+
             for ( KojiArchiveInfo archive : archives )
             {
                 executorService.submit( ()->{
