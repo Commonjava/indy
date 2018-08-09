@@ -20,6 +20,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -115,10 +116,10 @@ public abstract class IndexingDirectContentAccessDecorator
     private Transfer getIndexedTransfer( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
-        IndexedStorePath storePath =
-                indexManager.getIndexedStorePath( store.getKey(), path );
+        StoreKey indexedStoreKey =
+                indexManager.getIndexedStoreKey( store.getKey(), path );
 
-        if ( storePath != null )
+        if ( indexedStoreKey != null )
         {
             Transfer transfer = delegate.getTransfer( store, path );
             if ( transfer == null || !transfer.exists() )
@@ -149,7 +150,7 @@ public abstract class IndexingDirectContentAccessDecorator
         {
             // Here we will filter the resources if authoritative index set on. Only these indexed resources will be return.
             return raws.stream()
-                       .filter( res -> indexManager.getIndexedStorePath( res.getStoreKey(), res.getPath() ) != null )
+                       .filter( res -> indexManager.getIndexedStoreKey( res.getStoreKey(), res.getPath() ) != null )
                        .collect( Collectors.toList() );
         }
         else

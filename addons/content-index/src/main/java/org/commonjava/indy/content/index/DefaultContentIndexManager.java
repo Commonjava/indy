@@ -64,7 +64,7 @@ public class DefaultContentIndexManager
 
     @ContentIndexCache
     @Inject
-    private CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
+    private CacheHandle<IndexedStorePath, StoreKey> contentIndex;
 
     @Inject
     private NotFoundCache nfc;
@@ -82,7 +82,7 @@ public class DefaultContentIndexManager
     }
 
     public DefaultContentIndexManager( StoreDataManager storeDataManager, SpecialPathManager specialPathManager,
-                                CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex,
+                                CacheHandle<IndexedStorePath, StoreKey> contentIndex,
                                 Map<String, PackageIndexingStrategy> indexingStrategies,
                                 NotFoundCache nfc )
     {
@@ -186,16 +186,16 @@ public class DefaultContentIndexManager
     {
         String path = getStrategyPath( key, rawPath );
         IndexedStorePath toRemove = new IndexedStorePath( key, path );
-        IndexedStorePath val = contentIndex.remove( toRemove );
+        StoreKey val = contentIndex.remove( toRemove );
         logger.trace( "De index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), toRemove );
     }
 
     @Override
-    public IndexedStorePath getIndexedStorePath( final StoreKey key, final String rawPath )
+    public StoreKey getIndexedStoreKey( final StoreKey key, final String rawPath )
     {
         String path = getStrategyPath( key, rawPath );
         IndexedStorePath ispKey = new IndexedStorePath( key, path );
-        IndexedStorePath val = contentIndex.get( ispKey );
+        StoreKey val = contentIndex.get( ispKey );
         logger.trace( "Get index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), ispKey );
         return val;
     }
@@ -221,13 +221,13 @@ public class DefaultContentIndexManager
 
         IndexedStorePath origin = new IndexedStorePath( originKey, path );
         logger.trace( "Indexing path: {} in: {}", path, originKey );
-        contentIndex.put( origin, origin );
+        contentIndex.put( origin, originKey );
 
         Set<StoreKey> keySet = new HashSet<>( Arrays.asList( topKeys ) );
         keySet.forEach( ( key ) -> {
             IndexedStorePath isp = new IndexedStorePath( key, originKey, path );
             logger.trace( "Indexing path: {} in: {} via member: {}", path, key, originKey );
-            contentIndex.put( isp, origin );
+            contentIndex.put( isp, originKey );
         } );
     }
 

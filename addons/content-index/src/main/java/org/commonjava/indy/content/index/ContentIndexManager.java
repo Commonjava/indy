@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -31,7 +30,7 @@ public interface ContentIndexManager
 
     void deIndexStorePath( final StoreKey key, final String path );
 
-    IndexedStorePath getIndexedStorePath( final StoreKey key, final String path );
+    StoreKey getIndexedStoreKey( final StoreKey key, final String path );
 
     void indexTransferIn( Transfer transfer, StoreKey... topKeys );
 

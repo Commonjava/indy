@@ -21,6 +21,7 @@ import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
@@ -71,7 +72,7 @@ public class ContentIndexRemoteRepoUsageTest
 
     private ContentIndexManager indexManager;
 
-    private CacheHandle<IndexedStorePath, IndexedStorePath> cacheHandle;
+    private CacheHandle<IndexedStorePath, StoreKey> cacheHandle;
 
     @Before
     public void getIndexManager()
@@ -90,9 +91,9 @@ public class ContentIndexRemoteRepoUsageTest
 
         server.expect( server.formatUrl( repoName, FIRST_PATH ), 200, FIRST_PATH_CONTENT );
 
-        IndexedStorePath indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nBEFORE: Indexed path entry: " + indexedPath + "\n\n\n\n");
-        assertThat( indexedPath, nullValue() );
+        StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nBEFORE: Indexed path entry: " + indexedStoreKey + "\n\n\n\n");
+        assertThat( indexedStoreKey, nullValue() );
 
         Long hits = cacheHandle.execute( (cache) -> cache.getAdvancedCache().getStats().getHits() );
         assertThat( hits == 0, equalTo( true ) );
@@ -102,9 +103,9 @@ public class ContentIndexRemoteRepoUsageTest
             assertThat( IOUtils.toString( first ), equalTo( FIRST_PATH_CONTENT ) );
         }
 
-        indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER 1: Indexed path entry: " + indexedPath + "\n\n\n\n");
-        assertThat( indexedPath, notNullValue() );
+        indexedStoreKey = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER 1: Indexed path entry: " + indexedStoreKey + "\n\n\n\n");
+        assertThat( indexedStoreKey, notNullValue() );
 
         hits = cacheHandle.execute( (cache) -> cache.getAdvancedCache().getStats().getHits() );
         assertThat( hits >= 1, equalTo( true ) );
@@ -114,13 +115,13 @@ public class ContentIndexRemoteRepoUsageTest
             assertThat( IOUtils.toString( first ), equalTo( FIRST_PATH_CONTENT ) );
         }
 
-        IndexedStorePath indexedPath2 = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER 2: Indexed path entry: " + indexedPath2 + "\n\n\n\n");
+        StoreKey indexedStoreKey2 = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER 2: Indexed path entry: " + indexedStoreKey2 + "\n\n\n\n");
 
         hits = cacheHandle.execute( (cache) -> cache.getAdvancedCache().getStats().getHits() );
         assertThat( hits >= 2, equalTo( true ) );
 
         // object equality should work since we haven't persisted this anywhere yet.
-        assertThat( indexedPath == indexedPath2, equalTo( true ) );
+        assertThat( indexedStoreKey == indexedStoreKey2, equalTo( true ) );
     }
 }
