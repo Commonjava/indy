@@ -22,6 +22,7 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -129,8 +130,8 @@ public class ContentIndexNestedGroupAndStoreDeletionTest
     {
         for ( ArtifactStore store : stores )
         {
-            IndexedStorePath indexedPath = indexManager.getIndexedStorePath( store.getKey(), PATH );
-            assertThat( indexedPath, nullValue() );
+            StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( store.getKey(), PATH );
+            assertThat( indexedStoreKey, nullValue() );
         }
     }
 
@@ -138,9 +139,9 @@ public class ContentIndexNestedGroupAndStoreDeletionTest
     {
         for ( ArtifactStore store : stores )
         {
-            IndexedStorePath indexedPath = indexManager.getIndexedStorePath( store.getKey(), PATH );
-            logger.debug( "\n\n\nGot indexedPath: " + indexedPath + "\n\n\n" );
-            assertThat( indexedPath, notNullValue() );
+            StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( store.getKey(), PATH );
+            logger.debug( "\n\n\nGot indexedStoreKey: " + indexedStoreKey + "\n\n\n" );
+            assertThat( indexedStoreKey, notNullValue() );
         }
     }
 }

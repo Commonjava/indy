@@ -107,7 +107,7 @@ public class ContentIndexWarmer
                                 stores.forEach( s -> {
                                     List<Transfer> txfrs = transferMap.get( s.getKey() );
                                     txfrs.forEach( t -> {
-                                        if ( indexManager.getIndexedStorePath( gkey, t.getPath() ) == null )
+                                        if ( indexManager.getIndexedStoreKey( gkey, t.getPath() ) == null )
                                         {
                                             indexManager.indexTransferIn( t, gkey );
                                         }

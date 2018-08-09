@@ -21,6 +21,7 @@ import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.infinispan.AdvancedCache;
@@ -81,7 +82,7 @@ public class ContentIndexDirLvWithMetadataTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
-    private CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
+    private CacheHandle<IndexedStorePath, StoreKey> contentIndex;
 
     @Before
     public void getIndexManager()
@@ -116,14 +117,13 @@ public class ContentIndexDirLvWithMetadataTest
         }
 
 
-        AdvancedCache<IndexedStorePath, IndexedStorePath> advancedCache =
+        AdvancedCache<IndexedStorePath, StoreKey> advancedCache =
                 (AdvancedCache) contentIndex.execute( c -> c );
         System.out.println( "[Content index DEBUG]: cached isps: " + advancedCache.keySet() );
 
-        for ( IndexedStorePath isp : advancedCache.values() )
+        for ( StoreKey key : advancedCache.values() )
         {
-            assertThat( isp.getStoreKey(), equalTo( remote2.getKey() ) );
-            assertThat( isp.getPath(), equalTo( PATH_META ) );
+            assertThat( key, equalTo( remote2.getKey() ) );
         }
 
         System.out.println( "[Content index DEBUG]: cache size:" + advancedCache.size() );

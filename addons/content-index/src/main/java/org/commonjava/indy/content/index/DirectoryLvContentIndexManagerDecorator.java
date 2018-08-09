@@ -76,10 +76,10 @@ public abstract class DirectoryLvContentIndexManagerDecorator
     }
 
     @Override
-    public IndexedStorePath getIndexedStorePath( StoreKey key, String path )
+    public StoreKey getIndexedStoreKey( StoreKey key, String path )
     {
         logger.debug( "DECORATED getIndexedStorePath:(path {}, key {})", path, key );
-        return delegate.getIndexedStorePath( key, getDirPathWithIfMeta( path ) );
+        return delegate.getIndexedStoreKey( key, getDirPathWithIfMeta( path ) );
     }
 
     @Override

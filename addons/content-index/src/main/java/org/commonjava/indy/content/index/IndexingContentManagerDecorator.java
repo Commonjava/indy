@@ -384,29 +384,23 @@ public abstract class IndexingContentManagerDecorator
             return null;
         }
 
-        IndexedStorePath storePath = indexManager.getIndexedStorePath( storeKey, path );
+        StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( storeKey, path );
 
-        if ( storePath != null )
+        if ( indexedStoreKey != null )
         {
-            StoreKey actualStorageKey = storePath.getOriginStoreKey();
-            if ( actualStorageKey == null )
-            {
-                actualStorageKey = storePath.getStoreKey();
-            }
-
-            Transfer transfer = delegate.getTransfer( actualStorageKey, path, op );
+            Transfer transfer = delegate.getTransfer( indexedStoreKey, path, op );
             if ( transfer == null || !transfer.exists() )
             {
-                if ( storePath.getStoreKey().getType() == StoreType.remote )
+                if ( indexedStoreKey.getType() == StoreType.remote )
                 {
                     // Transfer not existing may be caused by not cached for remote repo, so we should trigger downloading
                     // immediately to check if it really exists.
                     logger.debug( "Will trigger downloading of path {} from store {} from content index level", path,
-                                  storePath.getStoreKey() );
+                                  indexedStoreKey );
                     try
                     {
                         transfer =
-                                delegate.retrieve( storeDataManager.getArtifactStore( storePath.getStoreKey() ), path,
+                                delegate.retrieve( storeDataManager.getArtifactStore( indexedStoreKey ), path,
                                                    metadata );
                         if ( transfer != null && transfer.exists() )
                         {
@@ -416,11 +410,11 @@ public abstract class IndexingContentManagerDecorator
                     }
                     catch ( IndyDataException e )
                     {
-                        logger.warn( "Error to get store {} caused by {}", storePath.getStoreKey(), e.getMessage() );
+                        logger.warn( "Error to get store {} caused by {}", indexedStoreKey, e.getMessage() );
                     }
                 }
 
-                logger.trace( "Found obsolete index entry: {}. De-indexing from: {} and {}", storePath, storeKey,
+                logger.trace( "Found obsolete index entry: {},{}. De-indexing from: {} and {}", indexedStoreKey, path, storeKey,
                               topKey );
                 // something happened to the underlying Transfer...de-index it, and don't return it.
                 indexManager.deIndexStorePath( storeKey, path );

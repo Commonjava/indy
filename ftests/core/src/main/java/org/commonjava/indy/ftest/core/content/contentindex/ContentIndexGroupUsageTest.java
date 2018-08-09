@@ -21,6 +21,7 @@ import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -91,30 +92,30 @@ public class ContentIndexGroupUsageTest
         Group group = new Group( MAVEN_PKG_KEY, groupName, repo.getKey() );
         group = client.stores().create( group, name.getMethodName(), Group.class );
 
-        IndexedStorePath indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nBEFORE: Indexed path entry: " + indexedPath + "\n\n\n\n");
-        assertThat( indexedPath, nullValue() );
+        StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nBEFORE: Indexed path entry: " + indexedStoreKey + "\n\n\n\n");
+        assertThat( indexedStoreKey, nullValue() );
 
         try (InputStream first = client.content().get( repo.getKey(), FIRST_PATH ))
         {
             assertThat( IOUtils.toString( first ), equalTo( FIRST_PATH_CONTENT ) );
         }
 
-        indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER remote: Remote-level indexed path entry: " + indexedPath + "\n\n\n\n");
-        assertThat( indexedPath, notNullValue() );
+        indexedStoreKey = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER remote: Remote-level indexed path entry: " + indexedStoreKey + "\n\n\n\n");
+        assertThat( indexedStoreKey, notNullValue() );
 
         try (InputStream first = client.content().get( group.getKey(), FIRST_PATH ))
         {
             assertThat( IOUtils.toString( first ), equalTo( FIRST_PATH_CONTENT ) );
         }
 
-        IndexedStorePath indexedPath2 = indexManager.getIndexedStorePath( group.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER group: Group-level indexed path entry: " + indexedPath2 + "\n\n\n\n");
-        assertThat( indexedPath2, notNullValue() );
+        indexedStoreKey = indexManager.getIndexedStoreKey( group.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER group: Group-level indexed path entry: " + indexedStoreKey + "\n\n\n\n");
+        assertThat( indexedStoreKey, notNullValue() );
 
-        indexedPath = indexManager.getIndexedStorePath( repo.getKey(), FIRST_PATH );
-        logger.info( "\n\n\nAFTER group: Remote-level indexed path entry: " + indexedPath + "\n\n\n\n");
-        assertThat( indexedPath, notNullValue() );
+        indexedStoreKey = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
+        logger.info( "\n\n\nAFTER group: Remote-level indexed path entry: " + indexedStoreKey + "\n\n\n\n");
+        assertThat( indexedStoreKey, notNullValue() );
     }
 }
