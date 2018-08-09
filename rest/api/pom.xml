@@ -27,6 +27,11 @@
     <artifactId>indy-rest-api</artifactId>
     <name>Indy :: REST :: API</name>
 
+    <properties>
+      <skipTests>false</skipTests>
+      <skipSurefire>false</skipSurefire>
+    </properties>
+
     <dependencies>
       <dependency>
         <groupId>org.commonjava.indy.embed</groupId>
@@ -75,6 +80,12 @@
 
     <build>
       <plugins>
+        <plugin>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <skip>false</skip>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>

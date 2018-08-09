@@ -348,7 +348,7 @@ public class KojiMavenMetadataProviderTest
                 new KojiBuildAuthority( kojiConfig, new StandardTypeMapper(), kojiClient, storeDataManager,
                                         contentDigester, directContentAccess );
 
-        provider = new KojiMavenMetadataProvider( this.cache, kojiClient, buildAuthority, kojiConfig );
+        provider = new KojiMavenMetadataProvider( this.cache, kojiClient, buildAuthority, kojiConfig, Executors.newCachedThreadPool() );
     }
 
     private static DefaultCacheManager cacheManager;

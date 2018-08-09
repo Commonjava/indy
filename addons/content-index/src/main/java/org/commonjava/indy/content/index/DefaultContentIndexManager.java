@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -245,12 +246,19 @@ public class DefaultContentIndexManager
     @Override
     public void clearAllIndexedPathWithOriginalStore( ArtifactStore originalStore )
     {
+        StoreKey osk = originalStore.getKey();
+
         Set<IndexedStorePath> isps =
-                contentIndex.cacheKeySetByFilter( key -> key.getOriginStoreKey().equals( originalStore.getKey() ) );
+                contentIndex.cacheKeySetByFilter( (key) -> {
+                    StoreKey myOriginKey = key.getOriginStoreKey();
+                    return myOriginKey != null && myOriginKey.equals( osk );
+                } );
+
         if ( isps != null )
         {
             isps.forEach( isp -> contentIndex.remove( isp ) );
         }
+
         logger.trace( "Clear all indices with origin: {}, size: {}", originalStore.getKey(), ( isps != null ? isps.size() : 0 ) );
     }
 
@@ -258,8 +266,21 @@ public class DefaultContentIndexManager
     public void clearAllIndexedPathInStoreWithOriginal( ArtifactStore store, ArtifactStore originalStore )
     {
         Set<IndexedStorePath> isps = contentIndex.cacheKeySetByFilter(
-                key -> key.getStoreKey().equals( store.getKey() ) && key.getOriginStoreKey()
-                                                                        .equals( originalStore.getKey() ) );
+                key -> {
+                    StoreKey myOriginalStoreKey = key.getOriginStoreKey();
+
+                    if ( !key.getStoreKey().equals( store.getKey() ) )
+                    {
+                        return false;
+                    }
+                    else if (myOriginalStoreKey == null )
+                    {
+                        return false;
+                    }
+
+                    return myOriginalStoreKey.equals( originalStore.getKey() );
+                } );
+
         if ( isps != null )
         {
             isps.forEach( isp -> contentIndex.remove( isp ) );
