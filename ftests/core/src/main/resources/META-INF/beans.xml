@@ -21,8 +21,6 @@
     <!-- ContentManagerDirectAccess decorators -->
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
 
-    <!-- ContentIndexManager decorators -->
-    <class>org.commonjava.indy.content.index.DirectoryLvContentIndexManagerDecorator</class>
   </decorators>
 
 </beans>

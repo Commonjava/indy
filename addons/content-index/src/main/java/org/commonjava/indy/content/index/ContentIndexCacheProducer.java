@@ -68,6 +68,12 @@ public class ContentIndexCacheProducer
 //        } );
 //    }
 
+    /**
+     * Cache which is used to store content index. A content index entry should be a IndexedStorePath->StoreKey mapping
+     * The key "IndexedStorePath" stores the request store info, including storeKey and path info, and the value "StoreKey"
+     * should always be a concrete store(remote, hosted), which is the store that really contains the path info.
+     * @return
+     */
     @ContentIndexCache
     @Produces
     @ApplicationScoped
