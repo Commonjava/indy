@@ -438,7 +438,7 @@ public final class ProxyResponseWriter
         else
         {
             RemoteRepository remote;
-            final String baseUrl = getBaseUrl( url );
+            final String baseUrl = getBaseUrl( url, true );
 
             ArtifactStoreQuery<RemoteRepository> query =
                             storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
@@ -475,7 +475,7 @@ public final class ProxyResponseWriter
         UrlInfo info = new UrlInfo( url.toExternalForm() );
 
         UserPass up = UserPass.parse( ApplicationHeader.authorization, httpRequest, url.getAuthority() );
-        String baseUrl = getBaseUrl( url );
+        String baseUrl = getBaseUrl( url, false );
 
         logger.debug( ">>>> Create repo: trackingId=" + trackingId + ", name=" + name );
         ProxyCreationResult result = repoCreator.create( trackingId, name, baseUrl, info, up,
@@ -549,10 +549,11 @@ public final class ProxyResponseWriter
         return port;
     }
 
-    private String getBaseUrl( URL url )
+    private String getBaseUrl( URL url, boolean includeDefaultPort )
     {
         int port = getPort( url );
-        return String.format( "%s://%s:%s/", url.getProtocol(), url.getHost(), port );
+        String portStr = !includeDefaultPort && port == url.getDefaultPort() ? "" : ":" + Integer.toString( url.getPort() );
+        return String.format( "%s://%s%s/", url.getProtocol(), url.getHost(), portStr );
     }
 
     public void setError( final Throwable error )
