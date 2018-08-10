@@ -1456,7 +1456,7 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <mavenExecutorId>forked-path</mavenExecutorId>
             <useReleaseProfile>false</useReleaseProfile>
-            <arguments>-Prelease,run-its -T8 -DskipTests=true</arguments>
+            <arguments>-Prelease -T8 -DskipTests=true</arguments>
           </configuration>
         </plugin>
         <plugin>
