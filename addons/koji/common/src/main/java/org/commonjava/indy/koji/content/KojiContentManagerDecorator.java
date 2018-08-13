@@ -311,7 +311,9 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
-            return kojiClient.withKojiSession( ( session ) -> {
+//            return kojiClient.withKojiSession( ( session ) -> {
+            KojiSessionInfo session = null;
+
                 List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( artifactRef, session ); // use multicall
 
                 Collections.sort( builds, ( build1, build2 ) -> build2.getCreationTime()
@@ -387,7 +389,7 @@ public abstract class KojiContentManagerDecorator
                 logger.trace( "No builds were found that matched the restrictions." );
 
                 return defValue;
-            } );
+//            } );
         }
         catch ( KojiClientException e )
         {

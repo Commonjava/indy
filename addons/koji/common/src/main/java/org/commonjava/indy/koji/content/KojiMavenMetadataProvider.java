@@ -222,7 +222,8 @@ public class KojiMavenMetadataProvider
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        return kojiClient.withKojiSession( ( session ) -> {
+//        return kojiClient.withKojiSession( ( session ) -> {
+        KojiSessionInfo session = null;
 
             // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
             List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ga, session );
@@ -339,7 +340,7 @@ public class KojiMavenMetadataProvider
             md.setVersioning( versioning );
 
             return md;
-        } );
+//        } );
     }
 
     private ArchiveScan scanArchive( final KojiArchiveInfo archive, final KojiSessionInfo session,
