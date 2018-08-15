@@ -27,9 +27,8 @@ class ProjectArtifacts implements ValidationRule {
 
             def tools = request.getTools()
             def projectTCs = [:]
-            request.getSourcePaths().each {
+            tools.paralleledEach(request.getSourcePaths(), { it ->
                 def ref = tools.getArtifact(it)
-//                if (ref != null && ref.getType() != "pom") {
                 if (ref != null) {
                     def gav = ref.asProjectVersionRef()
                     def found = projectTCs[gav]
@@ -39,9 +38,9 @@ class ProjectArtifacts implements ValidationRule {
                     }
                     found << ref.getTypeAndClassifier()
                 }
-            }
+            })
 
-            projectTCs.each { entry ->
+            tools.paralleledEach(projectTCs, { entry ->
                 if ( entry.value.size > 1 || !entry.value.contains(new SimpleTypeAndClassifier("pom"))) {
                     tcs.each { tc ->
                         if (!entry.value.contains(tc)) {
@@ -52,7 +51,7 @@ class ProjectArtifacts implements ValidationRule {
                         }
                     }
                 }
-            }
+            })
         } else {
             def logger = LoggerFactory.getLogger(getClass())
             logger.warn("No 'classifierAndTypeSet' parameter specified in rule-set: {}. Cannot execute ProjectArtifacts rule!", request.getRuleSet().getName())

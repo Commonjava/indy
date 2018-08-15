@@ -12,7 +12,7 @@ class ProjectVersionPattern implements ValidationRule {
 
         if (versionPattern != null) {
             def tools = request.getTools()
-            request.getSourcePaths().each { it ->
+            tools.paralleledEach(request.getSourcePaths(), { it ->
                 def ref = tools.getArtifact(it)
                 if (ref != null) {
                     def vs = ref.getVersionString()
@@ -23,7 +23,7 @@ class ProjectVersionPattern implements ValidationRule {
                         builder.append(it).append(" does not match version pattern: '").append(versionPattern).append("' (version was: '").append(vs).append("')")
                     }
                 }
-            }
+            })
         } else {
             def logger = LoggerFactory.getLogger(getClass())
             logger.warn("No 'versionPattern' parameter specified in rule-set: {}. Cannot execute ProjectVersionPattern rule!", request.getRuleSet().getName())

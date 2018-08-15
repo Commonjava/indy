@@ -170,4 +170,12 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
     {
         return Collections.singletonList( new IndyPromoteClientModule() );
     }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=true" );
+    }
 }

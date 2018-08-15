@@ -1,14 +1,12 @@
 package org.commonjava.indy.promote.rules
 
 import org.apache.commons.lang.StringUtils
-import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
+
 import org.commonjava.maven.atlas.graph.rel.DependencyRelationship
 import org.commonjava.maven.atlas.graph.rel.RelationshipType
 import org.commonjava.maven.atlas.ident.DependencyScope
-import org.commonjava.maven.atlas.ident.ref.ArtifactRef
-import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 import org.slf4j.LoggerFactory
 
@@ -26,12 +24,11 @@ class ArtifactRefAvailability implements ValidationRule {
 
         def logger = LoggerFactory.getLogger(ValidationRule.class)
 
-        def pomTC = new SimpleTypeAndClassifier("pom")
-        request.getSourcePaths().each { it ->
+        tools.paralleledEach(request.getSourcePaths(), { it ->
             if (it.endsWith(".pom")) {
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    relationships.each { rel ->
+                    tools.paralleledEach(relationships, { rel ->
                         def skip = false
                         if (rel.getType() == RelationshipType.DEPENDENCY) {
                             def dr = (DependencyRelationship) rel
@@ -48,11 +45,11 @@ class ArtifactRefAvailability implements ValidationRule {
                             def found = false
                             def foundPom = false
 
-                            verifyStoreKeys.each{ verifyStoreKey ->
-                                if( !found ){
+                            tools.paralleledEach(verifyStoreKeys, { verifyStoreKey ->
+                                if (!found) {
                                     def txfr = tools.getTransfer(verifyStoreKey, path)
                                     logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())
-                                    if (txfr != null  && txfr.exists()) {
+                                    if (txfr != null && txfr.exists()) {
                                         logger.info("Marking as found: {}", target.asPomArtifact());
                                         found = true
                                     }
@@ -66,9 +63,9 @@ class ArtifactRefAvailability implements ValidationRule {
                                         foundPom = true
                                     }
                                 }
-                            }
+                            })
 
-                            if ( !found ) {
+                            if (!found) {
                                 if (builder.length() > 0) {
                                     builder.append("\n")
                                 }
@@ -76,10 +73,10 @@ class ArtifactRefAvailability implements ValidationRule {
                                         .append(" is invalid: ")
                                         .append(path)
                                         .append(" is not available via: ")
-                                        .append(StringUtils.join(verifyStoreKeys, ", " ))
+                                        .append(StringUtils.join(verifyStoreKeys, ", "))
                             }
 
-                            if ( !foundPom ) {
+                            if (!foundPom) {
                                 if (builder.length() > 0) {
                                     builder.append("\n")
                                 }
@@ -87,13 +84,13 @@ class ArtifactRefAvailability implements ValidationRule {
                                         .append(" is invalid: ")
                                         .append(tools.toArtifactPath(target.asPomArtifact()))
                                         .append(" is not available via: ")
-                                        .append(StringUtils.join(verifyStoreKeys, ", " ))
+                                        .append(StringUtils.join(verifyStoreKeys, ", "))
                             }
                         }
-                    }
+                    })
                 }
             }
-        }
+        })
 
         builder.length() > 0 ? builder.toString() : null
     }

@@ -56,6 +56,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -520,5 +521,36 @@ public class PromotionValidationTools
     public Transfer getTransfer( final StoreResource resource )
     {
         return transferManager.getCacheReference( resource );
+    }
+
+    public <T> void paralleledEach( Collection<T> collection, groovy.lang.Closure closure )
+    {
+        final Logger logger = LoggerFactory.getLogger( this.getClass() );
+        logger.trace( "Exe parallel on collection {} with closure {}", collection, closure );
+        collection.parallelStream().forEach( e -> {
+            logger.trace( "The paralleled exe on element {}", e );
+            closure.call( e );
+        } );
+    }
+
+    public <T> void paralleledEach( T[] array, groovy.lang.Closure closure )
+    {
+        final Logger logger = LoggerFactory.getLogger( this.getClass() );
+        logger.trace( "Exe parallel on array {} with closure {}", array, closure );
+        Arrays.stream( array ).parallel().forEach( e -> {
+            logger.trace( "The paralleled exe on element {}", e );
+            closure.call( e );
+        } );
+    }
+
+    public <K, V> void paralleledEach( Map<K, V> map, groovy.lang.Closure closure )
+    {
+        Set<Map.Entry<K, V>> entries = map.entrySet();
+        final Logger logger = LoggerFactory.getLogger( this.getClass() );
+        logger.trace( "Exe parallel on map {} with closure {}", entries, closure );
+        entries.parallelStream().forEach( e -> {
+            logger.trace( "The paralleled exe on entry {}", e );
+            closure.call( e );
+        } );
     }
 }
