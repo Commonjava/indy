@@ -28,6 +28,7 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -129,6 +130,11 @@ public class CacheHandle<K,V>
     public V put( K key, V value )
     {
         return execute( cache -> cache.put( key, value ) );
+    }
+
+    public V put( K key, V value, int expiration, TimeUnit timeUnit )
+    {
+        return execute( cache -> cache.put( key, value, expiration, timeUnit ) );
     }
 
     public V putIfAbsent( K key, V value )
