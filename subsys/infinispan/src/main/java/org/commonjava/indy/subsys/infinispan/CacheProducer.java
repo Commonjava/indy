@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
+import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
@@ -23,6 +24,8 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.infinispan.Cache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
@@ -45,6 +48,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
+import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
+
 /**
  * Created by jdcasey on 3/8/16.
  */
@@ -60,6 +68,12 @@ public class CacheProducer
 
     @Inject
     private IndyConfiguration indyConfiguration;
+
+    @Inject
+    private IndyMetricsManager metricsManager;
+
+    @Inject
+    private IndyMetricsConfig metricsConfig;
 
     private Map<String, CacheHandle> caches = new ConcurrentHashMap<>();
 
@@ -134,7 +148,12 @@ public class CacheProducer
         if ( handle == null )
         {
             Cache<K, V> cache = cacheManager.getCache( named );
-            handle = new CacheHandle( named, cache );
+
+            final String cacheMetricPrefix = metricsManager == null ?
+                    null :
+                    getSupername( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN, named );
+
+            handle = new CacheHandle( named, cache, metricsManager, cacheMetricPrefix );
             caches.put( named, handle );
         }
         return handle;
