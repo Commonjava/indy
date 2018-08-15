@@ -18,6 +18,7 @@ package org.commonjava.indy.koji.data;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
+import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -148,31 +149,21 @@ public class KojiRepairManager
             return ret.withNoChange( group.getKey() );
         }
 
-        List<KojiBuildInfo> buildInfoList;
-        try
-        {
-            buildInfoList = kojiClient.withKojiSession( ( session ) -> {
-                List<Object> args = new ArrayList<>(  );
-                stores.forEach( storeKey -> {
-                    String nvr = kojiUtils.getBuildNvr( storeKey );
-                    if ( nvr != null )
-                    {
-                        args.add( nvr );
-                    }
-                    else
-                    {
-                        ret.withIgnore( storeKey );
-                    }
-                } );
-                return kojiClient.multiCall( GET_BUILD, args, KojiBuildInfo.class, session );
-            } );
-        }
-        catch ( KojiClientException e )
-        {
-            String error = String.format( "Cannot get buildInfoList: %s, error: %s", group.getKey(), e );
-            logger.warn( error, e );
-            return ret.withError( error, e );
-        }
+        KojiSessionInfo session = null;
+
+        List<Object> args = new ArrayList<>(  );
+        stores.forEach( storeKey -> {
+            String nvr = kojiUtils.getBuildNvr( storeKey );
+            if ( nvr != null )
+            {
+                args.add( nvr );
+            }
+            else
+            {
+                ret.withIgnore( storeKey );
+            }
+        } );
+        List<KojiBuildInfo> buildInfoList = kojiClient.multiCall( GET_BUILD, args, KojiBuildInfo.class, session );
 
         buildInfoList.forEach( buildInfo -> {
             try
@@ -209,7 +200,8 @@ public class KojiRepairManager
         KojiBuildInfo buildInfo;
         try
         {
-            buildInfo = kojiClient.withKojiSession( ( session ) -> kojiClient.getBuildInfo( nvr, session ) );
+            KojiSessionInfo session = null;
+            buildInfo = kojiClient.getBuildInfo( nvr, session );
         }
         catch ( KojiClientException e )
         {
