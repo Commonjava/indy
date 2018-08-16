@@ -67,7 +67,7 @@ public class CacheHandle<K,V>
     {
         this.name = named;
         this.cache = cache;
-ru      }
+    }
 
     //FIXME: as new CacheProvider construction mechanism used a original cache to construct FastLocalCacheProvider,
     //       here we need to expose the wrapped cache out. Need to think some alternative way later to fix this.
