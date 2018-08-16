@@ -18,9 +18,9 @@ package org.commonjava.indy.model.core;
 import io.swagger.annotations.ApiModel;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 @ApiModel( description = "Grouping of other artifact stores, with a defined order to the membership that determines content preference", parent = ArtifactStore.class )
@@ -32,6 +32,8 @@ public class Group
 
     private List<StoreKey> constituents;
 
+    private final Object monitor = new Object();
+
     Group()
     {
     }
@@ -39,27 +41,27 @@ public class Group
     public Group( final String packageType, final String name, final List<StoreKey> constituents )
     {
         super( packageType, StoreType.group, name );
-        this.constituents = new ArrayList<>( constituents );
+        this.constituents = new LinkedList<>( constituents );
     }
 
     @Deprecated
     public Group( final String name, final List<StoreKey> constituents )
     {
         super( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, name );
-        this.constituents = new ArrayList<>( constituents );
+        this.constituents = new LinkedList<>( constituents );
     }
 
     public Group( final String packageType, final String name, final StoreKey... constituents )
     {
         super( packageType, StoreType.group, name );
-        this.constituents = new ArrayList<>( Arrays.asList( constituents ) );
+        this.constituents = new LinkedList<>( Arrays.asList( constituents ) );
     }
 
     @Deprecated
     public Group( final String name, final StoreKey... constituents )
     {
         super( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, name );
-        this.constituents = new ArrayList<>( Arrays.asList( constituents ) );
+        this.constituents = new LinkedList<>( Arrays.asList( constituents ) );
     }
 
     public List<StoreKey> getConstituents()
@@ -86,17 +88,28 @@ public class Group
 
         if ( constituents == null )
         {
-            constituents = new ArrayList<>();
+            constituents = new LinkedList<>();
         }
 
-        synchronized ( constituents )
+        synchronized ( monitor )
         {
             if ( constituents.contains( repository ) )
             {
                 return false;
             }
 
-            return constituents.add( repository );
+            // We will add new hosted repo as the first member in group, as this hosted will most likely
+            // contain the most recent dependencies for the subsequent build.
+            if ( repository.getType() == StoreType.hosted )
+            {
+                ( (LinkedList<StoreKey>) constituents ).push( repository );
+                return true;
+            }
+            else
+            {
+
+                return constituents.add( repository );
+            }
         }
     }
 
@@ -109,7 +122,7 @@ public class Group
     {
         if ( constituents != null )
         {
-            synchronized ( constituents )
+            synchronized ( monitor )
             {
                 return constituents.remove( repository );
             }
@@ -122,11 +135,11 @@ public class Group
     {
         if ( this.constituents == null )
         {
-            this.constituents = new ArrayList<>( constituents );
+            this.constituents = new LinkedList<>( constituents );
         }
         else
         {
-            synchronized ( constituents )
+            synchronized ( monitor )
             {
                 this.constituents.clear();
                 this.constituents.addAll( constituents );
@@ -149,7 +162,7 @@ public class Group
     @Override
     public Group copyOf( final String packageType, final String name )
     {
-        Group g = new Group( packageType, name, new ArrayList<>( getConstituents() ) );
+        Group g = new Group( packageType, name, new LinkedList<>( getConstituents() ) );
         copyBase( g );
 
         return g;
