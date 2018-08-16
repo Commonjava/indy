@@ -12,7 +12,7 @@ class ParsablePom implements ValidationRule {
         def logger = LoggerFactory.getLogger(ValidationRule.class)
         logger.info("Parsing POMs in:\n  {}.", request.getSourcePaths().join("\n  "))
 
-        request.getSourcePaths().each { it ->
+        tools.paralleledEach(request.getSourcePaths(), { it ->
             if (it.endsWith(".pom")) {
                 logger.info("Parsing POM from path: {}.", it)
                 try {
@@ -25,7 +25,7 @@ class ParsablePom implements ValidationRule {
                     builder.append(it).append(": Failed to parse POM. Error was: ").append(e)
                 }
             }
-        }
+        })
 
         builder.length() > 0 ? builder.toString() : null
     }

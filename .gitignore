@@ -41,8 +41,7 @@ venv
 # multibuild temporary content
 builds-*
 
-# embedders log
-embedders/savant/indy.home_IS_UNDEFINED/*
-embedder/indy.home_IS_UNDEFINED/*
+# local ftests log
+**/indy.home_IS_UNDEFINED/*
 
 *.dat

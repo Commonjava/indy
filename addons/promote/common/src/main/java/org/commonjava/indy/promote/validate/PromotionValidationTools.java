@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.promote.validate;
 
+import groovy.lang.Closure;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
@@ -56,9 +59,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -99,6 +106,11 @@ public class PromotionValidationTools
 
     @Inject
     private ContentDigester contentDigester;
+
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "Promotion-validation-rules-executor", threads = 8 )
+    private Executor ruleParallelExecutor;
 
     protected PromotionValidationTools()
     {
@@ -521,4 +533,53 @@ public class PromotionValidationTools
     {
         return transferManager.getCacheReference( resource );
     }
+
+    public <T> void paralleledEach( Collection<T> collection, Closure closure )
+    {
+        final Logger logger = LoggerFactory.getLogger( this.getClass() );
+        logger.trace( "Exe parallel on collection {} with closure {}", collection, closure );
+        runParallelAndWait( collection, closure, logger );
+    }
+
+    public <T> void paralleledEach( T[] array, Closure closure )
+    {
+        final Logger logger = LoggerFactory.getLogger( this.getClass() );
+        logger.trace( "Exe parallel on array {} with closure {}", array, closure );
+        runParallelAndWait( Arrays.asList( array ), closure, logger );
+    }
+
+    public <K, V> void paralleledEach( Map<K, V> map, Closure closure )
+    {
+        Set<Map.Entry<K, V>> entries = map.entrySet();
+        final Logger logger = LoggerFactory.getLogger( this.getClass() );
+        logger.trace( "Exe parallel on map {} with closure {}", entries, closure );
+        runParallelAndWait( entries, closure, logger );
+    }
+
+    private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )
+    {
+        final CountDownLatch latch = new CountDownLatch( runCollection.size() );
+        runCollection.forEach( e -> ruleParallelExecutor.execute( () -> {
+            try
+            {
+                logger.trace( "The paralleled exe on element {}", e );
+                closure.call( e );
+            }
+            finally
+            {
+                latch.countDown();
+            }
+        } ) );
+        final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 10;
+        try
+        {
+            latch.await( DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS, TimeUnit.MINUTES );
+        }
+        catch ( InterruptedException e )
+        {
+            logger.error( "Rule validation execution failed due to parallel running timeout for {} minutes",
+                          DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS );
+        }
+    }
+
 }

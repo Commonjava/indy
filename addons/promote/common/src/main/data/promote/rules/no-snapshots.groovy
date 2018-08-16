@@ -1,10 +1,8 @@
 package org.commonjava.indy.promote.rules
 
-import org.commonjava.indy.model.core.StoreKey
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
-import org.slf4j.LoggerFactory
 
 class NoSnapshots implements ValidationRule {
 
@@ -15,7 +13,7 @@ class NoSnapshots implements ValidationRule {
         def tools = request.getTools()
         def dc = new ModelProcessorConfig().setIncludeBuildSection(true).setIncludeManagedPlugins(true).setIncludeManagedDependencies(true)
 
-        request.getSourcePaths().each { it ->
+        tools.paralleledEach(request.getSourcePaths(), { it ->
             if (it.endsWith(".pom")) {
                 def ref = tools.getArtifact(it)
                 if (ref != null) {
@@ -29,7 +27,7 @@ class NoSnapshots implements ValidationRule {
 
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    relationships.each { rel ->
+                    tools.paralleledEach(relationships, { rel ->
                         def target = rel.getTarget()
                         if (!target.getVersionSpec().isRelease()) {
                             if (builder.length() > 0) {
@@ -37,10 +35,10 @@ class NoSnapshots implements ValidationRule {
                             }
                             builder.append(target).append(" uses a variable/snapshot version in: ").append(it)
                         }
-                    }
+                    })
                 }
             }
-        }
+        })
 
         builder.length() > 0 ? builder.toString() : null
     }
