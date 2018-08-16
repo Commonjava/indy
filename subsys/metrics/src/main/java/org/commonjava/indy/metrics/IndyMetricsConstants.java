@@ -56,13 +56,13 @@ public class IndyMetricsConstants
      * @param name user specified name
      * @param defaultName 'class name + method name', not null.
      */
-    public static String getName( String nodePrefix, String name, String defaultName, String suffix )
+    public static String getName( String nodePrefix, String name, String defaultName, String... suffix )
     {
         if ( isBlank( name ) || name.equals( DEFAULT ) )
         {
             name = defaultName;
         }
-        return name( nodePrefix, name, suffix );
+        return name( name( nodePrefix, name ), suffix );
     }
 
 
