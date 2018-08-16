@@ -62,6 +62,13 @@ public class CacheHandle<K,V>
         this.metricPrefix = metricPrefix;
     }
 
+    // useful for testing
+    public CacheHandle( String named, Cache<K, V> cache )
+    {
+        this.name = named;
+        this.cache = cache;
+ru      }
+
     //FIXME: as new CacheProvider construction mechanism used a original cache to construct FastLocalCacheProvider,
     //       here we need to expose the wrapped cache out. Need to think some alternative way later to fix this.
     @Deprecated

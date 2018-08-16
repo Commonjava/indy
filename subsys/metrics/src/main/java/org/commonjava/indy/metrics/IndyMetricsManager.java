@@ -22,8 +22,6 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
-import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet;
 import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.model.Location;
 import org.slf4j.Logger;
@@ -36,15 +34,12 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
-import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
 
 /**
  * Created by xiabai on 2/27/17.
@@ -68,7 +63,7 @@ public class IndyMetricsManager
     ReporterIntializer reporter;
 
     @Inject
-    private CacheProducer cacheProducer;
+    private Instance<MetricSetProvider> metricSetProviderInstances;
 
     @Inject
     private IndyMetricsConfig config;
@@ -98,10 +93,7 @@ public class IndyMetricsManager
         indyHealthChecks.forEach( indyHealthCheck -> HEALTH_CHECK_REGISTRY.register( indyHealthCheck.getName(),
                                                                                      indyHealthCheck ) );
 
-        if ( config.isIspnMetricsEnabled() )
-        {
-            setUpIspnMetrics();
-        }
+        metricSetProviderInstances.forEach( ( provider ) -> provider.registerMetricSet( metricRegistry ) );
 
         if ( config.isMeasureTransport() )
         {
@@ -117,19 +109,6 @@ public class IndyMetricsManager
         }
         logger.info( "Start metrics reporters" );
         reporter.initReporter( metricRegistry );
-    }
-
-    private void setUpIspnMetrics()
-    {
-        logger.info( "Adding ISPN checks to registry: {}", metricRegistry );
-        String gauges = config.getIspnGauges();
-        List<String> list = null;
-        if ( gauges != null )
-        {
-            list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
-        }
-        metricRegistry.register( name( config.getNodePrefix(), INDY_METRIC_ISPN ),
-                                 new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list ) );
     }
 
     private void setUpTransportMetricConfig()
