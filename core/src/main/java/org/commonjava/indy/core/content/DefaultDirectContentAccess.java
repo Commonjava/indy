@@ -55,7 +55,7 @@ public class DefaultDirectContentAccess
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "direct-content-access" )
+    @ExecutorConfig( named = "direct-content-access", threads = 8, priority = 8 )
     private ExecutorService executorService;
 
 

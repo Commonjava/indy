@@ -91,10 +91,13 @@ public class MetricsInterceptor
         {
             Stream.of( measure.exceptions() ).forEach( ( named ) ->
                                         {
-                                            String name = getName( nodePrefix, named.value(), defaultName, EXCEPTION );
-                                            Meter meter = metricsManager.getMeter( name );
-                                            logger.trace( "ERRORS++ {}", name );
-                                            meter.mark();
+                                            metricsManager.getMeter(
+                                                    getName( nodePrefix, named.value(), defaultName, EXCEPTION ) )
+                                                          .mark();
+
+                                            metricsManager.getMeter(
+                                                    getName( nodePrefix, named.value(), defaultName, EXCEPTION,
+                                                             e.getClass().getSimpleName() ) ).mark();
                                         } );
 
             throw e;

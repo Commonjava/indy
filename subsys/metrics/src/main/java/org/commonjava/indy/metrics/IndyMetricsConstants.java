@@ -43,17 +43,26 @@ public class IndyMetricsConstants
     }
 
     /**
+     * Get the metric fullname with no default value.
+     * @param nameParts user specified name parts
+     */
+    public static String getSupername( String nodePrefix, String... nameParts )
+    {
+        return name( nodePrefix, nameParts );
+    }
+
+    /**
      * Get the metric fullname.
      * @param name user specified name
      * @param defaultName 'class name + method name', not null.
      */
-    public static String getName( String nodePrefix, String name, String defaultName, String suffix )
+    public static String getName( String nodePrefix, String name, String defaultName, String... suffix )
     {
         if ( isBlank( name ) || name.equals( DEFAULT ) )
         {
             name = defaultName;
         }
-        return name( nodePrefix, name, suffix );
+        return name( name( nodePrefix, name ), suffix );
     }
 
 
