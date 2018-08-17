@@ -140,7 +140,7 @@ public class GroupMetadataMergeInfoGenTest
 
         g.addConstituent( hostedB.getKey() );
         g = updateAndRetrieve( g, "adding group", path );
-        assertInfoContent( g, path, "maven:hosted:hostedB\nmaven:hosted:hostedA\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedA\nmaven:hosted:hostedB\n" );
 
         g.removeConstituent( hostedA.getKey() );
         g = updateAndRetrieve( g, "removing group", path );
@@ -148,7 +148,7 @@ public class GroupMetadataMergeInfoGenTest
 
         g.addConstituent( hostedC.getKey() );
         g = updateAndRetrieve( g, "adding group", path );
-        assertInfoContent( g, path, "maven:hosted:hostedC\nmaven:hosted:hostedB\n" );
+        assertInfoContent( g, path, "maven:hosted:hostedB\nmaven:hosted:hostedC\n" );
 
         hostedB.setDisabled( true );
         client.stores().update( hostedB, "disabled" );

@@ -15,12 +15,14 @@
  */
 package org.commonjava.indy.model.core;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 
 @ApiModel( description = "Grouping of other artifact stores, with a defined order to the membership that determines content preference", parent = ArtifactStore.class )
@@ -34,6 +36,9 @@ public class Group
 
     private final Object monitor = new Object();
 
+    @JsonProperty( "prepend_constituent" )
+    private boolean prependConstituent = false;
+
     Group()
     {
     }
@@ -41,27 +46,27 @@ public class Group
     public Group( final String packageType, final String name, final List<StoreKey> constituents )
     {
         super( packageType, StoreType.group, name );
-        this.constituents = new LinkedList<>( constituents );
+        this.constituents = new ArrayList<>( constituents );
     }
 
     @Deprecated
     public Group( final String name, final List<StoreKey> constituents )
     {
         super( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, name );
-        this.constituents = new LinkedList<>( constituents );
+        this.constituents = new ArrayList<>( constituents );
     }
 
     public Group( final String packageType, final String name, final StoreKey... constituents )
     {
         super( packageType, StoreType.group, name );
-        this.constituents = new LinkedList<>( Arrays.asList( constituents ) );
+        this.constituents = new ArrayList<>( Arrays.asList( constituents ) );
     }
 
     @Deprecated
     public Group( final String name, final StoreKey... constituents )
     {
         super( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, name );
-        this.constituents = new LinkedList<>( Arrays.asList( constituents ) );
+        this.constituents = new ArrayList<>( Arrays.asList( constituents ) );
     }
 
     public List<StoreKey> getConstituents()
@@ -88,7 +93,7 @@ public class Group
 
         if ( constituents == null )
         {
-            constituents = new LinkedList<>();
+            constituents = new ArrayList<>();
         }
 
         synchronized ( monitor )
@@ -98,11 +103,11 @@ public class Group
                 return false;
             }
 
-            // We will add new hosted repo as the first member in group, as this hosted will most likely
-            // contain the most recent dependencies for the subsequent build.
-            if ( repository.getType() == StoreType.hosted )
+            // We will add new repo as the first member in group if prependConstituent set to true,
+            // that means this repo may contain the most recent dependencies for the subsequent build.
+            if ( isPrependConstituent() )
             {
-                ( (LinkedList<StoreKey>) constituents ).push( repository );
+                constituents.add( 0, repository );
                 return true;
             }
             else
@@ -135,7 +140,7 @@ public class Group
     {
         if ( this.constituents == null )
         {
-            this.constituents = new LinkedList<>( constituents );
+            this.constituents = new ArrayList<>( constituents );
         }
         else
         {
@@ -145,6 +150,16 @@ public class Group
                 this.constituents.addAll( constituents );
             }
         }
+    }
+
+    public boolean isPrependConstituent()
+    {
+        return prependConstituent;
+    }
+
+    public void setPrependConstituent( boolean prependConstituent )
+    {
+        this.prependConstituent = prependConstituent;
     }
 
     @Override
@@ -162,7 +177,7 @@ public class Group
     @Override
     public Group copyOf( final String packageType, final String name )
     {
-        Group g = new Group( packageType, name, new LinkedList<>( getConstituents() ) );
+        Group g = new Group( packageType, name, new ArrayList<>( getConstituents() ) );
         copyBase( g );
 
         return g;
