@@ -27,6 +27,7 @@ import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
@@ -129,6 +130,21 @@ public class AdminController
         {
             throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
                                               "Failed to retrieve: {}. Reason: {}", e, key, e.getMessage() );
+        }
+    }
+
+    public RemoteRepository getRemoteByUrl( final String url )
+            throws IndyWorkflowException
+    {
+        try
+        {
+            return storeManager.query().getRemoteRepositoryByUrl( url );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new IndyWorkflowException( ApplicationStatus.SERVER_ERROR.code(),
+                                             "Failed to retrieve remote by url: {}. Reason: {}", e, url,
+                                             e.getMessage() );
         }
     }
 
