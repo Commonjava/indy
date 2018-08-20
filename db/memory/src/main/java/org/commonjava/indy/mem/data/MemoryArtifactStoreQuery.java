@@ -217,7 +217,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public List<T> getAllByDefaultPackageTypes()
             throws IndyDataException
     {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         Set<String> defaults = PackageTypes.getPackageTypes();
         for ( String packageType : defaults )
         {
@@ -245,13 +245,13 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<Group>( dataManager, storeKey.getPackageType(), enabled,
+        return new MemoryArtifactStoreQuery<>( dataManager, storeKey.getPackageType(), enabled,
                                                     Group.class ).stream(
                 store -> ( (Group) store ).getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
 
     @Override
-    public RemoteRepository getRemoteRepositoryByUrl( String url )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( String url )
             throws IndyDataException
     {
         /*
@@ -271,7 +271,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
 
         final UrlInfo urlInfo = temp;
 
-        RemoteRepository result = null;
+        List<RemoteRepository> result;
 
         // first try to find the remote repo by urlWithNoSchemeAndLastSlash
         /* @formatter:off */
@@ -303,11 +303,11 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                     }
 
                     return false;
-                } ).findFirst().orElse( null );
+                } ).collect( Collectors.toList() );
         /* @formatter:on */
 
 
-        if ( result == null )
+        if ( result.isEmpty() )
         {
             // ...if not found by hostname try to search by IP
             /* @formatter:off */
@@ -354,7 +354,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                         }
 
                         return false;
-                    } ).findFirst().orElse( null );
+                    } ).collect(Collectors.toList());
             /* @formatter:on */
         }
 
@@ -395,8 +395,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Getting groups affected by: {}", keys );
 
-        List<StoreKey> toProcess = new ArrayList<>();
-        toProcess.addAll( keys.stream().collect( Collectors.toSet() ) );
+        List<StoreKey> toProcess = new ArrayList<>( new HashSet<>( keys ) );
 
         Set<Group> groups = new HashSet<>();
         if ( toProcess.isEmpty() )
@@ -406,7 +405,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
 
         Set<StoreKey> processed = new HashSet<>();
 
-        Set<Group> all = new MemoryArtifactStoreQuery<Group>( dataManager, toProcess.get( 0 ).getPackageType(), null,
+        Set<Group> all = new MemoryArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
                                                               Group.class ).stream().collect( Collectors.toSet() );
 
         while ( !toProcess.isEmpty() )
@@ -445,7 +444,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public List<RemoteRepository> getAllRemoteRepositories()
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<RemoteRepository>( dataManager, packageType, enabled,
+        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled,
                                                                RemoteRepository.class ).getAll();
     }
 
@@ -453,7 +452,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public List<HostedRepository> getAllHostedRepositories()
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<HostedRepository>( dataManager, packageType, enabled,
+        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled,
                                                                HostedRepository.class ).getAll();
     }
 
@@ -461,7 +460,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public List<Group> getAllGroups()
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<Group>( dataManager, packageType, enabled, Group.class ).getAll();
+        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled, Group.class ).getAll();
     }
 
     @Override

@@ -18,17 +18,21 @@ package org.commonjava.indy.client.core.module;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.util.UrlUtils;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.dto.EndpointViewListing;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+
+import java.util.List;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
@@ -151,5 +155,15 @@ public class IndyStoresClientModule
                          new TypeReference<StoreListingDTO<Group>>()
                          {
                          } );
+    }
+
+    public StoreListingDTO<RemoteRepository> getRemoteByUrl( final String url, final String packageType )
+            throws IndyClientException
+    {
+        return http.get(
+                UrlUtils.buildUrl( STORE_BASEPATH, packageType, StoreType.remote.toString(), "query" ) + "/byUrl?url=" + url,
+                new TypeReference<StoreListingDTO<RemoteRepository>>()
+                {
+                }  );
     }
 }

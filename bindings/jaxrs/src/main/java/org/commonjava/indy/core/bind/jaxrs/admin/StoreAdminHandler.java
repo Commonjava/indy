@@ -43,6 +43,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -60,8 +61,10 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
@@ -421,6 +424,48 @@ public class StoreAdminHandler
             adminController.delete( key, user, summary );
 
             response = noContent().build();
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            response = formatResponse( e );
+        }
+        return response;
+    }
+
+    @ApiOperation( "Retrieve the definition of a remote by specific url" )
+    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "The store definition" ),
+                           @ApiResponse( code = 404, message = "The remote repository doesn't exist" ), } )
+    @Path( "/query/byUrl" )
+    @GET
+    public Response getRemoteByUrl( final @PathParam( "packageType" ) String packageType,
+                                    final @ApiParam( allowableValues = "remote", required = true )
+                                    @PathParam( "type" ) String type, final @QueryParam( "url" ) String url,
+                                    @Context final HttpServletRequest request,
+                                    final @Context SecurityContext securityContext )
+    {
+        if ( !"remote".equals( type ) )
+        {
+            return ResponseUtils.formatBadRequestResponse(
+                    String.format( "Not supporte repository type of %s", type ) );
+        }
+
+        logger.info( "Get remote repository by url: {}", url );
+        Response response;
+        try
+        {
+            final List<RemoteRepository> remotes = adminController.getRemoteByUrl( url );
+            logger.info( "According to url {}, Returning remote listing remote repositories: {}", url, remotes );
+
+            if ( remotes == null || remotes.isEmpty() )
+            {
+                response = Response.status( Status.NOT_FOUND ).build();
+            }
+            else
+            {
+                final StoreListingDTO<RemoteRepository> dto = new StoreListingDTO<>( remotes );
+                response = formatOkResponseWithJsonEntity( dto, objectMapper );
+            }
         }
         catch ( final IndyWorkflowException e )
         {
