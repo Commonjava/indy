@@ -22,6 +22,7 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.koji.content.CachedKojiContentProvider;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
 import org.commonjava.indy.koji.model.KojiRepairResult;
@@ -40,9 +41,9 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.redhat.red.build.koji.model.xmlrpc.messages.Constants.GET_BUILD;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 
@@ -65,7 +66,7 @@ public class KojiRepairManager
     private StoreDataManager storeManager;
 
     @Inject
-    private KojiClient kojiClient;
+    private CachedKojiContentProvider kojiCachedClient;
 
     @Inject
     private KojiUtils kojiUtils;
@@ -81,7 +82,7 @@ public class KojiRepairManager
     {
         this.storeManager = storeManager;
         this.config = config;
-        this.kojiClient = kojiClient;
+        this.kojiCachedClient = new CachedKojiContentProvider( kojiClient, null );
     }
 
     public KojiRepairResult repairVol( KojiRepairRequest request, String user, String baseUrl )
@@ -163,7 +164,7 @@ public class KojiRepairManager
                 ret.withIgnore( storeKey );
             }
         } );
-        List<KojiBuildInfo> buildInfoList = kojiClient.multiCall( GET_BUILD, args, KojiBuildInfo.class, session );
+        List<KojiBuildInfo> buildInfoList = kojiCachedClient.getBuildInfo( args, session );
 
         buildInfoList.forEach( buildInfo -> {
             try
@@ -201,7 +202,7 @@ public class KojiRepairManager
         try
         {
             KojiSessionInfo session = null;
-            buildInfo = kojiClient.getBuildInfo( nvr, session );
+            buildInfo = kojiCachedClient.getBuildInfo( nvr, session );
         }
         catch ( KojiClientException e )
         {

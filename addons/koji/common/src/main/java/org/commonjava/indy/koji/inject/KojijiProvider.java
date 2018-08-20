@@ -31,6 +31,7 @@ import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -80,8 +81,12 @@ public class KojijiProvider
     }
 
     @Override
-    public void start()
-            throws IndyLifecycleException
+    public void start() throws IndyLifecycleException
+    {
+    }
+
+    @PostConstruct
+    private void setUp() throws KojiClientException
     {
         if ( !config.isEnabled() )
         {
@@ -99,20 +104,13 @@ public class KojijiProvider
             kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
         }
 
-        try
+        if ( indyMetricsConfig.isKojiMetricEnabled() )
         {
-            if ( indyMetricsConfig.isKojiMetricEnabled() )
-            {
-                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
-            }
-            else
-            {
-                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
-            }
+            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
         }
-        catch ( KojiClientException e )
+        else
         {
-            throw new IndyLifecycleException( "Init KojiClient failed", e );
+            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
         }
 
         versionMetadataLocks = new Locker<>();

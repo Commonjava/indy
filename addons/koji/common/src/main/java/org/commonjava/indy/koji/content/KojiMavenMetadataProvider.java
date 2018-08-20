@@ -37,6 +37,7 @@ import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.atlas.ident.ref.InvalidRefException;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
@@ -44,6 +45,7 @@ import org.commonjava.maven.atlas.ident.util.VersionUtils;
 import org.commonjava.maven.atlas.ident.version.InvalidVersionSpecificationException;
 import org.commonjava.maven.atlas.ident.version.SingleVersion;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +58,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,7 +87,7 @@ public class KojiMavenMetadataProvider
     private CacheHandle<ProjectRef, Metadata> versionMetadata;
 
     @Inject
-    private KojiClient kojiClient;
+    private CachedKojiContentProvider kojiContentProvider;
 
     @Inject
     private IndyKojiConfig kojiConfig;
@@ -107,10 +107,10 @@ public class KojiMavenMetadataProvider
     protected KojiMavenMetadataProvider(){}
 
     public KojiMavenMetadataProvider( CacheHandle<ProjectRef, Metadata> versionMetadata, KojiClient kojiClient,
-                                      KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig, ExecutorService executorService )
+                                      KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig, ExecutorService executorService, DefaultCacheManager cacheManager )
     {
         this.versionMetadata = versionMetadata;
-        this.kojiClient = kojiClient;
+        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager ) );
         this.buildAuthority = buildAuthority;
         this.kojiConfig = kojiConfig;
         this.executorService = executorService;
@@ -222,11 +222,10 @@ public class KojiMavenMetadataProvider
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-//        return kojiClient.withKojiSession( ( session ) -> {
         KojiSessionInfo session = null;
 
             // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
-            List<KojiArchiveInfo> archives = kojiClient.listArchivesMatching( ga, session );
+            List<KojiArchiveInfo> archives = kojiContentProvider.listArchivesMatching( ga, session );
 
             Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new ConcurrentHashMap<>();
             Set<Integer> seenBuilds = new ConcurrentHashSet<>();
@@ -257,7 +256,7 @@ public class KojiMavenMetadataProvider
                         {
                             logger.trace( "Checking for builds/tags of: {}", archive );
 
-                            List<KojiTagInfo> tags = kojiClient.listTags( build.getId(), session );
+                            List<KojiTagInfo> tags = kojiContentProvider.listTags( build.getId(), session );
                             for ( KojiTagInfo tag : tags )
                             {
                                 if ( kojiConfig.isTagAllowed( tag.getName() ) )
@@ -340,7 +339,6 @@ public class KojiMavenMetadataProvider
             md.setVersioning( versioning );
 
             return md;
-//        } );
     }
 
     private ArchiveScan scanArchive( final KojiArchiveInfo archive, final KojiSessionInfo session,
@@ -394,7 +392,7 @@ public class KojiMavenMetadataProvider
         }
         else
         {
-            build = kojiClient.getBuildInfo( archive.getBuildId(), session );
+            build = kojiContentProvider.getBuildInfo( archive.getBuildId(), session );
             seenBuilds.add( archive.getBuildId() );
             scan.setBuild( build );
         }

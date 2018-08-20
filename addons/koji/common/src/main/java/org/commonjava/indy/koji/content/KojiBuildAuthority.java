@@ -32,6 +32,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
@@ -39,6 +40,7 @@ import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
 import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.Transfer;
+import org.infinispan.manager.DefaultCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +83,7 @@ public class KojiBuildAuthority
     private TypeMapper typeMapper;
 
     @Inject
-    private KojiClient kojiClient;
+    private CachedKojiContentProvider kojiContentProvider;
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -96,11 +98,11 @@ public class KojiBuildAuthority
 
     public KojiBuildAuthority( IndyKojiConfig config, TypeMapper typeMapper, KojiClient kojiClient,
                                StoreDataManager storeDataManager, ContentDigester contentDigester,
-                               DirectContentAccess directContentAccess )
+                               DirectContentAccess directContentAccess, DefaultCacheManager cacheManager )
     {
         this.config = config;
         this.typeMapper = typeMapper;
-        this.kojiClient = kojiClient;
+        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager ) );
         this.storeDataManager = storeDataManager;
         this.contentDigester = contentDigester;
         this.directContentAccess = directContentAccess;
@@ -149,7 +151,8 @@ public class KojiBuildAuthority
             KojiBuildArchiveCollection archiveCollection = seenBuildArchives.get( build.getId() );
             if ( archiveCollection == null )
             {
-                archiveCollection = kojiClient.listArchivesForBuild( build, session );
+                List<KojiArchiveInfo> archiveList = kojiContentProvider.listArchivesForBuild( build.getId(), session );
+                archiveCollection = new KojiBuildArchiveCollection( build, archiveList );
                 seenBuildArchives.put( build.getId(), archiveCollection );
             }
 

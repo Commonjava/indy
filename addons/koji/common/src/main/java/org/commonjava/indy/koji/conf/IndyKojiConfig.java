@@ -73,6 +73,10 @@ public class IndyKojiConfig
 
     private static final boolean DEFAULT_PROXY_BINARY_BUILDS = false;
 
+    private static final Boolean DEFAULT_QUERY_CACHE_ENABLED = true;
+
+    private static final int DEFAULT_QUERY_CACHE_EXPIRATION_HOURS = 3; // 3 hours for volatile caches
+
     private Boolean enabled;
 
     private String url;
@@ -101,6 +105,8 @@ public class IndyKojiConfig
 
     private Boolean tagPatternsEnabled;
 
+    private Boolean queryCacheEnabled;
+
     private Boolean proxyBinaryBuilds;
 
     private List<String> tagPatterns;
@@ -114,6 +120,8 @@ public class IndyKojiConfig
     private String binayNamingFormat = "koji-binary-${name}-${version}"; // default
 
     private Integer downloadTimeoutSeconds;
+
+    private Integer queryCacheTimeoutHours;
 
     private Long lockTimeoutSeconds;
 
@@ -389,6 +397,26 @@ public class IndyKojiConfig
         return getEnabled();
     }
 
+    public Boolean isQueryCacheEnabled()
+    {
+        return queryCacheEnabled == null ? DEFAULT_QUERY_CACHE_ENABLED : queryCacheEnabled;
+    }
+
+    public void setQueryCacheEnabled( Boolean queryCacheEnabled )
+    {
+        this.queryCacheEnabled = queryCacheEnabled;
+    }
+
+    public Integer getQueryCacheTimeoutHours()
+    {
+        return queryCacheTimeoutHours == null ? DEFAULT_QUERY_CACHE_EXPIRATION_HOURS : queryCacheTimeoutHours;
+    }
+
+    public void setQueryCacheTimeoutHours( Integer queryCacheTimeoutHours )
+    {
+        this.queryCacheTimeoutHours = queryCacheTimeoutHours;
+    }
+
     public Boolean getTagPatternsEnabled()
     {
         return tagPatternsEnabled == null ? DEFAULT_TAG_PATTERNS_ENABLED : tagPatternsEnabled;
@@ -457,6 +485,16 @@ public class IndyKojiConfig
             case "tag.patterns.enabled":
             {
                 this.tagPatternsEnabled = Boolean.valueOf( value.trim() );
+                break;
+            }
+            case "query.cache.enabled":
+            {
+                this.queryCacheEnabled = Boolean.valueOf( value.trim() );
+                break;
+            }
+            case "query.cache.timeout.hours":
+            {
+                this.queryCacheTimeoutHours = Integer.valueOf( value );
                 break;
             }
             case "proxy.binary.builds":

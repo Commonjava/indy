@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.koji.content;
 
-import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveQuery;
@@ -119,7 +118,7 @@ public abstract class KojiContentManagerDecorator
     private StoreDataManager storeDataManager;
 
     @Inject
-    private KojiClient kojiClient;
+    private CachedKojiContentProvider kojiContentProvider;
 
     @Inject
     private KojiUtils kojiUtils;
@@ -314,7 +313,7 @@ public abstract class KojiContentManagerDecorator
 //            return kojiClient.withKojiSession( ( session ) -> {
             KojiSessionInfo session = null;
 
-                List<KojiBuildInfo> builds = kojiClient.listBuildsContaining( artifactRef, session ); // use multicall
+                List<KojiBuildInfo> builds = kojiContentProvider.listBuildsContaining( artifactRef, session );
 
                 Collections.sort( builds, ( build1, build2 ) -> build2.getCreationTime()
                                                                       .compareTo( build1.getCreationTime() ) );
@@ -419,7 +418,7 @@ public abstract class KojiContentManagerDecorator
             {
                 buildIds.add( b.getId() );
             }
-            return kojiClient.listTags( buildIds, session );
+            return kojiContentProvider.listTags( buildIds, session );
         }
         return Collections.EMPTY_MAP;
     }
@@ -431,8 +430,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         try
         {
-            KojiArchiveQuery archiveQuery = new KojiArchiveQuery().withBuildId( build.getId() ).withType( "maven" );
-            List<KojiArchiveInfo> archives = kojiClient.listArchives( archiveQuery, session );
+            List<KojiArchiveInfo> archives = kojiContentProvider.listArchivesForBuild( build.getId(), session );
 
             boolean isBinaryBuild = kojiUtils.isBinaryBuild( build );
             String name = kojiUtils.getRepositoryName( build );
