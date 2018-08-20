@@ -42,7 +42,7 @@ public class StoreListingDTO<T extends ArtifactStore>
 
     public List<T> getItems()
     {
-        return items == null ? Collections.<T> emptyList() : items;
+        return items == null ? Collections.emptyList() : items;
     }
 
     public void setItems( final List<T> items )

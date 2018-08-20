@@ -367,10 +367,10 @@ public class ImpliedRepositoryDetector
                 }
 
                 logger.debug( "Detected POM-declared repository: {}", repo );
-                RemoteRepository rr = null;
+                List<RemoteRepository> rrs = null;
                 try
                 {
-                    rr = storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepositoryByUrl( repo.getUrl() );
+                    rrs = storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepositoryByUrl( repo.getUrl() );
                 }
                 catch ( IndyDataException e )
                 {
@@ -379,11 +379,11 @@ public class ImpliedRepositoryDetector
                             e );
                 }
 
-                if ( rr == null )
+                if ( rrs == null || rrs.isEmpty() )
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
 
-                    rr = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
+                    final RemoteRepository rr = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
                     if ( rr == null )
                     {
                         logger.warn(
@@ -427,7 +427,7 @@ public class ImpliedRepositoryDetector
                 }
                 else
                 {
-                    logger.debug( "Found existing RemoteRepository: {}", rr );
+                    logger.debug( "Found existing RemoteRepositories: {}", rrs );
                 }
             }
         }

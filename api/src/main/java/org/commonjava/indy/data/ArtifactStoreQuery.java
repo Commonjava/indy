@@ -80,7 +80,7 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
     Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException;
 
-    RemoteRepository getRemoteRepositoryByUrl( String url )
+    List<RemoteRepository> getRemoteRepositoryByUrl( String url )
             throws IndyDataException;
 
     List<ArtifactStore> getOrderedConcreteStoresInGroup( String groupName )

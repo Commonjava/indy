@@ -16,6 +16,7 @@
 package org.commonjava.indy.ftest.core.store;
 
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -28,19 +29,21 @@ import static org.junit.Assert.assertThat;
 /**
  * <b>GIVEN:</b>
  * <ul>
- *     <li>A remote repository with accessible remote url</li>
+ *     <li>Two remote repositories with same accessible remote url</li>
+ *     <li>One remote repo with another remote url</li>
  * </ul>
  *
  * <br/>
  * <b>WHEN:</b>
  * <ul>
- *     <li>Client request query by url for remote</li>
+ *     <li>Client request query by url for the first two remote</li>
  * </ul>
  *
  * <br/>
  * <b>THEN:</b>
  * <ul>
- *     <li>The remote repository can be got correctly</li>
+ *     <li>These two remote repositories can be got correctly</li>
+ *     <li>The third one will not be got</li>
  * </ul>
  */
 public class GetRemoteByUrlTest
@@ -53,16 +56,26 @@ public class GetRemoteByUrlTest
     public void getRemoteByUrl()
             throws Exception
     {
-        final String repoName = newName();
-        final String url = server.formatUrl( repoName );
-        final RemoteRepository repo =
-                new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, repoName, url );
-        assertThat( client.stores().create( repo, name.getMethodName(), RemoteRepository.class ), notNullValue() );
-        server.expect( url, 200, "" );
-        final RemoteRepository remote =
-                client.stores().getRemoteByUrl( url, MavenPackageTypeDescriptor.MAVEN_PKG_KEY, RemoteRepository.class );
+        final String urlName = "urltest";
+        final String url = server.formatUrl( urlName );
+        final RemoteRepository remote1 =
+                new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, newName(), url );
+        assertThat( client.stores().create( remote1, name.getMethodName(), RemoteRepository.class ), notNullValue() );
 
-        assertThat( remote, equalTo( repo ) );
+        final RemoteRepository remote2 =  new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, newName(), url );
+        assertThat( client.stores().create( remote2, name.getMethodName(), RemoteRepository.class ), notNullValue() );
+
+        final RemoteRepository remote3 = new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, newName(), server.formatUrl("another test") );
+        assertThat( client.stores().create( remote2, name.getMethodName(), RemoteRepository.class ), notNullValue() );
+
+        server.expect( url, 200, "" );
+        final StoreListingDTO<RemoteRepository> remotes =
+                client.stores().getRemoteByUrl( url, MavenPackageTypeDescriptor.MAVEN_PKG_KEY );
+
+        assertThat( remotes, notNullValue() );
+        assertThat( remotes.getItems().contains( remote1 ), equalTo( true ));
+        assertThat( remotes.getItems().contains( remote2 ), equalTo( true ));
+        assertThat( remotes.getItems().contains( remote3 ), equalTo( false ));
     }
 
 }

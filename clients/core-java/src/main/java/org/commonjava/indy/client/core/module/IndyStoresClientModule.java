@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
+import java.util.List;
+
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public class IndyStoresClientModule
@@ -155,12 +157,13 @@ public class IndyStoresClientModule
                          } );
     }
 
-    public <T extends RemoteRepository> T getRemoteByUrl( final String url, final String packageType,
-                                                          final Class<T> cls )
+    public StoreListingDTO<RemoteRepository> getRemoteByUrl( final String url, final String packageType )
             throws IndyClientException
     {
         return http.get(
                 UrlUtils.buildUrl( STORE_BASEPATH, packageType, StoreType.remote.toString(), "query" ) + "/byUrl?url=" + url,
-                cls );
+                new TypeReference<StoreListingDTO<RemoteRepository>>()
+                {
+                }  );
     }
 }

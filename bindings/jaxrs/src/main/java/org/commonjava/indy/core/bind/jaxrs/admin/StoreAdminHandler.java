@@ -454,17 +454,17 @@ public class StoreAdminHandler
         Response response;
         try
         {
-            final RemoteRepository remote = adminController.getRemoteByUrl( url );
-            logger.info( "Returning remote repository: {}", remote );
+            final List<RemoteRepository> remotes = adminController.getRemoteByUrl( url );
+            logger.info( "According to url {}, Returning remote listing remote repositories: {}", url, remotes );
 
-            if ( remote == null )
+            if ( remotes == null || remotes.isEmpty() )
             {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
+                response = Response.status( Status.NOT_FOUND ).build();
             }
             else
             {
-                response = formatOkResponseWithJsonEntity( remote, objectMapper );
+                final StoreListingDTO<RemoteRepository> dto = new StoreListingDTO<>( remotes );
+                response = formatOkResponseWithJsonEntity( dto, objectMapper );
             }
         }
         catch ( final IndyWorkflowException e )

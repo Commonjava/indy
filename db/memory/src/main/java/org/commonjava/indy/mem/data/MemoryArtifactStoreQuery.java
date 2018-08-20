@@ -251,7 +251,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public RemoteRepository getRemoteRepositoryByUrl( String url )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( String url )
             throws IndyDataException
     {
         /*
@@ -271,7 +271,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
 
         final UrlInfo urlInfo = temp;
 
-        RemoteRepository result;
+        List<RemoteRepository> result;
 
         // first try to find the remote repo by urlWithNoSchemeAndLastSlash
         /* @formatter:off */
@@ -303,11 +303,11 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                     }
 
                     return false;
-                } ).findFirst().orElse( null );
+                } ).collect( Collectors.toList() );
         /* @formatter:on */
 
 
-        if ( result == null )
+        if ( result.isEmpty() )
         {
             // ...if not found by hostname try to search by IP
             /* @formatter:off */
@@ -354,7 +354,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                         }
 
                         return false;
-                    } ).findFirst().orElse( null );
+                    } ).collect(Collectors.toList());
             /* @formatter:on */
         }
 

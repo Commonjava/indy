@@ -133,7 +133,7 @@ public class AdminController
         }
     }
 
-    public RemoteRepository getRemoteByUrl( final String url )
+    public List<RemoteRepository> getRemoteByUrl( final String url )
             throws IndyWorkflowException
     {
         try
