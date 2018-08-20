@@ -19,8 +19,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.redhat.red.build.koji.model.xmlrpc.messages.Constants.GET_BUILD;
@@ -41,6 +43,22 @@ public class CachedKojiContentProvider
 
     private final String KOJI_ARCHIVES_MATCHING_GA = "koji-ArchivesMatchingGA"; // volatile
 
+    /**
+     * This is to register ISPN caches produced by this provider so that the Metrics knows them.
+     */
+    public Set<String> getCacheNames()
+    {
+        Set<String> ret = new HashSet<>();
+        if ( kojiConfig.isEnabled() && kojiConfig.isQueryCacheEnabled() )
+        {
+            ret.add( KOJI_TAGS );
+            ret.add( KOJI_BUILD_INFO );
+            ret.add( KOJI_BUILD_INFO_CONTAINING_ARTIFACT );
+            ret.add( KOJI_ARCHIVES_FOR_BUILD );
+            ret.add( KOJI_ARCHIVES_MATCHING_GA );
+        }
+        return ret;
+    }
 
     @Inject
     private CacheProducer cacheProducer;
@@ -188,7 +206,6 @@ public class CachedKojiContentProvider
         return computeIfAbsent( KOJI_ARCHIVES_FOR_BUILD, Integer.class, List.class, buildId,
                                 () -> kojiClient.listArchives( query, session ) );
     }
-
 
     @FunctionalInterface
     private interface KojiContentSupplier<T>

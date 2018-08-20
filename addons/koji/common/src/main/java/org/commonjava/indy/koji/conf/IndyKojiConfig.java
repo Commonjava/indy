@@ -492,7 +492,7 @@ public class IndyKojiConfig
                 this.queryCacheEnabled = Boolean.valueOf( value.trim() );
                 break;
             }
-            case "query.cache.timeout.seconds":
+            case "query.cache.timeout.hours":
             {
                 this.queryCacheTimeoutHours = Integer.valueOf( value );
                 break;
