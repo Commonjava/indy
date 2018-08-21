@@ -99,7 +99,12 @@ public class TimeoutEventListener
         try
         {
             ArtifactStore store = storeManager.getArtifactStore( key );
-            boolean deleted = contentManager.delete( store, path );
+            if ( store == null )
+            {
+                logger.debug( "Store: {} is no longer available. Nothing to do for path: {}", key, path );
+            }
+
+            boolean deleted = store == null || contentManager.delete( store, path );
 
             if ( !deleted )
             {
