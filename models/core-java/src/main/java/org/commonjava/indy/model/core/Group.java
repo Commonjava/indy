@@ -17,7 +17,6 @@ package org.commonjava.indy.model.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
 import java.util.ArrayList;
@@ -32,15 +31,14 @@ public class Group
 
     private static final long serialVersionUID = 1L;
 
-    private List<StoreKey> constituents;
-
-    private final Object monitor = new Object();
+    private final List<StoreKey> constituents;
 
     @JsonProperty( "prepend_constituent" )
     private boolean prependConstituent = false;
 
     Group()
     {
+        this.constituents = new ArrayList<>();
     }
 
     public Group( final String packageType, final String name, final List<StoreKey> constituents )
@@ -91,12 +89,7 @@ public class Group
             return false;
         }
 
-        if ( constituents == null )
-        {
-            constituents = new ArrayList<>();
-        }
-
-        synchronized ( monitor )
+        synchronized ( constituents )
         {
             if ( constituents.contains( repository ) )
             {
@@ -125,30 +118,18 @@ public class Group
 
     public boolean removeConstituent( final StoreKey repository )
     {
-        if ( constituents != null )
+        synchronized ( constituents )
         {
-            synchronized ( monitor )
-            {
-                return constituents.remove( repository );
-            }
+            return constituents.remove( repository );
         }
-
-        return false;
     }
 
     public void setConstituents( final List<StoreKey> constituents )
     {
-        if ( this.constituents == null )
+        synchronized ( this.constituents )
         {
-            this.constituents = new ArrayList<>( constituents );
-        }
-        else
-        {
-            synchronized ( monitor )
-            {
-                this.constituents.clear();
-                this.constituents.addAll( constituents );
-            }
+            this.constituents.clear();
+            this.constituents.addAll( constituents );
         }
     }
 

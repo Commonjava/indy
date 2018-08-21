@@ -75,7 +75,7 @@ public class GroupTest
     }
 
     @Test
-    public void testAddHosted(){
+    public void testPrepend(){
         Group src =
                 new Group( MAVEN_PKG_KEY, "test" );
         StoreKey remote1 = new StoreKey( MAVEN_PKG_KEY, remote, "remote1" );
@@ -86,20 +86,18 @@ public class GroupTest
         src.addConstituent( remote2 );
         assertThat(src.getConstituents().get( 0 ), equalTo(  remote1 ));
 
+        src.setPrependConstituent( true );
+
         StoreKey hosted1 = new StoreKey( MAVEN_PKG_KEY, hosted, "hosted1" );
         src.addConstituent( hosted1 );
         assertThat(src.getConstituents().get( 0 ), equalTo(  hosted1 ));
 
-        StoreKey hosted2 = new StoreKey( MAVEN_PKG_KEY, hosted, "hosted2" );
-        src.addConstituent( hosted2 );
-        assertThat(src.getConstituents().get( 0 ), equalTo(  hosted2 ));
-
         StoreKey remote3 = new StoreKey( MAVEN_PKG_KEY, remote, "remote3" );
         src.addConstituent( remote3 );
-        assertThat(src.getConstituents().get( 0 ), equalTo(  hosted2 ));
+        assertThat(src.getConstituents().get( 0 ), equalTo(  remote3 ));
 
         StoreKey group = new StoreKey( MAVEN_PKG_KEY, StoreType.group, "group" );
         src.addConstituent( group );
-        assertThat(src.getConstituents().get( 0 ), equalTo(  hosted2 ));
+        assertThat(src.getConstituents().get( 0 ), equalTo(  group ));
     }
 }
