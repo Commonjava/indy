@@ -198,7 +198,7 @@ public class HttpProxyTest
 
         proxy = new HttpProxy( config, bootOpts,
                                new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache(),
-                                                       scriptEngine, new MDCManager() ) );
+                                                       scriptEngine, new MDCManager(), null, null ) );
         proxy.start();
     }
 
