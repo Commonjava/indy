@@ -15,7 +15,10 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
@@ -31,8 +34,7 @@ import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.conf.TrackingType;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -61,12 +63,12 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.indy.util.ApplicationHeader.proxy_authenticate;
@@ -105,11 +107,18 @@ public final class ProxyResponseWriter
 
     private MDCManager mdcManager;
 
+    private MetricRegistry metricRegistry;
+
+    private IndyMetricsConfig metricsConfig;
+
+    private String cls; // short class name for metrics
+
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
                                 final MDCManager mdcManager,
-                                final ProxyRepositoryCreator repoCreator, final StreamConnection streamConnection )
+                                final ProxyRepositoryCreator repoCreator, final StreamConnection streamConnection,
+                                final IndyMetricsConfig metricsConfig, final MetricRegistry metricRegistry )
     {
         this.config = config;
         this.contentController = contentController;
@@ -119,11 +128,33 @@ public final class ProxyResponseWriter
         this.mdcManager = mdcManager;
         this.repoCreator = repoCreator;
         this.peerAddress = streamConnection.getPeerAddress();
+        this.metricsConfig = metricsConfig;
+        this.metricRegistry = metricRegistry;
+        this.cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 ); // e.g., foo.bar.ClassA -> f.b.ClassA
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void handleEvent( final ConduitStreamSinkChannel channel )
+    {
+        if ( metricsConfig == null || metricRegistry == null )
+        {
+            doHandleEvent( channel );
+            return;
+        }
+
+        Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "handleEvent" ) );
+        Timer.Context timerContext = timer.time();
+        try
+        {
+            doHandleEvent( channel );
+        }
+        finally
+        {
+            timerContext.stop();
+        }
+    }
+
+    private void doHandleEvent( final ConduitStreamSinkChannel channel )
     {
         HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );
         if ( httpRequest == null )
@@ -304,6 +335,28 @@ public final class ProxyResponseWriter
                            final boolean writeBody, final UserPass proxyUserPass )
                     throws IOException, IndyWorkflowException
     {
+        if ( metricsConfig == null || metricRegistry == null )
+        {
+            doTransfer( http, store, path, writeBody, proxyUserPass );
+            return;
+        }
+
+        Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "transfer" ) );
+        Timer.Context timerContext = timer.time();
+        try
+        {
+            doTransfer( http, store, path, writeBody, proxyUserPass );
+        }
+        finally
+        {
+            timerContext.stop();
+        }
+    }
+
+    private void doTransfer( final HttpConduitWrapper http, final ArtifactStore store, final String path,
+                           final boolean writeBody, final UserPass proxyUserPass )
+                    throws IOException, IndyWorkflowException
+    {
         if ( transferred )
         {
             return;
@@ -413,6 +466,26 @@ public final class ProxyResponseWriter
     }
 
     private ArtifactStore getArtifactStore( String trackingId, final URL url )
+                    throws IndyDataException
+    {
+        if ( metricsConfig == null || metricRegistry == null )
+        {
+            return doGetArtifactStore( trackingId, url );
+        }
+
+        Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "getArtifactStore" ) );
+        Timer.Context timerContext = timer.time();
+        try
+        {
+            return doGetArtifactStore( trackingId, url );
+        }
+        finally
+        {
+            timerContext.stop();
+        }
+    }
+
+    private ArtifactStore doGetArtifactStore( String trackingId, final URL url )
                     throws IndyDataException
     {
         int port = getPort( url );

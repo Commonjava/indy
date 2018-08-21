@@ -15,11 +15,13 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
@@ -65,13 +67,20 @@ public class ProxyAcceptHandler
     @Inject
     private MDCManager mdcManager;
 
+    @Inject
+    MetricRegistry metricRegistry;
+
+    @Inject
+    private IndyMetricsConfig metricsConfig;
+
     protected ProxyAcceptHandler()
     {
     }
 
     public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager, ContentController contentController,
                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
-                               ScriptEngine scriptEngine, MDCManager mdcManager )
+                               ScriptEngine scriptEngine, MDCManager mdcManager,
+                               IndyMetricsConfig metricsConfig, MetricRegistry metricRegistry )
     {
         this.config = config;
         this.storeManager = storeManager;
@@ -80,6 +89,8 @@ public class ProxyAcceptHandler
         this.cacheProvider = cacheProvider;
         this.scriptEngine = scriptEngine;
         this.mdcManager = mdcManager;
+        this.metricsConfig = metricsConfig;
+        this.metricRegistry = metricRegistry;
     }
 
     public ProxyRepositoryCreator createRepoCreator()
@@ -130,7 +141,8 @@ public class ProxyAcceptHandler
 
         final ProxyResponseWriter writer =
                         new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator,
-                                                 cacheProvider, mdcManager, creator, accepted );
+                                                 cacheProvider, mdcManager, creator, accepted,
+                                                 metricsConfig, metricRegistry );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter().set( writer );
