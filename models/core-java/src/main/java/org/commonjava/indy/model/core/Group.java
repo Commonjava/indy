@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.model.core;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
@@ -30,10 +31,14 @@ public class Group
 
     private static final long serialVersionUID = 1L;
 
-    private List<StoreKey> constituents;
+    private final List<StoreKey> constituents;
+
+    @JsonProperty( "prepend_constituent" )
+    private boolean prependConstituent = false;
 
     Group()
     {
+        this.constituents = new ArrayList<>();
     }
 
     public Group( final String packageType, final String name, final List<StoreKey> constituents )
@@ -84,11 +89,6 @@ public class Group
             return false;
         }
 
-        if ( constituents == null )
-        {
-            constituents = new ArrayList<>();
-        }
-
         synchronized ( constituents )
         {
             if ( constituents.contains( repository ) )
@@ -96,7 +96,18 @@ public class Group
                 return false;
             }
 
-            return constituents.add( repository );
+            // We will add new repo as the first member in group if prependConstituent set to true,
+            // that means this repo may contain the most recent dependencies for the subsequent build.
+            if ( isPrependConstituent() )
+            {
+                constituents.add( 0, repository );
+                return true;
+            }
+            else
+            {
+
+                return constituents.add( repository );
+            }
         }
     }
 
@@ -107,31 +118,29 @@ public class Group
 
     public boolean removeConstituent( final StoreKey repository )
     {
-        if ( constituents != null )
+        synchronized ( constituents )
         {
-            synchronized ( constituents )
-            {
-                return constituents.remove( repository );
-            }
+            return constituents.remove( repository );
         }
-
-        return false;
     }
 
     public void setConstituents( final List<StoreKey> constituents )
     {
-        if ( this.constituents == null )
+        synchronized ( this.constituents )
         {
-            this.constituents = new ArrayList<>( constituents );
+            this.constituents.clear();
+            this.constituents.addAll( constituents );
         }
-        else
-        {
-            synchronized ( constituents )
-            {
-                this.constituents.clear();
-                this.constituents.addAll( constituents );
-            }
-        }
+    }
+
+    public boolean isPrependConstituent()
+    {
+        return prependConstituent;
+    }
+
+    public void setPrependConstituent( boolean prependConstituent )
+    {
+        this.prependConstituent = prependConstituent;
     }
 
     @Override

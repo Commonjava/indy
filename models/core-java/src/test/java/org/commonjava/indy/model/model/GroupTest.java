@@ -15,18 +15,18 @@
  */
 package org.commonjava.indy.model.model;
 
-import org.commonjava.indy.model.core.GenericPackageTypeDescriptor;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
+import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -72,5 +72,32 @@ public class GroupTest
                                 e.printStackTrace();
                             }
                         } );
+    }
+
+    @Test
+    public void testPrepend(){
+        Group src =
+                new Group( MAVEN_PKG_KEY, "test" );
+        StoreKey remote1 = new StoreKey( MAVEN_PKG_KEY, remote, "remote1" );
+        src.addConstituent( remote1 );
+        assertThat(src.getConstituents().get( 0 ), equalTo(  remote1 ));
+
+        StoreKey remote2 = new StoreKey( MAVEN_PKG_KEY, remote, "remote2" );
+        src.addConstituent( remote2 );
+        assertThat(src.getConstituents().get( 0 ), equalTo(  remote1 ));
+
+        src.setPrependConstituent( true );
+
+        StoreKey hosted1 = new StoreKey( MAVEN_PKG_KEY, hosted, "hosted1" );
+        src.addConstituent( hosted1 );
+        assertThat(src.getConstituents().get( 0 ), equalTo(  hosted1 ));
+
+        StoreKey remote3 = new StoreKey( MAVEN_PKG_KEY, remote, "remote3" );
+        src.addConstituent( remote3 );
+        assertThat(src.getConstituents().get( 0 ), equalTo(  remote3 ));
+
+        StoreKey group = new StoreKey( MAVEN_PKG_KEY, StoreType.group, "group" );
+        src.addConstituent( group );
+        assertThat(src.getConstituents().get( 0 ), equalTo(  group ));
     }
 }
