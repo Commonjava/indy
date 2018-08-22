@@ -300,7 +300,14 @@ public class TimeoutEventListener
 
     private void deleteExpiration( StoreKey key, String path )
     {
-        scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
+        if ( key != null )
+        {
+            scheduleManager.deleteJob( ScheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
+        }
+        else
+        {
+            logger.debug( "Store is no longer available. No need to do deletion for path: {}", path );
+        }
     }
 
 }
