@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.expire;
 
+import org.commonjava.indy.model.core.StoreKey;
 import org.junit.Test;
 
 import java.text.DateFormat;
@@ -24,6 +25,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+import static org.commonjava.indy.core.expire.ScheduleManager.CONTENT_JOB_TYPE;
+import static org.commonjava.indy.core.expire.ScheduleManager.storeKeyFrom;
+import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -34,6 +38,17 @@ import static org.junit.Assert.assertTrue;
  */
 public class ScheduleManagerTest
 {
+    @Test
+    public void testStoreKeyFrom()
+    {
+        StoreKey k = new StoreKey( "maven", remote, "repo1" );
+        ScheduleKey key = new ScheduleKey( k, CONTENT_JOB_TYPE, "/abc" );
+
+        final StoreKey sk = storeKeyFrom( key.groupName() );
+
+        assertNotNull( sk );
+    }
+
     @Test
     public void testCalculateNextExpireTime()
             throws Exception
