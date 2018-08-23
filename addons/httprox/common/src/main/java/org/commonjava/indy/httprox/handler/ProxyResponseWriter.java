@@ -67,7 +67,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
@@ -87,7 +87,7 @@ public final class ProxyResponseWriter
 
     private static final String HTTP_PROXY_AUTH_CACHE = "httproxy-auth-cache";
 
-    private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 3;
+    private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 1;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -331,7 +331,7 @@ public final class ProxyResponseWriter
 
     private String generateAuthCacheKey( UserPass proxyUserPass )
     {
-        return md5Hex( proxyUserPass.getUser() + ":" + proxyUserPass.getPassword() );
+        return sha256Hex( proxyUserPass.getUser() + ":" + proxyUserPass.getPassword() );
     }
 
     private void handleError( final Throwable error, final HttpWrapper http )
