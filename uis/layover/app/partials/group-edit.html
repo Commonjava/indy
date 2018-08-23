@@ -41,6 +41,11 @@
         <label>Enabled?</label>
         <span class="hint" ng-if="!raw.enabled && raw.disableExpiration">Set to automatically re-enable at {{raw.disableExpiration | dateFormat}}</span>
       </div>
+      <div class="detail-field">
+        <input type="checkbox" ng-model="store.prepend_constituent" />
+        <label>Prepend Constituents?</label>
+        <span class="hint">If enabled, all new constituents which are added not manually(like promotion) will be at the top of constituents list</span>
+      </div>
 
       <div class="sub-fields">
         <div class="detail-field">
