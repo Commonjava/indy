@@ -269,7 +269,7 @@ public class JaxRsBooter
                                 dm.start() );
 
                         undertow = Undertow.builder()
-                                           .setSocketOption( Options.BACKLOG, bootOptions.getSocketBacklog() )
+//                                           .setSocketOption( Options.BACKLOG, bootOptions.getSocketBacklog() )
                                            .setHandler( eh )
                                            .addHttpListener( foundPort, bootOptions.getBind() )
                                            .build();
