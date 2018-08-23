@@ -101,7 +101,7 @@ public class TimeoutEventListener
             ArtifactStore store = storeManager.getArtifactStore( key );
             if ( store == null )
             {
-                logger.debug( "Store: {} is no longer available. Nothing to do for path: {}", key, path );
+                logger.warn( "Store: {} is no longer available. Nothing to do for path: {}", key, path );
             }
 
             boolean deleted = store == null || contentManager.delete( store, path );
@@ -306,7 +306,7 @@ public class TimeoutEventListener
         }
         else
         {
-            logger.debug( "Store is no longer available. No need to do deletion for path: {}", path );
+            logger.warn( "Store is no longer available. No need to do deletion for path: {}", path );
         }
     }
 

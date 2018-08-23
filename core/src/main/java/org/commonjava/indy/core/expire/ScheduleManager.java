@@ -629,11 +629,28 @@ public class ScheduleManager
         final String[] parts = group.split( "#" );
         if ( parts.length > 1 )
         {
-            final StoreType type = StoreType.get( parts[0] );
-            if ( type != null )
+            final Logger logger = LoggerFactory.getLogger( ScheduleManager.class );
+            StoreKey storeKey = null;
+            try
             {
-                return new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, type, parts[1] );
+                storeKey = StoreKey.fromString( parts[0] );
             }
+            catch ( IllegalArgumentException e )
+            {
+                logger.warn( "Not a store key for string: {}", parts[0] );
+            }
+
+            //TODO this part of code may be obsolete, will need further check then remove
+            if ( storeKey == null )
+            {
+                logger.info( "Not a store key for string: {}, will parse as store type", parts[0] );
+                final StoreType type = StoreType.get( parts[0] );
+                if ( type != null )
+                {
+                    storeKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, type, parts[1] );
+                }
+            }
+            return storeKey;
         }
 
         return null;
