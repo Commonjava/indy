@@ -25,6 +25,7 @@ import org.commonjava.indy.httprox.handler.ProxyAcceptHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.OptionMap;
+import org.xnio.Options;
 import org.xnio.StreamConnection;
 import org.xnio.Xnio;
 import org.xnio.XnioWorker;
@@ -89,8 +90,9 @@ public class HttpProxy
         XnioWorker worker;
         try
         {
+            OptionMap optionMap = OptionMap.create( Options.BACKLOG, bootOptions.getSocketBacklog() );
             worker = Xnio.getInstance()
-                         .createWorker( OptionMap.EMPTY );
+                         .createWorker( optionMap );
 
             final InetSocketAddress addr;
             if ( config.getPort() < 1 )

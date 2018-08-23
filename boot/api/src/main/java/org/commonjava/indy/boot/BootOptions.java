@@ -45,6 +45,8 @@ public class BootOptions
 
     public static final int DEFAULT_PORT = 8080;
 
+    private static final Integer DEFAULT_SOCKET_BACKLOG = 1000;
+
     @Option( name = "-h", aliases = { "--help" }, usage = "Print this and exit" )
     private boolean help;
 
@@ -65,6 +67,9 @@ public class BootOptions
     
     @Option( name = "-R", aliases = { "--secure-realm" }, usage = "Specify security realm" )
     private String secureRealm;
+
+    @Option( name = "-B", aliases = { "--backlog" }, usage = "Specify TCP backlog (default: 1000; total usage is doubled if you're using httprox)" )
+    private Integer socketBacklog;
     
     private StringSearchInterpolator interp;
 
@@ -341,4 +346,13 @@ public class BootOptions
         this.port = port;
     }
 
+    public Integer getSocketBacklog()
+    {
+        return socketBacklog == null ? DEFAULT_SOCKET_BACKLOG : socketBacklog;
+    }
+
+    public void setSocketBacklog( final Integer socketBacklog )
+    {
+        this.socketBacklog = socketBacklog;
+    }
 }

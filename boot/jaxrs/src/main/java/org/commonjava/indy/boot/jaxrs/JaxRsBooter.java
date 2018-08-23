@@ -41,6 +41,7 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xnio.Options;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletException;
@@ -268,6 +269,7 @@ public class JaxRsBooter
                                 dm.start() );
 
                         undertow = Undertow.builder()
+                                           .setSocketOption( Options.BACKLOG, bootOptions.getSocketBacklog() )
                                            .setHandler( eh )
                                            .addHttpListener( foundPort, bootOptions.getBind() )
                                            .build();
