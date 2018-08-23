@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.core.expire;
 
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
 
 import java.text.DateFormat;
@@ -27,6 +29,7 @@ import java.util.Date;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -42,6 +45,17 @@ public class ScheduleManagerTest
         assertResult( 10000, System.currentTimeMillis() - 3000, 3000, false );
         assertResult( 2000, System.currentTimeMillis() - 1000, 2000, true );
         assertResult( 2000, System.currentTimeMillis() - 3000, 0, true );
+    }
+
+    @Test
+    public void testStoreKeyFrom()
+    {
+        StoreKey k = new StoreKey( "maven", StoreType.remote, "repo1" );
+        ScheduleKey key = new ScheduleKey(k, ScheduleManager.CONTENT_JOB_TYPE, "/abc");
+        final StoreKey sk = ScheduleManager.storeKeyFrom( key.groupName() );
+        System.out.println(">>> " + sk);
+        assertNotNull( sk );
+        assertEquals( sk, k );
     }
 
     private void assertResult( final long expire, final long start, final long timeGone, final boolean nullable )
