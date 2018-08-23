@@ -56,6 +56,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.indy.subsys.template.TemplatingEngine;
@@ -198,7 +199,8 @@ public class HttpProxyTest
 
         proxy = new HttpProxy( config, bootOpts,
                                new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache(),
-                                                       scriptEngine, new MDCManager(), null, null ) );
+                                                       scriptEngine, new MDCManager(), null, null,
+                                                       new CacheProducer( null, cacheManager ) ) );
         proxy.start();
     }
 

@@ -43,6 +43,8 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.UrlInfo;
@@ -60,10 +62,12 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
@@ -81,11 +85,17 @@ public final class ProxyResponseWriter
 
     private static final String TRACKED_USER_SUFFIX = "+tracking";
 
+    private static final String HTTP_PROXY_AUTH_CACHE = "httproxy-auth-cache";
+
+    private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 3;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.topic.httprox.inbound" );
 
     private final SocketAddress peerAddress;
+
+    private final CacheHandle<String, Boolean> proxyAuthCache;
 
     private Throwable error;
 
@@ -118,7 +128,8 @@ public final class ProxyResponseWriter
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
                                 final MDCManager mdcManager,
                                 final ProxyRepositoryCreator repoCreator, final StreamConnection streamConnection,
-                                final IndyMetricsConfig metricsConfig, final MetricRegistry metricRegistry )
+                                final IndyMetricsConfig metricsConfig, final MetricRegistry metricRegistry,
+                                final CacheProducer cacheProducer )
     {
         this.config = config;
         this.contentController = contentController;
@@ -131,6 +142,7 @@ public final class ProxyResponseWriter
         this.metricsConfig = metricsConfig;
         this.metricRegistry = metricRegistry;
         this.cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 ); // e.g., foo.bar.ClassA -> f.b.ClassA
+        this.proxyAuthCache = cacheProducer.getCache( HTTP_PROXY_AUTH_CACHE, String.class, Boolean.class );
     }
 
     @Override
@@ -241,11 +253,23 @@ public final class ProxyResponseWriter
                             trackingId = trackingKey.getId();
                         }
 
-                        logger.debug( "Passing BASIC authentication credentials to Keycloak bearer-token translation authenticator" );
-                        if ( !proxyAuthenticator.authenticate( proxyUserPass, http ) )
+                        String authCacheKey = generateAuthCacheKey( proxyUserPass );
+                        Boolean isAuthToken = proxyAuthCache.get( authCacheKey );
+                        if ( Boolean.TRUE.equals( isAuthToken ) )
                         {
-                            authenticated = false;
+                            authenticated = true;
+                            logger.debug("Found auth key in cache" );
                         }
+                        else
+                        {
+                            logger.debug( "Passing BASIC authentication credentials to Keycloak bearer-token translation authenticator" );
+                            authenticated = proxyAuthenticator.authenticate( proxyUserPass, http );
+                            if ( authenticated )
+                            {
+                                proxyAuthCache.put( authCacheKey, Boolean.TRUE, DEFAULT_AUTH_CACHE_EXPIRATION_HOURS, TimeUnit.HOURS );
+                            }
+                        }
+                        logger.debug( "Authentication done, result: {}", authenticated );
                     }
 
                     if ( authenticated )
@@ -257,7 +281,10 @@ public final class ProxyResponseWriter
                             case GET_METHOD:
                             case HEAD_METHOD:
                             {
+                                logger.debug( "getArtifactStore starts, trackingId: {}, url: {}", trackingId, url );
                                 ArtifactStore store = getArtifactStore( trackingId, url );
+                                logger.debug( "getArtifactStore done, store: {}", store );
+
                                 transfer( http, store, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
                                 break;
                             }
@@ -300,6 +327,11 @@ public final class ProxyResponseWriter
         {
             logger.error( "Failed to flush/shutdown response.", e );
         }
+    }
+
+    private String generateAuthCacheKey( UserPass proxyUserPass )
+    {
+        return md5Hex( proxyUserPass.getUser() + ":" + proxyUserPass.getPassword() );
     }
 
     private void handleError( final Throwable error, final HttpWrapper http )
@@ -498,6 +530,7 @@ public final class ProxyResponseWriter
                             storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( Group.class );
 
             Group group = query.getGroup( groupName );
+            logger.debug( "Get httproxy group, group: {}", group );
 
             if ( group == null )
             {
@@ -522,6 +555,7 @@ public final class ProxyResponseWriter
                           .findFirst()
                           .orElse( null );
 
+            logger.debug( "Get httproxy remote, remote: {}", remote );
             if ( remote == null )
             {
                 logger.debug( "Creating remote repository for HTTProx request: {}", url );
