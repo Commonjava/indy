@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 
     Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
@@ -18,34 +18,20 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-addons</artifactId>
     <version>1.3.2-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>indy-addons</artifactId>
+  <artifactId>indy-hosted-by-archive</artifactId>
+  <name>Indy :: Add-Ons :: Hosted By Archive :: Parent</name>
   <packaging>pom</packaging>
 
-  <name>Indy :: Add-Ons :: Parent</name>
-  
   <modules>
-    <module>autoprox</module>
-    <module>content-index</module>
-    <module>dot-maven</module>
-    <module>folo</module>
-    <module>httprox</module>
-    <module>implied-repos</module>
-    <module>koji</module>
-    <module>promote</module>
-    <module>revisions</module>
-    <module>setback</module>
-    <module>pkg-maven</module>
-    <module>diagnostics</module>
-    <module>relate</module>
-    <module>pkg-npm</module>
-    <module>hosted-by-archive</module>
-    <!-- DO NOT REMOVE: append::addon -->
+    <module>common</module>
+    <module>client-java</module>
+    <module>ftests</module>
+    <module>jaxrs</module>
   </modules>
+
 </project>
