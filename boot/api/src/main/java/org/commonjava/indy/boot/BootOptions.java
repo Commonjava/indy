@@ -68,9 +68,6 @@ public class BootOptions
     @Option( name = "-R", aliases = { "--secure-realm" }, usage = "Specify security realm" )
     private String secureRealm;
 
-    @Option( name = "-B", aliases = { "--backlog" }, usage = "Specify TCP backlog (default: 1000; total usage is doubled if you're using httprox)" )
-    private Integer socketBacklog;
-    
     private StringSearchInterpolator interp;
 
     private Properties bootProps;
@@ -346,13 +343,4 @@ public class BootOptions
         this.port = port;
     }
 
-    public Integer getSocketBacklog()
-    {
-        return socketBacklog == null ? DEFAULT_SOCKET_BACKLOG : socketBacklog;
-    }
-
-    public void setSocketBacklog( final Integer socketBacklog )
-    {
-        this.socketBacklog = socketBacklog;
-    }
 }

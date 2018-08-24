@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,7 @@ import java.net.InetSocketAddress;
 
 @ApplicationScoped
 public class HttpProxy
-    implements StartupAction, ShutdownAction
+        implements StartupAction, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -67,7 +67,7 @@ public class HttpProxy
 
     @Override
     public void start()
-        throws IndyLifecycleException
+            throws IndyLifecycleException
     {
         if ( !config.isEnabled() )
         {
@@ -90,9 +90,29 @@ public class HttpProxy
         XnioWorker worker;
         try
         {
-            OptionMap optionMap = OptionMap.create( Options.BACKLOG, bootOptions.getSocketBacklog() );
-            worker = Xnio.getInstance()
-                         .createWorker( optionMap );
+            // borrowed from Undertow.class
+            int ioThreads = Math.max( Runtime.getRuntime().availableProcessors(), 2 );
+            int workerThreads = ioThreads * 8;
+            OptionMap optionMap = OptionMap.builder()
+                                           .set( Options.WORKER_IO_THREADS, ioThreads )
+                                           .set( Options.CONNECTION_HIGH_WATER, 1000000 )
+                                           .set( Options.CONNECTION_LOW_WATER, 1000000 )
+                                           .set( Options.WORKER_TASK_CORE_THREADS, workerThreads )
+                                           .set( Options.WORKER_TASK_MAX_THREADS, workerThreads )
+                                           .set( Options.TCP_NODELAY, true )
+                                           .set( Options.CORK, true )
+                                           .getMap();
+
+            worker = Xnio.getInstance().createWorker( optionMap );
+
+            OptionMap socketOptions = OptionMap.builder()
+                                               .set(Options.WORKER_IO_THREADS, worker.getIoThreadCount())
+                                               .set(Options.TCP_NODELAY, true)
+                                               .set(Options.REUSE_ADDRESSES, true)
+                                               .set(Options.BALANCING_TOKENS, 1)
+                                               .set(Options.BALANCING_CONNECTIONS, 2)
+                                               .set(Options.BACKLOG, 1000)
+                                               .getMap();
 
             final InetSocketAddress addr;
             if ( config.getPort() < 1 )
@@ -102,7 +122,7 @@ public class HttpProxy
                 server = PortFinder.findPortFor( 16, ( foundPort ) -> {
                     InetSocketAddress a = new InetSocketAddress( bind, config.getPort() );
                     AcceptingChannel<StreamConnection> result =
-                            worker.createStreamConnectionServer( a, acceptHandler, OptionMap.EMPTY );
+                            worker.createStreamConnectionServer( a, acceptHandler, socketOptions );
 
                     result.resumeAccepts();
                     using.set( a );
