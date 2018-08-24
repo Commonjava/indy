@@ -41,7 +41,9 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xnio.Options;
 
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -234,6 +236,8 @@ public class JaxRsBooter
                                                          .select( IndyDeployment.class )
                                                          .get();
 
+        Instance<XnioService> services = container.instance().select( XnioService.class );
+
         final DeploymentInfo di = indyDeployment.getDeployment( bootOptions.getContextPath() )
                                                  .setContextPath( "/" );
 
@@ -252,7 +256,7 @@ public class JaxRsBooter
                 final ThreadLocal<ServletException> errorHolder = new ThreadLocal<>();
                 ThreadLocal<Integer> usingPort = new ThreadLocal<>();
                 server = PortFinder.findPortFor( 16, ( foundPort ) -> {
-                    Undertow undertow = null;
+                    final Undertow undertow;
                     try
                     {
                         // FROM: https://stackoverflow.com/questions/28295752/compressing-undertow-server-responses#28329810
@@ -268,19 +272,28 @@ public class JaxRsBooter
                                 dm.start() );
 
                         undertow = Undertow.builder()
+//                                           .setSocketOption( Options.BACKLOG, bootOptions.getSocketBacklog() )
                                            .setHandler( eh )
                                            .addHttpListener( foundPort, bootOptions.getBind() )
                                            .build();
 
                         undertow.start();
+
+                        if ( services != null )
+                        {
+                            services.forEach( svc->svc.start( undertow.getWorker(), bootOptions ) );
+                        }
+
                         usingPort.set( foundPort );
+
+                        return undertow;
                     }
                     catch ( ServletException e )
                     {
                         errorHolder.set( e );
                     }
 
-                    return undertow;
+                    return null;
                 } );
 
                 ServletException e = errorHolder.get();

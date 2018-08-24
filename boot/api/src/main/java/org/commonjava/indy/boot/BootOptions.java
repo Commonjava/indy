@@ -45,6 +45,8 @@ public class BootOptions
 
     public static final int DEFAULT_PORT = 8080;
 
+    private static final Integer DEFAULT_SOCKET_BACKLOG = 1000;
+
     @Option( name = "-h", aliases = { "--help" }, usage = "Print this and exit" )
     private boolean help;
 
@@ -65,7 +67,7 @@ public class BootOptions
     
     @Option( name = "-R", aliases = { "--secure-realm" }, usage = "Specify security realm" )
     private String secureRealm;
-    
+
     private StringSearchInterpolator interp;
 
     private Properties bootProps;
