@@ -87,8 +87,6 @@ public final class ProxyResponseWriter
 
     private static final String HTTP_PROXY_AUTH_CACHE = "httproxy-auth-cache";
 
-    private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 1;
-
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.topic.httprox.inbound" );
@@ -266,7 +264,7 @@ public final class ProxyResponseWriter
                             authenticated = proxyAuthenticator.authenticate( proxyUserPass, http );
                             if ( authenticated )
                             {
-                                proxyAuthCache.put( authCacheKey, Boolean.TRUE, DEFAULT_AUTH_CACHE_EXPIRATION_HOURS, TimeUnit.HOURS );
+                                proxyAuthCache.put( authCacheKey, Boolean.TRUE, config.getAuthCacheExpirationHours(), TimeUnit.HOURS );
                             }
                         }
                         logger.debug( "Authentication done, result: {}", authenticated );

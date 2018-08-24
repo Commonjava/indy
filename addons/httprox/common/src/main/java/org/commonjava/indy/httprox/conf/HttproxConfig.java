@@ -40,6 +40,8 @@ public class HttproxConfig
 
     private static final String DEFAULT_TRACKING_TYPE = TrackingType.SUFFIX.name();
 
+    private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 1;
+
     private String proxyRealm;
 
     private Boolean enabled;
@@ -47,6 +49,8 @@ public class HttproxConfig
     private Boolean secured;
 
     private Integer port;
+
+    private Integer authCacheExpirationHours;
 
     private String trackingType;
 
@@ -112,6 +116,17 @@ public class HttproxConfig
     public void setProxyRealm( final String proxyRealm )
     {
         this.proxyRealm = proxyRealm;
+    }
+
+    public Integer getAuthCacheExpirationHours()
+    {
+        return authCacheExpirationHours == null ? DEFAULT_AUTH_CACHE_EXPIRATION_HOURS : authCacheExpirationHours;
+    }
+
+    @ConfigName( "auth.cache.expiration.hours" )
+    public void setAuthCacheExpirationHours( Integer authCacheExpirationHours )
+    {
+        this.authCacheExpirationHours = authCacheExpirationHours;
     }
 
     @Override
