@@ -82,8 +82,11 @@ public class IspnNotFoundCache
     @PostConstruct
     private void start()
     {
-        queryFactory = Search.getQueryFactory( nfcCache.getCache() ); // Obtain a query factory for the cache
-        maxResultSetSize = config.getNfcMaxResultSetSize();
+        nfcCache.executeCache( (cache) -> {
+            queryFactory = Search.getQueryFactory( cache ); // Obtain a query factory for the cache
+            maxResultSetSize = config.getNfcMaxResultSetSize();
+            return null;
+        } );
     }
 
     private int getTimeoutInSeconds( ConcreteResource resource )
@@ -152,9 +155,11 @@ public class IspnNotFoundCache
     @Override
     public void clearMissing( final Location location )
     {
-        Cache<String, NfcConcreteResourceWrapper> cache = nfcCache.getCache();
-        Set<String> paths = getMissing( location );
-        paths.forEach( path -> cache.remove( getResourceKey( new ConcreteResource( location, path ) ) ) );
+        nfcCache.execute( (cache) -> {
+            Set<String> paths = getMissing( location );
+            paths.forEach( path -> cache.remove( getResourceKey( new ConcreteResource( location, path ) ) ) );
+            return null;
+        } );
     }
 
     @Override
@@ -167,7 +172,7 @@ public class IspnNotFoundCache
     @Override
     public void clearAllMissing()
     {
-        nfcCache.getCache().clear();
+        nfcCache.execute( (cache) -> { cache.clear(); return null; } );
     }
 
     @Override
@@ -292,7 +297,7 @@ public class IspnNotFoundCache
     @Override
     public long getSize()
     {
-        return nfcCache.getCache().size();
+        return nfcCache.execute( (cache) -> new Long( cache.size() ) );
     }
 
     private int getProperPageSize( int pageSize )

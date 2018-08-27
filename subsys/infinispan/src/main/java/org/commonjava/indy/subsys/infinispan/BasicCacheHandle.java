@@ -28,13 +28,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 
 public class BasicCacheHandle<K,V>
 {
-    Logger logger = LoggerFactory.getLogger( getClass() );
-
     private String name;
 
     protected BasicCache<K,V> cache;
@@ -42,6 +39,11 @@ public class BasicCacheHandle<K,V>
     private IndyMetricsManager metricsManager;
 
     private String metricPrefix;
+
+    public String getMetricPrefix()
+    {
+        return metricPrefix;
+    }
 
     private boolean stopped;
 
@@ -67,10 +69,6 @@ public class BasicCacheHandle<K,V>
         this( named, cache, null, null );
     }
 
-    public BasicCache<K,V> getCache(){
-        return cache;
-    }
-
     public String getName()
     {
         return name;
@@ -78,6 +76,8 @@ public class BasicCacheHandle<K,V>
 
     public <R> R execute( Function<BasicCache<K, V>, R> operation )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
         if ( !stopped )
         {
             Timer.Context context = startMetrics( "execute" );
@@ -108,6 +108,7 @@ public class BasicCacheHandle<K,V>
 
     public void stop()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         logger.info( "Cache {} is shutting down!", name );
         this.stopped = true;
     }
@@ -151,11 +152,14 @@ public class BasicCacheHandle<K,V>
     {
         if ( metricsManager != null )
         {
-            metricsManager.getMeter( name( metricPrefix, name, METER ) ).mark();
-            return metricsManager.getTimer( name( metricPrefix, name, TIMER ) ).time();
+            return metricsManager.getTimer( name( getMetricName( name ), TIMER ) ).time();
         }
-
         return null;
+    }
+
+    protected String getMetricName( String opName )
+    {
+        return name( metricPrefix, opName );
     }
 
     public Set<K> cacheKeySetByFilter( Predicate<K> filter )

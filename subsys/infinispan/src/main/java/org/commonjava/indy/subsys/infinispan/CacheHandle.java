@@ -34,8 +34,6 @@ import java.util.function.Function;
  */
 public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
 {
-    Logger logger = LoggerFactory.getLogger( getClass() );
-
     protected CacheHandle(){}
 
     public CacheHandle( String named, Cache<K, V> cache, IndyMetricsManager metricsManager, String metricPrefix )
@@ -48,13 +46,9 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
         this( named, cache, null, null );
     }
 
-    @Deprecated
-    public Cache<K,V> getCache(){
-        return (Cache) cache;
-    }
-
     public <R> R executeCache( Function<Cache<K, V>, R> operation )
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( !isStopped() )
         {
             Timer.Context context = startMetrics( "execute" );

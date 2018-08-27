@@ -18,6 +18,8 @@ package org.commonjava.indy.subsys.infinispan;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.client.hotrod.RemoteCache;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 public class RemoteCacheHandle<K,V> extends BasicCacheHandle<K, V>
 {
 
@@ -29,6 +31,12 @@ public class RemoteCacheHandle<K,V> extends BasicCacheHandle<K, V>
     public RemoteCacheHandle( String named, RemoteCache<K, V> cache )
     {
         this( named, cache, null, null );
+    }
+
+    @Override
+    protected String getMetricName( String opName )
+    {
+        return name( getMetricPrefix(), "remote", opName );
     }
 
 }

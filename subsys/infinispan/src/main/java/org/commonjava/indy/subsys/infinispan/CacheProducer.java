@@ -29,7 +29,6 @@ import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
@@ -166,6 +165,10 @@ public class CacheProducer
         }
     }
 
+    /**
+     * Get a BasicCache instance. If the remote cache is enabled, it will match the named with remote.patterns.
+     * If matched, it will create/return a RemoteCache. If not matched, an embedded cache will be created/returned to the caller.
+     */
     public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named, Class<K> keyClass, Class<V> valueClass )
     {
         BasicCacheHandle<K, V> handle = caches.get( named );
