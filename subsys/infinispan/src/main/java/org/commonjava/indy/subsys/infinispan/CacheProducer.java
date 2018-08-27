@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.codehaus.plexus.interpolation.InterpolationException;
@@ -26,7 +25,11 @@ import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
@@ -34,6 +37,8 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +53,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
 
@@ -67,6 +70,9 @@ public class CacheProducer
     private EmbeddedCacheManager cacheManager;
 
     @Inject
+    private ISPNRemoteConfiguration remoteConfiguration;
+
+    @Inject
     private IndyConfiguration indyConfiguration;
 
     @Inject
@@ -75,20 +81,46 @@ public class CacheProducer
     @Inject
     private IndyMetricsConfig metricsConfig;
 
-    private Map<String, CacheHandle> caches = new ConcurrentHashMap<>();
+    private Map<String, BasicCacheHandle> caches = new ConcurrentHashMap<>(); // hold embedded and remote caches
 
     protected CacheProducer()
     {
     }
 
-    public CacheProducer( IndyConfiguration indyConfiguration, EmbeddedCacheManager cacheManager )
+    public CacheProducer( IndyConfiguration indyConfiguration, EmbeddedCacheManager cacheManager, ISPNRemoteConfiguration remoteConfiguration )
     {
         this.indyConfiguration = indyConfiguration;
         this.cacheManager = cacheManager;
+        this.remoteConfiguration = remoteConfiguration;
+        if ( remoteConfiguration != null )
+        {
+            startRemoteManager();
+        }
     }
 
     @PostConstruct
     public void start()
+    {
+        startRemoteManager();
+        startEmbeddedManager();
+    }
+
+    private RemoteCacheManager remoteCacheManager;
+
+    private void startRemoteManager()
+    {
+        if ( !remoteConfiguration.isEnabled() )
+        {
+            logger.info( "Infinispan remote configuration not enabled. Skip." );
+            return;
+        }
+
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        builder.addServer().host( remoteConfiguration.getRemoteServer() ).port( remoteConfiguration.getHotrodPort() );
+        remoteCacheManager = new RemoteCacheManager( builder.build() );
+    }
+
+    private void startEmbeddedManager()
     {
         // FIXME This is just here to trigger shutdown hook init for embedded log4j in infinispan-embedded-query.
         // FIXES:
@@ -134,29 +166,51 @@ public class CacheProducer
         }
     }
 
-    /**
-     * Retrieve a cache with a pre-defined configuration (from infinispan.xml) or using the default cache config.
-     */
-    public synchronized <K,V> CacheHandle<K,V> getCache(String named, Class<K> keyClass, Class<V> valueClass )
+    public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named, Class<K> keyClass, Class<V> valueClass )
     {
-        if ( cacheManager == null )
+        BasicCacheHandle<K, V> handle = caches.get( named );
+        if ( handle != null )
         {
-            throw new IllegalStateException( "Cannot access CacheManager. Indy seems to be in a state of shutdown." );
+            return handle;
         }
 
-        CacheHandle<K, V> handle = caches.get( named );
+        if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( named ) )
+        {
+            RemoteCache<K, V> cache = remoteCacheManager.getCache( named );
+            if ( cache == null )
+            {
+                logger.debug( "Remote cache not found, name: {}", named );
+                return null;
+            }
+            handle = new RemoteCacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
+        }
+        else
+        {
+            handle = getCache( named, keyClass, valueClass );
+        }
+        caches.put( named, handle );
+        
+        return handle;
+    }
+
+    /**
+     * Retrieve an embedded cache with a pre-defined configuration (from infinispan.xml) or using the default cache configuration.
+     */
+    public synchronized <K, V> CacheHandle<K, V> getCache( String named, Class<K> keyClass, Class<V> valueClass )
+    {
+        BasicCacheHandle<K, V> handle = caches.get( named );
         if ( handle == null )
         {
             Cache<K, V> cache = cacheManager.getCache( named );
-
-            final String cacheMetricPrefix = metricsManager == null ?
-                    null :
-                    getSupername( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN, named );
-
-            handle = new CacheHandle( named, cache, metricsManager, cacheMetricPrefix );
+            handle = new CacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
             caches.put( named, handle );
         }
-        return handle;
+        return (CacheHandle) handle;
+    }
+
+    private String getCacheMetricPrefix( String named )
+    {
+        return metricsManager == null ? null : getSupername( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN, named );
     }
 
     public synchronized Configuration getCacheConfiguration( String name )
@@ -191,13 +245,19 @@ public class CacheProducer
     public synchronized void stop()
             throws IndyLifecycleException
     {
+        logger.info( "Stopping Infinispan caches." );
         caches.forEach( ( name, cacheHandle ) -> cacheHandle.stop() );
 
         if ( cacheManager != null )
         {
-            logger.info( "Stopping Infinispan caches." );
             cacheManager.stop();
             cacheManager = null;
+        }
+
+        if ( remoteCacheManager != null )
+        {
+            remoteCacheManager.stop();
+            remoteCacheManager = null;
         }
     }
 

@@ -48,7 +48,7 @@ public class CacheInstanceAdapter<K, V>
     @Override
     public <R> R execute( Function<Cache<K, V>, R> operation )
     {
-        return cacheHandle.execute( operation );
+        return cacheHandle.executeCache( operation );
     }
 
     @Override

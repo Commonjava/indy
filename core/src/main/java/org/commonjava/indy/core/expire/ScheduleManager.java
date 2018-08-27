@@ -138,7 +138,7 @@ public class ScheduleManager
         }
 
         // register this producer as schedule cache listener
-        scheduleCache.execute( cache -> {
+        scheduleCache.executeCache( cache -> {
             cache.addListener( ScheduleManager.this );
             return null;
         } );
@@ -567,7 +567,7 @@ public class ScheduleManager
     private Date getNextExpireTime( final ScheduleKey cacheKey )
     {
 
-        return scheduleCache.execute( cache -> {
+        return scheduleCache.executeCache( cache -> {
             final CacheEntry entry = cache.getAdvancedCache().getCacheEntry( cacheKey );
             if ( entry != null )
             {

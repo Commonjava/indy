@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.Cache;
@@ -27,75 +26,45 @@ import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import static com.codahale.metrics.MetricRegistry.name;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 
 /**
  * Holder class that helps manage the shutdown process for things that use Infinispan.
  */
-public class CacheHandle<K,V>
+public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
 {
-    private String name;
-
-    private Cache<K,V> cache;
-
-    private IndyMetricsManager metricsManager;
-
-    private String metricPrefix;
-
-    private boolean stopped;
+    Logger logger = LoggerFactory.getLogger( getClass() );
 
     protected CacheHandle(){}
 
     public CacheHandle( String named, Cache<K, V> cache, IndyMetricsManager metricsManager, String metricPrefix )
     {
-        this.name = named;
-        this.cache = cache;
-        this.metricsManager = metricsManager;
-        this.metricPrefix = metricPrefix;
+        super( named, cache, metricsManager, metricPrefix );
     }
 
-    // useful for testing
     public CacheHandle( String named, Cache<K, V> cache )
     {
-        this.name = named;
-        this.cache = cache;
+        this( named, cache, null, null );
     }
 
-    //FIXME: as new CacheProvider construction mechanism used a original cache to construct FastLocalCacheProvider,
-    //       here we need to expose the wrapped cache out. Need to think some alternative way later to fix this.
     @Deprecated
     public Cache<K,V> getCache(){
-        return cache;
+        return (Cache) cache;
     }
 
-    public String getName()
+    public <R> R executeCache( Function<Cache<K, V>, R> operation )
     {
-        return name;
-    }
-
-    public <R> R execute( Function<Cache<K, V>, R> operation )
-    {
-        if ( !stopped )
+        if ( !isStopped() )
         {
             Timer.Context context = startMetrics( "execute" );
 
             try
             {
-                return operation.apply( cache );
+                return (R) operation.apply( (Cache) cache );
             }
             catch ( RuntimeException e )
             {
-                // this may happen if the cache is in the process of shutting down
-                Logger logger = LoggerFactory.getLogger( getClass() );
                 logger.error( "Failed to complete operation: " + e.getMessage(), e );
             }
             finally
@@ -108,53 +77,10 @@ public class CacheHandle<K,V>
         }
         else
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.error( "Cannot complete operation. Cache {} is shutting down.", name );
+            logger.error( "Cannot complete operation. Cache {} is shutting down.", getName() );
         }
 
         return null;
-    }
-
-    public void stop()
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.info( "Cache {} is shutting down!", name );
-        this.stopped = true;
-    }
-
-    public boolean containsKey( K key )
-    {
-        return execute( cache -> !stopped && cache.containsKey( key ) );
-    }
-
-    public V put( K key, V value )
-    {
-        return execute( cache -> cache.put( key, value ) );
-    }
-
-    public V put( K key, V value, int expiration, TimeUnit timeUnit )
-    {
-        return execute( cache -> cache.put( key, value, expiration, timeUnit ) );
-    }
-
-    public V putIfAbsent( K key, V value )
-    {
-        return execute( ( c ) -> c.putIfAbsent( key, value ) );
-    }
-
-    public V computeIfAbsent( K key, Function<? super K, ? extends V> mappingFunction )
-    {
-        return execute( c -> c.computeIfAbsent( key, mappingFunction ) );
-    }
-
-    public V remove( K key )
-    {
-        return execute( cache -> cache.remove( key ) );
-    }
-
-    public V get( K key )
-    {
-        return execute( cache -> cache.get( key ) );
     }
 
     public void beginTransaction()
@@ -166,7 +92,7 @@ public class CacheHandle<K,V>
         {
             AtomicReference<NotSupportedException> suppEx = new AtomicReference<>();
             AtomicReference<SystemException> sysEx = new AtomicReference<>();
-            execute( ( c ) -> {
+            executeCache( ( c ) -> {
                 try
                 {
                     c.getAdvancedCache().getTransactionManager().begin();
@@ -210,7 +136,7 @@ public class CacheHandle<K,V>
         try
         {
             AtomicReference<SystemException> sysEx = new AtomicReference<>();
-            execute( ( c ) -> {
+            executeCache( ( c ) -> {
                 try
                 {
                     c.getAdvancedCache().getTransactionManager().rollback();
@@ -238,17 +164,6 @@ public class CacheHandle<K,V>
         }
     }
 
-    private Timer.Context startMetrics( String name )
-    {
-        if ( metricsManager != null )
-        {
-            metricsManager.getMeter( name( metricPrefix, name, METER ) ).mark();
-            return metricsManager.getTimer( name( metricPrefix, name, TIMER ) ).time();
-        }
-
-        return null;
-    }
-
     public void commit()
             throws SystemException, HeuristicMixedException, HeuristicRollbackException, RollbackException
     {
@@ -259,7 +174,7 @@ public class CacheHandle<K,V>
             AtomicReference<HeuristicMixedException> hmEx = new AtomicReference<>();
             AtomicReference<HeuristicRollbackException> hrEx = new AtomicReference<>();
             AtomicReference<RollbackException> rEx = new AtomicReference<>();
-            execute( ( c ) -> {
+            executeCache( ( c ) -> {
                 try
                 {
                     c.getAdvancedCache().getTransactionManager().commit();
@@ -318,7 +233,7 @@ public class CacheHandle<K,V>
     {
         AtomicReference<SystemException> sysEx = new AtomicReference<>();
 
-        Integer result = execute( ( c ) -> {
+        Integer result = executeCache( ( c ) -> {
             try
             {
                 return c.getAdvancedCache().getTransactionManager().getStatus();
@@ -341,26 +256,17 @@ public class CacheHandle<K,V>
 
     public Object getLockOwner( K key )
     {
-        return execute( ( c ) -> c.getAdvancedCache().getLockManager().getOwner( key ) );
+        return executeCache( ( c ) -> c.getAdvancedCache().getLockManager().getOwner( key ) );
     }
 
     public boolean isLocked( K key )
     {
-        return execute( ( c ) -> c.getAdvancedCache().getLockManager().isLocked( key ) );
+        return executeCache( ( c ) -> c.getAdvancedCache().getLockManager().isLocked( key ) );
     }
 
     public void lock( K... keys )
     {
-        execute( ( c ) -> c.getAdvancedCache().lock( keys ) );
-    }
-
-    public Set<K> cacheKeySetByFilter( Predicate<K> filter )
-    {
-        return this.cache.keySet().stream().filter( filter ).collect( Collectors.toSet() );
-    }
-
-    public boolean isEmpty(){
-        return execute( c->c.isEmpty() );
+        executeCache( ( c ) -> c.getAdvancedCache().lock( keys ) );
     }
 
 }

@@ -85,7 +85,7 @@ public class FoloCacheProducer
         final CacheHandle<TrackedContentEntry, TrackedContentEntry> handler =
                         cacheProducer.getCache( IN_PROGRESS_NAME, TrackedContentEntry.class, TrackedContentEntry.class );
 
-        handler.execute( cache->{
+        handler.executeCache( cache->{
             SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
 
             searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );

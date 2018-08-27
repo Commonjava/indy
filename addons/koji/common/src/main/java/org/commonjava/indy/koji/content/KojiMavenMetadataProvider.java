@@ -110,7 +110,7 @@ public class KojiMavenMetadataProvider
                                       KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig, ExecutorService executorService, DefaultCacheManager cacheManager )
     {
         this.versionMetadata = versionMetadata;
-        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager ) );
+        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
         this.buildAuthority = buildAuthority;
         this.kojiConfig = kojiConfig;
         this.executorService = executorService;
@@ -199,7 +199,7 @@ public class KojiMavenMetadataProvider
                     Metadata md = metadata;
 
                     // FIXME: Need a way to listen for cache expiration and re-request this?
-                    versionMetadata.execute( ( cache ) -> cache.getAdvancedCache()
+                    versionMetadata.executeCache( ( cache ) -> cache.getAdvancedCache()
                                                                .put( ga, md, kojiConfig.getMetadataTimeoutSeconds(),
                                                                      TimeUnit.SECONDS ) );
                 }

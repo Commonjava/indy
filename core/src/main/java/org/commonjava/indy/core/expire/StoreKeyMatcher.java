@@ -18,7 +18,7 @@ package org.commonjava.indy.core.expire;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheKeyMatcher;
-import org.infinispan.Cache;
+import org.infinispan.commons.api.BasicCache;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -46,7 +46,7 @@ public class StoreKeyMatcher
     @Override
     public Set<ScheduleKey> matches( CacheHandle<ScheduleKey, ?> cacheHandle )
     {
-        return cacheHandle.execute( Cache::keySet )
+        return cacheHandle.execute( BasicCache::keySet )
                           .stream()
                           .filter( key -> key != null && key.exists() && key.groupName().equals( ScheduleManager.groupName( storeKey, eventType ) ) )
                           .collect( Collectors.toSet() );

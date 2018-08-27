@@ -102,7 +102,7 @@ public class KojiBuildAuthority
     {
         this.config = config;
         this.typeMapper = typeMapper;
-        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager ) );
+        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
         this.storeDataManager = storeDataManager;
         this.contentDigester = contentDigester;
         this.directContentAccess = directContentAccess;
