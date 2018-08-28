@@ -36,6 +36,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.atlas.ident.ref.InvalidRefException;
@@ -84,7 +85,7 @@ public class KojiMavenMetadataProvider
 
     @Inject
     @KojiMavenVersionMetadataCache
-    private CacheHandle<ProjectRef, Metadata> versionMetadata;
+    private BasicCacheHandle<ProjectRef, Metadata> versionMetadata;
 
     @Inject
     private CachedKojiContentProvider kojiContentProvider;
@@ -199,9 +200,7 @@ public class KojiMavenMetadataProvider
                     Metadata md = metadata;
 
                     // FIXME: Need a way to listen for cache expiration and re-request this?
-                    versionMetadata.executeCache( ( cache ) -> cache.getAdvancedCache()
-                                                               .put( ga, md, kojiConfig.getMetadataTimeoutSeconds(),
-                                                                     TimeUnit.SECONDS ) );
+                    versionMetadata.execute( ( cache ) -> cache.put( ga, md, kojiConfig.getMetadataTimeoutSeconds(), TimeUnit.SECONDS ) );
                 }
                 else
                 {

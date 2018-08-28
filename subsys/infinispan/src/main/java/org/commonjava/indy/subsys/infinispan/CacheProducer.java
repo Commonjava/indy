@@ -117,6 +117,7 @@ public class CacheProducer
         ConfigurationBuilder builder = new ConfigurationBuilder();
         builder.addServer().host( remoteConfiguration.getRemoteServer() ).port( remoteConfiguration.getHotrodPort() );
         remoteCacheManager = new RemoteCacheManager( builder.build() );
+        logger.info( "Infinispan remote cache manager started." );
     }
 
     private void startEmbeddedManager()
@@ -182,13 +183,16 @@ public class CacheProducer
             RemoteCache<K, V> cache = remoteCacheManager.getCache( named );
             if ( cache == null )
             {
-                logger.debug( "Remote cache not found, name: {}", named );
-                return null;
+                logger.warn( "Remote cache not found, name: {}", named );
             }
-            handle = new RemoteCacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
+            else
+            {
+                handle = new RemoteCacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
+            }
         }
-        else
+        if ( handle == null )
         {
+            logger.debug( "Get embedded cache, name: {}", named );
             handle = getCache( named, keyClass, valueClass );
         }
         caches.put( named, handle );

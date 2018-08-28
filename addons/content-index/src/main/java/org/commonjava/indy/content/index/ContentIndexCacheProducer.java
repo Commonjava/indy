@@ -16,7 +16,7 @@
 package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -77,8 +77,8 @@ public class ContentIndexCacheProducer
     @ContentIndexCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<IndexedStorePath, StoreKey> contentIndexCacheCfg()
+    public BasicCacheHandle<IndexedStorePath, StoreKey> contentIndexCacheCfg()
     {
-        return cacheProducer.getCache( "content-index", IndexedStorePath.class, StoreKey.class );
+        return cacheProducer.getBasicCache( "content-index", IndexedStorePath.class, StoreKey.class );
     }
 }

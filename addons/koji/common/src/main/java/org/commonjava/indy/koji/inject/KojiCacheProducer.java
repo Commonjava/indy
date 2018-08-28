@@ -16,6 +16,7 @@
 package org.commonjava.indy.koji.inject;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.atlas.ident.ref.ProjectRef;
@@ -37,8 +38,8 @@ public class KojiCacheProducer
     @KojiMavenVersionMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<ProjectRef, Metadata> versionMetadataCache()
+    public BasicCacheHandle<ProjectRef, Metadata> versionMetadataCache()
     {
-        return cacheProducer.getCache( "koji-maven-version-metadata", ProjectRef.class, Metadata.class );
+        return cacheProducer.getBasicCache( "koji-maven-version-metadata", ProjectRef.class, Metadata.class );
     }
 }

@@ -78,7 +78,7 @@ public class ContentIndexRemoteRepoUsageTest
     public void getIndexManager()
     {
         indexManager = CDI.current().select( ContentIndexManager.class ).get();
-        cacheHandle = CDI.current().select( ContentIndexCacheProducer.class ).get().contentIndexCacheCfg();
+        cacheHandle = (CacheHandle) CDI.current().select( ContentIndexCacheProducer.class ).get().contentIndexCacheCfg();
     }
 
     @Test

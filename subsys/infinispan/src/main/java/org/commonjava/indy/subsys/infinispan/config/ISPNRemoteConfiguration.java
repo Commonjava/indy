@@ -20,12 +20,9 @@ import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -48,22 +45,6 @@ public class ISPNRemoteConfiguration
 
     public ISPNRemoteConfiguration()
     {
-    }
-
-    private List<String> remotePatternsList;
-
-    @PostConstruct
-    private void init()
-    {
-        if ( isNotBlank( remotePatterns ) )
-        {
-            remotePatternsList = new ArrayList<>();
-            String[] patterns = remotePatterns.split( "," );
-            for ( String pattern : patterns )
-            {
-                remotePatternsList.add( pattern );
-            }
-        }
     }
 
     public Boolean isEnabled()
@@ -114,17 +95,23 @@ public class ISPNRemoteConfiguration
 
     public boolean isRemoteCache( String cacheName )
     {
-        if ( remotePatternsList == null )
+        if ( remotePatterns == null )
         {
             return false;
         }
-        for ( String pattern : remotePatternsList )
+
+        String[] patterns = remotePatterns.split( "," );
+        for ( String pattern : patterns )
         {
-            if ( cacheName.matches( pattern ) || cacheName.equals( pattern ) )
+            if ( isNotBlank( pattern ) )
             {
-                return true;
+                if ( cacheName.matches( pattern ) || cacheName.equals( pattern ) )
+                {
+                    return true;
+                }
             }
         }
+
         return false;
     }
 

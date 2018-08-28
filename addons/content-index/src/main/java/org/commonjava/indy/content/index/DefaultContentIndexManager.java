@@ -22,7 +22,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -64,7 +63,7 @@ public class DefaultContentIndexManager
 
     @ContentIndexCache
     @Inject
-    private CacheHandle<IndexedStorePath, StoreKey> contentIndex;
+    private BasicCacheHandle<IndexedStorePath, StoreKey> contentIndex;
 
     @Inject
     private NotFoundCache nfc;
@@ -82,7 +81,7 @@ public class DefaultContentIndexManager
     }
 
     public DefaultContentIndexManager( StoreDataManager storeDataManager, SpecialPathManager specialPathManager,
-                                CacheHandle<IndexedStorePath, StoreKey> contentIndex,
+                                BasicCacheHandle<IndexedStorePath, StoreKey> contentIndex,
                                 Map<String, PackageIndexingStrategy> indexingStrategies,
                                 NotFoundCache nfc )
     {

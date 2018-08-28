@@ -37,7 +37,7 @@ public class CachedKojiContentProvider
 
     private final String KOJI_BUILD_INFO = "koji-buildInfoByIdOrNvr"; // immutable
 
-    private final String KOJI_BUILD_INFO_CONTAINING_ARTIFACT = "koji_buildInfoContainingArtifact"; // volatile
+    private final String KOJI_BUILD_INFO_CONTAINING_ARTIFACT = "koji-buildInfoContainingArtifact"; // volatile
 
     private final String KOJI_ARCHIVES_FOR_BUILD = "koji-ArchivesForBuild"; // immutable
 
