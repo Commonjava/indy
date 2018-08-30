@@ -91,10 +91,6 @@ public class CacheProducer
         this.indyConfiguration = indyConfiguration;
         this.cacheManager = cacheManager;
         this.remoteConfiguration = remoteConfiguration;
-        if ( remoteConfiguration != null )
-        {
-            startRemoteManager();
-        }
     }
 
     @PostConstruct
@@ -108,7 +104,7 @@ public class CacheProducer
 
     private void startRemoteManager()
     {
-        if ( !remoteConfiguration.isEnabled() )
+        if ( remoteConfiguration == null || !remoteConfiguration.isEnabled() )
         {
             logger.info( "Infinispan remote configuration not enabled. Skip." );
             return;
@@ -180,13 +176,23 @@ public class CacheProducer
 
         if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( named ) )
         {
-            RemoteCache<K, V> cache = remoteCacheManager.getCache( named );
+            RemoteCache<K, V> cache = null;
+            try
+            {
+                cache = remoteCacheManager.getCache( named );
+            }
+            catch ( Exception e )
+            {
+                logger.warn( "Get remote cache failed", e );
+            }
+
             if ( cache == null )
             {
-                logger.warn( "Remote cache not found, name: {}", named );
+                logger.warn( "Can not get remote cache, name: {}", named );
             }
             else
             {
+                logger.info( "Get remote cache, name: {}", named );
                 handle = new RemoteCacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
             }
         }
