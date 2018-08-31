@@ -39,6 +39,6 @@ public class MetadataCacheProducer
     @ApplicationScoped
     public CacheHandle<StoreKey, Map> mavenVersionMetaCacheCfg()
     {
-        return cacheProducer.getCache( "maven-version-metadata-cache", StoreKey.class, Map.class );
+        return cacheProducer.getCache( "maven-version-metadata-cache" );
     }
 }

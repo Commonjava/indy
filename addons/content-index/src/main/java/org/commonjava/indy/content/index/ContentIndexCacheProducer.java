@@ -79,6 +79,6 @@ public class ContentIndexCacheProducer
     @ApplicationScoped
     public BasicCacheHandle<IndexedStorePath, StoreKey> contentIndexCacheCfg()
     {
-        return cacheProducer.getBasicCache( "content-index", IndexedStorePath.class, StoreKey.class );
+        return cacheProducer.getBasicCache( "content-index" );
     }
 }

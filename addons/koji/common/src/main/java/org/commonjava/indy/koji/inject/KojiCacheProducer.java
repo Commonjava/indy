@@ -40,6 +40,6 @@ public class KojiCacheProducer
     @ApplicationScoped
     public BasicCacheHandle<ProjectRef, Metadata> versionMetadataCache()
     {
-        return cacheProducer.getBasicCache( "koji-maven-version-metadata", ProjectRef.class, Metadata.class );
+        return cacheProducer.getBasicCache( "koji-maven-version-metadata" );
     }
 }

@@ -40,6 +40,6 @@ public class CoreCacheProducer
     @ApplicationScoped
     public BasicCacheHandle<String, TransferMetadata> contentMetadataCache()
     {
-        return cacheProducer.getBasicCache( CONTENT_METADATA_NAME, String.class, TransferMetadata.class );
+        return cacheProducer.getBasicCache( CONTENT_METADATA_NAME );
     }
 }

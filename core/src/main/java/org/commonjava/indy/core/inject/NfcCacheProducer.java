@@ -39,6 +39,6 @@ public class NfcCacheProducer
     @ApplicationScoped
     public CacheHandle<String, NfcConcreteResourceWrapper> nfcCache()
     {
-        return cacheProducer.getCache( NFC, String.class, NfcConcreteResourceWrapper.class );
+        return cacheProducer.getCache( NFC );
     }
 }

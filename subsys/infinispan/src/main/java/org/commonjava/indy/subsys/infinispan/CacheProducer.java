@@ -166,59 +166,50 @@ public class CacheProducer
      * Get a BasicCache instance. If the remote cache is enabled, it will match the named with remote.patterns.
      * If matched, it will create/return a RemoteCache. If not matched, an embedded cache will be created/returned to the caller.
      */
-    public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named, Class<K> keyClass, Class<V> valueClass )
+    public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named )
     {
-        BasicCacheHandle<K, V> handle = caches.get( named );
-        if ( handle != null )
-        {
-            return handle;
-        }
+        BasicCacheHandle handle = caches.computeIfAbsent( named, (k) -> {
+            if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( k ) )
+            {
+                RemoteCache<K, V> cache = null;
+                try
+                {
+                    cache = remoteCacheManager.getCache( k );
+                    if ( cache == null )
+                    {
+                        logger.warn( "Can not get remote cache, name: {}", k );
+                        return null;
+                    }
+                }
+                catch ( Exception e )
+                {
+                    logger.warn( "Get remote cache failed", e );
+                    return null;
+                }
+                logger.info( "Get remote cache, name: {}", k );
+                return new RemoteCacheHandle( k, cache, metricsManager, getCacheMetricPrefix( k ) );
+            }
+            return null;
+        } );
 
-        if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( named ) )
-        {
-            RemoteCache<K, V> cache = null;
-            try
-            {
-                cache = remoteCacheManager.getCache( named );
-            }
-            catch ( Exception e )
-            {
-                logger.warn( "Get remote cache failed", e );
-            }
-
-            if ( cache == null )
-            {
-                logger.warn( "Can not get remote cache, name: {}", named );
-            }
-            else
-            {
-                logger.info( "Get remote cache, name: {}", named );
-                handle = new RemoteCacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
-            }
-        }
         if ( handle == null )
         {
-            logger.debug( "Get embedded cache, name: {}", named );
-            handle = getCache( named, keyClass, valueClass );
+            handle = getCache( named );
         }
-        caches.put( named, handle );
-        
+
         return handle;
     }
 
     /**
-     * Retrieve an embedded cache with a pre-defined configuration (from infinispan.xml) or using the default cache configuration.
+     * Retrieve an embedded cache with a pre-defined configuration (from infinispan.xml) or the default cache configuration.
      */
-    public synchronized <K, V> CacheHandle<K, V> getCache( String named, Class<K> keyClass, Class<V> valueClass )
+    public synchronized <K, V> CacheHandle<K, V> getCache( String named )
     {
-        BasicCacheHandle<K, V> handle = caches.get( named );
-        if ( handle == null )
-        {
-            Cache<K, V> cache = cacheManager.getCache( named );
-            handle = new CacheHandle( named, cache, metricsManager, getCacheMetricPrefix( named ) );
-            caches.put( named, handle );
-        }
-        return (CacheHandle) handle;
+        logger.debug( "Get embedded cache, name: {}", named );
+        return (CacheHandle) caches.computeIfAbsent( named, (k) -> {
+            Cache<K, V> cache = cacheManager.getCache( k );
+            return new CacheHandle( k, cache, metricsManager, getCacheMetricPrefix( k ) );
+        } );
     }
 
     private String getCacheMetricPrefix( String named )
