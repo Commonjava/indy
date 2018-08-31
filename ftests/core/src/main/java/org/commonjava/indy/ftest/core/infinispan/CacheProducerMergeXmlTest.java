@@ -55,7 +55,7 @@ public class CacheProducerMergeXmlTest
     {
         manager = new DefaultCacheManager(
                 new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build() );
-        producer = new CacheProducer( new DefaultIndyConfiguration(), manager );
+        producer = new CacheProducer( new DefaultIndyConfiguration(), manager, null );
         producer.start();
         manager = producer.getCacheManager();
     }

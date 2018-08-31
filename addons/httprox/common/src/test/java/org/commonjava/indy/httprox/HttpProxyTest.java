@@ -200,7 +200,7 @@ public class HttpProxyTest
         proxy = new HttpProxy( config, bootOpts,
                                new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache(),
                                                        scriptEngine, new MDCManager(), null, null,
-                                                       new CacheProducer( null, cacheManager ) ) );
+                                                       new CacheProducer( null, cacheManager, null ) ) );
         proxy.start();
     }
 

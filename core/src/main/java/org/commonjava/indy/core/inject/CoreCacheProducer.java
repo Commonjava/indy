@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.core.inject;
 
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 
@@ -24,7 +24,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 /**
- * Produces ISPN Cache instances (wrapped in {@link CacheHandle} to help with shutdown blocking) for use in core class
+ * Produces ISPN Cache instances (wrapped in {@link BasicCacheHandle} to help with shutdown blocking) for use in core class
  * implementations.
  */
 public class CoreCacheProducer
@@ -38,8 +38,8 @@ public class CoreCacheProducer
     @ContentMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<String, TransferMetadata> contentMetadataCache()
+    public BasicCacheHandle<String, TransferMetadata> contentMetadataCache()
     {
-        return cacheProducer.getCache( CONTENT_METADATA_NAME, String.class, TransferMetadata.class );
+        return cacheProducer.getBasicCache( CONTENT_METADATA_NAME );
     }
 }

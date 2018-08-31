@@ -34,6 +34,6 @@ public class PrefetchCacheProducer
     @ApplicationScoped
     public CacheHandle<RemoteRepository, List> contentIndexCacheCfg()
     {
-        return cacheProducer.getCache( "prefetch-cache", RemoteRepository.class, List.class );
+        return cacheProducer.getCache( "prefetch-cache" );
     }
 }

@@ -33,7 +33,7 @@ public class FastLocalCacheProducer
     @ApplicationScoped
     public CacheHandle<String, String> nfsOwnerCacheCfg()
     {
-        return cacheProducer.getCache( "indy-nfs-owner-cache", String.class, String.class );
+        return cacheProducer.getCache( "indy-nfs-owner-cache" );
     }
 
     @FastLocalFileRemoveCache
@@ -41,6 +41,6 @@ public class FastLocalCacheProducer
     @ApplicationScoped
     public CacheHandle<String, ConcreteResource> fastLocalFileRemoveCfg()
     {
-        return cacheProducer.getCache( "indy-fastlocal-file-delete-cache", String.class, ConcreteResource.class );
+        return cacheProducer.getCache( "indy-fastlocal-file-delete-cache" );
     }
 }

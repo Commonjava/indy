@@ -83,9 +83,9 @@ public class FoloCacheProducer
 
     private void registerTransformer(){
         final CacheHandle<TrackedContentEntry, TrackedContentEntry> handler =
-                        cacheProducer.getCache( IN_PROGRESS_NAME, TrackedContentEntry.class, TrackedContentEntry.class );
+                        cacheProducer.getCache( IN_PROGRESS_NAME );
 
-        handler.execute( cache->{
+        handler.executeCache( cache->{
             SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
 
             searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
@@ -99,7 +99,7 @@ public class FoloCacheProducer
     @ApplicationScoped
     public CacheHandle<TrackedContentEntry, TrackedContentEntry> inProgressFoloRecordCacheCfg()
     {
-        return cacheProducer.getCache( IN_PROGRESS_NAME, TrackedContentEntry.class, TrackedContentEntry.class );
+        return cacheProducer.getCache( IN_PROGRESS_NAME );
     }
 
     @FoloSealedCache
@@ -107,6 +107,6 @@ public class FoloCacheProducer
     @ApplicationScoped
     public CacheHandle<TrackingKey, TrackedContent> sealedFoloRecordCacheCfg()
     {
-        return cacheProducer.getCache( SEALED_NAME, TrackingKey.class, TrackedContent.class );
+        return cacheProducer.getCache( SEALED_NAME );
     }
 }

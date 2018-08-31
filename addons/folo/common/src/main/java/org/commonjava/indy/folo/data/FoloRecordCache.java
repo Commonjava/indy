@@ -16,7 +16,6 @@
 package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.folo.change.FoloBackupListener;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
@@ -26,6 +25,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.Cache;
+import org.infinispan.commons.api.BasicCache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
 import org.infinispan.query.dsl.QueryBuilder;
@@ -68,7 +68,7 @@ public class FoloRecordCache
     @PostConstruct
     private void init()
     {
-        sealedRecordCache.execute( (cache) -> {
+        sealedRecordCache.executeCache( (cache) -> {
             cache.addListener( foloBackupListener );
             return null;
         } );
@@ -183,7 +183,7 @@ public class FoloRecordCache
 
     public Set<TrackingKey> getInProgressTrackingKey()
     {
-        return inProgressRecordCache.execute( Cache::keySet )
+        return inProgressRecordCache.execute( BasicCache::keySet )
                                     .stream()
                                     .map( TrackedContentEntry::getTrackingKey )
                                     .collect( Collectors.toSet() );
@@ -191,17 +191,17 @@ public class FoloRecordCache
 
     public Set<TrackingKey> getSealedTrackingKey()
     {
-        return sealedRecordCache.execute( Cache::keySet );
+        return sealedRecordCache.execute( BasicCache::keySet );
     }
 
     public Set<TrackedContent> getSealed()
     {
-        return sealedRecordCache.execute( Cache::entrySet ).stream().map( (et) -> et.getValue() ).collect( Collectors.toSet() );
+        return sealedRecordCache.execute( BasicCache::entrySet ).stream().map( (et) -> et.getValue() ).collect( Collectors.toSet() );
     }
 
     private <R> R inProgressByTrackingKey( final TrackingKey key, final BiFunction<QueryBuilder, CacheHandle<TrackedContentEntry, TrackedContentEntry>, R> operation )
     {
-        return inProgressRecordCache.execute( ( cache ) -> {
+        return inProgressRecordCache.executeCache( ( cache ) -> {
             QueryFactory queryFactory = Search.getQueryFactory( cache );
             QueryBuilder qb = queryFactory.from( TrackedContentEntry.class )
                                              .having( "trackingKey.id" )

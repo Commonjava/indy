@@ -140,7 +140,7 @@ public final class ProxyResponseWriter
         this.metricsConfig = metricsConfig;
         this.metricRegistry = metricRegistry;
         this.cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 ); // e.g., foo.bar.ClassA -> f.b.ClassA
-        this.proxyAuthCache = cacheProducer.getCache( HTTP_PROXY_AUTH_CACHE, String.class, Boolean.class );
+        this.proxyAuthCache = cacheProducer.getCache( HTTP_PROXY_AUTH_CACHE );
     }
 
     @Override

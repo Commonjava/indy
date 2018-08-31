@@ -78,7 +78,7 @@ public class ContentIndexRemoteRepoUsageTest
     public void getIndexManager()
     {
         indexManager = CDI.current().select( ContentIndexManager.class ).get();
-        cacheHandle = CDI.current().select( ContentIndexCacheProducer.class ).get().contentIndexCacheCfg();
+        cacheHandle = (CacheHandle) CDI.current().select( ContentIndexCacheProducer.class ).get().contentIndexCacheCfg();
     }
 
     @Test
@@ -95,7 +95,7 @@ public class ContentIndexRemoteRepoUsageTest
         logger.info( "\n\n\nBEFORE: Indexed path entry: " + indexedStoreKey + "\n\n\n\n");
         assertThat( indexedStoreKey, nullValue() );
 
-        Long hits = cacheHandle.execute( (cache) -> cache.getAdvancedCache().getStats().getHits() );
+        Long hits = cacheHandle.executeCache( (cache) -> cache.getAdvancedCache().getStats().getHits() );
         assertThat( hits == 0, equalTo( true ) );
 
         try (InputStream first = client.content().get( repo.getKey(), FIRST_PATH ))
@@ -107,7 +107,7 @@ public class ContentIndexRemoteRepoUsageTest
         logger.info( "\n\n\nAFTER 1: Indexed path entry: " + indexedStoreKey + "\n\n\n\n");
         assertThat( indexedStoreKey, notNullValue() );
 
-        hits = cacheHandle.execute( (cache) -> cache.getAdvancedCache().getStats().getHits() );
+        hits = cacheHandle.executeCache( (cache) -> cache.getAdvancedCache().getStats().getHits() );
         assertThat( hits >= 1, equalTo( true ) );
 
         try (InputStream first = client.content().get( repo.getKey(), FIRST_PATH ))
@@ -118,7 +118,7 @@ public class ContentIndexRemoteRepoUsageTest
         StoreKey indexedStoreKey2 = indexManager.getIndexedStoreKey( repo.getKey(), FIRST_PATH );
         logger.info( "\n\n\nAFTER 2: Indexed path entry: " + indexedStoreKey2 + "\n\n\n\n");
 
-        hits = cacheHandle.execute( (cache) -> cache.getAdvancedCache().getStats().getHits() );
+        hits = cacheHandle.executeCache( (cache) -> cache.getAdvancedCache().getStats().getHits() );
         assertThat( hits >= 2, equalTo( true ) );
 
         // object equality should work since we haven't persisted this anywhere yet.

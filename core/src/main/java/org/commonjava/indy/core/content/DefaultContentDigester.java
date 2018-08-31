@@ -22,7 +22,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.core.inject.ContentMetadataCache;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
@@ -60,7 +60,7 @@ public class DefaultContentDigester
 
     @Inject
     @ContentMetadataCache
-    private CacheHandle<String, TransferMetadata> metadataCache;
+    private BasicCacheHandle<String, TransferMetadata> metadataCache;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -69,7 +69,7 @@ public class DefaultContentDigester
     }
 
     public DefaultContentDigester( DirectContentAccess directContentAccess,
-                                   CacheHandle<String, TransferMetadata> metadataCache )
+                                   BasicCacheHandle<String, TransferMetadata> metadataCache )
     {
         this.directContentAccess = directContentAccess;
         this.metadataCache = metadataCache;

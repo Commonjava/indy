@@ -22,6 +22,7 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.infinispan.AdvancedCache;
@@ -98,7 +99,7 @@ public class ContentIndexDirLvWithArtifactsTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
-    private CacheHandle<IndexedStorePath, StoreKey> contentIndex;
+    private BasicCacheHandle<IndexedStorePath, StoreKey> contentIndex;
 
     @Before
     public void getIndexManager()

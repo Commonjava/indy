@@ -44,7 +44,7 @@ public class ScheduleCacheProducer
     @ApplicationScoped
     public CacheHandle<ScheduleKey, Map> versionMetadataCache()
     {
-        return cacheProducer.getCache( SCHEDULE_EXPIRE, ScheduleKey.class, Map.class );
+        return cacheProducer.getCache( SCHEDULE_EXPIRE );
     }
 
 }

@@ -37,7 +37,7 @@ public class CachedKojiContentProvider
 
     private final String KOJI_BUILD_INFO = "koji-buildInfoByIdOrNvr"; // immutable
 
-    private final String KOJI_BUILD_INFO_CONTAINING_ARTIFACT = "koji_buildInfoContainingArtifact"; // volatile
+    private final String KOJI_BUILD_INFO_CONTAINING_ARTIFACT = "koji-buildInfoContainingArtifact"; // volatile
 
     private final String KOJI_ARCHIVES_FOR_BUILD = "koji-ArchivesForBuild"; // immutable
 
@@ -108,7 +108,7 @@ public class CachedKojiContentProvider
             return kojiClient.listTags( buildIds, session );
         }
 
-        CacheHandle<Integer, List> cache = cacheProducer.getCache( KOJI_TAGS, Integer.class, List.class );
+        CacheHandle<Integer, List> cache = cacheProducer.getCache( KOJI_TAGS );
 
         Map<Integer, List<KojiTagInfo>> map = new HashMap<>();
         List<Integer> missed = new ArrayList<>();
@@ -156,7 +156,7 @@ public class CachedKojiContentProvider
             return kojiClient.multiCall( GET_BUILD, args, KojiBuildInfo.class, session );
         }
 
-        CacheHandle<Object, KojiBuildInfo> cache = cacheProducer.getCache( KOJI_BUILD_INFO, Object.class, KojiBuildInfo.class );
+        CacheHandle<Object, KojiBuildInfo> cache = cacheProducer.getCache( KOJI_BUILD_INFO );
 
         Map<Object, KojiBuildInfo> m = new HashMap<>();
         List<Object> missed = new ArrayList<>();
@@ -231,7 +231,7 @@ public class CachedKojiContentProvider
             return supplier.getKojiContent();
         }
 
-        CacheHandle<K, V> cache = cacheProducer.getCache( name, kType, vType );
+        CacheHandle<K, V> cache = cacheProducer.getCache( name );
         V ret = cache.get( key );
         if ( ret == null )
         {
