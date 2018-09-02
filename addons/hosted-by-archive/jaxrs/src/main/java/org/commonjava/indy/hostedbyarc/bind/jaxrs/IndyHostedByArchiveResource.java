@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
@@ -55,11 +56,14 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Api( value = "Hosted by archive", description = "Create a new maven hosted store by zip file" )
-@Path( "/api/admin/stores/maven/hosted/{name}" )
+@Path( "/api/admin/stores/maven/hosted/{name}/compressed-content" )
 @ApplicationScoped
 public class IndyHostedByArchiveResource
         implements IndyResources
@@ -85,17 +89,16 @@ public class IndyHostedByArchiveResource
     @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", required = true,
                                              dataType = "org.commonjava.indy.model.core.ArtifactStore",
                                              value = "The artifact store definition JSON" ) } )
-    @Path( "/compressed-content" )
     @POST
-    @Consumes( MediaType.MULTIPART_FORM_DATA )
+    @Consumes( ApplicationContent.application_zip )
     @Produces( ApplicationContent.application_json )
     public Response postCreateHostedByZip( final @PathParam( "name" ) String name, final @Context UriInfo uriInfo,
                                            final @QueryParam( "ignoreBeforeRoot" ) String ignoreBeforeRoot,
-                                           final @MultipartForm FileUploadForm form,
+                                           final InputStream fileInputStream,
                                            final @Context HttpServletRequest request,
                                            final @Context SecurityContext securityContext )
     {
-        return createHostedByZip( name, uriInfo, ignoreBeforeRoot, form, request, securityContext );
+        return createHostedByZip( name, uriInfo, ignoreBeforeRoot, fileInputStream, request, securityContext );
     }
 
     @ApiOperation( "Create a new maven hosted store by a zip file" )
@@ -105,21 +108,20 @@ public class IndyHostedByArchiveResource
     @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", required = true,
                                              dataType = "org.commonjava.indy.model.core.ArtifactStore",
                                              value = "The artifact store definition JSON" ) } )
-    @Path( "/compressed-content" )
     @PUT
-    @Consumes( MediaType.MULTIPART_FORM_DATA )
+    @Consumes( ApplicationContent.application_zip )
     @Produces( ApplicationContent.application_json )
     public Response putCreateHostedByZip( final @PathParam( "name" ) String name, final @Context UriInfo uriInfo,
                                           final @QueryParam( "ignoreBeforeRoot" ) String ignoreBeforeRoot,
-                                          final @MultipartForm FileUploadForm form,
+                                          final FileInputStream fileInput,
                                           final @Context HttpServletRequest request,
                                           final @Context SecurityContext securityContext )
     {
-        return createHostedByZip( name, uriInfo, ignoreBeforeRoot, form, request, securityContext );
+        return createHostedByZip( name, uriInfo, ignoreBeforeRoot, fileInput, request, securityContext );
     }
 
     private Response createHostedByZip( final String name, final UriInfo uriInfo, final String ignoreBeforeRoot,
-                                        final FileUploadForm form, final HttpServletRequest request,
+                                        final InputStream fileInput, final HttpServletRequest request,
                                         final SecurityContext securityContext )
     {
         if ( !config.isEnabled() )
@@ -152,12 +154,16 @@ public class IndyHostedByArchiveResource
         HostedRepository repo;
         try
         {
-            repo = hostedByArchiveManager.createStoreByArc( form.getData(), name, user, PATH_PREFIX, true );
+            repo = hostedByArchiveManager.createStoreByArc( fileInput, name, user, PATH_PREFIX, true );
         }
         catch ( IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             return formatResponse( e );
+        }
+        finally
+        {
+            IOUtils.closeQuietly( fileInput );
         }
 
         return Response.status( Status.OK ).entity( repo ).build();

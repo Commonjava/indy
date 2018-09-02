@@ -16,14 +16,11 @@
 package org.commonjava.indy.hostedbyarc.client;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.entity.mime.content.StringBody;
+import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
@@ -34,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
@@ -43,6 +41,8 @@ public class IndyHostedByArchiveClientModule
         extends IndyClientModule
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private static final ContentType CONTENT_TYPE_ZIP = ContentType.create( "application/zip" );
 
     public static final String HOSTED_BY_ARC_PATH = "admin/stores/maven/hosted";
 
@@ -59,13 +59,8 @@ public class IndyHostedByArchiveClientModule
 
         try
         {
-            FileBody fileBody = new FileBody( zipFile, ContentType.APPLICATION_OCTET_STREAM );
-            HttpEntity entity = MultipartEntityBuilder.create()
-                                                      .addPart( "fileName", new StringBody( zipFile.getName(),
-                                                                                            ContentType.TEXT_PLAIN ) )
-                                                      .addPart( "file", fileBody )
-                                                      .build();
-
+            postRequest.setHeader( "Content-Type", CONTENT_TYPE_ZIP.getMimeType() );
+            InputStreamEntity entity = new InputStreamEntity( new FileInputStream( zipFile ), CONTENT_TYPE_ZIP );
             postRequest.setEntity( entity );
 
             resources = http.execute( postRequest );

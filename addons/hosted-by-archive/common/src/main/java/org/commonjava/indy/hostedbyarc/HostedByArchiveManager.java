@@ -40,6 +40,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.util.ArrayList;
@@ -68,33 +69,18 @@ public class HostedByArchiveManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "Hosted-by-arc-executor", priority = 1, threads = 8)
+    @ExecutorConfig( named = "Hosted-by-arc-executor", priority = 1, threads = 8 )
     private ExecutorService executors;
 
-    public HostedRepository createStoreByArc( final byte[] archiveData, final String repoName, final String user,
+    public HostedRepository createStoreByArc( final InputStream fileInput, final String repoName, final String user,
                                               final String pathPrefix, final boolean deleteFilesAfterUnzip )
             throws IndyWorkflowException
     {
-        final File archive;
-        try
-        {
-            archive = createTempArchiveFromUpload( archiveData );
-        }
-        catch ( IOException e )
-        {
-            throw new IndyWorkflowException( "Archive uploading failed!", e );
-        }
-
-        if ( !isZipFileType( archive ) )
-        {
-            throw new IndyWorkflowException( "Uploaded file is not a zip archive!" );
-        }
-
         final String unzipPath = HostedByArchiveManager.TMP_DIR + "/" + System.currentTimeMillis();
         final List<String> unzippedFiles;
         try
         {
-            unzippedFiles = unzip( archive, unzipPath );
+            unzippedFiles = unzip( fileInput, unzipPath );
         }
         catch ( IOException e )
         {
@@ -109,7 +95,6 @@ public class HostedByArchiveManager
         {
             if ( deleteFilesAfterUnzip )
             {
-                Files.deleteIfExists( archive.toPath() );
                 deleteDirectory( new File( unzipPath ) );
             }
         }
@@ -121,25 +106,7 @@ public class HostedByArchiveManager
         return repo;
     }
 
-    private File createTempArchiveFromUpload( final byte[] archiveData )
-            throws IOException
-    {
-        final String fileName = "hosted" + System.currentTimeMillis() + ".zip";
-        File tempZipFile = new File( TMP_DIR + "/" + fileName );
-        if ( !tempZipFile.exists() )
-        {
-            tempZipFile.createNewFile();
-        }
-
-        try (FileOutputStream fop = new FileOutputStream( tempZipFile ))
-        {
-            IOUtils.write( archiveData, fop );
-        }
-
-        return tempZipFile;
-    }
-
-    private List<String> unzip( final File zipFile, final String unzipPath )
+    private List<String> unzip( final InputStream zipStream, final String unzipPath )
             throws IOException
     {
         final List<String> filePaths = new ArrayList<>();
@@ -151,7 +118,7 @@ public class HostedByArchiveManager
 
         if ( unzipDir.mkdirs() )
         {
-            try (ZipInputStream zis = new ZipInputStream( new FileInputStream( zipFile ) ))
+            try (ZipInputStream zis = new ZipInputStream( zipStream ))
             {
                 ZipEntry zipEntry = zis.getNextEntry();
                 while ( zipEntry != null )
@@ -179,6 +146,8 @@ public class HostedByArchiveManager
                 zis.closeEntry();
             }
         }
+
+        logger.debug( "Unzipped file list: {}", filePaths );
 
         return filePaths;
     }
@@ -217,43 +186,42 @@ public class HostedByArchiveManager
     }
 
     private void storeUnzippedFiles( final HostedRepository repo, List<String> paths, final String unzippedDir,
-                                     final String pathPrefix ) throws IndyWorkflowException
+                                     final String pathPrefix )
+            throws IndyWorkflowException
     {
         final CountDownLatch latch = new CountDownLatch( paths.size() );
 
-        paths.forEach( s -> {
-            executors.execute( () -> {
-                String path = s.startsWith( "/" ) ? s : "/" + s;
-                if ( StringUtils.isNotBlank( pathPrefix ) )
+        paths.forEach( s -> executors.execute( () -> {
+            String path = s.startsWith( "/" ) ? s : "/" + s;
+            if ( StringUtils.isNotBlank( pathPrefix ) )
+            {
+                if ( path.startsWith( pathPrefix ) )
                 {
-                    if ( path.startsWith( pathPrefix ) )
-                    {
-                        path = path.replaceFirst( pathPrefix, "" );
-                    }
+                    path = path.replaceFirst( pathPrefix, "" );
                 }
-                File f = new File( unzippedDir + "/" + s );
-                try
-                {
-                    contentManager.store( repo, path, new FileInputStream( f ), TransferOperation.UPLOAD );
-                }
-                catch ( IndyWorkflowException | FileNotFoundException e )
-                {
-                    logger.error( "store failed for path {}", s, e );
-                }
-                finally
-                {
-                    latch.countDown();
-                }
-            } );
-        } );
+            }
+            File f = new File( unzippedDir + "/" + s );
+            try
+            {
+                contentManager.store( repo, path, new FileInputStream( f ), TransferOperation.UPLOAD );
+            }
+            catch ( IndyWorkflowException | FileNotFoundException e )
+            {
+                logger.error( "store failed for path {}", s, e );
+            }
+            finally
+            {
+                latch.countDown();
+            }
+        } ) );
 
         try
         {
-            latch.await( config.getLockTimeoutMins(), TimeUnit.MINUTES);
+            latch.await( config.getLockTimeoutMins(), TimeUnit.MINUTES );
         }
         catch ( InterruptedException e )
         {
-            throw new IndyWorkflowException("File store process interrupted!", e);
+            throw new IndyWorkflowException( "File store process interrupted!", e );
         }
     }
 
@@ -280,6 +248,7 @@ public class HostedByArchiveManager
         Files.deleteIfExists( dir.toPath() );
     }
 
+    @Deprecated
     private boolean isZipFileType( final File file )
     {
         if ( file == null || !file.exists() )

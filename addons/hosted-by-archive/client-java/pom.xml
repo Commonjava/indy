@@ -31,10 +31,5 @@
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-client-core-java</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpmime</artifactId>
-      <version>4.4</version>
-    </dependency>
   </dependencies>
 </project>
