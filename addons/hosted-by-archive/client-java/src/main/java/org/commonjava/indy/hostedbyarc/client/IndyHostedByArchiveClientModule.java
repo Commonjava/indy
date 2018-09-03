@@ -36,6 +36,7 @@ import java.io.IOException;
 
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
+import static org.apache.http.HttpStatus.*;
 
 public class IndyHostedByArchiveClientModule
         extends IndyClientModule
@@ -46,12 +47,12 @@ public class IndyHostedByArchiveClientModule
 
     public static final String HOSTED_BY_ARC_PATH = "admin/stores/maven/hosted";
 
-    public HostedRepository createRepo( final File zipFile, final String repoName, final String ignoreBeforeRoot )
+    public HostedRepository createRepo( final File zipFile, final String repoName, final String ignorePathPrefix )
             throws IndyClientException
     {
-        final String endPath = StringUtils.isBlank( ignoreBeforeRoot ) ?
+        final String endPath = StringUtils.isBlank( ignorePathPrefix ) ?
                 "compressed-content" :
-                "compressed-content?ignoreBeforeRoot=" + ignoreBeforeRoot;
+                "compressed-content?pathPrefixToIgnore=" + ignorePathPrefix;
         final String urlPath = UrlUtils.buildUrl( http.getBaseUrl(), HOSTED_BY_ARC_PATH, repoName, endPath );
 
         HttpPost postRequest = new HttpPost( urlPath );
@@ -70,9 +71,9 @@ public class IndyHostedByArchiveClientModule
                 HttpResponse response = resources.getResponse();
                 final StatusLine sl = response.getStatusLine();
 
-                if ( sl.getStatusCode() != 200 )
+                if ( sl.getStatusCode() != SC_OK && sl.getStatusCode() != SC_CREATED )
                 {
-                    if ( sl.getStatusCode() == 404 )
+                    if ( sl.getStatusCode() == SC_NOT_FOUND )
                     {
                         return null;
                     }

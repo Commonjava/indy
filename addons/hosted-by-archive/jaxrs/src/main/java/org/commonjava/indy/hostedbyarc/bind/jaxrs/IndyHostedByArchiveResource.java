@@ -33,9 +33,9 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationStatus;
-import org.jboss.resteasy.annotations.providers.multipart.MultipartForm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,15 +50,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URI;
 
+import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatCreatedResponseWithJsonEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
@@ -82,6 +81,9 @@ public class IndyHostedByArchiveResource
     @Inject
     private HostedByArchiveConfig config;
 
+    @Inject
+    private IndyObjectMapper objectMapper;
+
     @ApiOperation( "Create a new maven hosted store by a zip file" )
     @ApiResponses( { @ApiResponse( code = 201, response = ArtifactStore.class, message = "The store was created" ),
                            @ApiResponse( code = 409,
@@ -93,12 +95,11 @@ public class IndyHostedByArchiveResource
     @Consumes( ApplicationContent.application_zip )
     @Produces( ApplicationContent.application_json )
     public Response postCreateHostedByZip( final @PathParam( "name" ) String name, final @Context UriInfo uriInfo,
-                                           final @QueryParam( "ignoreBeforeRoot" ) String ignoreBeforeRoot,
-                                           final InputStream fileInputStream,
-                                           final @Context HttpServletRequest request,
+                                           final @QueryParam( "pathPrefixToIgnore" ) String ignorePathPrefix,
+                                           final InputStream fileInputStream, final @Context HttpServletRequest request,
                                            final @Context SecurityContext securityContext )
     {
-        return createHostedByZip( name, uriInfo, ignoreBeforeRoot, fileInputStream, request, securityContext );
+        return createHostedByZip( name, uriInfo, ignorePathPrefix, fileInputStream, request, securityContext );
     }
 
     @ApiOperation( "Create a new maven hosted store by a zip file" )
@@ -112,15 +113,14 @@ public class IndyHostedByArchiveResource
     @Consumes( ApplicationContent.application_zip )
     @Produces( ApplicationContent.application_json )
     public Response putCreateHostedByZip( final @PathParam( "name" ) String name, final @Context UriInfo uriInfo,
-                                          final @QueryParam( "ignoreBeforeRoot" ) String ignoreBeforeRoot,
-                                          final FileInputStream fileInput,
-                                          final @Context HttpServletRequest request,
+                                          final @QueryParam( "pathPrefixToIgnore" ) String ignorePathPrefix,
+                                          final InputStream fileInput, final @Context HttpServletRequest request,
                                           final @Context SecurityContext securityContext )
     {
-        return createHostedByZip( name, uriInfo, ignoreBeforeRoot, fileInput, request, securityContext );
+        return createHostedByZip( name, uriInfo, ignorePathPrefix, fileInput, request, securityContext );
     }
 
-    private Response createHostedByZip( final String name, final UriInfo uriInfo, final String ignoreBeforeRoot,
+    private Response createHostedByZip( final String name, final UriInfo uriInfo, final String ignorePathPrefix,
                                         final InputStream fileInput, final HttpServletRequest request,
                                         final SecurityContext securityContext )
     {
@@ -141,20 +141,20 @@ public class IndyHostedByArchiveResource
 
         final String user = securityManager.getUser( securityContext, request );
 
-        final String PATH_PREFIX;
-        if ( StringUtils.isBlank( ignoreBeforeRoot ) )
+        final String IGNORED_PATH_PREFIX;
+        if ( StringUtils.isBlank( ignorePathPrefix ) )
         {
-            PATH_PREFIX = "";
+            IGNORED_PATH_PREFIX = "";
         }
         else
         {
-            PATH_PREFIX = ignoreBeforeRoot.startsWith( "/" ) ? ignoreBeforeRoot : "/" + ignoreBeforeRoot;
+            IGNORED_PATH_PREFIX = ignorePathPrefix.startsWith( "/" ) ? ignorePathPrefix : "/" + ignorePathPrefix;
         }
 
         HostedRepository repo;
         try
         {
-            repo = hostedByArchiveManager.createStoreByArc( fileInput, name, user, PATH_PREFIX, true );
+            repo = hostedByArchiveManager.createStoreByArc( fileInput, name, user, IGNORED_PATH_PREFIX );
         }
         catch ( IndyWorkflowException e )
         {
@@ -166,6 +166,20 @@ public class IndyHostedByArchiveResource
             IOUtils.closeQuietly( fileInput );
         }
 
-        return Response.status( Status.OK ).entity( repo ).build();
+        if ( repo != null )
+        {
+            final URI uri = uriInfo.getBaseUriBuilder()
+                                   .path( "/api/admin/stores" )
+                                   .path( repo.getPackageType() )
+                                   .path( repo.getType().singularEndpointName() )
+                                   .build( repo.getName() );
+
+            return formatCreatedResponseWithJsonEntity( uri, repo, objectMapper );
+        }
+        else
+        {
+            return formatResponse( new IndyWorkflowException( "Hosted creation failed with some unknown error!" ) );
+        }
+
     }
 }
