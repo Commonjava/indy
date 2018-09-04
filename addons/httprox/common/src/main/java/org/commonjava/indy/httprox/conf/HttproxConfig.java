@@ -58,8 +58,6 @@ public class HttproxConfig
 
     public TrackingType getTrackingType()
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Using configured tracking type: '{}'", trackingType );
         return TrackingType.valueOf( trackingType == null ? DEFAULT_TRACKING_TYPE : trackingType.toUpperCase() );
     }
 
