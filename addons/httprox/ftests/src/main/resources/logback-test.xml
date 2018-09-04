@@ -24,8 +24,9 @@
       <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-  
-  <logger name="org.commonjava.util.partyline" level="TRACE" />
+
+  <logger name="org.commonjava.indy.httprox" level="TRACE"/>
+  <logger name="org.apache.http" level="TRACE"/>
 
   <root level="DEBUG">
     <appender-ref ref="STDOUT" />

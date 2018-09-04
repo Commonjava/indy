@@ -57,10 +57,13 @@ import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
 import org.xnio.StreamConnection;
 import org.xnio.conduits.ConduitStreamSinkChannel;
+import org.xnio.conduits.ConduitStreamSourceChannel;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URL;
+import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
@@ -69,6 +72,7 @@ import java.util.stream.Collectors;
 import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.CONNECT_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
@@ -91,7 +95,15 @@ public final class ProxyResponseWriter
 
     private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.topic.httprox.inbound" );
 
+    private final ConduitStreamSourceChannel sourceChannel;
+
+    private ProxyRequestReader proxyRequestReader;
+
     private final SocketAddress peerAddress;
+
+    private ProxySSLTunnel sslTunnel;
+
+    private boolean directed = false;
 
     private final CacheHandle<String, Boolean> proxyAuthCache;
 
@@ -113,21 +125,19 @@ public final class ProxyResponseWriter
 
     private HttpRequest httpRequest;
 
-    private MDCManager mdcManager;
+    private final MDCManager mdcManager;
 
-    private MetricRegistry metricRegistry;
+    private final MetricRegistry metricRegistry;
 
-    private IndyMetricsConfig metricsConfig;
+    private final IndyMetricsConfig metricsConfig;
 
-    private String cls; // short class name for metrics
+    private final String cls; // short class name for metrics
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
-                                final MDCManager mdcManager,
-                                final ProxyRepositoryCreator repoCreator, final StreamConnection streamConnection,
-                                final IndyMetricsConfig metricsConfig, final MetricRegistry metricRegistry,
-                                final CacheProducer cacheProducer )
+                                final MDCManager mdcManager, final ProxyRepositoryCreator repoCreator, final StreamConnection accepted,
+                                final IndyMetricsConfig metricsConfig, final MetricRegistry metricRegistry, final CacheProducer cacheProducer )
     {
         this.config = config;
         this.contentController = contentController;
@@ -136,11 +146,17 @@ public final class ProxyResponseWriter
         this.cacheProvider = cacheProvider;
         this.mdcManager = mdcManager;
         this.repoCreator = repoCreator;
-        this.peerAddress = streamConnection.getPeerAddress();
+        this.peerAddress = accepted.getPeerAddress();
+        this.sourceChannel = accepted.getSourceChannel();
         this.metricsConfig = metricsConfig;
         this.metricRegistry = metricRegistry;
         this.cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 ); // e.g., foo.bar.ClassA -> f.b.ClassA
         this.proxyAuthCache = cacheProducer.getCache( HTTP_PROXY_AUTH_CACHE );
+    }
+
+    public void setProxyRequestReader( ProxyRequestReader proxyRequestReader )
+    {
+        this.proxyRequestReader = proxyRequestReader;
     }
 
     @Override
@@ -164,19 +180,24 @@ public final class ProxyResponseWriter
         }
     }
 
-    private void doHandleEvent( final ConduitStreamSinkChannel channel )
+    private void doHandleEvent( final ConduitStreamSinkChannel sinkChannel )
     {
-        HttpConduitWrapper http = new HttpConduitWrapper( channel, httpRequest, contentController, cacheProvider );
+        if ( directed )
+        {
+            return;
+        }
+
+        HttpConduitWrapper http = new HttpConduitWrapper( sinkChannel, httpRequest, contentController, cacheProvider );
         if ( httpRequest == null )
         {
             if ( error != null )
             {
-                logger.debug( "handling error from request reader: " + error.getMessage(), error );
+                logger.debug( "Handling error from request reader: " + error.getMessage(), error );
                 handleError( error, http );
             }
             else
             {
-                logger.debug( "invalid state (no error or request) from request reader. Sending 400." );
+                logger.debug( "Invalid state (no error or request) from request reader. Sending 400." );
                 try
                 {
                     http.writeStatus( ApplicationStatus.BAD_REQUEST );
@@ -195,14 +216,19 @@ public final class ProxyResponseWriter
         // TODO: Can we handle this?
         final String oldThreadName = Thread.currentThread().getName();
         Thread.currentThread().setName( "PROXY-" + httpRequest.getRequestLine().toString() );
-        channel.getCloseSetter().set( ( sinkChannel ) ->
+        sinkChannel.getCloseSetter().set( ( c ) ->
         {
             restLogger.info( "END {} (from: {})", httpRequest.getRequestLine(), peerAddress );
-            logger.debug("sink channel closing.");
+            logger.trace("Sink channel closing.");
             Thread.currentThread().setName( oldThreadName );
+            if ( sslTunnel != null )
+            {
+                logger.trace("Close ssl tunnel");
+                sslTunnel.close();
+            }
         } );
 
-        logger.debug( "\n\n\n>>>>>>> Handle write\n\n\n\n\n" );
+        logger.debug( "\n\n\n>>>>>>> Handle write\n\n\n" );
         if ( error == null )
         {
             try
@@ -272,17 +298,14 @@ public final class ProxyResponseWriter
 
                     if ( authenticated )
                     {
-                        final URL url = new URL( requestLine.getUri() );
-
                         switch ( method )
                         {
                             case GET_METHOD:
                             case HEAD_METHOD:
                             {
+                                final URL url = new URL( requestLine.getUri() );
                                 logger.debug( "getArtifactStore starts, trackingId: {}, url: {}", trackingId, url );
                                 ArtifactStore store = getArtifactStore( trackingId, url );
-                                logger.debug( "getArtifactStore done, store: {}", store );
-
                                 transfer( http, store, url.getPath(), GET_METHOD.equals( method ), proxyUserPass );
                                 break;
                             }
@@ -290,6 +313,30 @@ public final class ProxyResponseWriter
                             {
                                 http.writeStatus( ApplicationStatus.OK );
                                 http.writeHeader( ApplicationHeader.allow, ALLOW_HEADER_VALUE );
+                                break;
+                            }
+                            case CONNECT_METHOD:
+                            {
+                                String uri = requestLine.getUri(); // e.g, github.com:443
+                                logger.debug( "Get CONNECT request, uri: {}", uri );
+
+                                String[] toks = uri.split( ":" );
+                                String host = toks[0];
+                                int port = Integer.parseInt( toks[1] );
+
+                                http.writeStatus( ApplicationStatus.OK );
+                                http.writeHeader( "Status", "200 OK\n" );
+
+                                directed = true;
+
+                                // After this, the proxy simply opens a plain socket to the target server and relays
+                                // everything between the initial client and the target server (including the TLS handshake).
+                                InetSocketAddress target = new InetSocketAddress( host, port );
+                                SocketChannel socketChannel = SocketChannel.open( target );
+                                sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel );
+                                sslTunnel.open();
+                                proxyRequestReader.setProxySSLTunnel( sslTunnel ); // client input will be directed to target socket
+
                                 break;
                             }
                             default:
@@ -319,7 +366,14 @@ public final class ProxyResponseWriter
 
         try
         {
-            http.close();
+            if ( directed )
+            {
+                ; // do not close sink channel
+            }
+            else
+            {
+                http.close();
+            }
         }
         catch ( final IOException e )
         {
