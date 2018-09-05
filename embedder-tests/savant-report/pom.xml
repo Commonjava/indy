@@ -135,6 +135,18 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-hosted-by-archive-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-hosted-by-archive-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-hosted-by-archive-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
@@ -262,6 +274,10 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-relate</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-hosted-by-archive</artifactId>
     </dependency>
   </dependencies>
 

@@ -378,6 +378,11 @@ public final class ResponseUtils
         return formulateResponse( status, error, null, false, null );
     }
 
+    public static Response formatResponse( final ApplicationStatus status, final String message )
+    {
+        return formulateResponse( status, null, message, false, null );
+    }
+
     public static void throwError( final ApplicationStatus status, final Throwable error,
                                    final Consumer<ResponseBuilder> builderModifier )
     {
