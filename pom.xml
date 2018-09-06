@@ -70,7 +70,7 @@
     <kojijiVersion>2.4</kojijiVersion>
     <rwxVersion>2.1</rwxVersion>
     <jhttpcVersion>1.8</jhttpcVersion>
-    <weftVersion>1.8</weftVersion>
+    <weftVersion>1.9</weftVersion>
     <httpTestserverVersion>1.3</httpTestserverVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
