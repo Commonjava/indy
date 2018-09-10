@@ -66,4 +66,6 @@ public interface IndyConfiguration
 
     File getIndyConfDir();
 
+    Boolean isAllowRemoteListDownload();
+
 }

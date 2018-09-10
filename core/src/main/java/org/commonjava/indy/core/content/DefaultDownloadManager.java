@@ -22,6 +22,7 @@ import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStoreRescanEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
@@ -122,6 +123,9 @@ public class DefaultDownloadManager
     @Any
     private Instance<ContentAdvisor> contentAdvisors;
 
+    @Inject
+    private IndyConfiguration indyConfig;
+
     protected DefaultDownloadManager()
     {
     }
@@ -165,12 +169,18 @@ public class DefaultDownloadManager
 
         //        final String dir = PathUtils.dirname( path );
 
+        final EventMetadata metadata = eventMetadata == null ?
+                new EventMetadata().set( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD,
+                                         indyConfig.isAllowRemoteListDownload() ) :
+                eventMetadata.set( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD,
+                                   indyConfig.isAllowRemoteListDownload() );
+
         if ( store.getKey().getType() == StoreType.group )
         {
             try
             {
                 final List<ListingResult> results = transfers.listAll(
-                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ), eventMetadata );
+                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ), metadata );
 
                 for ( final ListingResult lr : results )
                 {
@@ -218,7 +228,7 @@ public class DefaultDownloadManager
             {
                 try
                 {
-                    final ListingResult lr = transfers.list( res, eventMetadata );
+                    final ListingResult lr = transfers.list( res, metadata );
                     if ( lr != null && lr.getListing() != null )
                     {
                         for ( final String file : lr.getListing() )
@@ -294,10 +304,15 @@ public class DefaultDownloadManager
         final String dir = PathUtils.dirname( path );
 
         final List<StoreResource> result = new ArrayList<>();
+        final EventMetadata metadata = eventMetadata == null ?
+                new EventMetadata().set( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD,
+                                         indyConfig.isAllowRemoteListDownload() ) :
+                eventMetadata.set( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD,
+                                   indyConfig.isAllowRemoteListDownload() );
         try
         {
             final List<ListingResult> results = transfers.listAll(
-                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ), eventMetadata );
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ), metadata );
 
             for ( final ListingResult lr : results )
             {

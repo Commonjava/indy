@@ -43,6 +43,8 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 10000; // 10,000
 
+    public static final Boolean DEFAULT_ALLOW_REMOTE_LIST_DOWNLOAD = true;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -56,6 +58,8 @@ public class DefaultIndyConfiguration
     private Integer nfcMaxResultSetSize;
 
     private String mdcHeaders;
+
+    private Boolean allowRemoteListDownload;
 
     public DefaultIndyConfiguration()
     {
@@ -149,6 +153,18 @@ public class DefaultIndyConfiguration
     public File getIndyConfDir()
     {
         return getSyspropDir( IndyConfigFactory.CONFIG_DIR_PROP );
+    }
+
+    @Override
+    public Boolean isAllowRemoteListDownload()
+    {
+        return allowRemoteListDownload == null ? DEFAULT_ALLOW_REMOTE_LIST_DOWNLOAD : allowRemoteListDownload;
+    }
+
+    @ConfigName( "remote.list.download.enabled" )
+    public void setAllowRemoteListDownload( Boolean allowRemoteListDownload )
+    {
+        this.allowRemoteListDownload = allowRemoteListDownload;
     }
 
     private File getSyspropDir( final String property )
