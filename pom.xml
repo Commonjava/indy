@@ -219,14 +219,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.commonjava.indy.docker</groupId>
-        <artifactId>indy-docker-base</artifactId>
-        <type>tar.gz</type>
-        <version>1.3.2-SNAPSHOT</version>
-        <scope>provided</scope>
-      </dependency>
-
-      <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-autoprox-jaxrs</artifactId>
         <version>1.4.1-SNAPSHOT</version>
