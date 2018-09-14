@@ -49,7 +49,7 @@ public class ProxySSLTunnel
              {
                  try
                  {
-                     pipeToSinkChannel( sinkChannel, socketChannel );
+                     pipeTargetToSinkChannel( sinkChannel, socketChannel );
                  }
                  catch ( Exception e )
                  {
@@ -58,11 +58,10 @@ public class ProxySSLTunnel
              } );
     }
 
-    private void pipeToSinkChannel( ConduitStreamSinkChannel sinkChannel, SocketChannel targetChannel )
+    private void pipeTargetToSinkChannel( ConduitStreamSinkChannel sinkChannel, SocketChannel targetChannel )
                     throws IOException
     {
-        logger.trace( "Starting target to sink pipe..." );
-
+        logger.trace( "Start target to sink channel pipe" );
         selector = Selector.open();
 
         targetChannel.configureBlocking( false );
@@ -75,13 +74,13 @@ public class ProxySSLTunnel
                 break;
             }
 
-            logger.trace( "Select on target channel..." );
+            logger.trace( "Select on target channel" );
             int readyChannels = selector.select( DEFAULT_SELECTOR_TIMEOUT );
 
-            logger.trace( "Select returns, readyChannels: {}", readyChannels );
+            logger.trace( "Select returns, {} ready channels", readyChannels );
             if ( readyChannels == 0 )
             {
-                logger.trace( "No ready channel, complete pipe" );
+                logger.trace( "No ready channel, break" );
                 break;
             }
 
@@ -92,11 +91,20 @@ public class ProxySSLTunnel
                 SelectionKey key = iterator.next();
                 if ( key.isReadable() )
                 {
-                    logger.trace( "Read from target socket channel..." );
+                    logger.trace( "Read from target channel" );
                     byte[] bytes = doRead( (SocketChannel) key.channel() );
 
-                    logger.trace( "Read DONE, write data to sink channel, size: {}", bytes.length );
-                    sinkChannel.write( ByteBuffer.wrap( bytes ) );
+                    logger.trace( "Read done, write to sink channel, bytes: {}", bytes.length );
+                    if ( bytes.length > 0 )
+                    {
+                        sinkChannel.write( ByteBuffer.wrap( bytes ) );
+                    }
+                    else
+                    {
+                        // read 0 or -1 means the other side have closed the socket
+                        logger.debug( "Peer closed socket" );
+                        break;
+                    }
                 }
                 iterator.remove();
             }
@@ -130,6 +138,7 @@ public class ProxySSLTunnel
         try
         {
             selector.close(); // wake it up to complete the tunnel
+            socketChannel.close();
         }
         catch ( IOException e )
         {

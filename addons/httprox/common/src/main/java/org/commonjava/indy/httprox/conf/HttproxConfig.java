@@ -38,6 +38,8 @@ public class HttproxConfig
 
     private static final boolean DEFAULT_SECURED = false;
 
+    private static final boolean DEFAULT_MITM_ENABLED = true;
+
     private static final String DEFAULT_TRACKING_TYPE = TrackingType.SUFFIX.name();
 
     private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 1;
@@ -45,6 +47,8 @@ public class HttproxConfig
     private String proxyRealm;
 
     private Boolean enabled;
+
+    private Boolean MITMEnabled;
 
     private Boolean secured;
 
@@ -150,5 +154,16 @@ public class HttproxConfig
     public void setNoCachePatterns( String noCachePatterns )
     {
         this.noCachePatterns = noCachePatterns;
+    }
+
+    @ConfigName( "MITM.enabled" )
+    public void setMITMEnabled( Boolean MITMEnabled )
+    {
+        this.MITMEnabled = MITMEnabled;
+    }
+
+    public boolean isMITMEnabled()
+    {
+        return MITMEnabled == null ? DEFAULT_MITM_ENABLED : MITMEnabled;
     }
 }

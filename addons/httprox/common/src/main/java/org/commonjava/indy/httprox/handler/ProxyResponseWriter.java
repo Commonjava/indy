@@ -65,6 +65,7 @@ import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -331,8 +332,30 @@ public final class ProxyResponseWriter
 
                                 // After this, the proxy simply opens a plain socket to the target server and relays
                                 // everything between the initial client and the target server (including the TLS handshake).
-                                InetSocketAddress target = new InetSocketAddress( host, port );
-                                SocketChannel socketChannel = SocketChannel.open( target );
+
+                                SocketChannel socketChannel;
+
+                                if ( !config.isMITMEnabled() )
+                                {
+                                    InetSocketAddress target = new InetSocketAddress( host, port );
+                                    socketChannel = SocketChannel.open( target );
+                                }
+                                else
+                                {
+                                    ProxyMITMSSLServer svr = new ProxyMITMSSLServer( host, port );
+                                    new Thread( svr ).start();
+
+                                    socketChannel = svr.get();
+
+                                    if ( socketChannel == null )
+                                    {
+                                        logger.debug( "Failed to get MITM socket channel" );
+                                        http.writeStatus( ApplicationStatus.SERVER_ERROR );
+                                        svr.stop();
+                                        break;
+                                    }
+                                }
+
                                 sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel );
                                 sslTunnel.open();
                                 proxyRequestReader.setProxySSLTunnel( sslTunnel ); // client input will be directed to target socket
