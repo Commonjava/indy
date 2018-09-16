@@ -28,6 +28,8 @@ import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.content.browse.ContentBrowseController;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.model.core.PackageTypes;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -110,6 +112,9 @@ public class ContentBrowseResource
             return Response.status( 400 ).build();
         }
 
+        final StoreKey sk = new StoreKey( packageType, StoreType.get( type ), name );
+
+
         final String browseBaseUri =
                 uriInfo.getBaseUriBuilder().path( BROWSE_REST_BASE_PATH + "/" + packageType ).build().toString();
 
@@ -120,7 +125,7 @@ public class ContentBrowseResource
         ContentBrowseResult result;
         try
         {
-            result = controller.browseContent( packageType, type, name, path, browseBaseUri, contentBaseUri, uriFormatter,
+            result = controller.browseContent( sk, path, browseBaseUri, contentBaseUri, uriFormatter,
                                                new EventMetadata() );
 
             response = formatOkResponseWithJsonEntity( result, mapper );

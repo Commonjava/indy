@@ -73,18 +73,16 @@ public class ContentBrowseController
         this.contentManager = contentManager;
     }
 
-    public ContentBrowseResult browseContent( final String packageType, final String type, final String name,
-                                              final String path, final String browseBaseUri,
-                                              final String contentBaseUri, final UriFormatter uriFormatter,  EventMetadata eventMetadata )
+    public ContentBrowseResult browseContent( final StoreKey storeKey, final String path, final String browseBaseUri,
+                                              final String contentBaseUri, final UriFormatter uriFormatter,
+                                              EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
 
-        final StoreType st = StoreType.get( type );
-        final StoreKey sk = new StoreKey( packageType, st, name );
+        final EventMetadata metadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, storeKey );
 
-        final EventMetadata metadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
-
-        return renderResult( sk, PathUtils.normalize( path ), browseBaseUri, contentBaseUri, uriFormatter, metadata );
+        return renderResult( storeKey, PathUtils.normalize( path ), browseBaseUri, contentBaseUri, uriFormatter,
+                             metadata );
 
     }
 
