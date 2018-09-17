@@ -8,29 +8,34 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.model.core.dto.StoreListingDTO;
-import org.commonjava.indy.subsys.http.IndyHttpException;
 import org.commonjava.indy.subsys.http.util.HttpResources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.channels.SocketChannel;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static javax.ws.rs.HttpMethod.GET;
+import static javax.ws.rs.HttpMethod.HEAD;
 import static org.commonjava.indy.boot.PortFinder.findOpenPort;
 
 /**
@@ -87,22 +92,47 @@ public class ProxyMITMSSLServer implements Runnable
 
     private volatile Socket socket;
 
+    /**
+     * TODO: generate the keystore on-the-fly.
+     openssl genpkey -algorithm RSA -out server.key
+     openssl req -new -key server.key -subj "/CN=localhost/O=Test Org" -out server.csr
+     openssl x509 -days 360 -req -in server.csr -CAcreateserial -CA ca.crt -CAkey ca.key -out server.crt
+     openssl pkcs12 -export -in server.crt -inkey server.key -out server.p12
+     */
+    private SSLServerSocketFactory getSSLServerSocketFactory( String host ) throws Exception
+    {
+/*
+        System.setProperty( "javax.net.ssl.keyStore", "/home/ruhan/ssl/keystore" );
+        System.setProperty( "javax.net.ssl.keyStorePassword", "passwd" );
+        return (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+*/
+        KeyStore ks = KeyStore.getInstance( "JKS" ); // or PKCS12
+        try (InputStream ksIs = new FileInputStream( new File( "/home/ruhan/ssl/keystore", host ) ))
+        {
+            ks.load( ksIs, "passwd".toCharArray() );
+        }
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance( KeyManagerFactory.getDefaultAlgorithm() );
+        kmf.init( ks, "passwd".toCharArray() );
+
+        SSLContext sc = SSLContext.getInstance( "TLS" );
+        sc.init( kmf.getKeyManagers(), null, null );
+        return sc.getServerSocketFactory();
+    }
+
     private void execute() throws Exception
     {
-        System.setProperty( "javax.net.ssl.keyStore", "/home/ruhan/ssl/oss-server.p12" );
-        System.setProperty( "javax.net.ssl.keyStorePassword", "passwd" );
-
-        SSLServerSocketFactory sslServerSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+        SSLServerSocketFactory sslServerSocketFactory = getSSLServerSocketFactory( host );
 
         serverPort = findOpenPort( maxRetries );
-
         sslServerSocket = sslServerSocketFactory.createServerSocket( serverPort );
-        logger.debug( "SSL ServerSocket started, {}", sslServerSocket );
+
+        logger.debug( "MITM server started, {}", sslServerSocket );
         started = true;
 
         socket = sslServerSocket.accept();
 
-        logger.debug( "SSL ServerSocket accepted" );
+        logger.debug( "MITM server accepted" );
         BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
 
         String path = null;
@@ -111,7 +141,7 @@ public class ProxyMITMSSLServer implements Runnable
         while ( ( line = in.readLine() ) != null )
         {
             sb.append( line + "\n" );
-            if ( line.startsWith( "GET" ))
+            if ( line.startsWith( GET ) || line.startsWith( HEAD ) )
             {
                 String[] toks = line.split("\\s+");
                 path = toks[1];
@@ -125,18 +155,22 @@ public class ProxyMITMSSLServer implements Runnable
 
         logger.debug( "Request:\n{}", sb.toString() );
 
-        //String body = "<html><body>Hello World!</body></html>"; // for test
-        String body = requestRemoteHTTPS( host, port, path );
-        int len = body.getBytes().length;
+        if ( path != null )
+        {
+            String body = requestRemoteHTTPS( host, port, path );
+            int len = body.getBytes().length;
 
-        String resp = "HTTP/1.1 200 OK\r\n"
-                        + "Content-Type: text/html; charset=UTF-8\r\n"
-                        + "Content-Length: " + len + "\r\n"
-                        + "Connection: close\r\n" + "\r\n" + body;
+            String resp = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html; charset=UTF-8\r\n" + "Content-Length: " + len + "\r\n"
+                            + "Connection: close\r\n" + "\r\n" + body;
 
-        BufferedWriter out = new BufferedWriter( new OutputStreamWriter( socket.getOutputStream() ) );
-        out.write( resp );
-        out.close();
+            BufferedWriter out = new BufferedWriter( new OutputStreamWriter( socket.getOutputStream() ) );
+            out.write( resp );
+            out.close();
+        }
+        else
+        {
+            logger.debug( "MITM server failed to get GET/HEAD request from client" );
+        }
         in.close();
         socket.close();
         sslServerSocket.close();

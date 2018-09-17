@@ -73,7 +73,12 @@ public final class ProxyRequestReader
             {
                 logger.debug( "Reads: {} ", read ); // Read 0 means client have closed the connection
                 sourceChannel.shutdownReads();
+                if ( sslTunnel != null )
+                {
+                    sslTunnel.close();
+                }
                 sinkChannel.shutdownWrites();
+                sinkChannel.close();
                 return;
             }
 

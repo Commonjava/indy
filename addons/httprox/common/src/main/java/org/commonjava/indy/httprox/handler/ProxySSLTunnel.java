@@ -67,6 +67,7 @@ public class ProxySSLTunnel
         targetChannel.configureBlocking( false );
         targetChannel.register( selector, SelectionKey.OP_READ );
 
+        breakPipe:
         while ( true )
         {
             if ( closed )
@@ -103,7 +104,7 @@ public class ProxySSLTunnel
                     {
                         // read 0 or -1 means the other side have closed the socket
                         logger.debug( "Peer closed socket" );
-                        break;
+                        break breakPipe;
                     }
                 }
                 iterator.remove();
