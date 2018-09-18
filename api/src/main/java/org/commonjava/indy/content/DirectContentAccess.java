@@ -80,7 +80,13 @@ public interface DirectContentAccess
     List<StoreResource> listRaw( ArtifactStore store, String parentPath )
             throws IndyWorkflowException;
 
+    List<StoreResource> listRaw( ArtifactStore store, String parentPath, EventMetadata eventMetadata )
+            throws IndyWorkflowException;
+
     Map<String, List<StoreResource>> listRaw( ArtifactStore store, List<String> parentPathList )
+            throws IndyWorkflowException;
+
+    Map<String, List<StoreResource>> listRaw( ArtifactStore store, List<String> parentPathList, EventMetadata eventMetadata )
             throws IndyWorkflowException;
 
 }

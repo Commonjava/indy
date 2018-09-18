@@ -177,8 +177,22 @@ public class DefaultDirectContentAccess
     }
 
     @Override
+    public List<StoreResource> listRaw( ArtifactStore store, String path, EventMetadata eventMetadata )
+            throws IndyWorkflowException
+    {
+        return downloadManager.list( store, path, eventMetadata );
+    }
+
+    @Override
+    public Map<String, List<StoreResource>> listRaw( ArtifactStore store, List<String> parentPathList )
+            throws IndyWorkflowException
+    {
+        return listRaw( store, parentPathList, new EventMetadata() );
+    }
+
+    @Override
     public Map<String, List<StoreResource>> listRaw( ArtifactStore store,
-                                                     List<String> parentPathList ) throws IndyWorkflowException
+                                                     List<String> parentPathList, EventMetadata eventMetadata ) throws IndyWorkflowException
     {
         CompletionService<List<StoreResource>> executor = new ExecutorCompletionService<>( executorService );
         Map<String, Future<List<StoreResource>>> futures = new HashMap<>();
@@ -188,7 +202,7 @@ public class DefaultDirectContentAccess
             logger.trace( "Requesting listing of {} in {}", path, store );
             Future<List<StoreResource>> future = executor.submit( ()->{
                 logger.trace( "Starting listing of {} in {}", path, store );
-                List<StoreResource> listRaw = listRaw( store, path );
+                List<StoreResource> listRaw = listRaw( store, path, eventMetadata );
                 logger.trace( "Listing of {} in {} finished", path, store );
                 return listRaw;
             });
