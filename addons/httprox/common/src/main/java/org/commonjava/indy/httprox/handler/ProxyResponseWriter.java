@@ -342,7 +342,7 @@ public final class ProxyResponseWriter
                                 }
                                 else
                                 {
-                                    ProxyMITMSSLServer svr = new ProxyMITMSSLServer( host, port );
+                                    ProxyMITMSSLServer svr = new ProxyMITMSSLServer( host, port, config );
                                     new Thread( svr ).start();
 
                                     socketChannel = svr.get();

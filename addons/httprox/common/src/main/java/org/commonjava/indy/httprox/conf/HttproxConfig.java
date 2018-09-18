@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 
 @SectionName( "httprox" )
 @ApplicationScoped
@@ -59,6 +60,10 @@ public class HttproxConfig
     private String trackingType;
 
     private String noCachePatterns; // if multiple patterns, split by comma
+
+    private String MITMCAKey;
+
+    private String MITMCACert;
 
     public TrackingType getTrackingType()
     {
@@ -165,5 +170,27 @@ public class HttproxConfig
     public boolean isMITMEnabled()
     {
         return MITMEnabled == null ? DEFAULT_MITM_ENABLED : MITMEnabled;
+    }
+
+    public String getMITMCAKey()
+    {
+        return MITMCAKey;
+    }
+
+    @ConfigName( "MITM.ca.key" )
+    public void setMITMCAKey( String MITMCAKey )
+    {
+        this.MITMCAKey = MITMCAKey;
+    }
+
+    public String getMITMCACert()
+    {
+        return MITMCACert;
+    }
+
+    @ConfigName( "MITM.ca.cert" )
+    public void setMITMCACert( String MITMCACert )
+    {
+        this.MITMCACert = MITMCACert;
     }
 }

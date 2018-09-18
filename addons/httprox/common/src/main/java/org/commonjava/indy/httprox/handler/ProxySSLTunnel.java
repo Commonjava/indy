@@ -79,9 +79,9 @@ public class ProxySSLTunnel
             int readyChannels = selector.select( DEFAULT_SELECTOR_TIMEOUT );
 
             logger.trace( "Select returns, {} ready channels", readyChannels );
-            if ( readyChannels == 0 )
+            if ( readyChannels == 0 || !selector.isOpen() )
             {
-                logger.trace( "No ready channel, break" );
+                logger.trace( "No ready channel or selector closed, break" );
                 break;
             }
 
@@ -96,7 +96,7 @@ public class ProxySSLTunnel
                     byte[] bytes = doRead( (SocketChannel) key.channel() );
 
                     logger.trace( "Read done, write to sink channel, bytes: {}", bytes.length );
-                    if ( bytes.length > 0 )
+                    if ( bytes.length > 0 && sinkChannel.isOpen() )
                     {
                         sinkChannel.write( ByteBuffer.wrap( bytes ) );
                     }
