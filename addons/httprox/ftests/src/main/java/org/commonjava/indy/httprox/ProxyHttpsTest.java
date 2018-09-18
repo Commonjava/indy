@@ -18,11 +18,17 @@ package org.commonjava.indy.httprox;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.helper.HttpResources;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyStore;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -46,11 +52,11 @@ public class ProxyHttpsTest
     public void run() throws Exception
     {
         String ret = null;
-        //ret = regression();
-        //assertEquals( content, ret );
+        ret = regression();
+        assertEquals( content, ret );
 
-        ret = get( https_url );
-        //assertTrue( ret.contains( "<artifactId>indy-api</artifactId>" ) );
+        ret = get( https_url, true );
+        assertTrue( ret.contains( "<artifactId>indy-api</artifactId>" ) );
     }
 
     // Regression test for HTTP url
@@ -60,13 +66,26 @@ public class ProxyHttpsTest
         final String testRepo = "test";
         String url = server.formatUrl( testRepo, path );
         server.expect( url, 200, content );
-        return get( url );
+        return get( url, false );
     }
 
-    private String get( String url ) throws Exception
+    private String get( String url, boolean withCACert ) throws Exception
     {
+        CloseableHttpClient client;
+
+        if ( withCACert )
+        {
+            File jks = new File( etcDir, "ssl/ca.jks" );
+            KeyStore trustStore = getTrustStore( jks );
+            SSLSocketFactory socketFactory = new SSLSocketFactory( trustStore );
+            client = proxiedHttp( socketFactory );
+        }
+        else
+        {
+            client = proxiedHttp();
+        }
+
         HttpGet get = new HttpGet( url );
-        CloseableHttpClient client = proxiedHttp();
         CloseableHttpResponse response = null;
 
         InputStream stream = null;
@@ -88,10 +107,34 @@ public class ProxyHttpsTest
         }
     }
 
+    private KeyStore getTrustStore( File jks ) throws Exception
+    {
+        KeyStore trustStore = KeyStore.getInstance( KeyStore.getDefaultType() );
+        try (FileInputStream instream = new FileInputStream( jks ))
+        {
+            trustStore.load( instream, "passwd".toCharArray() );
+        }
+        return trustStore;
+    }
+
     @Override
     protected int getTestTimeoutMultiplier()
     {
         return 3;
     }
 
+    @Override
+    protected String getAdditionalHttproxConfig()
+    {
+        return "MITM.ca.key=${indy.home}/etc/indy/ssl/ca.der\n"
+                        + "MITM.ca.cert=${indy.home}/etc/indy/ssl/ca.crt";
+    }
+
+    @Override
+    protected void initTestData( CoreServerFixture fixture ) throws IOException
+    {
+        copyToConfigFile( "ssl/ca.der", "ssl/ca.der" );
+        copyToConfigFile( "ssl/ca.crt", "ssl/ca.crt" );
+        copyToConfigFile( "ssl/ca.jks", "ssl/ca.jks" );
+    }
 }

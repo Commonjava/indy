@@ -101,12 +101,6 @@ public class ProxyMITMSSLServer implements Runnable
      */
     private SSLServerSocketFactory getSSLServerSocketFactory( String host ) throws Exception
     {
-        /*KeyStore ks = KeyStore.getInstance( "JKS" ); // or PKCS12
-        try (InputStream ksIs = new FileInputStream( new File( "/home/ruhan/ssl/keystore", host ) ))
-        {
-            ks.load( ksIs, "passwd".toCharArray() );
-        }*/
-
         AtomicReference<Exception> err = new AtomicReference<>();
         KeyStore ks = keystoreMap.computeIfAbsent( host, (k) -> {
             try
