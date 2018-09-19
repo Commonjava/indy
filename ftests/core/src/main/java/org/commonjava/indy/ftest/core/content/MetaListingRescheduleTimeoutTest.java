@@ -17,16 +17,17 @@ package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
-import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.Date;
@@ -37,7 +38,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-
 /**
  * This case test if the ".listing.txt" metadata re-schedule is working.
  * when: <br />
@@ -45,6 +45,7 @@ import static org.junit.Assert.assertThat;
  *      <li>creates a remote repo with two pom artifacts and a ".listing.txt" source</li>
  *      <li>set metadata timeout for remote</li>
  *      <li>request the content after a short period during the schedule</li>
+ *      <li>set remote.list.download.enabled to true to make remote listing download enabled</li>
  * </ul>
  * then: <br />
  * <ul>
@@ -58,7 +59,7 @@ public class MetaListingRescheduleTimeoutTest
     @Rule
     public ExpectationServer server = new ExpectationServer( "repos" );
 
-//    @Ignore // content listing is disabled for now, 2018/4/3
+    //    @Ignore // content listing is disabled for now, 2018/4/3
     @Test
     @Category( TimingDependent.class )
     public void timeout()
@@ -80,12 +81,10 @@ public class MetaListingRescheduleTimeoutTest
         final String repoSubUrl2 = server.formatUrl( repoId, repoSubPath2 );
 
         // mocking up a http server that expects access to metadata
-        final String listingContent = "<html>" + "<head><title>Index of /org/foo/bar</title></head>"
-                + "<body><h1>Index of /org/foo/bar/</h1>"
-                + "<hr><pre>"
-                + "<a href=\"1.0/\">1.0/</a>"
-                + "<a href=\"1.1/\">1.1/</a>"
-                + "</pre><hr></body></html>";
+        final String listingContent =
+                "<html>" + "<head><title>Index of /org/foo/bar</title></head>" + "<body><h1>Index of /org/foo/bar/</h1>"
+                        + "<hr><pre>" + "<a href=\"1.0/\">1.0/</a>" + "<a href=\"1.1/\">1.1/</a>"
+                        + "</pre><hr></body></html>";
         server.expect( repoRootUrl, 200, listingContent );
         final String datetime = ( new Date() ).toString();
         server.expect( repoSubUrl1, 200, String.format( "metadata %s", datetime ) );
@@ -93,25 +92,29 @@ public class MetaListingRescheduleTimeoutTest
 
         // set up remote repository pointing to the test http server, and timeout little later
         final String changelog = "Timeout Testing: " + name.getMethodName();
-        final RemoteRepository repository = new RemoteRepository( repoId, server.formatUrl( repoId ) );
+        final RemoteRepository repository =
+                new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, repoId, server.formatUrl( repoId ) );
         repository.setMetadataTimeoutSeconds( METADATA_TIMEOUT_SECONDS );
         client.stores().create( repository, changelog, RemoteRepository.class );
 
-        try(InputStream is = client.content().get( remote, repoId, repoSubPath1 )){}
-        try(InputStream is = client.content().get( remote, repoId, repoSubPath2 )){}
+        try (InputStream is = client.content().get( remote, repoId, repoSubPath1 ))
+        {
+        }
+        try (InputStream is = client.content().get( remote, repoId, repoSubPath2 ))
+        {
+        }
 
         // first time trigger normal content storage with timeout, should be 4s
         InputStream content = client.content().get( remote, repoId, repoRootPath );
         assertThat( "no metadata result", content, notNullValue() );
-        logger.debug("### will begin to get content");
+        logger.debug( "### will begin to get content" );
         IOUtils.readLines( content ).forEach( logger::info );
         content.close();
 
         final String listingMetaPath = "org/foo/bar/.listing.txt";
 
-        File listingMetaFile =
-                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
-                           listingMetaPath ).toFile();
+        File listingMetaFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+                                          remote.singularEndpointName() + "-" + repoId, listingMetaPath ).toFile();
 
         assertThat( "metadata doesn't exist: " + listingMetaFile, listingMetaFile.exists(), equalTo( true ) );
 
@@ -124,7 +127,7 @@ public class MetaListingRescheduleTimeoutTest
         // will wait second time for a longer period
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS * getTestTimeoutMultiplier() );
 
-//        logger.info( "Checking whether metadata file {} has been deleted...", listingMetaFile );
+        //        logger.info( "Checking whether metadata file {} has been deleted...", listingMetaFile );
         // as rescheduled, the artifact should not be deleted
         assertThat( "artifact should be removed as the rescheduled of metadata should not succeed",
                     listingMetaFile.exists(), equalTo( false ) );
@@ -140,5 +143,13 @@ public class MetaListingRescheduleTimeoutTest
     protected int getTestTimeoutMultiplier()
     {
         return super.getTestTimeoutMultiplier() * 2;
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "main.conf", "remote.list.download.enabled=true\n"
+                + "[storage-default]\nstorage.dir=${indy.home}/var/lib/indy/storage" );
     }
 }
