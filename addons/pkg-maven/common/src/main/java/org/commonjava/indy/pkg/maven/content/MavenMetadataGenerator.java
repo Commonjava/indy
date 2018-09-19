@@ -291,7 +291,7 @@ public class MavenMetadataGenerator
         if ( pathElementsCount >= 2 )
         {
             // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
-            final List<StoreResource> firstLevelFiles = fileManager.listRaw( store, path );
+            final List<StoreResource> firstLevelFiles = fileManager.listRaw( store, path, eventMetadata );
 
             ArtifactPathInfo samplePomInfo = null;
             for ( final StoreResource topResource : firstLevelFiles )
@@ -311,7 +311,7 @@ public class MavenMetadataGenerator
                                                              .map( (res) -> res.getPath() )
                                                              .filter( (subpath) -> subpath.endsWith( "/" ) )
                                                              .collect( Collectors.toList() );
-                final Map<String, List<StoreResource>> secondLevelMap = fileManager.listRaw( store, firstLevelDirs );
+                final Map<String, List<StoreResource>> secondLevelMap = fileManager.listRaw( store, firstLevelDirs, eventMetadata );
                 nextTopResource: for ( final String topPath : firstLevelDirs )
                 {
                     final List<StoreResource> secondLevelListing = secondLevelMap.get( topPath );

@@ -18,6 +18,7 @@ package org.commonjava.indy.core.content;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
@@ -34,6 +35,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -91,6 +93,9 @@ public class DefaultContentManager
 
     @Inject
     private ContentDigester contentDigester;
+
+    @Inject
+    private IndyConfiguration indyConfig;
 
     protected DefaultContentManager()
     {
@@ -628,6 +633,8 @@ public class DefaultContentManager
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        final EventMetadata metadata = setAllowRemoteDownloading(eventMetadata);
+
         List<StoreResource> listed;
         if ( group == store.getKey().getType() )
         {
@@ -661,7 +668,7 @@ public class DefaultContentManager
                 List<StoreResource> storeListing = null;
                 try
                 {
-                    storeListing = list( member, path, eventMetadata );
+                    storeListing = list( member, path, metadata );
                 }
                 catch ( IndyWorkflowException e )
                 {
@@ -676,12 +683,12 @@ public class DefaultContentManager
         }
         else
         {
-            listed = downloadManager.list( store, path, eventMetadata );
+            listed = downloadManager.list( store, path, metadata );
 
             for ( final ContentGenerator producer : contentGenerators )
             {
                 final List<StoreResource> produced =
-                        producer.generateDirectoryContent( store, path, listed, eventMetadata );
+                        producer.generateDirectoryContent( store, path, listed, metadata );
                 if ( produced != null )
                 {
                     listed.addAll( produced );
@@ -690,6 +697,24 @@ public class DefaultContentManager
         }
 
         return dedupeListing( listed );
+    }
+
+    private EventMetadata setAllowRemoteDownloading( final EventMetadata eventMetadata )
+    {
+        if ( eventMetadata == null )
+        {
+            return new EventMetadata().set( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD,
+                                            indyConfig.isAllowRemoteListDownload() );
+        }
+        else if ( eventMetadata.get( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD ) == null )
+        {
+            return eventMetadata.set( TransferManager.ALLOW_REMOTE_LISTING_DOWNLOAD,
+                                      indyConfig.isAllowRemoteListDownload() );
+        }
+        else
+        {
+            return eventMetadata;
+        }
     }
 
     @Override
