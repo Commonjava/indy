@@ -184,12 +184,18 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-hosted-by-archive-common</artifactId>
+      <artifactId>indy-hosted-by-archive-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-hosted-by-archive-jaxrs</artifactId>
+      <artifactId>indy-content-browse-common</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-jaxrs</artifactId>
+    </dependency>
+
+
 
 
     <dependency>
@@ -319,6 +325,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-hosted-by-archive</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-content-browse</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -406,6 +416,7 @@
               <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>
             </dependenciesToScan>
           </configuration>
           <executions>

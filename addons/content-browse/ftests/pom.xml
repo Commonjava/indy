@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
@@ -18,35 +17,39 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-content-browse</artifactId>
     <version>1.4.1-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-addons</artifactId>
-  <packaging>pom</packaging>
-
-  <name>Indy :: Add-Ons :: Parent</name>
+  <artifactId>indy-ftests-content-browse</artifactId>
+  <name>Indy :: Directory Content Browse :: Functional Tests</name>
   
-  <modules>
-    <module>autoprox</module>
-    <module>content-index</module>
-    <module>dot-maven</module>
-    <module>folo</module>
-    <module>httprox</module>
-    <module>implied-repos</module>
-    <module>koji</module>
-    <module>promote</module>
-    <module>revisions</module>
-    <module>setback</module>
-    <module>pkg-maven</module>
-    <module>diagnostics</module>
-    <module>relate</module>
-    <module>pkg-npm</module>
-    <module>hosted-by-archive</module>
-    <module>content-browse</module>
-    <!-- DO NOT REMOVE: append::addon -->
-  </modules>
+  <dependencies>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-jaxrs</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-common</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
 </project>
