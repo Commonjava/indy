@@ -1,16 +1,14 @@
 package org.commonjava.indy.httprox.handler;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.util.CertificateAndKeys;
-import org.commonjava.indy.subsys.http.util.HttpResources;
+import org.commonjava.indy.httprox.util.HttpConduitWrapper;
+import org.commonjava.indy.httprox.util.ProxyResponseHelper;
+import org.commonjava.indy.httprox.util.OutputStreamSinkChannel;
+import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.subsys.http.util.UserPass;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +16,14 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
+import java.net.URL;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -38,7 +33,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.lang.Thread.sleep;
@@ -49,6 +43,7 @@ import static org.commonjava.indy.httprox.util.CertUtils.createKeyStore;
 import static org.commonjava.indy.httprox.util.CertUtils.createSignedCertificateAndKey;
 import static org.commonjava.indy.httprox.util.CertUtils.getPrivateKey;
 import static org.commonjava.indy.httprox.util.CertUtils.loadX509Certificate;
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 
 /**
  * We create server crt based on the host name and use a CA crt to sign it. We send the CA crt to client and they use
@@ -66,10 +61,27 @@ public class ProxyMITMSSLServer implements Runnable
 
     private volatile int serverPort;
 
-    public ProxyMITMSSLServer( String host, int port, HttproxConfig config )
+    private final String trackingId;
+
+    private final UserPass proxyUserPass;
+
+    private final ContentController contentController;
+
+    private final CacheProvider cacheProvider;
+
+    private final ProxyResponseHelper proxyResponseHelper;
+
+    public ProxyMITMSSLServer( String host, int port, String trackingId, UserPass proxyUserPass,
+                               ProxyResponseHelper proxyResponseHelper,
+                               ContentController contentController, CacheProvider cacheProvider, HttproxConfig config )
     {
         this.host = host;
         this.port = port;
+        this.trackingId = trackingId;
+        this.proxyUserPass = proxyUserPass;
+        this.proxyResponseHelper = proxyResponseHelper;
+        this.contentController = contentController;
+        this.cacheProvider = cacheProvider;
         this.config = config;
     }
 
@@ -82,7 +94,7 @@ public class ProxyMITMSSLServer implements Runnable
         }
         catch ( Exception e )
         {
-            logger.warn( "Execute failed", e );
+            logger.warn( "Exception failed", e );
         }
     }
 
@@ -94,7 +106,7 @@ public class ProxyMITMSSLServer implements Runnable
 
     private char[] keystorePassword = "password".toCharArray(); // keystore password can not be null
 
-    private static Map<String, KeyStore> keystoreMap = new ConcurrentHashMap(); // cache keystore
+    private static Map<String, KeyStore> keystoreMap = new ConcurrentHashMap(); // cache keystore, key: hostname
 
     /**
      * Generate the keystore on-the-fly and initiate SSL socket factory.
@@ -114,7 +126,7 @@ public class ProxyMITMSSLServer implements Runnable
             return null;
         } );
 
-        if ( ks == null )
+        if ( ks == null || err.get() != null )
         {
             throw err.get();
         }
@@ -132,7 +144,8 @@ public class ProxyMITMSSLServer implements Runnable
         PrivateKey caKey = getPrivateKey( config.getMITMCAKey() );
         X509Certificate caCert = loadX509Certificate( new File( config.getMITMCACert() ));
 
-        String dn = "CN=#, O=Test Org".replace( "#", host );
+        String dn = config.getMITMDNTemplate().replace( "<host>", host ); // e.g., "CN=<host>, O=Test Org"
+
         CertificateAndKeys certificateAndKeys = createSignedCertificateAndKey( dn, caCert, caKey, false );
         Certificate signedCertificate = certificateAndKeys.getCertificate();
         logger.debug( "Create signed cert:\n" + signedCertificate.toString() );
@@ -161,12 +174,14 @@ public class ProxyMITMSSLServer implements Runnable
         String path = null;
         StringBuilder sb = new StringBuilder();
         String line;
+        String method = null;
         while ( ( line = in.readLine() ) != null )
         {
             sb.append( line + "\n" );
-            if ( line.startsWith( GET ) || line.startsWith( HEAD ) )
+            if ( line.startsWith( GET ) || line.startsWith( HEAD ) ) // only care about GET/HEAD
             {
                 String[] toks = line.split("\\s+");
+                method = toks[0];
                 path = toks[1];
             }
             else if ( line.isEmpty() )
@@ -180,19 +195,23 @@ public class ProxyMITMSSLServer implements Runnable
 
         if ( path != null )
         {
-            String body = requestRemoteHTTPS( host, port, path );
+            /*String body = requestRemote( host, port, path );
             int len = body.getBytes().length;
 
-            String resp = "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html; charset=UTF-8\r\n" + "Content-Length: " + len + "\r\n"
+            String resp = "HTTP/1.1 200 OK\r\n"
+                            + "Content-Type: text/html; charset=UTF-8\r\n"
+                            + "Content-Length: " + len + "\r\n"
                             + "Connection: close\r\n" + "\r\n" + body;
 
             BufferedWriter out = new BufferedWriter( new OutputStreamWriter( socket.getOutputStream() ) );
             out.write( resp );
-            out.close();
+            out.close();*/
+
+            transferRemote( socket, host, port, method, path );
         }
         else
         {
-            logger.debug( "MITM server failed to get GET/HEAD request from client" );
+            logger.debug( "MITM server failed to get request from client" );
         }
         in.close();
         socket.close();
@@ -200,7 +219,24 @@ public class ProxyMITMSSLServer implements Runnable
         logger.debug( "MITM server closed" );
     }
 
-    private String requestRemoteHTTPS( String host, int port, String path ) throws Exception
+    private void transferRemote( Socket socket, String host, int port, String method, String path ) throws Exception
+    {
+        String protocol = "https";
+        String auth = null;
+        String query = null;
+        String fragment = null;
+        URI uri = new URI( protocol, auth, host, port, path, query, fragment );
+        URL remoteUrl = uri.toURL();
+        logger.debug( "Requesting remote URL: {}", remoteUrl.toString() );
+
+        ArtifactStore store = proxyResponseHelper.getArtifactStore( trackingId, remoteUrl );
+        HttpConduitWrapper http = new HttpConduitWrapper( new OutputStreamSinkChannel( socket.getOutputStream() ), null,
+                                                          contentController, cacheProvider );
+        proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ), proxyUserPass );
+    }
+
+    /*// for test
+    private String requestRemote( String host, int port, String path ) throws Exception
     {
         String protocol = "https";
         String auth = null;
@@ -232,11 +268,11 @@ public class ProxyMITMSSLServer implements Runnable
         {
             IOUtils.closeQuietly( client );
         }
-    }
+    }*/
 
     private static final int maxRetries = 16;
 
-    public SocketChannel get() throws InterruptedException, ExecutionException
+    public SocketChannel getSocketChannel() throws InterruptedException, ExecutionException
     {
         for ( int i = 0; i < maxRetries; i++ )
         {
@@ -246,7 +282,7 @@ public class ProxyMITMSSLServer implements Runnable
                 logger.debug( "Server started" );
                 try
                 {
-                    return openSocketChannelToServer();
+                    return openSocketChannelToMITM();
                 }
                 catch ( IOException e )
                 {
@@ -262,12 +298,12 @@ public class ProxyMITMSSLServer implements Runnable
         return null;
     }
 
-    private SocketChannel openSocketChannelToServer() throws IOException
+    private SocketChannel openSocketChannelToMITM() throws IOException
     {
         logger.debug( "Open socket channel to MITM server, localhost:{}", serverPort );
+
         InetSocketAddress target = new InetSocketAddress( "localhost", serverPort );
-        SocketChannel socketChannel = SocketChannel.open( target );
-        return socketChannel;
+        return SocketChannel.open( target );
     }
 
     public void stop()

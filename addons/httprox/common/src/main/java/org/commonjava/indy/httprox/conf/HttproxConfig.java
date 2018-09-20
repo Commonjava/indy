@@ -20,10 +20,12 @@ import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terracotta.quartz.collections.SerializedToolkitStore;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.net.URI;
 
 @SectionName( "httprox" )
@@ -64,6 +66,8 @@ public class HttproxConfig
     private String MITMCAKey;
 
     private String MITMCACert;
+
+    private String MITMDNTemplate;
 
     public TrackingType getTrackingType()
     {
@@ -192,5 +196,16 @@ public class HttproxConfig
     public void setMITMCACert( String MITMCACert )
     {
         this.MITMCACert = MITMCACert;
+    }
+
+    public String getMITMDNTemplate()
+    {
+        return MITMDNTemplate;
+    }
+
+    @ConfigName( "MITM.dn.template" )
+    public void setMITMDNTemplate( String MITMDNTemplate )
+    {
+        this.MITMDNTemplate = MITMDNTemplate;
     }
 }

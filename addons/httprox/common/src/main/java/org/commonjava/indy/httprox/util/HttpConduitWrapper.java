@@ -34,6 +34,7 @@ import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.channels.Channels;
+import org.xnio.channels.StreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.FileInputStream;
@@ -53,7 +54,7 @@ public class HttpConduitWrapper
         implements org.commonjava.indy.subsys.http.HttpWrapper
 {
 
-    private final ConduitStreamSinkChannel sinkChannel;
+    private final StreamSinkChannel sinkChannel;
 
     private HttpRequest httpRequest;
 
@@ -61,7 +62,7 @@ public class HttpConduitWrapper
 
     private CacheProvider cacheProvider;
 
-    public HttpConduitWrapper( ConduitStreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController, CacheProvider cacheProvider )
+    public HttpConduitWrapper( StreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController, CacheProvider cacheProvider )
     {
         this.sinkChannel = channel;
         this.httpRequest = httpRequest;
