@@ -64,6 +64,7 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
+import static org.commonjava.indy.subsys.http.util.UserPass.parse;
 import static org.commonjava.indy.util.ApplicationHeader.proxy_authenticate;
 import static org.commonjava.indy.util.ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED;
 
@@ -222,8 +223,7 @@ public final class ProxyResponseWriter
                     throw new IndyDataException( "No valid instance of ProxyRepositoryCreator" );
                 }
 
-                final UserPass proxyUserPass =
-                                UserPass.parse( ApplicationHeader.proxy_authorization, httpRequest, null );
+                final UserPass proxyUserPass = parse( ApplicationHeader.proxy_authorization, httpRequest, null );
 
                 mdcManager.putExtraHeaders( httpRequest );
                 if ( proxyUserPass != null )

@@ -58,7 +58,7 @@ public class ProxyHttpsTest
         ret = regression();
         assertEquals( content, ret );
 
-        ret = get( https_url, true );
+        ret = get( https_url, true, USER, PASS );
         assertTrue( ret.contains( "<artifactId>indy-api</artifactId>" ) );
 
         StoreListingDTO<RemoteRepository> repo =
@@ -74,10 +74,10 @@ public class ProxyHttpsTest
         final String testRepo = "test";
         String url = server.formatUrl( testRepo, path );
         server.expect( url, 200, content );
-        return get( url, false );
+        return get( url, false, USER, PASS );
     }
 
-    private String get( String url, boolean withCACert ) throws Exception
+    protected String get( String url, boolean withCACert, String user, String pass ) throws Exception
     {
         CloseableHttpClient client;
 
@@ -86,11 +86,11 @@ public class ProxyHttpsTest
             File jks = new File( etcDir, "ssl/ca.jks" );
             KeyStore trustStore = getTrustStore( jks );
             SSLSocketFactory socketFactory = new SSLSocketFactory( trustStore );
-            client = proxiedHttp( socketFactory );
+            client = proxiedHttp( user, pass, socketFactory );
         }
         else
         {
-            client = proxiedHttp();
+            client = proxiedHttp( user, pass );
         }
 
         HttpGet get = new HttpGet( url );
@@ -99,7 +99,7 @@ public class ProxyHttpsTest
         InputStream stream = null;
         try
         {
-            response = client.execute( get, proxyContext( USER, PASS ) );
+            response = client.execute( get, proxyContext( user, pass ) );
             stream = response.getEntity().getContent();
             final String resulting = IOUtils.toString( stream );
 
@@ -128,7 +128,7 @@ public class ProxyHttpsTest
     @Override
     protected int getTestTimeoutMultiplier()
     {
-        return 3;
+        return 1;
     }
 
     @Override
