@@ -23,23 +23,17 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.UriFormatter;
-import org.commonjava.maven.atlas.ident.util.JoinString;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
-import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.util.PathUtils;
-import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -48,7 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -194,8 +187,19 @@ public class ContentBrowseController
                                               parentPath );
         }
 
+        final List<ContentBrowseResult.ListingURLResult> listingURLResults = new ArrayList<>( listingUrls.size() );
+
+        for ( String localUrl : listingUrls.keySet() )
+        {
+            final String apiPath = localUrl.replace( storeBrowseUrl, "" ).replace( storeContentUrl, "" );
+
+            listingURLResults.add(
+                    new ContentBrowseResult.ListingURLResult( apiPath, localUrl, listingUrls.get( localUrl ) ) );
+        }
+
+
         final ContentBrowseResult result = new ContentBrowseResult();
-        result.setListingUrls( listingUrls );
+        result.setListingUrls( listingURLResults );
         result.setParentUrl( parentUrl );
         result.setParentPath( parentPath );
         result.setPath( path );
