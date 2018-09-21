@@ -154,10 +154,10 @@ public class ProxyAcceptHandler
         sink.getWriteSetter().set( writer );
 
         final ProxyRequestReader reader = new ProxyRequestReader( writer, sink );
+        writer.setProxyRequestReader( reader );
 
         logger.debug( "Setting reader: {}", reader );
         source.getReadSetter().set( reader );
-
         source.resumeReads();
 
     }

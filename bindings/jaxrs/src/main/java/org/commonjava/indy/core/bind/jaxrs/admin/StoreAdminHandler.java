@@ -454,7 +454,7 @@ public class StoreAdminHandler
         Response response;
         try
         {
-            final List<RemoteRepository> remotes = adminController.getRemoteByUrl( url );
+            final List<RemoteRepository> remotes = adminController.getRemoteByUrl( url, packageType );
             logger.info( "According to url {}, Returning remote listing remote repositories: {}", url, remotes );
 
             if ( remotes == null || remotes.isEmpty() )

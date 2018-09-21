@@ -264,10 +264,17 @@ public abstract class AbstractIndyFunctionalTest
     protected void copyToDataFile( String resourcePath, String path ) throws IOException
     {
         File file = new File( dataDir, path );
-
         logger.info( "Writing data file to: {}, from: {}", file, resourcePath );
         file.getParentFile().mkdirs();
+        FileUtils.copyInputStreamToFile(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
+    }
 
+    protected void copyToConfigFile( String resourcePath, String path ) throws IOException
+    {
+        File file = new File( etcDir, path );
+        logger.info( "Writing data file to: {}, from: {}", file, resourcePath );
+        file.getParentFile().mkdirs();
         FileUtils.copyInputStreamToFile(
                         Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
     }

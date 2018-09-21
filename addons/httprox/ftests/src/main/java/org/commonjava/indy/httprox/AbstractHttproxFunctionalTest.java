@@ -28,8 +28,10 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.commonjava.indy.boot.PortFinder;
@@ -69,10 +71,20 @@ public class AbstractHttproxFunctionalTest
 
     protected CloseableHttpClient proxiedHttp() throws Exception
     {
-        return proxiedHttp( null, null );
+        return proxiedHttp( null, null, null );
+    }
+
+    protected CloseableHttpClient proxiedHttp( SSLSocketFactory socketFactory ) throws Exception
+    {
+        return proxiedHttp( null, null, socketFactory );
     }
 
     protected CloseableHttpClient proxiedHttp( final String user, final String pass ) throws Exception
+    {
+        return proxiedHttp( user, pass, null );
+    }
+
+    protected CloseableHttpClient proxiedHttp( final String user, final String pass, SSLSocketFactory socketFactory ) throws Exception
     {
         CredentialsProvider creds = null;
 
@@ -85,11 +97,13 @@ public class AbstractHttproxFunctionalTest
         HttpHost proxy = new HttpHost( HOST, proxyPort );
 
         final HttpRoutePlanner planner = new DefaultProxyRoutePlanner( proxy );
-        return HttpClients.custom()
-                          .setRoutePlanner( planner )
-                          .setDefaultCredentialsProvider( creds )
-                          .setProxy( proxy )
-                          .build();
+        HttpClientBuilder builder = HttpClients.custom()
+                                         .setRoutePlanner( planner )
+                                         .setDefaultCredentialsProvider( creds )
+                                         .setProxy( proxy )
+                                         .setSSLSocketFactory( socketFactory );
+
+        return builder.build();
     }
 
     @Override

@@ -36,8 +36,6 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 
 public final class ProxyRequestReader
@@ -45,15 +43,15 @@ public final class ProxyRequestReader
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private ByteArrayOutputStream req = new ByteArrayOutputStream();
-
-    private char lastChar = 0;
+    private ByteArrayOutputStream req;
 
     private boolean headDone = false;
 
     private final ProxyResponseWriter writer;
 
     private final ConduitStreamSinkChannel sinkChannel;
+
+    private ProxySSLTunnel sslTunnel;
 
     public ProxyRequestReader( final ProxyResponseWriter writer, final ConduitStreamSinkChannel sinkChannel )
     {
@@ -64,18 +62,37 @@ public final class ProxyRequestReader
     // TODO: May need to tune this to preserve request body.
     // TODO: NONE of the request headers (except authorization) are passed through!
     @Override
-    public void handleEvent( final ConduitStreamSourceChannel channel )
+    public void handleEvent( final ConduitStreamSourceChannel sourceChannel )
     {
         boolean sendResponse = false;
         try
         {
-            final int read = doRead( channel );
+            final int read = doRead( sourceChannel );
 
-            logger.debug( "Request in progress is:\n\n'{}'", new String( req.toByteArray() ) );
-
-            if ( read < 0 || headDone )
+            if ( read <= 0 )
             {
-                logger.debug( "request done. parsing." );
+                logger.debug( "Reads: {} ", read ); // Read 0 means client have closed the connection
+                sourceChannel.shutdownReads();
+                if ( sslTunnel != null )
+                {
+                    sslTunnel.close();
+                }
+                sinkChannel.shutdownWrites();
+                sinkChannel.close();
+                return;
+            }
+
+            if ( sslTunnel != null )
+            {
+                directTo( sslTunnel );
+                return;
+            }
+
+            logger.debug( "Request in progress is:\n\n{}", new String( req.toByteArray() ) );
+
+            if ( headDone )
+            {
+                logger.debug( "Request done. parsing." );
                 MessageConstraints mc = MessageConstraints.DEFAULT;
                 SessionInputBufferImpl inbuf = new SessionInputBufferImpl( new HttpTransportMetricsImpl(), 1024 );
                 HttpRequestFactory requestFactory = new DefaultHttpRequestFactory();
@@ -99,7 +116,7 @@ public final class ProxyRequestReader
                 {
                     logger.warn("Client closed connection. Aborting proxy request.");
                     sendResponse = false;
-                    channel.resumeReads();
+                    sourceChannel.shutdownReads();
                 }
                 catch ( HttpException e )
                 {
@@ -109,9 +126,8 @@ public final class ProxyRequestReader
             }
             else
             {
-                logger.debug( "request not finished. Pausing until more reads are available.'" );
-
-                channel.resumeReads();
+                logger.debug( "Request not finished. Pausing until more reads are available." );
+                sourceChannel.resumeReads();
             }
         }
         catch ( final IOException e )
@@ -123,72 +139,76 @@ public final class ProxyRequestReader
         if ( sendResponse )
         {
             sinkChannel.resumeWrites();
-            try
-            {
-                channel.shutdownReads();
-            }
-            catch ( final IOException e )
-            {
-                logger.debug( "failed to shutdown proxy request reads.", e );
-            }
-            //            IOUtils.closeQuietly( channel );
         }
+    }
+
+    public void setProxySSLTunnel( ProxySSLTunnel sslTunnel )
+    {
+        this.sslTunnel = sslTunnel;
+    }
+
+    private void directTo( ProxySSLTunnel sslTunnel ) throws IOException
+    {
+        byte[] bytes = req.toByteArray();
+        logger.trace( "Write client data to ssl tunnel, size: {}", bytes.length );
+        sslTunnel.write( bytes );
     }
 
     private int doRead( final ConduitStreamSourceChannel channel )
             throws IOException
     {
-        int read = -1;
-        if ( headDone )
-        {
-            return read;
-        }
+        req = new ByteArrayOutputStream();
 
-        final ByteBuffer buf = ByteBuffer.allocate( 256 );
+        final ByteBuffer buf = ByteBuffer.allocate( 1024 );
         logger.debug( "Starting read: {}", channel );
 
-        PrintWriter printer = new PrintWriter( new OutputStreamWriter( req ) );
-
-        readLoop:
+        int total = 0;
+        int read = -1;
         while ( ( read = channel.read( buf ) ) > 0 )
         {
             logger.debug( "Read {} bytes", read );
+            total += read;
 
             buf.flip();
             final byte[] bbuf = new byte[buf.limit()];
             buf.get( bbuf );
 
-            //            req.write( bbuf );
-            // inefficient, but allows us to stop after header read...
-            final String part = new String( bbuf );
-//            logger.debug( part );
-            for ( final char c : part.toCharArray() )
+            if ( !headDone )
             {
-                switch ( c )
+                char lastChar = 0;
+
+                // allows us to stop after header read...
+                final String part = new String( bbuf );
+                for ( final char c : part.toCharArray() )
                 {
-                    case '\r':
+                    switch ( c )
                     {
-                        // check: \r\N\R\n
-                        if ( lastChar == '\n' && req.size() > 0 )
+                        case '\r':
                         {
-                            // end of request head
-                            logger.debug( "Detected end of request head. Breaking read loop." );
-                            headDone = true;
-                            break readLoop;
+                            // check: \r\n\r\n
+                            if ( lastChar == '\n' && req.size() > 0 )
+                            {
+                                logger.debug( "Detected end of request head. Breaking read loop." );
+                                headDone = true;
+                                return total;
+                            }
+                        }
+                        default:
+                        {
+                            req.write( (byte) c & 0x00FF );
                         }
                     }
-                    default:
-                    {
-                        req.write( (byte) c & 0x00FF );
-                    }
+                    lastChar = c;
                 }
-
-                lastChar = c;
+            }
+            else
+            {
+                req.write( bbuf );
             }
         }
 
-        logger.debug( "Processed {} bytes", read );
-        return read;
+        logger.debug( "Processed {} bytes", total );
+        return total;
     }
 
 }
