@@ -134,7 +134,7 @@ public class ProxyHttpsTest
     @Override
     protected String getAdditionalHttproxConfig()
     {
-        return "MITM.ca.key=${indy.home}/etc/indy/ssl/ca.der\n"
+        return "MITM.enabled=true\nMITM.ca.key=${indy.home}/etc/indy/ssl/ca.der\n"
                         + "MITM.ca.cert=${indy.home}/etc/indy/ssl/ca.crt\n"
                         + "MITM.dn.template=CN=<host>, O=Test Org";
     }

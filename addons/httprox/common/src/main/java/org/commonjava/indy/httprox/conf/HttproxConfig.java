@@ -41,7 +41,7 @@ public class HttproxConfig
 
     private static final boolean DEFAULT_SECURED = false;
 
-    private static final boolean DEFAULT_MITM_ENABLED = true;
+    private static final boolean DEFAULT_MITM_ENABLED = false;
 
     private static final String DEFAULT_TRACKING_TYPE = TrackingType.SUFFIX.name();
 
