@@ -18,15 +18,15 @@ import java.util.concurrent.Executors;
 /**
  * Created by ruhan on 9/6/18.
  */
-public class ProxySSLTunnel
+public class ProxySSLTunnel implements Runnable
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private volatile Selector selector; // selecting READ events for target channel
 
-    private static final long DEFAULT_SELECTOR_TIMEOUT = 30000; // 30 seconds
+    private static final long SELECTOR_TIMEOUT = 60 * 1000; // 60 seconds
 
-    private static final int DEFAULT_READ_BUF_SIZE = 10240; // 10K
+    private static final int DEFAULT_READ_BUF_SIZE = 1024 * 32; // 32 K
 
     private final ConduitStreamSinkChannel sinkChannel;
 
@@ -43,19 +43,17 @@ public class ProxySSLTunnel
         this.service = Executors.newSingleThreadExecutor();
     }
 
-    public void open()
+    @Override
+    public void run()
     {
-        service.execute( () ->
-             {
-                 try
-                 {
-                     pipeTargetToSinkChannel( sinkChannel, socketChannel );
-                 }
-                 catch ( Exception e )
-                 {
-                     logger.error( "Pipe to sink channel failed", e );
-                 }
-             } );
+        try
+        {
+            pipeTargetToSinkChannel( sinkChannel, socketChannel );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Pipe to sink channel failed", e );
+        }
     }
 
     private void pipeTargetToSinkChannel( ConduitStreamSinkChannel sinkChannel, SocketChannel targetChannel )
@@ -76,7 +74,7 @@ public class ProxySSLTunnel
             }
 
             logger.trace( "Select on target channel" );
-            int readyChannels = selector.select( DEFAULT_SELECTOR_TIMEOUT );
+            int readyChannels = selector.select( SELECTOR_TIMEOUT );
 
             logger.trace( "Select returns, {} ready channels", readyChannels );
             if ( readyChannels == 0 || !selector.isOpen() )

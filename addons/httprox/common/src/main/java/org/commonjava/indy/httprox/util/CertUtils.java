@@ -33,12 +33,10 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
 import java.io.IOException;
@@ -53,9 +51,9 @@ public class CertUtils
 
     public static final String KEY_TYPE_RSA = "RSA";
 
-    public static final int KEY_BITS = 1024;
-
     public static final String CERT_TYPE_X509 = "X.509";
+
+    public static final int DEFAULT_CERT_EXPIRATION_DAYS = 365;
 
     /**
      * Create a self-signed X.509 cert
@@ -180,13 +178,13 @@ public class CertUtils
          *
         CertAndKeyGen gen = new CertAndKeyGen( KEY_TYPE_RSA, DEFAULT_SIGN_ALGORITHM, null );
         gen.generate( KEY_BITS );
-        X509Certificate cert = gen.getSelfCertificate(new X500Name(dn), TimeUnit.DAYS.toMillis( 365 ));
+        X509Certificate cert = gen.getSelfCertificate(new X500Name(dn), TimeUnit.DAYS.toMillis( DEFAULT_CERT_EXPIRATION_DAYS ));
         */
 
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance( KEY_TYPE_RSA );
         KeyPair pair = keyPairGenerator.generateKeyPair();
 
-        X509Certificate cert = generateX509Certificate( pair, dn, 365, DEFAULT_SIGN_ALGORITHM );
+        X509Certificate cert = generateX509Certificate( pair, dn, DEFAULT_CERT_EXPIRATION_DAYS, DEFAULT_SIGN_ALGORITHM );
 
         X509Certificate signedCertificate =
                         createSignedCertificate( cert, issuerCertificate, issuerPrivateKey, isIntermediate );
@@ -195,21 +193,4 @@ public class CertUtils
         return new CertificateAndKeys( signedCertificate, privateKey, publicKey );
     }
 
-    // for test
-    public static void main( String[] argv ) throws Exception
-    {
-        PrivateKey caKey = getPrivateKey( "/home/ruhan/ssl/ca.der" );
-        X509Certificate caCert = loadX509Certificate( new File( "/home/ruhan/ssl/ca.crt" ) );
-
-        String dn = "CN=Test, O=Test Org"; //"CN=Test, L=London, C=GB";
-        CertificateAndKeys certificateAndKey = createSignedCertificateAndKey( dn, caCert, caKey, false );
-        Certificate cert = certificateAndKey.getCertificate();
-        System.out.println( ">>>> " + cert.toString() );
-
-        KeyStore keyStore = createKeyStore();
-        String alias = "test";
-        Certificate[] chain = new Certificate[] { cert, caCert };
-        keyStore.setKeyEntry( alias, certificateAndKey.getPrivateKey(), "passwd".toCharArray(), chain );
-
-    }
 }

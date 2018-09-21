@@ -168,7 +168,7 @@ public class ProxyResponseHelper
         UrlInfo info = new UrlInfo( url.toExternalForm() );
 
         UserPass up = UserPass.parse( ApplicationHeader.authorization, httpRequest, url.getAuthority() );
-        String baseUrl = getBaseUrl( url, false );
+        String baseUrl = getBaseUrl( url, true );
 
         logger.debug( ">>>> Create repo: trackingId=" + trackingId + ", name=" + name );
         ProxyCreationResult result = repoCreator.create( trackingId, name, baseUrl, info, up,
@@ -245,10 +245,17 @@ public class ProxyResponseHelper
     private String getBaseUrl( URL url, boolean includeDefaultPort )
     {
         int port = getPort( url );
-        String portStr = !includeDefaultPort && port == url.getDefaultPort() ? "" : ":" + Integer.toString( url.getPort() );
+        String portStr;
+        if ( includeDefaultPort || port != url.getDefaultPort() )
+        {
+            portStr = ":" + port;
+        }
+        else
+        {
+            portStr = "";
+        }
         return String.format( "%s://%s%s/", url.getProtocol(), url.getHost(), portStr );
     }
-
 
     public void transfer( final HttpConduitWrapper http, final ArtifactStore store, final String path,
                    final boolean writeBody, final UserPass proxyUserPass )
@@ -296,8 +303,6 @@ public class ProxyResponseHelper
         }
         catch ( final IndyWorkflowException e )
         {
-            // TODO: timeouts?
-            // block TransferException to allow handling below.
             if ( !( e.getCause() instanceof TransferException ) )
             {
                 throw e;

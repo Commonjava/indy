@@ -113,13 +113,15 @@ public final class ProxyResponseWriter
 
     private final String cls; // short class name for metrics
 
-    private final ThreadPoolExecutor MITMExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool(); // run short-living MITM server
+    private final ThreadPoolExecutor tunnelAndMITMExecutor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
+                    // run short-living tunnels and MITM servers
 
     public ProxyResponseWriter( final HttproxConfig config, final StoreDataManager storeManager,
                                 final ContentController contentController,
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
-                                final MDCManager mdcManager, final ProxyRepositoryCreator repoCreator, final StreamConnection accepted,
-                                final IndyMetricsConfig metricsConfig, final MetricRegistry metricRegistry, final CacheProducer cacheProducer )
+                                final MDCManager mdcManager, final ProxyRepositoryCreator repoCreator,
+                                final StreamConnection accepted, final IndyMetricsConfig metricsConfig,
+                                final MetricRegistry metricRegistry, final CacheProducer cacheProducer )
     {
         this.config = config;
         this.contentController = contentController;
@@ -331,7 +333,7 @@ public final class ProxyResponseWriter
                                                     new ProxyMITMSSLServer( host, port, trackingId, proxyUserPass,
                                                                             proxyResponseHelper, contentController,
                                                                             cacheProvider, config );
-                                    MITMExecutor.submit( svr );
+                                    tunnelAndMITMExecutor.submit( svr );
                                     socketChannel = svr.getSocketChannel();
 
                                     if ( socketChannel == null )
@@ -344,7 +346,7 @@ public final class ProxyResponseWriter
                                 }
 
                                 sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel );
-                                sslTunnel.open();
+                                tunnelAndMITMExecutor.submit( sslTunnel );
                                 proxyRequestReader.setProxySSLTunnel( sslTunnel ); // client input will be directed to target socket
 
                                 break;

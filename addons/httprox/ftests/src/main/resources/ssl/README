@@ -1,0 +1,10 @@
+##################################
+# 1. Generate RSA key pairs
+# 2. Use it to create x509 CA cert
+# 3. Convert ca.key to der format so Java can load it
+# 4. Create CA key store to hold the cert which will be used as client's trust store when sending HTTPS request
+
+openssl genpkey -algorithm RSA -out ca.key
+openssl req -new -x509 -days 3600 -key ca.key -subj "/CN=Test CA/O=Test Org" -out ca.crt
+openssl pkcs8 -topk8 -outform DER -in ca.key -out ca.der -nocrypt
+keytool -import -alias ca -file ca.crt -keystore ca.jks

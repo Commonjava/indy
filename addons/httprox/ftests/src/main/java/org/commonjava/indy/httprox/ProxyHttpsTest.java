@@ -21,6 +21,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.helper.HttpResources;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
@@ -30,6 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
 
+import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -57,6 +60,11 @@ public class ProxyHttpsTest
 
         ret = get( https_url, true );
         assertTrue( ret.contains( "<artifactId>indy-api</artifactId>" ) );
+
+        StoreListingDTO<RemoteRepository> repo =
+                        this.client.stores().getRemoteByUrl( "https://oss.sonatype.org:443/", GENERIC_PKG_KEY );
+        repo.getItems().forEach( repository -> System.out.println(">>> " + repository) );
+        assertTrue( repo.getItems().size() == 1 );
     }
 
     // Regression test for HTTP url
