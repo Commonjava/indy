@@ -17,6 +17,7 @@ package org.commonjava.indy.content.browse.model;
 
 import org.commonjava.indy.model.core.StoreKey;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class ContentBrowseResult
 
     private List<String> sources;
 
-    private Map<String, Set<String>> listingUrls;
+    private List<ListingURLResult> listingUrls;
 
     public StoreKey getStoreKey()
     {
@@ -133,13 +134,44 @@ public class ContentBrowseResult
         this.sources = sources;
     }
 
-    public Map<String, Set<String>> getListingUrls()
+    public List<ListingURLResult> getListingUrls()
     {
         return listingUrls;
     }
 
-    public void setListingUrls( Map<String, Set<String>> listingUrls )
-    {
+    public void setListingUrls( List<ListingURLResult> listingUrls){
         this.listingUrls = listingUrls;
+    }
+
+    public static class ListingURLResult
+    {
+        private String path;
+
+        private String listingUrl;
+
+        private Set<String> sources;
+
+        public ListingURLResult( String path, String listingUrl, Set<String> sources )
+        {
+            this.path = path;
+            this.listingUrl = listingUrl;
+            this.sources = sources;
+        }
+
+        public String getPath()
+        {
+            return path;
+        }
+
+        public String getListingUrl()
+        {
+            return listingUrl;
+        }
+
+        public Set<String> getSources()
+        {
+            return sources;
+        }
+
     }
 }
