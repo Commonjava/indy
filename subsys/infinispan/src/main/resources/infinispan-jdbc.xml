@@ -20,7 +20,7 @@
           <write-behind />
           <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
-            <jdbc:id-column name="id_column" type="BYTEA" />
+            <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
             <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
           </jdbc:string-keyed-table>
