@@ -131,7 +131,7 @@ public class ProxyResponseHelper
         else
         {
             RemoteRepository remote;
-            final String baseUrl = getBaseUrl( url, true );
+            final String baseUrl = getBaseUrl( url, false );
 
             ArtifactStoreQuery<RemoteRepository> query =
                             storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
@@ -168,7 +168,7 @@ public class ProxyResponseHelper
         UrlInfo info = new UrlInfo( url.toExternalForm() );
 
         UserPass up = UserPass.parse( ApplicationHeader.authorization, httpRequest, url.getAuthority() );
-        String baseUrl = getBaseUrl( url, true );
+        String baseUrl = getBaseUrl( url, false );
 
         logger.debug( ">>>> Create repo: trackingId=" + trackingId + ", name=" + name );
         ProxyCreationResult result = repoCreator.create( trackingId, name, baseUrl, info, up,

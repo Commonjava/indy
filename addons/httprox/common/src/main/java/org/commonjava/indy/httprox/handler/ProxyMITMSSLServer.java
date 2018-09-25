@@ -195,18 +195,6 @@ public class ProxyMITMSSLServer implements Runnable
 
         if ( path != null )
         {
-            /*String body = requestRemote( host, port, path );
-            int len = body.getBytes().length;
-
-            String resp = "HTTP/1.1 200 OK\r\n"
-                            + "Content-Type: text/html; charset=UTF-8\r\n"
-                            + "Content-Length: " + len + "\r\n"
-                            + "Connection: close\r\n" + "\r\n" + body;
-
-            BufferedWriter out = new BufferedWriter( new OutputStreamWriter( socket.getOutputStream() ) );
-            out.write( resp );
-            out.close();*/
-
             transferRemote( socket, host, port, method, path );
         }
         else
@@ -234,41 +222,6 @@ public class ProxyMITMSSLServer implements Runnable
                                                           contentController, cacheProvider );
         proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ), proxyUserPass );
     }
-
-    /*// for test
-    private String requestRemote( String host, int port, String path ) throws Exception
-    {
-        String protocol = "https";
-        String auth = null;
-        String query = null;
-        String fragment = null;
-        URI uri = new URI( protocol, auth, host, port, path, query, fragment);
-        String remoteUrl = uri.toURL().toString();
-        logger.debug( "Requesting remote URL: {}", remoteUrl );
-
-        final HttpGet req = new HttpGet( remoteUrl );
-        CloseableHttpClient client = HttpClients.createDefault();
-        try
-        {
-            CloseableHttpResponse response = client.execute( req );
-
-            StatusLine statusLine = response.getStatusLine();
-            int status = statusLine.getStatusCode();
-            if ( status == HttpStatus.SC_OK )
-            {
-                String ret = HttpResources.entityToString( response );
-                return ret;
-            }
-            else
-            {
-                throw new IndyWorkflowException( status, "Request: %s failed: %s", remoteUrl, statusLine );
-            }
-        }
-        finally
-        {
-            IOUtils.closeQuietly( client );
-        }
-    }*/
 
     private static final int maxRetries = 16;
 
