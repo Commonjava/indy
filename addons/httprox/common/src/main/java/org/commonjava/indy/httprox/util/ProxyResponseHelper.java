@@ -147,7 +147,7 @@ public class ProxyResponseHelper
             {
                 logger.debug( "Creating remote repository for HTTProx request: {}", url );
                 String name = getRemoteRepositoryName( url );
-                ProxyCreationResult result = createRepo( trackingId, url, name );
+                ProxyCreationResult result = createRepo( null, url, name );
                 remote = result.getRemote();
             }
             return remote;

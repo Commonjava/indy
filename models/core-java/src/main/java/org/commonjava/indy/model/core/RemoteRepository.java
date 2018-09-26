@@ -40,12 +40,22 @@ public class RemoteRepository
 
     public static final String PREFETCH_LISTING_TYPE_HTML = "html";
 
+    public static final int DEFAULT_MAX_CONNECTIONS = 30;
+
+    public static final boolean DEFAULT_HOSTNAME_VERIFIER = true;
+
     @ApiModelProperty( required = true, value = "The remote URL to proxy" )
     @JsonProperty( "url" )
     private String url;
 
     @JsonProperty( "timeout_seconds" )
     private int timeoutSeconds;
+
+    @JsonProperty( "max_connections" )
+    private int maxConnections = DEFAULT_MAX_CONNECTIONS;
+
+    @JsonProperty( "hostname_verifier" )
+    private boolean hostnameVerifier = DEFAULT_HOSTNAME_VERIFIER;
 
     @JsonProperty( "nfc_timeout_seconds" )
     private int nfcTimeoutSeconds;
@@ -253,6 +263,26 @@ public class RemoteRepository
         this.timeoutSeconds = timeoutSeconds;
     }
 
+    public int getMaxConnections()
+    {
+        return maxConnections;
+    }
+
+    public void setMaxConnections( int maxConnections )
+    {
+        this.maxConnections = maxConnections;
+    }
+
+    public boolean isHostnameVerifier()
+    {
+        return hostnameVerifier;
+    }
+
+    public void setHostnameVerifier( boolean hostnameVerifier )
+    {
+        this.hostnameVerifier = hostnameVerifier;
+    }
+
     @Override
     public String toString()
     {
@@ -450,6 +480,8 @@ public class RemoteRepository
         repo.setProxyPassword( getProxyPassword() );
         repo.setProxyUser( getProxyUser() );
         repo.setTimeoutSeconds( getTimeoutSeconds() );
+        repo.setMaxConnections( getMaxConnections() );
+        repo.setHostnameVerifier( isHostnameVerifier() );
         repo.setUser( getUser() );
         repo.setPassword( getPassword() );
         repo.setPrefetchListingType( getPrefetchListingType() );

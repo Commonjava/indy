@@ -71,14 +71,7 @@ public final class ProxyRequestReader
 
             if ( read <= 0 )
             {
-                logger.debug( "Reads: {} ", read ); // Read 0 means client have closed the connection
-                sourceChannel.shutdownReads();
-                if ( sslTunnel != null )
-                {
-                    sslTunnel.close();
-                }
-                sinkChannel.shutdownWrites();
-                sinkChannel.close();
+                logger.debug( "Reads: {} ", read );
                 return;
             }
 
@@ -158,19 +151,37 @@ public final class ProxyRequestReader
             throws IOException
     {
         req = new ByteArrayOutputStream();
-
-        final ByteBuffer buf = ByteBuffer.allocate( 1024 );
         logger.debug( "Starting read: {}", channel );
 
         int total = 0;
-        int read = -1;
-        while ( ( read = channel.read( buf ) ) > 0 )
+        while ( true )
         {
+            ByteBuffer buf = ByteBuffer.allocate( 1024 );
+            int read = channel.read( buf ); // return the number of bytes read, possibly zero, or -1
+
             logger.debug( "Read {} bytes", read );
+
+            if ( read == -1 ) // return -1 if the channel has reached end-of-stream
+            {
+                if ( total == 0 ) // nothing read, return -1 to indicate the EOF
+                {
+                    return -1;
+                }
+                else
+                {
+                    return total;
+                }
+            }
+
+            if ( read == 0 ) // no new bytes this time
+            {
+                return total;
+            }
+
             total += read;
 
             buf.flip();
-            final byte[] bbuf = new byte[buf.limit()];
+            byte[] bbuf = new byte[buf.limit()];
             buf.get( bbuf );
 
             if ( !headDone )
@@ -188,9 +199,8 @@ public final class ProxyRequestReader
                             // check: \r\n\r\n
                             if ( lastChar == '\n' && req.size() > 0 )
                             {
-                                logger.debug( "Detected end of request head. Breaking read loop." );
+                                logger.debug( "Detected end of request heads" );
                                 headDone = true;
-                                return total;
                             }
                         }
                         default:
@@ -206,9 +216,6 @@ public final class ProxyRequestReader
                 req.write( bbuf );
             }
         }
-
-        logger.debug( "Processed {} bytes", total );
-        return total;
     }
 
 }
