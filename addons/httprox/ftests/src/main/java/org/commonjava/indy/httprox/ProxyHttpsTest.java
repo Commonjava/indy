@@ -16,6 +16,7 @@
 package org.commonjava.indy.httprox;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -100,6 +101,14 @@ public class ProxyHttpsTest
         try
         {
             response = client.execute( get, proxyContext( user, pass ) );
+            StatusLine status = response.getStatusLine();
+            System.out.println( "status >>>> " + status );
+
+            if ( status.getStatusCode() == 404 )
+            {
+                return status.toString();
+            }
+
             stream = response.getEntity().getContent();
             final String resulting = IOUtils.toString( stream );
 

@@ -198,9 +198,9 @@ public class RepositoryLocation
     }
 
     @Override
-    public boolean isHostnameVerifier()
+    public boolean isIgnoreHostnameVerification()
     {
-        return repository.isHostnameVerifier();
+        return repository.isIgnoreHostnameVerification();
     }
 
     @Override

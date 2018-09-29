@@ -93,8 +93,8 @@ public abstract class AbstractProxyRepositoryCreator
             remote.setPassthrough( true ); // to prevent long-term caching of content, default false
         }
 
-        remote.setTimeoutSeconds( 60 );
-        remote.setHostnameVerifier( false ); // not verify peer cert ssl hostname
+        remote.setTimeoutSeconds( 5 * 60 ); // 5 minutes
+        remote.setIgnoreHostnameVerification( true ); // not verify peer cert against hostname to avoid some redirected hostname inconsistency
 
         setPropsAndMetadata( remote, trackingID, info );
         return remote;

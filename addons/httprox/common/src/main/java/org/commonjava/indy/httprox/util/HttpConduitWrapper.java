@@ -113,6 +113,12 @@ public class HttpConduitWrapper
         sinkChannel.write( b );
     }
 
+    private void writeClose()
+                    throws IOException
+    {
+        writeHeader( "Connection", "close\r\n" );
+    }
+
     public void writeNotFoundTransfer( ArtifactStore store, String path )
             throws IOException, IndyWorkflowException
     {
@@ -153,10 +159,11 @@ public class HttpConduitWrapper
                 }
             }
         }
+        writeClose();
     }
 
     public void writeExistingTransfer( Transfer txfr, boolean writeBody, String path, EventMetadata eventMetadata )
-            throws IOException
+                    throws IOException, IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Valid transfer found." );
@@ -215,11 +222,6 @@ public class HttpConduitWrapper
                     while ( written < read );
                 }
             }
-        }
-        catch ( IndyWorkflowException e )
-        {
-            logger.error( String.format( "Failed to retrieve http-metadata.json file for: %s. Reason: %s", txfr,
-                                         e.getMessage() ), e );
         }
         finally
         {

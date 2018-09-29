@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -195,12 +196,20 @@ public class ProxyMITMSSLServer implements Runnable
 
         if ( path != null )
         {
-            transferRemote( socket, host, port, method, path );
+            try
+            {
+                transferRemote( socket, host, port, method, path );
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Transfer remote failed", e );
+            }
         }
         else
         {
             logger.debug( "MITM server failed to get request from client" );
         }
+
         in.close();
         socket.close();
         sslServerSocket.close();
@@ -218,9 +227,15 @@ public class ProxyMITMSSLServer implements Runnable
         logger.debug( "Requesting remote URL: {}", remoteUrl.toString() );
 
         ArtifactStore store = proxyResponseHelper.getArtifactStore( trackingId, remoteUrl );
-        HttpConduitWrapper http = new HttpConduitWrapper( new OutputStreamSinkChannel( socket.getOutputStream() ), null,
-                                                          contentController, cacheProvider );
-        proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ), proxyUserPass );
+        try (OutputStream out = socket.getOutputStream())
+        {
+            HttpConduitWrapper http =
+                            new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
+                                                    cacheProvider );
+            proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ),
+                                          proxyUserPass );
+            http.close();
+        }
     }
 
     private static final int maxRetries = 16;

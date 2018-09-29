@@ -91,7 +91,23 @@ public class ProxySSLTunnel implements Runnable
                 if ( key.isReadable() )
                 {
                     logger.trace( "Read from target channel" );
-                    byte[] bytes = doRead( (SocketChannel) key.channel() );
+                    byte[] bytes;
+                    try
+                    {
+                        bytes = doRead( (SocketChannel) key.channel() );
+                    }
+                    catch ( IOException e )
+                    {
+                        if ( e.getMessage().contains( "Connection reset by peer" ) )
+                        {
+                            logger.warn( e.getMessage() );
+                            break breakPipe;
+                        }
+                        else
+                        {
+                            throw e;
+                        }
+                    }
 
                     logger.trace( "Read done, write to sink channel, bytes: {}", bytes.length );
                     if ( bytes.length > 0 && sinkChannel.isOpen() )
