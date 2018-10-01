@@ -26,6 +26,8 @@ import org.commonjava.indy.koji.data.KojiRepoNameParser;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
+import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.net.MalformedURLException;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
@@ -149,4 +152,36 @@ public class KojiUtils
         }
         return ret;
     }
+
+    public boolean isVersionSignatureAllowedWithPath( String path )
+    {
+
+        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+
+        // skip those files without standard GAV format path
+        if ( pathInfo == null )
+        {
+            return true;
+        }
+
+        ProjectVersionRef versionRef = pathInfo.getProjectId();
+        return isVersionSignatureAllowedWithVersion( versionRef.getVersionStringRaw() );
+    }
+
+    public boolean isVersionSignatureAllowedWithVersion( String version )
+    {
+        final String versionFilter = config.getVersionFilter();
+
+        if ( versionFilter == null )
+        {
+            return true;
+        }
+
+        if ( Pattern.compile( versionFilter ).matcher( version ).matches())
+        {
+            return true;
+        }
+        return false;
+    }
+
 }

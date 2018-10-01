@@ -73,7 +73,7 @@ public class KojiRepairResource
     @POST
     @Path( "/" + VOL )
     @Consumes( ApplicationContent.application_json )
-    public KojiRepairResult repair( final KojiRepairRequest request, final @Context HttpServletRequest servletRequest,
+    public KojiRepairResult repairVolumes( final KojiRepairRequest request, final @Context HttpServletRequest servletRequest,
                                     final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
     {
         try
@@ -88,6 +88,32 @@ public class KojiRepairResource
                                                   request.getSource().getName() )
                                           .toString();
             return repairManager.repairVol( request, user, baseUrl );
+        }
+        catch ( KojiRepairException e )
+        {
+            logger.error( e.getMessage(), e );
+            throwError( e );
+        }
+
+        return null;
+    }
+
+    @ApiOperation( "Repair koji repository path masks." )
+    @ApiResponse( code = 200, message = "Operation finished (consult response content for success/failure).",
+                  response = KojiRepairResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON request specifying source and other configuration options",
+                       required = true, dataType = "org.commonjava.indy.koji.model.KojiRepairRequest" )
+    @POST
+    @Path( "/" + VOL )
+    @Consumes( ApplicationContent.application_json )
+    public KojiRepairResult repairPathMasks( final KojiRepairRequest request, final @Context HttpServletRequest servletRequest,
+                                    final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    {
+        try
+        {
+            String user = securityManager.getUser( securityContext, servletRequest );
+            return repairManager.repairPathMask( request, user );
         }
         catch ( KojiRepairException e )
         {

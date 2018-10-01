@@ -17,6 +17,7 @@ package org.commonjava.indy.koji.data;
 
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
+import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -24,6 +25,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.content.CachedKojiContentProvider;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.content.KojiPathPatternFormatter;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
 import org.commonjava.indy.koji.model.KojiRepairResult;
 import org.commonjava.indy.koji.util.KojiUtils;
@@ -32,6 +34,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
+import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +46,10 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.commonjava.indy.koji.content.KojiContentManagerDecorator.CREATION_TRIGGER_GAV;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 
@@ -69,7 +75,13 @@ public class KojiRepairManager
     private CachedKojiContentProvider kojiCachedClient;
 
     @Inject
+    private KojiPathPatternFormatter kojiPathFormatter;
+
+    @Inject
     private KojiUtils kojiUtils;
+
+    @Inject
+    private StoreDataManager storeDataManager;
 
     private ReentrantLock opLock = new ReentrantLock(); // operations are synchronized
 
@@ -83,6 +95,108 @@ public class KojiRepairManager
         this.storeManager = storeManager;
         this.config = config;
         this.kojiCachedClient = new CachedKojiContentProvider( kojiClient, null );
+    }
+
+    public KojiRepairResult repairPathMask( KojiRepairRequest request, String user )
+        throws KojiRepairException
+    {
+        KojiRepairResult ret = new KojiRepairResult( request );
+
+        if ( opLock.tryLock() )
+        {
+            try
+            {
+                StoreKey remoteKey = request.getSource();
+
+                ArtifactStore store;
+                try
+                {
+                    store = storeManager.getArtifactStore( remoteKey );
+                }
+                catch ( IndyDataException e )
+                {
+                    String error = String.format( "Cannot get store: %s, error: %s", remoteKey, e );
+                    logger.warn( error, e );
+                    return ret.withError( error );
+                }
+
+                if ( store == null )
+                {
+                    String error = String.format( "No such store: %s.", remoteKey );
+                    return ret.withError( error );
+                }
+
+                if ( remoteKey.getType() == remote )
+                {
+                    final String nvr = kojiUtils.getBuildNvr( remoteKey );
+                    if ( nvr == null )
+                    {
+                        String error = String.format( "Not a koji store: %s", remoteKey );
+                        return ret.withError( error );
+                    }
+
+                    try
+                    {
+                        KojiSessionInfo session = null;
+                        KojiBuildInfo build = kojiCachedClient.getBuildInfo( nvr, session );
+
+                        List<KojiArchiveInfo> archives = kojiCachedClient.listArchivesForBuild( build.getId(), session );
+
+                        ArtifactRef artifactRef = SimpleArtifactRef.parse( store.getMetadata( CREATION_TRIGGER_GAV ) );
+                        if ( artifactRef == null )
+                        {
+                            String error = String.format(
+                                    "Koji remote repository: %s does not have %s metadata. Cannot retrieve accurate path masks.",
+                                    remoteKey, CREATION_TRIGGER_GAV );
+                            return ret.withError( error );
+                        }
+
+                        // set pathMaskPatterns using build output paths
+                        Set<String> patterns = kojiPathFormatter.getPatterns( artifactRef, archives );
+
+                        KojiRepairResult.RepairResult repairResult = new KojiRepairResult.RepairResult( remoteKey );
+                        repairResult.withPropertyChange( "path_mask_patterns", store.getPathMaskPatterns(), patterns );
+
+                        ret.withResult( repairResult );
+
+                        store.setPathMaskPatterns( patterns );
+
+                        final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                               "Repairing remote repository path masks to Koji build: "
+                                                                                       + build.getNvr() );
+
+                        storeDataManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
+                    }
+                    catch ( KojiClientException e )
+                    {
+                        String error = String.format( "Cannot getBuildInfo: %s, error: %s", remoteKey, e );
+                        logger.debug( error, e );
+                        return ret.withError( error, e );
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        String error = String.format( "Failed to store changed remote repository: %s, error: %s", remoteKey, e );
+                        logger.debug( error, e );
+                        return ret.withError( error, e );
+                    }
+                }
+                else
+                {
+                    String error = String.format( "Not a remote koji repository: %s", remoteKey );
+                    return ret.withError( error );
+                }
+            }
+            finally
+            {
+                opLock.unlock();
+            }
+        }
+        else
+        {
+            throw new KojiRepairException( "Koji repair manager is busy." );
+        }
+
+        return ret;
     }
 
     public KojiRepairResult repairVol( KojiRepairRequest request, String user, String baseUrl )
