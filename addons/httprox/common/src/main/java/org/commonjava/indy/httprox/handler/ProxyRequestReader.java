@@ -226,7 +226,7 @@ public final class ProxyRequestReader
                                 lastFour.remove(0);
                             }
 
-                            lastFour.add( Character.valueOf( c ) );
+                            lastFour.add( c );
                             try
                             {
                                 if ( bReq.size() > 0 && HEAD_END.equals( lastFour ) )
