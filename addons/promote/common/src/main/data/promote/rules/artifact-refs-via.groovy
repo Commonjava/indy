@@ -15,12 +15,9 @@ class ArtifactRefAvailability implements ValidationRule {
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true);
 
-        def builder = new StringBuilder()
+        def errors = new ArrayList()
         def tools = request.getTools()
         def dc = new ModelProcessorConfig().setIncludeBuildSection(false).setIncludeManagedDependencies(false)
-
-        dc.setIncludeBuildSection(false)
-        dc.setIncludeManagedDependencies(false)
 
         def logger = LoggerFactory.getLogger(ValidationRule.class)
 
@@ -65,26 +62,17 @@ class ArtifactRefAvailability implements ValidationRule {
                                 }
                             })
 
-                            if (!found) {
-                                if (builder.length() > 0) {
-                                    builder.append("\n")
+                            synchronized (errors) {
+                                if (!found) {
+                                    errors.add(String.format("%s is invalid: %s is not available via: %s",
+                                            it, path, StringUtils.join(verifyStoreKeys, ", ")))
                                 }
-                                builder.append(it)
-                                        .append(" is invalid: ")
-                                        .append(path)
-                                        .append(" is not available via: ")
-                                        .append(StringUtils.join(verifyStoreKeys, ", "))
-                            }
 
-                            if (!foundPom) {
-                                if (builder.length() > 0) {
-                                    builder.append("\n")
+                                if (!foundPom) {
+                                    errors.add(String.format("%s is invalid: %s is not available via: %s", it,
+                                            tools.toArtifactPath(target.asPomArtifact()),
+                                            StringUtils.join(verifyStoreKeys, ", ")))
                                 }
-                                builder.append(it)
-                                        .append(" is invalid: ")
-                                        .append(tools.toArtifactPath(target.asPomArtifact()))
-                                        .append(" is not available via: ")
-                                        .append(StringUtils.join(verifyStoreKeys, ", "))
                             }
                         }
                     })
@@ -92,6 +80,6 @@ class ArtifactRefAvailability implements ValidationRule {
             }
         })
 
-        builder.length() > 0 ? builder.toString() : null
+        errors.isEmpty() ? null: StringUtils.join(errors, "\n")
     }
 }

@@ -43,11 +43,11 @@ public class ProjectArtifactsRuleTest
 
     private static final String CONTENT = "this is some content";
 
-    @Override
-    protected int getTestTimeoutMultiplier()
-    {
-        return 3;
-    }
+//    @Override
+//    protected int getTestTimeoutMultiplier()
+//    {
+//        return 3;
+//    }
 
     @Test
     @Category( EventDependent.class )

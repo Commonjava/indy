@@ -131,6 +131,7 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
             throws IndyClientException
     {
         client.content().store( source.getKey(), path, new ByteArrayInputStream( content.getBytes() ) );
+        waitForEventPropagation();
     }
 
     @Override

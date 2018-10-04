@@ -60,6 +60,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,6 +83,8 @@ public class PromotionValidationTools
 
     @Deprecated
     public static final String AVAILABLE_IN_STORE_KEY = "availableInStoreKey";
+
+    private static final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 10;
 
     @Inject
     private ContentManager contentManager;
@@ -558,8 +561,9 @@ public class PromotionValidationTools
 
     private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )
     {
-        final CountDownLatch latch = new CountDownLatch( runCollection.size() );
-        runCollection.forEach( e -> ruleParallelExecutor.execute( () -> {
+        Set<T> todo = new HashSet<>( runCollection);
+        final CountDownLatch latch = new CountDownLatch( todo.size() );
+        todo.forEach( e -> ruleParallelExecutor.execute( () -> {
             try
             {
                 logger.trace( "The paralleled exe on element {}", e );
@@ -570,7 +574,7 @@ public class PromotionValidationTools
                 latch.countDown();
             }
         } ) );
-        final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 10;
+
         try
         {
             latch.await( DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS, TimeUnit.MINUTES );
