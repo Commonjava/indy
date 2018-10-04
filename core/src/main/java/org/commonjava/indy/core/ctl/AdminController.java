@@ -133,12 +133,12 @@ public class AdminController
         }
     }
 
-    public List<RemoteRepository> getRemoteByUrl( final String url )
+    public List<RemoteRepository> getRemoteByUrl( final String url, final String packageType )
             throws IndyWorkflowException
     {
         try
         {
-            return storeManager.query().getRemoteRepositoryByUrl( url );
+            return storeManager.query().packageType( packageType ).getRemoteRepositoryByUrl( url );
         }
         catch ( IndyDataException e )
         {

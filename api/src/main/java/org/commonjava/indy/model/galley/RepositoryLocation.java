@@ -64,6 +64,11 @@ public class RepositoryLocation
         {
             attributes.put( Location.METADATA_TIMEOUT_SECONDS, repository.getMetadataTimeoutSeconds() );
         }
+
+        if ( repository.getMaxConnections() > 0 )
+        {
+            attributes.put( Location.MAX_CONNECTIONS, repository.getMaxConnections() );
+        }
     }
 
     @Override
@@ -190,6 +195,12 @@ public class RepositoryLocation
     public int getProxyPort()
     {
         return repository.getProxyPort();
+    }
+
+    @Override
+    public boolean isIgnoreHostnameVerification()
+    {
+        return repository.isIgnoreHostnameVerification();
     }
 
     @Override

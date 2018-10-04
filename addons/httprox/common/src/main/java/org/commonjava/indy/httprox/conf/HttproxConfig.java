@@ -20,10 +20,13 @@ import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terracotta.quartz.collections.SerializedToolkitStore;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
+import java.net.URI;
 
 @SectionName( "httprox" )
 @ApplicationScoped
@@ -38,6 +41,8 @@ public class HttproxConfig
 
     private static final boolean DEFAULT_SECURED = false;
 
+    private static final boolean DEFAULT_MITM_ENABLED = false;
+
     private static final String DEFAULT_TRACKING_TYPE = TrackingType.SUFFIX.name();
 
     private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 1;
@@ -45,6 +50,8 @@ public class HttproxConfig
     private String proxyRealm;
 
     private Boolean enabled;
+
+    private Boolean MITMEnabled;
 
     private Boolean secured;
 
@@ -56,10 +63,14 @@ public class HttproxConfig
 
     private String noCachePatterns; // if multiple patterns, split by comma
 
+    private String MITMCAKey;
+
+    private String MITMCACert;
+
+    private String MITMDNTemplate;
+
     public TrackingType getTrackingType()
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Using configured tracking type: '{}'", trackingType );
         return TrackingType.valueOf( trackingType == null ? DEFAULT_TRACKING_TYPE : trackingType.toUpperCase() );
     }
 
@@ -152,5 +163,49 @@ public class HttproxConfig
     public void setNoCachePatterns( String noCachePatterns )
     {
         this.noCachePatterns = noCachePatterns;
+    }
+
+    @ConfigName( "MITM.enabled" )
+    public void setMITMEnabled( Boolean MITMEnabled )
+    {
+        this.MITMEnabled = MITMEnabled;
+    }
+
+    public boolean isMITMEnabled()
+    {
+        return MITMEnabled == null ? DEFAULT_MITM_ENABLED : MITMEnabled;
+    }
+
+    public String getMITMCAKey()
+    {
+        return MITMCAKey;
+    }
+
+    @ConfigName( "MITM.ca.key" )
+    public void setMITMCAKey( String MITMCAKey )
+    {
+        this.MITMCAKey = MITMCAKey;
+    }
+
+    public String getMITMCACert()
+    {
+        return MITMCACert;
+    }
+
+    @ConfigName( "MITM.ca.cert" )
+    public void setMITMCACert( String MITMCACert )
+    {
+        this.MITMCACert = MITMCACert;
+    }
+
+    public String getMITMDNTemplate()
+    {
+        return MITMDNTemplate;
+    }
+
+    @ConfigName( "MITM.dn.template" )
+    public void setMITMDNTemplate( String MITMDNTemplate )
+    {
+        this.MITMDNTemplate = MITMDNTemplate;
     }
 }

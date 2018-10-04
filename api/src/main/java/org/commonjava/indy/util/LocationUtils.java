@@ -81,9 +81,6 @@ public final class LocationUtils
                 AttributePasswordManager.bind( location, PasswordEntry.KEY_PASSWORD, repository.getKeyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.PROXY_PASSWORD, repository.getProxyPassword() );
                 AttributePasswordManager.bind( location, PasswordEntry.USER_PASSWORD, repository.getPassword() );
-
-                // FIXME: Make this configurable on the RemoteRepository!
-                location.setAttribute( Location.MAX_CONNECTIONS, 30 );
             }
         }
 

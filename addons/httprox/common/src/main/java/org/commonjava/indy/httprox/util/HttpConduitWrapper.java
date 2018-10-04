@@ -34,6 +34,7 @@ import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.channels.Channels;
+import org.xnio.channels.StreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.FileInputStream;
@@ -53,7 +54,7 @@ public class HttpConduitWrapper
         implements org.commonjava.indy.subsys.http.HttpWrapper
 {
 
-    private final ConduitStreamSinkChannel sinkChannel;
+    private final StreamSinkChannel sinkChannel;
 
     private HttpRequest httpRequest;
 
@@ -61,7 +62,7 @@ public class HttpConduitWrapper
 
     private CacheProvider cacheProvider;
 
-    public HttpConduitWrapper( ConduitStreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController, CacheProvider cacheProvider )
+    public HttpConduitWrapper( StreamSinkChannel channel, HttpRequest httpRequest, ContentController contentController, CacheProvider cacheProvider )
     {
         this.sinkChannel = channel;
         this.httpRequest = httpRequest;
@@ -112,6 +113,12 @@ public class HttpConduitWrapper
         sinkChannel.write( b );
     }
 
+    private void writeClose()
+                    throws IOException
+    {
+        writeHeader( "Connection", "close\r\n" );
+    }
+
     public void writeNotFoundTransfer( ArtifactStore store, String path )
             throws IOException, IndyWorkflowException
     {
@@ -152,10 +159,11 @@ public class HttpConduitWrapper
                 }
             }
         }
+        writeClose();
     }
 
     public void writeExistingTransfer( Transfer txfr, boolean writeBody, String path, EventMetadata eventMetadata )
-            throws IOException
+                    throws IOException, IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Valid transfer found." );
@@ -214,11 +222,6 @@ public class HttpConduitWrapper
                     while ( written < read );
                 }
             }
-        }
-        catch ( IndyWorkflowException e )
-        {
-            logger.error( String.format( "Failed to retrieve http-metadata.json file for: %s. Reason: %s", txfr,
-                                         e.getMessage() ), e );
         }
         finally
         {

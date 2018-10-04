@@ -31,6 +31,8 @@ public final class HttpProxyConstants
 
     public static final String HEAD_METHOD = "HEAD";
 
+    public static final String CONNECT_METHOD = "CONNECT";
+
     public static final String OPTIONS_METHOD = "OPTIONS";
 
     public static final Set<String> ALLOWED_METHODS =
