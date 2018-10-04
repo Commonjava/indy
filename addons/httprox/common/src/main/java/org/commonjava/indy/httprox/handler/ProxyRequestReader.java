@@ -36,14 +36,27 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.PrintStream;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public final class ProxyRequestReader
         implements ChannelListener<ConduitStreamSourceChannel>
 {
+    private static final List<Character> HEAD_END = Collections.unmodifiableList(
+            Arrays.asList( Character.valueOf( '\r' ), Character.valueOf( '\n' ), Character.valueOf( '\r' ),
+                           Character.valueOf( '\n' ) ) );
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private ByteArrayOutputStream req;
+    private ByteArrayOutputStream bReq;
+
+    private PrintStream pReq;
 
     private boolean headDone = false;
 
@@ -52,6 +65,8 @@ public final class ProxyRequestReader
     private final ConduitStreamSinkChannel sinkChannel;
 
     private ProxySSLTunnel sslTunnel;
+
+    private List<Character> lastFour = new ArrayList<>();
 
     public ProxyRequestReader( final ProxyResponseWriter writer, final ConduitStreamSinkChannel sinkChannel )
     {
@@ -81,7 +96,7 @@ public final class ProxyRequestReader
                 return;
             }
 
-            logger.debug( "Request in progress is:\n\n{}", new String( req.toByteArray() ) );
+            logger.debug( "Request in progress is:\n\n{}", new String( bReq.toByteArray() ) );
 
             if ( headDone )
             {
@@ -93,7 +108,7 @@ public final class ProxyRequestReader
 
                 DefaultHttpRequestParser requestParser = new DefaultHttpRequestParser( inbuf, lp, requestFactory, mc );
 
-                inbuf.bind( new ByteArrayInputStream( req.toByteArray() ) );
+                inbuf.bind( new ByteArrayInputStream( bReq.toByteArray() ) );
 
                 try
                 {
@@ -142,7 +157,7 @@ public final class ProxyRequestReader
 
     private void directTo( ProxySSLTunnel sslTunnel ) throws IOException
     {
-        byte[] bytes = req.toByteArray();
+        byte[] bytes = bReq.toByteArray();
         logger.trace( "Write client data to ssl tunnel, size: {}", bytes.length );
         sslTunnel.write( bytes );
     }
@@ -150,13 +165,25 @@ public final class ProxyRequestReader
     private int doRead( final ConduitStreamSourceChannel channel )
             throws IOException
     {
-        req = new ByteArrayOutputStream();
+        bReq = new ByteArrayOutputStream();
+        pReq = new PrintStream( bReq );
+
         logger.debug( "Starting read: {}", channel );
 
         int total = 0;
         while ( true )
         {
             ByteBuffer buf = ByteBuffer.allocate( 1024 );
+            try
+            {
+                channel.awaitReadable( 1, TimeUnit.SECONDS );
+            }
+            catch ( InterruptedIOException e )
+            {
+                logger.debug( "proxy request read channel timed out while waiting for input. Considering this request failed." );
+                return -1;
+            }
+
             int read = channel.read( buf ); // return the number of bytes read, possibly zero, or -1
 
             logger.debug( "Read {} bytes", read );
@@ -186,34 +213,44 @@ public final class ProxyRequestReader
 
             if ( !headDone )
             {
-                char lastChar = 0;
-
                 // allows us to stop after header read...
                 final String part = new String( bbuf );
                 for ( final char c : part.toCharArray() )
                 {
                     switch ( c )
                     {
-                        case '\r':
+                        case '\n':
                         {
-                            // check: \r\n\r\n
-                            if ( lastChar == '\n' && req.size() > 0 )
+                            while ( lastFour.size() > 3 )
                             {
-                                logger.debug( "Detected end of request heads" );
-                                headDone = true;
+                                lastFour.remove(0);
+                            }
+
+                            lastFour.add( c );
+                            try
+                            {
+                                if ( bReq.size() > 0 && HEAD_END.equals( lastFour ) )
+                                {
+                                    logger.debug( "Detected end of request headers." );
+                                    headDone = true;
+                                }
+                            }
+                            finally
+                            {
+                                lastFour.remove( lastFour.size() - 1 );
                             }
                         }
                         default:
                         {
-                            req.write( (byte) c & 0x00FF );
+                            pReq.print( c );
+                            lastFour.add( c );
                         }
                     }
-                    lastChar = c;
                 }
             }
             else
             {
-                req.write( bbuf );
+                bReq.write( bbuf );
             }
         }
     }
