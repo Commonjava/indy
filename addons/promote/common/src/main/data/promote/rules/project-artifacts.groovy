@@ -3,13 +3,15 @@ package org.commonjava.indy.promote.rules;
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier
+import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 
 class ProjectArtifacts implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
         def classifierAndTypeSet = request.getValidationParameter("classifierAndTypeSet")
-        def builder = new StringBuilder()
+        def errors = new ArrayList()
 
         if (classifierAndTypeSet != null) {
             def ctStrings = classifierAndTypeSet.split("\\s*,\\s*")
@@ -25,38 +27,47 @@ class ProjectArtifacts implements ValidationRule {
                 }
             }
 
+            def logger = LoggerFactory.getLogger(getClass())
             def tools = request.getTools()
-            def projectTCs = [:]
+            def projectTCs = new ConcurrentHashMap();
             tools.paralleledEach(request.getSourcePaths(), { it ->
                 def ref = tools.getArtifact(it)
                 if (ref != null) {
                     def gav = ref.asProjectVersionRef()
-                    def found = projectTCs[gav]
-                    if (found == null) {
-                        found = []
-                        projectTCs[gav] = found
+                    logger.trace("Checking promotion on GAV: {} from source path: {}", gav, it)
+                    def found = null
+                    synchronized (projectTCs) {
+                        found = projectTCs.get(gav)
+                        if (found == null) {
+                            found = new HashSet()
+                            projectTCs.put(gav, found)
+                        }
                     }
-                    found << ref.getTypeAndClassifier()
+
+                    synchronized (found) {
+                        found.add(ref.getTypeAndClassifier())
+                    }
+                    logger.trace( "Found: {} -> {}", gav, found)
                 }
             })
 
             tools.paralleledEach(projectTCs, { entry ->
-                if ( entry.value.size > 1 || !entry.value.contains(new SimpleTypeAndClassifier("pom"))) {
+                logger.trace( "Processing {} -> {}", entry.key, entry.value)
+                if ( entry.value.size() > 1 || !entry.value.contains(new SimpleTypeAndClassifier("pom"))) {
                     tcs.each { tc ->
+                        logger.trace("Checking if TC: {} is in: {} for: {}", tc, entry.value, entry.key)
                         if (!entry.value.contains(tc)) {
-                            if (builder.length() > 0) {
-                                builder.append("\n")
+                            synchronized(errors) {
+                                errors.add(String.format("%s: missing artifact with type/classifier: %s", entry.key, tc))
                             }
-                            builder.append(entry.key).append(": missing artifact with type/classifier: ").append(tc)
                         }
                     }
                 }
             })
         } else {
-            def logger = LoggerFactory.getLogger(getClass())
             logger.warn("No 'classifierAndTypeSet' parameter specified in rule-set: {}. Cannot execute ProjectArtifacts rule!", request.getRuleSet().getName())
         }
 
-        builder.length() > 0 ? builder.toString() : builder
+        errors.isEmpty() ? null: StringUtils.join(errors, "\n")
     }
 }

@@ -1,5 +1,6 @@
-package org.commonjava.indy.promote.rules;
+package org.commonjava.indy.promote.rules
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.slf4j.LoggerFactory
@@ -8,7 +9,7 @@ class ProjectVersionPattern implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
         def versionPattern = request.getValidationParameter("versionPattern")
-        def builder = new StringBuilder()
+        def errors = new ArrayList()
 
         if (versionPattern != null) {
             def tools = request.getTools()
@@ -17,10 +18,10 @@ class ProjectVersionPattern implements ValidationRule {
                 if (ref != null) {
                     def vs = ref.getVersionString()
                     if (!vs.matches(versionPattern)) {
-                        if (builder.length() > 0) {
-                            builder.append("\n")
+                        synchronized (errors) {
+                            errors.add(String.format("%s does not match version pattern: '%s' (version was: '%s')",
+                                    it, versionPattern, vs))
                         }
-                        builder.append(it).append(" does not match version pattern: '").append(versionPattern).append("' (version was: '").append(vs).append("')")
                     }
                 }
             })
@@ -29,6 +30,6 @@ class ProjectVersionPattern implements ValidationRule {
             logger.warn("No 'versionPattern' parameter specified in rule-set: {}. Cannot execute ProjectVersionPattern rule!", request.getRuleSet().getName())
         }
 
-        builder.length() > 0 ? builder.toString() : builder
+        errors.isEmpty() ? null: StringUtils.join(errors, "\n")
     }
 }

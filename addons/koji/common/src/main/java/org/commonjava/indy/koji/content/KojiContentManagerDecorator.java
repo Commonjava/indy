@@ -17,7 +17,6 @@ package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
-import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveQuery;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
@@ -42,9 +41,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
-import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
@@ -60,7 +57,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,7 +67,6 @@ import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
-import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
 
 /**
@@ -106,7 +101,7 @@ public abstract class KojiContentManagerDecorator
 {
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
+    public static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
     private static final String NVR = "koji-NVR";
 
@@ -139,6 +134,9 @@ public abstract class KojiContentManagerDecorator
     @Inject
     private Locker<StoreKey> groupMembershipLocker;
 
+    @Inject
+    private KojiPathPatternFormatter pathFormatter;
+
     @Override
     @Measure( timers = @MetricNamed( DEFAULT ) )
     public boolean exists( ArtifactStore store, String path )
@@ -147,7 +145,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial existence check for: {}/{}", store.getKey(), path );
         boolean result = delegate.exists( store, path );
-        if ( !result && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
+        if ( !result && kojiUtils.isVersionSignatureAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
             Group group = (Group) store;
 
@@ -183,7 +181,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial retrieval attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.retrieve( store, path, eventMetadata );
-        if ( result == null && isVerSignedAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
+        if ( result == null && kojiUtils.isVersionSignatureAllowedWithPath( path ) && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
@@ -237,7 +235,7 @@ public abstract class KojiContentManagerDecorator
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "KOJI: Delegating initial getTransfer() attempt for: {}/{}", store.getKey(), path );
         Transfer result = delegate.getTransfer( store, path, operation );
-        if ( result == null && isVerSignedAllowedWithPath( path ) && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
+        if ( result == null && kojiUtils.isVersionSignatureAllowedWithPath( path ) && TransferOperation.DOWNLOAD == operation && StoreType.group == store.getKey().getType() )
         {
             logger.info( "KOJI: Checking for Koji build matching: {}", path );
             Group group = (Group) store;
@@ -463,7 +461,7 @@ public abstract class KojiContentManagerDecorator
                 }
 
                 // set pathMaskPatterns using build output paths
-                Set<String> patterns = getPatterns( artifactRef, archives );
+                Set<String> patterns = pathFormatter.getPatterns( artifactRef, archives );
 
                 // pre-index the koji build artifacts and set authoritative index of the remote to let the
                 // koji remote repo directly go through the content index
@@ -517,72 +515,6 @@ public abstract class KojiContentManagerDecorator
         {
             throw new KojiClientException( "Failed to store temporary remote repo: %s", e, e.getMessage() );
         }
-    }
-
-    private Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
-    {
-        Set<String> patterns = new HashSet<>();
-        for ( KojiArchiveInfo a : archives )
-        {
-            if ( !isVerSignedAllowedWithVersion( artifactRef.getVersionStringRaw() ) )
-            {
-                continue;
-            }
-            String pattern = getPatternString( artifactRef, a );
-            if ( pattern != null )
-            {
-                patterns.add( pattern );
-            }
-        }
-        if ( !patterns.isEmpty() )
-        {
-            String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
-            if ( meta != null )
-            {
-                patterns.add( meta );
-            }
-        }
-        return patterns;
-    }
-
-    private String getPatternString( ArtifactRef artifact, KojiArchiveInfo a )
-    {
-        String gId = a.getGroupId();
-        String artiId = a.getArtifactId();
-        String ver = a.getVersion();
-
-        if ( gId == null || artiId == null || ver == null )
-        {
-            logger.trace( "Pattern ignored, gId: {}, artiId: {}, ver: {}", gId, artiId, ver );
-            return null;
-        }
-        String pattern = gId.replace( '.', '/' ) + "/" + artiId + "/" + ver + "/" + a.getFilename();
-        logger.trace( "Pattern: {}", pattern );
-
-        return pattern;
-    }
-
-    private String getMetaString( ArtifactRef artifact )
-    {
-        String gId = artifact.getGroupId();
-        String artiId = artifact.getArtifactId();
-
-        if ( gId == null || artiId == null )
-        {
-            logger.trace( "Meta ignored, gId: {}, artiId: {}", gId, artiId );
-            return null;
-        }
-        String meta = null;
-        try
-        {
-            meta = formatMetadataPath( new SimpleProjectRef( gId, artiId ), METADATA_NAME );
-            logger.trace( "Meta: {}", meta );
-        }
-        catch ( TransferException e )
-        {
-            logger.error( "Format metadata path failed", e );
-        }
-        return meta;
     }
 
     private Group adjustTargetGroup( final RemoteRepository buildRepo, final Group srcGroup )
@@ -664,37 +596,6 @@ public abstract class KojiContentManagerDecorator
     {
         T execute( StoreKey inStore, ArtifactRef artifactRef, KojiBuildInfo build, KojiSessionInfo session )
                 throws KojiClientException;
-    }
-
-    private boolean isVerSignedAllowedWithPath ( String path )
-    {
-
-        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
-
-        // skip those files without standard GAV format path
-        if ( pathInfo == null )
-        {
-            return true;
-        }
-
-        ProjectVersionRef versionRef = pathInfo.getProjectId();
-        return isVerSignedAllowedWithVersion( versionRef.getVersionStringRaw() );
-    }
-
-    private boolean isVerSignedAllowedWithVersion ( String version )
-    {
-        final String versionFilter = config.getVersionFilter();
-
-        if ( versionFilter == null )
-        {
-            return true;
-        }
-
-        if ( Pattern.compile( versionFilter ).matcher( version ).matches())
-        {
-            return true;
-        }
-        return false;
     }
 
 }
