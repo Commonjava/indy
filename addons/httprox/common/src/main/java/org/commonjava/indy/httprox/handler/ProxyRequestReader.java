@@ -211,15 +211,6 @@ public final class ProxyRequestReader
             byte[] bbuf = new byte[buf.limit()];
             buf.get( bbuf );
 
-//            logger.trace( "Current read buffer:\n{}\n",
-//                          new Object()
-//                          {
-//                              public String toString()
-//                              {
-//                                  return new String( bbuf );
-//                              }
-//                          } );
-
             if ( !headDone )
             {
                 // allows us to stop after header read...
@@ -232,33 +223,15 @@ public final class ProxyRequestReader
                         {
                             while ( lastFour.size() > 3 )
                             {
-//                                logger.trace( "Trimming '{}' from lastFour (size: {})",
-//                                              StringEscapeUtils.escapeJava( Character.toString( lastFour.get( 0 ) ) ),
-//                                              lastFour.size() );
                                 lastFour.remove(0);
                             }
 
                             lastFour.add( Character.valueOf( c ) );
                             try
                             {
-//                                logger.trace( "lastFour value: {}",
-//                                              // Using an Object.toString() override avoids rendering when TRACE is disabled
-//                                              new Object()
-//                                              {
-//                                                  public String toString()
-//                                                  {
-//                                                      StringBuilder sb = new StringBuilder();
-//                                                      lastFour.forEach( ( i ) -> sb.append(
-//                                                              StringEscapeUtils.escapeJava( Character.toString( i ) ) ) );
-//                                                      return sb.toString();
-//                                                  }
-//                                              });
-
                                 if ( bReq.size() > 0 && HEAD_END.equals( lastFour ) )
                                 {
                                     logger.debug( "Detected end of request headers." );
-//                                    logger.trace( "Proxied request header:\n{}\n", new String( req.toByteArray() ) );
-
                                     headDone = true;
                                 }
                             }
@@ -269,15 +242,7 @@ public final class ProxyRequestReader
                         }
                         default:
                         {
-                            // TODO: Will this really preserve the characters correctly?
-                            // We converted to String then to char array, which may have condensed some bytes.
-                            //
-                            // This seems to provide an answer of sorts:
-                            //     https://stackoverflow.com/questions/5423223/how-to-send-non-english-unicode-string-using-http-header#5426648
                             pReq.print( c );
-
-//                            logger.trace( "Appending {} to lastFour", StringEscapeUtils.escapeJava( Character.toString( c ) ) );
-
                             lastFour.add( c );
                         }
                     }
