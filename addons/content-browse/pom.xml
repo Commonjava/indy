@@ -32,6 +32,7 @@
     <module>jaxrs</module>
     <module>ftests</module>
     <module>model-java</module>
+    <module>ui</module>
   </modules>
 
 </project>
