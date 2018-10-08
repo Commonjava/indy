@@ -108,6 +108,16 @@
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
+    <!-- React UI sets -->
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <scope>provided</scope>
+      <includes>
+        <include>*:tar.gz:react-uiset:*</include>
+      </includes>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
+      <unpack>true</unpack>
+    </dependencySet>
     
     <!-- aggregated commonjava classes -->
     <dependencySet>

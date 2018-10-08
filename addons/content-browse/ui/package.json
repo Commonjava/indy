@@ -1,0 +1,37 @@
+{
+  "name": "indy-content-browse-ui",
+  "version": "1.0.0",
+  "description": "react practice project",
+  "main": "src/main/js/index.js",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "jquery": "^3.3.1",
+    "react": "^16.5.2",
+    "react-dom": "^16.5.2",
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1",
+    "yarn": "^1.10.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.3",
+    "babel-loader": "7.1.5",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-2": "^6.24.1",
+    "webpack": "^4.19.1",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.8"
+  },
+  "scripts": {
+    "yarn": "node node_modules/yarn/bin/yarn.js",
+    "webpack": "node node_modules/webpack/bin/webpack.js",
+    "start": "webpack-dev-server --open",
+    "deploy": "cp ./src/main/html/* ./build/content-browse/",
+    "build": "npm run clean && npm run compile && npm run deploy",
+    "clean": "rm -rf ./build/*",
+    "compile": "NODE_ENV=production webpack --config ./webpack.config.js --progress"
+  }
+}
