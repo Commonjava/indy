@@ -43,6 +43,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.MASK;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.REPAIR_KOJI;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.VOL;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
@@ -105,7 +106,7 @@ public class KojiRepairResource
                        value = "JSON request specifying source and other configuration options",
                        required = true, dataType = "org.commonjava.indy.koji.model.KojiRepairRequest" )
     @POST
-    @Path( "/" + VOL )
+    @Path( "/" + MASK )
     @Consumes( ApplicationContent.application_json )
     public KojiRepairResult repairPathMasks( final KojiRepairRequest request, final @Context HttpServletRequest servletRequest,
                                     final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
