@@ -24,6 +24,7 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.koji.data.KojiRepairException;
 import org.commonjava.indy.koji.data.KojiRepairManager;
+import org.commonjava.indy.koji.model.KojiMultiRepairResult;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
 import org.commonjava.indy.koji.model.KojiRepairResult;
 import org.commonjava.indy.model.core.PackageTypeDescriptor;
@@ -43,6 +44,7 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.ALL_MASKS;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.MASK;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.REPAIR_KOJI;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.VOL;
@@ -115,6 +117,29 @@ public class KojiRepairResource
         {
             String user = securityManager.getUser( securityContext, servletRequest );
             return repairManager.repairPathMask( request, user );
+        }
+        catch ( KojiRepairException e )
+        {
+            logger.error( e.getMessage(), e );
+            throwError( e );
+        }
+
+        return null;
+    }
+
+    @ApiOperation( "Repair koji repository path masks for ALL koji remote repositories." )
+    @ApiResponse( code = 200, message = "Operation finished (consult response content for success/failure).",
+                  response = KojiMultiRepairResult.class )
+    @POST
+    @Path( "/" + ALL_MASKS )
+    @Consumes( ApplicationContent.application_json )
+    public KojiMultiRepairResult repairAllPathMasks( final @Context HttpServletRequest servletRequest,
+                                             final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    {
+        try
+        {
+            String user = securityManager.getUser( securityContext, servletRequest );
+            return repairManager.repairAllPathMasks( user );
         }
         catch ( KojiRepairException e )
         {
