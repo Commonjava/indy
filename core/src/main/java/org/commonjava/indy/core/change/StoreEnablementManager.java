@@ -135,6 +135,14 @@ public class StoreEnablementManager
         try
         {
             ArtifactStore store = storeDataManager.getArtifactStore( key );
+            if ( store == null )
+            {
+                logger.warn( "Attempt to disable missing repo! Skipping." );
+                return;
+            }
+
+            store = store.copyOf();
+
             int disableTimeout = store.getDisableTimeout();
             if ( disableTimeout <= TIMEOUT_NEVER_DISABLE )
             {
@@ -193,6 +201,14 @@ public class StoreEnablementManager
                 try
                 {
                     ArtifactStore store = storeDataManager.getArtifactStore( key );
+                    if ( store == null )
+                    {
+                        logger.warn( "Attempt to re-enable missing repository! Skipping." );
+                        cancelReEnablementTimeout( key );
+                        return;
+                    }
+
+                    store = store.copyOf();
                     if ( store.isDisabled() )
                     {
                         store.setDisabled( false );

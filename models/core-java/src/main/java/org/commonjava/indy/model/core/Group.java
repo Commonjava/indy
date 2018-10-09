@@ -159,6 +159,7 @@ public class Group
     public Group copyOf( final String packageType, final String name )
     {
         Group g = new Group( packageType, name, new ArrayList<>( getConstituents() ) );
+        g.setPrependConstituent( isPrependConstituent() );
         copyBase( g );
 
         return g;
