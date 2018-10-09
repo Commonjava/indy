@@ -2,17 +2,19 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = {
-  entry: './src/main/js/index.js',
+  entry: './src/main/js/app.js',
   output: {
     path: path.resolve(__dirname, 'build/content-browse'),
-    filename: 'index_bundle.js'
+    filename: 'app_bundle.js'
   },
-  mode: 'development',
-  devtool: 'inline-source-map',
-  devServer: {
-    contentBase: './build/content-browse',
-    port: 3000
-  },
+  mode: 'production',
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env': {
+        'NODE_ENV': JSON.stringify('production')
+      }
+    })
+  ],
   module: {
     rules: [
       { test: /\.js$/, use: 'babel-loader', exclude: /node_modules/ },

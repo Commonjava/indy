@@ -28,10 +28,10 @@
   "scripts": {
     "yarn": "node node_modules/yarn/bin/yarn.js",
     "webpack": "node node_modules/webpack/bin/webpack.js",
-    "start": "webpack-dev-server --open",
+    "start": "webpack-dev-server --open --config ./webpack.dev.config.js",
     "deploy": "cp ./src/main/html/* ./build/content-browse/",
     "build": "npm run clean && npm run compile && npm run deploy",
     "clean": "rm -rf ./build/*",
-    "compile": "NODE_ENV=production webpack --config ./webpack.config.js --progress"
+    "compile": "webpack --config ./webpack.prod.config.js -p --progress"
   }
 }

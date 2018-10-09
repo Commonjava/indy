@@ -9,7 +9,7 @@
       Red Hat, Inc. - initial API and implementation
 -->
 <assembly>
-  <id>reactset</id>
+  <id>reactui</id>
   <formats>
     <format>tar.gz</format>
   </formats>

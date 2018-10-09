@@ -113,7 +113,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:react-uiset:*</include>
+        <include>*:tar.gz:reactui:*</include>
       </includes>
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>

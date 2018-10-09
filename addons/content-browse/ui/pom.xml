@@ -79,13 +79,45 @@
             <phase>package</phase>
             <configuration>
               <descriptorRefs>
-                <descriptorRef>react-uiset</descriptorRef>
+                <descriptorRef>reactui</descriptorRef>
               </descriptorRefs>
             </configuration>
           </execution>
         </executions>
       </plugin>
     </plugins>
+
   </build>
 
+  <profiles>
+    <profile>
+      <id>realclean</id>
+
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <artifactId>maven-clean-plugin</artifactId>
+              <configuration>
+                <filesets>
+                  <fileset>
+                    <directory>${project.basedir}</directory>
+                    <includes>
+                      <include>node</include>
+                      <include>node_modules</include>
+                      <inclued>build</inclued>
+                      <include>node/**</include>
+                      <include>node_modules/**</include>
+                      <inclued>build/**</inclued>
+                    </includes>
+                    <followSymlinks>false</followSymlinks>
+                  </fileset>
+                </filesets>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
 </project>

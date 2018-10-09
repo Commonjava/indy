@@ -2,8 +2,10 @@
 
 import React from 'react';
 import {render} from 'react-dom';
-import $ from 'jquery';
-import {styles} from './style.js'
+import $ from 'jquery/src/core';
+import 'jquery/src/ajax';
+import 'jquery/src/ajax/xhr';
+import {styles} from './style.js';
 
 const URLList  = (props)=> {
   let elems = [];
@@ -21,7 +23,7 @@ const URLList  = (props)=> {
     });
   }
   return (
-    <ul className="item-listing">
+    <ul style={styles.ItemListing}>
       {elems}
     </ul>
   );
@@ -30,7 +32,7 @@ const URLList  = (props)=> {
 const Footer = (props) => {
   let elems = props.sources && props.sources.map((src, index)=>(<li key={"footer"+index}><a className="source-link" title={src} href={src}>{src}</a></li>));
   return(
-    <footer>
+    <footer style={styles.Footer}>
       <p>Sources for this page:</p>
       <ul>
         {elems}
@@ -44,7 +46,7 @@ class URLPage extends React.Component {
     this.state = {
       error: null,
       isLoaded: false,
-      items: []
+      data: {}
     };
   }
 
@@ -79,17 +81,18 @@ class URLPage extends React.Component {
   }
   
   render() {
-    const { error, isLoaded, items } = this.state;
+    const { error, isLoaded, data } = this.state;
     if (error) {
       return <div>Error: {error}</div>;
     } else if (!isLoaded) {
       return <div>Loading...</div>;
     } else {
+      document.title = `Directory listing for ${data.path} on ${this.getStoreKey().name}`;
       return (
         <div>
-          <h2 key="title">Directory listing for {this.state.data.path} on {this.getStoreKey().name}</h2>
-          <URLList key="urllist" parentUrl={this.state.data.parentUrl} urls={this.state.data.listingUrls} />
-          <Footer key="footer" sources={this.state.data.sources} />
+          <h2 style={styles.Header} key="title">Directory listing for {data.path} on {this.getStoreKey().name}</h2>
+          <URLList key="urllist" parentUrl={data.parentUrl} urls={data.listingUrls} />
+          <Footer key="footer" sources={data.sources} />
         </div>
       );
     }
