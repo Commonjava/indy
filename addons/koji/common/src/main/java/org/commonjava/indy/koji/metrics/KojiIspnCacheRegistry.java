@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.koji.metrics;
 
-import org.commonjava.indy.koji.content.CachedKojiContentProvider;
+import org.commonjava.indy.koji.content.IndyKojiContentProvider;
 import org.commonjava.indy.subsys.infinispan.metrics.IspnCacheRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,7 @@ public class KojiIspnCacheRegistry implements IspnCacheRegistry
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private CachedKojiContentProvider kojiContentProvider;
+    private IndyKojiContentProvider kojiContentProvider;
 
     @Override
     public Set<String> getCacheNames()

@@ -23,7 +23,7 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.koji.content.CachedKojiContentProvider;
+import org.commonjava.indy.koji.content.IndyKojiContentProvider;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.content.KojiPathPatternFormatter;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
@@ -45,7 +45,6 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -72,7 +71,7 @@ public class KojiRepairManager
     private StoreDataManager storeManager;
 
     @Inject
-    private CachedKojiContentProvider kojiCachedClient;
+    private IndyKojiContentProvider kojiCachedClient;
 
     @Inject
     private KojiPathPatternFormatter kojiPathFormatter;
@@ -94,7 +93,7 @@ public class KojiRepairManager
     {
         this.storeManager = storeManager;
         this.config = config;
-        this.kojiCachedClient = new CachedKojiContentProvider( kojiClient, null );
+        this.kojiCachedClient = new IndyKojiContentProvider( kojiClient, null );
     }
 
     public KojiRepairResult repairPathMask( KojiRepairRequest request, String user )
@@ -126,6 +125,8 @@ public class KojiRepairManager
                     return ret.withError( error );
                 }
 
+                store = store.copyOf();
+
                 if ( remoteKey.getType() == remote )
                 {
                     final String nvr = kojiUtils.getBuildNvr( remoteKey );
@@ -153,6 +154,8 @@ public class KojiRepairManager
 
                         // set pathMaskPatterns using build output paths
                         Set<String> patterns = kojiPathFormatter.getPatterns( artifactRef, archives );
+                        logger.debug( "For repo: {}, resetting path_mask_patterns to:\n\n{}\n\n", store.getKey(),
+                                     patterns );
 
                         KojiRepairResult.RepairResult repairResult = new KojiRepairResult.RepairResult( remoteKey );
                         repairResult.withPropertyChange( "path_mask_patterns", store.getPathMaskPatterns(), patterns );

@@ -88,7 +88,7 @@ public class KojiMavenMetadataProvider
     private BasicCacheHandle<ProjectRef, Metadata> versionMetadata;
 
     @Inject
-    private CachedKojiContentProvider kojiContentProvider;
+    private IndyKojiContentProvider kojiContentProvider;
 
     @Inject
     private IndyKojiConfig kojiConfig;
@@ -111,7 +111,7 @@ public class KojiMavenMetadataProvider
                                       KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig, ExecutorService executorService, DefaultCacheManager cacheManager )
     {
         this.versionMetadata = versionMetadata;
-        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
+        this.kojiContentProvider = new IndyKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
         this.buildAuthority = buildAuthority;
         this.kojiConfig = kojiConfig;
         this.executorService = executorService;

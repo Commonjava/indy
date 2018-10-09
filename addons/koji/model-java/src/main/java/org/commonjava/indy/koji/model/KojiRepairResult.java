@@ -206,7 +206,7 @@ public class KojiRepairResult
 
         public boolean isChanged()
         {
-            return !originalValue.equals( value );
+            return (originalValue == null && value != null) || !originalValue.equals( value );
         }
 
         public Object getOriginalValue()

@@ -40,7 +40,6 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -61,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
@@ -113,7 +111,7 @@ public abstract class KojiContentManagerDecorator
     private StoreDataManager storeDataManager;
 
     @Inject
-    private CachedKojiContentProvider kojiContentProvider;
+    private IndyKojiContentProvider kojiContentProvider;
 
     @Inject
     private KojiUtils kojiUtils;
