@@ -1,6 +1,7 @@
 package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.util.KojiUtils;
 import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
@@ -14,6 +15,7 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
@@ -69,7 +71,9 @@ public class KojiPathPatternFormatter
             logger.trace( "Pattern ignored, gId: {}, artiId: {}, ver: {}", gId, artiId, ver );
             return null;
         }
-        String pattern = gId.replace( '.', '/' ) + "/" + artiId + "/" + ver + "/" + a.getFilename();
+
+        // NOTE: This is not completely precise, but the trade-off in speed should make it worthwhile.
+        String pattern = "r|" + StringUtils.replace( gId, ".", "\\/" ) + "\\/.+\\/" + ver + "\\/.+|";
         logger.trace( "Pattern: {}", pattern );
 
         return pattern;
