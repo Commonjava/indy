@@ -34,6 +34,5 @@ public class IndyKojiConstants
 
     public static final String MASK = "mask";
 
-    public static final String REPAIR_KOJI_MASK = REPAIR_KOJI + "/" + MASK;
-
+    public static final String ALL_MASKS = "mask/all";
 }

@@ -26,6 +26,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.content.IndyKojiContentProvider;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.content.KojiPathPatternFormatter;
+import org.commonjava.indy.koji.model.KojiMultiRepairResult;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
 import org.commonjava.indy.koji.model.KojiRepairResult;
 import org.commonjava.indy.koji.util.KojiUtils;
@@ -45,10 +46,14 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.koji.content.KojiContentManagerDecorator.CREATION_TRIGGER_GAV;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 
@@ -96,12 +101,73 @@ public class KojiRepairManager
         this.kojiCachedClient = new IndyKojiContentProvider( kojiClient, null );
     }
 
+    public KojiMultiRepairResult repairAllPathMasks( final String user )
+            throws KojiRepairException
+    {
+        KojiMultiRepairResult result = new KojiMultiRepairResult();
+
+        if ( opLock.tryLock() )
+        {
+            try
+            {
+                List<RemoteRepository> kojiRemotes = storeManager.query()
+                                                                 .storeTypes( remote )
+                                                                 .stream( ( remote ) -> KOJI_ORIGIN.equals(
+                                                                         remote.getMetadata(
+                                                                                 ArtifactStore.METADATA_ORIGIN ) )
+                                                                         || KOJI_ORIGIN_BINARY.equals(
+                                                                         remote.getMetadata( ArtifactStore.METADATA_ORIGIN ) ) )
+                                                                 .map( s -> (RemoteRepository) s )
+                                                                 .filter( Objects::nonNull )
+                                                                 .collect( Collectors.toList() );
+
+                List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
+                    logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
+
+                    KojiRepairRequest request = new KojiRepairRequest( r.getKey(), false );
+                    try
+                    {
+                        return repairPathMask( request, user, true );
+                    }
+                    catch ( KojiRepairException e )
+                    {
+                        logger.error( "Failed to execute repair for: " + r.getKey(), e );
+                    }
+
+                    return null;
+                } ).filter( Objects::nonNull ).collect( Collectors.toList() );
+
+                result.setResults( results );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new KojiRepairException( "Failed to list Koji remote repositories for repair. Reason: %s", e, e.getMessage() );
+            }
+            finally
+            {
+                opLock.unlock();
+            }
+        }
+        else
+        {
+            throw new KojiRepairException( "Koji repair manager is busy." );
+        }
+
+        return result;
+    }
+
     public KojiRepairResult repairPathMask( KojiRepairRequest request, String user )
+            throws KojiRepairException
+    {
+        return repairPathMask( request, user, false );
+    }
+
+    public KojiRepairResult repairPathMask( KojiRepairRequest request, String user, boolean skipLock )
         throws KojiRepairException
     {
         KojiRepairResult ret = new KojiRepairResult( request );
 
-        if ( opLock.tryLock() )
+        if ( skipLock || opLock.tryLock() )
         {
             try
             {
@@ -191,7 +257,10 @@ public class KojiRepairManager
             }
             finally
             {
-                opLock.unlock();
+                if ( !skipLock )
+                {
+                    opLock.unlock();
+                }
             }
         }
         else
