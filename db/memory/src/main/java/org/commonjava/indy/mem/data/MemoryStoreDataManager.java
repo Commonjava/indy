@@ -303,6 +303,13 @@ public class MemoryStoreDataManager
             throws IndyDataException
     {
         AtomicReference<IndyDataException> error = new AtomicReference<>();
+        logger.trace( "Storing {} using operation lock: {}", store, opLocks );
+        if ( store == null )
+        {
+            logger.warn( "Tried to store null ArtifactStore!" );
+            return false;
+        }
+
         boolean result = opLocks.lockAnd( store.getKey(), LOCK_TIMEOUT_SECONDS, k-> {
             ArtifactStore original = stores.get( store.getKey() );
             if ( original == store )

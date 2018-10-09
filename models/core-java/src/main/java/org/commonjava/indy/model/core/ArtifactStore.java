@@ -233,6 +233,7 @@ public abstract class ArtifactStore
 
     protected void copyBase( ArtifactStore store )
     {
+        store.setRescanInProgress( store.isRescanInProgress() );
         store.setDescription( getDescription() );
         store.setDisabled( isDisabled() );
         store.setMetadata( getMetadata() );
@@ -240,6 +241,7 @@ public abstract class ArtifactStore
         store.setPathStyle( getPathStyle() );
         store.setDisableTimeout( getDisableTimeout() );
         store.setPathMaskPatterns( getPathMaskPatterns() );
+        store.setAuthoritativeIndex( isAuthoritativeIndex() );
     }
 
     protected void setTransientMetadata( Map<String, Object> transientMetadata )
