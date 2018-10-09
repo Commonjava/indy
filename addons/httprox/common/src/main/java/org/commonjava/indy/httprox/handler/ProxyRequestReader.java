@@ -233,6 +233,8 @@ public final class ProxyRequestReader
                                 {
                                     logger.debug( "Detected end of request headers." );
                                     headDone = true;
+
+                                    logger.trace( "Proxy request header:\n{}\n", new String( bReq.toByteArray() ) );
                                 }
                             }
                             finally
