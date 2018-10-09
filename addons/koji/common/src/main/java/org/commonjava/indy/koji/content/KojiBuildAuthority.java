@@ -83,7 +83,7 @@ public class KojiBuildAuthority
     private TypeMapper typeMapper;
 
     @Inject
-    private CachedKojiContentProvider kojiContentProvider;
+    private IndyKojiContentProvider kojiContentProvider;
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -102,7 +102,7 @@ public class KojiBuildAuthority
     {
         this.config = config;
         this.typeMapper = typeMapper;
-        this.kojiContentProvider = new CachedKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
+        this.kojiContentProvider = new IndyKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
         this.storeDataManager = storeDataManager;
         this.contentDigester = contentDigester;
         this.directContentAccess = directContentAccess;

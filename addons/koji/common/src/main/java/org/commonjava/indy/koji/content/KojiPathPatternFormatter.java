@@ -32,16 +32,21 @@ public class KojiPathPatternFormatter
         Set<String> patterns = new HashSet<>();
         for ( KojiArchiveInfo a : archives )
         {
-            if ( !kojiUtils.isVersionSignatureAllowedWithVersion( artifactRef.getVersionStringRaw() ) )
+            ArtifactRef ar = a.asArtifact();
+            if ( !kojiUtils.isVersionSignatureAllowedWithVersion( a.getVersion() ) )
             {
+                logger.warn(
+                        "Cannot use Koji archive for path_mask_patterns: {}. Version '{}' is not allowed from Koji.", a,
+                        a.getVersion() );
                 continue;
             }
-            String pattern = getPatternString( artifactRef, a );
+            String pattern = getPatternString( ar, a );
             if ( pattern != null )
             {
                 patterns.add( pattern );
             }
         }
+
         if ( !patterns.isEmpty() )
         {
             String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns

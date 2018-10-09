@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit;
 import static com.redhat.red.build.koji.model.xmlrpc.messages.Constants.GET_BUILD;
 
 @ApplicationScoped
-public class CachedKojiContentProvider
+public class IndyKojiContentProvider
 {
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -84,11 +84,11 @@ public class CachedKojiContentProvider
     @Inject
     private IndyKojiConfig kojiConfig;
 
-    public CachedKojiContentProvider()
+    public IndyKojiContentProvider()
     {
     }
 
-    public CachedKojiContentProvider( KojiClient kojiClient, CacheProducer cacheProducer )
+    public IndyKojiContentProvider( KojiClient kojiClient, CacheProducer cacheProducer )
     {
         this.kojiClient = kojiClient;
         this.cacheProducer = cacheProducer;
@@ -205,21 +205,33 @@ public class CachedKojiContentProvider
     }
 
 
+    // NOTE: This also enriches the archive results!
     public List<KojiArchiveInfo> listArchivesMatching( ProjectRef ga, KojiSessionInfo session )
                     throws KojiClientException
     {
         KojiArchiveQuery query = new KojiArchiveQuery( ga );
         return computeIfAbsent( KOJI_ARCHIVES_MATCHING_GA, ProjectRef.class, List.class, ga,
-                                () -> kojiClient.listArchives( query, session ),
+                                () ->{
+                                    List<KojiArchiveInfo> archives = kojiClient.listArchives( query, session );
+                                    kojiClient.enrichArchiveTypeInfo( archives, session );
+
+                                    return archives;
+                                },
                                 kojiConfig.getQueryCacheTimeoutHours() );
     }
 
+    // NOTE: This also enriches the archive results!
     public List<KojiArchiveInfo> listArchivesForBuild( Integer buildId, KojiSessionInfo session )
                     throws KojiClientException
     {
         KojiArchiveQuery query = new KojiArchiveQuery().withBuildId( buildId );
         return computeIfAbsent( KOJI_ARCHIVES_FOR_BUILD, Integer.class, List.class, buildId,
-                                () -> kojiClient.listArchives( query, session ) );
+                                () -> {
+                                    List<KojiArchiveInfo> archives = kojiClient.listArchives( query, session );
+                                    kojiClient.enrichArchiveTypeInfo( archives, session );
+
+                                    return archives;
+                                } );
     }
 
     @FunctionalInterface
