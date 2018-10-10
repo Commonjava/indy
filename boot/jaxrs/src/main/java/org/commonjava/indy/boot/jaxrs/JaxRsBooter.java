@@ -54,27 +54,22 @@ public class JaxRsBooter
     public static void main( final String[] args )
     {
         Thread.currentThread()
-              .setUncaughtExceptionHandler( new UncaughtExceptionHandler()
-              {
-                  @Override
-                  public void uncaughtException( final Thread thread, final Throwable error )
+              .setUncaughtExceptionHandler( ( thread, error ) -> {
+                  if ( error instanceof InvocationTargetException )
                   {
-                      if ( error instanceof InvocationTargetException )
-                      {
-                          final InvocationTargetException ite = (InvocationTargetException) error;
-                          System.err.println( "In: " + thread.getName() + "(" + thread.getId()
-                              + "), caught InvocationTargetException:" );
-                          ite.getTargetException()
-                             .printStackTrace();
+                      final InvocationTargetException ite = (InvocationTargetException) error;
+                      System.err.println( "In: " + thread.getName() + "(" + thread.getId()
+                          + "), caught InvocationTargetException:" );
+                      ite.getTargetException()
+                         .printStackTrace();
 
-                          System.err.println( "...via:" );
-                          error.printStackTrace();
-                      }
-                      else
-                      {
-                          System.err.println( "In: " + thread.getName() + "(" + thread.getId() + ") Uncaught error:" );
-                          error.printStackTrace();
-                      }
+                      System.err.println( "...via:" );
+                      error.printStackTrace();
+                  }
+                  else
+                  {
+                      System.err.println( "In: " + thread.getName() + "(" + thread.getId() + ") Uncaught error:" );
+                      error.printStackTrace();
                   }
               } );
 
@@ -153,8 +148,7 @@ public class JaxRsBooter
             container = weld.initialize();
 
             // injectable version.
-            final BootOptions cdiOptions = container.instance()
-                                                    .select( BootOptions.class )
+            final BootOptions cdiOptions = container.select( BootOptions.class )
                                                     .get();
             cdiOptions.copyFrom( bootOptions );
 
@@ -204,9 +198,7 @@ public class JaxRsBooter
     @Override
     public boolean startLifecycle()
     {
-        lifecycleManager = container.instance()
-                                    .select( IndyLifecycleManager.class )
-                                    .get();
+        lifecycleManager = container.select( IndyLifecycleManager.class ).get();
 
         boolean started;
         try
@@ -230,9 +222,7 @@ public class JaxRsBooter
     public boolean deploy()
     {
         boolean started;
-        final IndyDeployment indyDeployment = container.instance()
-                                                         .select( IndyDeployment.class )
-                                                         .get();
+        final IndyDeployment indyDeployment = container.select( IndyDeployment.class ).get();
 
         final DeploymentInfo di = indyDeployment.getDeployment( bootOptions.getContextPath() )
                                                  .setContextPath( "/" );
@@ -251,22 +241,12 @@ public class JaxRsBooter
 
                 final ThreadLocal<ServletException> errorHolder = new ThreadLocal<>();
                 ThreadLocal<Integer> usingPort = new ThreadLocal<>();
+
                 server = PortFinder.findPortFor( 16, ( foundPort ) -> {
                     Undertow undertow = null;
                     try
                     {
-                        // FROM: https://stackoverflow.com/questions/28295752/compressing-undertow-server-responses#28329810
-                        final Predicate sizePredicate =
-                                Predicates.parse( "max-content-size[" + Long.toString( 5 * 1024 ) + "]" );
-
-                        EncodingHandler eh = new EncodingHandler(
-                                new ContentEncodingRepository().addEncodingHandler( "gzip", new GzipEncodingProvider(),
-                                                                                    50, sizePredicate )
-                                                               .addEncodingHandler( "deflate",
-                                                                                    new DeflateEncodingProvider(), 51,
-                                                                                    sizePredicate ) ).setNext(
-                                dm.start() );
-
+                        EncodingHandler eh = getGzipEncodeHandler( dm );
                         undertow = Undertow.builder()
                                            .setHandler( eh )
                                            .addHttpListener( foundPort, bootOptions.getBind() )
@@ -294,7 +274,7 @@ public class JaxRsBooter
             else
             {
                 server = Undertow.builder()
-                                 .setHandler( dm.start() )
+                                 .setHandler( getGzipEncodeHandler( dm ) )
                                  .addHttpListener( port, bootOptions.getBind() )
                                  .build();
 
@@ -317,6 +297,18 @@ public class JaxRsBooter
         }
 
         return started;
+    }
+
+    private EncodingHandler getGzipEncodeHandler(final DeploymentManager dm) throws ServletException{
+        // FROM: https://stackoverflow.com/questions/28295752/compressing-undertow-server-responses#28329810
+        final Predicate sizePredicate = Predicates.parse( "max-content-size[" + Long.toString( 5 * 1024 ) + "]" );
+
+        EncodingHandler eh = new EncodingHandler(
+                new ContentEncodingRepository().addEncodingHandler( "gzip", new GzipEncodingProvider(), 50,
+                                                                    sizePredicate )
+                                               .addEncodingHandler( "deflate", new DeflateEncodingProvider(), 51,
+                                                                    sizePredicate ) ).setNext( dm.start() );
+        return eh;
     }
 
     @Override
