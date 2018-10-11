@@ -53,7 +53,7 @@
               <exclude>.babelrc</exclude>
               <exclude>yarn.lock</exclude>
               <exclude>app_bundle.js</exclude>
-              <exclude>build/content-build/app_bundle.js</exclude>
+              <exclude>build/content-browse/app_bundle.js</exclude>
             </excludes>
             <mapping>
               <service>SCRIPT_STYLE</service>
