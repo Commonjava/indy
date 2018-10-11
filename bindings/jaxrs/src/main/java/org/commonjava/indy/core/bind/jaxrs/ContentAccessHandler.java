@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.core.bind.jaxrs;
 
-import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
@@ -38,6 +37,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,10 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
+import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_API_ROOT;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
+import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_ROOT;
+import static org.commonjava.indy.core.ctl.ContentController.BROWSER_USER_AGENT;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 @ApplicationScoped
@@ -113,7 +116,7 @@ public class ContentAccessHandler
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
-        Response response = null;
+        Response response;
         final Transfer transfer;
         try
         {
@@ -218,6 +221,8 @@ public class ContentAccessHandler
 
         if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
         {
+            //FIXME: As directory content listing in doGet has switched to use new way, I'm not sure how to change
+            // this for head request. Maybe use the /api/browse content? Or just keeping use the current way?
             try
             {
                 logger.debug( "Getting listing at: {}", path );
@@ -250,7 +255,7 @@ public class ContentAccessHandler
                 Transfer item = null;
                 logger.info( "Checking existence of: {}:{} (cache only? {})", sk, path, cacheOnly );
 
-                boolean exists = false;
+                boolean exists;
                 if ( Boolean.TRUE.equals( cacheOnly ) )
                 {
                     logger.debug( "Calling getTransfer()" );
@@ -362,7 +367,7 @@ public class ContentAccessHandler
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
 
-        Response response = null;
+        Response response;
 
         logger.debug(
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
@@ -371,21 +376,33 @@ public class ContentAccessHandler
         if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
                 LISTING_HTML_FILE ) )
         {
-            try
+            if ( path != null && path.endsWith( LISTING_HTML_FILE ) )
             {
-                logger.debug( "Getting listing at: {}", path );
-                final String content =
-                                contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter );
+                path = path.replaceAll( String.format( "(%s)$", LISTING_HTML_FILE ), "" );
+            }
 
-                response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
-            }
-            catch ( final IndyWorkflowException e )
+            // A problem here is that if client is not browser(like curl or a program http call), the redirect response will
+            // just return a 303 location /browse/*, which is just a single html page with no actual content(because page is rendering
+            // by javascript). So I think we should consider to judge by the User-Agent to decide the real action, and if its not a browser
+            // action, we should redirect it to a REST call of /api/browse which will return the content result in JSON.
+            boolean isBrowser = false;
+            for ( String userAgent : BROWSER_USER_AGENT )
             {
-                logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
-                                             e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
+                if ( request.getHeader( "User-Agent" ).contains( userAgent ) )
+                {
+                    isBrowser = true;
+                    break;
+                }
             }
-//            response = formatResponse( NOT_IMPLEMENTED, null, "Content listing is not implemented", builderModifier );
+            final String root = isBrowser ? CONTENT_BROWSE_ROOT : CONTENT_BROWSE_API_ROOT;
+            final String browseUri = PathUtils.normalize( root, packageType, type, name, path );
+            logger.debug( "Directory listing request will redirect to entry point: {} ", browseUri );
+            ResponseBuilder builder = Response.seeOther( URI.create( browseUri ) ).type( acceptInfo.getRawAccept() );
+            if ( builderModifier != null )
+            {
+                builderModifier.accept( builder );
+            }
+            response = builder.build();
         }
         else
         {

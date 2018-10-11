@@ -70,6 +70,13 @@ public class ContentController
 
     public static final String LISTING_HTML_FILE = "index.html";
 
+    public static final String CONTENT_BROWSE_ROOT = "/browse";
+
+    public static final String CONTENT_BROWSE_API_ROOT = "/api/browse";
+
+    public static final String[] BROWSER_USER_AGENT =
+            new String[] { "Mozilla/", "Chrome/", "Safari/", "OPR/", "Trident/", "Gecko/", "AppleWebKit/" };
+
     private static final int MAX_PEEK_COUNT = 100;
 
     public static final String HTML_TAG_PATTERN = ".*\\<(!DOCTYPE|[-_.a-zA-Z0-9]+).*";
