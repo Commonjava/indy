@@ -30,6 +30,37 @@
   <name>Indy :: Add-Ons :: Directory Content Browse :: UI</name>
 
   <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>com.mycila</groupId>
+          <artifactId>license-maven-plugin</artifactId>
+          <version>2.10</version>
+          <configuration>
+            <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>
+            <properties>
+              <owner>${projectOwner}</owner>
+              <email>${projectEmail}</email>
+            </properties>
+            <excludes>
+              <exclude>**/README</exclude>
+              <exclude>**/LICENSE*</exclude>
+              <exclude>app/docs/**</exclude>
+              <exclude>**/*.groovy</exclude>
+              <exclude>bower_components/**</exclude>
+              <exclude>node/**</exclude>
+              <exclude>node_modules/**</exclude>
+              <exclude>.babelrc</exclude>
+              <exclude>yarn.lock</exclude>
+              <exclude>app_bundle.js</exclude>
+            </excludes>
+            <mapping>
+              <service>SCRIPT_STYLE</service>
+            </mapping>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
     <plugins>
       <plugin>
         <groupId>com.github.eirslett</groupId>
