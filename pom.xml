@@ -112,8 +112,10 @@
   </properties>
   
   <modules>
+    <module>uis</module>
     <module>models</module>
     <module>api</module>
+    <module>addons</module>
     <module>boot</module>
     <module>bindings</module>
     <module>core</module>
@@ -122,9 +124,7 @@
     <module>filers</module>
     <module>test</module>
     <module>tools</module>
-    <module>addons</module>
     <module>embedder</module>
-    <module>uis</module>
     <module>ftests</module>
     <module>rest</module>
     <module>clients</module>
