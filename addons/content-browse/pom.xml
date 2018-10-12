@@ -33,6 +33,7 @@
     <module>ftests</module>
     <module>model-java</module>
     <module>ui</module>
+    <module>client-java</module>
   </modules>
 
 </project>

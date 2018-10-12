@@ -151,6 +151,8 @@ public class ContentBrowseResult
 
         private Set<String> sources;
 
+        public ListingURLResult(){}
+
         public ListingURLResult( String path, String listingUrl, Set<String> sources )
         {
             this.path = path;
@@ -173,5 +175,19 @@ public class ContentBrowseResult
             return sources;
         }
 
+        public void setPath( String path )
+        {
+            this.path = path;
+        }
+
+        public void setListingUrl( String listingUrl )
+        {
+            this.listingUrl = listingUrl;
+        }
+
+        public void setSources( Set<String> sources )
+        {
+            this.sources = sources;
+        }
     }
 }
