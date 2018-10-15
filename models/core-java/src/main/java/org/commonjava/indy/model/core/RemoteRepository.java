@@ -42,6 +42,8 @@ public class RemoteRepository
 
     public static final int DEFAULT_MAX_CONNECTIONS = 30;
 
+    public static final int DEFAULT_METADATA_TIMEOUT_SECONDS = 86400;
+
     @ApiModelProperty( required = true, value = "The remote URL to proxy" )
     @JsonProperty( "url" )
     private String url;
@@ -118,6 +120,7 @@ public class RemoteRepository
 
     RemoteRepository()
     {
+        this.setMetadataTimeoutSeconds( DEFAULT_METADATA_TIMEOUT_SECONDS );
     }
 
     @Deprecated
@@ -131,6 +134,7 @@ public class RemoteRepository
         super( packageType, remote, name );
         this.url = remoteUrl;
         calculateFields();
+        this.setMetadataTimeoutSeconds( DEFAULT_METADATA_TIMEOUT_SECONDS );
     }
 
     public String getUrl()

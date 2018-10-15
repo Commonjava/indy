@@ -39,6 +39,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.IndyException;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -84,6 +85,9 @@ public class ReplicationController
 
     @Inject
     private ScriptEngine scriptEngine;
+
+    @Inject
+    private IndyConfiguration indyConfiguration;
 
     protected ReplicationController()
     {
@@ -172,6 +176,7 @@ public class ReplicationController
                             {
                                 RemoteRepository repo = creator.createRemoteRepository( key, view );
                                 repo.setMetadata( ArtifactStore.METADATA_ORIGIN, REPLICATION_ORIGIN );
+                                repo.setMetadataTimeoutSeconds( indyConfiguration.getRemoteMetadataTimeoutSeconds() );
 
                                 setProxyAttributes( repo, action );
 

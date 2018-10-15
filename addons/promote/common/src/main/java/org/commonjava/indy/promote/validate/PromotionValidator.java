@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -72,6 +73,10 @@ public class PromotionValidator
     private PromoteConfig config;
 
     @Inject
+    private IndyConfiguration indyConfiguration;
+
+
+    @Inject
     @WeftManaged
     @ExecutorConfig( named = "promote-validation-rules-runner", threads = 8, priority = 5 )
     private ExecutorService validationExecutor;
@@ -86,6 +91,12 @@ public class PromotionValidator
         this.validationsManager = validationsManager;
         this.validationTools = validationTools;
         this.storeDataMgr = storeDataMgr;
+    }
+
+    public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools,
+                                  StoreDataManager storeDataMgr, IndyConfiguration indyConfiguration){
+        this(validationsManager, validationTools, storeDataMgr);
+        this.indyConfiguration = indyConfiguration;
     }
 
     /**
@@ -264,6 +275,7 @@ public class PromotionValidator
                     "yyyyMMdd.hhmmss.SSSZ" ).format( new Date() );
 
             final RemoteRepository tempRemote = new RemoteRepository( tempName, baseUrl );
+            tempRemote.setMetadataTimeoutSeconds( indyConfiguration.getRemoteMetadataTimeoutSeconds() );
 
             tempRemote.setPathMaskPatterns( pathsReq.getPaths() );
 

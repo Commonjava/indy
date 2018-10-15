@@ -62,6 +62,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -91,6 +92,9 @@ public class StoreAdminHandler
 
     @Inject
     private SecurityManager securityManager;
+
+    @Inject
+    private IndyConfiguration configuration;
 
     public StoreAdminHandler()
     {
@@ -188,6 +192,15 @@ public class StoreAdminHandler
         }
 
         logger.info( "\n\nGot artifact store: {}\n\n", store );
+
+        if ( store != null && store.getType() == StoreType.remote )
+        {
+            RemoteRepository remote = (RemoteRepository) store;
+            if ( remote.getMetadataTimeoutSeconds() <= 0 )
+            {
+                remote.setMetadataTimeoutSeconds( configuration.getRemoteMetadataTimeoutSeconds() );
+            }
+        }
 
         try
         {
