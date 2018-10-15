@@ -20,6 +20,7 @@ import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.rest.dto.CatalogDTO;
 import org.commonjava.indy.autoprox.rest.dto.RuleDTO;
 import org.commonjava.indy.autoprox.util.ScriptRuleParser;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -63,6 +64,9 @@ public class AutoProxCatalogManager
 
     private boolean enabled;
 
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
     protected AutoProxCatalogManager()
     {
     }
@@ -75,6 +79,14 @@ public class AutoProxCatalogManager
         this.apConfig = apConfig;
         this.ruleParser = ruleParser;
         parseRules();
+    }
+
+    protected AutoProxCatalogManager(final DataFileManager ffManager, final AutoProxConfig apConfig,
+                                     final ScriptRuleParser ruleParser, IndyConfiguration indyConfiguration)
+            throws AutoProxRuleException
+    {
+        this( ffManager, apConfig, ruleParser );
+        this.indyConfiguration = indyConfiguration;
     }
 
     @PostConstruct
@@ -229,6 +241,7 @@ public class AutoProxCatalogManager
             {
                 RemoteRepository repo = rule.createRemoteRepository( key );
                 repo.setMetadata( ArtifactStore.METADATA_ORIGIN, AUTOPROX_ORIGIN );
+                repo.setMetadataTimeoutSeconds( indyConfiguration.getRemoteMetadataTimeoutSeconds() );
                 return repo;
             }
 
@@ -330,7 +343,13 @@ public class AutoProxCatalogManager
         final AutoProxRule rule = getRuleMatching( key );
         try
         {
-            return rule == null || !rule.isValidationEnabled() ? null : rule.createValidationRemote( key );
+            RemoteRepository remote =
+                    rule == null || !rule.isValidationEnabled() ? null : rule.createValidationRemote( key );
+            if ( remote != null )
+            {
+                remote.setMetadataTimeoutSeconds( indyConfiguration.getRemoteMetadataTimeoutSeconds() );
+            }
+            return remote;
         }
         catch ( final MalformedURLException e )
         {

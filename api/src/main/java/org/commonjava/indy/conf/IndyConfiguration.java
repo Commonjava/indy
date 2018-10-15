@@ -68,4 +68,6 @@ public interface IndyConfiguration
 
     Boolean isAllowRemoteListDownload();
 
+    int getRemoteMetadataTimeoutSeconds();
+
 }

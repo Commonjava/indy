@@ -31,6 +31,8 @@ import org.commonjava.indy.autoprox.conf.AutoProxConfig;
 import org.commonjava.indy.autoprox.fixture.TestAutoProxFactory;
 import org.commonjava.indy.autoprox.fixture.TestAutoProxyDataManager;
 import org.commonjava.indy.autoprox.util.ScriptRuleParser;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -113,7 +115,9 @@ public class AutoProxDataManagerDecoratorTest
 
         final AutoProxConfig indyConfig = new AutoProxConfig( autoproxDataDir.getName(), true );
 
-        catalog = new AutoProxCatalogManager( dataFiles, indyConfig, ruleParser );
+        final IndyConfiguration indyConfiguration = new DefaultIndyConfiguration();
+
+        catalog = new AutoProxCatalogManager( dataFiles, indyConfig, ruleParser, indyConfiguration );
         storeDataManager = new TestAutoProxyDataManager( catalog, galley.getTransferManager() );
 
         storeDataManager.install();

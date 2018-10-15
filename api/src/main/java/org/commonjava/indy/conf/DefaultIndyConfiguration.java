@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.conf;
 
+import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -45,6 +46,8 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_ALLOW_REMOTE_LIST_DOWNLOAD = false;
 
+    public static final int DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS = RemoteRepository.DEFAULT_METADATA_TIMEOUT_SECONDS;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -56,6 +59,8 @@ public class DefaultIndyConfiguration
     private Integer nfcExpirationSweepMinutes;
 
     private Integer nfcMaxResultSetSize;
+
+    private Integer remoteMetadataTimeoutSeconds;
 
     private String mdcHeaders;
 
@@ -177,6 +182,20 @@ public class DefaultIndyConfiguration
     public void setStoreDisableTimeoutSeconds( final Integer storeDisableTimeoutSeconds )
     {
         this.storeDisableTimeoutSeconds = storeDisableTimeoutSeconds;
+    }
+
+    @Override
+    public int getRemoteMetadataTimeoutSeconds()
+    {
+        return remoteMetadataTimeoutSeconds == null ?
+                DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS :
+                remoteMetadataTimeoutSeconds;
+    }
+
+    @ConfigName( "remote.metadata.timeout" )
+    public void setRemoteMetadataTimeoutSeconds( Integer remoteMetadataTimeoutSeconds )
+    {
+        this.remoteMetadataTimeoutSeconds = remoteMetadataTimeoutSeconds;
     }
 
     @Override

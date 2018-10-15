@@ -24,6 +24,7 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.core.inject.GroupMembershipLocks;
@@ -134,6 +135,9 @@ public abstract class KojiContentManagerDecorator
 
     @Inject
     private KojiPathPatternFormatter pathFormatter;
+
+    @Inject
+    private IndyConfiguration indyConfiguration;
 
     @Override
     @Measure( timers = @MetricNamed( DEFAULT ) )
@@ -457,6 +461,7 @@ public abstract class KojiContentManagerDecorator
                 {
                     remote.setMetadata( ArtifactStore.METADATA_ORIGIN, KOJI_ORIGIN );
                 }
+                remote.setMetadataTimeoutSeconds( indyConfiguration.getRemoteMetadataTimeoutSeconds() );
 
                 // set pathMaskPatterns using build output paths
                 Set<String> patterns = pathFormatter.getPatterns( artifactRef, archives );

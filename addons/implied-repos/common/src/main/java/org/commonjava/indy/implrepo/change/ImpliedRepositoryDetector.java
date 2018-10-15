@@ -20,6 +20,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.CoreEventManagerConstants;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.ArtifactStoreValidator;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -88,6 +89,9 @@ public class ImpliedRepositoryDetector
     @Inject
     private ImpliedRepoConfig config;
 
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
     @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
                      threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
                      priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
@@ -112,6 +116,15 @@ public class ImpliedRepositoryDetector
         this.scriptEngine = scriptEngine;
         this.config = config;
         this.executor = executor;
+    }
+
+    protected ImpliedRepositoryDetector(final MavenPomReader pomReader, final StoreDataManager storeManager,
+                                        final ImpliedRepoMetadataManager metadataManager,
+                                        final ArtifactStoreValidator remoteValidator, final ScriptEngine scriptEngine,
+                                        final ExecutorService executor, final ImpliedRepoConfig config,
+                                        final IndyConfiguration indyConfiguration ){
+        this(pomReader, storeManager, metadataManager, remoteValidator, scriptEngine, executor, config);
+        this.indyConfiguration = indyConfiguration;
     }
 
     public ImpliedRepositoryCreator createRepoCreator()
@@ -393,6 +406,7 @@ public class ImpliedRepositoryDetector
                     }
 
                     rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
+                    rr.setMetadataTimeoutSeconds( indyConfiguration.getRemoteMetadataTimeoutSeconds() );
 
                     if ( !remoteValidator.isValid( rr ) )
                     {

@@ -151,7 +151,7 @@ public class PromotionManagerTest
         DirectContentAccess dca =
                 new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
 
-        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<>(
                 "content-metadata", contentMetadata ) );
 
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
@@ -170,7 +170,7 @@ public class PromotionManagerTest
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager(),
-                                                                          contentDigester ), storeManager );
+                                                                          contentDigester ), storeManager, new DefaultIndyConfiguration() );
 
         PromoteConfig config = new PromoteConfig();
 

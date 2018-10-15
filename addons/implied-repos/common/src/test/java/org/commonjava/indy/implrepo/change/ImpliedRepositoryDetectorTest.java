@@ -18,6 +18,8 @@ package org.commonjava.indy.implrepo.change;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.ArtifactStoreValidator;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -69,10 +71,10 @@ public class ImpliedRepositoryDetectorTest
         public TestImpliedRepositoryDetector( MavenPomReader pomReader, StoreDataManager storeManager,
                                               ImpliedRepoMetadataManager metadataManager,
                                               ArtifactStoreValidator remoteValidator, ScriptEngine scriptEngine,
-                                              ImpliedRepoConfig config )
+                                              ImpliedRepoConfig config, IndyConfiguration indyConfiguration )
         {
             super( pomReader, storeManager, metadataManager, remoteValidator, scriptEngine,
-                   Executors.newSingleThreadExecutor(), config );
+                   Executors.newSingleThreadExecutor(), config, indyConfiguration );
         }
     }
 
@@ -124,7 +126,7 @@ public class ImpliedRepositoryDetectorTest
 
         ScriptEngine engine = new ScriptEngine( dataFiles );
         detector = new TestImpliedRepositoryDetector( fixture.getPomReader(), storeManager, metadataManager, validator,
-                                                      engine, config );
+                                                      engine, config, new DefaultIndyConfiguration() );
 
         summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" );
 
