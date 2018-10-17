@@ -606,7 +606,7 @@ public class MavenMetadataGenerator
     {
         synchronized ( versionMetadataCache )
         {
-            Map cacheMap = versionMetadataCache.get( key );
+            Map<String, MetadataInfo> cacheMap = versionMetadataCache.get( key );
             if ( cacheMap == null )
             {
                 cacheMap = new HashMap<>();
