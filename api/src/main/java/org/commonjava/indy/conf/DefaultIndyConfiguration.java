@@ -45,6 +45,8 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_ALLOW_REMOTE_LIST_DOWNLOAD = false;
 
+    public static final int DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS = 86400;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -56,6 +58,8 @@ public class DefaultIndyConfiguration
     private Integer nfcExpirationSweepMinutes;
 
     private Integer nfcMaxResultSetSize;
+
+    private Integer remoteMetadataTimeoutSeconds;
 
     private String mdcHeaders;
 
@@ -177,6 +181,20 @@ public class DefaultIndyConfiguration
     public void setStoreDisableTimeoutSeconds( final Integer storeDisableTimeoutSeconds )
     {
         this.storeDisableTimeoutSeconds = storeDisableTimeoutSeconds;
+    }
+
+    @Override
+    public int getRemoteMetadataTimeoutSeconds()
+    {
+        return remoteMetadataTimeoutSeconds == null ?
+                DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS :
+                remoteMetadataTimeoutSeconds;
+    }
+
+    @ConfigName( "remote.metadata.timeout" )
+    public void setRemoteMetadataTimeoutSeconds( Integer remoteMetadataTimeoutSeconds )
+    {
+        this.remoteMetadataTimeoutSeconds = remoteMetadataTimeoutSeconds;
     }
 
     @Override

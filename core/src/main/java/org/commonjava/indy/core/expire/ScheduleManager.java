@@ -236,10 +236,18 @@ public class ScheduleManager
         final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( resource, key.getPackageType() );
         if ( !repo.isPassthrough() )
         {
-            if ( ( info != null && info.isMetadata() ) && repo.getMetadataTimeoutSeconds() > 0 )
+            if ( ( info != null && info.isMetadata() ) && repo.getMetadataTimeoutSeconds() >= 0 )
             {
-                logger.debug( "Using metadata timeout for: {}", resource );
-                timeout = repo.getMetadataTimeoutSeconds();
+                if ( repo.getMetadataTimeoutSeconds() == 0 )
+                {
+                    logger.debug( "Using default metadata timeout for: {}", resource );
+                    timeout = config.getRemoteMetadataTimeoutSeconds();
+                }
+                else
+                {
+                    logger.debug( "Using metadata timeout for: {}", resource );
+                    timeout = repo.getMetadataTimeoutSeconds();
+                }
             }
             else
             {

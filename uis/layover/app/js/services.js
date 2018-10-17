@@ -312,8 +312,15 @@ indyServices.factory('StoreUtilSvc', function(){
       return options;
     },
 
-    durationToSeconds: function(duration){
-      if ( duration == 'never' ){
+    durationToSeconds: function(duration, useDefault){
+      if ( useDefault ) {
+        if ( duration === '0' || duration === 0 || duration === 'default' ) {
+          return 0;
+        }
+        if ( duration < 0 || duration === 'never' ) {
+          return -1;
+        }
+      } else if ( duration === 'never' ){
         return 0;
       }
 
@@ -351,8 +358,12 @@ indyServices.factory('StoreUtilSvc', function(){
       return date.toLocaleString();
     },
 
-    secondsToDuration: function(secs){
-      if ( secs == undefined ){
+    secondsToDuration: function(secs, useDefault){
+      if ( (secs === undefined || secs === 0) && useDefault ) {
+        return "default";
+      }
+
+      if ( secs === undefined ){
         return 'never';
       }
 
@@ -564,9 +575,9 @@ indyServices.factory('StoreDisableSvc', ['$resource',
     });
 
     obj.setEnableAttributes = function(raw, store, StoreUtilSvc){
-          console.log("Store:\n\n" + JSON.stringify(store));
+//          console.log("Store:\n\n" + JSON.stringify(store));
           var disabled = store.disabled === undefined ? false : store.disabled;
-          console.log( "is " + store.key + " disabled? " + disabled);
+//          console.log( "is " + store.key + " disabled? " + disabled);
           raw.enabled = !disabled;
           if ( disabled ){
             var type = StoreUtilSvc.typeFromKey(store.key);
@@ -604,7 +615,7 @@ indyServices.factory('StoreDisableSvc', ['$resource',
 
         scope.isDisabled = function(key){
             var result = key in scope.disabledMap;
-            console.log( "Is " + key + " disabled? " + result);
+//            console.log( "Is " + key + " disabled? " + result);
             return result;
         };
 

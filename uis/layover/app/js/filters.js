@@ -28,8 +28,8 @@ filterModule
 
 filterModule
   .filter('duration', ['StoreUtilSvc', function(StoreUtilSvc) {
-    return function(secs) {
-      return StoreUtilSvc.secondsToDuration( secs );
+    return function(secs, useDefault) {
+      return StoreUtilSvc.secondsToDuration( secs, useDefault );
     };
   }]);
 

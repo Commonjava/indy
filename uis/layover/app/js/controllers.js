@@ -91,7 +91,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
         }
         else{
           scope.store.cache_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.cache_timeout_seconds);
-          scope.store.metadata_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.metadata_timeout_seconds);
+          scope.store.metadata_timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.metadata_timeout_seconds, true);
         }
 
         scope.store.timeout_seconds = StoreUtilSvc.durationToSeconds(scope.raw.timeout_seconds);
@@ -120,7 +120,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
 
       $scope.raw.cache_timeout_seconds = StoreUtilSvc.secondsToDuration(store.cache_timeout_seconds);
       $scope.raw.timeout_seconds = StoreUtilSvc.secondsToDuration(store.timeout_seconds);
-      $scope.raw.metadata_timeout_seconds = StoreUtilSvc.secondsToDuration(store.metadata_timeout_seconds);
+      $scope.raw.metadata_timeout_seconds = StoreUtilSvc.secondsToDuration(store.metadata_timeout_seconds, true);
 
       var useX509 = store.server_certificate_pem !== undefined;
       useX509 = store.key_certificate_pem !== undefined || useX509;
@@ -128,7 +128,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
       $scope.raw.use_x509 = useX509;
 
       StoreDisableSvc.setEnableAttributes($scope.raw, store, StoreUtilSvc);
-      console.log("VIEW: After calling setEnableAttributes, raw.enabled == " + $scope.raw.enabled);
+//      console.log("VIEW: After calling setEnableAttributes, raw.enabled == " + $scope.raw.enabled);
 
       var useProxy = store.proxy_host !== undefined;
       $scope.raw.use_proxy = useProxy;
