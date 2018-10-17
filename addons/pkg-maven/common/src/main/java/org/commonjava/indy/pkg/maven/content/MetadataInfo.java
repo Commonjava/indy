@@ -17,10 +17,13 @@ package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
 
+import java.io.Serializable;
+
 /**
  * Used to bind group metadata and its metadata merge info together for caching easily
  */
 public class MetadataInfo
+        implements Serializable
 {
     private Metadata metadata;
 
