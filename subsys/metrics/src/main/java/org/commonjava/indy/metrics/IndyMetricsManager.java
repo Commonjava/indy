@@ -45,7 +45,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
  * Created by xiabai on 2/27/17.
  */
 @ApplicationScoped
-public class IndyMetricsManager
+public class  IndyMetricsManager
 {
 
     private static final Logger logger = LoggerFactory.getLogger( IndyMetricsManager.class );
