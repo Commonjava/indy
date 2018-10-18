@@ -305,6 +305,13 @@ public final class ProxyResponseWriter
                             }
                             case CONNECT_METHOD:
                             {
+                                if ( !config.isMITMEnabled() )
+                                {
+                                    logger.debug( "CONNECT method not supported unless MITM-proxying is enabled." );
+                                    http.writeStatus( ApplicationStatus.BAD_REQUEST );
+                                    break;
+                                }
+
                                 String uri = requestLine.getUri(); // e.g, github.com:443
                                 logger.debug( "Get CONNECT request, uri: {}", uri );
 
@@ -322,27 +329,19 @@ public final class ProxyResponseWriter
 
                                 SocketChannel socketChannel;
 
-                                if ( !config.isMITMEnabled() )
-                                {
-                                    InetSocketAddress target = new InetSocketAddress( host, port );
-                                    socketChannel = SocketChannel.open( target );
-                                }
-                                else
-                                {
-                                    ProxyMITMSSLServer svr =
-                                                    new ProxyMITMSSLServer( host, port, trackingId, proxyUserPass,
-                                                                            proxyResponseHelper, contentController,
-                                                                            cacheProvider, config );
-                                    tunnelAndMITMExecutor.submit( svr );
-                                    socketChannel = svr.getSocketChannel();
+                                ProxyMITMSSLServer svr =
+                                                new ProxyMITMSSLServer( host, port, trackingId, proxyUserPass,
+                                                                        proxyResponseHelper, contentController,
+                                                                        cacheProvider, config );
+                                tunnelAndMITMExecutor.submit( svr );
+                                socketChannel = svr.getSocketChannel();
 
-                                    if ( socketChannel == null )
-                                    {
-                                        logger.debug( "Failed to get MITM socket channel" );
-                                        http.writeStatus( ApplicationStatus.SERVER_ERROR );
-                                        svr.stop();
-                                        break;
-                                    }
+                                if ( socketChannel == null )
+                                {
+                                    logger.debug( "Failed to get MITM socket channel" );
+                                    http.writeStatus( ApplicationStatus.SERVER_ERROR );
+                                    svr.stop();
+                                    break;
                                 }
 
                                 sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel );
