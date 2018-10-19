@@ -145,6 +145,9 @@ public class JaxRsBooter
             weld = new Weld();
             weld.property("org.jboss.weld.se.archive.isolation", false);
 
+            // Weld shutdown hook might be called before Indy's, we need to disable it to allow Indy's shutdown hooks execute smoothly
+            weld.skipShutdownHook();
+
             container = weld.initialize();
 
             // injectable version.
