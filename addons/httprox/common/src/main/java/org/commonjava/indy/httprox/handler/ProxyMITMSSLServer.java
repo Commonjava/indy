@@ -60,6 +60,7 @@ import static org.commonjava.indy.httprox.util.CertUtils.createSignedCertificate
 import static org.commonjava.indy.httprox.util.CertUtils.getPrivateKey;
 import static org.commonjava.indy.httprox.util.CertUtils.loadX509Certificate;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.MITM_SO_TIMEOUT_MINUTES;
 
 /**
  * We create server crt based on the host name and use a CA crt to sign it. We send the CA crt to client and they use
@@ -183,6 +184,7 @@ public class ProxyMITMSSLServer implements Runnable
         started = true;
 
         socket = sslServerSocket.accept();
+        socket.setSoTimeout( (int) TimeUnit.MINUTES.toMillis( MITM_SO_TIMEOUT_MINUTES ) );
 
         logger.debug( "MITM server accepted" );
         BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );

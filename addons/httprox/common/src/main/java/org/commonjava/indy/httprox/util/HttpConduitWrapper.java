@@ -166,7 +166,7 @@ public class HttpConduitWrapper
                     throws IOException, IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Valid transfer found." );
+        logger.debug( "Valid transfer found, {}", txfr );
         try(InputStream in = txfr.openInputStream( true, eventMetadata ))
         {
             final HttpExchangeMetadata metadata = contentController.getHttpMetadata( txfr );
@@ -201,6 +201,7 @@ public class HttpConduitWrapper
 
             writeHeader( ApplicationHeader.content_type, contentController.getContentType( path ) );
 
+            logger.trace( "Write body, {}", writeBody );
             if ( writeBody )
             {
                 sinkChannel.write( ByteBuffer.wrap( "\r\n".getBytes() ) );
@@ -209,8 +210,10 @@ public class HttpConduitWrapper
                 ByteBuffer bbuf = ByteBuffer.allocate( capacity );
                 byte[] buf = new byte[capacity];
                 int read = -1;
+                logger.trace( "Read transfer..." );
                 while ( ( read = in.read( buf ) ) > -1 )
                 {
+                    logger.trace( "Read transfer, read={}", read );
                     bbuf.clear();
                     bbuf.put( buf, 0, read );
                     bbuf.flip();
@@ -218,6 +221,7 @@ public class HttpConduitWrapper
                     do
                     {
                         written += sinkChannel.write( bbuf );
+                        logger.trace( "Write sinkChannel, written={}", written );
                     }
                     while ( written < read );
                 }
@@ -227,6 +231,8 @@ public class HttpConduitWrapper
         {
             cacheProvider.cleanupCurrentThread();
         }
+        sinkChannel.flush();
+        logger.debug( "Write transfer DONE." );
     }
 
     @Override
