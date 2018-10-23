@@ -21,7 +21,10 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
@@ -29,6 +32,9 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.MITM_SO_TIMEOUT_MINUTES;
 
 /**
  * Created by ruhan on 9/6/18.
@@ -37,9 +43,9 @@ public class ProxySSLTunnel implements Runnable
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private volatile Selector selector; // selecting READ events for target channel
+    //private volatile Selector selector; // selecting READ events for target channel
 
-    private static final long SELECTOR_TIMEOUT = 60 * 1000; // 60 seconds
+    //private static final long SELECTOR_TIMEOUT = 60 * 1000; // 60 seconds
 
     private static final int DEFAULT_READ_BUF_SIZE = 1024 * 32; // 32 K
 
@@ -71,6 +77,54 @@ public class ProxySSLTunnel implements Runnable
         }
     }
 
+    private void pipeTargetToSinkChannel( ConduitStreamSinkChannel sinkChannel, SocketChannel targetChannel )
+                    throws IOException
+    {
+        targetChannel.socket().setSoTimeout( (int) TimeUnit.MINUTES.toMillis( MITM_SO_TIMEOUT_MINUTES ) );
+        InputStream inStream = targetChannel.socket().getInputStream();
+        ReadableByteChannel wrappedChannel = Channels.newChannel( inStream );
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate( DEFAULT_READ_BUF_SIZE );
+
+        while ( true )
+        {
+            if ( closed )
+            {
+                break;
+            }
+
+            int read = -1;
+            try
+            {
+                read = wrappedChannel.read( byteBuffer );
+            }
+            catch ( IOException e )
+            {
+                logger.debug( "Read target channel breaks, {}", e.toString() );
+                break;
+            }
+
+            if ( read <= 0 )
+            {
+                logger.debug( "Read breaks, read: {}", read );
+                break;
+            }
+
+            //limit is set to current position and position is set to zero
+            byteBuffer.flip();
+
+            final byte[] bytes = new byte[byteBuffer.limit()];
+            byteBuffer.get( bytes );
+
+            logger.debug( "Write sink channel, bytes: {}", bytes.length );
+            sinkChannel.write( ByteBuffer.wrap( bytes ) );
+            byteBuffer.clear();
+        }
+
+        logger.error( "Pipe to sink channel complete" );
+    }
+
+/*
     private void pipeTargetToSinkChannel( ConduitStreamSinkChannel sinkChannel, SocketChannel targetChannel )
                     throws IOException
     {
@@ -156,6 +210,7 @@ public class ProxySSLTunnel implements Runnable
         }
         return bos.toByteArray();
     }
+*/
 
     public void write( byte[] bytes ) throws IOException
     {
@@ -167,7 +222,7 @@ public class ProxySSLTunnel implements Runnable
         this.closed = true;
         try
         {
-            selector.close(); // wake it up to complete the tunnel
+            //selector.close(); // wake it up to complete the tunnel
             socketChannel.close();
         }
         catch ( IOException e )
