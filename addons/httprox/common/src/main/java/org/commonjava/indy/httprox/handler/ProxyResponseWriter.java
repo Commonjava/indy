@@ -344,7 +344,7 @@ public final class ProxyResponseWriter
                                     break;
                                 }
 
-                                sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel );
+                                sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel, config );
                                 tunnelAndMITMExecutor.submit( sslTunnel );
                                 proxyRequestReader.setProxySSLTunnel( sslTunnel ); // client input will be directed to target socket
 

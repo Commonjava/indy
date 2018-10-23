@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.conduits.ConduitStreamSinkChannel;
@@ -30,11 +31,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import static org.commonjava.indy.httprox.util.HttpProxyConstants.MITM_SO_TIMEOUT_MINUTES;
 
 /**
  * Created by ruhan on 9/6/18.
@@ -55,13 +52,13 @@ public class ProxySSLTunnel implements Runnable
 
     private volatile boolean closed;
 
-    private final ExecutorService service;
+    private final HttproxConfig config;
 
-    public ProxySSLTunnel( ConduitStreamSinkChannel sinkChannel, SocketChannel socketChannel )
+    public ProxySSLTunnel( ConduitStreamSinkChannel sinkChannel, SocketChannel socketChannel, HttproxConfig config )
     {
         this.sinkChannel = sinkChannel;
         this.socketChannel = socketChannel;
-        this.service = Executors.newSingleThreadExecutor();
+        this.config = config;
     }
 
     @Override
@@ -80,7 +77,7 @@ public class ProxySSLTunnel implements Runnable
     private void pipeTargetToSinkChannel( ConduitStreamSinkChannel sinkChannel, SocketChannel targetChannel )
                     throws IOException
     {
-        targetChannel.socket().setSoTimeout( (int) TimeUnit.MINUTES.toMillis( MITM_SO_TIMEOUT_MINUTES ) );
+        targetChannel.socket().setSoTimeout( (int) TimeUnit.MINUTES.toMillis( config.getMITMSoTimeoutMinutes() ) );
         InputStream inStream = targetChannel.socket().getInputStream();
         ReadableByteChannel wrappedChannel = Channels.newChannel( inStream );
 
@@ -229,6 +226,5 @@ public class ProxySSLTunnel implements Runnable
         {
             logger.error( "Close tunnel selector failed", e );
         }
-        service.shutdown();
     }
 }

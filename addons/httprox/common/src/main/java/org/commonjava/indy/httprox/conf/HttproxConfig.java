@@ -47,6 +47,8 @@ public class HttproxConfig
 
     private static final int DEFAULT_AUTH_CACHE_EXPIRATION_HOURS = 1;
 
+    private static final int DEFAULT_MITM_SO_TIMEOUT_MINUTES = 30;
+
     private String proxyRealm;
 
     private Boolean enabled;
@@ -68,6 +70,8 @@ public class HttproxConfig
     private String MITMCACert;
 
     private String MITMDNTemplate;
+
+    private Integer MITMSoTimeoutMinutes;
 
     public TrackingType getTrackingType()
     {
@@ -207,5 +211,16 @@ public class HttproxConfig
     public void setMITMDNTemplate( String MITMDNTemplate )
     {
         this.MITMDNTemplate = MITMDNTemplate;
+    }
+
+    public Integer getMITMSoTimeoutMinutes()
+    {
+        return MITMSoTimeoutMinutes == null ? DEFAULT_MITM_SO_TIMEOUT_MINUTES : MITMSoTimeoutMinutes;
+    }
+
+    @ConfigName( "MITM.so.timeout.minutes" )
+    public void setMITMSoTimeoutMinutes( Integer MITMSoTimeoutMinutes )
+    {
+        this.MITMSoTimeoutMinutes = MITMSoTimeoutMinutes;
     }
 }
