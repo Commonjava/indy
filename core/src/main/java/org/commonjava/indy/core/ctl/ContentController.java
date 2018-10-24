@@ -273,6 +273,10 @@ public class ContentController
         return store;
     }
 
+    /**
+     * @deprecated directory listing has been moved to addons/content-browse
+     */
+    @Deprecated
     public String renderListing( final String acceptHeader, final StoreType type, final String name, final String path,
                                  final String serviceUrl, final UriFormatter uriFormatter )
         throws IndyWorkflowException
@@ -281,6 +285,10 @@ public class ContentController
         return renderListing( acceptHeader, key, path, serviceUrl, uriFormatter );
     }
 
+    /**
+     * @deprecated directory listing has been moved to addons/content-browse
+     */
+    @Deprecated
     public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl, final UriFormatter uriFormatter )
             throws IndyWorkflowException
@@ -288,6 +296,10 @@ public class ContentController
         return renderListing( acceptHeader, key, requestPath, serviceUrl, uriFormatter, new EventMetadata() );
     }
 
+    /**
+     * @deprecated directory listing has been moved to addons/content-browse
+     */
+    @Deprecated
     public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl, final UriFormatter uriFormatter, final EventMetadata eventMetadata )
         throws IndyWorkflowException

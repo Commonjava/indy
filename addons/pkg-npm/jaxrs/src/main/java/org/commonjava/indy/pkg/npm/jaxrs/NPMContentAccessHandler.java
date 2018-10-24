@@ -26,7 +26,6 @@ import org.commonjava.indy.core.model.StoreHttpExchangeMetadata;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.util.AcceptInfo;
@@ -46,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -62,11 +62,11 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
+import static org.commonjava.indy.core.ctl.ContentController.*;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
@@ -188,38 +188,12 @@ public class NPMContentAccessHandler
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
-        final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
-
         Response response = null;
 
         if ( path == null || path.equals( "" ) )
         {
-            try
-            {
-                logger.info( "Getting listing at: {}", path );
-                final String content =
-                        contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
-
-                Response.ResponseBuilder builder = Response.ok()
-                                                           .header( ApplicationHeader.content_type.key(),
-                                                                    acceptInfo.getRawAccept() )
-                                                           .header( ApplicationHeader.content_length.key(),
-                                                                    Long.toString( content.length() ) )
-                                                           .header( ApplicationHeader.last_modified.key(),
-                                                                    HttpUtils.formatDateHeader( new Date() ) );
-                if ( builderModifier != null )
-                {
-                    builderModifier.accept( builder );
-                }
-                response = builder.build();
-            }
-            catch ( final IndyWorkflowException e )
-            {
-                logger.error(
-                        String.format( "Failed to list content: %s from: %s. Reason: %s", path, name, e.getMessage() ),
-                        e );
-                response = formatResponse( e, builderModifier );
-            }
+            logger.info( "Getting listing at: {}", path );
+            response = redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
         else
         {
@@ -342,20 +316,8 @@ public class NPMContentAccessHandler
 
         if ( path == null || path.equals( "" ) )
         {
-            try
-            {
-                logger.info( "Getting listing at: {}", path );
-                final String content =
-                        contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter, eventMetadata );
-
-                response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
-            }
-            catch ( final IndyWorkflowException e )
-            {
-                logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
-                                             e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
-            }
+            logger.info( "Getting listing at: {}", path );
+            response = redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
         else
         {
@@ -391,23 +353,8 @@ public class NPMContentAccessHandler
                     }
                     else if ( item.isDirectory() && StoreType.remote != st )
                     {
-                        try
-                        {
-                            logger.info( "Getting listing at: {}", path + "/" );
-                            final String content =
-                                    contentController.renderListing( standardAccept, sk, path + "/", baseUri,
-                                                                     uriFormatter, eventMetadata );
-
-                            response =
-                                    formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
-                        }
-                        catch ( final IndyWorkflowException e )
-                        {
-                            logger.error(
-                                    String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
-                                                   name, e.getMessage() ), e );
-                            response = formatResponse( e, builderModifier );
-                        }
+                        logger.info( "Getting listing at: {}", path + "/" );
+                        response = redirectContentListing( packageType, type, name, path, request, builderModifier );
                     }
                     else
                     {
@@ -552,7 +499,7 @@ public class NPMContentAccessHandler
         }
         catch ( final IOException e )
         {
-            logger.error( String.format( "[NPM] Failed to store the generated targets: s% and s%. Reason: s%",
+            logger.error( String.format( "[NPM] Failed to store the generated targets: %s and %s. Reason: %s",
                                          versionTarget.getResource(), tarballTarget.getResource(), e.getMessage() ), e );
         }
         return null;
@@ -645,5 +592,40 @@ public class NPMContentAccessHandler
             type = MediaType.APPLICATION_OCTET_STREAM;
         }
         return type;
+    }
+
+    private Response redirectContentListing( final String packageType, final String type, final String name,
+                                             final String originPath, final HttpServletRequest request,
+                                             final Consumer<Response.ResponseBuilder> builderModifier )
+    {
+        // final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
+        String path = originPath;
+        if ( path != null && path.endsWith( LISTING_HTML_FILE ) )
+        {
+            path = path.replaceAll( String.format( "(%s)$", LISTING_HTML_FILE ), "" );
+        }
+
+        // A problem here is that if client is not browser(like curl or a program http call), the redirect response will
+        // just return a 303 location /browse/*, which is just a single html page with no actual content(because page is rendering
+        // by javascript). So I think we should consider to judge by the User-Agent to decide the real action, and if its not a browser
+        // action, we should redirect it to a REST call of /api/browse which will return the content result in JSON.
+        boolean isBrowser = false;
+        for ( String userAgent : BROWSER_USER_AGENT )
+        {
+            if ( request.getHeader( "User-Agent" ).contains( userAgent ) && HttpMethod.GET.equalsIgnoreCase(
+                request.getMethod() ) )
+            {
+                isBrowser = true;
+                break;
+            }
+        }
+        final String root = isBrowser ? CONTENT_BROWSE_ROOT : CONTENT_BROWSE_API_ROOT;
+        final String browseUri = PathUtils.normalize(root, packageType, type, name, path);
+        logger.debug("Directory listing request will redirect to entry point: {} ", browseUri);
+        Response.ResponseBuilder builder = Response.seeOther(URI.create(browseUri));
+        if (builderModifier != null) {
+            builderModifier.accept(builder);
+        }
+        return builder.build();
     }
 }
