@@ -43,8 +43,9 @@
     </appender>
 
   <logger name="org.commonjava.indy" level="TRACE"/>
+  <logger name="org.commonjava.maven.galley" level="DEBUG"/>
 
-  <root level="DEBUG">
+  <root level="INFO">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
   </root>

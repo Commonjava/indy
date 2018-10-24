@@ -269,27 +269,30 @@ public class ImpliedRepositoryDetector
                 final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, message );
                 for ( final Group g : groups )
                 {
-                    Group group = g.copyOf();
-
-                    boolean changed = false;
-                    for ( final ArtifactStore implied : job.implied )
+                    if ( config.isEnabledForGroup( g.getName() ) )
                     {
-                        boolean groupChanged = group.addConstituent( implied );
-                        changed = groupChanged || changed;
+                        Group group = g.copyOf();
 
-                        logger.debug( "After attempting to add: {} to group: {}, changed status is: {}", implied, group,
-                                      changed );
+                        boolean changed = false;
+                        for ( final ArtifactStore implied : job.implied )
+                        {
+                            boolean groupChanged = group.addConstituent( implied );
+                            changed = groupChanged || changed;
+
+                            logger.debug( "After attempting to add: {} to group: {}, changed status is: {}", implied,
+                                          group, changed );
+                        }
+
+                        if ( changed )
+                        {
+                            storeManager.storeArtifactStore( group, summary, false, false,
+                                                             new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                                                                                      IMPLIED_REPOS_DETECTION )
+                                                                                .set( IMPLIED_REPOS, job.implied ) );
+                        }
+
+                        anyChanged = changed || anyChanged;
                     }
-
-                    if ( changed )
-                    {
-                        storeManager.storeArtifactStore( group, summary, false, false,
-                                                         new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
-                                                                                  IMPLIED_REPOS_DETECTION )
-                                                                            .set( IMPLIED_REPOS, job.implied ) );
-                    }
-
-                    anyChanged = changed || anyChanged;
                 }
             }
         }
