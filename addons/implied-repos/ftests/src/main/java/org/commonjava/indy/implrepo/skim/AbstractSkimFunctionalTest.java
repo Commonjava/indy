@@ -29,6 +29,8 @@ import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.maven.parse.PomPeek;
@@ -60,23 +62,24 @@ public class AbstractSkimFunctionalTest
         final String changelog = "Create test structures";
 
         final String url = server.formatUrl( TEST_REPO );
-        final RemoteRepository testRepo =
-            client.stores()
-                  .create( new RemoteRepository( TEST_REPO, url ), changelog, RemoteRepository.class );
+        final RemoteRepository testRepo = client.stores()
+                                                .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY,
+                                                                               TEST_REPO, url ), changelog,
+                                                         RemoteRepository.class );
 
         Group g;
-        if ( client.stores()
-                   .exists( group, PUBLIC ) )
+        final StoreKey groupKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, group, PUBLIC );
+        if ( client.stores().exists( groupKey ) )
         {
             System.out.println( "Loading pre-existing public group." );
             g = client.stores()
-                      .load( group, PUBLIC, Group.class );
+                      .load( groupKey, Group.class );
         }
         else
         {
             System.out.println( "Creating new group 'public'" );
             g = client.stores()
-                      .create( new Group( PUBLIC ), changelog, Group.class );
+                      .create( new Group( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, PUBLIC ), changelog, Group.class );
         }
 
         g.setConstituents( Collections.singletonList( testRepo.getKey() ) );

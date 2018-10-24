@@ -16,15 +16,13 @@
 package org.commonjava.indy.implrepo.skim;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.ftest.core.category.EventDependent;
-import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -32,6 +30,29 @@ import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>A pom in remote repo test with path p</li>
+ *     <li>The pom contains declaration of a repo r</li>
+ *     <li>Group pub contains remote repo test</li>
+ *     <li>No remote repo point to repo r contained in group pub at first</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Access pom through path p in group pub</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>A new remote i point to repo r will be added into group pub</li>
+ *     <li>Remote test will have metatada "implied_stores" point to "remote:i"</li>
+ *     <li>This remote i will have metatada "implied_by_stores" point to "remote:test"</li>
+ * </ul>
+ */
 public class PomWithRepoAddsRepoToGroupTest
     extends AbstractSkimFunctionalTest
 {
@@ -45,8 +66,10 @@ public class PomWithRepoAddsRepoToGroupTest
         
         server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 
+        final StoreKey pubGroupKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group,
+                                                   PUBLIC );
         final InputStream stream = client.content()
-                                         .get( StoreType.group, PUBLIC, ref.path );
+                                         .get( pubGroupKey, ref.path );
         final String downloaded = IOUtils.toString( stream );
         IOUtils.closeQuietly( stream );
         
@@ -56,13 +79,14 @@ public class PomWithRepoAddsRepoToGroupTest
         System.out.println( "Waiting 5s for events to run." );
         Thread.sleep( 5000 );
 
-        final Group g = client.stores().load( StoreType.group, PUBLIC, Group.class );
+        final Group g = client.stores().load( pubGroupKey, Group.class );
+        final StoreKey remoteRepoKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, REPO );
         assertThat( "Group membership does not contain implied repository",
-                    g.getConstituents()
-                     .contains( new StoreKey( StoreType.remote, REPO ) ), equalTo( true ) );
+                    g.getConstituents().contains( remoteRepoKey ), equalTo( true ) );
 
         RemoteRepository r = client.stores()
-                                         .load( StoreType.remote, TEST_REPO, RemoteRepository.class );
+                                   .load( new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote,
+                                                        TEST_REPO ), RemoteRepository.class );
 
         String metadata = r.getMetadata( ImpliedRepoMetadataManager.IMPLIED_STORES );
 
@@ -70,7 +94,7 @@ public class PomWithRepoAddsRepoToGroupTest
                     metadata.contains( "remote:" + REPO ), equalTo( true ) );
 
         r = client.stores()
-                  .load( StoreType.remote, REPO, RemoteRepository.class );
+                  .load( remoteRepoKey, RemoteRepository.class );
 
         metadata = r.getMetadata( ImpliedRepoMetadataManager.IMPLIED_BY_STORES );
 

@@ -16,11 +16,10 @@
 package org.commonjava.indy.implrepo.skim;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.ftest.core.category.EventDependent;
-import org.commonjava.indy.ftest.core.category.TimingDependent;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -29,6 +28,30 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>A pom in remote repo test with path p</li>
+ *     <li>The pom contains declaration of a repo r</li>
+ *     <li>Repo r contains a pom with path pr </li>
+ *     <li>Group pub contains remote repo test</li>
+ *     <li>No remote repo point to repo r contained in group pub at first</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Access pom through path p in group pub</li>
+ *     <li>Then access pom through path pr in group pub</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The pom with path p is available through group pub</li>
+ *     <li>The pom with path pr is also available through group pub</li>
+ * </ul>
+ */
 public class ResolveDepViaSkimmedRepoInGroupTest
     extends AbstractSkimFunctionalTest
 {
@@ -41,12 +64,14 @@ public class ResolveDepViaSkimmedRepoInGroupTest
     {
         final String repoUrl = server.formatUrl( REPO );
         final PomRef pomRef = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", repoUrl ) );
-        final PomRef simplePomRef = loadPom( "simple", Collections.<String, String>emptyMap() );
+        final PomRef simplePomRef = loadPom( "simple", Collections.emptyMap() );
 
         server.expect( server.formatUrl( TEST_REPO, pomRef.path ), 200, pomRef.pom );
         server.expect( server.formatUrl( REPO, simplePomRef.path ), 200, simplePomRef.pom );
 
-        InputStream stream = client.content().get( StoreType.group, PUBLIC, pomRef.path );
+        final StoreKey pubGroupKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group,
+                                                   PUBLIC );
+        InputStream stream = client.content().get( pubGroupKey, pomRef.path );
 
         String downloaded = IOUtils.toString( stream );
         IOUtils.closeQuietly( stream );
@@ -56,7 +81,7 @@ public class ResolveDepViaSkimmedRepoInGroupTest
         // give the events time to propagate
         waitForEventPropagation();
 
-        stream = client.content().get( StoreType.group, PUBLIC, simplePomRef.path );
+        stream = client.content().get( pubGroupKey, simplePomRef.path );
 
         assertNotNull("Stream of content should not be null", stream );
 

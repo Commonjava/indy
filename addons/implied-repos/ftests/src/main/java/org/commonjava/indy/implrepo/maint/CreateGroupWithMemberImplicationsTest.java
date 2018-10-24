@@ -20,6 +20,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -27,6 +28,26 @@ import java.util.Collections;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>RemoteRepositories test and implied</li>
+ *     <li>Group pubGroup</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Make remote implied as implied repo for remote test through implied addon client</li>
+ *     <li>Add test to pubGroup</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>implied will be added to pubGroup automatically</li>
+ * </ul>
+ */
 public class CreateGroupWithMemberImplicationsTest
     extends AbstractMaintFunctionalTest
 {
@@ -39,34 +60,33 @@ public class CreateGroupWithMemberImplicationsTest
         throws Exception
     {
         System.out.println( "\n\n\n\n\nSTARTING: " + name.getMethodName() + "\n\n\n\n\n" );
-        final StoreKey impliedKey = new StoreKey( StoreType.remote, IMPLIED );
-        final StoreKey testKey = new StoreKey( StoreType.remote, TEST_REPO );
+        final StoreKey impliedKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, IMPLIED );
+        final StoreKey testKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, TEST_REPO );
 
-        testRepo =
-            client.stores()
-                  .create( new RemoteRepository( TEST_REPO, "http://www.bar.com/repo" ), setupChangelog,
-                           RemoteRepository.class );
+        testRepo = client.stores()
+                         .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, TEST_REPO,
+                                                        "http://www.bar.com/repo" ), setupChangelog,
+                                  RemoteRepository.class );
 
         client.stores()
-              .create( new RemoteRepository( IMPLIED, "http://www.foo.com/repo" ), setupChangelog,
-                       RemoteRepository.class );
+              .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, IMPLIED,
+                                             "http://www.foo.com/repo" ), setupChangelog, RemoteRepository.class );
 
         client.module( ImpliedRepoClientModule.class )
               .setStoresImpliedBy( testRepo, Collections.singletonList( impliedKey ), "setting store implications" );
 
         pubGroup.addConstituent( testKey );
 
-        client.stores()
-              .update( pubGroup, "Add test repo that has implied repos" );
+        client.stores().update( pubGroup, "Add test repo that has implied repos" );
 
         // wait for events...
         Thread.sleep( 2000 );
 
         pubGroup = client.stores()
-                         .load( StoreType.group, PUBLIC, Group.class );
+                         .load( new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group, PUBLIC ),
+                                Group.class );
 
-        assertThat( pubGroup.getConstituents()
-                            .contains( impliedKey ), equalTo( true ) );
+        assertThat( pubGroup.getConstituents().contains( impliedKey ), equalTo( true ) );
         System.out.println( "\n\n\n\n\nENDED: " + name.getMethodName() + "\n\n\n\n\n" );
     }
 

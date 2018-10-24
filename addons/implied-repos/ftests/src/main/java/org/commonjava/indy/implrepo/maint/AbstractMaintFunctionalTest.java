@@ -28,6 +28,8 @@ import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.implrepo.client.ImpliedRepoClientModule;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Before;
 import org.junit.experimental.categories.Category;
@@ -55,18 +57,20 @@ public class AbstractMaintFunctionalTest
     {
         setupChangelog = "Create test structures";
 
+        final StoreKey groupKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, group, PUBLIC );
         if ( client.stores()
-                   .exists( group, PUBLIC ) )
+                   .exists( groupKey ) )
         {
             System.out.println( "Loading pre-existing public group." );
             pubGroup = client.stores()
-                      .load( group, PUBLIC, Group.class );
+                      .load( groupKey, Group.class );
         }
         else
         {
             System.out.println( "Creating new group 'public'" );
             pubGroup = client.stores()
-                             .create( new Group( PUBLIC ), setupChangelog, Group.class );
+                             .create( new Group( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, PUBLIC ), setupChangelog,
+                                      Group.class );
         }
     }
 
@@ -80,6 +84,6 @@ public class AbstractMaintFunctionalTest
     @Override
     protected Collection<IndyClientModule> getAdditionalClientModules()
     {
-        return Collections.<IndyClientModule> singleton( new ImpliedRepoClientModule() );
+        return Collections.singleton( new ImpliedRepoClientModule() );
     }
 }
