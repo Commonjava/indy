@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.content.browse.ftest;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URL;
 
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -35,6 +36,7 @@ import static org.junit.Assert.assertThat;
  * Given:
  * <ul>
  *     <li>Content is stored in a hosted repository</li>
+ *     <li>Hosted repository is a member of a group</li>
  * </ul>
  * <br/>
  * When:
@@ -42,7 +44,7 @@ import static org.junit.Assert.assertThat;
  *     <li>A directory on the stored content's path is requested via GET.
  *        <br/>
  *        <ul>
- *          <li>directly from the hosted repository</li>
+ *          <li>from the group</li>
  *          <li>without a trailing '/' or a '/index.html' in the requested path</li>
  *          <li>without using Accept: application/json</li>
  *        </ul>
@@ -55,7 +57,7 @@ import static org.junit.Assert.assertThat;
  *     <li>The stored content should be unaffected</li>
  * </ul>
  */
-public class StoreThenGetUnSuffixedDirAndDownloadTest
+public class StoreThenGetUnSuffixedDirAndDownloadViaGroupTest
         extends AbstractContentManagementTest
 {
 
@@ -76,18 +78,18 @@ public class StoreThenGetUnSuffixedDirAndDownloadTest
               .store( hosted, STORE, path, stream );
 
         assertThat( client.content()
-                          .exists( hosted, STORE, path ), equalTo( true ) );
+                          .exists( group, PUBLIC, path ), equalTo( true ) );
 
-        try(InputStream htmlIn = client.content().get( new StoreKey( hosted, STORE ), dirPath ))
+        try(InputStream jsonIn = client.content().get( new StoreKey( group, PUBLIC ), dirPath ))
         {
-            assertThat( htmlIn, notNullValue() );
-            String html = IOUtils.toString( htmlIn );
-            assertThat( html.contains( "<html>" ), equalTo( true ) );
-            assertThat( html.contains( "bar-1.pom" ), equalTo( true ) );
+            assertThat( jsonIn, notNullValue() );
+            String json = IOUtils.toString( jsonIn );
+            assertThat( json.startsWith( "{" ), equalTo( true ) );
+            assertThat( json.contains( "bar-1.pom" ), equalTo( true ) );
         }
 
         assertThat( client.content()
-                          .exists( hosted, STORE, path ), equalTo( true ) );
+                          .exists( group, PUBLIC, path ), equalTo( true ) );
 
         final URL url = new URL( client.content()
                                        .contentUrl( hosted, STORE, path ) );
