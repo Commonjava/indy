@@ -179,11 +179,10 @@ public class ImpliedRepositoryDetector
             finally
             {
                 logger.debug( "FINISHED Processing: {}", event );
-            }
-
-            synchronized ( ImpliedRepositoryDetector.this )
-            {
-                ImpliedRepositoryDetector.this.notifyAll();
+                synchronized ( ImpliedRepositoryDetector.this )
+                {
+                    ImpliedRepositoryDetector.this.notifyAll();
+                }
             }
         } );
     }
