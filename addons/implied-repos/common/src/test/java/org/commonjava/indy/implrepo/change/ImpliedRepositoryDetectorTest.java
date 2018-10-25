@@ -116,6 +116,7 @@ public class ImpliedRepositoryDetectorTest
 
         final ImpliedRepoConfig config = new ImpliedRepoConfig();
         config.setEnabled( true );
+        config.addEnabledGroupNamePattern( ".*" );
 
         File rootDir = temp.newFolder( "indy.root" );
         final DataFileManager dataFiles = new DataFileManager( rootDir, new DataFileEventManager() );
@@ -180,7 +181,7 @@ public class ImpliedRepositoryDetectorTest
 
         assertThat( storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepository( "i-repo-one" ), notNullValue() );
 
-        assertThat( getGroup().getConstituents().contains( new StoreKey( StoreType.remote, "i-repo-one" ) ),
+        assertThat( getGroup().getConstituents().contains( new StoreKey( MAVEN_PKG_KEY, StoreType.remote, "i-repo-one" ) ),
                     equalTo( true ) );
     }
 
