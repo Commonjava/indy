@@ -144,7 +144,9 @@ public class HttpConduitWrapper
                 writeStatus( metadata.getResponseStatusCode(), metadata.getResponseStatusMessage() );
             }
 
-            writeHeader( ApplicationHeader.content_type, contentController.getContentType( path ) );
+            String contentType = metadata.getContentType();
+            writeHeader( ApplicationHeader.content_type,
+                         contentType != null ? contentType : contentController.getContentType( path ) );
             for ( final Map.Entry<String, List<String>> headerSet : metadata.getResponseHeaders().entrySet() )
             {
                 final String key = headerSet.getKey();
@@ -199,7 +201,9 @@ public class HttpConduitWrapper
                 writeHeader( ApplicationHeader.last_modified, lastMod );
             }
 
-            writeHeader( ApplicationHeader.content_type, contentController.getContentType( path ) );
+            String contentType = metadata.getContentType();
+            writeHeader( ApplicationHeader.content_type,
+                         contentType != null ? contentType : contentController.getContentType( path ) );
 
             logger.trace( "Write body, {}", writeBody );
             if ( writeBody )
