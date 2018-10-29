@@ -118,7 +118,9 @@ public class ProxySSLTunnel implements Runnable
             byteBuffer.clear();
         }
 
-        logger.error( "Pipe to sink channel complete" );
+        sinkChannel.flush();
+
+        logger.debug( "Pipe to sink channel complete" );
     }
 
 /*
