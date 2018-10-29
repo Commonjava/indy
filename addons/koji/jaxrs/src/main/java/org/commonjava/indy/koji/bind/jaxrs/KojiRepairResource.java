@@ -39,6 +39,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
@@ -46,6 +47,8 @@ import javax.ws.rs.core.UriInfo;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.ALL_MASKS;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.MASK;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.META_TIMEOUT;
+import static org.commonjava.indy.koji.model.IndyKojiConstants.META_TIMEOUT_ALL;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.REPAIR_KOJI;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.VOL;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
@@ -140,6 +143,62 @@ public class KojiRepairResource
         {
             String user = securityManager.getUser( securityContext, servletRequest );
             return repairManager.repairAllPathMasks( user );
+        }
+        catch ( KojiRepairException e )
+        {
+            logger.error( e.getMessage(), e );
+            throwError( e );
+        }
+
+        return null;
+    }
+
+    @ApiOperation( "Repair koji repository metadata timeout to \"never timeout(-1)\"." )
+    @ApiResponse( code = 200, message = "Operation finished (consult response content for success/failure).",
+                  response = KojiRepairResult.class )
+    @ApiImplicitParam( name = "body", paramType = "body",
+                       value = "JSON request specifying source and other configuration options",
+                       required = true, dataType = "org.commonjava.indy.koji.model.KojiRepairRequest" )
+    @POST
+    @Path( "/" + META_TIMEOUT )
+    @Consumes( ApplicationContent.application_json )
+    public KojiRepairResult repairMetadataTimeout( final KojiRepairRequest request, final @Context HttpServletRequest servletRequest,
+                                             final @Context SecurityContext securityContext )
+    {
+        try
+        {
+            String user = securityManager.getUser( securityContext, servletRequest );
+            return repairManager.repairMetadataTimeout( request, user );
+        }
+        catch ( KojiRepairException e )
+        {
+            logger.error( e.getMessage(), e );
+            throwError( e );
+        }
+
+        return null;
+    }
+
+    @ApiOperation(
+            "Repair koji repository metadata timeout to \"never timeout(-1)\" for all koji remote repositories." )
+    @ApiImplicitParam( name = "isDryRun", paramType = "query",
+                       value = "boolean value to specify if this request is a dry run request", defaultValue = "false",
+                       dataType = "java.lang.Boolean" )
+    @ApiResponse( code = 200, message = "Operation finished (consult response content for success/failure).",
+                  response = KojiMultiRepairResult.class )
+    @POST
+    @Path( "/" + META_TIMEOUT_ALL )
+    @Consumes( ApplicationContent.application_json )
+    public KojiMultiRepairResult repairAllMetadataTimeout( final @Context HttpServletRequest servletRequest,
+                                                           final @QueryParam( "isDryRun" ) Boolean isDryRun,
+                                                           final @Context SecurityContext securityContext )
+    {
+
+        String user = securityManager.getUser( securityContext, servletRequest );
+        final boolean dryRun = isDryRun == null ? false : isDryRun;
+        try
+        {
+            return repairManager.repairAllMetadataTimeout( user, dryRun );
         }
         catch ( KojiRepairException e )
         {
