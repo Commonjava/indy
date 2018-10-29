@@ -84,9 +84,6 @@ public class KojiRepairManager
     @Inject
     private KojiUtils kojiUtils;
 
-    @Inject
-    private StoreDataManager storeDataManager;
-
     private ReentrantLock opLock = new ReentrantLock(); // operations are synchronized
 
     protected KojiRepairManager()
@@ -110,16 +107,7 @@ public class KojiRepairManager
         {
             try
             {
-                List<RemoteRepository> kojiRemotes = storeManager.query()
-                                                                 .storeTypes( remote )
-                                                                 .stream( ( remote ) -> KOJI_ORIGIN.equals(
-                                                                         remote.getMetadata(
-                                                                                 ArtifactStore.METADATA_ORIGIN ) )
-                                                                         || KOJI_ORIGIN_BINARY.equals(
-                                                                         remote.getMetadata( ArtifactStore.METADATA_ORIGIN ) ) )
-                                                                 .map( s -> (RemoteRepository) s )
-                                                                 .filter( Objects::nonNull )
-                                                                 .collect( Collectors.toList() );
+                List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
 
                 List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
@@ -171,27 +159,16 @@ public class KojiRepairManager
         {
             try
             {
-                StoreKey remoteKey = request.getSource();
-
-                ArtifactStore store;
-                try
-                {
-                    store = storeManager.getArtifactStore( remoteKey );
-                }
-                catch ( IndyDataException e )
-                {
-                    String error = String.format( "Cannot get store: %s, error: %s", remoteKey, e );
-                    logger.warn( error, e );
-                    return ret.withError( error );
-                }
+                ArtifactStore store = getRequestedStore(request, ret);
 
                 if ( store == null )
                 {
-                    String error = String.format( "No such store: %s.", remoteKey );
-                    return ret.withError( error );
+                    return ret;
                 }
 
                 store = store.copyOf();
+
+                StoreKey remoteKey = request.getSource();
 
                 if ( remoteKey.getType() == remote )
                 {
@@ -234,7 +211,7 @@ public class KojiRepairManager
                                                                                "Repairing remote repository path masks to Koji build: "
                                                                                        + build.getNvr() );
 
-                        storeDataManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
+                        storeManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
                     }
                     catch ( KojiClientException e )
                     {
@@ -480,5 +457,172 @@ public class KojiRepairManager
         }
         return repairResult;
     }
+
+    public KojiMultiRepairResult repairAllMetadataTimeout( final String user, boolean isDryRun )
+            throws KojiRepairException
+    {
+        KojiMultiRepairResult result = new KojiMultiRepairResult();
+
+        if ( opLock.tryLock() )
+        {
+            try
+            {
+                List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
+
+                List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
+                    logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
+
+                    KojiRepairRequest request = new KojiRepairRequest( r.getKey(), isDryRun );
+                    try
+                    {
+                        return repairMetadataTimeout( request, user, true );
+                    }
+                    catch ( KojiRepairException e )
+                    {
+                        logger.error( "Failed to execute repair for: " + r.getKey(), e );
+                    }
+
+                    return null;
+                } ).filter( Objects::nonNull ).collect( Collectors.toList() );
+
+                result.setResults( results );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new KojiRepairException( "Failed to list Koji remote repositories for repair. Reason: %s", e, e.getMessage() );
+            }
+            finally
+            {
+                opLock.unlock();
+            }
+        }
+        else
+        {
+            throw new KojiRepairException( "Koji repair manager is busy." );
+        }
+
+        return result;
+    }
+
+    public KojiRepairResult repairMetadataTimeout( KojiRepairRequest request, String user, boolean skipLock ) throws KojiRepairException{
+        KojiRepairResult ret = new KojiRepairResult( request );
+
+        if ( skipLock || opLock.tryLock() )
+        {
+            try
+            {
+                ArtifactStore store = getRequestedStore(request, ret);
+
+                if ( store == null )
+                {
+                    return ret;
+                }
+
+                store = store.copyOf();
+
+                StoreKey remoteKey = request.getSource();
+                if ( remoteKey.getType() == remote )
+                {
+                    final String nvr = kojiUtils.getBuildNvr( remoteKey );
+                    if ( nvr == null )
+                    {
+                        String error = String.format( "Not a koji store: %s", remoteKey );
+                        return ret.withError( error );
+                    }
+
+                    try
+                    {
+                        final int NEVER_TIMEOUT_VALUE = -1;
+                        if ( !request.isDryRun() )
+                        {
+                            ( (RemoteRepository) store ).setMetadataTimeoutSeconds( NEVER_TIMEOUT_VALUE );
+                            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                   "Repairing remote repository path masks to Koji build: "
+                                                                                           + nvr );
+                            storeManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
+                        }
+                        KojiRepairResult.RepairResult repairResult = new KojiRepairResult.RepairResult( remoteKey );
+                        repairResult.withPropertyChange( "metadata_timeout", ( (RemoteRepository) store ).getMetadataTimeoutSeconds(), NEVER_TIMEOUT_VALUE );
+
+                        ret.withResult( repairResult );
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        String error =
+                                String.format( "Failed to store changed remote repository: %s, error: %s", remoteKey,
+                                               e );
+                        logger.debug( error, e );
+                        return ret.withError( error, e );
+                    }
+                }
+                else
+                {
+                    String error = String.format( "Not a remote koji repository: %s", remoteKey );
+                    return ret.withError( error );
+                }
+            }
+            finally
+            {
+                if ( !skipLock )
+                {
+                    opLock.unlock();
+                }
+            }
+        }
+        else
+        {
+            throw new KojiRepairException( "Koji repair manager is busy." );
+        }
+
+        return ret;
+    }
+
+    public KojiRepairResult repairMetadataTimeout( KojiRepairRequest request, String user )
+            throws KojiRepairException
+    {
+        return repairMetadataTimeout( request, user, false );
+    }
+
+
+    private List<RemoteRepository> getAllKojiRemotes()
+            throws IndyDataException
+    {
+        return storeManager.query()
+                           .storeTypes( remote )
+                           .stream( ( remote ) ->
+                                            KOJI_ORIGIN.equals( remote.getMetadata( ArtifactStore.METADATA_ORIGIN ) )
+                                                    || KOJI_ORIGIN_BINARY.equals(
+                                                    remote.getMetadata( ArtifactStore.METADATA_ORIGIN ) ) )
+                           .map( s -> (RemoteRepository) s )
+                           .filter( Objects::nonNull )
+                           .collect( Collectors.toList() );
+    }
+
+    private ArtifactStore getRequestedStore(final KojiRepairRequest request, final KojiRepairResult ret ){
+        StoreKey remoteKey = request.getSource();
+
+        ArtifactStore store = null;
+        try
+        {
+            store = storeManager.getArtifactStore( remoteKey );
+        }
+        catch ( IndyDataException e )
+        {
+            String error = String.format( "Cannot get store: %s, error: %s", remoteKey, e );
+            logger.warn( error, e );
+            ret.withError( error );
+            return null;
+        }
+
+        if ( store == null )
+        {
+            String error = String.format( "No such store: %s.", remoteKey );
+            ret.withError( error );
+            return null;
+        }
+
+        return store;
+    }
+
 
 }
