@@ -35,4 +35,8 @@ public class IndyKojiConstants
     public static final String MASK = "mask";
 
     public static final String ALL_MASKS = "mask/all";
+
+    public static final String META_TIMEOUT = "metadata/timeout";
+
+    public static final String META_TIMEOUT_ALL = META_TIMEOUT + "/all";
 }
