@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import org.apache.commons.codec.binary.Hex;
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
@@ -90,13 +91,16 @@ public final class ProxyRequestReader
                 return;
             }
 
+            byte[] bytes = bReq.toByteArray();
+
             if ( sslTunnel != null )
             {
+                logger.debug( "Send to ssl tunnel, {}, bytes:\n\n {}\n", new String( bytes ), Hex.encodeHexString( bytes ) );
                 directTo( sslTunnel );
                 return;
             }
 
-            logger.debug( "Request in progress is:\n\n{}", new String( bReq.toByteArray() ) );
+            logger.debug( "Request in progress is:\n\n{}", new String( bytes ) );
 
             if ( headDone )
             {
@@ -108,7 +112,7 @@ public final class ProxyRequestReader
 
                 DefaultHttpRequestParser requestParser = new DefaultHttpRequestParser( inbuf, lp, requestFactory, mc );
 
-                inbuf.bind( new ByteArrayInputStream( bReq.toByteArray() ) );
+                inbuf.bind( new ByteArrayInputStream( bytes ) );
 
                 try
                 {
