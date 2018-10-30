@@ -319,9 +319,6 @@ public final class ProxyResponseWriter
                                 String host = toks[0];
                                 int port = Integer.parseInt( toks[1] );
 
-                                http.writeStatus( ApplicationStatus.OK );
-                                http.writeHeader( "Status", "200 OK\n" );
-
                                 directed = true;
 
                                 // After this, the proxy simply opens a plain socket to the target server and relays
@@ -347,6 +344,12 @@ public final class ProxyResponseWriter
                                 sslTunnel = new ProxySSLTunnel( sinkChannel, socketChannel, config );
                                 tunnelAndMITMExecutor.submit( sslTunnel );
                                 proxyRequestReader.setProxySSLTunnel( sslTunnel ); // client input will be directed to target socket
+
+                                // When all is ready, send the 200 to client. Client send the SSL handshake to reader,
+                                // reader direct it to tunnel to MITM. MITM finish the handshake and read the request data,
+                                // retrieve remote content and send back to tunnel to client. 
+                                http.writeStatus( ApplicationStatus.OK );
+                                http.writeHeader( "Status", "200 OK\n" );
 
                                 break;
                             }
