@@ -15,15 +15,25 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.util;
 
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+
+import static org.commonjava.indy.core.ctl.ContentController.BROWSER_USER_AGENT;
+import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_API_ROOT;
+import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_ROOT;
+import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 
 public final class RequestUtils
 {
@@ -44,5 +54,35 @@ public final class RequestUtils
 
         }
         return Collections.unmodifiableMap( headersMap );
+    }
+
+    public static  Response redirectContentListing( final String packageType, final String type, final String name,
+                                             final String originPath, final HttpServletRequest request,
+                                             final Consumer<Response.ResponseBuilder> builderModifier )
+    {
+        // final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
+        String path = originPath;
+        if (path != null && path.endsWith(LISTING_HTML_FILE)) {
+            path = path.replaceAll(String.format("(%s)$", LISTING_HTML_FILE), "");
+        }
+
+        // A problem here is that if client is not browser(like curl or a program http call), the redirect response will
+        // just return a 303 location /browse/*, which is just a single html page with no actual content(because page is rendering
+        // by javascript). So I think we should consider to judge by the User-Agent to decide the real action, and if its not a browser
+        // action, we should redirect it to a REST call of /api/browse which will return the content result in JSON.
+        boolean isBrowser = false;
+        for (String userAgent : BROWSER_USER_AGENT) {
+            if (request.getHeader("User-Agent").contains(userAgent) && HttpMethod.GET.equalsIgnoreCase( request.getMethod())) {
+                isBrowser = true;
+                break;
+            }
+        }
+        final String root = isBrowser ? CONTENT_BROWSE_ROOT : CONTENT_BROWSE_API_ROOT;
+        final String browseUri = PathUtils.normalize( root, packageType, type, name, path);
+        Response.ResponseBuilder builder = Response.seeOther( URI.create( browseUri));
+        if (builderModifier != null) {
+            builderModifier.accept(builder);
+        }
+        return builder.build();
     }
 }
