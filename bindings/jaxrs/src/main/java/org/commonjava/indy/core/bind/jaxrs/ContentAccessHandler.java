@@ -19,6 +19,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.metrics.IndyMetricsManager;
@@ -217,7 +218,7 @@ public class ContentAccessHandler
 
         if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
         {
-            response = redirectContentListing( packageType, type, name, path, request, builderModifier );
+            response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
         else
         {
@@ -347,7 +348,7 @@ public class ContentAccessHandler
         if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
                 LISTING_HTML_FILE ) )
         {
-            response = redirectContentListing( packageType, type, name, path, request, builderModifier );
+            response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
         else
         {
@@ -378,7 +379,7 @@ public class ContentAccessHandler
                     else if ( item.isDirectory() )
                     {
                         logger.debug( "Getting listing at: {}", path + "/" );
-                        response = redirectContentListing( packageType, type, name, path, request, builderModifier );
+                        response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
                     }
                     else
                     {
@@ -456,35 +457,6 @@ public class ContentAccessHandler
         return response;
     }
 
-    private Response redirectContentListing( final String packageType, final String type, final String name,
-                                             final String originPath, final HttpServletRequest request,
-                                             final Consumer<ResponseBuilder> builderModifier )
-    {
-        // final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
-        String path = originPath;
-        if (path != null && path.endsWith(LISTING_HTML_FILE)) {
-            path = path.replaceAll(String.format("(%s)$", LISTING_HTML_FILE), "");
-        }
 
-        // A problem here is that if client is not browser(like curl or a program http call), the redirect response will
-        // just return a 303 location /browse/*, which is just a single html page with no actual content(because page is rendering
-        // by javascript). So I think we should consider to judge by the User-Agent to decide the real action, and if its not a browser
-        // action, we should redirect it to a REST call of /api/browse which will return the content result in JSON.
-        boolean isBrowser = false;
-        for (String userAgent : BROWSER_USER_AGENT) {
-            if (request.getHeader("User-Agent").contains(userAgent) && HttpMethod.GET.equalsIgnoreCase(request.getMethod())) {
-                isBrowser = true;
-                break;
-            }
-        }
-        final String root = isBrowser ? CONTENT_BROWSE_ROOT : CONTENT_BROWSE_API_ROOT;
-        final String browseUri = PathUtils.normalize(root, packageType, type, name, path);
-        logger.debug("Directory listing request will redirect to entry point: {} ", browseUri);
-        ResponseBuilder builder = Response.seeOther(URI.create(browseUri));
-        if (builderModifier != null) {
-            builderModifier.accept(builder);
-        }
-        return builder.build();
-    }
 
 }
