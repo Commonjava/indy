@@ -21,6 +21,8 @@ import com.codahale.metrics.MetricSet;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +35,8 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class IspnCheckRegistrySet
                 implements MetricSet
 {
+    private static Logger logger = LoggerFactory.getLogger( IspnCheckRegistrySet.class );
+
     public static final String INDY_METRIC_ISPN = "indy.ispn";
 
     private static final String SIZE = "size";
@@ -85,7 +89,8 @@ public class IspnCheckRegistrySet
                Cache<Object, Object> cache = cacheManager.getCache( n );
                AdvancedCache<Object, Object> advancedCache = cache.getAdvancedCache();
 
-               gauges.put( name( cache.getName(), SIZE ), (Gauge) () -> advancedCache.size() ); // default
+               logger.info( "Get ISPN cache metrics, {}", n );
+               //gauges.put( name( cache.getName(), SIZE ), (Gauge) () -> advancedCache.size() ); // default
 
                // These give the current sizes of the cache.
                if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES ) )
