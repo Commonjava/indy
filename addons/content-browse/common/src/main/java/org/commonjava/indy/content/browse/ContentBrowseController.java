@@ -21,6 +21,8 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -42,6 +44,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -66,6 +69,7 @@ public class ContentBrowseController
         this.contentManager = contentManager;
     }
 
+    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
     public ContentBrowseResult browseContent( final StoreKey storeKey, final String path, final String browseBaseUri,
                                               final String contentBaseUri, final UriFormatter uriFormatter,
                                               EventMetadata eventMetadata )
