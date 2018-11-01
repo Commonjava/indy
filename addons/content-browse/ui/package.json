@@ -1,7 +1,7 @@
 {
   "name": "indy-content-browse-ui",
   "version": "1.0.0",
-  "description": "react practice project",
+  "description": "The ui part of the indy content directory browsing function",
   "main": "src/main/js/index.js",
   "license": "MIT",
   "private": true,
