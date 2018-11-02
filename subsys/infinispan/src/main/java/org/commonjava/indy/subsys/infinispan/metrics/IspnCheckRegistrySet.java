@@ -96,72 +96,87 @@ public class IspnCheckRegistrySet
                if ( ispnGauges == null || ispnGauges.contains( CURRENT_NUMBER_OF_ENTRIES ) )
                {
                    gauges.put( name( cache.getName(), CURRENT_NUMBER_OF_ENTRIES ),
-                               (Gauge) () -> advancedCache.getStats().getCurrentNumberOfEntries() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getCurrentNumberOfEntries() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_NUMBER_OF_ENTRIES ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_NUMBER_OF_ENTRIES ),
-                               (Gauge) () -> advancedCache.getStats().getTotalNumberOfEntries() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getTotalNumberOfEntries() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_HITS ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_HITS ),
-                               (Gauge) () -> advancedCache.getStats().getHits() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getHits() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_MISSES ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_MISSES ),
-                               (Gauge) () -> advancedCache.getStats().getMisses() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getMisses() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_RETRIEVALS ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_RETRIEVALS ),
-                               (Gauge) () -> advancedCache.getStats().getRetrievals() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getRetrievals() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_EVICTIONS ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_EVICTIONS ),
-                               (Gauge) () -> advancedCache.getStats().getEvictions() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getEvictions() ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( TOTAL_REMOVALS ) )
                {
                    gauges.put( name( cache.getName(), TOTAL_REMOVALS ),
-                               (Gauge) () -> advancedCache.getStats().getRemoveHits() );
+                               (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getRemoveHits() ) );
                }
 
                // The rest of these should show the RATES at which the cache is changing, or is being used.
                if ( ispnGauges == null || ispnGauges.contains( NUMBER_OF_ENTRIES_ADDED ) )
                {
                    gauges.put( name( cache.getName(), NUMBER_OF_ENTRIES_ADDED ),
-                               new RecentCountGauge( () -> (float) advancedCache.getStats().getCurrentNumberOfEntries() ) );
+                               new RecentCountGauge( () -> noExceptions( ()-> (float) advancedCache.getStats().getCurrentNumberOfEntries() ) ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( HITS ) )
                {
                    gauges.put( name( cache.getName(), HITS ),
-                               new RecentCountGauge( () -> (float) advancedCache.getStats().getHits() ) );
+                               new RecentCountGauge( () -> noExceptions( ()-> (float) advancedCache.getStats().getHits() ) ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( MISSES ) )
                {
                    gauges.put( name( cache.getName(), MISSES ),
-                               new RecentCountGauge( () -> (float) advancedCache.getStats().getMisses() ) );
+                               new RecentCountGauge( () -> noExceptions( ()-> (float) advancedCache.getStats().getMisses() ) ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( RETRIEVALS ) )
                {
                    gauges.put( name( cache.getName(), RETRIEVALS ),
-                               new RecentCountGauge( () -> (float) advancedCache.getStats().getRetrievals() ) );
+                               new RecentCountGauge( () -> noExceptions( ()-> (float) advancedCache.getStats().getRetrievals() ) ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( EVICTIONS ) )
                {
                    gauges.put( name( cache.getName(), EVICTIONS ),
-                               new RecentCountGauge( () -> (float) advancedCache.getStats().getEvictions() ) );
+                               new RecentCountGauge( () -> noExceptions( ()-> (float) advancedCache.getStats().getEvictions() ) ) );
                }
                if ( ispnGauges == null || ispnGauges.contains( REMOVALS ) )
                {
                    gauges.put( name( cache.getName(), REMOVALS ),
-                               new RecentCountGauge( () -> (float) advancedCache.getStats().getRemoveHits() ) );
+                               new RecentCountGauge( () -> noExceptions( ()-> (float) advancedCache.getStats().getRemoveHits() ) ) );
                }
            } );
+
         return gauges;
+    }
+
+    private <T> T noExceptions( final Supplier<T> task )
+    {
+        try
+        {
+            return task.get();
+        }
+        catch( Throwable t )
+        {
+            logger.error( "Error retrieving ISPN metric.", t );
+        }
+
+        return null;
     }
 
     private static final class RecentCountGauge implements Gauge<Float>
