@@ -24,61 +24,49 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
 
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class ProxyHttpsTest
-                extends AbstractHttproxFunctionalTest
+/**
+ * Add this test to make sure MITM can download some specific tgz files.
+ *
+ * NOTE: yarn install always report:
+ * error https://registry.npmjs.org/fsevents/-/fsevents-1.2.4.tgz:
+ * 140079105800320:error:1408F119:SSL routines:SSL3_GET_RECORD:decryption failed or bad record mac:s3_pkt.c:535:
+ */
+public class ProxyHttpsDownloadTgzTest
+                extends ProxyHttpsTest
 {
 
     private static final String USER = "user";
 
     private static final String PASS = "password";
 
-    private static final String content = "This is a test";
-
-    String https_url =
-                    "https://oss.sonatype.org/content/repositories/releases/org/commonjava/indy/indy-api/1.3.1/indy-api-1.3.1.pom";
+    String https_url = "https://registry.npmjs.org/fsevents/-/fsevents-1.2.4.tgz";
 
     @Test
     public void run() throws Exception
     {
-        String ret = null;
-        ret = regression();
-        assertEquals( content, ret );
-
-        ret = get( https_url, true, USER, PASS );
-        assertTrue( ret.contains( "<artifactId>indy-api</artifactId>" ) );
+        File ret = getDownloadedFile( https_url, true, USER, PASS );
+        assertTrue( ret != null && ret.exists() );
+        //System.out.println( "File size >>> " + ret.length() );
+        assertEquals( ret.length(), 784846 ); // content-length: 784846
 
         StoreListingDTO<RemoteRepository> repo =
-                        this.client.stores().getRemoteByUrl( "https://oss.sonatype.org:443/", GENERIC_PKG_KEY );
+                        this.client.stores().getRemoteByUrl( "https://registry.npmjs.org:443/", GENERIC_PKG_KEY );
         repo.getItems().forEach( repository -> System.out.println(">>> " + repository) );
         assertTrue( repo.getItems().size() == 1 );
     }
 
-    // Regression test for HTTP url
-    private String regression() throws Exception
-    {
-        final String path = "org/foo/bar/1.0/bar-1.0.nocache";
-        final String testRepo = "test";
-        String url = server.formatUrl( testRepo, path );
-        server.expect( url, 200, content );
-        return get( url, false, USER, PASS );
-    }
-
-    protected String get( String url, boolean withCACert, String user, String pass ) throws Exception
+    protected File getDownloadedFile( String url, boolean withCACert, String user, String pass ) throws Exception
     {
         CloseableHttpClient client;
 
@@ -106,16 +94,16 @@ public class ProxyHttpsTest
 
             if ( status.getStatusCode() == 404 )
             {
-                return status.toString();
+                return null;
             }
 
             stream = response.getEntity().getContent();
-            final String resulting = IOUtils.toString( stream );
+            File file = getTemp().newFile();
+            FileOutputStream fileOutputStream = new FileOutputStream( file );
+            IOUtils.copy( stream, fileOutputStream );
+            fileOutputStream.close();
 
-            assertThat( resulting, notNullValue() );
-            System.out.println( "\n\n>>>>>>>\n\n" + resulting + "\n\n" );
-
-            return resulting;
+            return file;
         }
         finally
         {
@@ -124,35 +112,4 @@ public class ProxyHttpsTest
         }
     }
 
-    protected KeyStore getTrustStore( File jks ) throws Exception
-    {
-        KeyStore trustStore = KeyStore.getInstance( KeyStore.getDefaultType() );
-        try (FileInputStream instream = new FileInputStream( jks ))
-        {
-            trustStore.load( instream, "passwd".toCharArray() );
-        }
-        return trustStore;
-    }
-
-    @Override
-    protected int getTestTimeoutMultiplier()
-    {
-        return 1;
-    }
-
-    @Override
-    protected String getAdditionalHttproxConfig()
-    {
-        return "MITM.enabled=true\nMITM.ca.key=${indy.home}/etc/indy/ssl/ca.der\n"
-                        + "MITM.ca.cert=${indy.home}/etc/indy/ssl/ca.crt\n"
-                        + "MITM.dn.template=CN=<host>, O=Test Org";
-    }
-
-    @Override
-    protected void initTestData( CoreServerFixture fixture ) throws IOException
-    {
-        copyToConfigFile( "ssl/ca.der", "ssl/ca.der" );
-        copyToConfigFile( "ssl/ca.crt", "ssl/ca.crt" );
-        copyToConfigFile( "ssl/ca.jks", "ssl/ca.jks" );
-    }
 }
