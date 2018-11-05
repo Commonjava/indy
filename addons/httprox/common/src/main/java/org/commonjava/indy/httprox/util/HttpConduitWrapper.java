@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
+
 /**
  * Created by jdcasey on 9/1/15.
  */
@@ -261,26 +263,7 @@ public class HttpConduitWrapper
     public void close()
             throws IOException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
-        boolean flushed = false;
-        while ( !flushed )
-        {
-            flushed = sinkChannel.flush();
-            if ( !flushed )
-            {
-                try
-                {
-                    logger.debug( "Waiting for sink channel to flush..." );
-                    wait( 100 );
-                }
-                catch ( InterruptedException e )
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-
+        flush( sinkChannel );
         sinkChannel.shutdownWrites();
     }
 }
