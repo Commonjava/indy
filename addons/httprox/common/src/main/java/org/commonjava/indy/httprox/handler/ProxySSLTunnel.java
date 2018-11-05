@@ -16,6 +16,7 @@
 package org.commonjava.indy.httprox.handler;
 
 import org.commonjava.indy.httprox.conf.HttproxConfig;
+import org.commonjava.indy.httprox.util.ChannelUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.conduits.ConduitStreamSinkChannel;
@@ -33,6 +34,8 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
+
 /**
  * Created by ruhan on 9/6/18.
  */
@@ -44,7 +47,7 @@ public class ProxySSLTunnel implements Runnable
 
     //private static final long SELECTOR_TIMEOUT = 60 * 1000; // 60 seconds
 
-    private static final int DEFAULT_READ_BUF_SIZE = 1024 * 32; // 32 K
+    private static final int DEFAULT_READ_BUF_SIZE = 1024 * 8; // not know why others not work
 
     private final ConduitStreamSinkChannel sinkChannel;
 
@@ -83,10 +86,12 @@ public class ProxySSLTunnel implements Runnable
 
         ByteBuffer byteBuffer = ByteBuffer.allocate( DEFAULT_READ_BUF_SIZE );
 
+        int total = 0;
         while ( true )
         {
             if ( closed )
             {
+                logger.debug( "Tunnel closed" );
                 break;
             }
 
@@ -116,11 +121,18 @@ public class ProxySSLTunnel implements Runnable
             logger.debug( "Write sink channel, bytes: {}", bytes.length );
             sinkChannel.write( ByteBuffer.wrap( bytes ) );
             byteBuffer.clear();
+
+            total += read;
         }
 
-        sinkChannel.flush();
+        logger.debug( "Pipe to sink channel complete, transferred: {}", total );
 
-        logger.debug( "Pipe to sink channel complete" );
+        flush( sinkChannel );
+        sinkChannel.shutdownWrites();
+        sinkChannel.close();
+
+        closed = true;
+
     }
 
 /*
@@ -218,7 +230,6 @@ public class ProxySSLTunnel implements Runnable
 
     public void close()
     {
-        this.closed = true;
         try
         {
             //selector.close(); // wake it up to complete the tunnel

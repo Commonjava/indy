@@ -243,15 +243,16 @@ public class ProxyMITMSSLServer implements Runnable
         logger.debug( "Requesting remote URL: {}", remoteUrl.toString() );
 
         ArtifactStore store = proxyResponseHelper.getArtifactStore( trackingId, remoteUrl );
-        try (OutputStream out = socket.getOutputStream())
-        {
+        OutputStream out = socket.getOutputStream();
+        //try (OutputStream out = socket.getOutputStream())
+        //{
             HttpConduitWrapper http =
                             new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
                                                     cacheProvider );
             proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ),
                                           proxyUserPass );
             http.close();
-        }
+        //}
     }
 
     private static final int maxRetries = 16;
