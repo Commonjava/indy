@@ -17,10 +17,9 @@ package org.commonjava.indy.metrics.jaxrs.interceptor;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import org.apache.commons.lang3.ClassUtils;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,17 +29,18 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.*;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 
 @Interceptor
 @Measure
@@ -69,19 +69,14 @@ public class MetricsInterceptor
             measure = method.getDeclaringClass().getAnnotation( Measure.class );
         }
 
-        logger.trace( "Gathering metrics for: {}", context.getContextData() );
-        String nodePrefix = config.getNodePrefix();
-
         String defaultName = getDefaultName( context.getMethod().getDeclaringClass(), context.getMethod().getName() );
+        logger.trace( "Gathering metrics for: {} using context: {}", defaultName, context.getContextData() );
 
-        List<Timer.Context> timers = Stream.of( measure.timers() ).map( named ->
-                                        {
-                                            String name = getName( nodePrefix, named.value(), defaultName, TIMER );
-                                            Timer.Context tc = metricsManager.getTimer( name ).time();
-                                            logger.trace( "START: {} ({})", name, tc );
-                                            return tc;
-                                        } )
-                                        .collect( Collectors.toList() );
+        boolean inject = measure.timers().length < 1 && measure.exceptions().length < 1 && measure.meters().length < 1;
+
+        List<Timer.Context> timers = initTimers( measure, defaultName, inject );
+        List<String> exceptionMeters = initMeters( measure, measure.exceptions(), EXCEPTION, defaultName, inject );
+        List<String> meters = initMeters( measure, measure.meters(), METER, defaultName, inject );
 
         try
         {
@@ -89,16 +84,20 @@ public class MetricsInterceptor
         }
         catch ( Exception e )
         {
-            Stream.of( measure.exceptions() ).forEach( ( named ) ->
-                                        {
-                                            metricsManager.getMeter(
-                                                    getName( nodePrefix, named.value(), defaultName, EXCEPTION ) )
-                                                          .mark();
-
-                                            metricsManager.getMeter(
-                                                    getName( nodePrefix, named.value(), defaultName, EXCEPTION,
-                                                             e.getClass().getSimpleName() ) ).mark();
-                                        } );
+            exceptionMeters.forEach( ( name ) -> {
+                metricsManager.getMeter( name ).mark();
+                logger.trace("Meter count for: {} is: {}", name, new Object(){
+                    public String toString(){
+                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
+                    }
+                });
+                metricsManager.getMeter( name( name, e.getClass().getSimpleName() ) ).mark();
+                logger.trace("Meter count for: {} is: {}", name, new Object(){
+                    public String toString(){
+                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
+                    }
+                });
+            } );
 
             throw e;
         }
@@ -110,16 +109,63 @@ public class MetricsInterceptor
                     logger.trace( "STOP: {}", timer );
                     timer.stop();
                 } );
-
             }
-            Stream.of( measure.meters() ).forEach( ( named ) ->
-                                        {
-                                            String name = getName( nodePrefix, named.value(), defaultName, METER );
-                                            Meter meter = metricsManager.getMeter( name );
-                                            logger.trace( "CALLS++ {}", name );
-                                            meter.mark();
-                                        } );
+
+            meters.forEach( ( name ) -> {
+                Meter meter = metricsManager.getMeter( name );
+                logger.trace( "CALLS++ {}", name );
+                meter.mark();
+
+                logger.trace("Meter count for: {} is: {}", name, new Object(){
+                    public String toString(){
+                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
+                    }
+                });
+            } );
         }
+    }
+
+    private List<String> initMeters( final Measure measure, final MetricNamed[] metrics, String classifier,
+                                     final String defaultName, final boolean inject )
+    {
+        List<String> meters;
+        if ( inject && ( metrics == null || metrics.length == 0 ) )
+        {
+            meters = Collections.singletonList( getName( config.getNodePrefix(), DEFAULT, defaultName, classifier ) );
+        }
+        else
+        {
+            meters = Stream.of( metrics )
+                           .map( metric -> getName( config.getNodePrefix(), metric.value(), defaultName, classifier ) )
+                           .collect( Collectors.toList() );
+        }
+
+        logger.trace( "Got meters for {} with classifier: {}: {}", defaultName, classifier, meters );
+
+        return meters;
+    }
+
+    private List<Timer.Context> initTimers( final Measure measure, String defaultName, final boolean inject )
+    {
+        List<Timer.Context> timers;
+
+        MetricNamed[] timerMetrics = measure.timers();
+        if ( inject && timerMetrics.length == 0 )
+        {
+            timers = Collections.singletonList(
+                    metricsManager.getTimer( getName( config.getNodePrefix(), DEFAULT, defaultName, TIMER ) ).time() );
+        }
+        else
+        {
+            timers = Stream.of( timerMetrics ).map( named -> {
+                String name = getName( config.getNodePrefix(), named.value(), defaultName, TIMER );
+                Timer.Context tc = metricsManager.getTimer( name ).time();
+                logger.trace( "START: {} ({})", name, tc );
+                return tc;
+            } ).collect( Collectors.toList() );
+        }
+
+        return timers;
     }
 
 }
