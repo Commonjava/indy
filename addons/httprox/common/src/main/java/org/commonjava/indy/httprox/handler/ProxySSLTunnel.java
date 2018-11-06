@@ -120,6 +120,7 @@ public class ProxySSLTunnel implements Runnable
 
             logger.debug( "Write sink channel, bytes: {}", byteBuffer.limit() );
             sinkChannel.write( byteBuffer );
+            sinkChannel.flush();
             byteBuffer.clear();
 
             total += read;
