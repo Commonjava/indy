@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import com.codahale.metrics.Timer;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
@@ -28,6 +27,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Holder class that helps manage the shutdown process for things that use Infinispan.
@@ -48,177 +48,153 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
 
     public <R> R executeCache( Function<Cache<K, V>, R> operation )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        if ( !isStopped() )
-        {
-            Timer.Context context = startMetrics( "execute" );
+        return doExecuteCache( "execute", operation );
+    }
 
-            try
+    // TODO: Why is this separate from {@link BasicCacheHandle#execute(Function)}?
+    protected <R> R doExecuteCache( String metricName, Function<Cache<K, V>, R> operation )
+    {
+        Supplier<R> execution = executionFor( operation );
+        if ( metricsManager != null )
+        {
+            return metricsManager.wrapWithStandardMetrics( execution, () -> getMetricName( metricName ) );
+        }
+
+        return execution.get();
+    }
+
+    private <R> Supplier<R> executionFor( final Function<Cache<K,V>,R> operation )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        return () -> {
+            if ( !isStopped() )
             {
-                return (R) operation.apply( (Cache) cache );
-            }
-            catch ( RuntimeException e )
-            {
-                logger.error( "Failed to complete operation: " + e.getMessage(), e );
-            }
-            finally
-            {
-                if ( context != null )
+                try
                 {
-                    context.stop();
+                    return (R) operation.apply( (Cache) cache );
+                }
+                catch ( RuntimeException e )
+                {
+                    logger.error( "Failed to complete operation: " + e.getMessage(), e );
                 }
             }
-        }
-        else
-        {
-            logger.error( "Cannot complete operation. Cache {} is shutting down.", getName() );
-        }
+            else
+            {
+                logger.error( "Cannot complete operation. Cache {} is shutting down.", getName() );
+            }
 
-        return null;
+            return null;
+        };
     }
 
     public void beginTransaction()
             throws NotSupportedException, SystemException
     {
-        Timer.Context context = startMetrics( "beginTransaction" );
+        AtomicReference<NotSupportedException> suppEx = new AtomicReference<>();
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+        doExecuteCache( "beginTransaction", ( c ) -> {
+            try
+            {
+                c.getAdvancedCache().getTransactionManager().begin();
+            }
+            catch ( NotSupportedException e )
+            {
+                suppEx.set( e );
+            }
+            catch ( SystemException e )
+            {
+                sysEx.set( e );
+            }
 
-        try
+            return null;
+        } );
+
+        if ( suppEx.get() != null )
         {
-            AtomicReference<NotSupportedException> suppEx = new AtomicReference<>();
-            AtomicReference<SystemException> sysEx = new AtomicReference<>();
-            executeCache( ( c ) -> {
-                try
-                {
-                    c.getAdvancedCache().getTransactionManager().begin();
-                }
-                catch ( NotSupportedException e )
-                {
-                    suppEx.set( e );
-                }
-                catch ( SystemException e )
-                {
-                    sysEx.set( e );
-                }
-
-                return null;
-            } );
-
-            if ( suppEx.get() != null )
-            {
-                throw suppEx.get();
-            }
-
-            if ( sysEx.get() != null )
-            {
-                throw sysEx.get();
-            }
+            throw suppEx.get();
         }
-        finally
+
+        if ( sysEx.get() != null )
         {
-            if ( context != null )
-            {
-                context.stop();
-            }
+            throw sysEx.get();
         }
     }
 
     public void rollback()
             throws SystemException
     {
-        Timer.Context context = startMetrics( "rollback" );
-
-        try
-        {
-            AtomicReference<SystemException> sysEx = new AtomicReference<>();
-            executeCache( ( c ) -> {
-                try
-                {
-                    c.getAdvancedCache().getTransactionManager().rollback();
-                }
-                catch ( SystemException e )
-                {
-                    sysEx.set( e );
-                }
-
-                return null;
-            } );
-
-
-            if ( sysEx.get() != null )
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+        doExecuteCache( "rollback", ( c ) -> {
+            try
             {
-                throw sysEx.get();
+                c.getAdvancedCache().getTransactionManager().rollback();
             }
-        }
-        finally
-        {
-            if ( context != null )
+            catch ( SystemException e )
             {
-                context.stop();
+                sysEx.set( e );
             }
+
+            return null;
+        } );
+
+        if ( sysEx.get() != null )
+        {
+            throw sysEx.get();
         }
     }
 
     public void commit()
             throws SystemException, HeuristicMixedException, HeuristicRollbackException, RollbackException
     {
-        Timer.Context context = startMetrics( "commit" );
-        try
+        AtomicReference<SystemException> sysEx = new AtomicReference<>();
+        AtomicReference<HeuristicMixedException> hmEx = new AtomicReference<>();
+        AtomicReference<HeuristicRollbackException> hrEx = new AtomicReference<>();
+        AtomicReference<RollbackException> rEx = new AtomicReference<>();
+
+        doExecuteCache( "commit", ( c ) -> {
+            try
+            {
+                c.getAdvancedCache().getTransactionManager().commit();
+            }
+            catch ( SystemException e )
+            {
+                sysEx.set( e );
+            }
+            catch ( HeuristicMixedException e )
+            {
+                hmEx.set( e );
+            }
+            catch ( HeuristicRollbackException e )
+            {
+                hrEx.set( e );
+            }
+            catch ( RollbackException e )
+            {
+                rEx.set( e );
+            }
+
+            return null;
+        } );
+
+        if ( sysEx.get() != null )
         {
-            AtomicReference<SystemException> sysEx = new AtomicReference<>();
-            AtomicReference<HeuristicMixedException> hmEx = new AtomicReference<>();
-            AtomicReference<HeuristicRollbackException> hrEx = new AtomicReference<>();
-            AtomicReference<RollbackException> rEx = new AtomicReference<>();
-            executeCache( ( c ) -> {
-                try
-                {
-                    c.getAdvancedCache().getTransactionManager().commit();
-                }
-                catch ( SystemException e )
-                {
-                    sysEx.set( e );
-                }
-                catch ( HeuristicMixedException e )
-                {
-                    hmEx.set( e );
-                }
-                catch ( HeuristicRollbackException e )
-                {
-                    hrEx.set( e );
-                }
-                catch ( RollbackException e )
-                {
-                    rEx.set( e );
-                }
-
-                return null;
-            } );
-
-            if ( sysEx.get() != null )
-            {
-                throw sysEx.get();
-            }
-
-            if ( hmEx.get() != null )
-            {
-                throw hmEx.get();
-            }
-
-            if ( hrEx.get() != null )
-            {
-                throw hrEx.get();
-            }
-
-            if ( rEx.get() != null )
-            {
-                throw rEx.get();
-            }
+            throw sysEx.get();
         }
-        finally
+
+        if ( hmEx.get() != null )
         {
-            if ( context != null )
-            {
-                context.stop();
-            }
+            throw hmEx.get();
+        }
+
+        if ( hrEx.get() != null )
+        {
+            throw hrEx.get();
+        }
+
+        if ( rEx.get() != null )
+        {
+            throw rEx.get();
         }
     }
 
@@ -227,7 +203,7 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
     {
         AtomicReference<SystemException> sysEx = new AtomicReference<>();
 
-        Integer result = executeCache( ( c ) -> {
+        Integer result = doExecuteCache( "getTransactionStatus", ( c ) -> {
             try
             {
                 return c.getAdvancedCache().getTransactionManager().getStatus();
@@ -250,17 +226,17 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
 
     public Object getLockOwner( K key )
     {
-        return executeCache( ( c ) -> c.getAdvancedCache().getLockManager().getOwner( key ) );
+        return doExecuteCache( "getLockOwner", ( c ) -> c.getAdvancedCache().getLockManager().getOwner( key ) );
     }
 
     public boolean isLocked( K key )
     {
-        return executeCache( ( c ) -> c.getAdvancedCache().getLockManager().isLocked( key ) );
+        return doExecuteCache( "isLocked", ( c ) -> c.getAdvancedCache().getLockManager().isLocked( key ) );
     }
 
     public void lock( K... keys )
     {
-        executeCache( ( c ) -> c.getAdvancedCache().lock( keys ) );
+        doExecuteCache( "lock", ( c ) -> c.getAdvancedCache().lock( keys ) );
     }
 
 }

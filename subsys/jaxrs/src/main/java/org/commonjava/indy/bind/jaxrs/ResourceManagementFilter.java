@@ -18,7 +18,11 @@ package org.commonjava.indy.bind.jaxrs;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.metrics.IndyMetricsConstants;
+import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +37,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
@@ -40,6 +46,7 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.X_FORWARDED_FOR;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 
 @ApplicationScoped
 public class ResourceManagementFilter
@@ -51,12 +58,27 @@ public class ResourceManagementFilter
     public static final String ORIGINAL_THREAD_NAME = "original-thread-name";
 
     public static final String METHOD_PATH_TIME = "method-path-time";
+    
+
+    private static final String POM_CONTENT_METRIC = "pom";
+
+    private static final String NORMAL_CONTENT_METRIC = "content";
+
+    private static final String METADATA_CONTENT_METRIC = "metadata";
+
+    private static final String SPECIAL_CONTENT_METRIC = "special";
 
     @Inject
     private CacheProvider cacheProvider;
 
     @Inject
     private MDCManager mdcManager;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
+
+    @Inject
+    private IndyMetricsManager metricsManager;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -115,7 +137,34 @@ public class ResourceManagementFilter
 
             restLogger.info( "START {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
 
-            chain.doFilter( request, response );
+            AtomicReference<IOException> ioex = new AtomicReference<>();
+            AtomicReference<ServletException> seex = new AtomicReference<>();
+
+            metricsManager.wrapWithStandardMetrics( () -> {
+                try
+                {
+                    chain.doFilter( request, response );
+                }
+                catch ( IOException e )
+                {
+                    ioex.set( e );
+                }
+                catch ( ServletException e )
+                {
+                    seex.set( e );
+                }
+                return null;
+            }, pathClassifier( hsr.getPathInfo() ) );
+
+            if ( ioex.get() != null )
+            {
+                throw ioex.get();
+            }
+
+            if ( seex.get() != null )
+            {
+                throw seex.get();
+            }
         }
         finally
         {
@@ -138,6 +187,29 @@ public class ResourceManagementFilter
 
             mdcManager.clear();
         }
+    }
+
+    private Supplier<String> pathClassifier( final String pathInfo )
+    {
+        return ()->{
+            if ( !pathInfo.contains( "content" ))
+            {
+                return IndyMetricsConstants.SKIP_METRIC;
+            }
+            SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( pathInfo );
+            if ( spi == null )
+            {
+                return pathInfo.endsWith( ".pom" ) ? POM_CONTENT_METRIC : NORMAL_CONTENT_METRIC;
+            }
+            else if ( spi.isMetadata() )
+            {
+                return METADATA_CONTENT_METRIC;
+            }
+            else
+            {
+                return SPECIAL_CONTENT_METRIC;
+            }
+        };
     }
 
     /**

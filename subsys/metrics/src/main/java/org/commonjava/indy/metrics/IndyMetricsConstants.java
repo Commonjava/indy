@@ -26,11 +26,15 @@ import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 public class IndyMetricsConstants
 {
+    public static final String DEFAULT = "default";
+
     public static final String EXCEPTION = "exception";
 
     public static final String METER = "meter";
 
     public static final String TIMER = "timer";
+
+    public static final String SKIP_METRIC = "skip-this-metric";
 
     /**
      * Get default metric name. Use abbreviated package name, e.g., foo.bar.ClassA.methodB -> f.b.ClassA.methodB
@@ -39,6 +43,16 @@ public class IndyMetricsConstants
     {
         // minimum len 1 shortens the package name and keeps class name
         String cls = ClassUtils.getAbbreviatedName( declaringClass.getName(), 1 );
+        return name( cls, method );
+    }
+
+    /**
+     * Get default metric name. Use abbreviated package name, e.g., foo.bar.ClassA.methodB -> f.b.ClassA.methodB
+     */
+    public static String getDefaultName( String declaringClass, String method )
+    {
+        // minimum len 1 shortens the package name and keeps class name
+        String cls = ClassUtils.getAbbreviatedName( declaringClass, 1 );
         return name( cls, method );
     }
 

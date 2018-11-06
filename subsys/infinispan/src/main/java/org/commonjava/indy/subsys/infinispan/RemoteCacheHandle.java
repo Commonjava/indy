@@ -36,7 +36,7 @@ public class RemoteCacheHandle<K,V> extends BasicCacheHandle<K, V>
     @Override
     protected String getMetricName( String opName )
     {
-        return name( getMetricPrefix(), "remote", opName );
+        return name( getMetricPrefix(), cache.getName(), "remote", opName );
     }
 
 }

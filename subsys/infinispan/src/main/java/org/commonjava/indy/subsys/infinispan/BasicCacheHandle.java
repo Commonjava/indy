@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -36,7 +37,7 @@ public class BasicCacheHandle<K,V>
 
     protected BasicCache<K,V> cache;
 
-    private IndyMetricsManager metricsManager;
+    protected IndyMetricsManager metricsManager;
 
     private String metricPrefix;
 
@@ -76,34 +77,43 @@ public class BasicCacheHandle<K,V>
 
     public <R> R execute( Function<BasicCache<K, V>, R> operation )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
+        return doExecute( "execute", operation );
+    }
 
-        if ( !stopped )
+    protected <R> R doExecute( String metricName, Function<BasicCache<K, V>, R> operation )
+    {
+        Supplier<R> execution = executionFor ( operation);
+        if ( metricsManager != null )
         {
-            Timer.Context context = startMetrics( "execute" );
+            return metricsManager.wrapWithStandardMetrics( execution, () -> getMetricName( metricName ) );
+        }
 
-            try
+        return execution.get();
+    }
+
+    private <R> Supplier<R> executionFor(Function<BasicCache<K,V>,R> operation)
+    {
+        return () -> {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+
+            if ( !stopped )
             {
-                return operation.apply( cache );
-            }
-            catch ( RuntimeException e )
-            {
-                logger.error( "Failed to complete operation: " + e.getMessage(), e );
-            }
-            finally
-            {
-                if ( context != null )
+                try
                 {
-                    context.stop();
+                    return operation.apply( cache );
+                }
+                catch ( RuntimeException e )
+                {
+                    logger.error( "Failed to complete operation: " + e.getMessage(), e );
                 }
             }
-        }
-        else
-        {
-            logger.error( "Cannot complete operation. Cache {} is shutting down.", name );
-        }
+            else
+            {
+                logger.error( "Cannot complete operation. Cache {} is shutting down.", name );
+            }
 
-        return null;
+            return null;
+        };
     }
 
     public void stop()
@@ -115,46 +125,37 @@ public class BasicCacheHandle<K,V>
 
     public boolean containsKey( K key )
     {
-        return execute( cache -> cache.containsKey( key ) );
+        return doExecute( "containsKey", cache -> cache.containsKey( key ) );
     }
 
     public V put( K key, V value )
     {
-        return execute( cache -> cache.put( key, value ) );
+        return doExecute( "put", cache -> cache.put( key, value ) );
     }
 
     public V put( K key, V value, int expiration, TimeUnit timeUnit )
     {
-        return execute( cache -> cache.put( key, value, expiration, timeUnit ) );
+        return doExecute( "put-with-expiration", cache -> cache.put( key, value, expiration, timeUnit ) );
     }
 
     public V putIfAbsent( K key, V value )
     {
-        return execute( ( c ) -> c.putIfAbsent( key, value ) );
+        return doExecute( "putIfAbsent", ( c ) -> c.putIfAbsent( key, value ) );
     }
 
     public V computeIfAbsent( K key, Function<? super K, ? extends V> mappingFunction )
     {
-        return execute( c -> c.computeIfAbsent( key, mappingFunction ) );
+        return doExecute( "computeIfAbsent", c -> c.computeIfAbsent( key, mappingFunction ) );
     }
 
     public V remove( K key )
     {
-        return execute( cache -> cache.remove( key ) );
+        return doExecute("remove", cache -> cache.remove( key ) );
     }
 
     public V get( K key )
     {
-        return execute( cache -> cache.get( key ) );
-    }
-
-    protected Timer.Context startMetrics( String name )
-    {
-        if ( metricsManager != null )
-        {
-            return metricsManager.getTimer( name( getMetricName( name ), TIMER ) ).time();
-        }
-        return null;
+        return doExecute( "get", cache -> cache.get( key ) );
     }
 
     protected String getMetricName( String opName )
