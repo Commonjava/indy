@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.measure.annotation;
 
+import org.commonjava.indy.metrics.IndyMetricsConstants;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -26,7 +28,11 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention( RUNTIME )
 public @interface MetricNamed
 {
-    String DEFAULT = "default";
+    /**
+     * Need to migrate to {@link IndyMetricsConstants#DEFAULT}.
+     * @deprecated
+     */
+    String DEFAULT = IndyMetricsConstants.DEFAULT;
 
     String value() default DEFAULT;
 }

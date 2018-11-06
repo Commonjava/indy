@@ -19,6 +19,7 @@ import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -148,6 +149,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public boolean removeIndexedStorePath( String rawPath, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
         String path = getStrategyPath( key, rawPath );
@@ -181,6 +183,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public void deIndexStorePath( final StoreKey key, final String rawPath )
     {
         String path = getStrategyPath( key, rawPath );
@@ -190,6 +193,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public StoreKey getIndexedStoreKey( final StoreKey key, final String rawPath )
     {
         String path = getStrategyPath( key, rawPath );
@@ -200,6 +204,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public void indexTransferIn( Transfer transfer, StoreKey...topKeys )
     {
         if ( transfer != null && transfer.exists() )
@@ -214,6 +219,7 @@ public class DefaultContentIndexManager
      * When we store or retrieve content, index it for faster reference next time.
      */
     @Override
+    @Measure
     public void indexPathInStores( String rawPath, StoreKey originKey, StoreKey... topKeys )
     {
         String path = getStrategyPath( originKey, rawPath );
@@ -231,6 +237,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public void clearAllIndexedPathInStore( ArtifactStore store )
     {
         Set<IndexedStorePath> isps =
@@ -243,6 +250,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public void clearAllIndexedPathWithOriginalStore( ArtifactStore originalStore )
     {
         StoreKey osk = originalStore.getKey();
@@ -262,6 +270,7 @@ public class DefaultContentIndexManager
     }
 
     @Override
+    @Measure
     public void clearAllIndexedPathInStoreWithOriginal( ArtifactStore store, ArtifactStore originalStore )
     {
         Set<IndexedStorePath> isps = contentIndex.cacheKeySetByFilter(
@@ -292,6 +301,7 @@ public class DefaultContentIndexManager
      * the path should be cleared.
      */
     @Override
+    @Measure
     public void clearIndexedPathFrom( String rawPath, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
         if ( groups == null || groups.isEmpty() )

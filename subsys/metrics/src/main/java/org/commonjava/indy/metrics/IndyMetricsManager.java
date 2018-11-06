@@ -35,8 +35,17 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -184,6 +193,52 @@ public class  IndyMetricsManager
     public Meter getMeter( String name )
     {
         return metricRegistry.meter( name );
+    }
+
+    public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
+    {
+        String suppliedName = classifier.get();
+        if ( SKIP_METRIC.equals( suppliedName ) )
+        {
+            return method.get();
+        }
+
+        String nodePrefix = config.getNodePrefix();
+
+        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[1];
+
+        String defaultName = getDefaultName( traceElement.getClassName(), traceElement.getMethodName() );
+        String metricName = getName( nodePrefix, suppliedName, defaultName, TIMER );
+
+        Timer.Context timer = getTimer( metricName ).time();
+        logger.trace( "START: {} ({})", metricName, timer );
+
+        try
+        {
+            return method.get();
+        }
+        catch ( Throwable e )
+        {
+            getMeter(
+                   getName( nodePrefix, suppliedName, defaultName, EXCEPTION ) )
+                         .mark();
+
+            getMeter(
+                   getName( nodePrefix, suppliedName, defaultName, EXCEPTION,
+                            e.getClass().getSimpleName() ) ).mark();
+
+            throw e;
+        }
+        finally
+        {
+            if ( timer != null )
+            {
+                timer.stop();
+            }
+
+            getMeter( getName( nodePrefix, suppliedName, defaultName, METER ) ).mark();
+            logger.trace( "CALLS++ {}", metricName );
+        }
     }
 
 }
