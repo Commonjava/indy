@@ -47,7 +47,7 @@ public class ProxySSLTunnel implements Runnable
 
     //private static final long SELECTOR_TIMEOUT = 60 * 1000; // 60 seconds
 
-    private static final int DEFAULT_READ_BUF_SIZE = 1024 * 8; // not know why others not work
+    private static final int DEFAULT_READ_BUF_SIZE = 1024 * 16;
 
     private final ConduitStreamSinkChannel sinkChannel;
 
@@ -115,11 +115,11 @@ public class ProxySSLTunnel implements Runnable
             //limit is set to current position and position is set to zero
             byteBuffer.flip();
 
-            final byte[] bytes = new byte[byteBuffer.limit()];
-            byteBuffer.get( bytes );
+            //final byte[] bytes = new byte[byteBuffer.limit()];
+            //byteBuffer.get( bytes );
 
-            logger.debug( "Write sink channel, bytes: {}", bytes.length );
-            sinkChannel.write( ByteBuffer.wrap( bytes ) );
+            logger.debug( "Write sink channel, bytes: {}", byteBuffer.limit() );
+            sinkChannel.write( byteBuffer );
             byteBuffer.clear();
 
             total += read;
