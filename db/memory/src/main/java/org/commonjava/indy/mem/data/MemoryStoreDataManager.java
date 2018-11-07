@@ -43,6 +43,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
@@ -310,7 +313,7 @@ public class MemoryStoreDataManager
             return false;
         }
 
-        boolean result = opLocks.lockAnd( store.getKey(), LOCK_TIMEOUT_SECONDS, k-> {
+        Function<StoreKey, Boolean> lockHandler = k -> {
             ArtifactStore original = stores.get( store.getKey() );
             if ( original == store )
             {
@@ -346,11 +349,31 @@ public class MemoryStoreDataManager
             }
 
             return false;
-        }, (k,lock)->{
+        };
+
+        BiFunction<StoreKey, ReentrantLock, Boolean> lockFailedHandler = (k,lock)->{
             error.set( new IndyDataException( "Failed to lock: %s for STORE after %d seconds.", k,
                                               LOCK_TIMEOUT_SECONDS ) );
             return false;
-        });
+        };
+
+        //FIXME: Something tricky happened for opLocks.lockAnd(...) which cause NPE, so here I wrapped it and just return false
+        //       and allow following action can go on. When find the root cause for this NPE, will think more about this code.
+        if ( opLocks == null || store == null || store.getKey() == null || lockHandler == null || lockFailedHandler == null )
+        {
+            logger.warn( "Before locking, opLocks is {} || store is {} || store.getKey is {}", opLocks, store,
+                         store.getKey() );
+        }
+        boolean result;
+        try
+        {
+            result = opLocks.lockAnd( store.getKey(), LOCK_TIMEOUT_SECONDS, lockHandler, lockFailedHandler );
+        }
+        catch ( NullPointerException e )
+        {
+            logger.error(String.format( "Some unknown errors happened when storing store %s", store), e);
+            return false;
+        }
 
         IndyDataException ex = error.get();
         if ( ex != null )
