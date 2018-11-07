@@ -194,9 +194,11 @@ public final class ResponseUtils
     {
         Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
 
+        // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
+        builder.header( ApplicationHeader.content_type.key(), contentType );
+
         boolean lastModSet = false;
         boolean lenSet = false;
-        boolean conTypeSet = false;
 
         if ( exchangeMetadata != null )
         {
@@ -205,8 +207,8 @@ public final class ResponseUtils
                 final String key = headerSet.getKey();
                 if ( ApplicationHeader.content_type.upperKey().equals( key ) )
                 {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.content_type.upperKey() );
-                    conTypeSet = true;
+                    logger.debug( "Skipping set for header: {}", ApplicationHeader.content_type.upperKey() );
+                    continue;
                 }
                 else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
                 {
@@ -244,13 +246,6 @@ public final class ResponseUtils
                 logger.debug( "Adding Content-Length header: {}", item.length() );
 
                 builder.header( ApplicationHeader.content_length.key(), item.length() );
-            }
-
-            if ( !conTypeSet )
-            {
-                logger.debug( "Adding Content-Type header: {}", contentType );
-
-                builder.header( ApplicationHeader.content_type.key(), contentType );
             }
 
             // Indy origin contains the storeKey of the repository where the content came from
