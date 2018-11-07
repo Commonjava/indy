@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-folo</artifactId>
-    <version>1.5.0.2</version>
+    <version>1.5.0.3-SNAPSHOT</version>
   </parent>
   <artifactId>indy-folo-model-java</artifactId>
   <name>Indy :: Add-Ons :: Folo Usage Tracker :: Java Domain Model</name>
