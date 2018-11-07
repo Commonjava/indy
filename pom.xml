@@ -41,6 +41,9 @@
   </scm>
   
   <properties>
+    <!-- turn off PMD for now -->
+    <pmd.skip>true</pmd.skip>
+
     <apiVersion>1</apiVersion>
     <projectOwner>Red Hat, Inc.</projectOwner>
     <projectEmail>https://github.com/Commonjava/indy</projectEmail>
