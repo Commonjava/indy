@@ -36,16 +36,13 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -197,20 +194,17 @@ public class  IndyMetricsManager
 
     public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
     {
-        String suppliedName = classifier.get();
-        if ( SKIP_METRIC.equals( suppliedName ) )
+        String name = classifier.get();
+        if ( SKIP_METRIC.equals( name ) )
         {
             return method.get();
         }
 
         String nodePrefix = config.getNodePrefix();
 
-        StackTraceElement traceElement = Thread.currentThread().getStackTrace()[1];
+        String metricName = name( nodePrefix, name );
 
-        String defaultName = getDefaultName( traceElement.getClassName(), traceElement.getMethodName() );
-        String metricName = getName( nodePrefix, suppliedName, defaultName, TIMER );
-
-        Timer.Context timer = getTimer( metricName ).time();
+        Timer.Context timer = getTimer( name( metricName, TIMER ) ).time();
         logger.trace( "START: {} ({})", metricName, timer );
 
         try
@@ -220,12 +214,11 @@ public class  IndyMetricsManager
         catch ( Throwable e )
         {
             getMeter(
-                   getName( nodePrefix, suppliedName, defaultName, EXCEPTION ) )
+                   name( name, EXCEPTION ) )
                          .mark();
 
             getMeter(
-                   getName( nodePrefix, suppliedName, defaultName, EXCEPTION,
-                            e.getClass().getSimpleName() ) ).mark();
+                   name( name, EXCEPTION, e.getClass().getSimpleName() ) ).mark();
 
             throw e;
         }
@@ -236,7 +229,7 @@ public class  IndyMetricsManager
                 timer.stop();
             }
 
-            getMeter( getName( nodePrefix, suppliedName, defaultName, METER ) ).mark();
+            getMeter( name( name, METER ) ).mark();
             logger.trace( "CALLS++ {}", metricName );
         }
     }
