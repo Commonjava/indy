@@ -58,15 +58,16 @@ public class ResourceManagementFilter
     public static final String ORIGINAL_THREAD_NAME = "original-thread-name";
 
     public static final String METHOD_PATH_TIME = "method-path-time";
-    
 
-    private static final String POM_CONTENT_METRIC = "pom";
+    private static final String BASE_CONTENT_METRIC = "indy.content.";
 
-    private static final String NORMAL_CONTENT_METRIC = "content";
+    private static final String POM_CONTENT_METRIC = BASE_CONTENT_METRIC + "pom";
 
-    private static final String METADATA_CONTENT_METRIC = "metadata";
+    private static final String NORMAL_CONTENT_METRIC = BASE_CONTENT_METRIC + "other";
 
-    private static final String SPECIAL_CONTENT_METRIC = "special";
+    private static final String METADATA_CONTENT_METRIC = BASE_CONTENT_METRIC + "metadata";
+
+    private static final String SPECIAL_CONTENT_METRIC = BASE_CONTENT_METRIC + "special";
 
     @Inject
     private CacheProvider cacheProvider;
@@ -95,7 +96,7 @@ public class ResourceManagementFilter
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
