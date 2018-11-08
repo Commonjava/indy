@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.indy.httprox.util.ChannelUtils.DEFAULT_READ_BUF_SIZE;
 import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
+import static org.commonjava.indy.httprox.util.ChannelUtils.write;
 
 /**
  * Created by jdcasey on 9/1/15.
@@ -212,24 +214,18 @@ public class HttpConduitWrapper
             {
                 sinkChannel.write( ByteBuffer.wrap( "\r\n".getBytes() ) );
 
-                int capacity = 16384;
+                int capacity = DEFAULT_READ_BUF_SIZE;
                 ByteBuffer bbuf = ByteBuffer.allocate( capacity );
                 byte[] buf = new byte[capacity];
                 int read = -1;
                 logger.trace( "Read transfer..." );
                 while ( ( read = in.read( buf ) ) > -1 )
                 {
-                    logger.trace( "Read transfer, read={}", read );
+                    logger.trace( "Read transfer and write to channel, size: {}", read );
                     bbuf.clear();
                     bbuf.put( buf, 0, read );
                     bbuf.flip();
-                    int written = 0;
-                    do
-                    {
-                        written += sinkChannel.write( bbuf );
-                        logger.trace( "Write sinkChannel, written={}", written );
-                    }
-                    while ( written < read );
+                    write( sinkChannel, bbuf );
                 }
             }
         }
