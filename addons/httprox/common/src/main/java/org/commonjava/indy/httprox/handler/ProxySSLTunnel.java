@@ -34,6 +34,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static org.commonjava.indy.httprox.util.ChannelUtils.DEFAULT_READ_BUF_SIZE;
 import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
 
 /**
@@ -46,8 +47,6 @@ public class ProxySSLTunnel implements Runnable
     //private volatile Selector selector; // selecting READ events for target channel
 
     //private static final long SELECTOR_TIMEOUT = 60 * 1000; // 60 seconds
-
-    private static final int DEFAULT_READ_BUF_SIZE = 1024 * 16;
 
     private final ConduitStreamSinkChannel sinkChannel;
 
@@ -118,15 +117,15 @@ public class ProxySSLTunnel implements Runnable
             //final byte[] bytes = new byte[byteBuffer.limit()];
             //byteBuffer.get( bytes );
 
-            logger.debug( "Write sink channel, bytes: {}", byteBuffer.limit() );
-            sinkChannel.write( byteBuffer );
+            logger.debug( "Write to sink channel, size: {}", byteBuffer.limit() );
+            ChannelUtils.write( sinkChannel, byteBuffer );
             sinkChannel.flush();
             byteBuffer.clear();
 
             total += read;
         }
 
-        logger.debug( "Pipe to sink channel complete, transferred: {}", total );
+        logger.debug( "Write to sink channel complete, transferred: {}", total );
 
         flush( sinkChannel );
         sinkChannel.shutdownWrites();
