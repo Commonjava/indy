@@ -45,9 +45,11 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
+import java.io.Externalizable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -198,6 +200,26 @@ public class CacheProducer
         }
 
         return handle;
+    }
+
+    /**
+     * Get named cache and verify that the cache obeys our expectations for clustering.
+     * There is no way to find out the runtime type of generic type parameters and we need to pass the k/v class types.
+     */
+    public synchronized <K, V> CacheHandle<K, V> getClusterizableCache( String named, Class<K> kClass, Class<V> vClass )
+    {
+        verifyClusterizable( kClass, vClass );
+        return getCache( named );
+    }
+
+    private <K, V> void verifyClusterizable( Class<K> kClass, Class<V> vClass )
+    {
+        if ( !Serializable.class.isAssignableFrom( kClass ) && !Externalizable.class.isAssignableFrom( kClass )
+                        || !Serializable.class.isAssignableFrom( vClass ) && !Externalizable.class.isAssignableFrom(
+                        vClass ) )
+        {
+            throw new RuntimeException( kClass + " or " + vClass + " is not Serializable/Externalizable" );
+        }
     }
 
     /**
