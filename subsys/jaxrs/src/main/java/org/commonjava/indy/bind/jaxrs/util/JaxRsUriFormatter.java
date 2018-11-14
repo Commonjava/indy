@@ -20,7 +20,7 @@ import static org.apache.commons.lang.StringUtils.join;
 import java.net.MalformedURLException;
 
 import org.commonjava.indy.util.UriFormatter;
-import org.commonjava.maven.atlas.ident.util.JoinString;
+import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;

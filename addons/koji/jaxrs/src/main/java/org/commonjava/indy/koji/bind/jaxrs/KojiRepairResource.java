@@ -16,6 +16,7 @@
 package org.commonjava.indy.koji.bind.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.redhat.red.build.koji.KojiClientException;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -95,7 +96,7 @@ public class KojiRepairResource
                                           .toString();
             return repairManager.repairVol( request, user, baseUrl );
         }
-        catch ( KojiRepairException e )
+        catch ( KojiRepairException | KojiClientException e )
         {
             logger.error( e.getMessage(), e );
             throwError( e );

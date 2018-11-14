@@ -36,7 +36,7 @@ import org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.maven.atlas.ident.util.JoinString;
+import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

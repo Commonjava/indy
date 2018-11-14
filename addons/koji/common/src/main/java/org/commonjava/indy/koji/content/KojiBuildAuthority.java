@@ -33,7 +33,7 @@ import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;

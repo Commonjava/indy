@@ -35,8 +35,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
-import org.commonjava.maven.atlas.ident.ref.SimpleArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,7 +249,7 @@ public class KojiRepairManager
     }
 
     public KojiRepairResult repairVol( KojiRepairRequest request, String user, String baseUrl )
-                    throws KojiRepairException
+                    throws KojiRepairException, KojiClientException
     {
         boolean flag = opLock.tryLock();
         if ( flag )
@@ -304,6 +304,7 @@ public class KojiRepairManager
     }
 
     private KojiRepairResult repairGroupVol( KojiRepairRequest request, Group group, String user )
+                    throws KojiClientException
     {
         KojiRepairResult ret = new KojiRepairResult( request );
 

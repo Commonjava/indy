@@ -17,7 +17,7 @@ package org.commonjava.indy.fixture;
 
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;

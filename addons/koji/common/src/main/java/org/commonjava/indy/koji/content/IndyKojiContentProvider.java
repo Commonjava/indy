@@ -25,8 +25,8 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.maven.atlas.ident.ref.ArtifactRef;
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,7 +161,7 @@ public class IndyKojiContentProvider
                                 () -> kojiClient.getBuildInfo( nvr, session ) );
     }
 
-    public List<KojiBuildInfo> getBuildInfo( List<Object> args, KojiSessionInfo session )
+    public List<KojiBuildInfo> getBuildInfo( List<Object> args, KojiSessionInfo session ) throws KojiClientException
     {
         logger.debug( "getBuildInfo, args: {}", args );
 

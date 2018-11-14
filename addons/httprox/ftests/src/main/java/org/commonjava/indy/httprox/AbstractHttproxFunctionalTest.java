@@ -37,7 +37,7 @@ import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.commonjava.indy.boot.PortFinder;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.maven.parse.PomPeek;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;

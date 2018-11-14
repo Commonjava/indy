@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.koji.inject;
 
-import org.commonjava.maven.atlas.ident.ref.InvalidRefException;
-import org.commonjava.maven.atlas.ident.ref.SimpleProjectRef;
+import org.commonjava.atlas.maven.ident.ref.InvalidRefException;
+import org.commonjava.atlas.maven.ident.ref.SimpleProjectRef;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

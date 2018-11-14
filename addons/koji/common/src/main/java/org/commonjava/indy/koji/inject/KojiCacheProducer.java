@@ -19,7 +19,7 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;

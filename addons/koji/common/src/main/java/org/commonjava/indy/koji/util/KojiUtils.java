@@ -26,8 +26,8 @@ import org.commonjava.indy.koji.data.KojiRepoNameParser;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
