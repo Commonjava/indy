@@ -49,6 +49,8 @@ import java.util.concurrent.TimeUnit;
 public final class ProxyRequestReader
         implements ChannelListener<ConduitStreamSourceChannel>
 {
+    private static final int AWAIT_READABLE_IN_MILLISECONDS = 100;
+
     private static final List<Character> HEAD_END = Collections.unmodifiableList(
             Arrays.asList( Character.valueOf( '\r' ), Character.valueOf( '\n' ), Character.valueOf( '\r' ),
                            Character.valueOf( '\n' ) ) );
@@ -178,15 +180,7 @@ public final class ProxyRequestReader
         while ( true )
         {
             ByteBuffer buf = ByteBuffer.allocate( 1024 );
-            try
-            {
-                channel.awaitReadable( 1, TimeUnit.SECONDS );
-            }
-            catch ( InterruptedIOException e )
-            {
-                logger.debug( "proxy request read channel timed out while waiting for input. Considering this request failed." );
-                return -1;
-            }
+            channel.awaitReadable( AWAIT_READABLE_IN_MILLISECONDS, TimeUnit.MILLISECONDS );
 
             int read = channel.read( buf ); // return the number of bytes read, possibly zero, or -1
 
