@@ -25,7 +25,7 @@ import org.commonjava.indy.model.galley.GroupLocation;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.maven.atlas.ident.util.JoinString;
+import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;

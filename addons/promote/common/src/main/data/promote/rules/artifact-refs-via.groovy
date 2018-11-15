@@ -4,9 +4,9 @@ import org.apache.commons.lang.StringUtils
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 
-import org.commonjava.maven.atlas.graph.rel.DependencyRelationship
-import org.commonjava.maven.atlas.graph.rel.RelationshipType
-import org.commonjava.maven.atlas.ident.DependencyScope
+import org.commonjava.atlas.maven.graph.rel.DependencyRelationship
+import org.commonjava.atlas.maven.graph.rel.RelationshipType
+import org.commonjava.atlas.maven.ident.DependencyScope
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 import org.slf4j.LoggerFactory
 

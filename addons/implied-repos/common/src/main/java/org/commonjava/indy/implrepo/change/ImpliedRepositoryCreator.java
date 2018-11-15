@@ -18,7 +18,7 @@ package org.commonjava.indy.implrepo.change;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.template.ScriptEngine;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.maven.model.view.RepositoryView;
 import org.slf4j.Logger;
 

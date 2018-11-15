@@ -19,8 +19,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.commonjava.maven.atlas.ident.util.VersionUtils;
-import org.commonjava.maven.atlas.ident.version.SingleVersion;
+import org.commonjava.atlas.maven.ident.util.VersionUtils;
+import org.commonjava.atlas.maven.ident.version.SingleVersion;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

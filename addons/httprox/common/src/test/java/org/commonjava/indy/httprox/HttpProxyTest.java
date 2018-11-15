@@ -63,7 +63,7 @@ import org.commonjava.indy.subsys.template.TemplatingEngine;
 import org.commonjava.indy.test.fixture.core.MockContentAdvisor;
 import org.commonjava.indy.test.fixture.core.MockInstance;
 import org.commonjava.indy.util.MimeTyper;
-import org.commonjava.maven.atlas.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
 import org.commonjava.maven.galley.auth.MemoryPasswordManager;
 import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;

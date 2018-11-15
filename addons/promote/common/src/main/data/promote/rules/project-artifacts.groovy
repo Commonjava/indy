@@ -2,7 +2,7 @@ package org.commonjava.indy.promote.rules;
 
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
-import org.commonjava.maven.atlas.ident.ref.SimpleTypeAndClassifier
+import org.commonjava.atlas.maven.ident.ref.SimpleTypeAndClassifier
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap

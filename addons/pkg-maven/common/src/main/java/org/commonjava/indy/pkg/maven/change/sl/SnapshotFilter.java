@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.pkg.maven.change.sl;
 
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 
 import java.io.File;
 import java.io.FilenameFilter;

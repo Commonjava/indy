@@ -62,15 +62,15 @@
 
 
     <!-- commonjava/redhat projects -->
-    <atlasVersion>0.17.2</atlasVersion>
-    <galleyVersion>0.16.6-SNAPSHOT</galleyVersion>
+    <atlasVersion>1.0.0-SNAPSHOT</atlasVersion>
+    <galleyVersion>0.16.7-SNAPSHOT</galleyVersion>
     <bomVersion>24</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.14</partylineVersion>
-    <kojijiVersion>2.4</kojijiVersion>
+    <kojijiVersion>2.7-SNAPSHOT</kojijiVersion>
     <rwxVersion>2.1</rwxVersion>
     <jhttpcVersion>1.9</jhttpcVersion>
-    <weftVersion>1.9</weftVersion>
+    <weftVersion>1.10-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.3</httpTestserverVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
@@ -1125,7 +1125,7 @@
       </dependency>
 
       <dependency>
-        <groupId>org.commonjava.maven.atlas</groupId>
+        <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-identities</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
@@ -1196,7 +1196,7 @@
       </dependency>
 
       <dependency>
-        <groupId>org.commonjava.maven.atlas</groupId>
+        <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-bindings-jackson-identities</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
@@ -1261,7 +1261,7 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.maven.atlas</groupId>
+        <groupId>org.commonjava.atlas</groupId>
         <artifactId>atlas-relationships-api</artifactId>
         <version>${atlasVersion}</version>
       </dependency>

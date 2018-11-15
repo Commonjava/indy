@@ -74,7 +74,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.maven.atlas</groupId>
+      <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-relationships-api</artifactId>
     </dependency>
     <dependency>

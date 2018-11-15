@@ -16,7 +16,7 @@
 package org.commonjava.indy.subsys.git;
 
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.maven.atlas.ident.util.JoinString;
+import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;

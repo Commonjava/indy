@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.maven.atlas.graph.jackson.ProjectRelationshipSerializerModule;
-import org.commonjava.maven.atlas.ident.jackson.ProjectVersionRefSerializerModule;
+import org.commonjava.atlas.maven.graph.jackson.ProjectRelationshipSerializerModule;
+import org.commonjava.atlas.maven.ident.jackson.ProjectVersionRefSerializerModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

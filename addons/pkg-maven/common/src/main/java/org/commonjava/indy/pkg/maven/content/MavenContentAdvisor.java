@@ -17,7 +17,7 @@ package org.commonjava.indy.pkg.maven.content;
 
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
-import org.commonjava.maven.atlas.ident.util.ArtifactPathInfo;
+import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 

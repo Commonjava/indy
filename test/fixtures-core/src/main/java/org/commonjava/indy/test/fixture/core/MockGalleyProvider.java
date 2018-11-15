@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.test.fixture.core;
 
-import org.commonjava.maven.atlas.ident.ref.ProjectRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
