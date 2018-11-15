@@ -21,12 +21,12 @@
     <!-- encoders are assigned the type
          ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
     <encoder>
-      <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
 
   <logger name="org.commonjava.indy.httprox" level="TRACE"/>
-  <logger name="org.apache.http" level="TRACE"/>
+  <logger name="org.apache.http" level="INFO"/>
 
   <root level="DEBUG">
     <appender-ref ref="STDOUT" />

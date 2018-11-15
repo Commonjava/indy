@@ -51,7 +51,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static java.lang.Thread.sleep;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static org.commonjava.indy.boot.PortFinder.findOpenPort;
@@ -68,6 +67,12 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 public class ProxyMITMSSLServer implements Runnable
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private static final int FIND_OPEN_PORT_MAX_RETRIES = 16;
+
+    private static final int GET_SOCKET_CHANNEL_MAX_RETRIES = 32;
+
+    private static final int GET_SOCKET_CHANNEL_WAIT_TIME_IN_MILLISECONDS = 500;
 
     private final String host;
 
@@ -176,7 +181,7 @@ public class ProxyMITMSSLServer implements Runnable
     {
         SSLServerSocketFactory sslServerSocketFactory = getSSLServerSocketFactory( host );
 
-        serverPort = findOpenPort( maxRetries );
+        serverPort = findOpenPort( FIND_OPEN_PORT_MAX_RETRIES );
         sslServerSocket = sslServerSocketFactory.createServerSocket( serverPort );
 
         logger.debug( "MITM server started, {}", sslServerSocket );
@@ -254,11 +259,9 @@ public class ProxyMITMSSLServer implements Runnable
         }
     }
 
-    private static final int maxRetries = 16;
-
     public SocketChannel getSocketChannel() throws InterruptedException, ExecutionException
     {
-        for ( int i = 0; i < maxRetries; i++ )
+        for ( int i = 0; i < GET_SOCKET_CHANNEL_MAX_RETRIES; i++ )
         {
             logger.debug( "Try to get socket channel #{}", i + 1 );
             if ( started )
@@ -270,13 +273,13 @@ public class ProxyMITMSSLServer implements Runnable
                 }
                 catch ( IOException e )
                 {
-                    throw new ExecutionException( "", e );
+                    throw new ExecutionException( "Open socket channel to MITM failed", e );
                 }
             }
             else
             {
                 logger.debug( "Server not started, wait..." );
-                sleep( TimeUnit.SECONDS.toMillis( 1 ) );
+                TimeUnit.MILLISECONDS.sleep( GET_SOCKET_CHANNEL_WAIT_TIME_IN_MILLISECONDS );
             }
         }
         return null;
