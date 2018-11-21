@@ -236,7 +236,7 @@ public class StoreContentListener
 
                 logger.debug( "Got affected groups: {}", groups );
 
-                affectedMembers.parallelStream().forEach( ( memberKey ) -> {
+                affectedMembers.forEach( ( memberKey ) -> {
                     logger.debug( "Listing all {}paths in: {}", ( removeMergableOnly ? "mergeable " : "" ), memberKey );
                     Set<String> paths = listPaths( memberKey, removeMergableOnly ? mergablePathStrings() : ( p ) -> true );
 
@@ -253,8 +253,7 @@ public class StoreContentListener
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         final boolean isReadonlyHosted = storeDataManager.isReadonly( originKey );
-        paths.parallelStream()
-                 .forEach( p -> {
+        paths.forEach( p -> {
                      if ( deleteOriginPath && !isReadonlyHosted )
                      {
                          try
@@ -267,7 +266,7 @@ public class StoreContentListener
                          }
                      }
 
-                     affectedGroups.parallelStream().forEach( g->{
+                     affectedGroups.forEach( g->{
                          try
                          {
                              Transfer gt = directContentAccess.getTransfer( g, p );
@@ -435,7 +434,7 @@ public class StoreContentListener
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        groups.parallelStream().forEach( g->{
+        groups.forEach( g->{
             Set<String> paths = listPaths( g.getKey(), pathFilter );
             logger.trace( "Clear mergable files for group: {}, paths: {}", g.getKey(), paths );
             paths.forEach( p->{

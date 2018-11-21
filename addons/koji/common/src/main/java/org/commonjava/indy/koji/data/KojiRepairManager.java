@@ -109,7 +109,7 @@ public class KojiRepairManager
             {
                 List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
 
-                List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
+                List<KojiRepairResult> results = kojiRemotes.stream().map( r -> {
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
 
                     KojiRepairRequest request = new KojiRepairRequest( r.getKey(), false );
@@ -470,7 +470,7 @@ public class KojiRepairManager
             {
                 List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
 
-                List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
+                List<KojiRepairResult> results = kojiRemotes.stream().map( r -> {
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
 
                     KojiRepairRequest request = new KojiRepairRequest( r.getKey(), isDryRun );

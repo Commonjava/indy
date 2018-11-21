@@ -285,7 +285,7 @@ public class TimeoutEventListener
     public void clearStoreContent( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups,
                                    boolean clearOriginPath )
     {
-        paths.parallelStream().forEach( p->{
+        paths.forEach( p->{
             if ( clearOriginPath )
             {
                 deleteExpiration( originKey, p );

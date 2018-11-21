@@ -387,7 +387,7 @@ public class FoloAdminController
             return null;
         }
 
-        return entries.parallelStream().map( ( entry ) ->
+        return entries.stream().map( ( entry ) ->
                                       {
                                           try
                                           {
