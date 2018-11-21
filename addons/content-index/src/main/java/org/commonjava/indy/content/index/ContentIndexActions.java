@@ -80,7 +80,7 @@ public class ContentIndexActions
     public void clearStoreContent( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups,
                                    boolean clearOriginPath )
     {
-        paths.parallelStream().forEach( path->{
+        paths.forEach( path->{
             if ( clearOriginPath )
             {
                 indexManager.deIndexStorePath( originKey, path );
