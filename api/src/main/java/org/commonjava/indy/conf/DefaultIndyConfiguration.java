@@ -47,6 +47,8 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS = 86400;
 
+    public static final int DEFAULT_FORKJOINPOOL_COMMON_PARALLELISM = 48;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -62,6 +64,8 @@ public class DefaultIndyConfiguration
     private Integer remoteMetadataTimeoutSeconds;
 
     private String mdcHeaders;
+
+    private Integer forkJoinPoolCommonParallelism;
 
     private Boolean allowRemoteListDownload;
 
@@ -189,6 +193,18 @@ public class DefaultIndyConfiguration
         return remoteMetadataTimeoutSeconds == null ?
                 DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS :
                 remoteMetadataTimeoutSeconds;
+    }
+
+    @Override
+    public int getForkJoinPoolCommonParallelism()
+    {
+        return forkJoinPoolCommonParallelism == null ? DEFAULT_FORKJOINPOOL_COMMON_PARALLELISM : forkJoinPoolCommonParallelism;
+    }
+
+    @ConfigName( "forkjoinpool.common.parallelism" )
+    public void setForkJoinPoolCommonParallelism( Integer forkJoinPoolCommonParallelism )
+    {
+        this.forkJoinPoolCommonParallelism = forkJoinPoolCommonParallelism;
     }
 
     @ConfigName( "remote.metadata.timeout" )

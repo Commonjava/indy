@@ -70,4 +70,5 @@ public interface IndyConfiguration
 
     int getRemoteMetadataTimeoutSeconds();
 
+    int getForkJoinPoolCommonParallelism();
 }
