@@ -783,12 +783,17 @@
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics</artifactId>
+        <artifactId>indy-subsys-metrics-core</artifactId>
         <version>1.5.0.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics</artifactId>
+        <artifactId>indy-subsys-metrics-reporter</artifactId>
+        <version>1.5.0.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-metrics-reporter</artifactId>
         <version>1.5.0.3-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
