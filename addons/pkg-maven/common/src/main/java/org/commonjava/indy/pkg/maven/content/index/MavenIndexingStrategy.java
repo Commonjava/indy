@@ -51,7 +51,7 @@ public class MavenIndexingStrategy
     public String getIndexPath( final String rawPath )
     {
         final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( rawPath );
-        if ( info == null || !info.isMetadata() )
+        if ( info == null || !info.isMergable() )
         {
             return PathUtils.getCurrentDirPath( rawPath );
         }
