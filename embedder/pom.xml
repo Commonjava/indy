@@ -61,7 +61,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics</artifactId>
+      <artifactId>indy-subsys-metrics-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-metrics-reporter</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
