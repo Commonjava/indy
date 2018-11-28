@@ -104,7 +104,7 @@ public class MemoryStoreDataManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed(), exceptions = @MetricNamed() )
+    @Measure
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists, final boolean fireEvents,
                                        final EventMetadata eventMetadata )
