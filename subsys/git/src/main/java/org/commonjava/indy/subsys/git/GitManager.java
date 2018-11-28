@@ -258,16 +258,17 @@ public class GitManager
         throws GitSubsystemException
     {
         lockAnd(me->{
+/*
             if ( !verifyChangesExist( paths ) )
             {
                 logger.info( "No actual changes in:\n  {}\n\nSkipping commit.", join( paths, "\n  " ) );
                 return this;
             }
+*/
 
             try
             {
                 final AddCommand add = git.add();
-                final CommitCommand commit = git.commit();
                 for ( final String filepath : paths )
                 {
                     add.addFilepattern( filepath );
@@ -293,6 +294,7 @@ public class GitManager
         return this;
     }
 
+/*
     private boolean verifyChangesExist( final Collection<String> paths )
         throws GitSubsystemException
     {
@@ -357,6 +359,7 @@ public class GitManager
             }
         });
     }
+*/
 
     private String buildMessage( final ChangeSummary summary, final Collection<String> paths )
     {

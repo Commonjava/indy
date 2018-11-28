@@ -36,6 +36,9 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.IndyLifecycleEvent;
 import org.commonjava.indy.flat.data.DataFileStoreDataManager;
+import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.revisions.conf.RevisionsConfig;
 import org.commonjava.indy.subsys.datafile.DataFile;
@@ -192,18 +195,24 @@ public class RevisionsManager
                 return;
             }
 
-            if ( event.getType() == DataFileEventType.deleted )
-            {
-                dataFileGit.delete( event.getSummary(), event.getFile() );
-            }
-            else
-            {
-                dataFileGit.addFiles( event.getSummary(), event.getFile() );
-            }
+            addOrDeleteFiles( event );
         }
         catch ( final GitSubsystemException e )
         {
             logger.error( String.format( "Failed to commit changes: %s. Reason: %s", event, e.getMessage() ), e );
+        }
+    }
+
+    @Measure( timers = @MetricNamed( DEFAULT ) )
+    private void addOrDeleteFiles( DataFileEvent event ) throws GitSubsystemException
+    {
+        if ( event.getType() == DataFileEventType.deleted )
+        {
+            dataFileGit.delete( event.getSummary(), event.getFile() );
+        }
+        else
+        {
+            dataFileGit.addFiles( event.getSummary(), event.getFile() );
         }
     }
 
@@ -220,6 +229,7 @@ public class RevisionsManager
         // FIXME: fire events to signal data owners to reload...
     }
 
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public int commitDataUpdates()
                     throws GitSubsystemException
     {
@@ -231,6 +241,7 @@ public class RevisionsManager
         return dataFileGit.commit();
     }
 
+    @Measure( timers = @MetricNamed( DEFAULT ) )
     public void pushDataUpdates()
         throws GitSubsystemException
     {
