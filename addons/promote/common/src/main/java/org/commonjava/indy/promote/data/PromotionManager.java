@@ -555,6 +555,13 @@ public class PromotionManager
             logger.error( msg, e );
         }
 
+        if ( targetStore == null )
+        {
+            String msg = String.format( "Failed to retrieve artifact store: %s", request.getTarget() );
+            errors.add( msg );
+            logger.error( msg );
+        }
+
         if ( errors.isEmpty() )
         {
             ArtifactStore src = sourceStore;
