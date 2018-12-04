@@ -24,6 +24,8 @@ public final class UrlInfo
 {
     private final String url;
 
+    private final String protocol;
+
     private String user;
 
     private String password;
@@ -82,6 +84,8 @@ public final class UrlInfo
 
         this.url = resultUrl;
 
+        this.protocol = url.getProtocol();
+
         host = url.getHost();
         if ( url.getPort() < 0 )
         {
@@ -117,6 +121,11 @@ public final class UrlInfo
     public String getUrl()
     {
         return url;
+    }
+
+    public String getProtocol()
+    {
+        return protocol;
     }
 
     public String getUser()
