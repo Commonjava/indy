@@ -27,7 +27,7 @@ import java.util.Set;
  * @author jdcasey
  *
  */
-public class PathsPromoteResult
+public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult>
 {
 
     @ApiModelProperty( "Original request (useful for resuming promotion after an error has been corrected)" )
@@ -72,6 +72,11 @@ public class PathsPromoteResult
         this.skippedPaths = skipped;
         this.validations = validations;
         this.error = null;
+    }
+
+    public PathsPromoteResult( PathsPromoteRequest request )
+    {
+        this.request = request;
     }
 
     public ValidationResult getValidations()

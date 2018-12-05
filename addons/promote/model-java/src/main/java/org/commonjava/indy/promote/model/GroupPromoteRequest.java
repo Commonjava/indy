@@ -28,7 +28,7 @@ import org.commonjava.indy.model.core.StoreType;
  *
  */
 public class GroupPromoteRequest
-    implements PromoteRequest<GroupPromoteRequest>
+                extends AbstractPromoteRequest<GroupPromoteRequest>
 {
 
     @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{remote,hosted,group}:name')", required=true )
@@ -101,5 +101,4 @@ public class GroupPromoteRequest
     {
         return String.format( "GroupPromoteRequest [source=%s, target-group=%s]", source, targetGroup );
     }
-
 }

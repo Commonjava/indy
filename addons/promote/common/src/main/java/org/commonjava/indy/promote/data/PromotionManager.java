@@ -158,6 +158,12 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
+        if ( request.isAsync() )
+        {
+            submitGroupPromoteRequest( request );
+            return new GroupPromoteResult( request ).accepted();
+        }
+
         ValidationResult validation = new ValidationResult();
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
                      request.getTargetGroup() );
@@ -292,6 +298,12 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
+        if ( request.isAsync() )
+        {
+            submitGroupPromoteRequest( request );
+            return new GroupPromoteResult( request ).accepted();
+        }
+
         if ( target.getConstituents().contains( request.getSource() ) )
         {
             // give the preUpdate event a different object to compare vs. the original group.
@@ -320,6 +332,14 @@ public class PromotionManager
         return new GroupPromoteResult( request );
     }
 
+
+    // TODO: thread off promotion task
+    private void submitGroupPromoteRequest( GroupPromoteRequest request )
+    {
+
+    }
+
+
     /**
      * Promote artifacts from the source to the target given in the {@link PathsPromoteRequest}. If a set of paths are given, only try to promotePaths those.
      * Otherwise, build a recursive list of available artifacts in the source store, and try to promotePaths them all.
@@ -336,6 +356,12 @@ public class PromotionManager
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        if ( request.isAsync() )
+        {
+            submitPathsPromoteRequest( request );
+            return new PathsPromoteResult( request ).accepted();
+        }
+
         final Set<String> paths = request.getPaths();
         final StoreKey source = request.getSource();
 
@@ -375,6 +401,12 @@ public class PromotionManager
         }
     }
 
+    // TODO: thread off promotion task
+    private void submitPathsPromoteRequest( PathsPromoteRequest request )
+    {
+
+    }
+
     /**
      * Attempt to resumePathsPromote from a previously failing {@link PathsPromoteResult}. This is meant to handle cases where a transient (or correctable) error
      * occurs on the server side, and promotion can proceed afterward. It works much like the {@link #promotePaths(PathsPromoteRequest, String)} call, using the pending
@@ -392,6 +424,14 @@ public class PromotionManager
     public PathsPromoteResult resumePathsPromote( final PathsPromoteResult result, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        final PathsPromoteRequest request = result.getRequest();
+
+        if ( request.isAsync() )
+        {
+            submitPathsPromoteRequest( request );
+            return new PathsPromoteResult( request ).accepted();
+        }
+
         final List<Transfer> contents =
                 getTransfersForPaths( result.getRequest().getSource(), result.getPendingPaths() );
 
@@ -418,6 +458,14 @@ public class PromotionManager
     public PathsPromoteResult rollbackPathsPromote( final PathsPromoteResult result )
             throws PromotionException, IndyWorkflowException
     {
+        final PathsPromoteRequest request = result.getRequest();
+
+        if ( request.isAsync() )
+        {
+            submitPathsPromoteRequest( request );
+            return new PathsPromoteResult( request ).accepted();
+        }
+
         StoreKey targetKey = result.getRequest().getTarget();
 
         final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );

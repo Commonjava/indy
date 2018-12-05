@@ -33,4 +33,8 @@ public interface PromoteRequest<T extends PromoteRequest<T>>
     T setDryRun( boolean dryRun );
 
     boolean isFireEvents();
+
+    boolean isAsync();
+
+    String getCallbackUrl();
 }
