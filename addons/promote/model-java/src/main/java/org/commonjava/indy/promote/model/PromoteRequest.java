@@ -36,5 +36,5 @@ public interface PromoteRequest<T extends PromoteRequest<T>>
 
     boolean isAsync();
 
-    String getCallbackUrl();
+    CallbackTarget getCallback();
 }

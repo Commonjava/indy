@@ -10,8 +10,8 @@ public abstract class AbstractPromoteRequest<T extends PromoteRequest> implement
     @ApiModelProperty( value="Asynchronous call. A callback url is needed when it is true." )
     protected boolean async;
 
-    @ApiModelProperty( value="Callback Url which is used to send the promotion result." )
-    protected String callbackUrl;
+    @ApiModelProperty( value="Callback which is used to send the promotion result." )
+    protected CallbackTarget callback;
 
     @Override
     public boolean isAsync()
@@ -20,9 +20,9 @@ public abstract class AbstractPromoteRequest<T extends PromoteRequest> implement
     }
 
     @Override
-    public String getCallbackUrl()
+    public CallbackTarget getCallback()
     {
-        return callbackUrl;
+        return callback;
     }
 
     public void setAsync( boolean async )
@@ -30,8 +30,8 @@ public abstract class AbstractPromoteRequest<T extends PromoteRequest> implement
         this.async = async;
     }
 
-    public void setCallbackUrl( String callbackUrl )
+    public void setCallback( CallbackTarget callback )
     {
-        this.callbackUrl = callbackUrl;
+        this.callback = callback;
     }
 }
