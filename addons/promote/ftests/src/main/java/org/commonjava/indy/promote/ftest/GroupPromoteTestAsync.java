@@ -1,0 +1,76 @@
+/**
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.commonjava.indy.promote.ftest;
+
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.promote.client.IndyPromoteClientModule;
+import org.commonjava.indy.promote.model.CallbackTarget;
+import org.commonjava.indy.promote.model.GroupPromoteRequest;
+import org.commonjava.indy.promote.model.GroupPromoteResult;
+import org.commonjava.test.http.expect.ExpectationServer;
+import org.junit.Rule;
+import org.junit.Test;
+
+import static org.commonjava.indy.promote.model.AbstractPromoteResult.ACCEPTED;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
+public class GroupPromoteTestAsync
+                extends GroupPromoteTest
+{
+
+    @Rule
+    public ExpectationServer server = new ExpectationServer( "test" );
+
+    private final String authToken = "I490M5M0057HSU";
+
+    @Test
+    public void run() throws Exception
+    {
+        String callbackUrl = server.formatUrl( "foo/bar/callback" );
+
+        AsyncExpectationHandler handler = new AsyncExpectationHandler();
+        server.expect( "POST", callbackUrl, handler );
+
+        GroupPromoteRequest req = new GroupPromoteRequest( source.getKey(), target.getName() );
+        req.setAsync( true );
+        CallbackTarget callback = new CallbackTarget( callbackUrl, authToken );
+        req.setCallback( callback );
+
+        final GroupPromoteResult result = client.module( IndyPromoteClientModule.class ).promoteToGroup( req );
+
+        assertEquals( result.getResultCode(), ACCEPTED );
+
+        // wait for task to complete
+        handler.waitComplete();
+
+        // some assertions after succeeded
+        assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
+        assertThat( result.getRequest().getTargetGroup(), equalTo( target.getName() ) );
+
+        assertThat( result.getError(), nullValue() );
+
+        assertThat( client.content().exists( target.getKey().getType(), target.getName(), first ), equalTo( true ) );
+        assertThat( client.content().exists( target.getKey().getType(), target.getName(), second ), equalTo( true ) );
+
+        Group g = client.stores().load( StoreType.group, target.getName(), Group.class );
+        assertThat( g.getConstituents().contains( source.getKey() ), equalTo( true ) );
+    }
+
+}

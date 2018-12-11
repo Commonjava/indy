@@ -9,8 +9,6 @@ import java.util.UUID;
  */
 public class AbstractPromoteResult<T extends AbstractPromoteResult>
 {
-    //public static final String DONE = "DONE";
-
     public static final String DONE = "DONE";
 
     public static final String ACCEPTED = "ACCEPTED";

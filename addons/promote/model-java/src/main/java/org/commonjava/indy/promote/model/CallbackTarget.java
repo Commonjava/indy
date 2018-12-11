@@ -13,21 +13,73 @@ public class CallbackTarget
         POST, PUT;
     }
 
-    private final String url;
+    private String url;
 
-    private final CallbackMethod method;
+    private String authToken;
 
-    private final Map<String, String> headers;
+    private CallbackMethod method;
 
-    public CallbackTarget( String url, CallbackMethod method, Map<String, String> headers )
+    private Map<String, String> headers;
+
+    public CallbackTarget()
+    {
+    }
+
+    public CallbackTarget( String url, String authToken, CallbackMethod method, Map<String, String> headers )
     {
         this.url = url;
+        this.authToken = authToken;
         this.method = method;
         this.headers = headers;
     }
 
-    public CallbackTarget( String url, CallbackMethod method )
+    public CallbackTarget( String url, String authToken, CallbackMethod method )
     {
-        this( url, method, Collections.emptyMap() );
+        this( url, authToken, method, Collections.emptyMap() );
+    }
+
+    public CallbackTarget( String url, String authToken )
+    {
+        this( url, authToken, CallbackMethod.POST, Collections.emptyMap() );
+    }
+
+    public void setUrl( String url )
+    {
+        this.url = url;
+    }
+
+    public void setAuthToken( String authToken )
+    {
+        this.authToken = authToken;
+    }
+
+    public void setMethod( CallbackMethod method )
+    {
+        this.method = method;
+    }
+
+    public void setHeaders( Map<String, String> headers )
+    {
+        this.headers = headers;
+    }
+
+    public String getUrl()
+    {
+        return url;
+    }
+
+    public String getAuthToken()
+    {
+        return authToken;
+    }
+
+    public CallbackMethod getMethod()
+    {
+        return method;
+    }
+
+    public Map<String, String> getHeaders()
+    {
+        return headers;
     }
 }

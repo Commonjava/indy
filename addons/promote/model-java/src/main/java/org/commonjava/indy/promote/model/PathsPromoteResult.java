@@ -45,7 +45,7 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     @ApiModelProperty( "Result of validation rule executions, if applicable" )
     private ValidationResult validations;
 
-    @ApiModelProperty( "Error message, if promomotion failed" )
+    @ApiModelProperty( "Error message, if promotion failed" )
     private String error;
 
     public PathsPromoteResult()
@@ -77,6 +77,12 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     public PathsPromoteResult( PathsPromoteRequest request )
     {
         this.request = request;
+    }
+
+    public PathsPromoteResult( PathsPromoteRequest request, String error )
+    {
+        this.request = request;
+        this.error = error;
     }
 
     public ValidationResult getValidations()
