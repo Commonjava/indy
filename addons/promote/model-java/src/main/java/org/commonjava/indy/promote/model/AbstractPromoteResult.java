@@ -44,4 +44,10 @@ public class AbstractPromoteResult<T extends AbstractPromoteResult>
         this.resultCode = ACCEPTED;
         return (T) this;
     }
+
+    public T withPromotionId( String promotionId )
+    {
+        this.promotionId = promotionId;
+        return (T) this;
+    }
 }

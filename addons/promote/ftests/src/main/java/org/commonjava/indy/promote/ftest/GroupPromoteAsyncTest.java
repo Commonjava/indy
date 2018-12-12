@@ -15,14 +15,12 @@
  */
 package org.commonjava.indy.promote.ftest;
 
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
-import org.commonjava.indy.promote.model.CallbackTarget;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Rule;
 import org.junit.Test;
 
 import static org.commonjava.indy.promote.model.AbstractPromoteResult.ACCEPTED;
@@ -31,34 +29,20 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class GroupPromoteTestAsync
-                extends GroupPromoteTest
+public class GroupPromoteAsyncTest
+                extends AbstractAsyncPromotionManagerTest<GroupPromoteRequest, GroupPromoteResult>
 {
-
-    @Rule
-    public ExpectationServer server = new ExpectationServer( "test" );
-
-    private final String authToken = "I490M5M0057HSU";
 
     @Test
     public void run() throws Exception
     {
-        String callbackUrl = server.formatUrl( "foo/bar/callback" );
 
-        AsyncExpectationHandler handler = new AsyncExpectationHandler();
-        server.expect( "POST", callbackUrl, handler );
+        GroupPromoteRequest req = getAsyncRequest( new GroupPromoteRequest( source.getKey(), target.getName() ) );
 
-        GroupPromoteRequest req = new GroupPromoteRequest( source.getKey(), target.getName() );
-        req.setAsync( true );
-        CallbackTarget callback = new CallbackTarget( callbackUrl, authToken );
-        req.setCallback( callback );
-
-        final GroupPromoteResult result = client.module( IndyPromoteClientModule.class ).promoteToGroup( req );
+        GroupPromoteResult result = client.module( IndyPromoteClientModule.class ).promoteToGroup( req );
 
         assertEquals( result.getResultCode(), ACCEPTED );
-
-        // wait for task to complete
-        handler.waitComplete();
+        result = getAsyncPromoteResult( GroupPromoteResult.class );
 
         // some assertions after succeeded
         assertThat( result.getRequest().getSource(), equalTo( source.getKey() ) );
@@ -71,6 +55,14 @@ public class GroupPromoteTestAsync
 
         Group g = client.stores().load( StoreType.group, target.getName(), Group.class );
         assertThat( g.getConstituents().contains( source.getKey() ), equalTo( true ) );
+    }
+
+    @Override
+    protected ArtifactStore createTarget( String changelog )
+                    throws Exception
+    {
+        Group group = new Group( "test" );
+        return client.stores().create( group, changelog, Group.class );
     }
 
 }

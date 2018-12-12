@@ -323,17 +323,21 @@ public class PromotionManager
 
         if ( request.isAsync() )
         {
-            submitGroupPromoteRollbackRequest( request, target, user );
+            submitGroupPromoteRollback( result, target, user );
             return new GroupPromoteResult( request ).accepted();
         }
 
-        return doGroupPromoteRollback( request, target, user );
+        return doGroupPromoteRollback( result, target, user );
 
     }
 
-    private GroupPromoteResult doGroupPromoteRollback( GroupPromoteRequest request, Group target, String user )
+    private GroupPromoteResult doGroupPromoteRollback( GroupPromoteResult result, Group target, String user )
                     throws PromotionException
     {
+        GroupPromoteResult ret;
+
+        GroupPromoteRequest request = result.getRequest();
+
         if ( target.getConstituents().contains( request.getSource() ) )
         {
             // give the preUpdate event a different object to compare vs. the original group.
@@ -352,31 +356,33 @@ public class PromotionManager
                 throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
                                               target.getKey(), request.getSource(), e.getMessage() );
             }
+            ret = new GroupPromoteResult( request );
         }
         else
         {
-            return new GroupPromoteResult( request, "Group: " + target.getKey() + " does not contain member: " + request
+            ret = new GroupPromoteResult( request, "Group: " + target.getKey() + " does not contain member: " + request
                             .getSource() );
         }
 
-        return new GroupPromoteResult( request );
+        return ret.withPromotionId( result.getPromotionId() );
     }
 
-    private void submitGroupPromoteRollbackRequest( GroupPromoteRequest request, Group target, String user )
+    private void submitGroupPromoteRollback( final GroupPromoteResult result, final Group target, final String user )
     {
         Future<GroupPromoteResult> future = executorService.submit( ()->
         {
             GroupPromoteResult ret;
             try
             {
-                ret = doGroupPromoteRollback( request, target, user );
+                ret = doGroupPromoteRollback( result, target, user );
             }
             catch ( Exception ex )
             {
+                GroupPromoteRequest request = result.getRequest();
                 String msg = "Group promotion rollback failed. Target: " + target.getKey() + ", Source: "
                                 + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
-                ret = new GroupPromoteResult( request, msg );
+                ret = new GroupPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
             return callbackHelper.callback( ret.getRequest().getCallback(), ret );
         } );
@@ -514,14 +520,14 @@ public class PromotionManager
 
         if ( request.isAsync() )
         {
-            submitResumePathsPromoteResult( result, baseUrl );
+            submitResumePathsPromote( result, baseUrl );
             return new PathsPromoteResult( request ).accepted();
         }
 
         return doResumePathsPromote( result, baseUrl );
     }
 
-    private void submitResumePathsPromoteResult( PathsPromoteResult result, String baseUrl )
+    private void submitResumePathsPromote( PathsPromoteResult result, String baseUrl )
     {
         Future<PathsPromoteResult> future = executorService.submit( ()->
         {
@@ -536,7 +542,7 @@ public class PromotionManager
                 String msg = "Path promotion failed. Target: " + request.getTarget() + ", Source: "
                                 + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
-                ret = new PathsPromoteResult( request, msg );
+                ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
             return callbackHelper.callback( ret.getRequest().getCallback(), ret );
         } );
@@ -547,13 +553,15 @@ public class PromotionManager
     {
         final PathsPromoteRequest request = result.getRequest();
 
-        final List<Transfer> contents =
-                        getTransfersForPaths( request.getSource(), result.getPendingPaths() );
+        final List<Transfer> contents = getTransfersForPaths( request.getSource(), result.getPendingPaths() );
 
         ValidationResult validation = new ValidationResult();
         ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
-        return runPathPromotions( request, result.getPendingPaths(), result.getCompletedPaths(),
-                                  result.getSkippedPaths(), contents, result.getValidations(), validationRequest );
+        PathsPromoteResult ret = runPathPromotions( request, result.getPendingPaths(), result.getCompletedPaths(),
+                                                    result.getSkippedPaths(), contents, result.getValidations(),
+                                                    validationRequest );
+
+        return ret.withPromotionId( result.getPromotionId() );
     }
 
     /**
@@ -599,7 +607,7 @@ public class PromotionManager
                 String msg = "Rollback path promotion failed. Target: " + request.getTarget() + ", Source: "
                                 + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
-                ret = new PathsPromoteResult( request, msg );
+                ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
             return callbackHelper.callback( ret.getRequest().getCallback(), ret );
         } );
@@ -699,7 +707,8 @@ public class PromotionManager
 
         }
 
-        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error.get(), new ValidationResult() );
+        PathsPromoteResult ret = new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error.get(), new ValidationResult() );
+        return ret.withPromotionId( result.getPromotionId() );
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
