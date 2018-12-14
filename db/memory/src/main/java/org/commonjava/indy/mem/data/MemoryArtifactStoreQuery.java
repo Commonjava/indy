@@ -293,7 +293,8 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
                         if (  targetUrlInfo != null )
                         {
                             if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
-                                        .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() ) )
+                                        .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
+                                            && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ))
                             {
                                 logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
                                               store.getKey() );
