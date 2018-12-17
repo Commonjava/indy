@@ -112,7 +112,7 @@ public class PromotionValidationTools
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "Promotion-validation-rules-executor", threads = 8 )
+    @ExecutorConfig( named = "promote-validation-rules-executor", threads = 8 )
     private Executor ruleParallelExecutor;
 
     protected PromotionValidationTools()
