@@ -119,6 +119,42 @@
     </headers>
   </appender -->
 
+  <!-- This example configuration is probably most unreliable under
+    failure conditions but wont block your application at all -->
+  <!-- use async delivery. the application threads are not blocked by logging -->
+  <!--
+    ProducerConfigs as below:
+     * acks=0: don't wait for a broker to ack the reception of a batch.
+     * linger.ms=1000: wait up to 1000ms and collect log messages before sending them as a batch
+     * max.block.ms=0: even if the producer buffer runs full, do not block the application but start to drop messages
+     * client.id=client.id=${HOSTNAME}-${CONTEXT_NAME}-logback-relaxed: define a client-id that you use to identify yourself against the kafka broker
+  -->
+  <!-- there is no fallback <appender-ref>. If this appender cannot deliver, it will drop its messages. -->
+  <!--
+  <appender name="KAFKA" class="com.github.danielwegener.logback.kafka.KafkaAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+    <topic>indy-logs</topic>
+    <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
+    <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
+
+    <producerConfig>bootstrap.servers=localhost:9092</producerConfig>
+    <producerConfig>acks=0</producerConfig>
+    <producerConfig>linger.ms=1000</producerConfig>
+    <producerConfig>max.block.ms=0</producerConfig>
+    <producerConfig>client.id=${HOSTNAME}-${CONTEXT_NAME}-logback-relaxed</producerConfig>
+  </appender>
+  -->
+
+  <!-- Followed with kafka appender, to prevent a metadata blocking problem -->
+  <!--
+  <logger name="org.apache.kafka" additivity="false" level="INFO">
+    <appender-ref ref="STDOUT"/>
+    <appender-ref ref="FILE" />
+  </logger>
+  -->
+
   <logger name="org.jboss" level="ERROR"/>
   <!-- <logger name="org.jboss.resteasy" level="DEBUG"/> -->
 
@@ -148,6 +184,10 @@
   <root level="INFO">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
+    <!-- if kafka function is on, include KAFKA appender -->
+    <!--
+    <appender-ref ref="KAFKA" />
+    -->
 
     <!-- if elasticsearch function is on, include ELASTIC appender-->
     <!-- if condition='property("elasticsearch.enable").equalsIgnoreCase("true")'>
