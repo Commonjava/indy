@@ -132,7 +132,6 @@ public class PromotionCallbackHelper
                 req.setHeader( key, headers.get( key ) );
             }
         }
-        req.addHeader( "Authorization", "Bearer " + target.getAuthToken() );
         req.addHeader( "Content-Type", "application/json" );
         req.setEntity( new StringEntity( objectMapper.writeValueAsString( ret ) ) );
     }

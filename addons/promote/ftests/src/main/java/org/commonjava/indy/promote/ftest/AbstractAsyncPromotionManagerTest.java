@@ -16,6 +16,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by ruhan on 12/18/18.
@@ -25,8 +27,6 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
 {
     @Rule
     public ExpectationServer server = new ExpectationServer( "test" );
-
-    private final String authToken = "I490M5M0057HSU";
 
     protected String callbackUrl;
 
@@ -43,7 +43,9 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
     protected T getAsyncRequest( AbstractPromoteRequest request )
     {
         request.setAsync( true );
-        request.setCallback( new CallbackTarget( callbackUrl, authToken ) );
+        Map<String, String> headers = new HashMap<>(  );
+        headers.put( "Authorization", "Bearer I490M5M0057HSU..." );
+        request.setCallback( new CallbackTarget( callbackUrl, headers ) );
         return (T) request;
     }
 

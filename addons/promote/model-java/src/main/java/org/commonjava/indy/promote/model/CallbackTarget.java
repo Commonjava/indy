@@ -3,6 +3,8 @@ package org.commonjava.indy.promote.model;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.commonjava.indy.promote.model.CallbackTarget.CallbackMethod.POST;
+
 /**
  * Created by ruhan on 12/6/18.
  */
@@ -15,42 +17,34 @@ public class CallbackTarget
 
     private String url;
 
-    private String authToken;
-
     private CallbackMethod method;
 
-    private Map<String, String> headers;
+    private Map<String, String> headers; // e.g., put( "Authorization", "Bearer ..." )
 
     public CallbackTarget()
     {
     }
 
-    public CallbackTarget( String url, String authToken, CallbackMethod method, Map<String, String> headers )
+    public CallbackTarget( String url, CallbackMethod method, Map<String, String> headers )
     {
         this.url = url;
-        this.authToken = authToken;
         this.method = method;
         this.headers = headers;
     }
 
-    public CallbackTarget( String url, String authToken, CallbackMethod method )
+    public CallbackTarget( String url, Map<String, String> headers )
     {
-        this( url, authToken, method, Collections.emptyMap() );
+        this( url, POST, headers );
     }
 
-    public CallbackTarget( String url, String authToken )
+    public CallbackTarget( String url )
     {
-        this( url, authToken, CallbackMethod.POST, Collections.emptyMap() );
+        this( url, POST, Collections.emptyMap() );
     }
 
     public void setUrl( String url )
     {
         this.url = url;
-    }
-
-    public void setAuthToken( String authToken )
-    {
-        this.authToken = authToken;
     }
 
     public void setMethod( CallbackMethod method )
@@ -66,11 +60,6 @@ public class CallbackTarget
     public String getUrl()
     {
         return url;
-    }
-
-    public String getAuthToken()
-    {
-        return authToken;
     }
 
     public CallbackMethod getMethod()
