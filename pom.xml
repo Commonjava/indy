@@ -56,7 +56,7 @@
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.0.1.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
-    <keycloakVersion>1.9.8.Final</keycloakVersion>
+    <keycloakVersion>4.6.0.Final</keycloakVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     <bytemanVersion>3.0.6</bytemanVersion>
 
@@ -108,7 +108,7 @@
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
 
     <metrics.version>4.0.2</metrics.version>
-    <jackson-version>2.9.7</jackson-version>
+    <jackson-version>2.9.8</jackson-version>
   </properties>
   
   <modules>
