@@ -27,6 +27,8 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.keycloak.RSATokenVerifier;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
+import org.keycloak.adapters.rotation.HardcodedPublicKeyLocator;
+import org.keycloak.adapters.rotation.PublicKeyLocator;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.PublicKey;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -72,6 +75,16 @@ public class KeycloakProxyAuthenticator
         this.httproxConfig = httproxConfig;
     }
 
+    private PublicKey getHardcodedRealmKey( KeycloakDeployment deployment )
+    {
+        PublicKeyLocator l = deployment.getPublicKeyLocator();
+        if ( l instanceof HardcodedPublicKeyLocator )
+        {
+            return l.getPublicKey( null, null );
+        }
+        return null;
+    }
+
     @Override
     public boolean authenticate( UserPass userPass, HttpWrapper http )
             throws IOException
@@ -97,7 +110,7 @@ public class KeycloakProxyAuthenticator
                     try (FileInputStream in = new FileInputStream( jsonFile ))
                     {
                         deployment = KeycloakDeploymentBuilder.build( in );
-                        logger.debug( "Got public key: '{}'", deployment.getRealmKey() );
+                        logger.debug( "Got public key: '{}'", getHardcodedRealmKey( deployment ) );
                     }
                 }
                 else
@@ -174,7 +187,7 @@ public class KeycloakProxyAuthenticator
             KeycloakBearerTokenDebug.debugToken( tokenString );
 
             logger.debug( "Verifying token: '{}'", tokenString );
-            token = RSATokenVerifier.verifyToken( tokenString, deployment.getRealmKey(), deployment.getRealmInfoUrl() );
+            token = RSATokenVerifier.verifyToken( tokenString, getHardcodedRealmKey( deployment ), deployment.getRealmInfoUrl() );
         }
         catch ( VerificationException e )
         {
