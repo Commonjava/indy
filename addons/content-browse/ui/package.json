@@ -20,8 +20,8 @@
     "babel-preset-react": "6.24.1",
     "babel-preset-stage-2": "6.24.1",
     "webpack": "4.19.1",
-    "webpack-cli": "3.1.0",
-    "webpack-dev-server": "3.1.8"
+    "webpack-cli": "3.1.2",
+    "webpack-dev-server": "3.1.14"
   },
   "scripts": {
     "yarn": "node node_modules/yarn/bin/yarn.js",
