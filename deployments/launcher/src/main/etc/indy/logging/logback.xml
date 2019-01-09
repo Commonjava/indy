@@ -121,6 +121,7 @@
 
   <!-- This example configuration is probably most unreliable under
     failure conditions but wont block your application at all -->
+  <!-- The encoder part is using JsonLayout format encoder to generate structured logs using json format -->
   <!-- use async delivery. the application threads are not blocked by logging -->
   <!--
     ProducerConfigs as below:
@@ -132,9 +133,13 @@
   <!-- there is no fallback <appender-ref>. If this appender cannot deliver, it will drop its messages. -->
   <!--
   <appender name="KAFKA" class="com.github.danielwegener.logback.kafka.KafkaAppender">
-    <encoder>
-      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+      <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+        <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
+        <appendLineSeparator>true</appendLineSeparator>
+      </layout>
     </encoder>
+
     <topic>indy-logs</topic>
     <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy" />
     <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
