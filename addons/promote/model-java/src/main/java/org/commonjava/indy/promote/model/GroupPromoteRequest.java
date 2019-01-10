@@ -40,9 +40,6 @@ public class GroupPromoteRequest
     @ApiModelProperty( value="Run validations, verify source and target locations ONLY, do not modify anything!" )
     private boolean dryRun;
 
-    @ApiModelProperty( value="Fire events, e.g. PromoteCompleteEvent" )
-    private boolean fireEvents;
-
     public GroupPromoteRequest()
     {
     }
@@ -96,12 +93,7 @@ public class GroupPromoteRequest
     @Override
     public boolean isFireEvents()
     {
-        return fireEvents;
-    }
-
-    public void setFireEvents( boolean fireEvents )
-    {
-        this.fireEvents = fireEvents;
+        return false;
     }
 
     @Override
