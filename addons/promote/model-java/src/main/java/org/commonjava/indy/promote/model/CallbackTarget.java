@@ -71,4 +71,10 @@ public class CallbackTarget
     {
         return headers;
     }
+
+    @Override
+    public String toString()
+    {
+        return "CallbackTarget{" + "url='" + url + '\'' + ", method=" + method + '}';
+    }
 }

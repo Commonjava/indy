@@ -36,7 +36,14 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
     public void setupCallbackHandle() throws Exception
     {
         callbackUrl = server.formatUrl( "foo/bar/callback" );
-        handler = new AsyncExpectationHandler();
+        if ( isRetry() )
+        {
+            handler = new AsyncExpectationRetryHandler();
+        }
+        else
+        {
+            handler = new AsyncExpectationHandler();
+        }
         server.expect( "POST", callbackUrl, handler );
     }
 
@@ -84,6 +91,10 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
 
         public <T> T getPromoteResult( Class<T> resultClass ) throws IOException
         {
+            if ( jsonBody == null )
+            {
+                return null;
+            }
             return mapper.readValue( jsonBody, resultClass );
         }
 
@@ -96,7 +107,14 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
 
             try
             {
-                wait( 30 * 1000 ); // max 30 seconds
+                if ( isRetry() )
+                {
+                    wait( 120 * 1000 ); // the minimum retry backoff is 1 min so we wait maximum 120 seconds
+                }
+                else
+                {
+                    wait( 30 * 1000 ); // max 30 seconds
+                }
             }
             catch ( InterruptedException e )
             {
@@ -108,6 +126,33 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
         {
             notifyAll();
         }
+    }
+
+    private class AsyncExpectationRetryHandler extends AsyncExpectationHandler
+    {
+        boolean isFirstTime = true; // we return 500 error for the first time to force promote to retry
+
+        @Override
+        public void handle( HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse )
+                        throws ServletException, IOException
+        {
+            if ( isFirstTime )
+            {
+                httpServletResponse.setStatus( 500 );
+                isFirstTime = false;
+            }
+            else
+            {
+                super.handle( httpServletRequest, httpServletResponse );
+            }
+        }
+
+    }
+
+    // if true, we will use AsyncExpectationRetryHandler to test retry
+    protected boolean isRetry()
+    {
+        return false;
     }
 
 }
