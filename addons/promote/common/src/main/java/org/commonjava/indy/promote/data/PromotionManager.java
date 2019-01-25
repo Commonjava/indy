@@ -16,7 +16,9 @@
 package org.commonjava.indy.promote.data;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
@@ -32,6 +34,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.promote.callback.PromotionCallbackHelper;
 import org.commonjava.indy.promote.change.event.PathsPromoteCompleteEvent;
 import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
@@ -65,10 +68,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
@@ -112,6 +117,14 @@ public class PromotionManager
     private Locker<StoreKey> byGroupTargetLocks;
 
     private Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
+
+    @WeftManaged
+    @Inject
+    @ExecutorConfig( named = "promotion", threads = 8, priority = 8 )
+    private ExecutorService executorService;
+
+    @Inject
+    private PromotionCallbackHelper callbackHelper;
 
     @Inject
     private NotFoundCache nfc;
@@ -158,11 +171,33 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
+        if ( request.isAsync() )
+        {
+            submitGroupPromoteRequest( request, user, baseUrl );
+            return new GroupPromoteResult( request ).accepted();
+        }
+
+        AtomicReference<PromotionException> error = new AtomicReference<>();
+        ValidationResult validation = doValidationAndPromote( request, error, user, baseUrl );
+
+        PromotionException e = error.get();
+        if ( e != null )
+        {
+            throw e;
+        }
+
+        return new GroupPromoteResult( request, validation );
+    }
+
+    private ValidationResult doValidationAndPromote( GroupPromoteRequest request,
+                                                     AtomicReference<PromotionException> error, String user,
+                                                     String baseUrl )
+    {
         ValidationResult validation = new ValidationResult();
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
                      request.getTargetGroup() );
 
-        AtomicReference<PromotionException> error = new AtomicReference<>();
+        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
         byGroupTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k-> {
             Group target;
             try
@@ -191,8 +226,8 @@ public class PromotionManager
                         {
                             final ChangeSummary changeSummary = new ChangeSummary( user,
                                                                                    "Promoting " + request.getSource()
-                                                                                           + " into membership of group: "
-                                                                                           + target.getKey() );
+                                                                                                   + " into membership of group: "
+                                                                                                   + target.getKey() );
 
                             storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
                             clearStoreNFC( validationRequest.getSourcePaths(), target );
@@ -200,12 +235,12 @@ public class PromotionManager
                             if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
                             {
                                 HostedRepository source =
-                                        (HostedRepository) storeManager.getArtifactStore( request.getSource() );
+                                                (HostedRepository) storeManager.getArtifactStore( request.getSource() );
 
                                 source.setReadonly( true );
 
                                 final ChangeSummary readOnlySummary = new ChangeSummary( user, "Promoting "
-                                        + request.getSource() + " into membership of group: " + target.getKey() );
+                                                + request.getSource() + " into membership of group: " + target.getKey() );
 
                                 storeManager.storeArtifactStore( source, readOnlySummary, false, true,
                                                                  new EventMetadata() );
@@ -214,8 +249,8 @@ public class PromotionManager
                         catch ( IndyDataException e )
                         {
                             error.set( new PromotionException(
-                                    "Failed to store group: %s with additional member: %s. Reason: %s", e, target.getKey(),
-                                    request.getSource(), e.getMessage() ) );
+                                            "Failed to store group: %s with additional member: %s. Reason: %s", e, target.getKey(),
+                                            request.getSource(), e.getMessage() ) );
                         }
                     }
                 }
@@ -229,21 +264,15 @@ public class PromotionManager
         }, (k,lock)-> {
             //FIXME: should we consider to repeat the promote process several times when lock failed?
             String errorMsg = String.format(
-                    "Failed to acquire group promotion lock on target when promote: %s in %d seconds.", targetKey,
-                    config.getLockTimeoutSeconds() );
+                            "Failed to acquire group promotion lock on target when promote: %s in %d seconds.", targetKey,
+                            config.getLockTimeoutSeconds() );
             logger.error( errorMsg );
             error.set( new PromotionException( errorMsg ) );
 
             return Boolean.FALSE;
         } );
 
-        PromotionException e = error.get();
-        if ( e != null )
-        {
-            throw e;
-        }
-
-        return new GroupPromoteResult( request, validation );
+        return validation;
     }
 
     /**
@@ -292,6 +321,23 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
+        if ( request.isAsync() )
+        {
+            submitGroupPromoteRollback( result, target, user );
+            return new GroupPromoteResult( request ).accepted();
+        }
+
+        return doGroupPromoteRollback( result, target, user );
+
+    }
+
+    private GroupPromoteResult doGroupPromoteRollback( GroupPromoteResult result, Group target, String user )
+                    throws PromotionException
+    {
+        GroupPromoteResult ret;
+
+        GroupPromoteRequest request = result.getRequest();
+
         if ( target.getConstituents().contains( request.getSource() ) )
         {
             // give the preUpdate event a different object to compare vs. the original group.
@@ -301,7 +347,7 @@ public class PromotionManager
             try
             {
                 final ChangeSummary changeSummary = new ChangeSummary( user, "Removing " + request.getSource()
-                        + " from membership of group: " + target.getKey() );
+                                + " from membership of group: " + target.getKey() );
 
                 storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
             }
@@ -310,14 +356,60 @@ public class PromotionManager
                 throw new PromotionException( "Failed to store group: %s with additional member: %s. Reason: %s", e,
                                               target.getKey(), request.getSource(), e.getMessage() );
             }
+            ret = new GroupPromoteResult( request );
         }
         else
         {
-            return new GroupPromoteResult( request, "Group: " + target.getKey() + " does not contain member: " + request
-                    .getSource() );
+            ret = new GroupPromoteResult( request, "Group: " + target.getKey() + " does not contain member: " + request
+                            .getSource() );
         }
 
-        return new GroupPromoteResult( request );
+        return ret.withPromotionId( result.getPromotionId() );
+    }
+
+    private void submitGroupPromoteRollback( final GroupPromoteResult result, final Group target, final String user )
+    {
+        Future<GroupPromoteResult> future = executorService.submit( ()->
+        {
+            GroupPromoteResult ret;
+            try
+            {
+                ret = doGroupPromoteRollback( result, target, user );
+            }
+            catch ( Exception ex )
+            {
+                GroupPromoteRequest request = result.getRequest();
+                String msg = "Group promotion rollback failed. Target: " + target.getKey() + ", Source: "
+                                + request.getSource() + ", Reason: " + getStackTrace( ex );
+                logger.warn( msg );
+                ret = new GroupPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
+            }
+            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+        } );
+    }
+
+    private void submitGroupPromoteRequest( final GroupPromoteRequest request, final String user, final String baseUrl )
+    {
+        Future<GroupPromoteResult> future = executorService.submit( ()->
+        {
+            AtomicReference<PromotionException> error = new AtomicReference<>();
+            ValidationResult validation = doValidationAndPromote( request, error, user, baseUrl );
+
+            GroupPromoteResult ret;
+            PromotionException ex = error.get();
+            if ( ex != null )
+            {
+                String msg = "Group promotion failed. Target: " + request.getTargetGroup() + ", Source: "
+                                + request.getSource() + ", Reason: " + getStackTrace( ex );
+                logger.warn( msg );
+                ret = new GroupPromoteResult( request, msg );
+            }
+            else
+            {
+                ret = new GroupPromoteResult( request, validation );
+            }
+            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+        } );
     }
 
     /**
@@ -335,6 +427,18 @@ public class PromotionManager
     @Measure( timers = @MetricNamed( DEFAULT ) )
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
+    {
+        if ( request.isAsync() )
+        {
+            submitPathsPromoteRequest( request, baseUrl );
+            return new PathsPromoteResult( request ).accepted();
+        }
+
+        return doPathsPromotion( request, baseUrl );
+    }
+
+    private PathsPromoteResult doPathsPromotion( PathsPromoteRequest request, String baseUrl )
+                    throws IndyWorkflowException, PromotionValidationException
     {
         final Set<String> paths = request.getPaths();
         final StoreKey source = request.getSource();
@@ -375,6 +479,26 @@ public class PromotionManager
         }
     }
 
+    private void submitPathsPromoteRequest( PathsPromoteRequest request, final String baseUrl )
+    {
+        Future<PathsPromoteResult> future = executorService.submit( ()->
+        {
+            PathsPromoteResult ret;
+            try
+            {
+                ret = doPathsPromotion( request, baseUrl );
+            }
+            catch ( Exception ex )
+            {
+                String msg = "Path promotion failed. Target: " + request.getTarget() + ", Source: "
+                                + request.getSource() + ", Reason: " + getStackTrace( ex );
+                logger.warn( msg );
+                ret = new PathsPromoteResult( request, msg );
+            }
+            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+        } );
+    }
+
     /**
      * Attempt to resumePathsPromote from a previously failing {@link PathsPromoteResult}. This is meant to handle cases where a transient (or correctable) error
      * occurs on the server side, and promotion can proceed afterward. It works much like the {@link #promotePaths(PathsPromoteRequest, String)} call, using the pending
@@ -392,13 +516,52 @@ public class PromotionManager
     public PathsPromoteResult resumePathsPromote( final PathsPromoteResult result, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
-        final List<Transfer> contents =
-                getTransfersForPaths( result.getRequest().getSource(), result.getPendingPaths() );
+        final PathsPromoteRequest request = result.getRequest();
+
+        if ( request.isAsync() )
+        {
+            submitResumePathsPromote( result, baseUrl );
+            return new PathsPromoteResult( request ).accepted();
+        }
+
+        return doResumePathsPromote( result, baseUrl );
+    }
+
+    private void submitResumePathsPromote( PathsPromoteResult result, String baseUrl )
+    {
+        Future<PathsPromoteResult> future = executorService.submit( ()->
+        {
+            PathsPromoteResult ret;
+            try
+            {
+                ret = doResumePathsPromote( result, baseUrl );
+            }
+            catch ( Exception ex )
+            {
+                final PathsPromoteRequest request = result.getRequest();
+                String msg = "Path promotion failed. Target: " + request.getTarget() + ", Source: "
+                                + request.getSource() + ", Reason: " + getStackTrace( ex );
+                logger.warn( msg );
+                ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
+            }
+            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+        } );
+    }
+
+    private PathsPromoteResult doResumePathsPromote( PathsPromoteResult result, String baseUrl )
+                    throws IndyWorkflowException, PromotionValidationException
+    {
+        final PathsPromoteRequest request = result.getRequest();
+
+        final List<Transfer> contents = getTransfersForPaths( request.getSource(), result.getPendingPaths() );
 
         ValidationResult validation = new ValidationResult();
-        ValidationRequest validationRequest = validator.validate( result.getRequest(), validation, baseUrl );
-        return runPathPromotions( result.getRequest(), result.getPendingPaths(), result.getCompletedPaths(),
-                                  result.getSkippedPaths(), contents, result.getValidations(), validationRequest );
+        ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
+        PathsPromoteResult ret = runPathPromotions( request, result.getPendingPaths(), result.getCompletedPaths(),
+                                                    result.getSkippedPaths(), contents, result.getValidations(),
+                                                    validationRequest );
+
+        return ret.withPromotionId( result.getPromotionId() );
     }
 
     /**
@@ -418,6 +581,41 @@ public class PromotionManager
     public PathsPromoteResult rollbackPathsPromote( final PathsPromoteResult result )
             throws PromotionException, IndyWorkflowException
     {
+        final PathsPromoteRequest request = result.getRequest();
+
+        if ( request.isAsync() )
+        {
+            submitRollbackPathsPromote( result );
+            return new PathsPromoteResult( request ).accepted();
+        }
+
+        return doRollbackPathsPromote( result );
+    }
+
+    private void submitRollbackPathsPromote( PathsPromoteResult result )
+    {
+        Future<PathsPromoteResult> future = executorService.submit( ()->
+        {
+            PathsPromoteResult ret;
+            try
+            {
+                ret = doRollbackPathsPromote( result );
+            }
+            catch ( Exception ex )
+            {
+                final PathsPromoteRequest request = result.getRequest();
+                String msg = "Rollback path promotion failed. Target: " + request.getTarget() + ", Source: "
+                                + request.getSource() + ", Reason: " + getStackTrace( ex );
+                logger.warn( msg );
+                ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
+            }
+            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+        } );
+    }
+
+    private PathsPromoteResult doRollbackPathsPromote( PathsPromoteResult result )
+                    throws IndyWorkflowException
+    {
         StoreKey targetKey = result.getRequest().getTarget();
 
         final List<Transfer> contents = getTransfersForPaths( targetKey, result.getCompletedPaths() );
@@ -431,7 +629,7 @@ public class PromotionManager
         }
 
         Set<String> pending =
-                result.getPendingPaths() == null ? new HashSet<>() : new HashSet<>( result.getPendingPaths() );
+                        result.getPendingPaths() == null ? new HashSet<>() : new HashSet<>( result.getPendingPaths() );
 
         final AtomicReference<String> error = new AtomicReference<>();
         final boolean copyToSource = result.getRequest().isPurgeSource();
@@ -444,8 +642,8 @@ public class PromotionManager
         catch ( final IndyDataException e )
         {
             String msg =
-                    String.format( "Failed to retrieve artifact store: %s. Reason: %s", result.getRequest().getSource(),
-                                   e.getMessage() );
+                            String.format( "Failed to retrieve artifact store: %s. Reason: %s", result.getRequest().getSource(),
+                                           e.getMessage() );
 
             logger.error( msg, e );
             error.set( msg );
@@ -484,7 +682,7 @@ public class PromotionManager
                         catch ( final IOException e )
                         {
                             String msg = String.format( "Failed to rollback path promotion of: %s from: %s. Reason: %s",
-                                                   transfer, result.getRequest().getSource(), e.getMessage() );
+                                                        transfer, result.getRequest().getSource(), e.getMessage() );
                             logger.error( msg, e );
                             error.set( msg );
                         }
@@ -494,7 +692,7 @@ public class PromotionManager
                 return null;
             }, (k,lock)->{
                 String msg = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
-                                       config.getLockTimeoutSeconds() );
+                                            config.getLockTimeoutSeconds() );
                 logger.warn( msg );
                 error.set( msg );
 
@@ -509,7 +707,8 @@ public class PromotionManager
 
         }
 
-        return new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error.get(), new ValidationResult() );
+        PathsPromoteResult ret = new PathsPromoteResult( result.getRequest(), pending, completed, skipped, error.get(), new ValidationResult() );
+        return ret.withPromotionId( result.getPromotionId() );
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,

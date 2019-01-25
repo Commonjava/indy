@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.promote.model;
+package org.commonjava.indy.promote.ftest;
 
-import org.commonjava.indy.model.core.StoreKey;
+import org.junit.Test;
 
-/**
- * Created by jdcasey on 9/11/15.
- */
-public interface PromoteRequest<T extends PromoteRequest<T>>
+public class GroupPromoteAsyncRetryTest
+                extends GroupPromoteAsyncTest
 {
-    StoreKey getSource();
 
-    T setSource( StoreKey source );
+    @Test
+    public void run() throws Exception
+    {
+        super.run();
+    }
 
-    StoreKey getTargetKey();
-
-    boolean isDryRun();
-
-    T setDryRun( boolean dryRun );
-
-    boolean isFireEvents();
-
-    boolean isAsync();
-
-    CallbackTarget getCallback();
+    @Override
+    protected boolean isRetry()
+    {
+        return true;
+    }
 }
