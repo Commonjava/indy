@@ -39,6 +39,7 @@
     <module>infinispan</module>
     <module>metrics</module>
     <module>prefetch</module>
+    <module>kafka</module>
   </modules>
   
 </project>
