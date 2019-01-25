@@ -59,7 +59,9 @@
     <keycloakVersion>4.6.0.Final</keycloakVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     <bytemanVersion>3.0.6</bytemanVersion>
-
+    <kafkaVersion>1.1.0</kafkaVersion>
+    <logbackVersion>1.2.3</logbackVersion>
+    <logbackContribVersion>0.1.5</logbackContribVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
@@ -1421,6 +1423,31 @@
         <groupId>org.elasticsearch</groupId>
         <artifactId>metrics-elasticsearch-reporter</artifactId>
         <version>2.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>${kafkaVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logbackVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-core</artifactId>
+        <version>${logbackVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback.contrib</groupId>
+        <artifactId>logback-jackson</artifactId>
+        <version>${logbackContribVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.qos.logback.contrib</groupId>
+        <artifactId>logback-json-classic</artifactId>
+        <version>${logbackContribVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
