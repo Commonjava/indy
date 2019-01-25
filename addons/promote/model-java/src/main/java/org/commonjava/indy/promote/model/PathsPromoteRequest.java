@@ -31,7 +31,7 @@ import java.util.Set;
  *
  */
 public class PathsPromoteRequest
-        implements PromoteRequest<PathsPromoteRequest>
+                extends AbstractPromoteRequest<PathsPromoteRequest>
 {
 
     @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{remote,hosted,group}:name')", required=true )

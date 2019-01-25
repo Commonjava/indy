@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiModelProperty;
  * @author jdcasey
  *
  */
-public class GroupPromoteResult
+public class GroupPromoteResult extends AbstractPromoteResult<GroupPromoteResult>
 {
 
     @ApiModelProperty( "Original request" )
@@ -33,7 +33,7 @@ public class GroupPromoteResult
     @ApiModelProperty( "Result of validation rule executions, if applicable" )
     private ValidationResult validations;
 
-    @ApiModelProperty( "Error message, if promomotion failed" )
+    @ApiModelProperty( "Error message, if promotion failed" )
     private String error;
 
     public GroupPromoteResult()
