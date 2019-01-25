@@ -113,7 +113,7 @@ public class MetaListingRescheduleTimeoutTest
 
         final String listingMetaPath = "org/foo/bar/.listing.txt";
 
-        File listingMetaFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File listingMetaFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                           remote.singularEndpointName() + "-" + repoId, listingMetaPath ).toFile();
 
         assertThat( "metadata doesn't exist: " + listingMetaFile, listingMetaFile.exists(), equalTo( true ) );

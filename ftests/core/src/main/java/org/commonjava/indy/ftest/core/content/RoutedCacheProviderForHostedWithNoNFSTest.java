@@ -39,7 +39,7 @@ public class RoutedCacheProviderForHostedWithNoNFSTest
 
         final String path = "/path/to/foo.class";
 
-        final File nfsStorage = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE ).toFile();
+        final File nfsStorage = Paths.get( fixture.getBootOptions().getHomeDir(), NFS_BASE ).toFile();
 
         assertThat( client.content().exists( hosted, STORE, path ), equalTo( false ) );
         assertThat( nfsStorage.exists(), equalTo( false ) );

@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.test.fixture.core;
 
-import static org.commonjava.indy.boot.PortFinder.findOpenPort;
+import static org.commonjava.propulsor.boot.PortFinder.findOpenPort;
 
 import java.io.Closeable;
 import java.io.File;
@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.codehaus.plexus.interpolation.InterpolationException;
-import org.commonjava.indy.boot.IndyBootException;
-import org.commonjava.indy.boot.BootFinder;
-import org.commonjava.indy.boot.BootInterface;
-import org.commonjava.indy.boot.BootOptions;
-import org.commonjava.indy.boot.BootStatus;
+import org.commonjava.propulsor.boot.BootException;
+import org.commonjava.propulsor.boot.BootFinder;
+import org.commonjava.propulsor.boot.BootInterface;
+import org.commonjava.propulsor.boot.BootOptions;
+import org.commonjava.propulsor.boot.BootStatus;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,14 +42,14 @@ public class CoreServerFixture
 
     private final BootOptions options;
 
-    private final BootInterface booter;
+    private BootInterface booter;
 
     private BootStatus status;
 
     private TemporaryFolder temp;
 
     public CoreServerFixture( final TemporaryFolder temp )
-        throws IndyBootException, IOException
+        throws BootException, IOException
     {
         this( BootFinder.find(), newBootOptions( null, temp.newFolder( "indy-home" ).getAbsolutePath() ) );
         this.temp = temp;
@@ -63,7 +63,7 @@ public class CoreServerFixture
     }
 
     public CoreServerFixture()
-        throws IndyBootException, IOException
+        throws BootException, IOException
     {
         this.booter = BootFinder.find();
         this.temp = newTemporaryFolder();
@@ -116,16 +116,9 @@ public class CoreServerFixture
         }
 
         logger.info( "\n\n\n\nIndy STARTING UP\n\n\n" );
-        status = booter.start( options );
-
-        if ( status == null )
-        {
-            throw new IllegalStateException( "Failed to start server!" );
-        }
-        else if ( status.isFailed() )
-        {
-            throw new IllegalStateException( "Failed to start server!", status.getError() );
-        }
+        booter.start( options );
+        status = new BootStatus();
+        status.markSuccess();
     }
 
     @Override
@@ -171,7 +164,7 @@ public class CoreServerFixture
 
         try
         {
-            final BootOptions options = new BootOptions( bootDefaults, indyHome );
+            final BootOptions options = new BootOptions( "indy", indyHome, bootDefaults );
             options.setPort( findOpenPort( MAX_PORTGEN_TRIES ) );
 
             return options;

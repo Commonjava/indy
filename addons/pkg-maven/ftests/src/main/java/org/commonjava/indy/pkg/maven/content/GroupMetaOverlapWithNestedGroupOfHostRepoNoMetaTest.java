@@ -180,7 +180,7 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoNoMetaTest
 
         // the top group should not reflect the meta file deprecation and expiration
         final String gpLevelMetaFilePath =
-                String.format( "%s/var/lib/indy/storage/%s/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+                String.format( "%s/var/lib/indy/storage/%s/%s-%s/%s", fixture.getBootOptions().getHomeDir(),
                                MAVEN_PKG_KEY, group.name(), topGroup.getName(), path );
 
         assertThat( "group metadata should not be removed after merging", new File( gpLevelMetaFilePath ).exists(),

@@ -199,7 +199,7 @@ public class GroupMetadataMergeInfoGenTest
 //        final String infoFilePath =
 //                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
 //                               store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX );
-        final File infoFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", store.getPackageType(),
+        final File infoFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", store.getPackageType(),
                                          group.singularEndpointName() + "-" + store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX ).toFile();
         assertThat( "info file doesn't exist", infoFile.exists(), equalTo( true ) );
 

@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.boot;
+package org.commonjava.indy.boot.jaxrs;
 
-import org.jboss.weld.environment.se.WeldContainer;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.ConfigurationRegistry;
+import org.commonjava.propulsor.config.DefaultConfigurationRegistry;
 
-public interface WeldBootInterface
-    extends BootInterface
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+
+@ApplicationScoped
+public class MockPropulsorProvider
 {
-
-    WeldContainer getContainer();
-
+    @Produces
+    public ConfigurationRegistry getConfigurationRegistry() throws ConfigurationException
+    {
+        return new DefaultConfigurationRegistry();
+    }
 }

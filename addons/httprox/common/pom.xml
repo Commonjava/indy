@@ -28,8 +28,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy.boot</groupId>
-      <artifactId>indy-booter-api</artifactId>
+      <groupId>org.commonjava.propulsor</groupId>
+      <artifactId>propulsor-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

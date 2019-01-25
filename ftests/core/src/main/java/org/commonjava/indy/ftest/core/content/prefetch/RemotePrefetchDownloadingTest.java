@@ -123,13 +123,13 @@ public class RemotePrefetchDownloadingTest
                 new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, repo1, server.formatUrl( repo1 ) );
         client.stores().create( remote1, "adding remote", RemoteRepository.class );
 
-        System.out.println( String.format( "Indy HOME:%s", fixture.getBootOptions().getIndyHome() ) );
+        System.out.println( String.format( "Indy HOME:%s", fixture.getBootOptions().getHomeDir() ) );
 
-        File fileMeta = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileMeta = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                    remote.singularEndpointName() + "-" + repo1, pathMeta ).toFile();
-        File fileJar = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileJar = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repo1, pathJar ).toFile();
-        File fileSrc = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileSrc = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repo1, pathSrc ).toFile();
 
         assertThat( fileMeta.exists(), equalTo( false ) );

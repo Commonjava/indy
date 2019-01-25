@@ -91,7 +91,7 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        pomFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        pomFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                              remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
 
         assertThat( "pom doesn't exist: " + pomFile, pomFile.exists(), equalTo( true ) );
@@ -102,7 +102,7 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
 
-        metadataFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        metadataFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repoId, metadataPath ).toFile();
 
         assertThat( "metadata doesn't exist", metadataFile.exists(), equalTo( true ) );
@@ -113,7 +113,7 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         assertThat( "no archetype result", archetypeResult, notNullValue() );
         assertThat( "archetype doesn't exist", archetypeResult.exists(), equalTo( true ) );
 
-        archetypeFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        archetypeFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repoId, archetypePath ).toFile();
 
         assertThat( "archetype doesn't exist: " + archetypeFile, archetypeFile.exists(), equalTo( true ) );

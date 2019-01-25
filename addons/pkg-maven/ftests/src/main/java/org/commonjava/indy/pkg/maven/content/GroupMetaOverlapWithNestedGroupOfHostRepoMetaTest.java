@@ -189,7 +189,7 @@ public class GroupMetaOverlapWithNestedGroupOfHostRepoMetaTest
 
         // the top group should reflect the meta file deprecation and re-indexing
         final String gpLevelMetaFilePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
+                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getHomeDir(), group.name(),
                                topGroup.getName(), path );
         assertThat( "group metadata should be removed after merging", new File( gpLevelMetaFilePath ).exists(),
                     equalTo( false ) );

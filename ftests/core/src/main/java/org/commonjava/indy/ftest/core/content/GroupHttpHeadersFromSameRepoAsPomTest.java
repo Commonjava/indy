@@ -123,7 +123,7 @@ public class GroupHttpHeadersFromSameRepoAsPomTest
 //        repoX.setDisabled( true );
 //        client.stores().update( repoX, "disabling" );
 
-        File remoteXFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File remoteXFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                       remote.singularEndpointName() + "-X", PATH ).toFile();
 
         waitForEventPropagation();

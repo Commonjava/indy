@@ -60,7 +60,7 @@ public class RoutedCacheProviderForRemoteWithNoNFSTest
         assertThat( "no result", result, notNullValue() );
         assertThat( "doesn't exist", result.exists(), equalTo( true ) );
 
-        final File nfsStorage = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE ).toFile();
+        final File nfsStorage = Paths.get( fixture.getBootOptions().getHomeDir(), NFS_BASE ).toFile();
         assertThat( nfsStorage.exists(), equalTo( false ) );
     }
 

@@ -127,7 +127,7 @@ public class GroupHttpHeadersFromSameRepoWhenNotInPathMaskTest
 //        repoX.setDisabled( true );
 //        client.stores().update( repoX, "disabling" );
 
-        File remoteYFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File remoteYFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                       remote.singularEndpointName() + "-Y", PATH ).toFile();
 
         waitForEventPropagation();

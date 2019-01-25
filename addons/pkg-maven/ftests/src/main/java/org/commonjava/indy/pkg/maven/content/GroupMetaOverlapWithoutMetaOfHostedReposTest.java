@@ -166,7 +166,7 @@ public class GroupMetaOverlapWithoutMetaOfHostedReposTest
 
         waitForEventPropagation();
 
-        File gpLevelMetaFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File gpLevelMetaFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                           group.singularEndpointName() + "-" + g.getName(), path ).toFile();
 
         assertThat( "group metadata should not be removed after merging", gpLevelMetaFile.exists(),

@@ -155,10 +155,6 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
-      <artifactId>indy-booter-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy.boot</groupId>
       <artifactId>indy-booter-jaxrs</artifactId>
     </dependency>
     <dependency>

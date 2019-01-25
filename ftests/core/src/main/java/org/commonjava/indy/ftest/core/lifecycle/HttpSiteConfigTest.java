@@ -69,7 +69,7 @@ public class HttpSiteConfigTest
                         + "enabled=true\n"
                         + "key.cert.pem=" + PEM_CONTENT + "\n"
                         + "max.connections=20\n"
-                        + "keycloak_yourdomain_com.key.cert.pem.path=" + fixture.getBootOptions().getIndyHome() + "/etc/indy/keycloak.pem\n"
+                        + "keycloak_yourdomain_com.key.cert.pem.path=" + fixture.getBootOptions().getHomeDir() + "/etc/indy/keycloak.pem\n"
                         + "keycloak_yourdomain_com.request.timeout.seconds=10" );
 
         writeConfigFile( "keycloak.pem", PEM_CONTENT );

@@ -78,7 +78,8 @@ else
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} x-forward=%X{x-forwarded-for} - %msg%n</pattern>
     </encoder>
   </appender>
-  
+
+  <logger name="org.jboss.resteasy" level="DEBUG" />
   <logger name="org.jboss" level="ERROR"/>
   <logger name="org.commonjava" level="DEBUG" />
   <logger name="org.apache.http.wire" level="DEBUG" />

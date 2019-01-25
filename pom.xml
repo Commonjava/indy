@@ -62,6 +62,10 @@
     <kafkaVersion>1.1.0</kafkaVersion>
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
+    <propulsorVersion>1.4-SNAPSHOT</propulsorVersion>
+    <weldVersion>2.4.6.Final</weldVersion>
+    <jacksonVersion>2.9.8</jacksonVersion>
+    <metricsVersion>4.0.2</metricsVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
@@ -109,8 +113,6 @@
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
 
-    <metrics.version>4.0.2</metrics.version>
-    <jackson-version>2.9.8</jackson-version>
   </properties>
   
   <modules>
@@ -612,11 +614,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.boot</groupId>
-        <artifactId>indy-booter-api</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy.boot</groupId>
         <artifactId>indy-booter-jaxrs</artifactId>
         <version>1.6.0-SNAPSHOT</version>
       </dependency>
@@ -825,22 +822,22 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-core</artifactId>
-        <version>${jackson-version}</version>
+        <version>${jacksonVersion}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-annotations</artifactId>
-        <version>${jackson-version}</version>
+        <version>${jacksonVersion}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
-        <version>${jackson-version}</version>
+        <version>${jacksonVersion}</version>
       </dependency>
       <dependency>
         <groupId>com.fasterxml.jackson.jaxrs</groupId>
         <artifactId>jackson-jaxrs-json-provider</artifactId>
-        <version>${jackson-version}</version>
+        <version>${jacksonVersion}</version>
       </dependency>
 
       <dependency>
@@ -960,32 +957,32 @@
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-core</artifactId>
-        <version>${metrics.version}</version>
+        <version>${metricsVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-jvm</artifactId>
-        <version>${metrics.version}</version>
+        <version>${metricsVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-healthchecks</artifactId>
-        <version>${metrics.version}</version>
+        <version>${metricsVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-graphite</artifactId>
-        <version>${metrics.version}</version>
+        <version>${metricsVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-servlets</artifactId>
-        <version>${metrics.version}</version>
+        <version>${metricsVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
         <artifactId>metrics-json</artifactId>
-        <version>${metrics.version}</version>
+        <version>${metricsVersion}</version>
       </dependency>
 
       <!-- START: appender of logback for elasticsearch support-->
@@ -1218,13 +1215,13 @@
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
         <artifactId>weld-se-core</artifactId>
-        <version>2.4.6.Final</version>
+        <version>${weldVersion}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
         <artifactId>weld-se</artifactId>
-        <version>2.4.6.Final</version>
+        <version>${weldVersion}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -1448,6 +1445,38 @@
         <groupId>ch.qos.logback.contrib</groupId>
         <artifactId>logback-json-classic</artifactId>
         <version>${logbackContribVersion}</version>
+      </dependency>
+
+      <!-- propulsor dependencies -->
+      <dependency>
+        <groupId>org.commonjava.propulsor</groupId>
+        <artifactId>propulsor-core</artifactId>
+        <version>${propulsorVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.propulsor.config</groupId>
+        <artifactId>propulsor-configuration-core</artifactId>
+        <version>${propulsorVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.propulsor.config</groupId>
+        <artifactId>propulsor-configuration-dotconf</artifactId>
+        <version>${propulsorVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.propulsor</groupId>
+        <artifactId>propulsor-resteasy</artifactId>
+        <version>${propulsorVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.propulsor</groupId>
+        <artifactId>propulsor-undertow</artifactId>
+        <version>${propulsorVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.propulsor</groupId>
+        <artifactId>propulsor-resteasy</artifactId>
+        <version>${propulsorVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

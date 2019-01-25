@@ -15,11 +15,17 @@
  */
 package org.commonjava.indy.bind.jaxrs.util;
 
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.CDI;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jboss.resteasy.cdi.CdiInjectorFactory;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 public class CdiInjectorFactoryImpl
     extends CdiInjectorFactory
@@ -35,8 +41,16 @@ public class CdiInjectorFactoryImpl
         final BeanManager bmgr = CDI.current()
                   .getBeanManager();
 
-        LoggerFactory.getLogger( getClass() )
-                     .info( "\n\n\n\nRESTEasy Using BeanManager: {}\n\n\n\n", bmgr );
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        logger.info( "\n\n\n\nRESTEasy Using BeanManager: {}\n\n\n\n", bmgr );
+
+        Set<Bean<?>> mappers = bmgr.getBeans( ObjectMapper.class );
+        mappers.forEach( bean -> {
+            CreationalContext ctx = bmgr.createCreationalContext( null );
+            logger.debug( "Found ObjectMapper: {}", bean.create( ctx ) );
+            ctx.release();
+        } );
 
         return bmgr;
     }

@@ -31,7 +31,6 @@
   <name>Indy :: Booters :: Parent</name>
   
   <modules>
-    <module>api</module>
     <module>jaxrs</module>
   </modules>
   

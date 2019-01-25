@@ -15,12 +15,12 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+import org.commonjava.indy.bind.jaxrs.jackson.CDIJacksonProvider;
 import org.commonjava.indy.bind.jaxrs.ui.UIServlet;
 import org.commonjava.indy.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
@@ -39,7 +39,6 @@ import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 import javax.servlet.Servlet;
 import javax.ws.rs.core.Application;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -47,7 +46,6 @@ import java.util.Set;
 
 @ApplicationScoped
 public class IndyDeployment
-        extends Application
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -100,6 +98,7 @@ public class IndyDeployment
         this.versioning = versioning;
         this.apiVersioningFilter = new ApiVersioningFilter( versioning );
         this.providerClasses = Collections.emptySet();
+        this.classes = getClasses();
     }
 
     @PostConstruct
@@ -123,13 +122,25 @@ public class IndyDeployment
             logger.info( "Found deployment provider: {}", fac );
             deploymentProviders.add( fac );
         }
+
+        classes = getClasses();
     }
+
+    private Set<Class<?>> classes;
 
     public DeploymentInfo getDeployment( final String contextRoot )
     {
         final ResteasyDeployment deployment = new ResteasyDeployment();
 
-        deployment.setApplication( this );
+        Application application = new Application()
+        {
+            public Set<Class<?>> getClasses()
+            {
+                return classes;
+            }
+        };
+        deployment.setApplication( application );
+
         deployment.setInjectorFactoryClass( CdiInjectorFactoryImpl.class.getName() );
 
         final ServletInfo resteasyServlet = Servlets.servlet( "REST", HttpServlet30Dispatcher.class )
@@ -150,7 +161,7 @@ public class IndyDeployment
                                                          this.apiVersioningFilter ) );
 
         final DeploymentInfo di = new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
-                                                      //                                .addInitParameter( "resteasy.scan", Boolean.toString( true ) )
+                                                      //.addInitParameter( "resteasy.scan", Boolean.toString( true ) )
                                                       .setContextPath( contextRoot )
                                                       .addServletContextAttribute( ResteasyDeployment.class.getName(),
                                                                                    deployment )
@@ -167,7 +178,7 @@ public class IndyDeployment
 
         if ( deploymentProviders != null )
         {
-            DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders, contextRoot, this );
+            DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders, contextRoot, application );
         }
 
         if ( uiConfiguration.getEnabled() )
@@ -185,15 +196,14 @@ public class IndyDeployment
         return di;
     }
 
-    @Override
     public Set<Class<?>> getClasses()
     {
         final Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll( providerClasses );
         classes.addAll( resourceClasses );
         deploymentProviders.forEach( di -> classes.addAll( di.getAdditionalClasses() ) );
-        classes.addAll( Arrays.asList( JacksonJsonProvider.class, UnhandledIOExceptionHandler.class ) );
-//        classes.add( UnhandledRuntimeExceptionHandler.class );
+        classes.add( CDIJacksonProvider.class );
+        classes.add( UnhandledIOExceptionHandler.class );
         return classes;
     }
 

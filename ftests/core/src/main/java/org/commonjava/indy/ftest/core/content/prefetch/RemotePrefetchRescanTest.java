@@ -132,17 +132,17 @@ public class RemotePrefetchRescanTest
                 new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, repo1, server.formatUrl( repo1 ) );
         client.stores().create( remote1, "adding remote", RemoteRepository.class );
 
-        System.out.println( String.format( "Indy HOME:%s", fixture.getBootOptions().getIndyHome() ) );
+        System.out.println( String.format( "Indy HOME:%s", fixture.getBootOptions().getHomeDir() ) );
 
-        File fileMeta = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileMeta = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                    remote.singularEndpointName() + "-" + repo1, pathMeta ).toFile();
-        File fileJar = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileJar = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repo1, pathJar1 ).toFile();
-        File fileSrc = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileSrc = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repo1, pathSrc1 ).toFile();
-        File fileJar2 = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileJar2 = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repo1, pathJar2 ).toFile();
-        File fileSrc2 = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File fileSrc2 = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repo1, pathSrc2 ).toFile();
 
 

@@ -77,7 +77,7 @@ public class ContentRescheduleTimeoutTest
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        File pomFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File pomFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
 
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );

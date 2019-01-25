@@ -53,7 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
-import static org.commonjava.indy.boot.PortFinder.findOpenPort;
+import static org.commonjava.propulsor.boot.PortFinder.findOpenPort;
 import static org.commonjava.indy.httprox.util.CertUtils.createKeyStore;
 import static org.commonjava.indy.httprox.util.CertUtils.createSignedCertificateAndKey;
 import static org.commonjava.indy.httprox.util.CertUtils.getPrivateKey;

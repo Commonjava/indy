@@ -81,7 +81,7 @@ public abstract class AbstractContentTimeoutWorkingTest
         client.content().get(remote, repoId, pomPath).close(); // force storage
 
         pomFile =
-                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
+                Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
                            pomPath ).toFile();
 
         assertThat( "pom doesn't exist: " + pomFile, this.pomFile.exists(), equalTo( true ) );

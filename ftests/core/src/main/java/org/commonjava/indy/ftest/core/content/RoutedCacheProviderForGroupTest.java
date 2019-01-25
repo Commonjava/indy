@@ -50,7 +50,7 @@ public class RoutedCacheProviderForGroupTest
                                                        .create( new HostedRepository( hostedName1 ), "create group",
                                                                 HostedRepository.class );
 
-        final File nfsStorage1 = Paths.get( fixture.getBootOptions().getIndyHome(), NFS_BASE, MAVEN_PKG_KEY,
+        final File nfsStorage1 = Paths.get( fixture.getBootOptions().getHomeDir(), NFS_BASE, MAVEN_PKG_KEY,
                                             hosted.singularEndpointName() + "-" + hostedName1, path ).toFile();
 
 
