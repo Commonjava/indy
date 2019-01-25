@@ -237,8 +237,8 @@ public class PromotionManager
                         {
                             final ChangeSummary changeSummary = new ChangeSummary( user,
                                                                                    "Promoting " + request.getSource()
-                                                                                           + " into membership of group: "
-                                                                                           + target.getKey() );
+                                                                                                   + " into membership of group: "
+                                                                                                   + target.getKey() );
 
                             storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
                             clearStoreNFC( validationRequest.getSourcePaths(), target );
@@ -246,12 +246,12 @@ public class PromotionManager
                             if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
                             {
                                 HostedRepository source =
-                                        (HostedRepository) storeManager.getArtifactStore( request.getSource() );
+                                                (HostedRepository) storeManager.getArtifactStore( request.getSource() );
 
                                 source.setReadonly( true );
 
                                 final ChangeSummary readOnlySummary = new ChangeSummary( user, "Promoting "
-                                        + request.getSource() + " into membership of group: " + target.getKey() );
+                                                + request.getSource() + " into membership of group: " + target.getKey() );
 
                                 storeManager.storeArtifactStore( source, readOnlySummary, false, true,
                                                                  new EventMetadata() );
@@ -367,7 +367,7 @@ public class PromotionManager
             try
             {
                 final ChangeSummary changeSummary = new ChangeSummary( user, "Removing " + request.getSource()
-                        + " from membership of group: " + target.getKey() );
+                                + " from membership of group: " + target.getKey() );
 
                 storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
             }
@@ -713,7 +713,7 @@ public class PromotionManager
         }
 
         Set<String> pending =
-                result.getPendingPaths() == null ? new HashSet<>() : new HashSet<>( result.getPendingPaths() );
+                        result.getPendingPaths() == null ? new HashSet<>() : new HashSet<>( result.getPendingPaths() );
 
         final AtomicReference<String> error = new AtomicReference<>();
         final boolean copyToSource = result.getRequest().isPurgeSource();
@@ -726,8 +726,8 @@ public class PromotionManager
         catch ( final IndyDataException e )
         {
             String msg =
-                    String.format( "Failed to retrieve artifact store: %s. Reason: %s", result.getRequest().getSource(),
-                                   e.getMessage() );
+                            String.format( "Failed to retrieve artifact store: %s. Reason: %s", result.getRequest().getSource(),
+                                           e.getMessage() );
 
             logger.error( msg, e );
             error.set( msg );
