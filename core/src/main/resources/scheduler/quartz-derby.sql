@@ -1,4 +1,8 @@
--- 
+-- ************************************************************************
+-- Deprecated, quartz scheduler has been replaced by ISPN based one,
+-- will be removed in future
+-- ************************************************************************
+--
 -- Apache Derby scripts by Steve Stewart, updated by Ronald Pomeroy
 -- Based on Srinivas Venkatarangaiah's file for Cloudscape
 -- 

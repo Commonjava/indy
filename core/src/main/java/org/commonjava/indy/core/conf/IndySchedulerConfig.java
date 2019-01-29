@@ -28,44 +28,59 @@ import java.util.Properties;
 
 @ApplicationScoped
 @SectionName( IndySchedulerConfig.SECTION_NAME )
-@Deprecated
 public class IndySchedulerConfig
         extends MapSectionListener
         implements IndyConfigInfo
 {
 
-    //TODO: this class is quartz related function for content expiration, which has been
+    //TODO: All quartz related function for content expiration has been
     //      replaced by ISPN cache timeout way. Will be removed in future
 
     public static final String SECTION_NAME = "scheduler";
 
-    private static final String QUARTZ_DATASOURCE_PREFIX = "org.quartz.dataSource.ds.";
-
-    private static final String DS_DRIVER = "driver";
-
-    private static final String DS_URL = "URL";
-
-    private static final String DDL_PROP = "ddl";
-
     private static final String ENABLED_PROP = "enabled";
 
-    private static final String DEFAULT_DB_URL =
-        String.format( "jdbc:derby:%s/var/lib/indy/data/scheduler",
-                       System.getProperty( "indy.home", System.getProperty( "java.io.tmpdir" ) ) );
+    private static final String CLUSTER_LOCK_EXPIRATION = "schedule.cluster.lock.expiration.sec";
 
-    private static final String DEFAULT_DB_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
+//    @Deprecated
+//    private static final String QUARTZ_DATASOURCE_PREFIX = "org.quartz.dataSource.ds.";
+//
+//    @Deprecated
+//    private static final String DS_DRIVER = "driver";
+//
+//    @Deprecated
+//    private static final String DS_URL = "URL";
+//
+//    @Deprecated
+//    private static final String DDL_PROP = "ddl";
+//
+//    @Deprecated
+//    private static final String DEFAULT_DB_URL =
+//        String.format( "jdbc:derby:%s/var/lib/indy/data/scheduler",
+//                       System.getProperty( "indy.home", System.getProperty( "java.io.tmpdir" ) ) );
+//
+//    @Deprecated
+//    private static final String DEFAULT_DB_DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 
     private static final boolean DEFAULT_ENABLED = true;
 
+    private static final int DEFAULT_CLUSTER_LOCK_EXPIRATION = 3600;
+
     private Boolean enabled;
 
-    private transient boolean dbDetailsParsed;
+    private Integer clusterLockExpiration;
 
-    private transient String ddlFile;
-
-    private transient String dbUrl;
-
-    private transient String dbDriver;
+//    @Deprecated
+//    private transient boolean dbDetailsParsed;
+//
+//    @Deprecated
+//    private transient String ddlFile;
+//
+//    @Deprecated
+//    private transient String dbUrl;
+//
+//    @Deprecated
+//    private transient String dbDriver;
 
     public IndySchedulerConfig()
     {
@@ -81,103 +96,111 @@ public class IndySchedulerConfig
         }
     }
 
-    private synchronized void parseDatabaseDetails()
-    {
-        if ( !dbDetailsParsed )
-        {
-            dbDetailsParsed = true;
-
-            final Map<String, String> configMap = getConfiguration();
-            if ( configMap == null )
-            {
-                return;
-            }
-
-            for ( final Map.Entry<String, String> entry : configMap.entrySet() )
-            {
-                final String key = entry.getKey();
-                if ( ENABLED_PROP.equalsIgnoreCase( key ) )
-                {
-                    enabled = Boolean.parseBoolean( entry.getValue().toLowerCase() );
-                }
-                else if ( DDL_PROP.equalsIgnoreCase( key ) )
-                {
-                    ddlFile = entry.getValue();
-                }
-                else if ( key.startsWith( QUARTZ_DATASOURCE_PREFIX ) )
-                {
-                    if ( key.endsWith( DS_DRIVER ) )
-                    {
-                        this.dbDriver = entry.getValue();
-                    }
-                    else if ( key.endsWith( DS_URL ) )
-                    {
-                        this.dbUrl = entry.getValue();
-                    }
-                }
-            }
-        }
-    }
+//    @Deprecated
+//    private synchronized void parseDatabaseDetails()
+//    {
+//        if ( !dbDetailsParsed )
+//        {
+//            dbDetailsParsed = true;
+//
+//            final Map<String, String> configMap = getConfiguration();
+//            if ( configMap == null )
+//            {
+//                return;
+//            }
+//
+//            for ( final Map.Entry<String, String> entry : configMap.entrySet() )
+//            {
+//                final String key = entry.getKey();
+//                if ( ENABLED_PROP.equalsIgnoreCase( key ) )
+//                {
+//                    enabled = Boolean.parseBoolean( entry.getValue().toLowerCase() );
+//                }
+//                else if ( DDL_PROP.equalsIgnoreCase( key ) )
+//                {
+//                    ddlFile = entry.getValue();
+//                }
+//                else if ( key.startsWith( QUARTZ_DATASOURCE_PREFIX ) )
+//                {
+//                    if ( key.endsWith( DS_DRIVER ) )
+//                    {
+//                        this.dbDriver = entry.getValue();
+//                    }
+//                    else if ( key.endsWith( DS_URL ) )
+//                    {
+//                        this.dbUrl = entry.getValue();
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     public boolean isEnabled()
     {
-        parseDatabaseDetails();
         return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
-    public String getDdlFile()
+    public int getClusterLockExpiration()
     {
-        parseDatabaseDetails();
-        return ddlFile;
+        return clusterLockExpiration == null ? DEFAULT_CLUSTER_LOCK_EXPIRATION : clusterLockExpiration;
     }
 
-    public String getDbUrl()
-    {
-        parseDatabaseDetails();
-        return dbUrl == null ? DEFAULT_DB_URL : dbUrl;
-    }
+//    @Deprecated
+//    public String getDdlFile()
+//    {
+//        parseDatabaseDetails();
+//        return ddlFile;
+//    }
+//
+//    @Deprecated
+//    public String getDbUrl()
+//    {
+//        parseDatabaseDetails();
+//        return dbUrl == null ? DEFAULT_DB_URL : dbUrl;
+//    }
+//
+//    @Deprecated
+//    public String getDbDriver()
+//    {
+//        parseDatabaseDetails();
+//        return dbDriver == null ? DEFAULT_DB_DRIVER : dbDriver;
+//    }
 
-    public String getDbDriver()
-    {
-        parseDatabaseDetails();
-        return dbDriver == null ? DEFAULT_DB_DRIVER : dbDriver;
-    }
-
-    public CharSequence validate()
-    {
-        //        parseDatabaseDetails();
-        //        final StringBuilder sb = new StringBuilder();
-        //        if ( dbDriver == null )
-        //        {
-        //            if ( sb.length() > 0 )
-        //            {
-        //                sb.append( "\n" );
-        //            }
-        //            sb.append( "Missing database driver (" )
-        //              .append( QUARTZ_DATASOURCE_PREFIX )
-        //              .append( DS_DRIVER )
-        //              .append( ")" );
-        //        }
-        //
-        //        if ( dbUrl == null )
-        //        {
-        //            if ( sb.length() > 0 )
-        //            {
-        //                sb.append( "\n" );
-        //            }
-        //            sb.append( "Missing database URL (" )
-        //              .append( QUARTZ_DATASOURCE_PREFIX )
-        //              .append( DS_URL )
-        //              .append( ")" );
-        //        }
-        //
-        //        if ( sb.length() > 0 )
-        //        {
-        //            return sb;
-        //        }
-
-        return null;
-    }
+//    public CharSequence validate()
+//    {
+//                parseDatabaseDetails();
+//                final StringBuilder sb = new StringBuilder();
+//                if ( dbDriver == null )
+//                {
+//                    if ( sb.length() > 0 )
+//                    {
+//                        sb.append( "\n" );
+//                    }
+//                    sb.append( "Missing database driver (" )
+//                      .append( QUARTZ_DATASOURCE_PREFIX )
+//                      .append( DS_DRIVER )
+//                      .append( ")" );
+//                }
+//
+//                if ( dbUrl == null )
+//                {
+//                    if ( sb.length() > 0 )
+//                    {
+//                        sb.append( "\n" );
+//                    }
+//                    sb.append( "Missing database URL (" )
+//                      .append( QUARTZ_DATASOURCE_PREFIX )
+//                      .append( DS_URL )
+//                      .append( ")" );
+//                }
+//
+//                if ( sb.length() > 0 )
+//                {
+//                    return sb;
+//                }
+//
+//        return null;
+//    }
 
     @Override
     public Map<String, String> getConfiguration()
@@ -186,11 +209,6 @@ public class IndySchedulerConfig
         if ( configuration == null )
         {
             configuration = new HashMap<>();
-        }
-
-        if ( configuration.isEmpty() )
-        {
-
         }
 
         return configuration;

@@ -1,3 +1,8 @@
+-- ************************************************************************
+-- Deprecated, quartz scheduler has been replaced by ISPN based one,
+-- will be removed in future
+-- ************************************************************************
+
 -- Thanks to Amir Kibbar and Peter Rietzler for contributing the schema for H2 database,
 -- and verifying that it works with Quartz's StdJDBCDelegate
 --
