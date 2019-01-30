@@ -179,13 +179,13 @@ public class Main
                                     error.set( e );
                                 }
                             }
+                            logger.info( "Load {} complete, size: {}", options.getCacheName(), records );
                         }
                         catch ( IOException e )
                         {
                             logger.error( "Failed to read data file header.", e );
                             error.set( e );
                         }
-
                         return true;
                     } );
                 }
