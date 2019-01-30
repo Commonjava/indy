@@ -6,7 +6,7 @@
       <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+  <!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <file>/home/jdcasey/code/stacks/indy/indy/deployments/launcher/target/indy/var/log/indy/indy.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <fileNamePattern>/home/jdcasey/code/stacks/indy/indy/deployments/launcher/target/indy/var/log/indy/indy.%i.log</fileNamePattern>
@@ -21,12 +21,12 @@
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} x-forward=%X{x-forwarded-for} - %msg%n</pattern>
     </encoder>
-  </appender>
+  </appender>-->
   
   <logger name="org.jboss" level="ERROR"/>
   <logger name="org.commonjava" level="DEBUG" />
   <root level="INFO">
     <appender-ref ref="STDOUT" />
-    <appender-ref ref="FILE" />
+    <!--<appender-ref ref="FILE" />-->
   </root>
 </configuration>
