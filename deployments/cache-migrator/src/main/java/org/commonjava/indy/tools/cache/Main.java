@@ -4,9 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.jboss.weld.environment.se.Weld;
-import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,11 +26,7 @@ public class Main
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private Weld weld;
-
-    private WeldContainer container;
-
-    private CacheProducer producer;
+    private SimpleCacheProducer producer;
 
     public static void main( String[] args )
     {
@@ -90,31 +83,26 @@ public class Main
         try
         {
             File inXml = options.getInfinispanXml();
-            File outXmlDir = new File( System.getProperty("java.io.tmpdir", "/tmp"), "infinispan-config-" + System.currentTimeMillis());
-            if ( !outXmlDir.isDirectory() && !outXmlDir.mkdirs() )
+            if ( inXml != null )
             {
-                throw new IndyBootException(
-                        "Failed to create temporary direcory for infinispan configuration loading" );
+                File outXmlDir = new File( System.getProperty("java.io.tmpdir", "/tmp"), "infinispan-config-" + System.currentTimeMillis());
+                if ( !outXmlDir.isDirectory() && !outXmlDir.mkdirs() )
+                {
+                    throw new IndyBootException(
+                            "Failed to create temporary direcory for infinispan configuration loading" );
+                }
+
+                File outXml = new File( outXmlDir, "infinispan.xml" );
+                FileUtils.copyFile( inXml, outXml );
+
+                Properties props = System.getProperties();
+
+                props.setProperty( "indy.config.dir", outXmlDir.getAbsolutePath() );
+
+                System.setProperties( props );
             }
 
-            File outXml = new File( outXmlDir, "infinispan.xml" );
-            FileUtils.copyFile( inXml, outXml );
-
-            Properties props = System.getProperties();
-
-            props.setProperty( "indy.config.dir", outXmlDir.getAbsolutePath() );
-
-            System.setProperties( props );
-
-            weld = new Weld();
-            weld.property("org.jboss.weld.se.archive.isolation", false);
-
-            // Weld shutdown hook might be called before Indy's, we need to disable it to allow Indy's shutdown hooks execute smoothly
-            weld.skipShutdownHook();
-
-            container = weld.initialize();
-
-            producer = container.select( CacheProducer.class ).get();
+            producer = new SimpleCacheProducer();
 
             CacheHandle<Object, Object> cache = producer.getCache( options.getCacheName() );
             if ( MigrationCommand.dump == options.getMigrationCommand() )
@@ -223,18 +211,13 @@ public class Main
         }
         finally
         {
-            if ( container != null )
+            try
             {
-                try
-                {
-                    producer.stop();
-                }
-                catch ( final IndyLifecycleException e )
-                {
-                    logger.error( "Failed to stop cache subsystem: " + e.getMessage(), e );
-                }
-
-                weld.shutdown();
+                producer.stop();
+            }
+            catch ( final IndyLifecycleException e )
+            {
+                logger.error( "Failed to stop cache subsystem: " + e.getMessage(), e );
             }
         }
 

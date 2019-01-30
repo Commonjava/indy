@@ -17,13 +17,13 @@ public class MigrationOptions
     @Option( name = "-i", aliases = { "--infinispan-xml" }, usage = "Infinispan configuration XML to use during migration" )
     private File infinispanXml;
 
-    @Argument( index = 0, required = true, usage = "Migration command to execute ('dump' or 'load')")
+    @Argument( index = 0, metaVar = "action", required = false, usage = "Migration command to execute ('dump' or 'load')")
     private MigrationCommand migrationCommand;
 
-    @Argument( index = 1, required = true, usage = "Name of cache to migrate")
+    @Argument( index = 1, metaVar = "cache-name", required = false, usage = "Name of cache to migrate")
     private String cacheName;
 
-    @Argument( index = 2, required = true, usage = "Cache data file (dump to here, or load from here)")
+    @Argument( index = 2, metaVar = "data-file", required = false, usage = "Cache data file (dump to here, or load from here)")
     private File dataFile;
 
     public boolean isHelp()
@@ -93,6 +93,13 @@ public class MigrationOptions
         if ( isHelp() )
         {
             printUsage( parser, null );
+            canStart = false;
+        }
+        else if ( getMigrationCommand() == null || getDataFile() == null || getCacheName() == null )
+        {
+            System.err.println("You must provide 'action', 'cache-name', and 'data-file' arguments!");
+            printUsage( parser, null );
+            
             canStart = false;
         }
 

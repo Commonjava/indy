@@ -79,6 +79,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.commonjava.indy.embed</groupId>
+      <artifactId>indy-embedder</artifactId>
+    </dependency>
+
+<!--     <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
       <artifactId>indy-booter-api</artifactId>
     </dependency>
@@ -99,7 +104,7 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-metrics-reporter</artifactId>
     </dependency>
-
+ -->
     <dependency>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-commons</artifactId>
@@ -124,6 +129,21 @@
     <dependency>
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.modules</groupId>
+      <artifactId>jboss-modules</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 
@@ -151,7 +171,9 @@
                 </descriptorRefs>
                 <appendAssemblyId>false</appendAssemblyId>
                 <archive>
-                  <mainClass>org.commonjava.indy.tools.cache.Main</mainClass>
+                  <manifest>
+                    <mainClass>org.commonjava.indy.tools.cache.Main</mainClass>
+                  </manifest>
                 </archive>
               </configuration>
             </execution>
@@ -161,7 +183,7 @@
     </pluginManagement>
     <plugins>
       <plugin>
-        <artifactId>maven-shade-plugin</artifactId>
+        <artifactId>maven-assembly-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
