@@ -26,7 +26,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * This ISPN cache producer is used to generate {@link ScheduleCache} and {@link ScheduleEventLockCache}.
@@ -57,7 +56,7 @@ public class ScheduleCacheProducer
     @ScheduleEventLockCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<UUID, IndyNode> scheduleEventLockCache()
+    public CacheHandle<ScheduleKey, IndyNode> scheduleEventLockCache()
     {
         return cacheProducer.getCache( SCHEDULE_EVENT_LOCK );
     }
