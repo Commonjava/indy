@@ -72,7 +72,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
@@ -128,7 +127,7 @@ public class ScheduleManager
 
     @Inject
     @ScheduleEventLockCache
-    private CacheHandle<UUID, IndyNode> scheduleEventLockCache;
+    private CacheHandle<ScheduleKey, IndyNode> scheduleEventLockCache;
 
     @Inject
     @Any
@@ -316,16 +315,9 @@ public class ScheduleManager
         dataMap.put( SCHEDULE_TIME, System.currentTimeMillis() );
 
         final ScheduleKey cacheKey = new ScheduleKey( key, jobType, jobName );
-        //FIXME: Is this uuid payload needed?
-        dataMap.put( SCHEDULE_UUID, uuidForKey( cacheKey ) );
 
         scheduleCache.execute( cache -> cache.put( cacheKey, dataMap, startSeconds, TimeUnit.SECONDS ) );
         logger.debug( "Scheduled for the key {} with timeout: {} seconds", cacheKey, startSeconds );
-    }
-
-    private UUID uuidForKey( final ScheduleKey key )
-    {
-        return key == null ? null : UUID.nameUUIDFromBytes( key.toStringKey().getBytes() );
     }
 
     public void scheduleContentExpiration( final StoreKey key, final String path,
@@ -783,11 +775,10 @@ public class ScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
-            final UUID uuidOfKey = uuidForKey( expiredKey );
-            if ( uuidOfKey != null && scheduleEventLockCache.containsKey( uuidOfKey ) )
+            if ( scheduleEventLockCache.containsKey( expiredKey ) )
             {
                 logger.info( "Another instance {} is still handling expiration event for {}", expiredKey,
-                             scheduleEventLockCache.containsKey( uuidOfKey ) );
+                             scheduleEventLockCache.containsKey( expiredKey ) );
                 return;
             }
             final Map expiredContent = e.getValue();
@@ -797,7 +788,7 @@ public class ScheduleManager
                 final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
                 final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
                 fireEvent( eventDispatcher, new SchedulerTriggerEvent( type, data ) );
-                scheduleEventLockCache.executeCache( cache -> cache.put( uuidOfKey, nodeHolder.getIndyNode(),
+                scheduleEventLockCache.executeCache( cache -> cache.put( expiredKey, nodeHolder.getIndyNode(),
                                                                          schedulerConfig.getClusterLockExpiration(),
                                                                          TimeUnit.SECONDS ) );
             }
