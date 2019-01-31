@@ -71,4 +71,10 @@ public interface IndyConfiguration
     int getRemoteMetadataTimeoutSeconds();
 
     int getForkJoinPoolCommonParallelism();
+
+    /**
+     * Comma separated migration actions. MigrationAction beans not in this list will be ignored.
+     * @return
+     */
+    String getMigrationActions();
 }

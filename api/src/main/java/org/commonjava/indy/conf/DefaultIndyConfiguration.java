@@ -69,6 +69,8 @@ public class DefaultIndyConfiguration
 
     private Boolean allowRemoteListDownload;
 
+    private String migrationActions;
+
     public DefaultIndyConfiguration()
     {
     }
@@ -199,6 +201,18 @@ public class DefaultIndyConfiguration
     public int getForkJoinPoolCommonParallelism()
     {
         return forkJoinPoolCommonParallelism == null ? DEFAULT_FORKJOINPOOL_COMMON_PARALLELISM : forkJoinPoolCommonParallelism;
+    }
+
+    @Override
+    public String getMigrationActions()
+    {
+        return migrationActions;
+    }
+
+    @ConfigName( "migration.actions" )
+    public void setMigrationActions( String migrationActions )
+    {
+        this.migrationActions = migrationActions;
     }
 
     @ConfigName( "forkjoinpool.common.parallelism" )

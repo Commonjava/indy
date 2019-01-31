@@ -25,6 +25,8 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +42,9 @@ public class IndyLifecycleManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private IndyConfiguration configuration;
 
     @Inject
     private IndyVersioning versioning;
@@ -107,7 +112,16 @@ public class IndyLifecycleManager
             migrationActions = new ArrayList<>();
             for ( final MigrationAction action : migrationActionInstances )
             {
-                migrationActions.add( action );
+                String migrations = configuration.getMigrationActions();
+                if ( migrations != null && migrations.contains( action.getClass().getSimpleName() ) )
+                {
+                    logger.debug( "Register migration action: {}", action.getClass().getName() );
+                    migrationActions.add( action );
+                }
+                else
+                {
+                    logger.debug( "Skip migration action: {}", action.getClass().getName() );
+                }
             }
             migrationActions.addAll(userLifecycleManager.getUserLifecycleActions("migrate",
                     MigrationAction.class));

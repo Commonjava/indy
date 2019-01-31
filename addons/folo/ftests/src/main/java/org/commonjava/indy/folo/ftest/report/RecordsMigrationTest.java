@@ -69,4 +69,14 @@ public class RecordsMigrationTest
         List<String> expectedIds = Arrays.asList( "Mg4NV207", "qC8c1cZB" );
         checkIdsDTO( idsDTO, expectedIds, adminClientModule );
     }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+                    throws IOException
+    {
+        writeConfigFile( "main.conf", "migration.actions=RecordsMigrationAction\n"
+                        + "[flatfiles]\n"
+                        + "data.dir=${indy.home}/var/lib/indy/data\n"
+                        + "work.dir=${indy.home}/var/lib/indy/work\n" );
+    }
 }

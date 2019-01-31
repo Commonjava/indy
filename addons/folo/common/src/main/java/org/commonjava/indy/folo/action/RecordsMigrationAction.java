@@ -55,6 +55,7 @@ public class RecordsMigrationAction
     public boolean migrate() throws IndyLifecycleException
     {
         File file = foloFiler.getSealedZipFile().getDetachedFile();
+        logger.debug( "Sealed zip file: {}, exist: {}", file.getAbsolutePath(), file.exists() );
         if ( file.exists() )
         {
             logger.info( "Migrate Folo sealed records, file: {}", file );
