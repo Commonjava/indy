@@ -52,6 +52,8 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
+import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -804,6 +806,14 @@ public class ScheduleManager
             return;
         }
         logger.info( "Cache removed to cancel scheduling, Key is {}, Value is {}", e.getKey(), e.getValue() );
+    }
+
+    // This method is only used to check clustered schedule expire cache nodes topology changing
+    @ViewChanged
+    public void checkClusterChange( ViewChangedEvent event )
+    {
+        logger.debug( "Schedule cache cluster members changed, old members: {}; new members: {}", event.getOldMembers(),
+                      event.getNewMembers() );
     }
 
 }
