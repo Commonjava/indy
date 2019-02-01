@@ -17,6 +17,7 @@ package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -29,6 +30,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by gli on 16-12-9.
  */
+@Ignore("Obsolete")
 public class LegacyQuartzDBMigrationActionTest
 {
     @Rule

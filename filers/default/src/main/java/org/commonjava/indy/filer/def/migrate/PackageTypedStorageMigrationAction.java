@@ -60,6 +60,14 @@ public class PackageTypedStorageMigrationAction
     public boolean migrate()
             throws IndyLifecycleException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Disabled." );
+        return true;
+    }
+
+    private boolean doMigrate()
+            throws IndyLifecycleException
+    {
         Set<ArtifactStore> stores;
         try
         {

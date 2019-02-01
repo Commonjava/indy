@@ -111,6 +111,14 @@ public class DataFileStoreDataManager
                             {
                                 logger.error( String.format( "Failed to load %s store: %s. Reason: %s", type, f, e.getMessage() ),
                                               e );
+                                try
+                                {
+                                    f.delete( summary );
+                                }
+                                catch ( IOException e1 )
+                                {
+                                    logger.error( "Failed to delete invalid store definition file: " + f, e );
+                                }
                             }
                         }
                     }
