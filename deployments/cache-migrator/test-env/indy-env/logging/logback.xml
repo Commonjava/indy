@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!--
 
     Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
@@ -16,8 +15,6 @@
     limitations under the License.
 
 -->
-=======
->>>>>>> Master merge for ISPN dump/load tool (#1137)
 <configuration>
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
     <!-- encoders are assigned the type
@@ -26,11 +23,7 @@
       <pattern>[%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
-<<<<<<< HEAD
   <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-=======
-  <!--<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
->>>>>>> Master merge for ISPN dump/load tool (#1137)
     <file>/home/jdcasey/code/stacks/indy/indy/deployments/launcher/target/indy/var/log/indy/indy.log</file>
     <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
       <fileNamePattern>/home/jdcasey/code/stacks/indy/indy/deployments/launcher/target/indy/var/log/indy/indy.%i.log</fileNamePattern>
@@ -45,7 +38,6 @@
     <encoder>
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} x-forward=%X{x-forwarded-for} - %msg%n</pattern>
     </encoder>
-<<<<<<< HEAD
   </appender>
   
   <logger name="org.jboss" level="DEBUG"/>
@@ -54,14 +46,5 @@
   <root level="INFO">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
-=======
-  </appender>-->
-  
-  <logger name="org.jboss" level="ERROR"/>
-  <logger name="org.commonjava" level="DEBUG" />
-  <root level="INFO">
-    <appender-ref ref="STDOUT" />
-    <!--<appender-ref ref="FILE" />-->
->>>>>>> Master merge for ISPN dump/load tool (#1137)
   </root>
 </configuration>
