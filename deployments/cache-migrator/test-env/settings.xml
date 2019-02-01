@@ -1,0 +1,12 @@
+<settings>
+  <localRepository>/tmp/maven-repo</localRepository>
+  
+  <mirrors>
+    <mirror>
+      <id>indy</id>
+      <mirrorOf>*,!apache-snapshots</mirrorOf>
+      <url>http://localhost:8080/api/group/public</url>
+    </mirror>
+  </mirrors>
+  
+</settings>
