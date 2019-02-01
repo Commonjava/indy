@@ -21,7 +21,11 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-dot-maven</artifactId>
+<<<<<<< HEAD
     <version>1.6.3-SNAPSHOT</version>
+=======
+    <version>1.6.0</version>
+>>>>>>> [maven-release-plugin] prepare release indy-parent-1.6.0
   </parent>
   
   <artifactId>indy-ftests-dot-maven</artifactId>

@@ -20,7 +20,11 @@
     <parent>
         <artifactId>indy-pkg-npm</artifactId>
         <groupId>org.commonjava.indy</groupId>
+<<<<<<< HEAD
         <version>1.6.3-SNAPSHOT</version>
+=======
+        <version>1.6.0</version>
+>>>>>>> [maven-release-plugin] prepare release indy-parent-1.6.0
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
