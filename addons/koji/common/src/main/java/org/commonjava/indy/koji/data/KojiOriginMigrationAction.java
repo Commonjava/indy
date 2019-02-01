@@ -22,6 +22,8 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -41,6 +43,14 @@ public class KojiOriginMigrationAction
 
     @Override
     public boolean migrate()
+            throws IndyLifecycleException
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Disabled." );
+        return true;
+    }
+
+    private boolean doMigrate()
             throws IndyLifecycleException
     {
         List<RemoteRepository> repos;

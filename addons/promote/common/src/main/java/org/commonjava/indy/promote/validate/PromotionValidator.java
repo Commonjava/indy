@@ -20,14 +20,13 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.promote.conf.PromoteConfig;
-import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PromoteRequest;
@@ -36,11 +35,13 @@ import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.promote.validate.model.ValidationRuleMapping;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -49,8 +50,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -69,6 +68,9 @@ public class PromotionValidator
     private StoreDataManager storeDataMgr;
 
     @Inject
+    private DownloadManager downloadManager;
+
+    @Inject
     private PromoteConfig config;
 
     @Inject
@@ -76,16 +78,19 @@ public class PromotionValidator
     @ExecutorConfig( named = "promote-validation-rules-runner", threads = 8, priority = 5 )
     private ExecutorService validationExecutor;
 
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     protected PromotionValidator()
     {
     }
 
     public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools,
-                               StoreDataManager storeDataMgr )
+                               StoreDataManager storeDataMgr, DownloadManager downloadManager )
     {
         this.validationsManager = validationsManager;
         this.validationTools = validationTools;
         this.storeDataMgr = storeDataMgr;
+        this.downloadManager = downloadManager;
     }
 
     /**
@@ -98,7 +103,7 @@ public class PromotionValidator
      * @return
      * @throws PromotionValidationException
      */
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public ValidationRequest validate( PromoteRequest request, ValidationResult result, String baseUrl )
             throws PromotionValidationException
     {
@@ -107,7 +112,6 @@ public class PromotionValidator
         final ArtifactStore store = getRequestStore( request, baseUrl );
         final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
 
-        Logger logger = LoggerFactory.getLogger( getClass() );
         if ( set != null )
         {
             logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
@@ -125,42 +129,11 @@ public class PromotionValidator
                         validationExecutor.execute( () -> {
                             try
                             {
-                                String ruleName =
-                                        new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
-
-                                ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
-                                if ( rule != null )
-                                {
-                                    try
-                                    {
-                                        logger.debug( "Running promotion validation rule: {}", rule.getName() );
-                                        String error = rule.getRule().validate( req );
-                                        if ( StringUtils.isNotEmpty( error ) )
-                                        {
-                                            logger.debug( "{} failed", rule.getName() );
-                                            result.addValidatorError( rule.getName(), error );
-                                        }
-                                        else
-                                        {
-                                            logger.debug( "{} succeeded", rule.getName() );
-                                        }
-                                    }
-                                    catch ( Exception e )
-                                    {
-                                        if ( e instanceof PromotionValidationException )
-                                        {
-                                            exceptionHolder.set( (PromotionValidationException) e );
-                                        }
-
-                                        exceptionHolder.set( new PromotionValidationException(
-                                                "Failed to run validation rule: {} for request: {}. Reason: {}", e,
-                                                rule.getName(), request, e ) );
-                                    }
-                                }
+                                executeValidationRule( ruleRef, req, result, request, latch );
                             }
-                            finally
+                            catch ( PromotionValidationException e )
                             {
-                                latch.countDown();
+                                exceptionHolder.set( (PromotionValidationException) e );
                             }
                         } );
                     }
@@ -211,12 +184,18 @@ public class PromotionValidator
                                                               new EventMetadata().set( ContentManager.SUPPRESS_EVENTS,
                                                                                        true ) );
 
+                            Transfer root = downloadManager.getStoreRootDirectory( store );
+                            if ( root.exists() )
+                            {
+                                root.delete( false );
+                            }
+
                             logger.debug( "Promotion temporary repo {} has been deleted for {}", store.getKey(),
                                          request.getSource() );
                         }
-                        catch ( IndyDataException e )
+                        catch ( IndyDataException | IOException e )
                         {
-                            logger.warn( "StoreDataManager can not remove artifact stores correctly.", e );
+                            logger.warn( "Temporary promotion validation repository was NOT removed correctly.", e );
                         }
                     }
                 }
@@ -229,6 +208,53 @@ public class PromotionValidator
         }
 
         return req;
+    }
+
+    @Measure
+    private void executeValidationRule( final String ruleRef, final ValidationRequest req,
+                                        final ValidationResult result, final PromoteRequest request,
+                                        final CountDownLatch latch )
+            throws PromotionValidationException
+    {
+        try
+        {
+            String ruleName =
+                    new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
+
+            ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
+            if ( rule != null )
+            {
+                try
+                {
+                    logger.debug( "Running promotion validation rule: {}", rule.getName() );
+                    String error = rule.getRule().validate( req );
+                    if ( StringUtils.isNotEmpty( error ) )
+                    {
+                        logger.debug( "{} failed", rule.getName() );
+                        result.addValidatorError( rule.getName(), error );
+                    }
+                    else
+                    {
+                        logger.debug( "{} succeeded", rule.getName() );
+                    }
+                }
+                catch ( Exception e )
+                {
+                    if ( e instanceof PromotionValidationException )
+                    {
+                        throw (PromotionValidationException) e;
+                    }
+
+                    throw new PromotionValidationException(
+                            "Failed to run validation rule: {} for request: {}. Reason: {}", e,
+                            rule.getName(), request, e );
+                }
+            }
+        }
+        finally
+        {
+            latch.countDown();
+        }
     }
 
     private boolean needTempRepo( PromoteRequest promoteRequest )

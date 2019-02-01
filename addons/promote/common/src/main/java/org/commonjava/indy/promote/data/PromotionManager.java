@@ -149,7 +149,7 @@ public class PromotionManager
     }
 
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException
     {
@@ -424,7 +424,7 @@ public class PromotionManager
      * @throws PromotionException
      * @throws IndyWorkflowException
      */
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {

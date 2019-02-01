@@ -78,6 +78,14 @@ public class LegacyDataMigrationAction
     public boolean migrate()
             throws IndyLifecycleException
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Disabled." );
+        return true;
+    }
+
+    private boolean doMigrate()
+            throws IndyLifecycleException
+    {
         if ( !( storeDataManager instanceof DataFileStoreDataManager ) )
         {
             logger.info( "Store manager: {} is not based on DataFile's. Skipping migration.",
