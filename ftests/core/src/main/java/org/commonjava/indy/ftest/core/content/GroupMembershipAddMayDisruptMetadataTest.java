@@ -63,24 +63,33 @@ import static org.junit.Assert.assertThat;
 public class GroupMembershipAddMayDisruptMetadataTest
         extends GroupMembershipChangeUpdateMetadataTest
 {
+    static volatile boolean prepareDone = false;
+
+    public static boolean isPrepareDone()
+    {
+        return prepareDone;
+    }
+
     @BMRules( rules = {
         @BMRule(
             name = "Create Rendezvous",
             targetClass = "MavenMetadataGenerator",
             targetMethod = "<init>",
             targetLocation = "ENTRY",
-            action = "createRendezvous(\"myRendezvous\", 2)" ),
+            action = "debug(\"createRendezvous...\"); createRendezvous(\"myRendezvous\", 2)" ),
         @BMRule(
             name = "Wait after generateGroupFileContent",
             targetClass = "MavenMetadataGenerator",
             targetMethod = "generateGroupFileContent",
             targetLocation = "EXIT",
+            condition = "org.commonjava.indy.ftest.core.content.GroupMembershipAddMayDisruptMetadataTest.isPrepareDone()",
             action = "debug(\"generateGroupFileContent waiting...\"); rendezvous(\"myRendezvous\"); debug(\"generateGroupFileContent go.\")" ),
         @BMRule(
             name = "Wait after storeArtifactStore",
             targetClass = "MemoryStoreDataManager",
             targetMethod = "storeArtifactStore",
             targetLocation = "EXIT",
+            condition = "org.commonjava.indy.ftest.core.content.GroupMembershipAddMayDisruptMetadataTest.isPrepareDone()",
             action = "debug(\"storeArtifactStore waiting...\"); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
     } )
     @Test
@@ -89,6 +98,7 @@ public class GroupMembershipAddMayDisruptMetadataTest
             throws Exception
     {
         prepare();
+        prepareDone = true;
 
         ExecutorService fixedPool = Executors.newFixedThreadPool( 2 );
 
