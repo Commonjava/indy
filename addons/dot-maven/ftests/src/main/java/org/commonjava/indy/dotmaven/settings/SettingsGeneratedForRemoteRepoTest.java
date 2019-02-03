@@ -20,7 +20,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.http.client.methods.HttpGet;
@@ -29,7 +28,6 @@ import org.apache.maven.settings.Settings;
 import org.apache.maven.settings.io.xpp3.SettingsXpp3Reader;
 import org.commonjava.indy.client.core.IndyClientHttp;
 import org.commonjava.indy.client.core.helper.HttpResources;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
 /**
@@ -75,12 +73,4 @@ public class SettingsGeneratedForRemoteRepoTest
 
         assertThat( mirror.getUrl(), equalTo( http.toIndyUrl( "remote/central" ) ) );
     }
-
-    @Override
-    protected void initTestConfig( CoreServerFixture fixture )
-                    throws IOException
-    {
-        writeConfigFile( "main.conf", "migration.actions=StoreDataSetupAction\n");
-    }
-
 }

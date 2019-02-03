@@ -16,7 +16,7 @@
 package org.commonjava.indy.core.data;
 
 import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.action.MigrationAction;
+import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -34,9 +34,9 @@ import javax.inject.Named;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
-@Named( "Store-Initialization" )
+@Named( "store-initialization" )
 public class StoreDataSetupAction
-    implements MigrationAction
+    implements StartupAction
 {
     private static final String DEFAULT_SETUP = "default-setup";
 
@@ -48,25 +48,23 @@ public class StoreDataSetupAction
     @Override
     public String getId()
     {
-        return "Default artifact store initilialization";
+        return "Default artifact store initialization";
     }
 
     @Override
-    public int getMigrationPriority()
+    public int getStartupPriority()
     {
-        return 95;
+        return 90;
     }
 
     @Override
-    public boolean migrate()
-        throws IndyLifecycleException
+    public void start() throws IndyLifecycleException
     {
         final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Initializing default data." );
 
-        boolean changed = false;
         try
         {
-            logger.info( "Verfiying that Indy basic stores are installed..." );
+            logger.info( "Verifying that Indy basic stores are installed..." );
             storeManager.install();
 
             if ( !storeManager.query()
@@ -80,7 +78,6 @@ public class StoreDataSetupAction
                 storeManager.storeArtifactStore( central, summary, true, true,
                                                  new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                           DEFAULT_SETUP ) );
-                changed = true;
             }
 
             if ( !storeManager.query()
@@ -96,7 +93,6 @@ public class StoreDataSetupAction
                 storeManager.storeArtifactStore( local, summary, true, true,
                                                  new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                           DEFAULT_SETUP ) );
-                changed = true;
             }
 
             if ( !storeManager.query()
@@ -111,7 +107,6 @@ public class StoreDataSetupAction
                 storeManager.storeArtifactStore( pub, summary, true, true,
                                                  new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
                                                                           DEFAULT_SETUP ) );
-                changed = true;
             }
         }
         catch ( final IndyDataException e )
@@ -119,7 +114,6 @@ public class StoreDataSetupAction
             throw new RuntimeException( "Failed to boot indy components: " + e.getMessage(), e );
         }
 
-        return changed;
     }
 
 }
