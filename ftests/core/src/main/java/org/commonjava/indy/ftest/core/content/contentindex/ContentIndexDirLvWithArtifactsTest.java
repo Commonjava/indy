@@ -99,7 +99,7 @@ public class ContentIndexDirLvWithArtifactsTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
-    private BasicCacheHandle<IndexedStorePath, StoreKey> contentIndex;
+    private BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
     @Before
     public void getIndexManager()
