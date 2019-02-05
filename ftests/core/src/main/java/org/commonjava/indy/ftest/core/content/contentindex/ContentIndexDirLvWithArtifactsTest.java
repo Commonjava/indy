@@ -21,9 +21,7 @@ import org.commonjava.indy.content.index.IndexedStorePath;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.infinispan.AdvancedCache;
 import org.junit.Before;
@@ -31,7 +29,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import javax.enterprise.inject.spi.CDI;
-
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -99,7 +96,7 @@ public class ContentIndexDirLvWithArtifactsTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
-    private BasicCacheHandle<IndexedStorePath, StoreKey> contentIndex;
+    private BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
     @Before
     public void getIndexManager()
@@ -151,13 +148,16 @@ public class ContentIndexDirLvWithArtifactsTest
             }
         }
 
-        AdvancedCache<IndexedStorePath, StoreKey> advancedCache =
+        AdvancedCache<IndexedStorePath, IndexedStorePath> advancedCache =
                 (AdvancedCache) contentIndex.execute( c -> c );
         System.out.println( "[Content index DEBUG]: cached isps: " + advancedCache.keySet() );
 
-        for ( StoreKey key : advancedCache.values() )
+        for ( IndexedStorePath value : advancedCache.values() )
         {
-            assertThat( key, equalTo( remote2.getKey() ) );
+            boolean match = remote2.getKey().equals( value.getOriginStoreKey() ) || remote2.getKey()
+                                                                                           .equals(
+                                                                                                   value.getStoreKey() );
+            assertThat( match, equalTo( true ) );
         }
 
         System.out.println( "[Content index DEBUG]: cache size:" + advancedCache.size() );

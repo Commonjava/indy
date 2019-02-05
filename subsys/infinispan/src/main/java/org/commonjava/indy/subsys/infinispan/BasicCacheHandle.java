@@ -163,10 +163,10 @@ public class BasicCacheHandle<K,V>
         return name( metricPrefix, opName );
     }
 
-    public Set<K> cacheKeySetByFilter( Predicate<K> filter )
-    {
-        return this.cache.keySet().stream().filter( filter ).collect( Collectors.toSet() );
-    }
+//    public Set<K> cacheKeySetByFilter( Predicate<K> filter )
+//    {
+//        return this.cache.keySet().stream().filter( filter ).collect( Collectors.toSet() );
+//    }
 
     public boolean isEmpty(){
         return execute( c->c.isEmpty() );

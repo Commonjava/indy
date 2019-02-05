@@ -63,6 +63,9 @@
 
         </jdbc:string-keyed-jdbc-store>
       </persistence>
+      <indexing index="LOCAL">
+        <property name="default.directory_provider">ram</property>
+      </indexing>
     </local-cache>
 
     <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">

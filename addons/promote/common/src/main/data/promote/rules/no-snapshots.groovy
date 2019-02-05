@@ -1,6 +1,7 @@
 package org.commonjava.indy.promote.rules
 
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.io.IOUtils
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig

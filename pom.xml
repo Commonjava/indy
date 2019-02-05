@@ -73,7 +73,7 @@
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.9</jhttpcVersion>
     <weftVersion>1.9</weftVersion>
-    <httpTestserverVersion>1.3</httpTestserverVersion>
+    <httpTestserverVersion>1.4</httpTestserverVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
@@ -909,6 +909,12 @@
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cdi-embedded</artifactId>
         <version>${infinispanVersion}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-cdi-common</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
@@ -1577,6 +1583,19 @@
           <version>2.4.1</version>
         </plugin>
         <plugin>
+          <groupId>org.jboss.jandex</groupId>
+          <artifactId>jandex-maven-plugin</artifactId>
+          <version>1.0.5</version>
+          <executions>
+            <execution>
+              <id>make-index</id>
+              <goals>
+                <goal>jandex</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
           <artifactId>maven-plugin-plugin</artifactId>
           <version>3.4</version>
         </plugin>
@@ -1710,6 +1729,10 @@
       </plugins>
     </pluginManagement>
     <plugins>
+<!--       <plugin>
+        <groupId>org.jboss.jandex</groupId>
+        <artifactId>jandex-maven-plugin</artifactId>
+      </plugin> -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
