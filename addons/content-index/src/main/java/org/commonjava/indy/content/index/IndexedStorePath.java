@@ -18,6 +18,9 @@ package org.commonjava.indy.content.index;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,16 +39,22 @@ public class IndexedStorePath
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private StoreType storeType;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String storeName;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private StoreType originStoreType;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String originStoreName;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String path;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String packageType;
 
     private transient StoreKey storeKey;

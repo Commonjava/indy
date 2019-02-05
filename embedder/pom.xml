@@ -366,8 +366,8 @@
                     <include>org.commonjava*:*</include>
                   </includes>
                   <excludes>
-                    <exclude>org.commonjava.atlas:*</exclude>
-                    <exclude>org.commonjava.rwx*:*</exclude>
+                    <!-- <exclude>org.commonjava.atlas:*</exclude> -->
+                    <!-- <exclude>org.commonjava.rwx*:*</exclude> -->
                     <exclude>org.commonjava*:*ftest*</exclude>
                   </excludes>
                 </artifactSet>
