@@ -206,7 +206,7 @@ public class RemoteRepository
         }
         catch ( final MalformedURLException e )
         {
-            LOGGER.error( "Failed to parse repository URL: '{}'. Reason: {}", e, this.url, e.getMessage() );
+            LOGGER.error( String.format( "Failed to parse repository URL: '%s'. Reason: %s", this.url, e.getMessage() ), e );
         }
 
         if ( url == null )

@@ -18,6 +18,8 @@ package org.commonjava.indy.content.index;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
+import org.commonjava.indy.core.inject.NfcConcreteResourceWrapper;
+import org.commonjava.indy.core.inject.NfcKeyedLocation;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -29,6 +31,10 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.infinispan.Cache;
+import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +48,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+import static org.commonjava.indy.model.core.StoreKey.fromString;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -54,6 +65,8 @@ import java.util.function.Consumer;
 public class DefaultContentIndexManager
         implements ContentIndexManager, BootupAction, ShutdownAction
 {
+    private static final int ITERATE_RESULT_SIZE = 1000;
+
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
@@ -76,6 +89,8 @@ public class DefaultContentIndexManager
     private Instance<PackageIndexingStrategy> indexingStrategyComponents;
 
     private Map<String, PackageIndexingStrategy> indexingStrategies;
+
+    private QueryFactory queryFactory;
 
     protected DefaultContentIndexManager()
     {
@@ -105,6 +120,12 @@ public class DefaultContentIndexManager
 
             this.indexingStrategies = Collections.unmodifiableMap( strats );
         }
+
+        contentIndex.execute( (cache) -> {
+            queryFactory = Search.getQueryFactory( (Cache) cache ); // Obtain a query factory for the cache
+//            maxResultSetSize = config.getNfcMaxResultSetSize();
+            return null;
+        } );
     }
 
     @Override
@@ -240,13 +261,22 @@ public class DefaultContentIndexManager
     @Measure
     public void clearAllIndexedPathInStore( ArtifactStore store )
     {
-        Set<IndexedStorePath> isps =
-                contentIndex.cacheKeySetByFilter( key -> key.getStoreKey().equals( store.getKey() ) );
-        if ( isps != null )
-        {
-            isps.forEach( isp -> contentIndex.remove( isp ) );
-        }
-        logger.trace( "Clear all indices in: {}, size: {}", store.getKey(), ( isps != null ? isps.size() : 0 ) );
+        StoreKey sk = store.getKey();
+
+        long total = iterateRemove( () -> queryFactory.from( IndexedStorePath.class )
+                                                      .maxResults( ITERATE_RESULT_SIZE )
+                                                      .having( "packageType" )
+                                                      .eq( sk.getPackageType() )
+                                                      .and()
+                                                      .having( "storeType" )
+                                                      .eq( sk.getType().name() )
+                                                      .and()
+                                                      .having( "storeName" )
+                                                      .eq( sk.getName() )
+                                                      .toBuilder()
+                                                      .build() );
+
+        logger.trace( "Cleared all indices with group: {}, size: {}", sk, total );
     }
 
     @Override
@@ -255,44 +285,71 @@ public class DefaultContentIndexManager
     {
         StoreKey osk = originalStore.getKey();
 
-        Set<IndexedStorePath> isps =
-                contentIndex.cacheKeySetByFilter( (key) -> {
-                    StoreKey myOriginKey = key.getOriginStoreKey();
-                    return myOriginKey != null && myOriginKey.equals( osk );
-                } );
+        long total = iterateRemove( () -> queryFactory.from( IndexedStorePath.class )
+                                                      .maxResults( ITERATE_RESULT_SIZE )
+                                                      .having( "packageType" )
+                                                      .eq( osk.getPackageType() )
+                                                      .and()
+                                                      .having( "originStoreType" )
+                                                      .eq( osk.getType().name() )
+                                                      .and()
+                                                      .having( "originStoreName" )
+                                                      .eq( osk.getName() )
+                                                      .toBuilder()
+                                                      .build() );
 
-        if ( isps != null )
+        logger.trace( "Cleared all indices with origin: {}, size: {}", osk, total );
+    }
+
+    private long iterateRemove( final Supplier<Query> queryFunction )
+    {
+        long total = 0;
+        Query query;
+        long last = -1;
+        while( last != 0 )
         {
-            isps.forEach( isp -> contentIndex.remove( isp ) );
+            query = queryFunction.get();
+
+                    List<IndexedStorePath> all = query.list();
+            all.forEach( ( key ) -> {
+                logger.debug("Removing from content index: {}", key);
+                contentIndex.remove( key );
+            } );
+
+            last = all.size();
+            total += last;
         }
 
-        logger.trace( "Clear all indices with origin: {}, size: {}", originalStore.getKey(), ( isps != null ? isps.size() : 0 ) );
+        return total;
     }
 
     @Override
     @Measure
     public void clearAllIndexedPathInStoreWithOriginal( ArtifactStore store, ArtifactStore originalStore )
     {
-        Set<IndexedStorePath> isps = contentIndex.cacheKeySetByFilter(
-                key -> {
-                    StoreKey myOriginalStoreKey = key.getOriginStoreKey();
+        StoreKey sk = store.getKey();
+        StoreKey osk = originalStore.getKey();
 
-                    if ( !key.getStoreKey().equals( store.getKey() ) )
-                    {
-                        return false;
-                    }
-                    else if (myOriginalStoreKey == null )
-                    {
-                        return false;
-                    }
+        long total = iterateRemove( () -> queryFactory.from( IndexedStorePath.class )
+                                                      .maxResults( ITERATE_RESULT_SIZE )
+                                                      .having( "packageType" )
+                                                      .eq( osk.getPackageType() )
+                                                      .and()
+                                                      .having( "storeType" )
+                                                      .eq( sk.getType().name() )
+                                                      .and()
+                                                      .having( "storeName" )
+                                                      .eq( sk.getName() )
+                                                      .and()
+                                                      .having( "originStoreType" )
+                                                      .eq( osk.getType().name() )
+                                                      .and()
+                                                      .having( "originStoreName" )
+                                                      .eq( osk.getName() )
+                                                      .toBuilder()
+                                                      .build() );
 
-                    return myOriginalStoreKey.equals( originalStore.getKey() );
-                } );
-
-        if ( isps != null )
-        {
-            isps.forEach( isp -> contentIndex.remove( isp ) );
-        }
+        logger.trace( "Cleared all indices with origin: {} and group: {}, size: {}", osk, sk, total );
     }
 
     /**

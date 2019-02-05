@@ -1,6 +1,7 @@
 package org.commonjava.indy.promote.rules
 
 import org.apache.commons.lang.StringUtils
+import org.apache.commons.io.IOUtils
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
@@ -25,6 +26,29 @@ class NoSnapshots implements ValidationRule {
                     }
                 }
 
+
+                def txfr = tools.getTransfer(request.getSource(), it)
+                def pomContent = null
+                try(InputStream stream = txfr.openInputStream(false))
+                {
+                    pomContent = IOUtils.readLines(stream)
+                }
+                catch ( IOException e )
+                {
+                    errors.add( "Cannot read POM: " + it )
+                }
+                if ( pomContent != null )
+                {
+                    for(def i=0; i<pomContent.size(); i++)
+                    {
+                        if ( pomContent.get(i).contains("SNAPSHOT"))
+                        {
+
+                        }
+                    }
+
+                    errors.add( )
+                }
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
                     tools.paralleledEach(relationships, { rel ->
