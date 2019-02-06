@@ -216,6 +216,7 @@ public class KojiMavenMetadataProvider
         } );
     }
 
+    @Measure
     private Metadata executeKojiMetadataLookup(ProjectRef ga, String path )
             throws KojiClientException
     {

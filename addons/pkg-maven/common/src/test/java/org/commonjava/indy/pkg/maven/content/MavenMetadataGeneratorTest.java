@@ -95,7 +95,7 @@ public class MavenMetadataGeneratorTest
 
         final XMLInfrastructure xml = new XMLInfrastructure();
         final TypeMapper types = new StandardTypeMapper();
-        final MavenMetadataMerger merger = new MavenMetadataMerger( Collections.emptyList() );
+        final MavenMetadataMerger merger = new MavenMetadataMerger();
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
         DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads,
