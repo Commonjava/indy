@@ -15,8 +15,16 @@
  */
 package org.commonjava.indy.pkg.maven.content.group;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.indy.util.LocationUtils.getKey;
+import org.apache.maven.archetype.catalog.Archetype;
+import org.apache.maven.archetype.catalog.ArchetypeCatalog;
+import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Reader;
+import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Writer;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
@@ -26,22 +34,11 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.maven.archetype.catalog.Archetype;
-import org.apache.maven.archetype.catalog.ArchetypeCatalog;
-import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Reader;
-import org.apache.maven.archetype.catalog.io.xpp3.ArchetypeCatalogXpp3Writer;
-import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.commonjava.indy.core.content.group.MetadataMerger;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.maven.galley.model.Transfer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @javax.enterprise.context.ApplicationScoped
 public class ArchetypeCatalogMerger
-    implements MetadataMerger
 {
 
     public static final String CATALOG_NAME = "archetype-catalog.xml";
@@ -54,7 +51,6 @@ public class ArchetypeCatalogMerger
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    @Override
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         final ArchetypeCatalog master = new ArchetypeCatalog();
@@ -113,11 +109,5 @@ public class ArchetypeCatalogMerger
         }
 
         return null;
-    }
-
-    @Override
-    public Metadata mergeFromMetadatas( Collection<Metadata> sources, Group group, String path )
-    {
-        throw new UnsupportedOperationException( "Not yet implemented" );
     }
 }

@@ -39,6 +39,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.atlas.maven.ident.ref.SimpleTypeAndClassifier;
@@ -60,6 +61,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import javax.annotation.PostConstruct;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -151,6 +153,11 @@ public class MavenMetadataGenerator
     private MavenMetadataMerger merger;
 
     @Inject
+    private Instance<MavenMetadataProvider> metadataProviderInstances;
+
+    private List<MavenMetadataProvider> metadataProviders;
+
+    @Inject
     @WeftManaged
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
     private ExecutorService executorService;
@@ -182,6 +189,12 @@ public class MavenMetadataGenerator
         if ( executorService == null )
         {
             executorService = Executors.newFixedThreadPool( 8 );
+        }
+
+        metadataProviders = new ArrayList<>();
+        if ( metadataProviderInstances != null )
+        {
+            metadataProviderInstances.forEach( provider -> metadataProviders.add( provider ) );
         }
     }
 
@@ -549,19 +562,45 @@ public class MavenMetadataGenerator
             return meta;
         }
 
-        Map<StoreKey, Metadata> memberMetas = new ConcurrentHashMap<>( members.size() );
-        Set<ArtifactStore> missing = retrieveCachedMemberMetadata( memberMetas, members, contributingMembers, toMergePath );
+        Metadata master = new Metadata();
 
-        // this is weird, but I found duplicates in the missing set! De-duplicating here before proceeding...
-        Map<StoreKey, ArtifactStore> missingMap = new HashMap<>();
-        missing.forEach( m->missingMap.put(m.getKey(), m) );
-        missing = new HashSet<>( missingMap.values() );
+        Set<ArtifactStore> missing = missingMetadataFunction( group, members, contributingMembers, new HashSet<>(), master, toMergePath,
+                                                              ( m, memberMetas, providerMetadata, tmp ) -> retrieveCachedMemberMetadata( memberMetas, members, contributingMembers, tmp ) );
 
-        // Try to download missed meta
-        missing = downloadMissingMemberMetadata( group, missing, memberMetas, toMergePath );
+        missing = missingMetadataFunction( group, members, contributingMembers, missing, master, toMergePath,
+                                           ( m, memberMetas, providerMetadata, tmp ) -> downloadMissingMemberMetadata( group, m, memberMetas, tmp ) );
 
-        // Try to generate missed meta
-        generateMissingMemberMetadata( group, missing, memberMetas, toMergePath );
+        missing = missingMetadataFunction( group, members, contributingMembers, missing, master, toMergePath,
+                                           ( m, memberMetas, providerMetadata, tmp ) -> generateMissingMemberMetadata( group, m, memberMetas, tmp ) );
+
+        if ( metadataProviders != null )
+        {
+            missing = missingMetadataFunction( group, members, contributingMembers, missing, master, toMergePath,
+                                               ( m, memberMetas, providerMetadata, tmp ) -> {
+                                                   for ( MavenMetadataProvider provider : metadataProviders )
+                                                   {
+                                                       try
+                                                       {
+                                                           Metadata toMerge =
+                                                                   provider.getMetadata( group.getKey(), path );
+                                                           if ( toMerge != null )
+                                                           {
+                                                               providerMetadata.add( toMerge );
+                                                           }
+                                                       }
+                                                       catch ( IndyWorkflowException e )
+                                                       {
+                                                           logger.error( String.format(
+                                                                   "Cannot read metadata: %s from metadata provider: %s. Reason: %s",
+                                                                   path, provider.getClass().getSimpleName(),
+                                                                   e.getMessage() ), e );
+                                                       }
+                                                   }
+
+                                                   return m;
+                                               } );
+
+        }
 
         if ( !missing.isEmpty() )
         {
@@ -570,31 +609,11 @@ public class MavenMetadataGenerator
                     missing );
         }
 
-        String tmp = toMergePath;
-        List<Metadata> metas = members.stream()
-                                      .map( mem -> {
-                                          Metadata memberMetadata = memberMetas.get( mem.getKey() );
-                                          if ( memberMetadata != null )
-                                          {
-                                              logger.trace( "Recording contributing member: {} for metadata: {} in group: {}", mem.getKey(), tmp, group.getKey() );
-                                              final Versioning versioning = memberMetadata.getVersioning();
-                                              logger.trace( "Metadata latest version: {}, versioning versions:{}",
-                                                            versioning != null ? versioning.getLatest() : null,
-                                                            versioning != null ? versioning.getVersions() : null );
-                                              contributingMembers.add( mem.getKey() );
-                                          }
-
-                                          return memberMetadata;
-                                      } )
-                                      .filter( mmeta -> mmeta != null )
-                                      .collect( Collectors.toList() );
-
-        logger.trace( "Metadata: {} in group: {} was generated from members: {}", toMergePath, group.getKey(), contributingMembers );
-
-        final Metadata master = merger.mergeFromMetadatas( metas, group, toMergePath );
-
-        if ( master != null )
+        List<String> versions = master.getVersioning().getVersions();
+        if ( versions != null && !versions.isEmpty() )
         {
+            merger.sortVersions( master );
+
             return master;
         }
 
@@ -602,6 +621,53 @@ public class MavenMetadataGenerator
         return null;
     }
 
+    private Set<ArtifactStore> missingMetadataFunction( Group group, List<ArtifactStore> members,
+                                                        List<StoreKey> contributingMembers, Set<ArtifactStore> oldMissing,
+                                                        Metadata master, String toMergePath,
+                                                        MetadataMergeFunction function )
+            throws IndyWorkflowException
+    {
+        // this is weird, but I found duplicates in the missing set! De-duplicating here before proceeding...
+        Map<StoreKey, ArtifactStore> missingMap = new HashMap<>();
+        oldMissing.forEach( m->missingMap.put(m.getKey(), m) );
+        Set<ArtifactStore> missing = new HashSet<>( missingMap.values() );
+
+        String tmp = toMergePath;
+
+        Map<StoreKey, Metadata> memberMetas = new ConcurrentHashMap<>( members.size() );
+        Set<Metadata> providerMetadata = new HashSet<>();
+
+        Set<ArtifactStore> newMissing = function.merge( missing, memberMetas, providerMetadata, toMergePath );
+
+        List<Metadata> metas = members.stream().map( mem -> {
+            Metadata memberMetadata = memberMetas.get( mem.getKey() );
+            if ( memberMetadata != null )
+            {
+                logger.trace( "Recording contributing member: {} for metadata: {} in group: {}", mem.getKey(), tmp,
+                              group.getKey() );
+                final Versioning versioning = memberMetadata.getVersioning();
+                logger.trace( "Metadata latest version: {}, versioning versions:{}",
+                              versioning != null ? versioning.getLatest() : null,
+                              versioning != null ? versioning.getVersions() : null );
+                contributingMembers.add( mem.getKey() );
+            }
+
+            return memberMetadata;
+        } ).filter( mmeta -> mmeta != null ).collect( Collectors.toList() );
+
+        if ( !providerMetadata.isEmpty() )
+        {
+            metas.addAll( providerMetadata );
+        }
+
+        logger.trace( "Metadata: {} in group: {} was generated from members: {}", toMergePath, group.getKey(),
+                      contributingMembers );
+
+        merger.mergeFromMetadatas( master, metas, group, toMergePath );
+        return newMissing;
+    }
+
+    @Measure
     private void putToMetadataCache( StoreKey key, String toMergePath, MetadataInfo meta )
     {
         synchronized ( versionMetadataCache )
@@ -769,7 +835,6 @@ public class MavenMetadataGenerator
         CountDownLatch latch = new CountDownLatch( missing.size() );
 
         logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
-        Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
 
         /* @formatter:off */
         missing.forEach( (store)->{
@@ -808,7 +873,6 @@ public class MavenMetadataGenerator
                 finally
                 {
                     logger.trace( "Ending metadata download: {}:{}", store.getKey(), toMergePath );
-                    remaining.remove( store );
                     latch.countDown();
                 }
             } );
@@ -827,6 +891,7 @@ public class MavenMetadataGenerator
         return ret;
     }
 
+    @Measure
     private void waitOnLatch( Group group, String toMergePath, CountDownLatch latch, String step )
     {
         do
