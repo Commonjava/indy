@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -771,68 +772,98 @@ public class PromotionManager
                              request.getSource(), tgt, request.getTarget() );
 
                 final boolean purgeSource = request.isPurgeSource();
+                CountDownLatch latch = new CountDownLatch( contents.size() );
                 contents.forEach( ( transfer ) -> {
-                    final String path = transfer.getPath();
-
-                    if ( !transfer.exists() )
-                    {
-                        pending.remove( path );
-                        skipped.add( path );
-                    }
-                    else
-                    {
+                    executorService.execute(()->{
                         try
                         {
-                            Transfer target =
-                                    contentManager.getTransfer( tgt, path, TransferOperation.UPLOAD );
-                            //                        synchronized ( target )
-                            //                        {
-                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target != null && target.exists() )
-                            {
-                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                             request.getSource(), request.getTarget() );
+                            final String path = transfer.getPath();
 
-                                // TODO: There's no guarantee that the pre-existing content is the same!
+                            if ( !transfer.exists() )
+                            {
                                 pending.remove( path );
                                 skipped.add( path );
                             }
                             else
                             {
-                                try (InputStream stream = transfer.openInputStream( true ))
+                                try
                                 {
-                                    contentManager.store( tgt, path, stream, TransferOperation.UPLOAD,
-                                                          new EventMetadata() );
-
-                                    pending.remove( path );
-                                    complete.add( path );
-
-                                    stream.close();
-
-                                    if ( purgeSource )
+                                    Transfer target = contentManager.getTransfer( tgt, path, TransferOperation.UPLOAD );
+                                    //                        synchronized ( target )
+                                    //                        {
+                                    // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                                    if ( target != null && target.exists() )
                                     {
-                                        contentManager.delete( src, path, new EventMetadata() );
+                                        logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.",
+                                                     path, request.getSource(), request.getTarget() );
+
+                                        // TODO: There's no guarantee that the pre-existing content is the same!
+                                        pending.remove( path );
+                                        skipped.add( path );
                                     }
+                                    else
+                                    {
+                                        try (InputStream stream = transfer.openInputStream( true ))
+                                        {
+                                            contentManager.store( tgt, path, stream, TransferOperation.UPLOAD,
+                                                                  new EventMetadata() );
+
+                                            pending.remove( path );
+                                            complete.add( path );
+
+                                            stream.close();
+
+                                            if ( purgeSource )
+                                            {
+                                                contentManager.delete( src, path, new EventMetadata() );
+                                            }
+                                        }
+                                        catch ( final IOException e )
+                                        {
+                                            String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
+                                                                        transfer, e.getMessage() );
+                                            errors.add( msg );
+                                            logger.error( msg, e );
+                                        }
+                                    }
+
                                 }
-                                catch ( final IOException e )
+                                catch ( final IndyWorkflowException e )
                                 {
-                                    String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
-                                                                transfer, e.getMessage() );
+                                    String msg =
+                                            String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
+                                                           tgt, e.getMessage() );
                                     errors.add( msg );
                                     logger.error( msg, e );
                                 }
                             }
-
                         }
-                        catch ( final IndyWorkflowException  e )
+                        finally
                         {
-                            String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
-                                                        tgt, e.getMessage() );
-                            errors.add( msg );
-                            logger.error( msg, e );
+                            latch.countDown();
                         }
-                    }
+                    });
                 } );
+
+                try
+                {
+                    latch.await();
+                }
+                catch ( InterruptedException e )
+                {
+                    Set<String> paths;
+                    try
+                    {
+                         paths = validationRequest.getSourcePaths();
+                    }
+                    catch ( PromotionValidationException e1 )
+                    {
+                        paths = contents.stream().map( txfr->txfr.getPath() ).collect(Collectors.toSet());
+                    }
+
+                    logger.error( "Interrupted while waiting for promotion of: {} to: {}\nPaths:\n\n{}\n\n",
+                                  request.getSource(), targetKey, paths );
+                }
 
                 try
                 {

@@ -318,38 +318,45 @@ public class MemoryStoreDataManager
         }
 
         Function<StoreKey, Boolean> lockHandler = k -> {
-            ArtifactStore original = stores.get( store.getKey() );
-            if ( original == store )
+            try
             {
-                // if they're the same instance, warn that preUpdate events may not work correctly!
-                logger.warn(
-                        "Storing changes on existing instance of: {}! You forgot to call {}.copyOf(), so preUpdate events may not accurately reflect before/after differences for this change!",
-                        store, store.getClass().getSimpleName() );
+                ArtifactStore original = stores.get( store.getKey() );
+                if ( original == store )
+                {
+                    // if they're the same instance, warn that preUpdate events may not work correctly!
+                    logger.warn(
+                            "Storing changes on existing instance of: {}! You forgot to call {}.copyOf(), so preUpdate events may not accurately reflect before/after differences for this change!",
+                            store, store.getClass().getSimpleName() );
+                }
+
+                if ( !skipIfExists || original == null )
+                {
+                    try
+                    {
+                        preStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                    }
+                    catch ( IndyDataException e )
+                    {
+                        error.set( e );
+                        return false;
+                    }
+
+                    final ArtifactStore old = stores.put( store.getKey(), store );
+                    try
+                    {
+                        postStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                        return true;
+                    }
+                    catch ( final IndyDataException e )
+                    {
+                        logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
+                        stores.put( old.getKey(), old );
+                    }
+                }
             }
-
-            if ( !skipIfExists || original == null )
+            catch ( RuntimeException e )
             {
-                try
-                {
-                    preStore( store, original, summary, original != null, fireEvents, eventMetadata );
-                }
-                catch ( IndyDataException e )
-                {
-                    error.set( e );
-                    return false;
-                }
-
-                final ArtifactStore old = stores.put( store.getKey(), store );
-                try
-                {
-                    postStore( store, original, summary, original != null, fireEvents, eventMetadata );
-                    return true;
-                }
-                catch ( final IndyDataException e )
-                {
-                    logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
-                    stores.put( old.getKey(), old );
-                }
+                logger.error( "Runtime exception trying to store: " + store.getKey(), e );
             }
 
             return false;
