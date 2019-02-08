@@ -317,10 +317,12 @@ public class MemoryStoreDataManager
             return false;
         }
 
+        final StoreKey storeKey = store.getKey();
+
         Function<StoreKey, Boolean> lockHandler = k -> {
             try
             {
-                ArtifactStore original = stores.get( store.getKey() );
+                ArtifactStore original = stores.get( storeKey );
                 if ( original == store )
                 {
                     // if they're the same instance, warn that preUpdate events may not work correctly!
@@ -333,7 +335,9 @@ public class MemoryStoreDataManager
                 {
                     try
                     {
+                        logger.debug( "Starting pre-store actions for update of: {}", storeKey );
                         preStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                        logger.debug( "Pre-store actions complete for update of: {}", storeKey );
                     }
                     catch ( IndyDataException e )
                     {
@@ -341,22 +345,30 @@ public class MemoryStoreDataManager
                         return false;
                     }
 
+                    logger.debug( "Updating {} in ArtifactStore map", storeKey );
                     final ArtifactStore old = stores.put( store.getKey(), store );
+                    logger.debug( "Updated {} in ArtifactStore map", storeKey );
+
                     try
                     {
+                        logger.debug( "Starting post-store actions for update of: {}", storeKey );
                         postStore( store, original, summary, original != null, fireEvents, eventMetadata );
+                        logger.debug( "Post-store actions complete for update of: {}", storeKey );
                         return true;
                     }
                     catch ( final IndyDataException e )
                     {
-                        logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
-                        stores.put( old.getKey(), old );
+                        if ( old != null )
+                        {
+                            logger.error( "postStore() failed for: {}. Rolling back to old value: {}", store, old );
+                            stores.put( old.getKey(), old );
+                        }
                     }
                 }
             }
             catch ( RuntimeException e )
             {
-                logger.error( "Runtime exception trying to store: " + store.getKey(), e );
+                logger.error( "Runtime exception trying to store: " + storeKey, e );
             }
 
             return false;
@@ -373,12 +385,12 @@ public class MemoryStoreDataManager
         if ( opLocks == null || store == null || store.getKey() == null || lockHandler == null || lockFailedHandler == null )
         {
             logger.warn( "Before locking, opLocks is {} || store is {} || store.getKey is {}", opLocks, store,
-                         store.getKey() );
+                         storeKey );
         }
         boolean result;
         try
         {
-            result = opLocks.lockAnd( store.getKey(), LOCK_TIMEOUT_SECONDS, lockHandler, lockFailedHandler );
+            result = opLocks.lockAnd( storeKey, LOCK_TIMEOUT_SECONDS, lockHandler, lockFailedHandler );
         }
         catch ( NullPointerException e )
         {
