@@ -106,6 +106,7 @@
     <keycloak-waitFor>WFLYSRV0025</keycloak-waitFor>
     <docker-appliance-keycloak>${dockerRegistry}/${dockerUser}/keycloak-test-appliance</docker-appliance-keycloak>
 
+    <version.plugin.jacoco>0.8.3</version.plugin.jacoco>
     <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
@@ -1516,7 +1517,7 @@
         <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.7.4.201502262128</version>
+          <version>${version.plugin.jacoco}</version>
           <!-- Broken for sonarqube! -->
           <!--<version>0.7.5.201505241946</version>-->
           <executions>
@@ -1786,6 +1787,9 @@
         <junit.report.dir>${session.executionRootDirectory}/target/surefire-reports</junit.report.dir>
         <failsafe.report.dir>${session.executionRootDirectory}/target/failsafe-reports</failsafe.report.dir>
       </properties>
+      <modules>
+        <module>embedder-tests</module>
+      </modules>
       <build>
         <plugins>
           <plugin>

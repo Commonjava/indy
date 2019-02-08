@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.embed.test</groupId>
     <artifactId>indy-embedder-tests</artifactId>
-    <version>1.6.1-SNAPSHOT</version>
+    <version>1.6.3-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-embedder-test-savant</artifactId>
@@ -115,19 +115,21 @@
         <artifactId>maven-failsafe-plugin</artifactId>
         <configuration>
           <dependenciesToScan>
-            <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
             <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-            <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
             <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
             <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
-            <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
             <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
             <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
             <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
             <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
             <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
             <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
             <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>
+            <dependency>org.commonjava.indy:indy-ftests-koji</dependency>
           </dependenciesToScan>
         </configuration>
         <executions>
