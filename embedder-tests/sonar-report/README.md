@@ -13,5 +13,5 @@ As indy has a seperate module to do integration test, we need some way to collec
  
 ### How to use
 
-* Generate test reports - run "mvn clean install -Prun-its,run-metrics" **in indy parent folder, but not in this savant-report folder**
-* Report to sonar - after reports generation, run "mvn sonar:sonar -Psonar-test-report -Dsonar.host.url=${your sonar host}" **in this folder**, or "mvn -f ./embedder-tests/savant-report/pom.xml -Psonar-test-report -Dsonar.host.url=${your sonar host}" **in indy parent folder** 
+* Generate test reports - run "mvn clean install -Dplugin.jacoco.skip=false -Prun-its,run-metrics" **in indy parent folder, but not in this savant-report folder**
+* Report to sonar - after reports generation, run "mvn sonar:sonar -Psonar-test-report -Dsonar.host.url=${your sonar host}" **in this folder**, or "mvn sonar:sonar -f ./embedder-tests/sonar-report/pom.xml -Psonar-test-report -Dsonar.host.url=${your sonar host}" **in indy parent folder** 
