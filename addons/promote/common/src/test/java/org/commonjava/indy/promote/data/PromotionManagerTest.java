@@ -58,8 +58,6 @@ import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
-import org.commonjava.maven.galley.nfc.NoOpNotFoundCache;
-import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -71,7 +69,6 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -82,6 +79,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -176,7 +174,9 @@ public class PromotionManagerTest
 
         PromoteConfig config = new PromoteConfig();
 
-        WeftExecutorService svc = new WeftExecutorService( Executors.newCachedThreadPool(), 2, null, null );
+        WeftExecutorService svc =
+                new WeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+
         manager =
                 new PromotionManager( validator, contentManager, downloadManager, storeManager, new Locker<StoreKey>(),
                                       new Locker<>(), config, nfc, svc, svc );

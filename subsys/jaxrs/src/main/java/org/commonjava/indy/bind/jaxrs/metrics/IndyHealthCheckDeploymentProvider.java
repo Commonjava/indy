@@ -20,13 +20,16 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.ServletInfo;
 import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Application;
 
+@ApplicationScoped
 public class IndyHealthCheckDeploymentProvider
                 extends IndyDeploymentProvider
 {
@@ -34,6 +37,9 @@ public class IndyHealthCheckDeploymentProvider
 
     @Inject
     private IndyMetricsConfig config;
+
+    @Inject
+    private IndyMetricsManager metricsManager;
 
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )

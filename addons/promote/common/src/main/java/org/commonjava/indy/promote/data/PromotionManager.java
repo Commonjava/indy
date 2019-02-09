@@ -159,7 +159,7 @@ public class PromotionManager
 
     @Measure
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
-            throws PromotionException
+            throws PromotionException, IndyWorkflowException
     {
         if ( !storeManager.hasArtifactStore( request.getSource() ) )
         {
@@ -298,7 +298,7 @@ public class PromotionManager
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )
-            throws PromotionException
+            throws PromotionException, IndyWorkflowException
     {
         GroupPromoteRequest request = result.getRequest();
 
@@ -376,7 +376,9 @@ public class PromotionManager
     }
 
     private void submitGroupPromoteRollback( final GroupPromoteResult result, final Group target, final String user )
+            throws IndyWorkflowException
     {
+        checkAsyncCapacity();
         Future<GroupPromoteResult> future = asyncPromotionService.submit( ()->
         {
             GroupPromoteResult ret;
@@ -397,7 +399,10 @@ public class PromotionManager
     }
 
     private void submitGroupPromoteRequest( final GroupPromoteRequest request, final String user, final String baseUrl )
+            throws IndyWorkflowException
     {
+        checkAsyncCapacity();
+
         Future<GroupPromoteResult> future = asyncPromotionService.submit( ()->
         {
             AtomicReference<PromotionException> error = new AtomicReference<>();
@@ -442,18 +447,25 @@ public class PromotionManager
             return new PathsPromoteResult( request ).accepted();
         }
 
-        checkCapacity();
+        checkTransferCapacity();
         return doPathsPromotion( request, baseUrl );
     }
 
-    private void checkCapacity()
+    private void checkTransferCapacity()
             throws IndyWorkflowException
     {
-        Integer threads = transferService.getThreadCount();
-        int load = transferService.getCurrentLoad();
-        if ( ( threads == null && load > 100 ) || load/threads > 10 )
+        if ( !transferService.isHealthy() )
         {
             throw new IndyWorkflowException( 409, "Transfer Threadpool Overload" );
+        }
+    }
+
+    private void checkAsyncCapacity()
+            throws IndyWorkflowException
+    {
+        if ( !asyncPromotionService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Async Threadpool Overload" );
         }
     }
 
@@ -500,13 +512,15 @@ public class PromotionManager
     }
 
     private void submitPathsPromoteRequest( PathsPromoteRequest request, final String baseUrl )
+            throws IndyWorkflowException
     {
+        checkAsyncCapacity();
         Future<PathsPromoteResult> future = asyncPromotionService.submit( ()->
         {
             PathsPromoteResult ret;
             try
             {
-                checkCapacity();
+                checkTransferCapacity();
                 ret = doPathsPromotion( request, baseUrl );
             }
             catch ( Exception ex )
@@ -545,18 +559,20 @@ public class PromotionManager
             return new PathsPromoteResult( request ).accepted();
         }
 
-        checkCapacity();
+        checkTransferCapacity();
         return doResumePathsPromote( result, baseUrl );
     }
 
     private void submitResumePathsPromote( PathsPromoteResult result, String baseUrl )
+            throws IndyWorkflowException
     {
+        checkAsyncCapacity();
         Future<PathsPromoteResult> future = asyncPromotionService.submit( ()->
         {
             PathsPromoteResult ret;
             try
             {
-                checkCapacity();
+                checkTransferCapacity();
                 ret = doResumePathsPromote( result, baseUrl );
             }
             catch ( Exception ex )
@@ -616,7 +632,9 @@ public class PromotionManager
     }
 
     private void submitRollbackPathsPromote( PathsPromoteResult result )
+            throws IndyWorkflowException
     {
+        checkAsyncCapacity();
         Future<PathsPromoteResult> future = asyncPromotionService.submit( ()->
         {
             PathsPromoteResult ret;
