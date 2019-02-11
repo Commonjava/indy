@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
@@ -170,7 +171,7 @@ public class CacheProducer
      */
     public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named )
     {
-        BasicCacheHandle handle = caches.computeIfAbsent( named, (k) -> {
+        BasicCacheHandle handle = caches.computeIfAbsent( named, ( k ) -> {
             if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( k ) )
             {
                 RemoteCache<K, V> cache = null;
@@ -228,7 +229,7 @@ public class CacheProducer
     public synchronized <K, V> CacheHandle<K, V> getCache( String named )
     {
         logger.debug( "Get embedded cache, name: {}", named );
-        return (CacheHandle) caches.computeIfAbsent( named, (k) -> {
+        return (CacheHandle) caches.computeIfAbsent( named, ( k ) -> {
             Cache<K, V> cache = cacheManager.getCache( k );
             return new CacheHandle( k, cache, metricsManager, getCacheMetricPrefix( k ) );
         } );
@@ -345,17 +346,36 @@ public class CacheProducer
      */
     private void mergedCachesFromConfig( String config, String path )
     {
+        logger.debug( "[ISPN xml merge] cache config xml to merge:\n {}", config );
+        // FIXME: here may cause ISPN000343 problem if your cache config has enabled distributed cache. Because distributed
+        //       cache needs transport support, so if the cache manager does not enable it and then add this type of cache
+        //       by defineConfiguration, it will report ISPN000343. So we should ensure the transport has been added by initialization.
         if ( cacheManager == null )
         {
-            cacheManager = new DefaultCacheManager();
+            try
+            {
+                logger.info(
+                        "Using {} resource Infinispan configuration to construct mergable cache configuration:\n\n{}\n\n", path,
+                        config );
+                cacheManager = new DefaultCacheManager(
+                        new ByteArrayInputStream( config.getBytes( StandardCharsets.UTF_8 ) ) );
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeException(
+                        String.format( "Failed to construct ISPN cacheManger due to %s xml stream read error.", path ),
+                        e );
+            }
         }
 
-        ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
-        ConfigurationManager manager = new ConfigurationManager( holder );
+        final ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
+        final ConfigurationManager manager = new ConfigurationManager( holder );
+
+        final Set<String> definedCaches = cacheManager.getCacheNames();
 
         for ( String name : manager.getDefinedCaches() )
         {
-            if ( cacheManager.getCacheNames().isEmpty() || !cacheManager.getCacheNames().contains( name ) )
+            if ( definedCaches.isEmpty() || !definedCaches.contains( name ) )
             {
                 logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
                 cacheManager.defineConfiguration( name, manager.getConfiguration( name ) );
