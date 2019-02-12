@@ -73,7 +73,7 @@
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.9</jhttpcVersion>
     <weftVersion>1.10-SNAPSHOT</weftVersion>
-    <httpTestserverVersion>1.5-SNAPSHOT</httpTestserverVersion>
+    <httpTestserverVersion>1.4</httpTestserverVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
