@@ -282,20 +282,18 @@ public class TimeoutEventListener
     }
 
     @Override
-    public void clearStoreContent( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups,
+    public void clearStoreContent( String path, ArtifactStore store, Set<Group> affectedGroups,
                                    boolean clearOriginPath )
     {
-        paths.parallelStream().forEach( p->{
-            if ( clearOriginPath )
-            {
-                deleteExpiration( originKey, p );
-            }
+        if ( clearOriginPath )
+        {
+            deleteExpiration( store.getKey(), path );
+        }
 
-            if ( affectedGroups != null && !affectedGroups.isEmpty() )
-            {
-                affectedGroups.forEach( g -> deleteExpiration( g.getKey(), p ) );
-            }
-        } );
+        if ( affectedGroups != null && !affectedGroups.isEmpty() )
+        {
+            affectedGroups.forEach( g -> deleteExpiration( g.getKey(), path ) );
+        }
     }
 
     private void deleteExpiration( StoreKey key, String path )
