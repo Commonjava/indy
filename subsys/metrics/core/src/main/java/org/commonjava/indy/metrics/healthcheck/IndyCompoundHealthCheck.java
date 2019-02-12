@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.metrics.healthcheck.impl;
+package org.commonjava.indy.metrics.healthcheck;
 
-import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
+import com.codahale.metrics.health.HealthCheck;
 
-public class ThreadDeadlockHealthCheck
-                extends IndyHealthCheck
+import java.util.Map;
+import java.util.Set;
+
+import static org.commonjava.indy.metrics.util.NameUtils.getAbbreviatedName;
+
+public interface IndyCompoundHealthCheck
 {
-    com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck
-                    deadlock = new com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck();
 
-    @Override
-    protected Result check() throws Exception
-    {
-        return deadlock.execute();
-    }
+    Map<String, HealthCheck> getHealthChecks();
 
 }

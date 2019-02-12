@@ -80,6 +80,18 @@ public class MetricsInterceptor
 
         try
         {
+            meters.forEach( ( name ) -> {
+                Meter meter = metricsManager.getMeter( name + ".starts" );
+                logger.trace( "CALLS++ {}", name );
+                meter.mark();
+
+                logger.trace("Meter count for: {} is: {}", name, new Object(){
+                    public String toString(){
+                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
+                    }
+                });
+            } );
+
             return context.proceed();
         }
         catch ( Exception e )

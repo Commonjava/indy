@@ -16,6 +16,7 @@
 package org.commonjava.indy.metrics.jaxrs.producer;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.metrics.IndyMetricsManager;
@@ -37,6 +38,12 @@ public class IndyMetricProducer implements StartupAction
     public MetricRegistry getMetricRegistry()
     {
         return new MetricRegistry();
+    }
+
+    @ApplicationScoped
+    @Produces
+    public HealthCheckRegistry getHealthCheckRegistry() {
+        return new HealthCheckRegistry();
     }
 
     @Override

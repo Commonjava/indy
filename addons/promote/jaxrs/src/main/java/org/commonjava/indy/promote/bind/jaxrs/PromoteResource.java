@@ -101,7 +101,7 @@ public class PromoteResource
                                           .toString();
             return manager.promoteToGroup( request, user, baseUrl );
         }
-        catch ( PromotionException e )
+        catch ( PromotionException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             throwError( e );
@@ -128,7 +128,7 @@ public class PromoteResource
             String user = securityManager.getUser( securityContext, servletRequest );
             return manager.rollbackGroupPromote( result, user );
         }
-        catch ( PromotionException e )
+        catch ( PromotionException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             throwError( e );

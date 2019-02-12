@@ -18,8 +18,10 @@ package org.commonjava.indy.metrics;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
 import org.commonjava.indy.metrics.reporter.ReporterIntializer;
 import org.commonjava.maven.galley.config.TransportMetricConfig;
@@ -35,6 +37,7 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -57,13 +60,16 @@ public class IndyMetricsManager
     private static final Logger logger = LoggerFactory.getLogger( IndyMetricsManager.class );
 
     @Inject
-    MetricRegistry metricRegistry;
+    private MetricRegistry metricRegistry;
 
     @Inject
-    @Any
-    Instance<IndyHealthCheck> indyHealthChecks;
+    private HealthCheckRegistry healthCheckRegistry;
 
-    public static final HealthCheckRegistry HEALTH_CHECK_REGISTRY = new HealthCheckRegistry();
+    @Inject
+    private Instance<IndyHealthCheck> indyHealthChecks;
+
+    @Inject
+    private Instance<IndyCompoundHealthCheck> indyCompoundHealthChecks;
 
     @Inject
     ReporterIntializer reporter;
@@ -96,8 +102,19 @@ public class IndyMetricsManager
         registerJvmMetric( config.getNodePrefix(), metricRegistry );
 
         // Health checks
-        indyHealthChecks.forEach( indyHealthCheck -> HEALTH_CHECK_REGISTRY.register( indyHealthCheck.getName(),
-                                                                                     indyHealthCheck ) );
+        indyHealthChecks.forEach( hc -> {
+            logger.info( "Registering health check: {}", hc.getName() );
+            healthCheckRegistry.register( hc.getName(), hc );
+        } );
+
+        indyCompoundHealthChecks.forEach( cc-> {
+            Map<String, HealthCheck> healthChecks = cc.getHealthChecks();
+            logger.info( "Registering {} health checks from set: {}", healthChecks.size(), cc.getClass().getSimpleName() );
+            healthChecks.forEach( (name,check)->{
+                logger.info( "Registering health check: {}", name );
+                healthCheckRegistry.register( name, check );
+            } );
+        } );
 
         metricSetProviderInstances.forEach( ( provider ) -> provider.registerMetricSet( metricRegistry ) );
 
