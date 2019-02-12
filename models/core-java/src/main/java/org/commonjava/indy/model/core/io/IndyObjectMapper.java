@@ -191,6 +191,7 @@ public class IndyObjectMapper
         throws JsonProcessingException, IOException
     {
         final JsonNode tree = readTree( json );
+        logger.debug( "Patching JSON tree: {}", tree );
 
         final JsonNode keyNode = tree.get( ArtifactStore.KEY_ATTR );
         StoreKey key;

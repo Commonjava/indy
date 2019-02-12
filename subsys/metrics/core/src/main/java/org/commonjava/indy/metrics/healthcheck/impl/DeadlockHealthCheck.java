@@ -13,18 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.bind.jaxrs.metrics;
+package org.commonjava.indy.metrics.healthcheck.impl;
 
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.codahale.metrics.servlets.HealthCheckServlet;
+import org.commonjava.indy.metrics.healthcheck.IndyComponentHC;
+import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
 
-import javax.enterprise.inject.spi.CDI;
+import javax.inject.Named;
 
-public class IndyHealthCheckServletContextListener extends HealthCheckServlet.ContextListener
+@Named
+public class DeadlockHealthCheck
+        extends IndyComponentHC
 {
+    com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck
+                    deadlock = new com.codahale.metrics.health.jvm.ThreadDeadlockHealthCheck();
+
     @Override
-    protected HealthCheckRegistry getHealthCheckRegistry()
+    protected Result check() throws Exception
     {
-        return CDI.current().select( HealthCheckRegistry.class ).get();
+        return deadlock.execute();
     }
+
 }

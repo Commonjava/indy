@@ -18,6 +18,7 @@ package org.commonjava.indy.promote.data;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -28,16 +29,15 @@ import org.commonjava.indy.core.inject.StoreContentLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.callback.PromotionCallbackHelper;
 import org.commonjava.indy.promote.change.event.PathsPromoteCompleteEvent;
 import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
@@ -67,15 +67,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
@@ -121,7 +122,12 @@ public class PromotionManager
     @WeftManaged
     @Inject
     @ExecutorConfig( named = "promotion", threads = 8, priority = 8 )
-    private ExecutorService executorService;
+    private WeftExecutorService asyncPromotionService;
+
+    @WeftManaged
+    @Inject
+    @ExecutorConfig( named = "promotion-transfers", threads = 40, priority = 6 )
+    private WeftExecutorService transferService;
 
     @Inject
     private PromotionCallbackHelper callbackHelper;
@@ -136,7 +142,8 @@ public class PromotionManager
     public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
                              final DownloadManager downloadManager, final StoreDataManager storeManager,
                              Locker<StoreKey> byPathTargetLocks, Locker<StoreKey> byGroupTargetLocks,
-                             PromoteConfig config, NotFoundCache nfc )
+                             PromoteConfig config, NotFoundCache nfc, WeftExecutorService asyncPromotionService,
+                             WeftExecutorService transferService )
     {
         this.validator = validator;
         this.contentManager = contentManager;
@@ -146,12 +153,14 @@ public class PromotionManager
         this.byGroupTargetLocks = byGroupTargetLocks;
         this.config = config;
         this.nfc = nfc;
+        this.asyncPromotionService = asyncPromotionService;
+        this.transferService = transferService;
     }
 
 
     @Measure
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
-            throws PromotionException
+            throws PromotionException, IndyWorkflowException
     {
         if ( !storeManager.hasArtifactStore( request.getSource() ) )
         {
@@ -290,7 +299,7 @@ public class PromotionManager
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )
-            throws PromotionException
+            throws PromotionException, IndyWorkflowException
     {
         GroupPromoteRequest request = result.getRequest();
 
@@ -368,8 +377,10 @@ public class PromotionManager
     }
 
     private void submitGroupPromoteRollback( final GroupPromoteResult result, final Group target, final String user )
+            throws IndyWorkflowException
     {
-        Future<GroupPromoteResult> future = executorService.submit( ()->
+        checkAsyncCapacity();
+        Future<GroupPromoteResult> future = asyncPromotionService.submit( ()->
         {
             GroupPromoteResult ret;
             try
@@ -389,8 +400,11 @@ public class PromotionManager
     }
 
     private void submitGroupPromoteRequest( final GroupPromoteRequest request, final String user, final String baseUrl )
+            throws IndyWorkflowException
     {
-        Future<GroupPromoteResult> future = executorService.submit( ()->
+        checkAsyncCapacity();
+
+        Future<GroupPromoteResult> future = asyncPromotionService.submit( ()->
         {
             AtomicReference<PromotionException> error = new AtomicReference<>();
             ValidationResult validation = doValidationAndPromote( request, error, user, baseUrl );
@@ -434,7 +448,26 @@ public class PromotionManager
             return new PathsPromoteResult( request ).accepted();
         }
 
+        checkTransferCapacity();
         return doPathsPromotion( request, baseUrl );
+    }
+
+    private void checkTransferCapacity()
+            throws IndyWorkflowException
+    {
+        if ( !transferService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Transfer Threadpool Overload" );
+        }
+    }
+
+    private void checkAsyncCapacity()
+            throws IndyWorkflowException
+    {
+        if ( !asyncPromotionService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Async Threadpool Overload" );
+        }
     }
 
     private PathsPromoteResult doPathsPromotion( PathsPromoteRequest request, String baseUrl )
@@ -480,12 +513,15 @@ public class PromotionManager
     }
 
     private void submitPathsPromoteRequest( PathsPromoteRequest request, final String baseUrl )
+            throws IndyWorkflowException
     {
-        Future<PathsPromoteResult> future = executorService.submit( ()->
+        checkAsyncCapacity();
+        Future<PathsPromoteResult> future = asyncPromotionService.submit( ()->
         {
             PathsPromoteResult ret;
             try
             {
+                checkTransferCapacity();
                 ret = doPathsPromotion( request, baseUrl );
             }
             catch ( Exception ex )
@@ -524,16 +560,20 @@ public class PromotionManager
             return new PathsPromoteResult( request ).accepted();
         }
 
+        checkTransferCapacity();
         return doResumePathsPromote( result, baseUrl );
     }
 
     private void submitResumePathsPromote( PathsPromoteResult result, String baseUrl )
+            throws IndyWorkflowException
     {
-        Future<PathsPromoteResult> future = executorService.submit( ()->
+        checkAsyncCapacity();
+        Future<PathsPromoteResult> future = asyncPromotionService.submit( ()->
         {
             PathsPromoteResult ret;
             try
             {
+                checkTransferCapacity();
                 ret = doResumePathsPromote( result, baseUrl );
             }
             catch ( Exception ex )
@@ -593,8 +633,10 @@ public class PromotionManager
     }
 
     private void submitRollbackPathsPromote( PathsPromoteResult result )
+            throws IndyWorkflowException
     {
-        Future<PathsPromoteResult> future = executorService.submit( ()->
+        checkAsyncCapacity();
+        Future<PathsPromoteResult> future = asyncPromotionService.submit( ()->
         {
             PathsPromoteResult ret;
             try
@@ -721,7 +763,7 @@ public class PromotionManager
             return new PathsPromoteResult( request, pending, prevComplete, prevSkipped, validation );
         }
 
-        StoreKey targetKey= request.getTarget();
+        StoreKey targetKey = request.getTarget();
 
         final Set<String> complete = prevComplete == null ? new HashSet<>() : new HashSet<>( prevComplete );
         final Set<String> skipped = prevSkipped == null ? new HashSet<>() : new HashSet<>( prevSkipped );
@@ -766,73 +808,38 @@ public class PromotionManager
             ArtifactStore src = sourceStore;
             ArtifactStore tgt = targetStore;
 
-            byPathTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k->{
-                logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", src,
-                             request.getSource(), tgt, request.getTarget() );
+            Set<PathTransferResult> results = byPathTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
+                logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", src, request.getSource(), tgt,
+                             request.getTarget() );
 
-                final boolean purgeSource = request.isPurgeSource();
-                contents.forEach( ( transfer ) -> {
-                    final String path = transfer.getPath();
+                ExecutorCompletionService<PathTransferResult> svc =
+                        new ExecutorCompletionService<>( transferService );
 
-                    if ( !transfer.exists() )
+                contents.forEach( ( transfer ) -> svc.submit( newPathsPromoteTransfer( transfer, src, tgt, request ) ) );
+
+                Set<PathTransferResult> pathResults = new HashSet<>();
+                for(int i=0; i<contents.size(); i++)
+                {
+                    try
                     {
-                        pending.remove( path );
-                        skipped.add( path );
+                        pathResults.add( svc.take().get() );
                     }
-                    else
+                    catch ( InterruptedException | ExecutionException e )
                     {
+                        Set<String> paths;
                         try
                         {
-                            Transfer target =
-                                    contentManager.getTransfer( tgt, path, TransferOperation.UPLOAD );
-                            //                        synchronized ( target )
-                            //                        {
-                            // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
-                            if ( target != null && target.exists() )
-                            {
-                                logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
-                                             request.getSource(), request.getTarget() );
-
-                                // TODO: There's no guarantee that the pre-existing content is the same!
-                                pending.remove( path );
-                                skipped.add( path );
-                            }
-                            else
-                            {
-                                try (InputStream stream = transfer.openInputStream( true ))
-                                {
-                                    contentManager.store( tgt, path, stream, TransferOperation.UPLOAD,
-                                                          new EventMetadata() );
-
-                                    pending.remove( path );
-                                    complete.add( path );
-
-                                    stream.close();
-
-                                    if ( purgeSource )
-                                    {
-                                        contentManager.delete( src, path, new EventMetadata() );
-                                    }
-                                }
-                                catch ( final IOException e )
-                                {
-                                    String msg = String.format( "Failed to open input stream for: %s. Reason: %s",
-                                                                transfer, e.getMessage() );
-                                    errors.add( msg );
-                                    logger.error( msg, e );
-                                }
-                            }
-
+                            paths = validationRequest.getSourcePaths();
                         }
-                        catch ( final IndyWorkflowException  e )
+                        catch ( PromotionValidationException e1 )
                         {
-                            String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer,
-                                                        tgt, e.getMessage() );
-                            errors.add( msg );
-                            logger.error( msg, e );
+                            paths = contents.stream().map( txfr -> txfr.getPath() ).collect( Collectors.toSet() );
                         }
+
+                        logger.error( String.format( "Error waiting for promotion of: %s to: %s\nPaths:\n\n%s\n\n",
+                                      request.getSource(), targetKey, paths ), e );
                     }
-                } );
+                }
 
                 try
                 {
@@ -844,8 +851,8 @@ public class PromotionManager
                     errors.add( msg );
                     logger.error( msg, e );
                 }
-                return null;
-            }, (k,lock)->{
+                return pathResults;
+            }, ( k, lock ) -> {
                 String error =
                         String.format( "Failed to acquire promotion lock on target: %s in %d seconds.", targetKey,
                                        config.getLockTimeoutSeconds() );
@@ -855,6 +862,31 @@ public class PromotionManager
 
                 return false;
             } );
+
+            if ( results != null )
+            {
+                results.forEach( pathResult->{
+                    if ( pathResult.traversed )
+                    {
+                        pending.remove( pathResult.path );
+                    }
+
+                    if ( pathResult.skipped )
+                    {
+                        skipped.add( pathResult.path );
+                    }
+
+                    if ( pathResult.completed )
+                    {
+                        complete.add( pathResult.path );
+                    }
+
+                    if ( pathResult.error != null )
+                    {
+                        errors.add( pathResult.error );
+                    }
+                } );
+            }
         }
 
         String error = null;
@@ -872,6 +904,89 @@ public class PromotionManager
             fireEvent( promoteCompleteEvent, evt );
         }
         return result;
+    }
+
+    private static final class PathTransferResult
+    {
+        public String error;
+        public boolean traversed = false;
+        public boolean skipped = false;
+        public boolean completed = false;
+        public final String path;
+
+        public PathTransferResult( final String path )
+        {
+            this.path = path;
+        }
+    }
+
+    private Callable<PathTransferResult> newPathsPromoteTransfer( final Transfer transfer, final ArtifactStore src,
+                                                                  final ArtifactStore tgt,
+                                                                  final PathsPromoteRequest request )
+    {
+        return () -> {
+            PathTransferResult result = new PathTransferResult( transfer.getPath() );
+            final String path = transfer.getPath();
+
+            if ( !transfer.exists() )
+            {
+                result.traversed = true;
+                result.skipped = true;
+            }
+            else
+            {
+                try
+                {
+                    Transfer target = contentManager.getTransfer( tgt, path, TransferOperation.UPLOAD );
+                    //                        synchronized ( target )
+                    //                        {
+                    // TODO: Should the request object have an overwrite attribute? Is that something the user is qualified to decide?
+                    if ( target != null && target.exists() )
+                    {
+                        logger.warn( "NOT promoting: {} from: {} to: {}. Target file already exists.", path,
+                                     request.getSource(), request.getTarget() );
+
+                        // TODO: There's no guarantee that the pre-existing content is the same!
+                        result.traversed = true;
+                        result.skipped = true;
+                    }
+                    else
+                    {
+                        try (InputStream stream = transfer.openInputStream( true ))
+                        {
+                            contentManager.store( tgt, path, stream, TransferOperation.UPLOAD, new EventMetadata() );
+
+                            result.traversed = true;
+                            result.completed = true;
+
+                            stream.close();
+
+                            if ( request.isPurgeSource() )
+                            {
+                                contentManager.delete( src, path, new EventMetadata() );
+                            }
+                        }
+                        catch ( final IOException e )
+                        {
+                            String msg = String.format( "Failed to open input stream for: %s. Reason: %s", transfer,
+                                                        e.getMessage() );
+                            result.error = msg;
+                            logger.error( msg, e );
+                        }
+                    }
+
+                }
+                catch ( final IndyWorkflowException e )
+                {
+                    String msg = String.format( "Failed to promote path: %s to: %s. Reason: %s", transfer, tgt,
+                                                e.getMessage() );
+                    result.error = msg;
+                    logger.error( msg, e );
+                }
+            }
+
+            return result;
+        };
     }
 
     private List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )
