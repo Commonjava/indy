@@ -145,12 +145,17 @@ public class PromotionManagerTest
         indyConfig.setNotFoundCacheTimeoutSeconds( 1 );
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( indyConfig );
 
+        WeftExecutorService rescanService =
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+
         downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
                                                       new IndyLocationExpander( storeManager ),
-                                                      new MockInstance<>( new MockContentAdvisor() ), nfc );
+                                                      new MockInstance<>( new MockContentAdvisor() ), nfc, rescanService );
 
+        WeftExecutorService contentAccessService =
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
         DirectContentAccess dca =
-                new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+                new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
         ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
                 "content-metadata", contentMetadata ) );
@@ -164,6 +169,8 @@ public class PromotionManagerTest
                                                             new ValidationRuleParser( new ScriptEngine( dataManager ),
                                                                                       new IndyObjectMapper( true ) ) );
 
+        WeftExecutorService validateService =
+                        new PoolWeftExecutorService( "test-validate-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
         MavenModelProcessor modelProcessor = new MavenModelProcessor();
         validator = new PromotionValidator( validationsManager,
                                             new PromotionValidationTools( contentManager, storeManager,
@@ -171,7 +178,7 @@ public class PromotionManagerTest
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager(),
-                                                                          contentDigester ), storeManager, downloadManager );
+                                                                          contentDigester ), storeManager, downloadManager, validateService );
 
         PromoteConfig config = new PromoteConfig();
 

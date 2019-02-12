@@ -186,20 +186,28 @@ public class PromotionManager
             return new GroupPromoteResult( request ).accepted();
         }
 
-        AtomicReference<PromotionException> error = new AtomicReference<>();
+        AtomicReference<Exception> error = new AtomicReference<>();
         ValidationResult validation = doValidationAndPromote( request, error, user, baseUrl );
 
-        PromotionException e = error.get();
+        Exception e = error.get();
         if ( e != null )
         {
-            throw e;
+            if ( e instanceof PromotionException )
+            {
+                throw (PromotionException) e;
+            }
+            else if ( e instanceof IndyWorkflowException )
+            {
+                throw (IndyWorkflowException) e;
+            }
         }
 
         return new GroupPromoteResult( request, validation );
     }
 
     private ValidationResult doValidationAndPromote( GroupPromoteRequest request,
-                                                     AtomicReference<PromotionException> error, String user,
+                                                     AtomicReference<Exception> error,
+                                                     String user,
                                                      String baseUrl )
     {
         ValidationResult validation = new ValidationResult();
@@ -264,7 +272,7 @@ public class PromotionManager
                     }
                 }
             }
-            catch ( PromotionValidationException e )
+            catch ( PromotionValidationException | IndyWorkflowException e )
             {
                 error.set( e );
             }
@@ -406,11 +414,11 @@ public class PromotionManager
 
         Future<GroupPromoteResult> future = asyncPromotionService.submit( ()->
         {
-            AtomicReference<PromotionException> error = new AtomicReference<>();
+            AtomicReference<Exception> error = new AtomicReference<>();
             ValidationResult validation = doValidationAndPromote( request, error, user, baseUrl );
 
             GroupPromoteResult ret;
-            PromotionException ex = error.get();
+            Exception ex = error.get();
             if ( ex != null )
             {
                 String msg = "Group promotion failed. Target: " + request.getTargetGroup() + ", Source: "
