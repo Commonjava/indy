@@ -142,7 +142,8 @@ public class PromotionManager
     public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
                              final DownloadManager downloadManager, final StoreDataManager storeManager,
                              Locker<StoreKey> byPathTargetLocks, Locker<StoreKey> byGroupTargetLocks,
-                             PromoteConfig config, NotFoundCache nfc, WeftExecutorService asyncPromotionService, WeftExecutorService transferService )
+                             PromoteConfig config, NotFoundCache nfc, WeftExecutorService asyncPromotionService,
+                             WeftExecutorService transferService )
     {
         this.validator = validator;
         this.contentManager = contentManager;

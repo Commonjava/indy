@@ -17,6 +17,7 @@ package org.commonjava.indy.promote.data;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -175,7 +176,7 @@ public class PromotionManagerTest
         PromoteConfig config = new PromoteConfig();
 
         WeftExecutorService svc =
-                new WeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                new PoolWeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
 
         manager =
                 new PromotionManager( validator, contentManager, downloadManager, storeManager, new Locker<StoreKey>(),

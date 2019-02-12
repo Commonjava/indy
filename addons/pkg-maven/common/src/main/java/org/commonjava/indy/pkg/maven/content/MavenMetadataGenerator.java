@@ -685,6 +685,7 @@ public class MavenMetadataGenerator
         }
     }
 
+    @Measure
     private Set<ArtifactStore> generateMissingMemberMetadata( Group group, Set<ArtifactStore> missingOrig,
                                                 Map<StoreKey, Metadata> memberMetas, String toMergePath )
                     throws IndyWorkflowException
@@ -825,6 +826,7 @@ public class MavenMetadataGenerator
         return missing;
     }
 
+    @Measure
     private Set<ArtifactStore> downloadMissingMemberMetadata( final Group group, final Set<ArtifactStore> missingOrig,
                                                 final Map<StoreKey, Metadata> memberMetas, final String toMergePath )
             throws IndyWorkflowException
