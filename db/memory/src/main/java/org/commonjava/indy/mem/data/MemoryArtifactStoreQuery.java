@@ -18,6 +18,7 @@ package org.commonjava.indy.mem.data;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -390,6 +391,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException
     {

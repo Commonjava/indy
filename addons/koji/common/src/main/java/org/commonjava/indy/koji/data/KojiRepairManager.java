@@ -20,11 +20,18 @@ import com.redhat.red.build.koji.KojiClientException;
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
+import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
+import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.SingleThreadedExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.koji.content.IndyKojiContentProvider;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.content.IndyKojiContentProvider;
 import org.commonjava.indy.koji.content.KojiPathPatternFormatter;
 import org.commonjava.indy.koji.model.KojiMultiRepairResult;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
@@ -35,8 +42,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
-import org.commonjava.atlas.maven.ident.ref.SimpleArtifactRef;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -84,6 +90,11 @@ public class KojiRepairManager
     @Inject
     private KojiUtils kojiUtils;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named="koji-repairs", threads=20, priority = 3 )
+    private WeftExecutorService repairExecutor;
+
     private ReentrantLock opLock = new ReentrantLock(); // operations are synchronized
 
     protected KojiRepairManager()
@@ -96,6 +107,7 @@ public class KojiRepairManager
         this.storeManager = storeManager;
         this.config = config;
         this.kojiCachedClient = new IndyKojiContentProvider( kojiClient, null );
+        this.repairExecutor = new SingleThreadedExecutorService( "koji-repairs" );
     }
 
     public KojiMultiRepairResult repairAllPathMasks( final String user )
@@ -109,7 +121,10 @@ public class KojiRepairManager
             {
                 List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
 
-                List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
+                DrainingExecutorCompletionService<KojiRepairResult> repairService =
+                        new DrainingExecutorCompletionService<>( repairExecutor );
+
+                kojiRemotes.forEach( r -> repairService.submit( ()->{
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
 
                     KojiRepairRequest request = new KojiRepairRequest( r.getKey(), false );
@@ -123,7 +138,22 @@ public class KojiRepairManager
                     }
 
                     return null;
-                } ).filter( Objects::nonNull ).collect( Collectors.toList() );
+                } ) );
+
+                List<KojiRepairResult> results = new ArrayList<>();
+                try
+                {
+                    repairService.drain( r -> {
+                        if ( r != null )
+                        {
+                            results.add( r );
+                        }
+                    } );
+                }
+                catch ( InterruptedException | ExecutionException e )
+                {
+                    logger.error( "Failed to repair path masks.", e );
+                }
 
                 result.setResults( results );
             }
@@ -470,7 +500,10 @@ public class KojiRepairManager
             {
                 List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
 
-                List<KojiRepairResult> results = kojiRemotes.parallelStream().map( r -> {
+                DrainingExecutorCompletionService<KojiRepairResult> repairService =
+                        new DrainingExecutorCompletionService<>( repairExecutor );
+
+                kojiRemotes.forEach( r -> repairService.submit( () -> {
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
 
                     KojiRepairRequest request = new KojiRepairRequest( r.getKey(), isDryRun );
@@ -484,7 +517,22 @@ public class KojiRepairManager
                     }
 
                     return null;
-                } ).filter( Objects::nonNull ).collect( Collectors.toList() );
+                } ) );
+
+                List<KojiRepairResult> results = new ArrayList<>();
+                try
+                {
+                    repairService.drain( r -> {
+                        if ( r != null )
+                        {
+                            results.add( r );
+                        }
+                    } );
+                }
+                catch ( InterruptedException | ExecutionException e )
+                {
+                    logger.error( "Failed to repair metadata timeout.", e );
+                }
 
                 result.setResults( results );
             }
