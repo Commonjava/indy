@@ -22,6 +22,7 @@ import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
@@ -79,8 +80,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -160,7 +159,7 @@ public class MavenMetadataGenerator
     @Inject
     @WeftManaged
     @ExecutorConfig( named="maven-metadata-generator", threads=8 )
-    private ExecutorService executorService;
+    private WeftExecutorService mavenMDGeneratorService;
 
     // don't need to inject since it's only used internally
     private final Locker<String> mergerLocks = new Locker<>();
@@ -174,23 +173,20 @@ public class MavenMetadataGenerator
     public MavenMetadataGenerator( final DirectContentAccess fileManager, final StoreDataManager storeManager,
                                    final XMLInfrastructure xml, final TypeMapper typeMapper,
                                    final MavenMetadataMerger merger, final GroupMergeHelper mergeHelper,
-                                   final NotFoundCache nfc, final MergedContentAction... mergedContentActions )
+                                   final NotFoundCache nfc, WeftExecutorService mavenMDGeneratorService,
+                                   final MergedContentAction... mergedContentActions )
     {
         super( fileManager, storeManager, mergeHelper, nfc, mergedContentActions );
         this.xml = xml;
         this.typeMapper = typeMapper;
         this.merger = merger;
+        this.mavenMDGeneratorService = mavenMDGeneratorService;
         start();
     }
 
     @PostConstruct
     public void start()
     {
-        if ( executorService == null )
-        {
-            executorService = Executors.newFixedThreadPool( 8 );
-        }
-
         metadataProviders = new ArrayList<>();
         if ( metadataProviderInstances != null )
         {
@@ -700,10 +696,12 @@ public class MavenMetadataGenerator
         logger.debug( "Generate missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
         Set<ArtifactStore> remaining = Collections.synchronizedSet( new HashSet<>( missing ) ); // for debug
 
+        checkMDGeneratorCapacity();
+
         /* @formatter:off */
         missing.forEach( (store)->{
             //logger.debug( "Submitting generation task for {} metadata: {}", store.getKey(), toMergePath );
-            executorService.execute( ()->{
+            mavenMDGeneratorService.execute( ()->{
                 try
                 {
                     logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath );
@@ -836,12 +834,14 @@ public class MavenMetadataGenerator
         Set<ArtifactStore> missing = Collections.synchronizedSet( new HashSet<>( missingOrig ) );
         CountDownLatch latch = new CountDownLatch( missing.size() );
 
+        checkMDGeneratorCapacity();
+
         logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing, missing.size() );
 
         /* @formatter:off */
         missing.forEach( (store)->{
             //logger.debug( "Submitting download task for {} metadata: {}", store.getKey(), toMergePath );
-            executorService.execute( ()->{
+            mavenMDGeneratorService.execute( ()->{
                 try
                 {
                     logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );
@@ -1199,6 +1199,15 @@ public class MavenMetadataGenerator
         }
 
         return true;
+    }
+
+    private void checkMDGeneratorCapacity()
+                    throws IndyWorkflowException
+    {
+        if ( !mavenMDGeneratorService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Maven Metadata Generator Threadpool Overload" );
+        }
     }
 
     // Parking this here, transplanted from ScheduleManager, because this is where it belongs. It might be

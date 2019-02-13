@@ -21,8 +21,12 @@ import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.apache.commons.io.IOUtils;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.content.DownloadManager;
@@ -63,8 +67,11 @@ public class DownloadManagerTest
     {
         data = new MemoryStoreDataManager( true );
 
+        WeftExecutorService rescanService =
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+
         downloader = new DefaultDownloadManager( data, fixture.getTransferManager(), new IndyLocationExpander( data ),
-                                                 null, new NoOpNotFoundCache() );
+                                                 null, new NoOpNotFoundCache(), rescanService );
     }
 
     @Test

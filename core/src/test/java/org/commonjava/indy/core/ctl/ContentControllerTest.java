@@ -17,6 +17,8 @@ package org.commonjava.indy.core.ctl;
 
 import groovy.text.GStringTemplateEngine;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
@@ -55,6 +57,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -92,11 +95,17 @@ public class ContentControllerTest
         fixture.initMissingComponents();
 
         final StoreDataManager storeManager = new MemoryStoreDataManager( true );
-        final DownloadManager fileManager =
-                new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander() );
 
+        WeftExecutorService rescanService =
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+
+        final DownloadManager fileManager =
+                new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander(), rescanService );
+
+        WeftExecutorService contentAccessService =
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
         final DirectContentAccess dca =
-                new DefaultDirectContentAccess( fileManager, Executors.newSingleThreadExecutor() );
+                new DefaultDirectContentAccess( fileManager, contentAccessService );
 
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, fileManager, new IndyObjectMapper( true ),
