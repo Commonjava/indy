@@ -16,6 +16,8 @@
 package org.commonjava.indy.pkg.maven.content;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.DownloadManager;
@@ -58,6 +60,7 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -91,17 +94,24 @@ public class MavenMetadataGeneratorTest
         config.setNotFoundCacheTimeoutSeconds( 1 );
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
 
-        final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransferManager(), locations, null, nfc );
+        WeftExecutorService rescanService =
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+
+        final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransferManager(), locations, null, nfc, rescanService );
 
         final XMLInfrastructure xml = new XMLInfrastructure();
         final TypeMapper types = new StandardTypeMapper();
         final MavenMetadataMerger merger = new MavenMetadataMerger();
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
-        DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads,
-                                                                                   Executors.newCachedThreadPool() );
+        WeftExecutorService contentAccessService =
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+        DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads, contentAccessService );
 
-        generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper, new MemoryNotFoundCache() );
+        WeftExecutorService mdService =
+                        new PoolWeftExecutorService( "test-md-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+
+        generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper, new MemoryNotFoundCache(), mdService );
 
         metadataReader =
             new MavenMetadataReader( xml, locations, fixture.getArtifactMetadataManager(), fixture.getXPathManager() );

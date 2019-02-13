@@ -27,6 +27,7 @@ import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
@@ -65,7 +66,6 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -103,18 +103,18 @@ public class KojiMavenMetadataProvider
     @WeftManaged
     @ExecutorConfig( threads=8, priority=8, named="koji-metadata" )
     @Inject
-    private ExecutorService executorService;
+    private WeftExecutorService kojiMDService;
 
     protected KojiMavenMetadataProvider(){}
 
     public KojiMavenMetadataProvider( CacheHandle<ProjectRef, Metadata> versionMetadata, KojiClient kojiClient,
-                                      KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig, ExecutorService executorService, DefaultCacheManager cacheManager )
+                                      KojiBuildAuthority buildAuthority, IndyKojiConfig kojiConfig, WeftExecutorService kojiMDService, DefaultCacheManager cacheManager )
     {
         this.versionMetadata = versionMetadata;
         this.kojiContentProvider = new IndyKojiContentProvider( kojiClient, new CacheProducer( null, cacheManager, null ) );
         this.buildAuthority = buildAuthority;
         this.kojiConfig = kojiConfig;
-        this.executorService = executorService;
+        this.kojiMDService = kojiMDService;
     }
 
     @Override
@@ -170,6 +170,8 @@ public class KojiMavenMetadataProvider
             logger.debug( "Could not render a valid Maven GA for path: '{}'", path );
             return null;
         }
+
+        checkKojiMDCapacity();
 
         ProjectRef ga = ref;
         return versionMetadataLocks.lockAnd( ga, kojiConfig.getLockTimeoutSeconds(), k -> {
@@ -235,7 +237,7 @@ public class KojiMavenMetadataProvider
 
             for ( KojiArchiveInfo archive : archives )
             {
-                executorService.submit( ()->{
+                kojiMDService.submit( ()->{
                     try
                     {
                         ArchiveScan scan = scanArchive( archive, session, versions, seenBuilds );
@@ -340,6 +342,15 @@ public class KojiMavenMetadataProvider
 
             return md;
     }
+
+    private void checkKojiMDCapacity() throws IndyWorkflowException
+    {
+        if ( !kojiMDService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Koji Metadata Threadpool Overload" );
+        }
+    }
+
 
     private ArchiveScan scanArchive( final KojiArchiveInfo archive, final KojiSessionInfo session,
                                        final Set<SingleVersion> versions, final Set<Integer> seenBuilds )

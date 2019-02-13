@@ -17,7 +17,9 @@ package org.commonjava.indy.promote.validate;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
@@ -47,7 +49,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -76,7 +77,7 @@ public class PromotionValidator
     @Inject
     @WeftManaged
     @ExecutorConfig( named = "promote-validation-rules-runner", threads = 8, priority = 5 )
-    private ExecutorService validationExecutor;
+    private WeftExecutorService validateService;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -85,12 +86,13 @@ public class PromotionValidator
     }
 
     public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools,
-                               StoreDataManager storeDataMgr, DownloadManager downloadManager )
+                               StoreDataManager storeDataMgr, DownloadManager downloadManager, WeftExecutorService validateService )
     {
         this.validationsManager = validationsManager;
         this.validationTools = validationTools;
         this.storeDataMgr = storeDataMgr;
         this.downloadManager = downloadManager;
+        this.validateService = validateService;
     }
 
     /**
@@ -102,10 +104,11 @@ public class PromotionValidator
      * @param baseUrl
      * @return
      * @throws PromotionValidationException
+     * @throws IndyWorkflowException
      */
     @Measure
     public ValidationRequest validate( PromoteRequest request, ValidationResult result, String baseUrl )
-            throws PromotionValidationException
+            throws PromotionValidationException, IndyWorkflowException
     {
         ValidationRuleSet set = validationsManager.getRuleSetMatching( request.getTargetKey() );
 
@@ -114,6 +117,9 @@ public class PromotionValidator
 
         if ( set != null )
         {
+            
+            checkValidateCapacity();
+            
             logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
 
             result.setRuleSet( set.getName() );
@@ -126,7 +132,7 @@ public class PromotionValidator
                     final AtomicReference<PromotionValidationException> exceptionHolder = new AtomicReference<>();
                     for ( String ruleRef : ruleNames )
                     {
-                        validationExecutor.execute( () -> {
+                        validateService.execute( () -> {
                             try
                             {
                                 executeValidationRule( ruleRef, req, result, request, latch );
@@ -209,6 +215,16 @@ public class PromotionValidator
 
         return req;
     }
+
+    private void checkValidateCapacity()
+                    throws IndyWorkflowException
+    {
+        if ( !validateService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Validate Threadpool Overload" );
+        }
+    }
+
 
     @Measure
     private void executeValidationRule( final String ruleRef, final ValidationRequest req,

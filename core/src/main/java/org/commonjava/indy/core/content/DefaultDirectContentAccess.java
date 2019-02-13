@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.content;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
@@ -33,11 +34,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -56,15 +55,15 @@ public class DefaultDirectContentAccess
     @Inject
     @WeftManaged
     @ExecutorConfig( named = "direct-content-access", threads = 8, priority = 8 )
-    private ExecutorService executorService;
+    private WeftExecutorService contentAccessService;
 
 
     public DefaultDirectContentAccess(){}
 
-    public DefaultDirectContentAccess( final DownloadManager downloadManager, ExecutorService executorService )
+    public DefaultDirectContentAccess( final DownloadManager downloadManager, WeftExecutorService executorService )
     {
         this.downloadManager = downloadManager;
-        this.executorService = executorService;
+        this.contentAccessService = executorService;
     }
 
 
@@ -73,13 +72,15 @@ public class DefaultDirectContentAccess
                                           final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        checkContentAccessCapacity();
+
         Logger logger = LoggerFactory.getLogger( getClass() );
         Map<ArtifactStore, Future<Transfer>> futures = new HashMap<>();
         for ( final ArtifactStore store : stores )
         {
             logger.trace( "Requesting retrieval of {} in {}", path, store );
 
-            Future<Transfer> future = executorService.submit( ()->{
+            Future<Transfer> future = contentAccessService.submit( ()->{
                 logger.trace( "Retrieving {} in {}", path, store );
                 Transfer txfr = retrieveRaw( store, path, eventMetadata );
                 logger.trace( "Transfer {} in {} retrieved", path, store );
@@ -194,7 +195,9 @@ public class DefaultDirectContentAccess
     public Map<String, List<StoreResource>> listRaw( ArtifactStore store,
                                                      List<String> parentPathList, EventMetadata eventMetadata ) throws IndyWorkflowException
     {
-        CompletionService<List<StoreResource>> executor = new ExecutorCompletionService<>( executorService );
+        checkContentAccessCapacity();
+
+        CompletionService<List<StoreResource>> executor = new ExecutorCompletionService<>( contentAccessService );
         Map<String, Future<List<StoreResource>>> futures = new HashMap<>();
         Logger logger = LoggerFactory.getLogger( getClass() );
         for ( final String path : parentPathList )
@@ -236,6 +239,15 @@ public class DefaultDirectContentAccess
         }
 
         return result;
+    }
+
+    private void checkContentAccessCapacity()
+                    throws IndyWorkflowException
+    {
+        if ( !contentAccessService.isHealthy() )
+        {
+            throw new IndyWorkflowException( 409, "Direct Content Access Threadpool Overload" );
+        }
     }
 
 }
