@@ -811,12 +811,10 @@ public class PromotionManager
             Set<PathTransferResult> results = byPathTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
                 logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", src, request.getSource(), tgt,
                              request.getTarget() );
-
                 ExecutorCompletionService<PathTransferResult> svc =
                         new ExecutorCompletionService<>( transferService );
 
                 contents.forEach( ( transfer ) -> svc.submit( newPathsPromoteTransfer( transfer, src, tgt, request ) ) );
-
                 Set<PathTransferResult> pathResults = new HashSet<>();
                 for(int i=0; i<contents.size(); i++)
                 {

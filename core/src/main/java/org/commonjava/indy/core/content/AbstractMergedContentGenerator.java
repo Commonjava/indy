@@ -133,14 +133,14 @@ public abstract class AbstractMergedContentGenerator
 
         }
 
-        groups.parallelStream().forEach( group -> Stream.of(paths).forEach( path->{
+        groups.forEach( group -> Stream.of(paths).forEach( path->{
             logger.trace( "Clearing: '{}' in: {}", path, group );
             clearMergedFile( group, path );
         } ));
 
         if ( mergedContentActions != null )
         {
-            StreamSupport.stream( mergedContentActions.spliterator(), true )
+            StreamSupport.stream( mergedContentActions.spliterator(), false )
                          .forEach( action -> Stream.of(paths).forEach( path->{
                              logger.trace( "Executing clearMergedPath on action: {} for group: {} and path: {}", action, groups, path );
                              action.clearMergedPath( store, groups, path );
