@@ -404,7 +404,13 @@ public class PromotionManager
                 logger.warn( msg );
                 ret = new GroupPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+
+            if ( ret.getRequest().getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
@@ -601,7 +607,12 @@ public class PromotionManager
                 ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
 
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            if ( ret.getRequest().getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
@@ -676,7 +687,13 @@ public class PromotionManager
                 logger.warn( msg );
                 ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+
+            if ( ret.getRequest().getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
