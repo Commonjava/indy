@@ -17,7 +17,6 @@ package org.commonjava.indy.content;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
 
 import java.util.Set;
 

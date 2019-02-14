@@ -71,7 +71,6 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -405,7 +404,13 @@ public class PromotionManager
                 logger.warn( msg );
                 ret = new GroupPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+
+            if ( ret.getRequest().getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
@@ -602,7 +607,12 @@ public class PromotionManager
                 ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
 
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            if ( ret.getRequest().getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
@@ -677,7 +687,13 @@ public class PromotionManager
                 logger.warn( msg );
                 ret = new PathsPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
             }
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+
+            if ( ret.getRequest().getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
