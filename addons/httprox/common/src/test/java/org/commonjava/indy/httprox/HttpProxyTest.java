@@ -175,14 +175,14 @@ public class HttpProxyTest
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( indyConfig );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         final DownloadManager downloadManager =
                 new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(),
                                             new MockInstance<>( new MockContentAdvisor() ), nfc, rescanService );
 
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         DirectContentAccess dca =
                 new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
