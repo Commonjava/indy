@@ -562,17 +562,27 @@ public class MavenMetadataGenerator
         }
 
         Metadata master = new Metadata();
+        master.setVersioning( new Versioning() );
 
         MetadataIncrementalResult incrementalResult = mergeMissing( group, master, members, toMergePath, "cached",
                                                          ( store, tmp ) -> retrieveCached( store, tmp ) );
+
+        contributingMembers.addAll(
+                incrementalResult.merged.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
 
         incrementalResult =
                 mergeMissing( group, incrementalResult.result, incrementalResult.missing, toMergePath,
                               "downloaded", ( store, tmp ) -> downloadMissing( store, tmp ) );
 
+        contributingMembers.addAll(
+                incrementalResult.merged.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+
         incrementalResult =
                 mergeMissing( group, incrementalResult.result, incrementalResult.missing, toMergePath,
                               "generated", ( store, tmp ) -> generateMissing( store, tmp ) );
+
+        contributingMembers.addAll(
+                incrementalResult.merged.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
 
         if ( metadataProviders != null )
         {
