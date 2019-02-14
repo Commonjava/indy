@@ -76,8 +76,10 @@ import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.cdi.util.weft.ExecutorConfig.BooleanLiteral.TRUE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
@@ -102,7 +104,7 @@ public class DefaultDownloadManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( priority = 10, threads = 2, named = "file-manager" )
+    @ExecutorConfig( priority = 10, threads = 2, named = "rescan-manager", loadSensitive = TRUE, maxLoadFactor = 2 )
     private WeftExecutorService rescanService;
 
     @Inject
@@ -1018,26 +1020,16 @@ public class DefaultDownloadManager
     public void rescan( final ArtifactStore store )
             throws IndyWorkflowException
     {
-        checkRescanCapacity();
         rescan( store, new EventMetadata() );
-    }
-
-    private void checkRescanCapacity()
-                    throws IndyWorkflowException
-    {
-        if ( !rescanService.isHealthy() )
-        {
-            throw new IndyWorkflowException( 409, "Rescan Threadpool Overload" );
-        }
     }
 
     @Override
     public void rescan( final ArtifactStore store, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        rescanService.execute(
+        detectOverloadVoid( () -> rescanService.execute(
                 new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress, fileEventManager,
-                               rescanEvent, eventMetadata ) );
+                               rescanEvent, eventMetadata ) ) );
     }
 
     private static final class Rescanner

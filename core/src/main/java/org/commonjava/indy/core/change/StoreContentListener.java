@@ -256,6 +256,8 @@ public class StoreContentListener
 
                 final Predicate<? super String> mergableFilter = removeMergableOnly ? mergablePathStrings() : ( p ) -> true;
 
+                // NOTE: We're NOT checking load for this executor, since this is an async process that is critical to
+                // data integrity.
                 affectedMembers.forEach( ( memberKey ) -> {
                     logger.debug( "Listing all {}paths in: {}", ( removeMergableOnly ? "mergeable " : "" ), memberKey );
                     listPathsAnd( memberKey, mergableFilter, p -> clearService.submit(

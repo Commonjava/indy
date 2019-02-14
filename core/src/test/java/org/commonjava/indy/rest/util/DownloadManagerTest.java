@@ -68,7 +68,7 @@ public class DownloadManagerTest
         data = new MemoryStoreDataManager( true );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false, null, null );
 
         downloader = new DefaultDownloadManager( data, fixture.getTransferManager(), new IndyLocationExpander( data ),
                                                  null, new NoOpNotFoundCache(), rescanService );

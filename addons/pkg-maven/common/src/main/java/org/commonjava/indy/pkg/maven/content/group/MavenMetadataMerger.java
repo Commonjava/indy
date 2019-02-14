@@ -63,8 +63,13 @@ public class MavenMetadataMerger
 
     public static final String METADATA_MD5_NAME = METADATA_NAME + ".md5";
 
-    public Metadata mergeFromMetadatas( final Metadata master, final Collection<Metadata> sources, final Group group, final String path )
+    public Metadata merge( final Metadata master, final Metadata src, final Group group, final String path )
     {
+        if ( src == null )
+        {
+            return master;
+        }
+
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Generating merged metadata in: {}:{}", group.getKey(), path );
 
@@ -73,70 +78,58 @@ public class MavenMetadataMerger
             master.setVersioning( new Versioning() );
         }
 
-        boolean merged = false;
-        for ( final Metadata src : sources )
+        logger.trace( "Adding in metadata content from: {}", src );
+
+        // there is a lot of junk in here to make up for Metadata's anemic merge() method.
+        if ( src.getGroupId() != null )
         {
-
-            logger.trace( "Adding in metadata content from: {}", src );
-
-            // there is a lot of junk in here to make up for Metadata's anemic merge() method.
-            if ( src.getGroupId() != null )
-            {
-                master.setGroupId( src.getGroupId() );
-            }
-
-            if ( src.getArtifactId() != null )
-            {
-                master.setArtifactId( src.getArtifactId() );
-            }
-
-            if ( src.getVersion() != null )
-            {
-                master.setVersion( src.getVersion() );
-            }
-
-            master.merge( src );
-
-            Versioning versioning = master.getVersioning();
-            Versioning mdVersioning = src.getVersioning();
-
-            // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
-            if ( versioning.getSnapshot() == null && mdVersioning != null )
-            {
-                logger.trace( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
-
-                versioning.setSnapshot( mdVersioning.getSnapshot() );
-
-                final List<SnapshotVersion> snapshotVersions = versioning.getSnapshotVersions();
-                boolean added = false;
-                for ( final SnapshotVersion snap : mdVersioning.getSnapshotVersions() )
-                {
-                    if ( !snapshotVersions.contains( snap ) )
-                    {
-                        snapshotVersions.add( snap );
-                        added = true;
-                    }
-                }
-
-                if ( added )
-                {
-                    snapshotVersions.sort( new SnapshotVersionComparator() );
-                }
-            }
-            else
-            {
-                logger.warn( "SKIPPING snapshot information from: {} in: {}:{})", src, group.getKey(), path );
-            }
-
-            merged = true;
+            master.setGroupId( src.getGroupId() );
         }
 
-        if ( merged )
+        if ( src.getArtifactId() != null )
         {
-            return master;
+            master.setArtifactId( src.getArtifactId() );
         }
 
-        return null;
+        if ( src.getVersion() != null )
+        {
+            master.setVersion( src.getVersion() );
+        }
+
+        master.merge( src );
+
+        Versioning versioning = master.getVersioning();
+        Versioning mdVersioning = src.getVersioning();
+
+        // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
+        if ( versioning.getSnapshot() == null && mdVersioning != null )
+        {
+            logger.trace( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
+
+            versioning.setSnapshot( mdVersioning.getSnapshot() );
+
+            final List<SnapshotVersion> snapshotVersions = versioning.getSnapshotVersions();
+            boolean added = false;
+            for ( final SnapshotVersion snap : mdVersioning.getSnapshotVersions() )
+            {
+                if ( !snapshotVersions.contains( snap ) )
+                {
+                    snapshotVersions.add( snap );
+                    added = true;
+                }
+            }
+
+            if ( added )
+            {
+                snapshotVersions.sort( new SnapshotVersionComparator() );
+            }
+        }
+        else
+        {
+            logger.warn( "SKIPPING snapshot information from: {} in: {}:{})", src, group.getKey(), path );
+        }
+
+        return master;
     }
 
     public void sortVersions( Metadata metadata )
