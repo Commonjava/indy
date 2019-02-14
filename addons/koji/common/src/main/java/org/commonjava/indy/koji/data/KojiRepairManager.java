@@ -27,6 +27,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.SingleThreadedExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -57,6 +58,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.koji.content.KojiContentManagerDecorator.CREATION_TRIGGER_GAV;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
@@ -92,7 +94,7 @@ public class KojiRepairManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named="koji-repairs", threads=20, priority = 3 )
+    @ExecutorConfig( named="koji-repairs", threads=50, priority = 3, loadSensitive = true, maxLoadFactor = 100)
     private WeftExecutorService repairExecutor;
 
     private ReentrantLock opLock = new ReentrantLock(); // operations are synchronized
@@ -111,7 +113,7 @@ public class KojiRepairManager
     }
 
     public KojiMultiRepairResult repairAllPathMasks( final String user )
-            throws KojiRepairException
+            throws KojiRepairException, IndyWorkflowException
     {
         KojiMultiRepairResult result = new KojiMultiRepairResult();
 
@@ -124,7 +126,7 @@ public class KojiRepairManager
                 DrainingExecutorCompletionService<KojiRepairResult> repairService =
                         new DrainingExecutorCompletionService<>( repairExecutor );
 
-                kojiRemotes.forEach( r -> repairService.submit( ()->{
+                detectOverloadVoid( () -> kojiRemotes.forEach( r -> repairService.submit( () -> {
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
 
                     KojiRepairRequest request = new KojiRepairRequest( r.getKey(), false );
@@ -138,7 +140,7 @@ public class KojiRepairManager
                     }
 
                     return null;
-                } ) );
+                } ) ) );
 
                 List<KojiRepairResult> results = new ArrayList<>();
                 try
@@ -490,7 +492,7 @@ public class KojiRepairManager
     }
 
     public KojiMultiRepairResult repairAllMetadataTimeout( final String user, boolean isDryRun )
-            throws KojiRepairException
+            throws KojiRepairException, IndyWorkflowException
     {
         KojiMultiRepairResult result = new KojiMultiRepairResult();
 
@@ -503,7 +505,7 @@ public class KojiRepairManager
                 DrainingExecutorCompletionService<KojiRepairResult> repairService =
                         new DrainingExecutorCompletionService<>( repairExecutor );
 
-                kojiRemotes.forEach( r -> repairService.submit( () -> {
+                detectOverloadVoid( () -> kojiRemotes.forEach( r -> repairService.submit( () -> {
                     logger.info( "Attempting to repair path masks in Koji remote: {}", r.getKey() );
 
                     KojiRepairRequest request = new KojiRepairRequest( r.getKey(), isDryRun );
@@ -517,7 +519,7 @@ public class KojiRepairManager
                     }
 
                     return null;
-                } ) );
+                } ) ) );
 
                 List<KojiRepairResult> results = new ArrayList<>();
                 try

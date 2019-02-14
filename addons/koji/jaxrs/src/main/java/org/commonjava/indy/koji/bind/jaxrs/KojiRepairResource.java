@@ -21,6 +21,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.koji.data.KojiRepairException;
@@ -145,7 +146,7 @@ public class KojiRepairResource
             String user = securityManager.getUser( securityContext, servletRequest );
             return repairManager.repairAllPathMasks( user );
         }
-        catch ( KojiRepairException e )
+        catch ( KojiRepairException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             throwError( e );
@@ -201,7 +202,7 @@ public class KojiRepairResource
         {
             return repairManager.repairAllMetadataTimeout( user, dryRun );
         }
-        catch ( KojiRepairException e )
+        catch ( KojiRepairException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
             throwError( e );

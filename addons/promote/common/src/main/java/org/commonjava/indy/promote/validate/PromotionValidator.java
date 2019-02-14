@@ -16,6 +16,7 @@
 package org.commonjava.indy.promote.validate;
 
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -45,12 +46,18 @@ import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static java.lang.String.format;
+import static org.apache.commons.lang.StringUtils.join;
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -76,7 +83,7 @@ public class PromotionValidator
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "promote-validation-rules-runner", threads = 8, priority = 5 )
+    @ExecutorConfig( named = "promote-validation-rules-runner", threads = 20, priority = 5, loadSensitive = true, maxLoadFactor = 400 )
     private WeftExecutorService validateService;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -118,8 +125,6 @@ public class PromotionValidator
         if ( set != null )
         {
             
-            checkValidateCapacity();
-            
             logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
 
             result.setRuleSet( set.getName() );
@@ -128,54 +133,49 @@ public class PromotionValidator
             {
                 try
                 {
-                    final CountDownLatch latch = new CountDownLatch( ruleNames.size() );
-                    final AtomicReference<PromotionValidationException> exceptionHolder = new AtomicReference<>();
-                    for ( String ruleRef : ruleNames )
-                    {
-                        validateService.execute( () -> {
-                            try
-                            {
-                                executeValidationRule( ruleRef, req, result, request, latch );
-                            }
-                            catch ( PromotionValidationException e )
-                            {
-                                exceptionHolder.set( (PromotionValidationException) e );
-                            }
-                        } );
-                    }
-                    int timeout = 0;
-                    final int LATCH_INTERVAL_SECONDS = 1;
-                    boolean executionSuccess = false;
-                    while ( timeout < config.getLockTimeoutSeconds() )
-                    {
-                        if ( latch.await( LATCH_INTERVAL_SECONDS, TimeUnit.SECONDS ) )
+                    DrainingExecutorCompletionService<PromotionValidationException> svc =
+                            new DrainingExecutorCompletionService<>( validateService );
+
+                    detectOverloadVoid(()->{
+                        for ( String ruleRef : ruleNames )
                         {
-                            executionSuccess = true;
-                            break;
+                            svc.submit( () -> {
+                                PromotionValidationException err = null;
+                                try
+                                {
+                                    executeValidationRule( ruleRef, req, result, request );
+                                }
+                                catch ( PromotionValidationException e )
+                                {
+                                    err = e;
+                                }
+
+                                return err;
+                            } );
                         }
-                        else
+                    });
+
+                    List<String> errors = new ArrayList<>();
+                    svc.drain( err->{
+                        if ( err != null )
                         {
-                            if ( exceptionHolder.get() != null )
-                            {
-                                throw exceptionHolder.get();
-                            }
-                            timeout += LATCH_INTERVAL_SECONDS;
+                            logger.error( "Promotion validation failure", err );
+                            errors.add( err.getMessage() );
                         }
-                    }
-                    if ( exceptionHolder.get() != null )
+                    } );
+
+                    if ( !errors.isEmpty() )
                     {
-                        throw exceptionHolder.get();
-                    }
-                    if ( !executionSuccess )
-                    {
-                        throw new PromotionValidationException( String.format(
-                                "Failed to do promotion validation: validation took more than %s seconds and is timeout",
-                                timeout ) );
+                        throw new PromotionValidationException( format( "Failed to do promotion validation: \n\n%s", join( errors, "\n" ) ) );
                     }
                 }
                 catch ( InterruptedException e )
                 {
                     throw new PromotionValidationException( "Failed to do promotion validation: validation execution has been interrupted ", e );
+                }
+                catch ( ExecutionException e )
+                {
+                    throw new PromotionValidationException( "Failed to execute promotion validations", e );
                 }
                 finally
                 {
@@ -183,7 +183,7 @@ public class PromotionValidator
                     {
                         try
                         {
-                            final String changeSum = String.format( "Removes the temp remote repo [%s] after promote operation.", store );
+                            final String changeSum = format( "Removes the temp remote repo [%s] after promote operation.", store );
                             storeDataMgr.deleteArtifactStore( store.getKey(),
                                                               new ChangeSummary( ChangeSummary.SYSTEM_USER,
                                                                                  changeSum ),
@@ -216,60 +216,42 @@ public class PromotionValidator
         return req;
     }
 
-    private void checkValidateCapacity()
-                    throws IndyWorkflowException
-    {
-        if ( !validateService.isHealthy() )
-        {
-            throw new IndyWorkflowException( 409, "Validate Threadpool Overload" );
-        }
-    }
-
-
     @Measure
     private void executeValidationRule( final String ruleRef, final ValidationRequest req,
-                                        final ValidationResult result, final PromoteRequest request,
-                                        final CountDownLatch latch )
+                                        final ValidationResult result, final PromoteRequest request )
             throws PromotionValidationException
     {
-        try
+        String ruleName =
+                new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
+
+        ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
+        if ( rule != null )
         {
-            String ruleName =
-                    new File( ruleRef ).getName(); // flatten in case some path fragment leaks in...
-
-            ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
-            if ( rule != null )
+            try
             {
-                try
+                logger.debug( "Running promotion validation rule: {}", rule.getName() );
+                String error = rule.getRule().validate( req );
+                if ( StringUtils.isNotEmpty( error ) )
                 {
-                    logger.debug( "Running promotion validation rule: {}", rule.getName() );
-                    String error = rule.getRule().validate( req );
-                    if ( StringUtils.isNotEmpty( error ) )
-                    {
-                        logger.debug( "{} failed", rule.getName() );
-                        result.addValidatorError( rule.getName(), error );
-                    }
-                    else
-                    {
-                        logger.debug( "{} succeeded", rule.getName() );
-                    }
+                    logger.debug( "{} failed", rule.getName() );
+                    result.addValidatorError( rule.getName(), error );
                 }
-                catch ( Exception e )
+                else
                 {
-                    if ( e instanceof PromotionValidationException )
-                    {
-                        throw (PromotionValidationException) e;
-                    }
-
-                    throw new PromotionValidationException(
-                            "Failed to run validation rule: {} for request: {}. Reason: {}", e,
-                            rule.getName(), request, e );
+                    logger.debug( "{} succeeded", rule.getName() );
                 }
             }
-        }
-        finally
-        {
-            latch.countDown();
+            catch ( Exception e )
+            {
+                if ( e instanceof PromotionValidationException )
+                {
+                    throw (PromotionValidationException) e;
+                }
+
+                throw new PromotionValidationException(
+                        "Failed to run validation rule: {} for request: {}. Reason: {}", e,
+                        rule.getName(), request, e );
+            }
         }
     }
 

@@ -25,6 +25,13 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
+import org.commonjava.atlas.maven.ident.ref.InvalidRefException;
+import org.commonjava.atlas.maven.ident.ref.ProjectRef;
+import org.commonjava.atlas.maven.ident.ref.SimpleProjectRef;
+import org.commonjava.atlas.maven.ident.util.VersionUtils;
+import org.commonjava.atlas.maven.ident.version.InvalidVersionSpecificationException;
+import org.commonjava.atlas.maven.ident.version.SingleVersion;
+import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
@@ -40,12 +47,6 @@ import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.atlas.maven.ident.ref.InvalidRefException;
-import org.commonjava.atlas.maven.ident.ref.ProjectRef;
-import org.commonjava.atlas.maven.ident.ref.SimpleProjectRef;
-import org.commonjava.atlas.maven.ident.util.VersionUtils;
-import org.commonjava.atlas.maven.ident.version.InvalidVersionSpecificationException;
-import org.commonjava.atlas.maven.ident.version.SingleVersion;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.util.concurrent.ConcurrentHashSet;
@@ -64,12 +65,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 
@@ -101,7 +105,7 @@ public class KojiMavenMetadataProvider
     private Locker<ProjectRef> versionMetadataLocks;
 
     @WeftManaged
-    @ExecutorConfig( threads=8, priority=8, named="koji-metadata" )
+    @ExecutorConfig( threads=8, priority=8, named="koji-metadata", maxLoadFactor = 100, loadSensitive = true)
     @Inject
     private WeftExecutorService kojiMDService;
 
@@ -171,9 +175,8 @@ public class KojiMavenMetadataProvider
             return null;
         }
 
-        checkKojiMDCapacity();
-
         ProjectRef ga = ref;
+        AtomicReference<IndyWorkflowException> wfError = new AtomicReference<>();
         return versionMetadataLocks.lockAnd( ga, kojiConfig.getLockTimeoutSeconds(), k -> {
             Metadata metadata = versionMetadata.get( ga );
             if ( metadata == null )
@@ -182,8 +185,15 @@ public class KojiMavenMetadataProvider
                 {
                     metadata = executeKojiMetadataLookup( ga, path );
                 }
+                catch ( IndyWorkflowException e )
+                {
+                    wfError.set( e );
+
+                    metadata = null;
+                }
                 catch ( KojiClientException e )
                 {
+                    // FIXME: Should this bubble up like IndyWorkflowException does in the case of overloaded threadpool?
                     Throwable cause = e.getCause();
                     logger.error(
                             String.format( "Failed to retrieve version metadata for: %s from Koji. Reason: %s", ga,
@@ -220,102 +230,41 @@ public class KojiMavenMetadataProvider
 
     @Measure
     private Metadata executeKojiMetadataLookup(ProjectRef ga, String path )
-            throws KojiClientException
+            throws KojiClientException, IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        KojiSessionInfo session = null;
+        // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
+        List<KojiArchiveInfo> archives = kojiContentProvider.listArchivesMatching( ga, null );
 
-            // short-term caches to help improve performance a bit by avoiding xml-rpc calls.
-            List<KojiArchiveInfo> archives = kojiContentProvider.listArchivesMatching( ga, session );
+        Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new ConcurrentHashMap<>();
+        Set<Integer> seenBuilds = new ConcurrentHashSet<>();
 
-            Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new ConcurrentHashMap<>();
-            Set<Integer> seenBuilds = new ConcurrentHashSet<>();
-            Set<SingleVersion> versions = new ConcurrentHashSet<>();
+        DrainingExecutorCompletionService<SingleVersion> svc = new DrainingExecutorCompletionService<>( kojiMDService );
 
-            CountDownLatch latch = new CountDownLatch( archives.size() );
-
+        detectOverloadVoid(()->{
             for ( KojiArchiveInfo archive : archives )
             {
-                kojiMDService.submit( ()->{
-                    try
-                    {
-                        ArchiveScan scan = scanArchive( archive, session, versions, seenBuilds );
-                        if ( scan.isDisqualified() )
-                        {
-                            return;
-                        }
-
-                        KojiBuildInfo build = scan.getBuild();
-                        SingleVersion singleVersion = scan.getSingleVersion();
-
-                        boolean buildAllowed = false;
-                        if ( !kojiConfig.isTagPatternsEnabled() )
-                        {
-                            buildAllowed = true;
-                        }
-                        else
-                        {
-                            logger.trace( "Checking for builds/tags of: {}", archive );
-
-                            List<KojiTagInfo> tags = kojiContentProvider.listTags( build.getId(), session );
-                            for ( KojiTagInfo tag : tags )
-                            {
-                                if ( kojiConfig.isTagAllowed( tag.getName() ) )
-                                {
-                                    logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
-                                    buildAllowed = true;
-                                    break;
-                                }
-                                else
-                                {
-                                    logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
-                                }
-                            }
-                        }
-
-                        logger.debug(
-                                "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
-
-                        if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ga, build,
-                                                                          session, seenBuildArchives ) )
-                        {
-                            try
-                            {
-                                logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
-                                versions.add( singleVersion );
-                            }
-                            catch ( InvalidVersionSpecificationException e )
-                            {
-                                logger.warn( String.format(
-                                        "Encountered invalid version: %s for archive: %s. Reason: %s",
-                                        archive.getVersion(), archive.getArchiveId(), e.getMessage() ), e );
-                            }
-                        }
-                    }
-                    catch ( KojiClientException e )
-                    {
-                        logger.error(
-                                "Received Koji error while scanning archives during metadata-generation of: %s. Reason: %s",
-                                e, ga, e.getMessage() );
-                    }
-                    finally
-                    {
-                        latch.countDown();
-                    }
-                } );
+                svc.submit( archiveScanner( path, ga, archive, seenBuilds, seenBuildArchives) );
             }
+        });
 
-            try
-            {
-                latch.await();
-            }
-            catch ( InterruptedException e )
-            {
-                logger.warn("Interrupted while waiting for threads scanning for Koji metadata related to: {}", ga );
-            }
+        Set<SingleVersion> versions = new ConcurrentHashSet<>();
+        try
+        {
+            svc.drain( v -> {
+                if ( v != null )
+                {
+                    versions.add( v );
+                }
+            } );
+        }
+        catch ( InterruptedException | ExecutionException e )
+        {
+            logger.warn( "Failed to scan for Koji metadata related to: " + ga, e );
+        }
 
-            if ( versions.isEmpty() )
+        if ( versions.isEmpty() )
             {
                 logger.debug( "No versions found in Koji builds for metadata: {}", path );
                 return null;
@@ -343,17 +292,80 @@ public class KojiMavenMetadataProvider
             return md;
     }
 
-    private void checkKojiMDCapacity() throws IndyWorkflowException
+    private Callable<SingleVersion> archiveScanner( final String path, final ProjectRef ga, final KojiArchiveInfo archive,
+                                                    final Set<Integer> seenBuilds,
+                                                    final Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
     {
-        if ( !kojiMDService.isHealthy() )
-        {
-            throw new IndyWorkflowException( 409, "Koji Metadata Threadpool Overload" );
-        }
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        return () -> {
+            try
+            {
+                ArchiveScan scan = scanArchive( archive, seenBuilds );
+                if ( scan.isDisqualified() )
+                {
+                    return null;
+                }
+
+                KojiBuildInfo build = scan.getBuild();
+                SingleVersion singleVersion = scan.getSingleVersion();
+
+                boolean buildAllowed = false;
+                if ( !kojiConfig.isTagPatternsEnabled() )
+                {
+                    buildAllowed = true;
+                }
+                else
+                {
+                    logger.trace( "Checking for builds/tags of: {}", archive );
+
+                    List<KojiTagInfo> tags = kojiContentProvider.listTags( build.getId(), null );
+                    for ( KojiTagInfo tag : tags )
+                    {
+                        if ( kojiConfig.isTagAllowed( tag.getName() ) )
+                        {
+                            logger.debug( "Koji tag: {} is allowed for proxying.", tag.getName() );
+                            buildAllowed = true;
+                            break;
+                        }
+                        else
+                        {
+                            logger.debug( "Koji tag: {} is not allowed for proxying.", tag.getName() );
+                        }
+                    }
+                }
+
+                logger.debug(
+                        "Checking if build passed tag whitelist check and doesn't collide with something in authority store (if configured)..." );
+
+                if ( buildAllowed && buildAuthority.isAuthorized( path, new EventMetadata(), ga, build, null,
+                                                                  seenBuildArchives ) )
+                {
+                    try
+                    {
+                        logger.debug( "Adding version: {} for: {}", archive.getVersion(), path );
+                        return singleVersion;
+                    }
+                    catch ( InvalidVersionSpecificationException e )
+                    {
+                        logger.warn( String.format( "Encountered invalid version: %s for archive: %s. Reason: %s",
+                                                    archive.getVersion(), archive.getArchiveId(), e.getMessage() ),
+                                     e );
+                    }
+                }
+            }
+            catch ( KojiClientException e )
+            {
+                logger.error(
+                        "Received Koji error while scanning archives during metadata-generation of: %s. Reason: %s",
+                        e, ga, e.getMessage() );
+            }
+
+            return null;
+        };
     }
 
-
-    private ArchiveScan scanArchive( final KojiArchiveInfo archive, final KojiSessionInfo session,
-                                       final Set<SingleVersion> versions, final Set<Integer> seenBuilds )
+    private ArchiveScan scanArchive( final KojiArchiveInfo archive, final Set<Integer> seenBuilds )
             throws KojiClientException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -387,13 +399,6 @@ public class KojiMavenMetadataProvider
             return scan;
         }
 
-        if ( versions.contains( singleVersion ) )
-        {
-            logger.debug( "Skipping already collected version: {}", archive.getVersion() );
-            scan.setDisqualified( true );
-            return scan;
-        }
-
         KojiBuildInfo build = null;
         if ( seenBuilds.contains( archive.getBuildId() ) )
         {
@@ -403,7 +408,7 @@ public class KojiMavenMetadataProvider
         }
         else
         {
-            build = kojiContentProvider.getBuildInfo( archive.getBuildId(), session );
+            build = kojiContentProvider.getBuildInfo( archive.getBuildId(), null );
             seenBuilds.add( archive.getBuildId() );
             scan.setBuild( build );
         }

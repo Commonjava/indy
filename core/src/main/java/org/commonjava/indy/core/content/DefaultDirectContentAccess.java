@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.content;
 
+import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -39,6 +40,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
@@ -54,7 +56,7 @@ public class DefaultDirectContentAccess
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "direct-content-access", threads = 8, priority = 8 )
+    @ExecutorConfig( named = "direct-content-access", threads = 8, priority = 8, maxLoadFactor = 100, loadSensitive = true )
     private WeftExecutorService contentAccessService;
 
 
@@ -72,23 +74,24 @@ public class DefaultDirectContentAccess
                                           final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        checkContentAccessCapacity();
-
         Logger logger = LoggerFactory.getLogger( getClass() );
         Map<ArtifactStore, Future<Transfer>> futures = new HashMap<>();
-        for ( final ArtifactStore store : stores )
-        {
-            logger.trace( "Requesting retrieval of {} in {}", path, store );
 
-            Future<Transfer> future = contentAccessService.submit( ()->{
-                logger.trace( "Retrieving {} in {}", path, store );
-                Transfer txfr = retrieveRaw( store, path, eventMetadata );
-                logger.trace( "Transfer {} in {} retrieved", path, store );
-                return txfr;
-            } );
+        detectOverloadVoid( () -> {
+            for ( final ArtifactStore store : stores )
+            {
+                logger.trace( "Requesting retrieval of {} in {}", path, store );
 
-            futures.put( store, future );
-        }
+                Future<Transfer> future = contentAccessService.submit( () -> {
+                    logger.trace( "Retrieving {} in {}", path, store );
+                    Transfer txfr = retrieveRaw( store, path, eventMetadata );
+                    logger.trace( "Transfer {} in {} retrieved", path, store );
+                    return txfr;
+                } );
+
+                futures.put( store, future );
+            }
+        } );
 
         final List<Transfer> txfrs = new ArrayList<>( stores.size() );
         for ( ArtifactStore store : stores )
@@ -191,63 +194,55 @@ public class DefaultDirectContentAccess
         return listRaw( store, parentPathList, new EventMetadata() );
     }
 
+    private static final class StoreListingResult
+    {
+        private String path;
+        private List<StoreResource> listing;
+
+        StoreListingResult( final String path, final List<StoreResource> listing )
+        {
+            this.path = path;
+            this.listing = listing;
+        }
+    }
+
     @Override
     public Map<String, List<StoreResource>> listRaw( ArtifactStore store,
                                                      List<String> parentPathList, EventMetadata eventMetadata ) throws IndyWorkflowException
     {
-        checkContentAccessCapacity();
+        DrainingExecutorCompletionService<StoreListingResult> svc =
+                new DrainingExecutorCompletionService<>( contentAccessService );
 
-        CompletionService<List<StoreResource>> executor = new ExecutorCompletionService<>( contentAccessService );
-        Map<String, Future<List<StoreResource>>> futures = new HashMap<>();
         Logger logger = LoggerFactory.getLogger( getClass() );
-        for ( final String path : parentPathList )
-        {
-            logger.trace( "Requesting listing of {} in {}", path, store );
-            Future<List<StoreResource>> future = executor.submit( ()->{
-                logger.trace( "Starting listing of {} in {}", path, store );
-                List<StoreResource> listRaw = listRaw( store, path, eventMetadata );
-                logger.trace( "Listing of {} in {} finished", path, store );
-                return listRaw;
-            });
-
-            futures.put( path, future );
-        }
+        detectOverloadVoid( ()->{
+            for ( final String path : parentPathList )
+            {
+                logger.trace( "Requesting listing of {} in {}", path, store );
+                svc.submit( ()->{
+                    logger.trace( "Starting listing of {} in {}", path, store );
+                    List<StoreResource> listRaw = listRaw( store, path, eventMetadata );
+                    logger.trace( "Listing of {} in {} finished", path, store );
+                    return new StoreListingResult( path, listRaw );
+                });
+            }
+        } );
 
         final Map<String, List<StoreResource>> result = new HashMap<>();
-        for ( String path : parentPathList )
+        try
         {
-            try
-            {
-                logger.trace( "Waiting for listing of {} in {}", path, store );
-                Future<List<StoreResource>> future = futures.get( path );
-                List<StoreResource> listing = future.get();
-                logger.trace( "Listing of {} in {} received", path, store );
-                if ( listing != null )
-                {
-                    result.put( path, listing );
-                }
-            }
-            catch ( InterruptedException ex )
-            {
-                throw new IndyWorkflowException( "Listing retrieval of %s in %s was interrupted", ex, path, store );
-            }
-            catch ( ExecutionException ex )
-            {
-                throw new IndyWorkflowException( "There was an error in listing retrieval of %s in %s: %s", ex, path,
-                                                 store, ex );
-            }
+            svc.drain( slr -> result.put( slr.path, slr.listing ) );
+        }
+        catch ( InterruptedException ex )
+        {
+            throw new IndyWorkflowException( "Listing retrieval in %s was interrupted", ex, store );
+        }
+        catch ( ExecutionException ex )
+        {
+            throw new IndyWorkflowException( "There was an error in listing retrieval for %s: %s", ex,
+                                             store, ex );
         }
 
         return result;
-    }
-
-    private void checkContentAccessCapacity()
-                    throws IndyWorkflowException
-    {
-        if ( !contentAccessService.isHealthy() )
-        {
-            throw new IndyWorkflowException( 409, "Direct Content Access Threadpool Overload" );
-        }
     }
 
 }
