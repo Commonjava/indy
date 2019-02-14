@@ -111,12 +111,12 @@ public class DefaultDownloadManagerTest
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander,null, nfc, rescanService);
 
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         DirectContentAccess dca =
                         new DefaultDirectContentAccess( downloadManager, contentAccessService );
 

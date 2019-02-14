@@ -336,13 +336,13 @@ public class KojiMavenMetadataProviderTest
                                          new IndyObjectMapper( true ), new GlobalHttpConfiguration(), null, null ) ).build();
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         DownloadManager downloadManager = new DefaultDownloadManager( storeDataManager, galley.getTransferManager(),
                                                                       new IndyLocationExpander( storeDataManager ), rescanService );
 
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         DirectContentAccess directContentAccess = new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
@@ -357,7 +357,7 @@ public class KojiMavenMetadataProviderTest
                                         contentDigester, directContentAccess, cacheManager );
 
         WeftExecutorService kojiMDService =
-                        new PoolWeftExecutorService( "test-koji-metadata-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-koji-metadata-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         provider = new KojiMavenMetadataProvider( this.cache, kojiClient, buildAuthority, kojiConfig, kojiMDService, cacheManager );
     }

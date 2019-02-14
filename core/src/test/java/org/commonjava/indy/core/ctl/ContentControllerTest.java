@@ -97,13 +97,13 @@ public class ContentControllerTest
         final StoreDataManager storeManager = new MemoryStoreDataManager( true );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false, null, null );
 
         final DownloadManager fileManager =
                 new DefaultDownloadManager( storeManager, fixture.getTransferManager(), fixture.getLocationExpander(), rescanService );
 
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         final DirectContentAccess dca =
                 new DefaultDirectContentAccess( fileManager, contentAccessService );
 

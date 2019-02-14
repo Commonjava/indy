@@ -146,14 +146,14 @@ public class PromotionManagerTest
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( indyConfig );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         downloadManager = new DefaultDownloadManager( storeManager, galleyParts.getTransferManager(),
                                                       new IndyLocationExpander( storeManager ),
                                                       new MockInstance<>( new MockContentAdvisor() ), nfc, rescanService );
 
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         DirectContentAccess dca =
                 new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
@@ -170,7 +170,7 @@ public class PromotionManagerTest
                                                                                       new IndyObjectMapper( true ) ) );
 
         WeftExecutorService validateService =
-                        new PoolWeftExecutorService( "test-validate-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-validate-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         MavenModelProcessor modelProcessor = new MavenModelProcessor();
         validator = new PromotionValidator( validationsManager,
                                             new PromotionValidationTools( contentManager, storeManager,
@@ -183,7 +183,7 @@ public class PromotionManagerTest
         PromoteConfig config = new PromoteConfig();
 
         WeftExecutorService svc =
-                new PoolWeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                new PoolWeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         manager =
                 new PromotionManager( validator, contentManager, downloadManager, storeManager, new Locker<StoreKey>(),

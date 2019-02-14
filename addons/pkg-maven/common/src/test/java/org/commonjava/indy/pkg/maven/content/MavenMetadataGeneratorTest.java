@@ -95,7 +95,7 @@ public class MavenMetadataGeneratorTest
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         final DownloadManager downloads = new DefaultDownloadManager( stores, fixture.getTransferManager(), locations, null, nfc, rescanService );
 
@@ -105,11 +105,11 @@ public class MavenMetadataGeneratorTest
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads, contentAccessService );
 
         WeftExecutorService mdService =
-                        new PoolWeftExecutorService( "test-md-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, null, null );
+                        new PoolWeftExecutorService( "test-md-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         generator = new MavenMetadataGenerator( contentAccess, stores, xml, types, merger, helper, new MemoryNotFoundCache(), mdService );
 
