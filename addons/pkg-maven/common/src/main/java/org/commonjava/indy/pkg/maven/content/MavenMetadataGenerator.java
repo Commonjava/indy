@@ -161,7 +161,7 @@ public class MavenMetadataGenerator
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named="maven-metadata-generator", threads=50, loadSensitive = true, maxLoadFactor = 10000 )
+    @ExecutorConfig( named="maven-metadata-generator", threads=50, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE, maxLoadFactor = 10000 )
     private WeftExecutorService mavenMDGeneratorService;
 
     // don't need to inject since it's only used internally

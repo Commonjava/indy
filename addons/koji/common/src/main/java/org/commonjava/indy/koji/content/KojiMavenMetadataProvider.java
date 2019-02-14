@@ -105,7 +105,7 @@ public class KojiMavenMetadataProvider
     private Locker<ProjectRef> versionMetadataLocks;
 
     @WeftManaged
-    @ExecutorConfig( threads=8, priority=8, named="koji-metadata", maxLoadFactor = 100, loadSensitive = true)
+    @ExecutorConfig( threads=8, priority=8, named="koji-metadata", maxLoadFactor = 100, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE)
     @Inject
     private WeftExecutorService kojiMDService;
 

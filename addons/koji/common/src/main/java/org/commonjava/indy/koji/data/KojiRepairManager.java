@@ -94,7 +94,7 @@ public class KojiRepairManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named="koji-repairs", threads=50, priority = 3, loadSensitive = true, maxLoadFactor = 100)
+    @ExecutorConfig( named="koji-repairs", threads=50, priority = 3, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE, maxLoadFactor = 100)
     private WeftExecutorService repairExecutor;
 
     private ReentrantLock opLock = new ReentrantLock(); // operations are synchronized

@@ -103,7 +103,7 @@ public class DefaultDownloadManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( priority = 10, threads = 2, named = "file-manager", loadSensitive = true, maxLoadFactor = 2 )
+    @ExecutorConfig( priority = 10, threads = 2, named = "file-manager", loadSensitive = ExecutorConfig.BooleanLiteral.TRUE, maxLoadFactor = 2 )
     private WeftExecutorService rescanService;
 
     @Inject

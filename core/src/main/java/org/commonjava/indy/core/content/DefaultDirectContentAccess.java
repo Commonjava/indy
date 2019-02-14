@@ -56,7 +56,7 @@ public class DefaultDirectContentAccess
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "direct-content-access", threads = 8, priority = 8, maxLoadFactor = 100, loadSensitive = true )
+    @ExecutorConfig( named = "direct-content-access", threads = 8, priority = 8, maxLoadFactor = 100, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE )
     private WeftExecutorService contentAccessService;
 
 

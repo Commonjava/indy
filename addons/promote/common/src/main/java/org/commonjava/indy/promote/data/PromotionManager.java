@@ -124,12 +124,12 @@ public class PromotionManager
 
     @WeftManaged
     @Inject
-    @ExecutorConfig( named = "promotion", threads = 8, priority = 8, loadSensitive = true )
+    @ExecutorConfig( named = "promotion", threads = 8, priority = 8, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE )
     private WeftExecutorService asyncPromotionService;
 
     @WeftManaged
     @Inject
-    @ExecutorConfig( named = "promotion-transfers", threads = 40, priority = 6, loadSensitive = true,
+    @ExecutorConfig( named = "promotion-transfers", threads = 40, priority = 6, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE,
                      maxLoadFactor = 100 )
     private WeftExecutorService transferService;
 

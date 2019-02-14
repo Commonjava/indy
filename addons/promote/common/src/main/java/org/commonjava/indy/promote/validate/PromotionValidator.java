@@ -83,7 +83,7 @@ public class PromotionValidator
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "promote-validation-rules-runner", threads = 20, priority = 5, loadSensitive = true, maxLoadFactor = 400 )
+    @ExecutorConfig( named = "promote-validation-rules-runner", threads = 20, priority = 5, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE, maxLoadFactor = 400 )
     private WeftExecutorService validateService;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );

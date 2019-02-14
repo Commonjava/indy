@@ -99,7 +99,7 @@ public class FoloAdminController
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( threads = 50, priority = 4, named = "folo-recalculator", maxLoadFactor = 100, loadSensitive = true )
+    @ExecutorConfig( threads = 50, priority = 4, named = "folo-recalculator", maxLoadFactor = 100, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE )
     private WeftExecutorService recalculationExecutor;
 
     protected FoloAdminController()
