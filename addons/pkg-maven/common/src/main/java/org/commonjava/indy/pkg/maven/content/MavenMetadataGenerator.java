@@ -677,6 +677,7 @@ public class MavenMetadataGenerator
 
     }
 
+    @Measure
     private Callable<MetadataResult> retrieveCached( final ArtifactStore store, final String toMergePath )
     {
         return ()->{
@@ -817,6 +818,7 @@ public class MavenMetadataGenerator
         return master;
     }
 
+    @Measure
     private Callable<MetadataResult> downloadMissing( ArtifactStore store, String toMergePath )
     {
         return () -> {
