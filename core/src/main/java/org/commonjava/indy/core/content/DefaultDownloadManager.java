@@ -76,6 +76,7 @@ import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.cdi.util.weft.ExecutorConfig.BooleanLiteral.TRUE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -103,7 +104,7 @@ public class DefaultDownloadManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( priority = 10, threads = 2, named = "file-manager", loadSensitive = ExecutorConfig.BooleanLiteral.TRUE, maxLoadFactor = 2 )
+    @ExecutorConfig( priority = 10, threads = 2, named = "rescan-manager", loadSensitive = TRUE, maxLoadFactor = 2 )
     private WeftExecutorService rescanService;
 
     @Inject

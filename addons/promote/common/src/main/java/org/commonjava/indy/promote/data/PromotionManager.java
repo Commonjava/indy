@@ -183,29 +183,23 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
+        Future<GroupPromoteResult> future = submitGroupPromoteRequest( request, user, baseUrl );
         if ( request.isAsync() )
         {
-            submitGroupPromoteRequest( request, user, baseUrl );
             return new GroupPromoteResult( request ).accepted();
         }
-
-        AtomicReference<Exception> error = new AtomicReference<>();
-        ValidationResult validation = doValidationAndPromote( request, error, user, baseUrl );
-
-        Exception e = error.get();
-        if ( e != null )
+        else
         {
-            if ( e instanceof PromotionException )
+            try
             {
-                throw (PromotionException) e;
+                return future.get();
             }
-            else if ( e instanceof IndyWorkflowException )
+            catch ( InterruptedException | ExecutionException e )
             {
-                throw (IndyWorkflowException) e;
+                logger.error( "Group prromotion failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
+                throw new PromotionException( "Execution of group promotion failed.", e );
             }
         }
-
-        return new GroupPromoteResult( request, validation );
     }
 
     private ValidationResult doValidationAndPromote( GroupPromoteRequest request, AtomicReference<Exception> error,
@@ -339,14 +333,23 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
+        Future<GroupPromoteResult> future = submitGroupPromoteRollback( result, target, user );
         if ( request.isAsync() )
         {
-            submitGroupPromoteRollback( result, target, user );
             return new GroupPromoteResult( request ).accepted();
         }
-
-        return doGroupPromoteRollback( result, target, user );
-
+        else
+        {
+            try
+            {
+                return future.get();
+            }
+            catch ( InterruptedException | ExecutionException e )
+            {
+                logger.error( "Group promotion rollback failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
+                throw new PromotionException( "Execution of group promotion rollback failed.", e );
+            }
+        }
     }
 
     private GroupPromoteResult doGroupPromoteRollback( GroupPromoteResult result, Group target, String user )
@@ -426,7 +429,13 @@ public class PromotionManager
             {
                 ret = new GroupPromoteResult( request, validation );
             }
-            return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+
+            if ( request.getCallback() != null )
+            {
+                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+            }
+
+            return ret;
         } ) );
     }
 
@@ -446,13 +455,23 @@ public class PromotionManager
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        Future<PathsPromoteResult> future = submitPathsPromoteRequest( request, baseUrl );
         if ( request.isAsync() )
         {
-            submitPathsPromoteRequest( request, baseUrl );
             return new PathsPromoteResult( request ).accepted();
         }
-
-        return doPathsPromotion( request, baseUrl );
+        else
+        {
+            try
+            {
+                return future.get();
+            }
+            catch ( InterruptedException | ExecutionException e )
+            {
+                logger.error( "Path prromotion failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
+                throw new PromotionException( "Execution of path promotion failed.", e );
+            }
+        }
     }
 
     private PathsPromoteResult doPathsPromotion( PathsPromoteRequest request, String baseUrl )
@@ -515,7 +534,13 @@ public class PromotionManager
                     logger.warn( msg );
                     ret = new PathsPromoteResult( request, msg );
                 }
-                return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+
+                if ( ret.getRequest().getCallback() != null )
+                {
+                    return callbackHelper.callback( ret.getRequest().getCallback(), ret );
+                }
+
+                return ret;
             } )
         );
     }
@@ -539,13 +564,23 @@ public class PromotionManager
     {
         final PathsPromoteRequest request = result.getRequest();
 
+        Future<PathsPromoteResult> future = submitResumePathsPromote( result, baseUrl );
         if ( request.isAsync() )
         {
-            submitResumePathsPromote( result, baseUrl );
             return new PathsPromoteResult( request ).accepted();
         }
-
-        return doResumePathsPromote( result, baseUrl );
+        else
+        {
+            try
+            {
+                return future.get();
+            }
+            catch ( InterruptedException | ExecutionException e )
+            {
+                logger.error( "Path promotion resume failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
+                throw new PromotionException( "Execution of path promotion resume failed.", e );
+            }
+        }
     }
 
     private Future<PathsPromoteResult> submitResumePathsPromote( PathsPromoteResult result, String baseUrl )
@@ -606,13 +641,23 @@ public class PromotionManager
     {
         final PathsPromoteRequest request = result.getRequest();
 
+        Future<PathsPromoteResult> future = submitRollbackPathsPromote( result );
         if ( request.isAsync() )
         {
-            submitRollbackPathsPromote( result );
             return new PathsPromoteResult( request ).accepted();
         }
-
-        return doRollbackPathsPromote( result );
+        else
+        {
+            try
+            {
+                return future.get();
+            }
+            catch ( InterruptedException | ExecutionException e )
+            {
+                logger.error( "Path promotion rollback failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
+                throw new PromotionException( "Execution of path promotion rollback failed.", e );
+            }
+        }
     }
 
     private Future<PathsPromoteResult> submitRollbackPathsPromote( PathsPromoteResult result )
