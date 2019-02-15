@@ -1594,7 +1594,7 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <mavenExecutorId>forked-path</mavenExecutorId>
             <useReleaseProfile>false</useReleaseProfile>
-            <arguments>-Prelease,docker -DskipTests=true -T16</arguments>
+            <arguments>-Prelease,docker -DskipTests=true</arguments>
           </configuration>
         </plugin>
         <plugin>
