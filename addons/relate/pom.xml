@@ -21,7 +21,7 @@
     <parent>
         <artifactId>indy-addons</artifactId>
         <groupId>org.commonjava.indy</groupId>
-        <version>1.7.1</version>
+        <version>1.7.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>indy-relate</artifactId>
