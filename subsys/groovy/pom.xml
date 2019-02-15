@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-subsystems</artifactId>
-    <version>1.6.3-SNAPSHOT</version>
+    <version>1.7.0</version>
   </parent>
   
   <artifactId>indy-subsys-groovy</artifactId>
