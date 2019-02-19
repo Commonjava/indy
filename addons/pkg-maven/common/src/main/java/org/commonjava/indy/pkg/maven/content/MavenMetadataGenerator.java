@@ -201,7 +201,7 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -562,25 +562,20 @@ public class MavenMetadataGenerator
         Metadata master = new Metadata();
         master.setVersioning( new Versioning() );
 
-        MetadataIncrementalResult incrementalResult = mergeMissing( group, master, members, toMergePath, "cached",
-                                                         ( store, tmp ) -> retrieveCached( store, tmp ) );
+        MetadataIncrementalResult incrementalResult =
+                new MetadataIncrementalResult( new HashSet<>( members ), Collections.emptySet(), master );
 
-        contributingMembers.addAll(
-                incrementalResult.merged.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+        incrementalResult = mergeMissing( group, incrementalResult, toMergePath, "cached", this::retrieveCached );
 
-        incrementalResult =
-                mergeMissing( group, incrementalResult.result, incrementalResult.missing, toMergePath,
-                              "downloaded", ( store, tmp ) -> downloadMissing( store, tmp ) );
+        contributingMembers.addAll( incrementalResult.merged );
 
-        contributingMembers.addAll(
-                incrementalResult.merged.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+        incrementalResult = mergeMissing( group, incrementalResult, toMergePath, "downloaded", this::downloadMissing );
 
-        incrementalResult =
-                mergeMissing( group, incrementalResult.result, incrementalResult.missing, toMergePath,
-                              "generated", ( store, tmp ) -> generateMissing( store, tmp ) );
+        contributingMembers.addAll( incrementalResult.merged );
 
-        contributingMembers.addAll(
-                incrementalResult.merged.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+        incrementalResult = mergeMissing( group, incrementalResult, toMergePath, "generated", this::generateMissing );
+
+        contributingMembers.addAll( incrementalResult.merged );
 
         if ( metadataProviders != null )
         {
@@ -718,10 +713,10 @@ public class MavenMetadataGenerator
     private static final class MetadataIncrementalResult
     {
         private final Set<ArtifactStore> missing;
-        private final Set<ArtifactStore> merged;
+        private final Set<StoreKey> merged;
         private final Metadata result;
 
-        public MetadataIncrementalResult( final Set<ArtifactStore> missing, final Set<ArtifactStore> merged,
+        public MetadataIncrementalResult( final Set<ArtifactStore> missing, final Set<StoreKey> merged,
                                           final Metadata result )
         {
             this.missing = missing;
@@ -730,12 +725,14 @@ public class MavenMetadataGenerator
         }
     }
 
-    @Measure
-    private MetadataIncrementalResult mergeMissing( final Group group, final Metadata master,
-                                                    final Collection<ArtifactStore> missing, final String toMergePath, String description,
+    private MetadataIncrementalResult mergeMissing( final Group group,
+                                                    final MetadataIncrementalResult incrementalResult,
+                                                    final String toMergePath, String description,
                                                     BiFunction<ArtifactStore, String, Callable<MetadataResult>> func )
             throws IndyWorkflowException
     {
+        Set<ArtifactStore> missing = incrementalResult.missing;
+        Metadata master = incrementalResult.result;
 
         // TODO: This should be the outer wrapper for download- or generate-specific behavior.
         logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing,
@@ -744,10 +741,10 @@ public class MavenMetadataGenerator
         DrainingExecutorCompletionService<MetadataResult> svc =
                 new DrainingExecutorCompletionService<>( mavenMDGeneratorService );
 
-        detectOverloadVoid( () -> missing.forEach( store -> svc.submit( func.apply(store, toMergePath)  ) ) );
+        detectOverloadVoid( () -> missing.forEach( store -> svc.submit( func.apply( store, toMergePath ) ) ) );
 
         Set<ArtifactStore> resultingMissing = new HashSet<>(); // return stores failed download
-        Set<ArtifactStore> included = new HashSet<>();
+        Set<StoreKey> included = new HashSet<>();
         try
         {
             svc.drain( mr -> {
@@ -759,7 +756,7 @@ public class MavenMetadataGenerator
                     }
                     else
                     {
-                        included.add( mr.store );
+                        included.add( mr.store.getKey() );
                         merger.merge( master, mr.metadata, group, toMergePath );
                         putToMetadataCache( mr.store.getKey(), toMergePath, new MetadataInfo( mr.metadata ) );
                     }
