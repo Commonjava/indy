@@ -1698,6 +1698,7 @@
               <exclude>**/*.log</exclude>
               <exclude>scratch/**</exclude>
               <exclude>**/.venv/*</exclude>
+              <exclude>**/venv/*</exclude>
               <exclude>**/README</exclude>
               <exclude>**/LICENSE*</exclude>
               <exclude>src/test/resources/**</exclude>
