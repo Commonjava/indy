@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<infinispan
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd"
-    xmlns="urn:infinispan:config:8.2">
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:infinispan:config:9.4 http://www.infinispan.org/schemas/infinispan-config-9.4.xsd
+                                urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
+            xmlns="urn:infinispan:config:9.4"
+            xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
 
-  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT">
-    <local-cache-configuration name="local-template">
-      <eviction size="10000000" type="COUNT"/>
+  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
+    <jmx duplicate-domains="true"/>
+    <local-cache-configuration name="local-template" statistics="true">
+      <!-- eviction is DEPRECATED, use memory element instead -->
+      <memory>
+        <!-- minimum size is 8M (must be larger than 8388624 to store configured address count of 1048576) -->
+        <off-heap size="20971520" eviction="MEMORY" address-count="1048576"/><!-- 20M -->
+      </memory>
     </local-cache-configuration>
 
     <local-cache name="local" configuration="local-template"/>
@@ -36,9 +42,9 @@
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
-      <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
     </local-cache>
 
     <local-cache name="indy-fastlocal-file-delete-cache">

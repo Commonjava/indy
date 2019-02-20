@@ -69,6 +69,16 @@ public class IspnCheckRegistrySet
 
     private static final String TOTAL_REMOVALS = "TotalRemovals";
 
+    private static final String OFF_HEAP_MEMORY_USED = "OffHeapMemoryUsed";
+
+    private static final String DATA_MEMORY_USED = "DataMemoryUsed";
+
+    private static final String AVG_READ_TIME = "AvgReadTime";
+
+    private static final String AVG_WRITE_TIME = "AvgWriteTime";
+
+    private static final String AVG_REMOVE_TIME = "AvgRemoveTime";
+
     private EmbeddedCacheManager cacheManager;
 
     private List<String> ispnGauges;
@@ -127,6 +137,31 @@ public class IspnCheckRegistrySet
                {
                    gauges.put( name( cache.getName(), TOTAL_REMOVALS ),
                                (Gauge) () -> noExceptions( ()-> advancedCache.getStats().getRemoveHits() ) );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( OFF_HEAP_MEMORY_USED ) )
+               {
+                   gauges.put( name( cache.getName(), OFF_HEAP_MEMORY_USED ),
+                               (Gauge) () -> advancedCache.getStats().getOffHeapMemoryUsed() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( DATA_MEMORY_USED ) )
+               {
+                   gauges.put( name( cache.getName(), DATA_MEMORY_USED ),
+                               (Gauge) () -> advancedCache.getStats().getDataMemoryUsed() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( AVG_READ_TIME ) )
+               {
+                   gauges.put( name( cache.getName(), AVG_READ_TIME ),
+                               (Gauge) () -> advancedCache.getStats().getAverageReadTime() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( AVG_WRITE_TIME ) )
+               {
+                   gauges.put( name( cache.getName(), AVG_WRITE_TIME ),
+                               (Gauge) () -> advancedCache.getStats().getAverageWriteTime() );
+               }
+               if ( ispnGauges == null || ispnGauges.contains( AVG_REMOVE_TIME ) )
+               {
+                   gauges.put( name( cache.getName(), AVG_REMOVE_TIME ),
+                               (Gauge) () -> advancedCache.getStats().getAverageRemoveTime() );
                }
 
                // The rest of these should show the RATES at which the cache is changing, or is being used.
