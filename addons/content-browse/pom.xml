@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>1.7.2-SNAPSHOT</version>
+    <version>1.7.2</version>
   </parent>
   <artifactId>indy-content-browse</artifactId>
   <name>Indy :: Add-Ons :: Directory Content Browse :: Parent</name>
