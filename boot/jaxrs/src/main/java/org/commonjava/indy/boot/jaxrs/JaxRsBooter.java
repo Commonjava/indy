@@ -234,7 +234,7 @@ public class JaxRsBooter
                                              .addDeployment( di );
         dm.deploy();
 
-        final UndertowConfig config = container.select( UndertowConfig.class ).get();
+        final RestConfig config = container.select( RestConfig.class ).get();
 
         status = new BootStatus();
         try
