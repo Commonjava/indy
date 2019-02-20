@@ -11,7 +11,7 @@ import java.io.InputStream;
 
 @SectionName( "rest")
 @ApplicationScoped
-public class UndertowConfig
+public class RestConfig
         implements IndyConfigInfo
 {
     private Integer ioThreads;
@@ -32,23 +32,23 @@ public class UndertowConfig
                      .getResourceAsStream( "default-rest.conf" );
     }
 
-    @ConfigName( "io.threads" )
     public Integer getIoThreads()
     {
         return ioThreads;
     }
 
+    @ConfigName( "io.threads" )
     public void setIoThreads( final Integer ioThreads )
     {
         this.ioThreads = ioThreads;
     }
 
-    @ConfigName( "worker.threads" )
     public Integer getWorkerThreads()
     {
         return workerThreads;
     }
 
+    @ConfigName( "worker.threads" )
     public void setWorkerThreads( final Integer workerThreads )
     {
         this.workerThreads = workerThreads;

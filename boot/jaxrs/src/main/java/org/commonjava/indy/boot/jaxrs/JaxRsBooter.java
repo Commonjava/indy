@@ -45,7 +45,6 @@ import org.xnio.Options;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletException;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationTargetException;
 
 @Service( BootInterface.class )
@@ -235,7 +234,7 @@ public class JaxRsBooter
                                              .addDeployment( di );
         dm.deploy();
 
-        final UndertowConfig config = container.select( UndertowConfig.class ).get();
+        final RestConfig config = container.select( RestConfig.class ).get();
 
         status = new BootStatus();
         try
