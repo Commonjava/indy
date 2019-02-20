@@ -28,6 +28,7 @@ if len(sys.argv) < 2:
 
 URL=sys.argv[1]
 THREAD_NAME_PATTERN = re.compile('^\S+')
+THREAD_GROUP_PATTERN = re.compile('\s+Group: \S+')
 
 headers = {
 	'Accept': '*'
@@ -38,6 +39,7 @@ if resp.status_code != 200:
 	print(f"Failed to get thread information from Indy: {resp}")
 
 thread_info = resp.text
+groups = {}
 names = {}
 total = 0
 for line in thread_info.splitlines():
@@ -49,8 +51,18 @@ for line in thread_info.splitlines():
 		names[name] = count+1
 		total+=1
 
+	if THREAD_GROUP_PATTERN.match(line):
+		name = line.rstrip().split()[1]
+		count = names.get(name) or 0
+		groups[name] = count+1
+
+print("Counts by thread group:\n------------------------------------------------")
+for k,v in sorted(groups.items(), key=operator.itemgetter(1)):
+	print(f"{k}: {v}")
+
+print("\nCounts by name-inferred groupings:\n------------------------------------------------")
 for k,v in sorted(names.items(), key=operator.itemgetter(1)):
 	print(f"{k}: {v}")
 
-print(f"Total: {total}")
+print(f"\nTotal threads: {total}")
 
