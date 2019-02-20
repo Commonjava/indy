@@ -40,6 +40,7 @@
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
+      <eviction size="10000000" type="COUNT" strategy="LRU"/>
     </local-cache>
 
     <local-cache name="indy-fastlocal-file-delete-cache">
