@@ -378,7 +378,7 @@ public class CacheProducer
             if ( definedCaches.isEmpty() || !definedCaches.contains( name ) )
             {
                 logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
-                cacheManager.defineConfiguration( name, manager.getConfiguration( name ) );
+                cacheManager.defineConfiguration( name, manager.getConfiguration( name, false ) );
             }
         }
     }
