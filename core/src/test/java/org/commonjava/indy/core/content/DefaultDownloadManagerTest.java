@@ -88,11 +88,14 @@ public class DefaultDownloadManagerTest
 
     @BeforeClass
     public static void setupClass()
+            throws IOException
     {
         cacheManager = new DefaultCacheManager(
-                        new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build() );
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "infinispan-test.xml" ) );
+
         contentMetadata = cacheManager.getCache( "content-metadata", true );
     }
+
 
     @Before
     public void setup()

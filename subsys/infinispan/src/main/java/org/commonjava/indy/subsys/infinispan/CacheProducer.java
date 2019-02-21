@@ -132,36 +132,43 @@ public class CacheProducer
         File confDir = indyConfiguration.getIndyConfDir();
         File ispnConf = new File( confDir, ISPN_XML );
 
-        InputStream resouceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream( ISPN_XML );
-
-        String resourceStr = interpolateStrFromStream( resouceStream, "CLASSPATH:" + ISPN_XML );
-
-        if ( ispnConf.exists() )
+        try(InputStream resouceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream( ISPN_XML ))
         {
-            try
+
+            String resourceStr = interpolateStrFromStream( resouceStream, "CLASSPATH:" + ISPN_XML );
+
+            if ( ispnConf.exists() )
             {
-                InputStream confStream = FileUtils.openInputStream( ispnConf );
-                String confStr = interpolateStrFromStream( confStream, ispnConf.getPath() );
-                mergedCachesFromConfig( confStr, "CUSTOMER" );
-                mergedCachesFromConfig( resourceStr, "CLASSPATH" );
+                try (InputStream confStream = FileUtils.openInputStream( ispnConf ))
+                {
+                    String confStr = interpolateStrFromStream( confStream, ispnConf.getPath() );
+                    mergedCachesFromConfig( confStr, "CUSTOMER" );
+                    mergedCachesFromConfig( resourceStr, "CLASSPATH" );
+                }
+                catch ( IOException e )
+                {
+                    throw new RuntimeException( "Cannot read infinispan configuration from file: " + ispnConf, e );
+                }
             }
-            catch ( IOException e )
+            else
             {
-                throw new RuntimeException( "Cannot read infinispan configuration from file: " + ispnConf, e );
+                try
+                {
+                    logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
+                    cacheManager = new DefaultCacheManager(
+                            new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
+                }
+                catch ( IOException e )
+                {
+                    throw new RuntimeException(
+                            "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
+                }
             }
         }
-        else
+        catch ( IOException e )
         {
-            try
-            {
-                logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
-                cacheManager = new DefaultCacheManager(
-                        new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
-            }
-            catch ( IOException e )
-            {
-                throw new RuntimeException( "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
-            }
+            throw new RuntimeException(
+                    "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
         }
     }
 
@@ -378,7 +385,7 @@ public class CacheProducer
             if ( definedCaches.isEmpty() || !definedCaches.contains( name ) )
             {
                 logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
-                cacheManager.defineConfiguration( name, manager.getConfiguration( name ) );
+                cacheManager.defineConfiguration( name, manager.getConfiguration( name, false ) );
             }
         }
     }

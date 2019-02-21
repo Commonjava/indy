@@ -47,8 +47,8 @@ import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.infinispan.commons.util.concurrent.ConcurrentHashSet;
 import org.infinispan.manager.DefaultCacheManager;
-import org.infinispan.util.concurrent.ConcurrentHashSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

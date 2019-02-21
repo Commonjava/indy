@@ -41,10 +41,10 @@ import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xnio.Options;
 
 import javax.enterprise.inject.spi.BeanManager;
 import javax.servlet.ServletException;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationTargetException;
 
 @Service( BootInterface.class )
@@ -234,6 +234,8 @@ public class JaxRsBooter
                                              .addDeployment( di );
         dm.deploy();
 
+        final RestConfig config = container.select( RestConfig.class ).get();
+
         status = new BootStatus();
         try
         {
@@ -250,10 +252,13 @@ public class JaxRsBooter
                     try
                     {
                         EncodingHandler eh = getGzipEncodeHandler( dm );
-                        undertow = Undertow.builder()
-                                           .setHandler( eh )
-                                           .addHttpListener( foundPort, bootOptions.getBind() )
-                                           .build();
+                        Undertow.Builder builder =
+                                Undertow.builder().setHandler( eh ).addHttpListener( foundPort, bootOptions.getBind() );
+
+                        builder.setWorkerOption( Options.WORKER_NAME, "REST" );
+                        config.configureBuilder( builder );
+
+                        undertow = builder.build();
 
                         undertow.start();
                         usingPort.set( foundPort );
