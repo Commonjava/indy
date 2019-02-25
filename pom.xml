@@ -66,7 +66,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
-    <galleyVersion>0.16.7</galleyVersion>
+    <galleyVersion>0.16.8-SNAPSHOT</galleyVersion>
     <bomVersion>24</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.14</partylineVersion>
