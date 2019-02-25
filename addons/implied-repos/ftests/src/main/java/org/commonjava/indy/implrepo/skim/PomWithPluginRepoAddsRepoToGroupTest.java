@@ -64,7 +64,8 @@ public class PomWithPluginRepoAddsRepoToGroupTest
     {
         final PomRef ref =
             loadPom( "one-plugin-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
-        
+
+        server.expect( "HEAD", server.formatUrl( REPO, "/" ), 200, (String) null  );
         server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 
         final StoreKey pubGroupKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group,
