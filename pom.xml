@@ -66,14 +66,14 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
-    <galleyVersion>0.16.9-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.16.9</galleyVersion>
     <bomVersion>24</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.14</partylineVersion>
     <kojijiVersion>2.7</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.9</jhttpcVersion>
-    <weftVersion>1.12-SNAPSHOT</weftVersion>
+    <weftVersion>1.12</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
