@@ -15,17 +15,25 @@
  */
 package org.commonjava.indy.tools.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.boot.IndyBootException;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -42,6 +50,8 @@ public class Main
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private SimpleCacheProducer producer;
+
+    private ObjectMapper objectMapper;
 
     public static void main( String[] args )
     {
@@ -118,101 +128,34 @@ public class Main
             }
 
             producer = new SimpleCacheProducer();
+            objectMapper = new IndyObjectMapper(true);
+            objectMapper.disable( SerializationFeature.INDENT_OUTPUT );
 
             CacheHandle<Object, Object> cache = producer.getCache( options.getCacheName() );
             if ( MigrationCommand.dump == options.getMigrationCommand() )
             {
-                AtomicReference<Throwable> error = new AtomicReference<>();
-                try (ObjectOutputStream out = new ObjectOutputStream( new GZIPOutputStream( new FileOutputStream( options.getDataFile() ) )))
+
+                if ( DataType.json == options.getDataType() )
                 {
-                    cache.executeCache( ( c ) -> {
-                        try
-                        {
-                            out.writeLong( c.size() );
-                        }
-                        catch ( IOException e )
-                        {
-                            logger.error( "Failed to write data file header.", e );
-                            error.set( e );
-                        }
-
-                        if ( error.get() == null )
-                        {
-                            c.forEach( ( k, v ) -> {
-                                if ( error.get() == null )
-                                {
-                                    try
-                                    {
-                                        out.writeObject( k );
-                                        out.writeObject( v );
-                                    }
-                                    catch ( IOException e )
-                                    {
-                                        logger.error( "Failed to write entry with key: " + k, e );
-                                        error.set( e );
-                                    }
-                                }
-                            });
-                        }
-
-                        return true;
-                    } );
+                    dumpJsonFile( cache,  options );
                 }
-                catch ( IOException e )
+                else
                 {
-                    error.set( e );
+                    dumpObjectFile( cache, options );
                 }
 
-                if ( error.get() != null )
-                {
-                    throw new IndyBootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
-                }
             }
             else
             {
-                AtomicReference<Throwable> error = new AtomicReference<>();
-                try (ObjectInputStream in = new ObjectInputStream(
-                        new GZIPInputStream( new FileInputStream( options.getDataFile() ) ) ))
+                if ( DataType.json == options.getDataType() )
                 {
-                    cache.executeCache( (c)->{
-                        try
-                        {
-                            long records = in.readLong();
-
-                            for(long i=0; i<records; i++)
-                            {
-                                try
-                                {
-                                    Object k = in.readObject();
-                                    Object v = in.readObject();
-
-                                    c.putAsync( k, v );
-                                }
-                                catch ( Exception e )
-                                {
-                                    logger.error( "Failed to read entry at index: " + i, e );
-                                    error.set( e );
-                                }
-                            }
-                            logger.info( "Load {} complete, size: {}", options.getCacheName(), records );
-                        }
-                        catch ( IOException e )
-                        {
-                            logger.error( "Failed to read data file header.", e );
-                            error.set( e );
-                        }
-                        return true;
-                    } );
+                    loadFromJsonFile( cache, options );
                 }
-                catch ( IOException e )
+                else
                 {
-                    error.set( e );
+                    loadFromObjectFile( cache, options );
                 }
 
-                if ( error.get() != null )
-                {
-                    throw new IndyBootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
-                }
             }
 
         }
@@ -237,5 +180,194 @@ public class Main
         }
 
         return 0;
+    }
+
+    private void loadFromJsonFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws IndyBootException
+    {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        try (BufferedReader in = new BufferedReader( new InputStreamReader(
+                        new FileInputStream( options.getDataFile() )  )))
+        {
+            cache.executeCache( (c)->{
+                try
+                {
+                    String key;
+                    int count = 0;
+                    while ( (key = in.readLine()) != null )
+                    {
+                        try
+                        {
+                            Object k = objectMapper.readValue( key, TrackingKey.class );
+                            Object v = objectMapper.readValue( in.readLine(), TrackedContent.class );
+
+                            c.putAsync( k, v );
+                            count++;
+                        }
+                        catch ( Exception e )
+                        {
+                            logger.error( "Failed to read entry key: {}", key, e );
+                            error.set( e );
+                        }
+                    }
+                    logger.info( "Load entries: {}", count );
+                }
+                catch ( Exception e )
+                {
+                    logger.error( "Failed to read data file header.", e );
+                    error.set( e );
+                }
+                return true;
+            } );
+        }
+        catch ( IOException e )
+        {
+            error.set( e );
+        }
+
+        if ( error.get() != null )
+        {
+            throw new IndyBootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
+        }
+    }
+
+    private void loadFromObjectFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws IndyBootException
+    {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        try (ObjectInputStream in = new ObjectInputStream(
+                        new GZIPInputStream( new FileInputStream( options.getDataFile() ) ) ))
+        {
+            cache.executeCache( (c)->{
+                try
+                {
+                    long records = in.readLong();
+
+                    for(long i=0; i<records; i++)
+                    {
+                        try
+                        {
+                            Object k = in.readObject();
+                            Object v = in.readObject();
+
+                            c.putAsync( k, v );
+                        }
+                        catch ( Exception e )
+                        {
+                            logger.error( "Failed to read entry at index: " + i, e );
+                            error.set( e );
+                        }
+                    }
+                    logger.info( "Load {} complete, size: {}", options.getCacheName(), records );
+                }
+                catch ( IOException e )
+                {
+                    logger.error( "Failed to read data file header.", e );
+                    error.set( e );
+                }
+                return true;
+            } );
+        }
+        catch ( IOException e )
+        {
+            error.set( e );
+        }
+
+        if ( error.get() != null )
+        {
+            throw new IndyBootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
+        }
+    }
+
+    private void dumpObjectFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws IndyBootException
+    {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        try (ObjectOutputStream out = new ObjectOutputStream( new GZIPOutputStream( new FileOutputStream( options.getDataFile() ) )))
+        {
+            cache.executeCache( ( c ) -> {
+                try
+                {
+                    out.writeLong( c.size() );
+                }
+                catch ( IOException e )
+                {
+                    logger.error( "Failed to write data file header.", e );
+                    error.set( e );
+                }
+
+                if ( error.get() == null )
+                {
+                    c.forEach( ( k, v ) -> {
+                        if ( error.get() == null )
+                        {
+                            try
+                            {
+                                out.writeObject( k );
+                                out.writeObject( v );
+                            }
+                            catch ( IOException e )
+                            {
+                                logger.error( "Failed to write entry with key: " + k, e );
+                                error.set( e );
+                            }
+                        }
+                    });
+                }
+
+                return true;
+            } );
+        }
+        catch ( IOException e )
+        {
+            error.set( e );
+        }
+
+        if ( error.get() != null )
+        {
+            throw new IndyBootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
+        }
+    }
+
+    private void dumpJsonFile( CacheHandle<Object, Object> cache,  MigrationOptions options ) throws IndyBootException
+    {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        try (BufferedOutputStream out =  new BufferedOutputStream( new FileOutputStream( options.getDataFile() )   ))
+        {
+            String lineSeparator = System.getProperty("line.separator");
+
+            cache.executeCache( ( c ) -> {
+
+                if ( error.get() == null )
+                {
+                    c.forEach( ( k, v ) -> {
+                        if ( error.get() == null )
+                        {
+                            try
+                            {
+                                out.write( objectMapper.writeValueAsBytes( k ) );
+                                out.write( lineSeparator.getBytes() );
+                                out.write( objectMapper.writeValueAsBytes( v ) );
+                                out.write( lineSeparator.getBytes() );
+                                out.flush();
+                            }
+                            catch ( IOException e )
+                            {
+                                logger.error( "Failed to write entry with key: " + k, e );
+                                error.set( e );
+                            }
+                        }
+                    });
+                }
+
+                return true;
+            } );
+        }
+        catch ( IOException e )
+        {
+            error.set( e );
+        }
+
+        if ( error.get() != null )
+        {
+            throw new IndyBootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
+        }
     }
 }
