@@ -32,6 +32,9 @@ public class MigrationOptions
     @Option( name = "-i", aliases = { "--infinispan-xml" }, usage = "Infinispan configuration XML to use during migration" )
     private File infinispanXml;
 
+    @Option( name = "-t", aliases = { "--data-type" }, usage = "Data type ('json' or 'object')" )
+    private DataType dataType;
+
     @Argument( index = 0, metaVar = "action", required = false, usage = "Migration command to execute ('dump' or 'load')")
     private MigrationCommand migrationCommand;
 
@@ -90,6 +93,10 @@ public class MigrationOptions
     {
         this.dataFile = dataFile;
     }
+
+    public DataType getDataType() { return dataType; }
+
+    public void setDataType( final DataType dataType ) { this.dataType = dataType; }
 
     public boolean parseArgs( final String[] args )
             throws IndyBootException
