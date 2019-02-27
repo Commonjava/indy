@@ -19,12 +19,9 @@
 
     <local-cache name="local" configuration="local-template"/>
 
-    <local-cache name="koji-maven-version-metadata" configuration="local-template">
-      <eviction strategy="LRU" size="200000" type="COUNT"/>
-    </local-cache>
+    <local-cache name="koji-maven-version-metadata" configuration="local-template" />
 
     <local-cache name="folo-in-progress" configuration="local-template">
-      <eviction size="200000" type="COUNT" strategy="LRU"/>
       <indexing index="LOCAL">
         <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
         <property name="default.directory_provider">ram</property>
@@ -33,26 +30,27 @@
     </local-cache>
 
     <local-cache name="folo-sealed" configuration="local-template">
-      <eviction size="1000" type="COUNT" strategy="LRU"/>
       <persistence passivation="true">
         <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/folo"/>
       </persistence>
+      <memory>
+        <object size="1000" strategy="LRU" />
+      </memory>
     </local-cache>
 
-    <local-cache name="content-index" configuration="local-template">
-      <eviction strategy="LRU" size="200000" type="COUNT"/>
-    </local-cache>
+    <local-cache name="content-index" configuration="local-template" />
 
     <local-cache name="content-metadata" configuration="local-template"/>
 
     <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
-      <eviction size="10000000" type="COUNT" strategy="LRU"/>
+      <memory>
+        <object size="10000000" strategy="LRU" />
+      </memory>
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
-      <eviction size="200000" type="COUNT" strategy="LRU"/>
     </local-cache>
 
     <!--
@@ -60,7 +58,6 @@
         it will make all cache entries expired after 1 day, and trigger the purge of the expired cache every 30 mins
     -->
     <local-cache name="indy-fastlocal-file-delete-cache" configuration="local-template">
-      <eviction size="200000" strategy="LRU"/>
       <expiration lifespan="86400000" max-idle="86400000" interval="1800000"/>
     </local-cache>
 
@@ -72,21 +69,25 @@
     </local-cache>
 
     <local-cache name="nfc" configuration="local-template">
-      <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <!--
         Expires in 72 hours and run expiration every 15 minutes.
       -->
       <expiration lifespan="259200000" max-idle="259200000" interval="900000" />
+      <memory>
+        <object size="10000000" strategy="LRU" />
+      </memory>
       <indexing index="LOCAL">
         <property name="default.directory_provider">ram</property>
       </indexing>
     </local-cache>
 
     <local-cache name="prefetch-cache">
-      <eviction size="20000" type="COUNT" strategy="LRU"/>
       <persistence passivation="true">
         <file-store shared="false" preload="true" fetch-state="false" path="${indy.data}/prefetch"/>
       </persistence>
+      <memory>
+        <object size="20000" strategy="LRU" />
+      </memory>
     </local-cache>
 
     <local-cache name="partyline-GLM-locks">
