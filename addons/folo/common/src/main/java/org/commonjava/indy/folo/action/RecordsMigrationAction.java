@@ -76,12 +76,6 @@ public class RecordsMigrationAction
                 }
             }
 
-            // clear cache
-            sealedRecordCache.execute( ( cache ) -> {
-                cache.clear();
-                return null;
-            } );
-
             // import
             try (InputStream stream = new FileInputStream( file ))
             {
@@ -103,6 +97,10 @@ public class RecordsMigrationAction
             {
                 throw new IndyLifecycleException( "Rename {} to {} failed", file, toFile, e );
             }
+        }
+        else
+        {
+            logger.info( "Folo migration zip file not exist, file: {}", file.getAbsolutePath() );
         }
         return true;
     }
