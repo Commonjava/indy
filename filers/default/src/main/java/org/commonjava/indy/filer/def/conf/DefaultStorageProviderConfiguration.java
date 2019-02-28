@@ -64,6 +64,7 @@ public class DefaultStorageProviderConfiguration
         return storageBasedir == null ? DEFAULT_BASEDIR : storageBasedir;
     }
 
+    @Deprecated
     public File getNFSStorageRootDirectory()
     {
 //        return nfsStoreBasedir == null ? DEFAULT_NFS_BASEDIR : nfsStoreBasedir;
@@ -71,6 +72,7 @@ public class DefaultStorageProviderConfiguration
     }
 
     @ConfigName( "storage.dir" )
+    @Deprecated
     public void setStorageRootDirectory( final File storageBasedir )
     {
         this.storageBasedir = storageBasedir;

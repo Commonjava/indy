@@ -63,6 +63,7 @@ public class EnabledGroupAddingImpliedTest
         logger.debug( "Start testing!" );
         final PomRef ref = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
 
+        server.expect( "HEAD", server.formatUrl( REPO, "/" ), 200, (String) null  );
         server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 
         final StoreKey testRepoKey =

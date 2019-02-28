@@ -36,7 +36,7 @@ public class HeapHealthCheck
 
     private static final String CURRENT_LOAD = "current-load-pct";
 
-    private static final float HEALTHY_LOAD_MAX = 0.9f;
+    private static final float HEALTHY_LOAD_MAX = 90f;
 
     @Override
     protected Result check()

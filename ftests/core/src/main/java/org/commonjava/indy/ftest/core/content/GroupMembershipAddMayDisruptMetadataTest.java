@@ -100,6 +100,8 @@ public class GroupMembershipAddMayDisruptMetadataTest
         Callable<String> groupAddTask = new GroupAddCallable( remoteRepositoryC.getKey() );
         Future<String> user2 = fixedPool.submit( groupAddTask );
 
+        Thread.sleep( 2000 );
+
         String metadata = user1.get();
         String retCode = user2.get();
 

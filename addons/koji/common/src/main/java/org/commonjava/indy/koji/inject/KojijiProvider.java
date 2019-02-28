@@ -141,6 +141,6 @@ public class KojijiProvider
     @Override
     public int getShutdownPriority()
     {
-        return 1;
+        return 100;
     }
 }

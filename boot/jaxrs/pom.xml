@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy.boot</groupId>
     <artifactId>indy-booters</artifactId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.7.4-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.indy.boot</groupId>
@@ -99,4 +99,26 @@
     </dependency>
   </dependencies>
   
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>confset</id>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <phase>package</phase>
+            <configuration>
+              <descriptorRefs>
+                <descriptorRef>confset</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 </project>

@@ -16,7 +16,9 @@
 package org.commonjava.indy.filer.def;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.cdi.util.weft.WeftScheduledExecutor;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
@@ -60,6 +62,7 @@ import javax.inject.Inject;
 import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
@@ -93,10 +96,11 @@ public class DefaultGalleyStorageProvider
     @Inject
     private SpecialPathManager specialPathManager;
 
-    @ExecutorConfig( named = "indy-fast-local-executor", threads = 5, priority = 2 )
-    @WeftManaged
+    @ExecutorConfig( named = "galley-delete-executor", threads = 5, priority = 2 )
+//    @WeftManaged
+    @WeftScheduledExecutor
     @Inject
-    private ExecutorService fastLocalExecutors;
+    private ScheduledExecutorService deleteExecutor;
 
     @Inject
     private TransferMetadataConsumer contentMetadataConsumer;
@@ -217,62 +221,7 @@ public class DefaultGalleyStorageProvider
 
         final File storeRoot = config.getStorageRootDirectory();
 
-        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot );
-
-        final File nfsBasedir = config.getNFSStorageRootDirectory();
-        if ( nfsBasedir != null )
-        {
-            if ( !nfsBasedir.exists() )
-            {
-                nfsBasedir.mkdirs();
-            }
-
-            // nfs root can not be created due to some security reason(like permission), will bypass FastLocal provider and use PartyLine
-            if ( nfsBasedir.exists() )
-            {
-
-                final FastLocalCacheProviderFactory fastLocalFac;
-                final CacheInstanceAdapter<String, String> nfsOwnerCacheAdapter =
-                        new CacheInstanceAdapter<>( nfsOwnerCache );
-                if ( fastLocalFileRemoveCache == null )
-                {
-                    fastLocalFac = new FastLocalCacheProviderFactory( storeRoot, nfsBasedir, nfsOwnerCacheAdapter,
-                                                                      fastLocalExecutors );
-                }
-                else
-                {
-                    final CacheInstanceAdapter<String, ConcreteResource> fastLocalFileRemoveCacheAdapter =
-                            new CacheInstanceAdapter<>( fastLocalFileRemoveCache );
-                    fastLocalFac = new FastLocalCacheProviderFactory( storeRoot, nfsBasedir, nfsOwnerCacheAdapter,
-                                                                      fastLocalFileRemoveCacheAdapter,
-                                                                      fastLocalExecutors );
-                }
-
-                cacheProviderFactory = new RoutingCacheProviderFactory( ( resource ) ->
-                                                                        {
-                                                                            if ( resource != null )
-                                                                            {
-                                                                                final Location loc =
-                                                                                        resource.getLocation();
-
-                                                                                // looking for KeyedLocation and StoreType.hosted should be faster than regex on the URI.
-                                                                                return (
-                                                                                        ( loc instanceof KeyedLocation )
-                                                                                                && hosted
-                                                                                                == ( (KeyedLocation) loc )
-                                                                                                .getKey()
-                                                                                                .getType() );
-                                                                            }
-                                                                            return false;
-                                                                        }, fastLocalFac, cacheProviderFactory );
-            }
-            else
-            {
-                logger.warn(
-                        "[Indy] nfs base dir {} can not be created correctly due to some unknown reasons, will use partyline cache provider as default",
-                        nfsBasedir );
-            }
-        }
+        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, deleteExecutor );
 
         // TODO: Tie this into a config file!
         transportManagerConfig = new TransportManagerConfig();

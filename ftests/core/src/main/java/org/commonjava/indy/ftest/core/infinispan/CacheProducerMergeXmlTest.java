@@ -64,13 +64,12 @@ public class CacheProducerMergeXmlTest
     public void testMerge()
             throws Exception
     {
-        assertThat( manager.getCacheConfiguration( "local" ).eviction().size(), equalTo( 10000000L ) );
-        assertThat( manager.getCacheConfiguration( "koji-maven-version-metadata" ).eviction().size(),
-                    equalTo( 10000000L ) );
-        assertThat( manager.getCacheConfiguration( "folo-in-progress" ).eviction().size(), equalTo( 10000000L ) );
+        assertThat( manager.getCacheConfiguration( "local" ).memory().addressCount(), equalTo( 1048576 ) );
+        assertThat( manager.getCacheConfiguration( "koji-maven-version-metadata" ).memory().addressCount(), equalTo( 1048576 ) );
+        assertThat( manager.getCacheConfiguration( "folo-in-progress" ).memory().addressCount(), equalTo( 1048576 ) );
         assertThat( manager.getCacheConfiguration( "folo-sealed" ).persistence().passivation(), equalTo( false ) );
-        assertThat( manager.getCacheConfiguration( "content-index" ).eviction().size(), equalTo( 10000000L ) );
-        assertThat( manager.getCacheConfiguration( "indy-nfs-owner-cache" ).eviction().size(), equalTo( 10000000L ) );
+        assertThat( manager.getCacheConfiguration( "content-index" ).memory().addressCount(), equalTo( 1048576 ) );
+        assertThat( manager.getCacheConfiguration( "indy-nfs-owner-cache" ).memory().addressCount(), equalTo( 1048576 ) );
         assertThat( manager.getCacheConfiguration( "nfc" ), notNullValue() );
         assertThat( manager.getCacheConfiguration( "schedule-expire-cache" ), notNullValue() );
         assertThat( manager.getCacheConfiguration( "maven-version-metadata-cache" ), notNullValue() );
