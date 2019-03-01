@@ -34,7 +34,7 @@
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.koji.inject.KojiProjectRefStringKey2StringMapper">
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost:5432/test" username="test" password="test" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
 
           <jdbc:string-keyed-table prefix="indy_cache" fetch-size="10" batch-size="10" create-on-start="true" drop-on-exit="false">
             <jdbc:id-column name="id_column" type="TEXT" />
@@ -52,7 +52,7 @@
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
 
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost:5432/test" username="test" password="test" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
 
           <jdbc:string-keyed-table prefix="indy_cache" fetch-size="50" batch-size="50" create-on-start="true" drop-on-exit="false">
             <jdbc:id-column name="id_column" type="TEXT" />
@@ -73,7 +73,7 @@
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper">
 
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost:5432/test" username="test" password="test" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
 
           <jdbc:string-keyed-table prefix="indy_cache" fetch-size="10" batch-size="10" create-on-start="true" drop-on-exit="false">
             <jdbc:id-column name="id_column" type="TEXT" />
@@ -90,7 +90,7 @@
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.core.expire.ScheduleCacheKey2StringMapper">
 
-          <jdbc:connection-pool connection-url="jdbc:postgresql://localhost:5432/test" username="test" password="test" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
 
           <jdbc:string-keyed-table prefix="indy_cache" fetch-size="50" batch-size="50" create-on-start="true" drop-on-exit="false">
             <jdbc:id-column name="id_column" type="TEXT" />
