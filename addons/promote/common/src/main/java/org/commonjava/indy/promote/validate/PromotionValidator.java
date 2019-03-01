@@ -165,6 +165,11 @@ public class PromotionValidator
                     {
                         throw new PromotionValidationException( format( "Failed to do promotion validation: \n\n%s", join( errors, "\n" ) ) );
                     }
+                    else
+                    {
+                        logger.debug( "Validation succeeded for request from {} to {} against rule-set {} with rules {}",
+                                     request.getSource(), request.getTargetKey(), set.getName(), ruleNames );
+                    }
                 }
                 catch ( InterruptedException e )
                 {

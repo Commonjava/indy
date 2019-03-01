@@ -158,7 +158,6 @@ public class PromoteValidationsManager
 
             if ( scripts != null && scripts.length > 0 )
             {
-
                 for ( final DataFile script : scripts )
                 {
                     logger.debug( "Reading promotion validation rule-set from: {}", script );
@@ -166,6 +165,7 @@ public class PromoteValidationsManager
                     if ( set != null )
                     {
                         ruleSets.put( script.getName(), set );
+                        logger.debug( "Read rule-set successfully for script: {} ", script );
                     }
                 }
             }
