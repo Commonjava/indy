@@ -63,7 +63,7 @@ import static org.commonjava.indy.model.core.StoreKey.fromString;
 @ApplicationScoped
 @Default
 public class DefaultContentIndexManager
-        implements ContentIndexManager, BootupAction, ShutdownAction
+        implements ContentIndexManager, ShutdownAction
 {
     private static final int ITERATE_RESULT_SIZE = 1000;
 
@@ -136,31 +136,11 @@ public class DefaultContentIndexManager
 
 
     @Override
-    public void init()
-            throws IndyLifecycleException
-    {
-        //FIXME: Currently the content-index is GAV/Directory level, but NFC is not. That makes this NFC listener not usable
-        //       as it is clearing the directory resource from NFC but the real ones in NFC are file resource. Need to think
-        //       about implement NFC from GAV/Directory level too if we want to make this usable.
-//        logger.debug( "Register index cache listener for NFC" );
-//        contentIndex.execute( cache -> {
-//            cache.addListener( listener );
-//            return null;
-//        } );
-    }
-
-    @Override
     public void stop()
             throws IndyLifecycleException
     {
         logger.debug( "Shutdown index cache" );
         contentIndex.stop();
-    }
-
-    @Override
-    public int getBootPriority()
-    {
-        return 80;
     }
 
     @Override

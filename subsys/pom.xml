@@ -40,6 +40,7 @@
     <module>metrics</module>
     <module>prefetch</module>
     <module>kafka</module>
+    <module>cpool</module>
   </modules>
   
 </project>
