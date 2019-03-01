@@ -75,7 +75,7 @@
     <jhttpcVersion>1.9</jhttpcVersion>
     <weftVersion>1.12</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
-    
+
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
     
@@ -456,6 +456,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-cpool</artifactId>
+        <version>1.7.4-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-client-core-java</artifactId>
         <version>1.7.4-SNAPSHOT</version>
       </dependency>
@@ -823,6 +828,11 @@
         <scope>provided</scope>
       </dependency>
 
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>2.7.8</version>
+      </dependency>
 
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
@@ -1280,6 +1290,7 @@
         <artifactId>atlas-relationships-api</artifactId>
         <version>${atlasVersion}</version>
       </dependency>
+
       <dependency>
         <groupId>org.quartz-scheduler</groupId>
         <artifactId>quartz</artifactId>

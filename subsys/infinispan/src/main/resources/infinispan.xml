@@ -7,14 +7,14 @@
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
-      <eviction strategy="LRU" size="200000" type="COUNT"/>
-      <!--<memory>-->
+      <!--<eviction strategy="LRU" size="200000" type="COUNT"/>-->
+      <memory>
         <!--
           Limits the cache to this by the amount of entries in the cache.
           If choose memory or off-heap, make sure the key/value objects implements Serializable
         -->
-      <!--  <object size="200000"/>
-      </memory> -->
+        <object size="200000"/>
+      </memory>
     </local-cache-configuration>
 
     <local-cache name="local" configuration="local-template"/>
