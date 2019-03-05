@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.rmi.RemoteException;
@@ -25,6 +26,8 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 
 @ApplicationScoped
 public class ConnectionPoolProvider
@@ -75,7 +78,7 @@ public class ConnectionPoolProvider
 //        logger.info( "RMI / JNDI Registry running on port: {}", registryPort );
 
         Properties properties = System.getProperties();
-        properties.setProperty( CPInitialContextFactory.FACTORY_SYSPROP, CPInitialContextFactory.class.getName() );
+        properties.setProperty( INITIAL_CONTEXT_FACTORY, CPInitialContextFactory.class.getName() );
 //        properties.setProperty( "java.naming.provider.url", "rmi://127.0.0.1:" + registryPort );
         System.setProperties( properties );
 

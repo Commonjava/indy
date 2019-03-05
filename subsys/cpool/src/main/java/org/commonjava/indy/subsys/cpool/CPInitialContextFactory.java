@@ -13,8 +13,6 @@ import java.util.Map;
 public class CPInitialContextFactory
         implements InitialContextFactory
 {
-    public static final String FACTORY_SYSPROP = "java.naming.factory.initial";
-
     private static CPInitialContext context;
 
     @Override
