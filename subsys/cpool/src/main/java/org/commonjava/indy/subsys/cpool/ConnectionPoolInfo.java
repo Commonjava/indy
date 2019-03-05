@@ -92,9 +92,8 @@ public class ConnectionPoolInfo
     @Override
     public String toString()
     {
-        return "ConnectionPoolInfo{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", user='" + user + '\''
-                + ", password='" + password + '\'' + ", dataSourceClassname='" + dataSourceClassname + '\''
-                + ", driverClassname='" + driverClassname + '\'' + ", useMetrics=" + useMetrics + ", useHealthChecks="
-                + useHealthChecks + ", properties=" + properties + '}';
+        return "ConnectionPoolInfo{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", dataSourceClassname='"
+                + dataSourceClassname + '\'' + ", driverClassname='" + driverClassname + '\'' + ", useMetrics="
+                + useMetrics + ", useHealthChecks=" + useHealthChecks + ", properties=" + properties + '}';
     }
 }
