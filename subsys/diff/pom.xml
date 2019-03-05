@@ -20,28 +20,26 @@
 
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-subsystems</artifactId>
     <version>1.8.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-subsystems</artifactId>
-  <packaging>pom</packaging>
+  <artifactId>indy-subsys-diff</artifactId>
 
-  <name>Indy :: Subsystems :: Parent</name>
+  <name>Indy :: Subsystems :: Repo diff</name>
   
-  <modules>
-    <module>flatfile</module>
-    <module>git</module>
-    <module>groovy</module>
-    <module>http</module>
-    <module>keycloak</module>
-    <module>jaxrs</module>
-    <module>infinispan</module>
-    <module>metrics</module>
-    <module>prefetch</module>
-    <module>kafka</module>
-    <module>cpool</module>
-    <module>diff</module>
-  </modules>
-  
+  <dependencies>
+    <dependency>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.github.java-diff-utils</groupId>
+      <artifactId>java-diff-utils</artifactId>
+    </dependency>
+  </dependencies>
 </project>
