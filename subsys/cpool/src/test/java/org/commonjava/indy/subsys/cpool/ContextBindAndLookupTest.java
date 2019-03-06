@@ -2,10 +2,12 @@ package org.commonjava.indy.subsys.cpool;
 
 import org.junit.Test;
 
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.Properties;
 
+import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -19,7 +21,7 @@ public class ContextBindAndLookupTest
         String val = "BAR";
 
         Properties properties = System.getProperties();
-        properties.setProperty( CPInitialContextFactory.FACTORY_SYSPROP, CPInitialContextFactory.class.getName() );
+        properties.setProperty( INITIAL_CONTEXT_FACTORY, CPInitialContextFactory.class.getName() );
         System.setProperties( properties );
 
         bind( key, val );
