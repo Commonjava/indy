@@ -8,7 +8,7 @@
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
       <memory>
-        <object size="200000" strategy="LRU" />
+        <object size="200000" strategy="REMOVE" />
       </memory>
     </local-cache-configuration>
 
@@ -26,6 +26,9 @@
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
       </persistence>
+      <memory>
+        <object size="2000" strategy="REMOVE"/>
+      </memory>
     </local-cache>
 
     <local-cache name="folo-in-progress" configuration="local-template">
@@ -50,7 +53,7 @@
       </persistence>
 
       <memory>
-        <object size="1000" strategy="LRU" />
+        <object size="1000" strategy="REMOVE" />
       </memory>
     </local-cache>
 
@@ -126,7 +129,7 @@
         <file-store shared="false" preload="true" fetch-state="false" path="${indy.data}/prefetch"/>
       </persistence>
       <memory>
-        <object size="20000" strategy="LRU" />
+        <object size="20000" strategy="REMOVE" />
       </memory>
     </local-cache>
 
