@@ -39,7 +39,7 @@
 
     <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
       <memory>
-        <object size="10000000" strategy="LRU" />
+        <object size="2000" strategy="LRU" />
       </memory>
     </local-cache>
 
