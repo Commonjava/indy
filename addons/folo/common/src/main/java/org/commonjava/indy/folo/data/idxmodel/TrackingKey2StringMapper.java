@@ -40,31 +40,29 @@ public class TrackingKey2StringMapper
     @Override
     public String getStringMapping( Object key )
     {
-        Object keyObj = key;
-        if ( keyObj instanceof TrackingKey )
+        if ( key instanceof TrackingKey )
         {
-            TrackingKey tk = (TrackingKey) keyObj;
+            TrackingKey tk = (TrackingKey) key;
             return tk.getId();
         }
-        else if ( keyObj instanceof WrappedByteArray )
+        else if ( key instanceof WrappedByteArray )
         {
             try (ObjectInputStream objStream = new ObjectInputStream(
-                    new ByteArrayInputStream( ( (WrappedByteArray) keyObj ).getBytes() ) ))
+                    new ByteArrayInputStream( ( (WrappedByteArray) key ).getBytes() ) ))
             {
-                keyObj = objStream.readObject();
-                if ( keyObj instanceof TrackingKey )
-                {
-                    return ( (TrackingKey) keyObj ).getId();
-                }
+                TrackingKey newKey = new TrackingKey();
+                newKey.readExternal( objStream );
+                return newKey.getId();
             }
             catch ( IOException | ClassNotFoundException e )
             {
                 LOGGER.error(
                         "Folo tracking JDBC store error: Cannot deserialize tracking key type {}, is using off-heap with unsupported type?",
-                        keyObj == null ? null : keyObj.getClass() );
+                        key.getClass() );
             }
         }
-        LOGGER.error( "Folo tracking JDBC store error: Not supported key type {}", keyObj == null ? null : keyObj.getClass() );
+        LOGGER.error( "Folo tracking JDBC store error: Not supported key type {}",
+                      key == null ? null : key.getClass() );
         return null;
     }
 
