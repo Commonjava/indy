@@ -17,54 +17,14 @@ package org.commonjava.indy.folo.data.idxmodel;
 
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.infinispan.commons.marshall.WrappedByteArray;
-import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
+import org.commonjava.indy.subsys.infinispan.AbstractIndyKey2StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
 public class TrackingKey2StringMapper
-        implements TwoWayKey2StringMapper
+        extends AbstractIndyKey2StringMapper<TrackingKey>
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
-
-    @Override
-    public boolean isSupportedType( Class<?> keyType )
-    {
-        return keyType == TrackingKey.class || keyType == WrappedByteArray.class;
-    }
-
-    @Override
-    public String getStringMapping( Object key )
-    {
-        if ( key instanceof TrackingKey )
-        {
-            TrackingKey tk = (TrackingKey) key;
-            return tk.getId();
-        }
-        else if ( key instanceof WrappedByteArray )
-        {
-            try (ObjectInputStream objStream = new ObjectInputStream(
-                    new ByteArrayInputStream( ( (WrappedByteArray) key ).getBytes() ) ))
-            {
-                TrackingKey newKey = new TrackingKey();
-                newKey.readExternal( objStream );
-                return newKey.getId();
-            }
-            catch ( IOException | ClassNotFoundException e )
-            {
-                LOGGER.error(
-                        "Folo tracking JDBC store error: Cannot deserialize tracking key type {}, is using off-heap with unsupported type?",
-                        key.getClass() );
-            }
-        }
-        LOGGER.error( "Folo tracking JDBC store error: Not supported key type {}",
-                      key == null ? null : key.getClass() );
-        return null;
-    }
 
     @Override
     public Object getKeyMapping( String stringKey )
@@ -78,5 +38,21 @@ public class TrackingKey2StringMapper
             LOGGER.error( "Folo tracking JDBC store error: an empty store key from store" );
             return null;
         }
+    }
+
+    @Override
+    protected String getStringMappingFromInst( Object key )
+    {
+        if ( !( key instanceof TrackingKey ) )
+        {
+            return null;
+        }
+        return ( (TrackingKey) key ).getId();
+    }
+
+    @Override
+    protected Class<TrackingKey> provideKeyClass()
+    {
+        return TrackingKey.class;
     }
 }
