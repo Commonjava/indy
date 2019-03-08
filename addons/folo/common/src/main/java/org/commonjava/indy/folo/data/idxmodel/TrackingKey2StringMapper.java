@@ -22,16 +22,14 @@ import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Base64;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 
 public class TrackingKey2StringMapper
         implements TwoWayKey2StringMapper
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
-
-    private static final char NON_STRING_PREFIX = '\uFEFF';
-
-    private static final char BYTEARRAYKEY_IDENTIFIER = '8';
 
     @Override
     public boolean isSupportedType( Class<?> keyType )
@@ -42,25 +40,32 @@ public class TrackingKey2StringMapper
     @Override
     public String getStringMapping( Object key )
     {
-        if ( key instanceof TrackingKey )
+        Object keyObj = key;
+        if ( keyObj instanceof TrackingKey )
         {
-            TrackingKey tk = (TrackingKey) key;
+            TrackingKey tk = (TrackingKey) keyObj;
             return tk.getId();
-
         }
-        else if ( key instanceof WrappedByteArray )
+        else if ( keyObj instanceof WrappedByteArray )
         {
-            return generateString( BYTEARRAYKEY_IDENTIFIER,
-                                   Base64.getEncoder().encodeToString( ( (WrappedByteArray) key ).getBytes() ) );
+            try (ObjectInputStream objStream = new ObjectInputStream(
+                    new ByteArrayInputStream( ( (WrappedByteArray) keyObj ).getBytes() ) ))
+            {
+                keyObj = objStream.readObject();
+                if ( keyObj instanceof TrackingKey )
+                {
+                    return ( (TrackingKey) keyObj ).getId();
+                }
+            }
+            catch ( IOException | ClassNotFoundException e )
+            {
+                LOGGER.error(
+                        "Folo tracking JDBC store error: Cannot deserialize tracking key type {}, is using off-heap with unsupported type?",
+                        keyObj == null ? null : keyObj.getClass() );
+            }
         }
-        LOGGER.error( "Folo tracking JDBC store error: Not supported key type {}",
-                      key == null ? null : key.getClass() );
+        LOGGER.error( "Folo tracking JDBC store error: Not supported key type {}", keyObj == null ? null : keyObj.getClass() );
         return null;
-    }
-
-    private String generateString( char identifier, String s )
-    {
-        return String.valueOf( NON_STRING_PREFIX ) + String.valueOf( identifier ) + s;
     }
 
     @Override
