@@ -78,7 +78,8 @@
     <jhttpcVersion>1.9</jhttpcVersion>
     <weftVersion>1.14</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
-
+    <propulsorVersion>1.4-SNAPSHOT</propulsorVersion>
+    
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
     
@@ -1546,6 +1547,11 @@
         <groupId>io.github.java-diff-utils</groupId>
         <artifactId>java-diff-utils</artifactId>
         <version>4.0</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.propulsor.content-audit</groupId>
+        <artifactId>propulsor-content-audit-api</artifactId>
+        <version>${propulsorVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

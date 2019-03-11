@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-event-audit</artifactId>
+        <version>1.7.4-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>indy-event-audit-common</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.commonjava.propulsor.content-audit</groupId>
+            <artifactId>propulsor-content-audit-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.maven.galley</groupId>
+            <artifactId>galley-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-folo-model-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-promote-common</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
