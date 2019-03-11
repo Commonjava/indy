@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -47,6 +46,7 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
+import static org.commonjava.indy.metrics.system.SystemInstrumentation.registerSystemMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
@@ -99,6 +99,7 @@ public class IndyMetricsManager
 
         logger.info( "Init metrics subsystem..." );
 
+        registerSystemMetric( config.getNodePrefix(), metricRegistry );
         registerJvmMetric( config.getNodePrefix(), metricRegistry );
 
         // Health checks
