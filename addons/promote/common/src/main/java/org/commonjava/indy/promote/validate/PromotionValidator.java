@@ -284,7 +284,9 @@ public class PromotionValidator
             String tempName = PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName() + new SimpleDateFormat(
                     "yyyyMMdd.hhmmss.SSSZ" ).format( new Date() );
 
-            final RemoteRepository tempRemote = new RemoteRepository( tempName, baseUrl );
+            String packageType = promoteRequest.getSource().getPackageType();
+
+            final RemoteRepository tempRemote = new RemoteRepository( packageType, tempName, baseUrl );
 
             tempRemote.setPathMaskPatterns( pathsReq.getPaths() );
 
