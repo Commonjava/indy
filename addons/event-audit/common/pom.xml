@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>indy-event-audit-common</artifactId>
+    <name>Indy :: Add-Ons :: Event Audit :: Common</name>
 
     <dependencies>
         <dependency>
@@ -33,5 +34,27 @@
             <artifactId>indy-promote-common</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>confset</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>confset</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

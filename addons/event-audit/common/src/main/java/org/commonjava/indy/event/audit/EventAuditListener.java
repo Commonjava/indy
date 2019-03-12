@@ -5,6 +5,7 @@ import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.event.audit.conf.EventAuditConfig;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -16,6 +17,8 @@ import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Transfer;
@@ -53,10 +56,18 @@ public class EventAuditListener
     @Inject
     PromoteChangeManager promoteChangeManager;
 
+    @Inject
+    EventAuditConfig eventAuditConfig;
+
     private final Logger logger = LoggerFactory.getLogger( "org.commonjava.indy.event.audit" );
 
-    public void onFileAccess( @Observes final org.commonjava.maven.galley.event.FileAccessEvent event )
+    public void onFileAccess( @Observes final FileAccessEvent event )
     {
+
+        if ( !eventAuditConfig.isEnabled() )
+        {
+            return;
+        }
 
         FileEvent fileEvent = new FileEvent( FileEventType.ACCESS );
         transformFileEvent( event, fileEvent );
@@ -64,8 +75,13 @@ public class EventAuditListener
 
     }
 
-    public void onFileUpload( @Observes final org.commonjava.maven.galley.event.FileStorageEvent event )
+    public void onFileUpload( @Observes final FileStorageEvent event )
     {
+
+        if ( !eventAuditConfig.isEnabled() )
+        {
+            return;
+        }
 
         FileEvent fileEvent = new FileEvent( FileEventType.STORAGE );
         transformFileEvent( event, fileEvent );
@@ -74,6 +90,11 @@ public class EventAuditListener
 
     public void onPromoteComplete( @Observes final PromoteCompleteEvent event )
     {
+        if ( !eventAuditConfig.isEnabled() )
+        {
+            return;
+        }
+
         FileGroupingEvent fileGroupingEvent = new FileGroupingEvent( FileGroupingEventType.BY_PATH_PROMOTION );
         transformFileGroupingEvent( event, fileGroupingEvent );
         eventPublisher.publishFileGroupingEvent( fileGroupingEvent );
