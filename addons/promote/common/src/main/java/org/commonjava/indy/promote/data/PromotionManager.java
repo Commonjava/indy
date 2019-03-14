@@ -30,6 +30,7 @@ import org.commonjava.indy.core.inject.StoreContentLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -64,6 +65,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +95,9 @@ public class PromotionManager
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private IndyMetricsManager metricsManager;
 
     @Inject
     private PromoteConfig config;
@@ -512,13 +517,31 @@ public class PromotionManager
         }
         else if ( validation.isValid() )
         {
-            return runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents,
-                                      validation, validationRequest );
+            PathsPromoteResult result = runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents,
+                                                           validation, validationRequest );
+            doPathPromoteMetrics( contents.size(), result );
+            return result;
         }
         else
         {
             return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
                                            validation );
+        }
+    }
+
+    private void doPathPromoteMetrics( int total, PathsPromoteResult result )
+    {
+        try
+        {
+            Map<String, Integer> pathPromoteMetrics = new HashMap<>();
+            pathPromoteMetrics.put( "total", total );
+            pathPromoteMetrics.put( "complete", result.getCompletedPaths().size() );
+            pathPromoteMetrics.put( "skipped", result.getSkippedPaths().size() );
+            metricsManager.addGauges( this.getClass(), "path.promote", pathPromoteMetrics );
+        }
+        catch ( Throwable e )
+        {
+            logger.warn( "Failed to get path promote files metrics. Reason: {} ", e.getMessage() );
         }
     }
 
