@@ -18,6 +18,8 @@ package org.commonjava.indy.metrics.system;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
@@ -31,6 +33,8 @@ import java.util.Map;
 public class SystemGaugesSet
         implements MetricSet
 {
+    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
     private final OperatingSystemMXBean operatingSystemMXBean;
 
     public SystemGaugesSet()
@@ -55,15 +59,22 @@ public class SystemGaugesSet
 
         final Map<String, Metric> gauges = new HashMap<>();
 
-        gauges.put( "process.cpu.load", (Gauge<Double>) osMxBean::getProcessCpuLoad );
-        gauges.put( "system.cpu.load", (Gauge<Double>) osMxBean::getSystemCpuLoad );
-        gauges.put( "system.load.avg", (Gauge<Double>) osMxBean::getSystemLoadAverage );
-        gauges.put( "process.cpu.time.ms", (Gauge<Long>) () -> osMxBean.getProcessCpuTime() * 1000 );
+        try
+        {
+            gauges.put( "process.cpu.load", (Gauge<Double>) osMxBean::getProcessCpuLoad );
+            gauges.put( "system.cpu.load", (Gauge<Double>) osMxBean::getSystemCpuLoad );
+            gauges.put( "system.load.avg", (Gauge<Double>) osMxBean::getSystemLoadAverage );
+            gauges.put( "process.cpu.time.ms", (Gauge<Long>) () -> osMxBean.getProcessCpuTime() * 1000 );
 
-        gauges.put( "mem.total.swap", (Gauge<Long>) osMxBean::getTotalSwapSpaceSize );
-        gauges.put( "mem.total.physical", (Gauge<Long>) osMxBean::getTotalPhysicalMemorySize );
-        gauges.put( "mem.free.physical", (Gauge<Long>) osMxBean::getFreePhysicalMemorySize );
-        gauges.put( "mem.free.swap", (Gauge<Long>) osMxBean::getFreeSwapSpaceSize );
+            gauges.put( "mem.total.swap", (Gauge<Long>) osMxBean::getTotalSwapSpaceSize );
+            gauges.put( "mem.total.physical", (Gauge<Long>) osMxBean::getTotalPhysicalMemorySize );
+            gauges.put( "mem.free.physical", (Gauge<Long>) osMxBean::getFreePhysicalMemorySize );
+            gauges.put( "mem.free.swap", (Gauge<Long>) osMxBean::getFreeSwapSpaceSize );
+        }
+        catch ( Throwable e )
+        {
+            logger.warn( "Can not get system level metrics. Reason: {}", e.getMessage() );
+        }
 
         return Collections.unmodifiableMap( gauges );
 
