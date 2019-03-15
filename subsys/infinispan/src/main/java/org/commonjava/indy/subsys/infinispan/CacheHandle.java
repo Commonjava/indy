@@ -17,6 +17,7 @@ package org.commonjava.indy.subsys.infinispan;
 
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.Cache;
+import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,15 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
     public CacheHandle( String named, Cache<K, V> cache )
     {
         this( named, cache, null, null );
+    }
+
+    /**
+     * This is needed to pass the raw cache to lower level components, like Partyline.
+     * @return
+     */
+    public Cache<K,V> getCache()
+    {
+        return (Cache) this.cache;
     }
 
     public <R> R executeCache( Function<Cache<K, V>, R> operation )

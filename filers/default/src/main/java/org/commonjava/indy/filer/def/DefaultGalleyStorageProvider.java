@@ -19,6 +19,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.cdi.util.weft.WeftScheduledExecutor;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
@@ -50,6 +51,9 @@ import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.ContentsFilteringTransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
+import org.commonjava.util.partyline.lock.global.GlobalLockManager;
+import org.commonjava.util.partyline.lock.global.GlobalLockOwner;
+import org.commonjava.util.partyline.lock.global.impl.InfinispanTransactionalGLM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,10 +81,17 @@ public class DefaultGalleyStorageProvider
     private DefaultStorageProviderConfiguration config;
 
     @Inject
+    private IndyConfiguration indyConfiguration;
+
+    @Inject
     private FileEventManager fileEventManager;
 
     @Inject
     private PathGenerator pathGenerator;
+
+    @PartylineGLMCache
+    @Inject
+    private CacheHandle<String, GlobalLockOwner> partylineGLMCache;
 
     @NFSOwnerCache
     @Inject
@@ -221,7 +232,14 @@ public class DefaultGalleyStorageProvider
 
         final File storeRoot = config.getStorageRootDirectory();
 
-        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, deleteExecutor );
+        // Apply partyline gloable lock manager if in cluster Env
+        GlobalLockManager globalLockManager = null;
+        if ( indyConfiguration.isClusterEnabled() )
+        {
+            logger.info( "Enable ISPN transactional GLM via {}", partylineGLMCache.getName() );
+            globalLockManager = new InfinispanTransactionalGLM( partylineGLMCache.getCache() );
+        }
+        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, deleteExecutor, globalLockManager );
 
         // TODO: Tie this into a config file!
         transportManagerConfig = new TransportManagerConfig();

@@ -69,6 +69,8 @@ public class DefaultIndyConfiguration
 
     private Boolean allowRemoteListDownload;
 
+    private Boolean clusterEnabled;
+
     public DefaultIndyConfiguration()
     {
     }
@@ -199,6 +201,18 @@ public class DefaultIndyConfiguration
     public int getForkJoinPoolCommonParallelism()
     {
         return forkJoinPoolCommonParallelism == null ? DEFAULT_FORKJOINPOOL_COMMON_PARALLELISM : forkJoinPoolCommonParallelism;
+    }
+
+    @Override
+    public boolean isClusterEnabled()
+    {
+        return clusterEnabled == null ? false : clusterEnabled;
+    }
+
+    @ConfigName( "cluster.enabled" )
+    public void setClusterEnabled( Boolean clusterEnabled )
+    {
+        this.clusterEnabled = clusterEnabled;
     }
 
     @ConfigName( "forkjoinpool.common.parallelism" )

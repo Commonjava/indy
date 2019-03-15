@@ -89,5 +89,24 @@
       </persistence>
     </local-cache>
 
+    <local-cache name="partyline-GLM-locks">
+      <locking
+              isolation="READ_COMMITTED"
+              write-skew="true"/>
+      <transaction
+              locking="OPTIMISTIC"
+              auto-commit="true"
+              complete-timeout="60000"
+              mode="FULL_XA"
+              notifications="true"
+              protocol="DEFAULT"
+              reaper-interval="30000"
+              recovery-cache="__recoveryInfoCacheName__"
+              stop-timeout="30000"
+              transaction-manager-lookup="org.infinispan.transaction.lookup.GenericTransactionManagerLookup"/>
+      <versioning
+              scheme="SIMPLE"/>
+    </local-cache>
+
   </cache-container>
 </infinispan>
