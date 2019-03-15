@@ -685,11 +685,13 @@
         <artifactId>indy-koji-jaxrs</artifactId>
         <version>1.7.5-SNAPSHOT</version>
       </dependency>
+      <!-- not used
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-koji</artifactId>
         <version>1.6.1-SNAPSHOT</version>
       </dependency>
+      -->
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
