@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-content-browse</artifactId>
-    <version>1.7.5-SNAPSHOT</version>
+    <version>1.7.5</version>
   </parent>
   
   <artifactId>indy-content-browse-jaxrs</artifactId>
