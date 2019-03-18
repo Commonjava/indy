@@ -8,7 +8,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.boot.PortFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
