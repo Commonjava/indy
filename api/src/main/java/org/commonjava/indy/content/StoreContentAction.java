@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.content;
 
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
 
 import java.util.Set;
 
@@ -25,5 +25,5 @@ import java.util.Set;
  */
 public interface StoreContentAction
 {
-    void clearStoreContent( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups, boolean clearOriginPath );
+    void clearStoreContent( String path, ArtifactStore store, Set<Group> affectedGroups, boolean clearOriginPath );
 }

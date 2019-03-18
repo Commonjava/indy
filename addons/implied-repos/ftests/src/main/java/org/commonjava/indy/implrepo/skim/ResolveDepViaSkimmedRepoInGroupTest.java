@@ -66,6 +66,7 @@ public class ResolveDepViaSkimmedRepoInGroupTest
         final PomRef pomRef = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", repoUrl ) );
         final PomRef simplePomRef = loadPom( "simple", Collections.emptyMap() );
 
+        server.expect( "HEAD", server.formatUrl( REPO, "/" ), 200, (String) null  );
         server.expect( server.formatUrl( TEST_REPO, pomRef.path ), 200, pomRef.pom );
         server.expect( server.formatUrl( REPO, simplePomRef.path ), 200, simplePomRef.pom );
 

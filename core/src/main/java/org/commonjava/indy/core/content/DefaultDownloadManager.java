@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.content;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
@@ -73,14 +74,14 @@ import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.cdi.util.weft.ExecutorConfig.BooleanLiteral.TRUE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.change.EventUtils.fireEvent;
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
-import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 import static org.commonjava.maven.galley.model.TransferOperation.DOWNLOAD;
 import static org.commonjava.maven.galley.model.TransferOperation.LISTING;
@@ -103,8 +104,8 @@ public class DefaultDownloadManager
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( priority = 10, threads = 2, named = "file-manager" )
-    private ExecutorService executor; // = Executors.newFixedThreadPool( 8 );
+    @ExecutorConfig( priority = 10, threads = 2, named = "rescan-manager", loadSensitive = TRUE, maxLoadFactor = 2 )
+    private WeftExecutorService rescanService;
 
     @Inject
     private TransferManager transfers;
@@ -127,26 +128,28 @@ public class DefaultDownloadManager
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
-                                   final LocationExpander locationExpander )
+                                   final LocationExpander locationExpander, WeftExecutorService rescanService )
     {
         this.storeManager = storeManager;
         this.transfers = transfers;
         this.locationExpander = locationExpander;
         this.fileEventManager = new IndyFileEventManager();
-        executor = Executors.newFixedThreadPool( 10 );
+        this.rescanService = rescanService;
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
-                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors )
+                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors,
+                                   WeftExecutorService rescanService )
     {
-        this(storeManager, transfers, locationExpander);
+        this(storeManager, transfers, locationExpander, rescanService);
         this.contentAdvisors = contentAdvisors;
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
-                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors, final NotFoundCache nfc)
+                                   final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors,
+                                   final NotFoundCache nfc, WeftExecutorService rescanService )
     {
-        this(storeManager, transfers, locationExpander, contentAdvisors);
+        this(storeManager, transfers, locationExpander, contentAdvisors, rescanService);
         this.nfc = nfc;
     }
     @Override
@@ -1024,9 +1027,9 @@ public class DefaultDownloadManager
     public void rescan( final ArtifactStore store, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        executor.execute(
+        detectOverloadVoid( () -> rescanService.execute(
                 new Rescanner( store, getStorageReference( store.getKey() ), rescansInProgress, fileEventManager,
-                               rescanEvent, eventMetadata ) );
+                               rescanEvent, eventMetadata ) ) );
     }
 
     private static final class Rescanner

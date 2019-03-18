@@ -17,9 +17,7 @@ package org.commonjava.indy.pkg.npm.content.group;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.io.IOUtils;
-import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.core.content.group.MetadataMerger;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -43,7 +41,6 @@ import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @ApplicationScoped
 public class PackageMetadataMerger
-                implements MetadataMerger
 {
     public static final String METADATA_NAME = "package.json";
 
@@ -72,7 +69,6 @@ public class PackageMetadataMerger
         }
     }
 
-    @Override
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -212,9 +208,4 @@ public class PackageMetadataMerger
         return null;
     }
 
-    @Override
-    public Metadata mergeFromMetadatas( Collection<Metadata> sources, Group group, String path )
-    {
-        throw new UnsupportedOperationException( "Not supported" );
-    }
 }

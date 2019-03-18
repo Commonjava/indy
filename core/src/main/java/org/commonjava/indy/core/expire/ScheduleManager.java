@@ -52,6 +52,7 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
@@ -86,7 +87,7 @@ import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE
 @ApplicationScoped
 @Listener
 public class ScheduleManager
-        implements BootupAction, ShutdownAction
+        implements ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -127,7 +128,6 @@ public class ScheduleManager
     @Inject
     private Event<SchedulerEvent> eventDispatcher;
 
-    @Override
     public void init()
             throws IndyLifecycleException
     {
@@ -689,12 +689,6 @@ public class ScheduleManager
     public String getId()
     {
         return "Indy Scheduler";
-    }
-
-    @Override
-    public int getBootPriority()
-    {
-        return 80;
     }
 
     @Override

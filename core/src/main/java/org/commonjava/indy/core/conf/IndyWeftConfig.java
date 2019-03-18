@@ -42,6 +42,8 @@ public class IndyWeftConfig
 
     public static final String DEFAULT_PRIORITY = "defaultPriority";
 
+    public static final String DEFAULT_MAX_LOAD_FACTOR = "defaultMaxLoadFactor";
+
     public static final String ENABLED = "enabled";
 
     public static final String NODE_PREFIX = INDY_METRICS_NODE_PREFIX;
@@ -49,6 +51,8 @@ public class IndyWeftConfig
     public static final String THREADS_SUFFIX = ".threads";
 
     public static final String PRIORITY_SUFFIX = ".priority";
+
+    public static final String MAX_LOAD_FACTOR_SUFFIX = ".maxLoadFactor";
 
     public static final String ENABLED_SUFFIX = ".enabled";
 
@@ -83,6 +87,11 @@ public class IndyWeftConfig
                 final int v = Integer.parseInt( value );
                 weftConfig.configureDefaultPriority( v );
             }
+            else if ( DEFAULT_MAX_LOAD_FACTOR.equals( name ) )
+            {
+                final float v = Float.parseFloat( value );
+                weftConfig.configureDefaultMaxLoadFactor( v );
+            }
             else if ( ENABLED.equals( name ) )
             {
                 weftConfig.configureEnabled( Boolean.parseBoolean( value ) );
@@ -112,6 +121,11 @@ public class IndyWeftConfig
                     else if ( ENABLED_SUFFIX.equals( suffix ) )
                     {
                         weftConfig.configureEnabled( pool, Boolean.parseBoolean( value ) );
+                    }
+                    else if ( MAX_LOAD_FACTOR_SUFFIX.equals( suffix ) )
+                    {
+                        final float v = Float.parseFloat( value );
+                        weftConfig.configureMaxLoadFactor( pool, v );
                     }
                 }
             }

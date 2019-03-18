@@ -284,6 +284,8 @@ public class GroupMembershipChangeUpdateMetadataTest
 
         checkGroupMembership( remoteRepositoryA.getKey(), remoteRepositoryB.getKey(), remoteRepositoryC.getKey() );
 
+        Thread.sleep( 2000 );
+
         // Get merged from A, B, C
         user1 = fixedPool.submit( groupMetaTask );
         metadata = user1.get();

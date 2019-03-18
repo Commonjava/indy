@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 Red Hat, Inc.
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,7 @@ public class EnabledGroupAddingImpliedTest
         logger.debug( "Start testing!" );
         final PomRef ref = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
 
+        server.expect( "HEAD", server.formatUrl( REPO, "/" ), 200, (String) null  );
         server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 
         final StoreKey testRepoKey =

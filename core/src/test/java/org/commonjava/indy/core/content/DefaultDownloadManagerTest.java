@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.core.content;
 
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentDigester;
@@ -57,6 +59,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -85,11 +88,14 @@ public class DefaultDownloadManagerTest
 
     @BeforeClass
     public static void setupClass()
+            throws IOException
     {
         cacheManager = new DefaultCacheManager(
-                        new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build() );
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "infinispan-test.xml" ) );
+
         contentMetadata = cacheManager.getCache( "content-metadata", true );
     }
+
 
     @Before
     public void setup()
@@ -107,10 +113,15 @@ public class DefaultDownloadManagerTest
         config.setNotFoundCacheTimeoutSeconds( 1 );
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
 
-        downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander,null, nfc);
+        WeftExecutorService rescanService =
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
+        downloadManager = new DefaultDownloadManager( storeManager, core.getTransferManager(), locationExpander,null, nfc, rescanService);
+
+        WeftExecutorService contentAccessService =
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         DirectContentAccess dca =
-                        new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+                        new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
         ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
                         "content-metadata", contentMetadata ) );

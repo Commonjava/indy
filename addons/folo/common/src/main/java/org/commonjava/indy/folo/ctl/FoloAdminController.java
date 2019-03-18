@@ -15,6 +15,11 @@
  */
 package org.commonjava.indy.folo.ctl;
 
+import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.SingleThreadedExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
@@ -44,7 +49,6 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,9 +59,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
@@ -65,6 +69,7 @@ import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.folo.FoloUtils.backupTrackedContent;
 import static org.commonjava.indy.folo.FoloUtils.readZipInputStreamAnd;
 import static org.commonjava.indy.folo.FoloUtils.toInputStream;
@@ -92,6 +97,11 @@ public class FoloAdminController
     @Inject
     private ContentDigester contentDigester;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( threads = 50, priority = 4, named = "folo-recalculator", maxLoadFactor = 100, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE )
+    private WeftExecutorService recalculationExecutor;
+
     protected FoloAdminController()
     {
     }
@@ -104,6 +114,7 @@ public class FoloAdminController
         this.filer = filer;
         this.contentManager = contentManager;
         this.contentDigester = contentDigester;
+        this.recalculationExecutor = new SingleThreadedExecutorService( "folo-recalculator" );
     }
 
     public TrackedContentDTO seal( final String id, final String baseUrl )
@@ -364,8 +375,13 @@ public class FoloAdminController
         TrackedContent record = recordManager.get( trackingKey );
 
         AtomicBoolean failed = new AtomicBoolean( false );
+
         Set<TrackedContentEntry> recalculatedUploads = recalculateEntrySet( record.getUploads(), id, failed );
-        Set<TrackedContentEntry> recalculatedDownloads = recalculateEntrySet( record.getDownloads(), id, failed );
+        Set<TrackedContentEntry> recalculatedDownloads = null;
+        if ( !failed.get() )
+        {
+            recalculatedDownloads = recalculateEntrySet( record.getDownloads(), id, failed );
+        }
 
         if ( failed.get() )
         {
@@ -381,29 +397,49 @@ public class FoloAdminController
 
     private Set<TrackedContentEntry> recalculateEntrySet( final Set<TrackedContentEntry> entries,
                                                           final String id, final AtomicBoolean failed )
+            throws IndyWorkflowException
     {
         if ( entries == null )
         {
             return null;
         }
 
-        return entries.parallelStream().map( ( entry ) ->
-                                      {
-                                          try
-                                          {
-                                              return recalculate( entry );
-                                          }
-                                          catch ( IndyWorkflowException e )
-                                          {
-                                              logger.error( String.format(
-                                                      "Tracking record: %s : Failed to recalculate: %s/%s (%s). Reason: %s",
-                                                      id, entry.getStoreKey(), entry.getPath(), entry.getEffect(), e.getMessage() ), e );
+        DrainingExecutorCompletionService<TrackedContentEntry> recalculateService =
+                new DrainingExecutorCompletionService<>( recalculationExecutor );
 
-                                              failed.set( true );
-                                          }
-                                          return null;
-                                      } ).filter( Objects::nonNull ).collect( Collectors.toSet() );
+        detectOverloadVoid( () -> entries.forEach( entry -> recalculateService.submit( () -> {
+            try
+            {
+                return recalculate( entry );
+            }
+            catch ( IndyWorkflowException e )
+            {
+                logger.error( String.format( "Tracking record: %s : Failed to recalculate: %s/%s (%s). Reason: %s", id,
+                                             entry.getStoreKey(), entry.getPath(), entry.getEffect(), e.getMessage() ),
+                              e );
 
+                failed.set( true );
+            }
+            return null;
+        } ) ) );
+
+        Set<TrackedContentEntry> result = new HashSet<>();
+        try
+        {
+            recalculateService.drain( entry-> {
+                if ( entry != null )
+                {
+                    result.add( entry );
+                }
+            } );
+        }
+        catch ( InterruptedException | ExecutionException e )
+        {
+            logger.error( "Failed to recalculate metadata for Folo tracked content entries in: " + id, e );
+            failed.set( true );
+        }
+
+        return result;
     }
 
     private TrackedContentEntry recalculate( final TrackedContentEntry entry )

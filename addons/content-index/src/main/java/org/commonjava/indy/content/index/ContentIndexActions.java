@@ -77,17 +77,15 @@ public class ContentIndexActions
     }
 
     @Override
-    public void clearStoreContent( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups,
+    public void clearStoreContent( String path, ArtifactStore store, Set<Group> affectedGroups,
                                    boolean clearOriginPath )
     {
-        paths.parallelStream().forEach( path->{
-            if ( clearOriginPath )
-            {
-                indexManager.deIndexStorePath( originKey, path );
-            }
+        if ( clearOriginPath )
+        {
+            indexManager.deIndexStorePath( store.getKey(), path );
+        }
 
-            indexManager.clearIndexedPathFrom( path, affectedGroups, null );
-        } );
+        indexManager.clearIndexedPathFrom( path, affectedGroups, null );
     }
 
 }

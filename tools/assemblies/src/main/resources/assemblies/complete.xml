@@ -134,7 +134,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
       <excludes>
-        <exclude>org.commonjava.indy.embed:*</exclude>
+        <exclude>org.commonjava*:*</exclude>
       </excludes>
       <outputDirectory>lib/thirdparty</outputDirectory>
     </dependencySet>

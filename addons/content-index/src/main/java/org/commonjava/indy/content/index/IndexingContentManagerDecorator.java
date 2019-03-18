@@ -786,7 +786,7 @@ public abstract class IndexingContentManagerDecorator
         boolean result = false;
         for ( ArtifactStore store : stores )
         {
-            result = delete( store, path, eventMetadata ) | result;
+            result = delete( store, path, eventMetadata ) || result;
         }
 
         return result;

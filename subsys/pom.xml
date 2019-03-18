@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.6.0-SNAPSHOT</version>
+    <version>1.7.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-subsystems</artifactId>
@@ -40,6 +40,7 @@
     <module>metrics</module>
     <module>prefetch</module>
     <module>kafka</module>
+    <module>cpool</module>
   </modules>
   
 </project>

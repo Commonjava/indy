@@ -63,7 +63,8 @@ public class PomWithRepoAddsRepoToGroupTest
     public void skimPomForRepoAndAddIt() throws Exception
     {
         final PomRef ref = loadPom( "one-repo", Collections.singletonMap( "one-repo.url", server.formatUrl( REPO ) ) );
-        
+
+        server.expect( "HEAD", server.formatUrl( REPO, "/" ), 200, (String) null );
         server.expect( server.formatUrl( TEST_REPO, ref.path ), 200, ref.pom );
 
         final StoreKey pubGroupKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.group,
@@ -78,6 +79,7 @@ public class PomWithRepoAddsRepoToGroupTest
         // sleep while event observer runs...
         System.out.println( "Waiting 5s for events to run." );
         Thread.sleep( 5000 );
+        System.out.println("Resuming test.");
 
         final Group g = client.stores().load( pubGroupKey, Group.class );
         final StoreKey remoteRepoKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, REPO );

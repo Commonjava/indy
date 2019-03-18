@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
+import static org.commonjava.indy.util.ApplicationContent.text_plain;
 
 /**
  * Created by jdcasey on 1/11/17.
@@ -51,6 +52,21 @@ public class DiagnosticsResource
 {
     @Inject
     private DiagnosticsManager diagnosticsManager;
+
+    @ApiOperation(
+            "Retrieve a thread dump for Indy." )
+    @ApiResponses( { @ApiResponse( code = 200, response = String.class, message = "Thread dump content" ) } )
+    @GET
+    @Path( "/threads" )
+    @Produces(text_plain)
+    public Response getThreadDump()
+    {
+        String threadDump = diagnosticsManager.getThreadDumpString();
+        return Response.ok( threadDump )
+                       .header( ApplicationHeader.content_disposition.key(),
+                                "attachment; filename=indy-threads-" + System.currentTimeMillis() + ".txt" )
+                       .build();
+    }
 
     @ApiOperation(
             "Retrieve a ZIP-compressed file containing log files and a thread dump for Indy." )

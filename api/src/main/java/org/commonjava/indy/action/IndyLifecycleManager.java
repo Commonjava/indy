@@ -45,16 +45,16 @@ public class IndyLifecycleManager
     private IndyVersioning versioning;
 
     @Inject
-    private Instance<BootupAction> bootupActionInstances;
+    private Instance<BootupAction> bootupActionCdiInstances;
 
     @Inject
-    private Instance<MigrationAction> migrationActionInstances;
+    private Instance<MigrationAction> migrationActionCdiInstances;
 
     @Inject
-    private Instance<StartupAction> startupActionInstances;
+    private Instance<StartupAction> startupActionCdiInstances;
 
     @Inject
-    private Instance<ShutdownAction> shutdownActionInstances;
+    private Instance<ShutdownAction> shutdownActionCdiInstances;
 
     @Inject
     private IndyLifecycleEventManager lifecycleEvents;
@@ -69,6 +69,14 @@ public class IndyLifecycleManager
     private List<StartupAction> startupActions;
 
     private List<ShutdownAction> shutdownActions;
+
+    private Iterable<BootupAction> bootupActionInstances;
+
+    private Iterable<MigrationAction> migrationActionInstances;
+
+    private Iterable<StartupAction> startupActionInstances;
+
+    private Iterable<ShutdownAction> shutdownActionInstances;
 
     protected IndyLifecycleManager()
     {
@@ -85,7 +93,7 @@ public class IndyLifecycleManager
     @PostConstruct
     public void init()
     {
-        initialize( bootupActionInstances, migrationActionInstances, startupActionInstances, shutdownActionInstances );
+        initialize( bootupActionCdiInstances, migrationActionCdiInstances, startupActionCdiInstances, shutdownActionCdiInstances );
     }
 
     private void initialize( final Iterable<BootupAction> bootupActionInstances,
@@ -93,54 +101,26 @@ public class IndyLifecycleManager
                              final Iterable<StartupAction> startupActionInstances,
                              final Iterable<ShutdownAction> shutdownActionInstances )
     {
-        try
-        {
-            bootupActions = new ArrayList<>();
-            for ( final BootupAction action : bootupActionInstances )
-            {
-                bootupActions.add( action );
-            }
-            bootupActions.addAll(userLifecycleManager.getUserLifecycleActions("boot",
-                    BootupAction.class));
-            Collections.sort( bootupActions, BOOT_PRIORITY_COMPARATOR );
-
-            migrationActions = new ArrayList<>();
-            for ( final MigrationAction action : migrationActionInstances )
-            {
-                migrationActions.add( action );
-            }
-            migrationActions.addAll(userLifecycleManager.getUserLifecycleActions("migrate",
-                    MigrationAction.class));
-            Collections.sort( migrationActions, MIGRATION_PRIORITY_COMPARATOR );
-
-            startupActions = new ArrayList<>();
-            for ( final StartupAction action : startupActionInstances )
-            {
-                startupActions.add( action );
-            }
-            startupActions.addAll(userLifecycleManager.getUserLifecycleActions("start",
-                    StartupAction.class));
-            Collections.sort( startupActions, START_PRIORITY_COMPARATOR );
-
-            shutdownActions = new ArrayList<>();
-            for ( final ShutdownAction action : shutdownActionInstances )
-            {
-                shutdownActions.add( action );
-            }
-            shutdownActions.addAll(userLifecycleManager.getUserLifecycleActions("shutdown",
-                    ShutdownAction.class));
-            Collections.sort( shutdownActions, SHUTDOWN_PRIORITY_COMPARATOR );
-        }
-        catch ( Throwable e )
-        {
-            Throwable realError = ( e instanceof InvocationTargetException ?
-                    ( (InvocationTargetException) e ).getTargetException() :
-                    e );
-
-            logger.error( "Failed to initialize Indy lifecycle components.", realError );
-
-            throw new IllegalStateException( "Failed to initialize lifecycle components", realError );
-        }
+        this.bootupActionInstances = bootupActionInstances;
+        this.migrationActionInstances = migrationActionInstances;
+        this.startupActionInstances = startupActionInstances;
+        this.shutdownActionInstances = shutdownActionInstances;
+//        try
+//        {
+//
+//
+//
+//        }
+//        catch ( Throwable e )
+//        {
+//            Throwable realError = ( e instanceof InvocationTargetException ?
+//                    ( (InvocationTargetException) e ).getTargetException() :
+//                    e );
+//
+//            logger.error( "Failed to initialize Indy lifecycle components.", realError );
+//
+//            throw new IllegalStateException( "Failed to initialize lifecycle components", realError );
+//        }
     }
 
     /**
@@ -197,6 +177,15 @@ public class IndyLifecycleManager
     private void runBootupActions()
         throws IndyLifecycleException
     {
+        bootupActions = new ArrayList<>();
+        for ( final BootupAction action : bootupActionInstances )
+        {
+            bootupActions.add( action );
+        }
+        bootupActions.addAll(userLifecycleManager.getUserLifecycleActions("boot",
+                                                                          BootupAction.class));
+        Collections.sort( bootupActions, BOOT_PRIORITY_COMPARATOR );
+
         if ( bootupActions != null )
         {
             logger.info( "Running bootup actions..." );
@@ -211,6 +200,15 @@ public class IndyLifecycleManager
     private void runMigrationActions()
         throws IndyLifecycleException
     {
+        migrationActions = new ArrayList<>();
+        for ( final MigrationAction action : migrationActionInstances )
+        {
+            migrationActions.add( action );
+        }
+        migrationActions.addAll(userLifecycleManager.getUserLifecycleActions("migrate",
+                                                                             MigrationAction.class));
+        Collections.sort( migrationActions, MIGRATION_PRIORITY_COMPARATOR );
+
         boolean changed = false;
         if ( migrationActions != null )
         {
@@ -226,6 +224,15 @@ public class IndyLifecycleManager
     private void runStartupActions()
         throws IndyLifecycleException
     {
+        startupActions = new ArrayList<>();
+        for ( final StartupAction action : startupActionInstances )
+        {
+            startupActions.add( action );
+        }
+        startupActions.addAll(userLifecycleManager.getUserLifecycleActions("start",
+                                                                           StartupAction.class));
+        Collections.sort( startupActions, START_PRIORITY_COMPARATOR );
+
         if ( startupActions != null )
         {
             logger.info( "Running startup actions..." );
@@ -240,6 +247,15 @@ public class IndyLifecycleManager
     private void runShutdownActions()
         throws IndyLifecycleException
     {
+        shutdownActions = new ArrayList<>();
+        for ( final ShutdownAction action : shutdownActionInstances )
+        {
+            shutdownActions.add( action );
+        }
+        shutdownActions.addAll(userLifecycleManager.getUserLifecycleActions("shutdown",
+                                                                            ShutdownAction.class));
+        Collections.sort( shutdownActions, SHUTDOWN_PRIORITY_COMPARATOR );
+
         if ( shutdownActions != null )
         {
             logger.info( "Running shutdown actions..." );

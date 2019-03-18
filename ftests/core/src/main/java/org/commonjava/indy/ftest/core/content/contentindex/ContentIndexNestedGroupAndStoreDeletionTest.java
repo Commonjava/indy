@@ -112,17 +112,21 @@ public class ContentIndexNestedGroupAndStoreDeletionTest
             assertThat( IOUtils.toString( first ), equalTo( CONTENT ) );
         }
 
-        indexExist( topGroup, group, repositoryA );
+        indexExist( topGroup, group );
 
         client.stores().delete( topGroup.getKey(), name.getMethodName() ); // delete TG
 
+        Thread.sleep( 2000 );
+
         indexNotExist( topGroup );
 
-        indexExist( group, repositoryA );
+        indexExist( group );
 
         client.stores().delete( repositoryA.getKey(), name.getMethodName() ); // delete A
 
-        indexNotExist( group, repositoryA );
+        Thread.sleep( 2000 );
+
+        indexNotExist( group );
 
     }
 
@@ -131,7 +135,7 @@ public class ContentIndexNestedGroupAndStoreDeletionTest
         for ( ArtifactStore store : stores )
         {
             StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( store.getKey(), PATH );
-            assertThat( indexedStoreKey, nullValue() );
+            assertThat( "Indexed StoreKey was found for " + store.getKey(), indexedStoreKey, nullValue() );
         }
     }
 
@@ -141,7 +145,7 @@ public class ContentIndexNestedGroupAndStoreDeletionTest
         {
             StoreKey indexedStoreKey = indexManager.getIndexedStoreKey( store.getKey(), PATH );
             logger.debug( "\n\n\nGot indexedStoreKey: " + indexedStoreKey + "\n\n\n" );
-            assertThat( indexedStoreKey, notNullValue() );
+            assertThat( "Indexed StoreKey not found for " + store.getKey(), indexedStoreKey, notNullValue() );
         }
     }
 }

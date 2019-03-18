@@ -30,6 +30,8 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
@@ -92,6 +94,7 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -169,12 +172,17 @@ public class HttpProxyTest
         indyConfig.setNotFoundCacheTimeoutSeconds( 1 );
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( indyConfig );
 
+        WeftExecutorService rescanService =
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
+
         final DownloadManager downloadManager =
                 new DefaultDownloadManager( storeManager, core.getTransferManager(), core.getLocationExpander(),
-                                            new MockInstance<>( new MockContentAdvisor() ), nfc );
+                                            new MockInstance<>( new MockContentAdvisor() ), nfc, rescanService );
 
+        WeftExecutorService contentAccessService =
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         DirectContentAccess dca =
-                new DefaultDirectContentAccess( downloadManager, Executors.newSingleThreadExecutor() );
+                new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
         ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<>(
                 "content-metadata", contentMetadata ) );

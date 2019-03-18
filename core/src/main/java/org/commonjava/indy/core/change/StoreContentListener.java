@@ -15,11 +15,16 @@
  */
 package org.commonjava.indy.core.change;
 
+import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.change.event.IndyStoreEvent;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
@@ -43,12 +48,17 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -62,6 +72,8 @@ import static org.commonjava.maven.galley.util.PathUtils.ROOT;
 @ApplicationScoped
 public class StoreContentListener
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private Instance<StoreContentAction> storeContentActions;
@@ -78,10 +90,15 @@ public class StoreContentListener
     @Inject
     private NotFoundCache nfc;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( threads=20, priority=7, named="content-cleanup" )
+    private WeftExecutorService cleanupExecutor;
+
     /**
      * Handles store disable/enablement.
      */
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public void onStoreEnablement( @Observes final ArtifactStoreEnablementEvent event )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -136,8 +153,6 @@ public class StoreContentListener
     private void removeAllSupercededMemberContent( final ArtifactStore store,
                                                    final Map<ArtifactStore, ArtifactStore> changeMap )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
         StoreKey key = store.getKey();
         // we're only interested in groups, since only adjustments to group memberships can invalidate indexed content.
         if ( group == key.getType() )
@@ -236,58 +251,98 @@ public class StoreContentListener
 
                 logger.debug( "Got affected groups: {}", groups );
 
-                affectedMembers.parallelStream().forEach( ( memberKey ) -> {
+                DrainingExecutorCompletionService<Integer> clearService =
+                        new DrainingExecutorCompletionService<>( cleanupExecutor );
+
+                final Predicate<? super String> mergableFilter = removeMergableOnly ? mergablePathStrings() : ( p ) -> true;
+
+                // NOTE: We're NOT checking load for this executor, since this is an async process that is critical to
+                // data integrity.
+                affectedMembers.forEach( ( memberKey ) -> {
                     logger.debug( "Listing all {}paths in: {}", ( removeMergableOnly ? "mergeable " : "" ), memberKey );
-                    Set<String> paths = listPaths( memberKey, removeMergableOnly ? mergablePathStrings() : ( p ) -> true );
+                    listPathsAnd( memberKey, mergableFilter, p -> clearService.submit(
+                            clearPathProcessor( p, memberKey, groups ) ) );
 
-                    logger.debug( "Got mergable transfers from diverged portion of membership: {}", paths );
-
-                    clearPaths( paths, memberKey, groups, false );
                 } );
 
+                drainAndCount( clearService, "store: " + store.getKey() );
             }
         }
     }
 
-    private void clearPaths( Set<String> paths, StoreKey originKey, Set<Group> affectedGroups, boolean deleteOriginPath )
+    private Callable<Integer> clearPathProcessor( final String path, final StoreKey key, final Set<Group> groups )
+    {
+        try
+        {
+            ArtifactStore store = storeDataManager.getArtifactStore( key );
+            return clearPathProcessor( path, store, groups );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Cannot clear paths for missing / inaccessible store: " + key, e );
+        }
+
+        return ()->0;
+    }
+
+    private Callable<Integer> clearPathProcessor( final String path, final ArtifactStore store, final Set<Group> groups )
+    {
+        return () -> {
+            logger.debug( "Got mergable transfer from diverged portion of membership: {}", path );
+
+            int cleared = clearPath( path, store, groups, false );
+            return cleared;
+        };
+    }
+
+    private int clearPath( String path, ArtifactStore origin, Set<Group> affectedGroups, boolean deleteOriginPath )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
-        final boolean isReadonlyHosted = storeDataManager.isReadonly( originKey );
-        paths.parallelStream()
-                 .forEach( p -> {
-                     if ( deleteOriginPath && !isReadonlyHosted )
-                     {
-                         try
-                         {
-                             delete( directContentAccess.getTransfer( originKey, p ) );
-                         }
-                         catch ( IndyWorkflowException e )
-                         {
-                             logger.error( String.format( "Failed to retrieve transfer for: %s in origin store: %s. Reason: %s", p, originKey, e.getMessage() ), e );
-                         }
-                     }
+        final boolean isReadonlyHosted = storeDataManager.isReadonly( origin );
+        AtomicInteger cleared = new AtomicInteger( 0 );
+        if ( deleteOriginPath && !isReadonlyHosted )
+        {
+            try
+            {
+                if ( delete( directContentAccess.getTransfer( origin, path ) ) )
+                {
+                    nfc.clearMissing( LocationUtils.toLocation( origin ) ); // clear NFC for this group
+                    cleared.incrementAndGet();
+                }
+            }
+            catch ( IndyWorkflowException e )
+            {
+                logger.error( String.format( "Failed to retrieve transfer for: %s in origin store: %s. Reason: %s", path,
+                                             origin.getKey(), e.getMessage() ), e );
+            }
+        }
 
-                     affectedGroups.parallelStream().forEach( g->{
-                         try
-                         {
-                             Transfer gt = directContentAccess.getTransfer( g, p );
-                             delete( gt );
-                         }
-                         catch ( IndyWorkflowException e )
-                         {
-                             logger.error( String.format( "Failed to retrieve transfer for: %s in group: %s. Reason: %s", p, g.getName(), e.getMessage() ), e );
-                         }
-                     } );
-                 } );
-
+        affectedGroups.forEach( g -> {
+            try
+            {
+                Transfer gt = directContentAccess.getTransfer( g, path );
+                if ( delete( gt ) )
+                {
+                    cleared.incrementAndGet();
+                }
+            }
+            catch ( IndyWorkflowException e )
+            {
+                logger.error( String.format( "Failed to retrieve transfer for: %s in group: %s. Reason: %s", path,
+                                             g.getName(), e.getMessage() ), e );
+            }
+        } );
 
         logger.debug( "Clearing content via supplemental store-content actions..." );
         StreamSupport.stream( storeContentActions.spliterator(), false )
-                     .forEach( action -> action.clearStoreContent( paths, originKey, affectedGroups, deleteOriginPath ) );
+                     .forEach(
+                             action -> action.clearStoreContent( path, origin, affectedGroups, deleteOriginPath ) );
         logger.debug( "All store-content actions done executing." );
+
+        return cleared.get();
     }
 
-    private void delete( Transfer t )
+    private boolean delete( Transfer t )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         if ( t != null && t.exists() )
@@ -295,30 +350,33 @@ public class StoreContentListener
             try
             {
                 logger.debug( "Deleting: {}", t );
-                t.delete( true );
+                boolean deleted = t.delete( true );
                 if ( t.exists() )
                 {
                     logger.error( "{} WAS NOT DELETED!", t );
                 }
+
+                return deleted;
             }
             catch ( IOException e )
             {
                 logger.error( String.format( "Failed to delete: %s. Reason: %s", t, e.getMessage() ), e );
             }
         }
+
+        return false;
     }
 
-    private Set<String> listPaths( StoreKey key, Predicate<? super String> pathFilter )
+    private void listPathsAnd( StoreKey key, Predicate<? super String> pathFilter, Consumer<String> pathAction )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
         Transfer root = null;
         try
         {
-            Set<String> paths = new HashSet<>();
             root = directContentAccess.getTransfer( key, ROOT );
 
-            root.lockWrite();
+//            root.lockWrite();
 
             List<Transfer> toProcess = new ArrayList<>();
             toProcess.add( root );
@@ -340,7 +398,7 @@ public class StoreContentListener
                             if( pathFilter.test( t.getPath() ) )
                             {
                                 logger.trace( "Adding file path to results: {}", t.getPath() );
-                                paths.add( t.getPath() );
+                                pathAction.accept( t.getPath() );
                             }
                             else
                             {
@@ -354,8 +412,6 @@ public class StoreContentListener
                     logger.error( String.format( "Failed to list contents of: %s. Reason: %s", next, e ), e );
                 }
             }
-
-            return paths;
         }
         catch ( IndyWorkflowException  e )
         {
@@ -368,49 +424,68 @@ public class StoreContentListener
                 root.unlock();
             }
         }
-
-        return Collections.emptySet();
     }
 
     /**
      * List the mergable paths in target store and clean up the paths in affected groups.
-     * @param stores
+     * @param event
      * @param pathFilter
      * @param deleteOriginPath
      */
-    private void processAllPaths( final Iterable<ArtifactStore> stores, Predicate<? super String> pathFilter, boolean deleteOriginPath )
+    private void processAllPaths( final IndyStoreEvent event, Predicate<? super String> pathFilter, boolean deleteOriginPath )
     {
-        StreamSupport.stream( stores.spliterator(), true ).forEach( ( store ) -> {
-            final StoreKey key = store.getKey();
+        DrainingExecutorCompletionService<Integer> clearService =
+                new DrainingExecutorCompletionService<>( cleanupExecutor );
 
-            Set<String> paths = listPaths( key, pathFilter );
-
-            if ( !paths.isEmpty() )
+        Set<StoreKey> keys = event.getStores().stream().map( store -> store.getKey() ).collect( Collectors.toSet() );
+        keys.forEach(key->{
+            final Set<Group> groups = new HashSet<>();
+            try
             {
-                Set<Group> groups = null;
-                try
-                {
-                    groups = storeDataManager.query().packageType( key.getPackageType() ).getGroupsAffectedBy( key );
-                }
-                catch ( IndyDataException e )
-                {
-                    e.printStackTrace();
-                }
+                groups.addAll(
+                        storeDataManager.query().packageType( key.getPackageType() ).getGroupsAffectedBy( key ) );
 
-                clearPaths( paths, key, groups, deleteOriginPath );
+                listPathsAnd( key, pathFilter, p->clearService.submit(clearPathProcessor( p, key, groups )) );
+            }
+            catch ( IndyDataException e )
+            {
+                logger.error( "Failed to retrieve groups affected by: " + key, e );
             }
         } );
+
+        drainAndCount( clearService, "stores: " + keys );
+    }
+
+    private int drainAndCount( final DrainingExecutorCompletionService<Integer> clearService, final String description )
+    {
+        AtomicInteger count = new AtomicInteger( 0 );
+        try
+        {
+            clearService.drain( partialCount -> count.addAndGet( partialCount ) );
+        }
+        catch ( InterruptedException | ExecutionException e )
+        {
+            logger.error( "Failed to clear paths related to change in " + description, e );
+        }
+
+        logger.debug( "Cleared {} paths for changes in {}", count.get(), description );
+
+        return count.get();
     }
 
     /**
      * Extensive version for clean up paths. This will clean all mergable files in affected groups regardless whether
      * the path is in the target store cache or not. It also clears NFC.
-     * @param stores
+     * @param event
      * @param pathFilter
      */
-    private void processAllPathsExt( final Iterable<ArtifactStore> stores, Predicate<? super String> pathFilter )
+    private void processAllPathsExt( final IndyStoreEvent event, Predicate<? super String> pathFilter )
     {
-        StreamSupport.stream( stores.spliterator(), true ).forEach( ( store ) -> {
+        DrainingExecutorCompletionService<Integer> clearService =
+                new DrainingExecutorCompletionService<>( cleanupExecutor );
+
+        Set<ArtifactStore> stores = new HashSet<>( event.getStores() );
+        stores.forEach(store->{
             final StoreKey key = store.getKey();
             try
             {
@@ -420,7 +495,11 @@ public class StoreContentListener
                 {
                     groups.add( (Group) store );
                 }
-                clearPaths( groups, pathFilter );
+
+                groups.forEach( g->{
+                    listPathsAnd( key, pathFilter, p->clearService.submit(clearPathProcessor( p, key, groups )) );
+                } );
+
                 nfc.clearMissing( LocationUtils.toLocation( store ) ); // clear NFC for this store
             }
             catch ( IndyDataException e )
@@ -428,29 +507,9 @@ public class StoreContentListener
                 e.printStackTrace();
             }
         } );
-    }
 
-    private void clearPaths( Set<Group> groups, Predicate<? super String> pathFilter )
-                    throws IndyDataException
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-
-        groups.parallelStream().forEach( g->{
-            Set<String> paths = listPaths( g.getKey(), pathFilter );
-            logger.trace( "Clear mergable files for group: {}, paths: {}", g.getKey(), paths );
-            paths.forEach( p->{
-                try
-                {
-                    Transfer gt = directContentAccess.getTransfer( g, p );
-                    delete( gt );
-                }
-                catch ( IndyWorkflowException e )
-                {
-                    logger.error( String.format( "Failed to retrieve transfer for: %s in group: %s. Reason: %s", p, g.getName(), e.getMessage() ), e );
-                }
-            } );
-            nfc.clearMissing( LocationUtils.toLocation( g ) ); // clear NFC for this group
-        } );
+        Set<StoreKey> keys = event.getStores().stream().map( s -> s.getKey() ).collect( Collectors.toSet() );
+        drainAndCount( clearService, "stores: " + keys );
     }
 
     private Predicate<? super String> mergablePathStrings()

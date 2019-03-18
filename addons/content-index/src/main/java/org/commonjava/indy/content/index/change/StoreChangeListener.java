@@ -36,8 +36,10 @@ public class StoreChangeListener
 
     public void storeDeleted( @Observes final ArtifactStoreDeletePostEvent event )
     {
+        logger.info( "Updating content index for removed stores." );
         for ( final ArtifactStore store : event )
         {
+            logger.info( "Updating content index for removal of: {}", store.getKey() );
             processChanged( store );
         }
     }

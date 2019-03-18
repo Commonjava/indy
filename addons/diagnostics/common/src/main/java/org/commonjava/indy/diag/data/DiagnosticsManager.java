@@ -38,6 +38,8 @@ import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -69,16 +71,35 @@ public class DiagnosticsManager
 
     public String getThreadDumpString()
     {
-        StringBuilder sb = new StringBuilder();
+        Thread[] threads = new Thread[Thread.activeCount()];
+        Thread.enumerate( threads );
+
+        Map<Long, Thread> threadMap = new HashMap<>();
+        Stream.of( threads ).forEach( t -> threadMap.put( t.getId(), t ) );
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
         ThreadInfo[] threadInfos = threadMXBean.getThreadInfo( threadMXBean.getAllThreadIds(), 100 );
+
+        StringBuilder sb = new StringBuilder();
         Stream.of( threadInfos ).forEachOrdered( ( ti ) -> {
             if ( sb.length() > 0 )
             {
                 sb.append( "\n\n" );
             }
 
+            String threadGroup = "Unknown";
+            Thread t = threadMap.get(ti.getThreadId());
+            if ( t != null )
+            {
+                ThreadGroup tg = t.getThreadGroup();
+                if ( tg != null )
+                {
+                    threadGroup = tg.getName();
+                }
+            }
+
             sb.append( ti.getThreadName() )
+              .append("\n  Group: ")
+              .append( threadGroup )
               .append( "\n  State: " )
               .append( ti.getThreadState() )
               .append( "\n  Lock Info: " )

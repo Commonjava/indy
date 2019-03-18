@@ -83,7 +83,7 @@ public class ContentIndexDirLvWithMetadataTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
-    private BasicCacheHandle<IndexedStorePath, StoreKey> contentIndex;
+    private BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
     @Before
     public void getIndexManager()
@@ -118,13 +118,13 @@ public class ContentIndexDirLvWithMetadataTest
         }
 
 
-        AdvancedCache<IndexedStorePath, StoreKey> advancedCache =
+        AdvancedCache<IndexedStorePath, IndexedStorePath> advancedCache =
                 (AdvancedCache) contentIndex.execute( c -> c );
         System.out.println( "[Content index DEBUG]: cached isps: " + advancedCache.keySet() );
 
-        for ( StoreKey key : advancedCache.values() )
+        for ( IndexedStorePath value : advancedCache.values() )
         {
-            assertThat( key, equalTo( remote2.getKey() ) );
+            assertThat( value.getOriginStoreKey(), equalTo( remote2.getKey() ) );
         }
 
         System.out.println( "[Content index DEBUG]: cache size:" + advancedCache.size() );

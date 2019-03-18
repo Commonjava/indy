@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.commonjava.test.http.util.PortFinder.findOpenPort;
+import static org.commonjava.test.http.util.PortFinder.findPortFor;
 
 /**
  * Created by xiabai on 5/9/17.
@@ -64,7 +64,8 @@ public class ZabbixSocketServer
         try
         {
             int clientNumber = 0;
-            listener = new ServerSocket( findOpenPort( 16 ) );
+            listener = new ServerSocket( findPortFor( 16, p -> p ) );
+
             this.port = listener.getLocalPort();
 
             synchronized ( this )
