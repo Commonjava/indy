@@ -16,16 +16,29 @@
 package org.commonjava.indy.metrics.system;
 
 import com.codahale.metrics.MetricRegistry;
+import org.commonjava.indy.metrics.MetricSetProvider;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-public class SystemInstrumentation
+@ApplicationScoped
+public class SystemGaugesSetProvider
+        implements MetricSetProvider
 {
+    @Inject
+    private SystemGaugesSet systemGaugesSet;
+
+    @Inject
+    private IndyMetricsConfig metricsConfig;
+
     private static final String SYSTEM = "system";
 
-    public static void registerSystemMetric( String nodePrefix, MetricRegistry registry )
+    @Override
+    public void registerMetricSet( MetricRegistry registry )
     {
-        registry.register( name( nodePrefix, SYSTEM ), new SystemGaugesSet() );
-
+        registry.register( name( metricsConfig.getNodePrefix(), SYSTEM ), systemGaugesSet );
     }
 }
