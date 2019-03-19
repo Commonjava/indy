@@ -36,6 +36,12 @@ public interface StoreDataManager
 
     String EVENT_ORIGIN = "event-origin";
 
+    /**
+     * We need to modify the way Indy processes the readonly flag on repositories. It should apply to user operations but 
+     * NOT apply to workflow like promotion. Set it to true in EventMetadata to bypass the readonly check.
+     */
+    String IGNORE_READONLY = "ignore-readonly";
+
     ArtifactStoreQuery<ArtifactStore> query();
 
     /**

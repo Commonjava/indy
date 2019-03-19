@@ -43,7 +43,15 @@ public class CacheOnlyLocation
 
     private final boolean isAllowReleases;
 
-    private final boolean isReadOnly;
+    private boolean isReadOnly;
+
+    /**
+     * This is used to bypass the repo's readonly flag in case of internal workflow like promotion.
+     */
+    public void setReadonly( boolean isReadOnly )
+    {
+        this.isReadOnly = isReadOnly;
+    }
 
     public CacheOnlyLocation( final HostedRepository repo )
     {
