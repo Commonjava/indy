@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.Collections;
@@ -107,17 +108,21 @@ public class SystemGaugesSet
 
     }
 
-    private File getIndyStorageDir()
+    private File getIndyStorageDir() throws IOException
     {
-        // We can use indy home directly as it also contains indy storage
+        final String DEFAULT_STORAGE_DIR = "/var/lib/indy/storage";
+        // We can use indy home to get indy's storage directory first
         final File indyHome = config.getIndyHomeDir();
         if ( indyHome != null && indyHome.exists() && indyHome.isDirectory() )
         {
-            return indyHome;
+            final File storage = new File( indyHome.getCanonicalPath() + DEFAULT_STORAGE_DIR );
+            if ( storage.exists() && storage.isDirectory() )
+            {
+                return storage;
+            }
         }
 
         // Or if indy home not defined, we use docker defined one.
-        final String DEFAULT_STORAGE_DIR = "/var/lib/indy";
         return new File( DEFAULT_STORAGE_DIR );
     }
 
