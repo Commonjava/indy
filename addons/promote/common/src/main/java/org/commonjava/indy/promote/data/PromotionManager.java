@@ -79,6 +79,7 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverload;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
@@ -1018,7 +1019,8 @@ public class PromotionManager
                     {
                         try (InputStream stream = transfer.openInputStream( true ))
                         {
-                            contentManager.store( tgt, path, stream, TransferOperation.UPLOAD, new EventMetadata() );
+                            contentManager.store( tgt, path, stream, TransferOperation.UPLOAD,
+                                                  new EventMetadata().set( IGNORE_READONLY, true ) );
 
                             result.traversed = true;
                             result.completed = true;
