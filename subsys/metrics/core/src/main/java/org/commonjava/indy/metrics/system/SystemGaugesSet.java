@@ -21,6 +21,10 @@ import com.codahale.metrics.MetricSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.Collections;
@@ -30,10 +34,15 @@ import java.util.Map;
 /**
  * A set of gauges for system gauges, including stats on cpu, process, physical mem, swap mem.
  */
+@ApplicationScoped
+@Named
 public class SystemGaugesSet
         implements MetricSet
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
+    @Inject
+    private StoragePathProvider storagePathProvider;
 
     private final OperatingSystemMXBean operatingSystemMXBean;
 
@@ -64,7 +73,7 @@ public class SystemGaugesSet
             gauges.put( "process.cpu.load", (Gauge<Double>) osMxBean::getProcessCpuLoad );
             gauges.put( "system.cpu.load", (Gauge<Double>) osMxBean::getSystemCpuLoad );
             gauges.put( "system.load.avg", (Gauge<Double>) osMxBean::getSystemLoadAverage );
-            gauges.put( "process.cpu.time.ms", (Gauge<Long>) () -> osMxBean.getProcessCpuTime() * 1000 );
+            gauges.put( "process.cpu.time.ms", (Gauge<Long>) () -> osMxBean.getProcessCpuTime() / 1000 );
 
             gauges.put( "mem.total.swap", (Gauge<Long>) osMxBean::getTotalSwapSpaceSize );
             gauges.put( "mem.total.physical", (Gauge<Long>) osMxBean::getTotalPhysicalMemorySize );
@@ -73,11 +82,42 @@ public class SystemGaugesSet
         }
         catch ( Throwable e )
         {
-            logger.warn( "Can not get system level metrics. Reason: {}", e.getMessage() );
+            logger.warn( "Cannot get system level metrics. Reason: {}", e.getMessage() );
+        }
+
+        try
+        {
+            final File storePath = getIndyStorageDir();
+            if ( storePath.exists() && storePath.isDirectory() )
+            {
+                gauges.put( "store.indy.total", (Gauge<Long>) storePath::getTotalSpace );
+                gauges.put( "store.indy.usable", (Gauge<Long>) storePath::getUsableSpace );
+            }
+            else
+            {
+                logger.warn( "Cannot trace indy storage usage because storage path {} not defined.",
+                             storePath.getCanonicalPath() );
+            }
+        }
+        catch ( Throwable e )
+        {
+            logger.warn( "Cannot trace indy storage usage. Reason: {}", e.getMessage() );
         }
 
         return Collections.unmodifiableMap( gauges );
 
+    }
+
+    private File getIndyStorageDir()
+    {
+        if ( storagePathProvider != null && storagePathProvider.getStoragePath() != null )
+        {
+            return storagePathProvider.getStoragePath();
+        }
+
+        // if indy config for storage path not defined, we use docker defined one.
+        final String DEFAULT_STORAGE_DIR = "/var/lib/indy/storage";
+        return new File( DEFAULT_STORAGE_DIR );
     }
 
 }

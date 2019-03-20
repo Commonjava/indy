@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2013~2019 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,16 +16,29 @@
 package org.commonjava.indy.metrics.system;
 
 import com.codahale.metrics.MetricRegistry;
+import org.commonjava.indy.metrics.MetricSetProvider;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-public class SystemInstrumentation
+@ApplicationScoped
+public class SystemGaugesSetProvider
+        implements MetricSetProvider
 {
+    @Inject
+    private SystemGaugesSet systemGaugesSet;
+
+    @Inject
+    private IndyMetricsConfig metricsConfig;
+
     private static final String SYSTEM = "system";
 
-    public static void registerSystemMetric( String nodePrefix, MetricRegistry registry )
+    @Override
+    public void registerMetricSet( MetricRegistry registry )
     {
-        registry.register( name( nodePrefix, SYSTEM ), new SystemGaugesSet() );
-
+        registry.register( name( metricsConfig.getNodePrefix(), SYSTEM ), systemGaugesSet );
     }
 }
