@@ -18,14 +18,13 @@ package org.commonjava.indy.metrics.system;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.File;
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.util.Collections;
@@ -35,6 +34,7 @@ import java.util.Map;
 /**
  * A set of gauges for system gauges, including stats on cpu, process, physical mem, swap mem.
  */
+@ApplicationScoped
 @Named
 public class SystemGaugesSet
         implements MetricSet
@@ -42,7 +42,7 @@ public class SystemGaugesSet
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private IndyConfiguration config;
+    private StoragePathProvider storagePathProvider;
 
     private final OperatingSystemMXBean operatingSystemMXBean;
 
@@ -108,21 +108,15 @@ public class SystemGaugesSet
 
     }
 
-    private File getIndyStorageDir() throws IOException
+    private File getIndyStorageDir()
     {
-        final String DEFAULT_STORAGE_DIR = "/var/lib/indy/storage";
-        // We can use indy home to get indy's storage directory first
-        final File indyHome = config.getIndyHomeDir();
-        if ( indyHome != null && indyHome.exists() && indyHome.isDirectory() )
+        if ( storagePathProvider != null && storagePathProvider.getStoragePath() != null )
         {
-            final File storage = new File( indyHome.getCanonicalPath() + DEFAULT_STORAGE_DIR );
-            if ( storage.exists() && storage.isDirectory() )
-            {
-                return storage;
-            }
+            return storagePathProvider.getStoragePath();
         }
 
-        // Or if indy home not defined, we use docker defined one.
+        // if indy config for storage path not defined, we use docker defined one.
+        final String DEFAULT_STORAGE_DIR = "/var/lib/indy/storage";
         return new File( DEFAULT_STORAGE_DIR );
     }
 
