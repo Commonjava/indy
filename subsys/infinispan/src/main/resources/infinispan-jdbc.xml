@@ -7,13 +7,14 @@
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
-      <eviction strategy="LRU" size="200000" type="COUNT"/>
+      <memory>
+        <object size="200000" strategy="REMOVE" />
+      </memory>
     </local-cache-configuration>
 
     <local-cache name="local" configuration="local-template"/>
 
     <local-cache name="koji-maven-version-metadata" configuration="local-template">
-      <eviction strategy="LRU" size="200000" type="COUNT"/>
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.koji.inject.KojiProjectRefStringKey2StringMapper">
           <write-behind />
@@ -25,10 +26,12 @@
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
       </persistence>
+      <memory>
+        <object size="2000" strategy="REMOVE"/>
+      </memory>
     </local-cache>
 
     <local-cache name="folo-in-progress" configuration="local-template">
-      <eviction size="200000" type="COUNT" strategy="LRU"/>
       <indexing index="LOCAL">
         <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
         <property name="default.directory_provider">ram</property>
@@ -37,14 +40,24 @@
     </local-cache>
 
     <local-cache name="folo-sealed" configuration="local-template">
-      <eviction size="1000" type="COUNT" strategy="LRU"/>
-      <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/folo"/>
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.folo.data.idxmodel.TrackingKey2StringMapper">
+          <write-behind />
+          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
+            <jdbc:id-column name="id_column" type="TEXT" />
+            <jdbc:data-column name="data_column" type="BYTEA" />
+            <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
       </persistence>
+
+      <memory>
+        <object size="1000" strategy="REMOVE" />
+      </memory>
     </local-cache>
 
     <local-cache name="content-index" configuration="local-template">
-      <eviction strategy="LRU" size="200000" type="COUNT"/>
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
           <write-behind />
@@ -61,7 +74,6 @@
     <local-cache name="content-metadata" configuration="local-template"/>
 
     <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
-      <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper">
           <write-behind />
@@ -76,7 +88,6 @@
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">
-      <eviction size="200000" type="COUNT" strategy="LRU"/>
       <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
@@ -86,7 +97,6 @@
         it will make all cache entries expired after 1 day, and trigger the purge of the expired cache every 30 mins
     -->
     <local-cache name="indy-fastlocal-file-delete-cache" configuration="local-template">
-      <eviction size="200000" strategy="LRU"/>
       <expiration lifespan="86400000" max-idle="86400000" interval="1800000"/>
     </local-cache>
 
@@ -105,7 +115,6 @@
     </local-cache>
 
     <local-cache name="nfc" configuration="local-template">
-      <eviction size="10000000" type="COUNT" strategy="LRU"/>
       <!--
         Expires in 72 hours and run expiration every 15 minutes.
       -->
@@ -116,10 +125,12 @@
     </local-cache>
 
     <local-cache name="prefetch-cache">
-      <eviction size="20000" type="COUNT" strategy="LRU"/>
       <persistence passivation="true">
         <file-store shared="false" preload="true" fetch-state="false" path="${indy.data}/prefetch"/>
       </persistence>
+      <memory>
+        <object size="20000" strategy="REMOVE" />
+      </memory>
     </local-cache>
 
   </cache-container>
