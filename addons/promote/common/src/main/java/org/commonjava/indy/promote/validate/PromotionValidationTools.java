@@ -16,25 +16,24 @@
 package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
-import org.commonjava.atlas.maven.graph.rel.ProjectRelationship;
-import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
-import org.commonjava.atlas.maven.ident.ref.ProjectRef;
-import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
-import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
-import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.atlas.maven.graph.rel.ProjectRelationship;
+import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectRef;
+import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;
+import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -65,8 +64,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -113,7 +113,7 @@ public class PromotionValidationTools
     @Inject
     @WeftManaged
     @ExecutorConfig( named = "promote-validation-rules-executor", threads = 8 )
-    private ExecutorService ruleParallelExecutor;
+    private Executor ruleParallelExecutor;
 
     protected PromotionValidationTools()
     {
@@ -562,43 +562,27 @@ public class PromotionValidationTools
     private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )
     {
         Set<T> todo = new HashSet<>( runCollection);
-        DrainingExecutorCompletionService<Void> svc = new DrainingExecutorCompletionService<>( ruleParallelExecutor );
+        final CountDownLatch latch = new CountDownLatch( todo.size() );
         todo.forEach( e -> ruleParallelExecutor.execute( () -> {
             try
             {
                 logger.trace( "The paralleled exe on element {}", e );
                 closure.call( e );
             }
-            catch ( Throwable throwable )
+            finally
             {
-                String str;
-                try
-                {
-                    str = String.valueOf( e );
-                }
-                catch ( RuntimeException re )
-                {
-                    str = "unknown rule";
-                }
-
-                logger.error( "Failed to execute rule for: " + str, throwable );
+                latch.countDown();
             }
         } ) );
 
         try
         {
-            // this is just an alternative to CountDownLatch, which allows us to reuse common code.
-            svc.drain( ( result ) -> {} );
+            latch.await( DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS, TimeUnit.MINUTES );
         }
         catch ( InterruptedException e )
         {
-            logger.error( "Rule validation execution failed due to interruption",
-                          e );
-        }
-        catch ( ExecutionException e )
-        {
-            logger.error( "Rule validation execution failed due to execution exception.",
-                          e );
+            logger.error( "Rule validation execution failed due to parallel running timeout for {} minutes",
+                          DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS );
         }
     }
 
