@@ -23,6 +23,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletException;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 
 @ApplicationScoped
 public class IndyDeployer
@@ -68,8 +69,8 @@ public class IndyDeployer
             {
                 logger.info( "Looking for open Undertow port..." );
 
-                final ThreadLocal<ServletException> errorHolder = new ThreadLocal<>();
-                ThreadLocal<Integer> usingPort = new ThreadLocal<>();
+                final AtomicReference<ServletException> errorHolder = new AtomicReference<>();
+                AtomicReference<Integer> usingPort = new AtomicReference<>();
 
                 server = PortFinder.findPortFor( 16, ( foundPort ) -> {
                     Undertow undertow = null;

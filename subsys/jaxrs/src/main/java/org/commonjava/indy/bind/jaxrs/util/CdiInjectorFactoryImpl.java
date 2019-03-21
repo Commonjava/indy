@@ -31,10 +31,6 @@ public class CdiInjectorFactoryImpl
     extends CdiInjectorFactory
 {
 
-    public CdiInjectorFactoryImpl()
-    {
-    }
-
     @Override
     protected BeanManager lookupBeanManager()
     {
@@ -43,15 +39,17 @@ public class CdiInjectorFactoryImpl
 
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        logger.info( "\n\n\n\nRESTEasy Using BeanManager: {}\n\n\n\n", bmgr );
+        if ( logger.isDebugEnabled() )
+        {
+            Set<Bean<?>> mappers = bmgr.getBeans( ObjectMapper.class );
+            mappers.forEach( bean -> {
+                CreationalContext ctx = bmgr.createCreationalContext( null );
+                logger.debug( "Found ObjectMapper: {}", bean.create( ctx ) );
+                ctx.release();
+            } );
 
-        Set<Bean<?>> mappers = bmgr.getBeans( ObjectMapper.class );
-        mappers.forEach( bean -> {
-            CreationalContext ctx = bmgr.createCreationalContext( null );
-            logger.debug( "Found ObjectMapper: {}", bean.create( ctx ) );
-            ctx.release();
-        } );
-
+            logger.debug( "\n\n\n\nRESTEasy CDI Injector Factory Using BeanManager: {} (@{})\n\n\n\n", bmgr, bmgr.hashCode() );
+        }
         return bmgr;
     }
 
