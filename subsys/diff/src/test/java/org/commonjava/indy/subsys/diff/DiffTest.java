@@ -23,6 +23,7 @@ import com.github.difflib.patch.Patch;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -49,9 +50,7 @@ public class DiffTest
         RemoteRepository repoNew = null;
         try (InputStream in = this.getClass().getResourceAsStream( "/central.json" ))
         {
-            byte[] bytes = new byte[800];
-            IOUtils.read( in, bytes );
-            String json = new String( bytes ).trim();
+            String json = IOUtils.toString( in );
             repoOld = objectMapper.readValue( json, RemoteRepository.class );
             repoNew = objectMapper.readValue( json, RemoteRepository.class );
         }
@@ -82,8 +81,8 @@ public class DiffTest
         StringBuilder newBuilder = new StringBuilder(  );
         result.forEach( newBuilder::append );
         RemoteRepository newRepoAgain = objectMapper.readValue( newBuilder.toString(), RemoteRepository.class );
-        System.out.println(newRepoAgain.isPassthrough());
-        System.out.println(newRepoAgain.isAllowReleases());
+        Assert.assertTrue( newRepoAgain.isPassthrough());
+        Assert.assertFalse(newRepoAgain.isAllowReleases());
 
     }
 }

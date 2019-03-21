@@ -43,6 +43,10 @@ public class RepositoryChangeLog
     @JsonProperty
     private String summary;
 
+    @ApiModelProperty( required = true, dataType = "string", value = "The type of this change [delete|update|create]" )
+    @JsonProperty
+    private String changeType;
+
     @ApiModelProperty( required = true, dataType = "string", value = "User who did this change" )
     @JsonProperty
     private String user;
@@ -91,6 +95,16 @@ public class RepositoryChangeLog
         this.summary = summary;
     }
 
+    public String getChangeType()
+    {
+        return changeType;
+    }
+
+    public void setChangeType( String changeType )
+    {
+        this.changeType = changeType;
+    }
+
     public String getUser()
     {
         return user;
@@ -120,8 +134,9 @@ public class RepositoryChangeLog
         result = prime * result + ( ( changeTime == null ) ? 2 : changeTime.hashCode() );
         result = prime * result + ( ( version == null ) ? 3 : version.hashCode() );
         result = prime * result + ( ( summary == null ) ? 5 : summary.hashCode() );
-        result = prime * result + ( ( user == null ) ? 8 : user.hashCode() );
-        result = prime * result + ( ( diffContent == null ) ? 13 : diffContent.hashCode() );
+        result = prime * result + ( ( changeType == null ) ? 8 : changeType.hashCode() );
+        result = prime * result + ( ( user == null ) ? 13 : user.hashCode() );
+        result = prime * result + ( ( diffContent == null ) ? 21 : diffContent.hashCode() );
         return result;
     }
 
@@ -184,6 +199,18 @@ public class RepositoryChangeLog
             }
         }
         else if ( !summary.equals( other.summary ) )
+        {
+            return false;
+        }
+
+        if ( changeType == null )
+        {
+            if ( other.changeType != null )
+            {
+                return false;
+            }
+        }
+        else if ( !changeType.equals( other.changeType ) )
         {
             return false;
         }

@@ -27,6 +27,9 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.diff.cache.RepoChangelogCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.jgroups.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -42,6 +45,8 @@ public class RepoChangeHandler
 {
     private static final int DIFF_PATCH_CONTEXT_LINES = 3;
 
+    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
     @Inject
     private IndyObjectMapper objectMapper;
 
@@ -53,8 +58,6 @@ public class RepoChangeHandler
     {
         Collection<ArtifactStore> stores = event.getChanges();
 
-        //TODO: think about how to handle these exceptions
-        List<IndyDataException> exceptions = new ArrayList<>();
         for ( ArtifactStore store : stores )
         {
             try
@@ -65,13 +68,13 @@ public class RepoChangeHandler
                 RepositoryChangeLog changeLog = new RepositoryChangeLog();
                 changeLog.setStoreKey( store.getKey() );
                 changeLog.setChangeTime( new Date() );
+                changeLog.setDiffContent( patchString );
+                changeLog.setChangeType( "update" );
                 //FIXME: how to define version string and summary?
                 changeLog.setVersion( "" );
                 changeLog.setSummary( "" );
                 //FIXME: seems we don't have a user provider globally
                 changeLog.setUser( "" );
-                changeLog.setDiffContent( patchString );
-
                 String key = changeLog.getStoreKey() + "_" + changeLog.getVersion();
                 repoChangelogCache.put( key, changeLog );
             }
@@ -80,10 +83,10 @@ public class RepoChangeHandler
                 String error =
                         String.format( "Something wrong happened when doing repo change log generation for store %s",
                                        store.getKey() );
-                exceptions.add( new IndyDataException( error, e ) );
+                logger.error(error, e);
+
             }
         }
-
     }
 
     private String diffPatchString( final ArtifactStore changed, final ArtifactStore origin )
