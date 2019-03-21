@@ -35,6 +35,7 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.CacheOnlyLocation;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
@@ -80,6 +81,7 @@ import static org.commonjava.cdi.util.weft.ExecutorConfig.BooleanLiteral.TRUE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
@@ -570,12 +572,13 @@ public class DefaultDownloadManager
                                              "Cannot deploy to non-deploy point artifact store: {}.", store.getKey() );
         }
 
-        if ( storeManager.isReadonly( store ) )
+        if ( !isIgnoreReadonly( eventMetadata ) && storeManager.isReadonly( store ) )
         {
             throw new IndyWorkflowException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
                                              "The store {} is readonly. If you want to store any content to this store, please modify it to non-readonly",
                                              store.getKey() );
         }
+
 
         if ( store instanceof HostedRepository )
         {
@@ -613,7 +616,12 @@ public class DefaultDownloadManager
 
         try
         {
-            final ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
+            KeyedLocation loc = LocationUtils.toLocation( store );
+            if ( isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation )
+            {
+                ( (CacheOnlyLocation) loc ).setReadonly( false );
+            }
+            final ConcreteResource resource = new ConcreteResource( loc, path );
             Transfer txfr = transfers.store( resource, stream, eventMetadata );
             nfc.clearMissing( resource );
             return txfr;
@@ -650,6 +658,11 @@ public class DefaultDownloadManager
         }
     }
 
+    private boolean isIgnoreReadonly( EventMetadata eventMetadata )
+    {
+        return Boolean.TRUE.equals( eventMetadata.get( IGNORE_READONLY ) );
+    }
+
     /*
      * (non-Javadoc)
      * @see org.commonjava.indy.core.rest.util.FileManager#upload(java.util.List, java.lang.String,
@@ -678,7 +691,7 @@ public class DefaultDownloadManager
         HostedRepository selected = null;
         for ( final ArtifactStore store : stores )
         {
-            if ( storeManager.isReadonly( store ) )
+            if ( !isIgnoreReadonly( eventMetadata ) && storeManager.isReadonly( store ) )
             {
                 logger.debug( "The store {} is readonly, store operation not allowed" );
                 continue;
