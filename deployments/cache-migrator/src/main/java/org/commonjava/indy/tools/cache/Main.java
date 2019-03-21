@@ -19,11 +19,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.boot.IndyBootException;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.propulsor.boot.BootException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,8 +42,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import static org.commonjava.indy.boot.BootInterface.ERR_CANT_INIT_BOOTER;
-import static org.commonjava.indy.boot.BootInterface.ERR_CANT_PARSE_ARGS;
+import static org.commonjava.propulsor.boot.BootStatus.ERR_INIT;
+import static org.commonjava.propulsor.boot.BootStatus.ERR_PARSE_ARGS;
 
 public class Main
 {
@@ -88,22 +88,22 @@ public class Main
                         System.exit( result );
                     }
                 }
-                catch ( final IndyBootException e )
+                catch ( final BootException e )
                 {
                     System.err.printf( "ERROR INITIALIZING BOOTER: %s", e.getMessage() );
-                    System.exit( ERR_CANT_INIT_BOOTER );
+                    System.exit( ERR_INIT );
                 }
             }
         }
-        catch ( final IndyBootException e )
+        catch ( final BootException e )
         {
             System.err.printf( "ERROR: %s", e.getMessage() );
-            System.exit( ERR_CANT_PARSE_ARGS );
+            System.exit( ERR_PARSE_ARGS );
         }
     }
 
     private int run( final MigrationOptions options )
-            throws IndyBootException
+            throws BootException
     {
         try
         {
@@ -113,7 +113,7 @@ public class Main
                 File outXmlDir = new File( System.getProperty("java.io.tmpdir", "/tmp"), "infinispan-config-" + System.currentTimeMillis());
                 if ( !outXmlDir.isDirectory() && !outXmlDir.mkdirs() )
                 {
-                    throw new IndyBootException(
+                    throw new BootException(
                             "Failed to create temporary direcory for infinispan configuration loading" );
                 }
 
@@ -161,11 +161,11 @@ public class Main
         }
         catch ( final Throwable e )
         {
-            if ( e instanceof IndyBootException )
-                throw (IndyBootException)e;
+            if ( e instanceof BootException )
+                throw (BootException)e;
 
             logger.error( "Failed to initialize Booter: " + e.getMessage(), e );
-            return ERR_CANT_INIT_BOOTER;
+            return ERR_INIT;
         }
         finally
         {
@@ -182,7 +182,7 @@ public class Main
         return 0;
     }
 
-    private void loadFromJsonFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws IndyBootException
+    private void loadFromJsonFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws BootException
     {
         AtomicReference<Throwable> error = new AtomicReference<>();
         try (BufferedReader in = new BufferedReader( new InputStreamReader(
@@ -226,11 +226,11 @@ public class Main
 
         if ( error.get() != null )
         {
-            throw new IndyBootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
+            throw new BootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
         }
     }
 
-    private void loadFromObjectFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws IndyBootException
+    private void loadFromObjectFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws BootException
     {
         AtomicReference<Throwable> error = new AtomicReference<>();
         try (ObjectInputStream in = new ObjectInputStream(
@@ -273,11 +273,11 @@ public class Main
 
         if ( error.get() != null )
         {
-            throw new IndyBootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
+            throw new BootException( "Failed to read data from file: " + options.getDataFile(), error.get() );
         }
     }
 
-    private void dumpObjectFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws IndyBootException
+    private void dumpObjectFile( CacheHandle<Object, Object> cache, MigrationOptions options ) throws BootException
     {
         AtomicReference<Throwable> error = new AtomicReference<>();
         try (ObjectOutputStream out = new ObjectOutputStream( new GZIPOutputStream( new FileOutputStream( options.getDataFile() ) )))
@@ -322,11 +322,11 @@ public class Main
 
         if ( error.get() != null )
         {
-            throw new IndyBootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
+            throw new BootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
         }
     }
 
-    private void dumpJsonFile( CacheHandle<Object, Object> cache,  MigrationOptions options ) throws IndyBootException
+    private void dumpJsonFile( CacheHandle<Object, Object> cache,  MigrationOptions options ) throws BootException
     {
         AtomicReference<Throwable> error = new AtomicReference<>();
         try (BufferedOutputStream out =  new BufferedOutputStream( new FileOutputStream( options.getDataFile() )   ))
@@ -367,7 +367,7 @@ public class Main
 
         if ( error.get() != null )
         {
-            throw new IndyBootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
+            throw new BootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
         }
     }
 }

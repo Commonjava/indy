@@ -45,7 +45,7 @@ public class ReparsePicksUpNewRuleFileTest
         final RuleDTO rule = getRule( "0001-simple-rule.groovy", "rules/simple-rule.groovy" );
 
         final File script = new File( fixture.getBootOptions()
-                                             .getIndyHome(), "var/lib/indy/data/autoprox/0001-simple-rule.groovy" );
+                                             .getHomeDir(), "var/lib/indy/data/autoprox/0001-simple-rule.groovy" );
         FileUtils.write( script, rule.getSpec() );
 
         module.reparseCatalog();

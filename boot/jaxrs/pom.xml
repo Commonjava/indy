@@ -31,11 +31,6 @@
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy.boot</groupId>
-      <artifactId>indy-booter-api</artifactId>
-    </dependency>
-    
-    <dependency>
       <groupId>io.undertow</groupId>
       <artifactId>undertow-core</artifactId>
     </dependency>
@@ -63,7 +58,7 @@
       <groupId>org.jboss.spec.javax.servlet</groupId>
       <artifactId>jboss-servlet-api_3.0_spec</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
@@ -97,6 +92,28 @@
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.commonjava.propulsor</groupId>
+      <artifactId>propulsor-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.propulsor.config</groupId>
+      <artifactId>propulsor-configuration-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.propulsor.config</groupId>
+      <artifactId>propulsor-configuration-dotconf</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.propulsor</groupId>
+      <artifactId>propulsor-resteasy</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.propulsor</groupId>
+      <artifactId>propulsor-undertow</artifactId>
+    </dependency>
+
   </dependencies>
   
 

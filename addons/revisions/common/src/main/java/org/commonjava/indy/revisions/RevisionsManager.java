@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.IndyLifecycleEvent;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.flat.data.DataFileStoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
@@ -74,7 +75,7 @@ public class RevisionsManager
     private DataFileManager dataFileManager;
 
     @Inject
-    private DataFileStoreDataManager storeManager;
+    private StoreDataManager storeManager;
 
     protected RevisionsManager()
     {
@@ -264,7 +265,7 @@ public class RevisionsManager
             return Collections.emptyList();
         }
 
-        final DataFile dataFile = storeManager.getDataFile( key );
+        final DataFile dataFile = ( (DataFileStoreDataManager) storeManager ).getDataFile( key );
         return dataFileGit.getChangelog( dataFile.getDetachedFile(), start, count );
     }
 

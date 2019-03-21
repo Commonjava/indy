@@ -92,7 +92,7 @@ public class AuthoritativeIndexedContentInHostedTest
               .store( repo.getKey(), CACHED_AFACT_PATH, new ByteArrayInputStream( CACHED_CONTENT.getBytes() ) );
 
         final Path nonCachedFile =
-                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+                Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                            hosted.singularEndpointName() + "-" + repoName, NON_CACHED_AFACT_PATH );
         Files.createDirectories( nonCachedFile.getParent() );
         Files.createFile( nonCachedFile );

@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.tools.cache;
 
-import org.commonjava.indy.boot.IndyBootException;
+import org.commonjava.propulsor.boot.BootException;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -99,7 +99,7 @@ public class MigrationOptions
     public void setDataType( final DataType dataType ) { this.dataType = dataType; }
 
     public boolean parseArgs( final String[] args )
-            throws IndyBootException
+            throws BootException
     {
         final CmdLineParser parser = new CmdLineParser( this );
         boolean canStart = true;
@@ -109,7 +109,7 @@ public class MigrationOptions
         }
         catch ( final CmdLineException e )
         {
-            throw new IndyBootException( "Failed to parse command-line args: %s", e, e.getMessage() );
+            throw new BootException( "Failed to parse command-line args: %s", e, e.getMessage() );
         }
 
         if ( isHelp() )

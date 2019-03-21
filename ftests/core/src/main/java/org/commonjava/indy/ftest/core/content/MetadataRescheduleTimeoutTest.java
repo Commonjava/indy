@@ -76,7 +76,7 @@ public class MetadataRescheduleTimeoutTest
         assertThat( "no metadata result", pomResult, notNullValue() );
         assertThat( "metadata doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        File metadataFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File metadataFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                        remote.singularEndpointName() + "-" + repoId, metadataPath ).toFile();
 
         assertThat( "metadata doesn't exist", metadataFile.exists(), equalTo( true ) );

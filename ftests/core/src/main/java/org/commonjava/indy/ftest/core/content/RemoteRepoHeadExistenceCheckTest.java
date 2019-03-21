@@ -64,7 +64,7 @@ public class RemoteRepoHeadExistenceCheckTest
         {
             boolean exists = client.content().exists( remote, STORE, path );
             assertTrue(exists);
-            File f = new File(new File(fixture.getBootOptions().getIndyHome()), "var/lib/indy/storage/remote-test/" + path);
+            File f = new File(new File(fixture.getBootOptions().getHomeDir()), "var/lib/indy/storage/remote-test/" + path);
             assertTrue(!f.exists());
             //TODO: this breaks because for whatever reason the head can not get content-length and we have to fall over to get().
             //Refer to NCL-2729 and we will have a better fix in future

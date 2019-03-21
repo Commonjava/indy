@@ -79,7 +79,7 @@ public class MixContentRescheduleTimeoutTest
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        File pomFile = Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY,
+        File pomFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
 
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
@@ -91,7 +91,7 @@ public class MixContentRescheduleTimeoutTest
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
 
         File metadataFile =
-                Paths.get( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
+                Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
                            metadataPath ).toFile();
 
         assertThat( "metadata doesn't exist: " + metadataFile, metadataFile.exists(), equalTo( true ) );

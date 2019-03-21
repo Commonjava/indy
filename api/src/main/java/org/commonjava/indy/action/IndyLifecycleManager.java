@@ -269,9 +269,8 @@ public class IndyLifecycleManager
 
     /**
      * Create a Runnable that can be used in {@link Runtime#addShutdownHook(Thread)}.
-     * @param server
      */
-    public Runnable createShutdownRunnable( final Object server )
+    public Runnable createShutdownRunnable()
     {
         return ()->
         {
@@ -282,13 +281,6 @@ public class IndyLifecycleManager
             catch ( final IndyLifecycleException e )
             {
                 throw new RuntimeException( "\n\nFailed to stop Indy: " + e.getMessage(), e );
-            }
-            finally
-            {
-                synchronized ( server )
-                {
-                    server.notifyAll();
-                }
             }
         };
     }

@@ -58,7 +58,7 @@ public abstract class AbstractCacheReportTest
         doDeletion( entry.getStoreKey(), path );
 
         final String filePath =
-                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(),
+                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getHomeDir(),
                                remote.name(), CENTRAL, path );
         final File pomFile = new File( filePath );
         assertThat( "File should be deleted", pomFile.exists(), equalTo( false ) );

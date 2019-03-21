@@ -34,7 +34,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.commonjava.indy.boot.PortFinder;
+import org.commonjava.propulsor.boot.PortFinder;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.atlas.maven.ident.ref.ProjectVersionRef;

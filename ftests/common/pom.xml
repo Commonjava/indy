@@ -58,7 +58,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
-      <artifactId>indy-booter-api</artifactId>
+      <artifactId>indy-booter-jaxrs</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

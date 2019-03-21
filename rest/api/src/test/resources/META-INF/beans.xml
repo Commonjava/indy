@@ -5,5 +5,6 @@
        version="1.1" bean-discovery-mode="all">
     <alternatives>
         <class>org.commonjava.indy.test.fixture.core.MockGalleyProvider</class>
+        <!--<class>org.commonjava.indy.test.fixture.core.MockWeftProvider</class>-->
     </alternatives>
 </beans>

@@ -19,8 +19,8 @@ import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.boot.BootStatus;
-import org.commonjava.indy.boot.IndyBootException;
+import org.commonjava.propulsor.boot.BootStatus;
+import org.commonjava.propulsor.boot.BootException;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
@@ -187,14 +187,14 @@ public abstract class AbstractIndyFunctionalTest
     }
 
     protected final CoreServerFixture newServerFixture()
-            throws IndyBootException, IOException
+            throws BootException, IOException
     {
         final CoreServerFixture fixture = new CoreServerFixture();
 
-        logger.info( "Setting up configuration using indy.home == '{}'", fixture.getBootOptions().getIndyHome() );
-        etcDir = new File( fixture.getBootOptions().getIndyHome(), "etc/indy" );
-        dataDir = new File( fixture.getBootOptions().getIndyHome(), "var/lib/indy/data" );
-        storageDir = new File( fixture.getBootOptions().getIndyHome(), "var/lib/indy/storage" );
+        logger.info( "Setting up configuration using indy.home == '{}'", fixture.getBootOptions().getHomeDir() );
+        etcDir = new File( fixture.getBootOptions().getHomeDir(), "etc/indy" );
+        dataDir = new File( fixture.getBootOptions().getHomeDir(), "var/lib/indy/data" );
+        storageDir = new File( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage" );
 
         initBaseTestConfig( fixture );
         initTestConfig( fixture );
@@ -216,7 +216,7 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getIndyHome() + "/var/lib/indy/storage" );
+        writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage" );
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
