@@ -15,9 +15,12 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.IndyLoggingConfig;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -35,6 +38,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.COMPONENT_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.ENVIRONMENT;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
@@ -46,6 +50,12 @@ public class MDCManager
 
     @Inject
     private IndyConfiguration config;
+
+    @Inject
+    private IndyLoggingConfig loggingConfig;
+
+    @Inject
+    private IndyObjectMapper objectMapper;
 
     public MDCManager() {}
 
@@ -113,5 +123,19 @@ public class MDCManager
                 MDC.put( header, h.getValue() );
             }
         } );
+    }
+
+    public void putEnvironment()
+    {
+        objectMapper = new IndyObjectMapper( true );
+        try
+        {
+            MDC.put( ENVIRONMENT, objectMapper.writeValueAsString( loggingConfig.getEnvars() ) );
+        }
+        catch ( JsonProcessingException e )
+        {
+            MDC.put( ENVIRONMENT, "{error: \"Envars could not be processed by Jackson.\"}");
+            logger.error( String.format( "Failed to create environment mdc. Reason: %s", e.getMessage() ), e );
+        }
     }
 }
