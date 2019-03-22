@@ -127,7 +127,6 @@ public class MDCManager
 
     public void putEnvironment()
     {
-        objectMapper = new IndyObjectMapper( true );
         try
         {
             MDC.put( ENVIRONMENT, objectMapper.writeValueAsString( loggingConfig.getEnvars() ) );

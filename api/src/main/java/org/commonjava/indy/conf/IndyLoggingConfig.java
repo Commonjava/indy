@@ -47,6 +47,14 @@ public class IndyLoggingConfig
 
     public static final String BUILD_NAMESPACE_KEY = "OPENSHIFT_BUILD_NAMESPACE";
 
+    public static final String SYSTEM_HOST_NAME = System.getenv( HOST_NAME_KEY );
+
+    public static final String SYSTEM_BUILD_COMMIT = System.getenv( BUILD_COMMIT_KEY );
+
+    public static final String SYSTEM_BUILD_NAME = System.getenv( BUILD_NAME_KEY );
+
+    public static final String SYSTEM_BUILD_NAMESPACE = System.getenv( BUILD_NAMESPACE_KEY );
+
     private String hostname;
 
     private String openshiftBuildCommit;
@@ -109,7 +117,7 @@ public class IndyLoggingConfig
 
     public String getHostname()
     {
-        return hostname == null ? System.getenv( HOST_NAME_KEY ) : hostname;
+        return hostname == null ? SYSTEM_HOST_NAME : hostname;
     }
 
     @ConfigName( HOST_NAME_KEY )
@@ -120,7 +128,7 @@ public class IndyLoggingConfig
 
     public String getOpenshiftBuildCommit()
     {
-        return openshiftBuildCommit == null ? System.getenv( BUILD_COMMIT_KEY ) : openshiftBuildCommit;
+        return openshiftBuildCommit == null ? SYSTEM_BUILD_COMMIT : openshiftBuildCommit;
     }
 
     @ConfigName( BUILD_COMMIT_KEY )
@@ -131,7 +139,7 @@ public class IndyLoggingConfig
 
     public String getOpenshiftBuildName()
     {
-        return openshiftBuildName == null ? System.getenv( BUILD_NAME_KEY ) : openshiftBuildName;
+        return openshiftBuildName == null ? SYSTEM_BUILD_NAME : openshiftBuildName;
     }
 
     @ConfigName( BUILD_NAME_KEY )
@@ -142,7 +150,7 @@ public class IndyLoggingConfig
 
     public String getOpenshiftBuildNamespace()
     {
-        return openshiftBuildNamespace == null ? System.getenv( BUILD_NAMESPACE_KEY ) : openshiftBuildNamespace;
+        return openshiftBuildNamespace == null ? SYSTEM_BUILD_NAMESPACE : openshiftBuildNamespace;
     }
 
     @ConfigName( BUILD_NAMESPACE_KEY )
