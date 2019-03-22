@@ -20,21 +20,22 @@ import com.github.difflib.DiffUtils;
 import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.algorithm.DiffException;
 import com.github.difflib.patch.Patch;
+import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
-import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.change.RepoChangeType;
 import org.commonjava.indy.model.change.RepositoryChangeLog;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.diff.cache.RepoChangelogCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.jgroups.logging.LogFactory;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -57,6 +58,26 @@ public class RepoChangeHandler
     public void generateRepoChangeLog( @Observes ArtifactStorePreUpdateEvent event )
     {
         Collection<ArtifactStore> stores = event.getChanges();
+        EventMetadata metadata = event.getEventMetadata();
+        ChangeSummary changeSummary = (ChangeSummary) metadata.get( StoreDataManager.CHANGE_SUMMARY );
+        String user = ChangeSummary.SYSTEM_USER;
+        String summary = "";
+        String version = "";
+        if ( changeSummary != null )
+        {
+            if ( changeSummary.getUser() != null )
+            {
+                user = changeSummary.getUser();
+            }
+            if ( changeSummary.getSummary() != null )
+            {
+                summary = changeSummary.getSummary();
+            }
+            if ( changeSummary.getRevisionId() != null )
+            {
+                version = changeSummary.getRevisionId();
+            }
+        }
 
         for ( ArtifactStore store : stores )
         {
@@ -69,12 +90,10 @@ public class RepoChangeHandler
                 changeLog.setStoreKey( store.getKey() );
                 changeLog.setChangeTime( new Date() );
                 changeLog.setDiffContent( patchString );
-                changeLog.setChangeType( "update" );
-                //FIXME: how to define version string and summary?
-                changeLog.setVersion( "" );
-                changeLog.setSummary( "" );
-                //FIXME: seems we don't have a user provider globally
-                changeLog.setUser( "" );
+                changeLog.setChangeType( RepoChangeType.UPDATE.name() );
+                changeLog.setUser( user );
+                changeLog.setSummary( summary );
+                changeLog.setVersion( version );
                 String key = changeLog.getStoreKey() + "_" + changeLog.getVersion();
                 repoChangelogCache.put( key, changeLog );
             }

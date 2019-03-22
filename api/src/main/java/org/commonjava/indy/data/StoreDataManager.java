@@ -42,6 +42,11 @@ public interface StoreDataManager
      */
     String IGNORE_READONLY = "ignore-readonly";
 
+    /**
+     * Need to store change summary for repository change processing
+     */
+    String CHANGE_SUMMARY = "change-summary";
+
     ArtifactStoreQuery<ArtifactStore> query();
 
     /**
