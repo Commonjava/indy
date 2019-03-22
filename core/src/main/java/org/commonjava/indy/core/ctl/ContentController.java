@@ -70,6 +70,13 @@ public class ContentController
 
     public static final String LISTING_HTML_FILE = "index.html";
 
+    public static final String CONTENT_BROWSE_ROOT = "/browse";
+
+    public static final String CONTENT_BROWSE_API_ROOT = "/api/browse";
+
+    public static final String[] BROWSER_USER_AGENT =
+            new String[] { "Mozilla/", "Chrome/", "Safari/", "OPR/", "Trident/", "Gecko/", "AppleWebKit/" };
+
     private static final int MAX_PEEK_COUNT = 100;
 
     public static final String HTML_TAG_PATTERN = ".*\\<(!DOCTYPE|[-_.a-zA-Z0-9]+).*";
@@ -266,6 +273,10 @@ public class ContentController
         return store;
     }
 
+    /**
+     * @deprecated directory listing has been moved to addons/content-browse
+     */
+    @Deprecated
     public String renderListing( final String acceptHeader, final StoreType type, final String name, final String path,
                                  final String serviceUrl, final UriFormatter uriFormatter )
         throws IndyWorkflowException
@@ -274,6 +285,10 @@ public class ContentController
         return renderListing( acceptHeader, key, path, serviceUrl, uriFormatter );
     }
 
+    /**
+     * @deprecated directory listing has been moved to addons/content-browse
+     */
+    @Deprecated
     public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl, final UriFormatter uriFormatter )
             throws IndyWorkflowException
@@ -281,6 +296,10 @@ public class ContentController
         return renderListing( acceptHeader, key, requestPath, serviceUrl, uriFormatter, new EventMetadata() );
     }
 
+    /**
+     * @deprecated directory listing has been moved to addons/content-browse
+     */
+    @Deprecated
     public String renderListing( final String acceptHeader, final StoreKey key, final String requestPath,
                                  final String serviceUrl, final UriFormatter uriFormatter, final EventMetadata eventMetadata )
         throws IndyWorkflowException

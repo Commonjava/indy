@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.content;
+package org.commonjava.indy.content.browse.ftest;
 
-import org.apache.commons.io.IOUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule;
+import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -30,6 +33,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -57,7 +62,7 @@ public class MetaListingRescheduleTimeoutTest
 {
 
     @Rule
-    public ExpectationServer server = new ExpectationServer( "repos" );
+    public ExpectationServer server = new ExpectationServer(  );
 
     //    @Ignore // content listing is disabled for now, 2018/4/3
     @Test
@@ -69,11 +74,9 @@ public class MetaListingRescheduleTimeoutTest
         final int METADATA_TIMEOUT_WAITING_MILLISECONDS = 3000;
 
         final String repoId = "test-repo";
-        // path without trailing slash for ExpectationServer...
-        String repoRootPath = "org/foo/bar";
+        String repoRootPath = "org/foo/bar/";
         final String repoRootUrl = server.formatUrl( repoId, repoRootPath );
         // now append the trailing '/' so Indy knows to try a directory listing...
-        repoRootPath += "/";
         final String repoSubPath1 = "org/foo/bar/1.0/pom.xml";
         final String repoSubPath2 = "org/foo/bar/1.1/pom.xml";
 
@@ -97,32 +100,34 @@ public class MetaListingRescheduleTimeoutTest
         repository.setMetadataTimeoutSeconds( METADATA_TIMEOUT_SECONDS );
         client.stores().create( repository, changelog, RemoteRepository.class );
 
-        try (InputStream is = client.content().get( remote, repoId, repoSubPath1 ))
+
+        try (InputStream is = client.content().get( repository.getKey(), repoSubPath1 ))
         {
         }
-        try (InputStream is = client.content().get( remote, repoId, repoSubPath2 ))
+        try (InputStream is = client.content().get( repository.getKey(), repoSubPath2 ))
         {
         }
+
+        IndyContentBrowseClientModule browseClientModule = client.module( IndyContentBrowseClientModule.class );
 
         // first time trigger normal content storage with timeout, should be 4s
-        InputStream content = client.content().get( remote, repoId, repoRootPath );
+        logger.debug("Start to request listing of {}", repoRootPath);
+        final ContentBrowseResult content = browseClientModule.getContentList( repository.getKey(), repoRootPath );
         assertThat( "no metadata result", content, notNullValue() );
         logger.debug( "### will begin to get content" );
-        IOUtils.readLines( content ).forEach( logger::info );
-        content.close();
 
-        final String listingMetaPath = "org/foo/bar/.listing.txt";
+        final String listingMetaPath = repoRootPath + ".listing.txt";
 
         File listingMetaFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                           remote.singularEndpointName() + "-" + repoId, listingMetaPath ).toFile();
 
-        assertThat( "metadata doesn't exist: " + listingMetaFile, listingMetaFile.exists(), equalTo( true ) );
+        assertThat( ".listing doesn't exist: " + listingMetaFile, listingMetaFile.exists(), equalTo( true ) );
 
         // wait for first time
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
-        client.content().get( remote, repoId, repoRootPath ).close();
+        browseClientModule.getContentList( repository.getKey(), repoRootPath );
 
         // will wait second time for a longer period
         Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS * getTestTimeoutMultiplier() );
@@ -134,15 +139,15 @@ public class MetaListingRescheduleTimeoutTest
     }
 
     @Override
-    protected boolean createStandardTestStructures()
-    {
-        return false;
-    }
-
-    @Override
     protected int getTestTimeoutMultiplier()
     {
         return super.getTestTimeoutMultiplier() * 2;
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
     }
 
     @Override
@@ -151,5 +156,11 @@ public class MetaListingRescheduleTimeoutTest
     {
         writeConfigFile( "main.conf", "remote.list.download.enabled=true\n"
                 + "[storage-default]\nstorage.dir=${indy.home}/var/lib/indy/storage" );
+    }
+
+    @Override
+    protected Collection<IndyClientModule> getAdditionalClientModules()
+    {
+        return Collections.singletonList( new IndyContentBrowseClientModule() );
     }
 }

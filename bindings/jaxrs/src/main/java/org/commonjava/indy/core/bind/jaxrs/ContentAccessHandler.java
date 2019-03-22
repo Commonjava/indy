@@ -15,11 +15,11 @@
  */
 package org.commonjava.indy.core.bind.jaxrs;
 
-import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.metrics.IndyMetricsManager;
@@ -27,10 +27,8 @@ import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.UriFormatter;
@@ -38,12 +36,14 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -51,7 +51,6 @@ import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -59,7 +58,10 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
+import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_API_ROOT;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
+import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_ROOT;
+import static org.commonjava.indy.core.ctl.ContentController.BROWSER_USER_AGENT;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 @ApplicationScoped
@@ -113,7 +115,7 @@ public class ContentAccessHandler
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
-        Response response = null;
+        Response response;
         final Transfer transfer;
         try
         {
@@ -212,36 +214,11 @@ public class ContentAccessHandler
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
-        final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
-
         Response response = null;
 
-        if ( path == null || path.equals( "" ) || path.endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
         {
-            try
-            {
-                logger.debug( "Getting listing at: {}", path );
-                final String content =
-                        contentController.renderListing( acceptInfo.getBaseAccept(), sk, path, baseUri, uriFormatter );
-
-                ResponseBuilder builder = Response.ok()
-                                   .header( ApplicationHeader.content_type.key(), acceptInfo.getRawAccept() )
-                                   .header( ApplicationHeader.content_length.key(), Long.toString( content.length() ) )
-                                   .header( ApplicationHeader.last_modified.key(),
-                                            HttpUtils.formatDateHeader( new Date() ) );
-                if ( builderModifier != null )
-                {
-                    builderModifier.accept( builder );
-                }
-                response = builder.build();
-            }
-            catch ( final IndyWorkflowException e )
-            {
-                logger.error(
-                        String.format( "Failed to list content: %s from: %s. Reason: %s", path, name, e.getMessage() ),
-                        e );
-                response = formatResponse( e, builderModifier );
-            }
+            response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
         else
         {
@@ -250,7 +227,7 @@ public class ContentAccessHandler
                 Transfer item = null;
                 logger.info( "Checking existence of: {}:{} (cache only? {})", sk, path, cacheOnly );
 
-                boolean exists = false;
+                boolean exists;
                 if ( Boolean.TRUE.equals( cacheOnly ) )
                 {
                     logger.debug( "Calling getTransfer()" );
@@ -362,7 +339,7 @@ public class ContentAccessHandler
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
 
-        Response response = null;
+        Response response;
 
         logger.debug(
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
@@ -371,21 +348,7 @@ public class ContentAccessHandler
         if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
                 LISTING_HTML_FILE ) )
         {
-            try
-            {
-                logger.debug( "Getting listing at: {}", path );
-                final String content =
-                                contentController.renderListing( standardAccept, sk, path, baseUri, uriFormatter );
-
-                response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
-            }
-            catch ( final IndyWorkflowException e )
-            {
-                logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path, name,
-                                             e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
-            }
-//            response = formatResponse( NOT_IMPLEMENTED, null, "Content listing is not implemented", builderModifier );
+            response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
         else
         {
@@ -415,21 +378,8 @@ public class ContentAccessHandler
                     }
                     else if ( item.isDirectory() )
                     {
-                        try
-                        {
-                            logger.debug( "Getting listing at: {}", path + "/" );
-                            final String content =
-                                            contentController.renderListing( standardAccept, sk, path + "/", baseUri,
-                                                                             uriFormatter );
-
-                            response = formatOkResponseWithEntity( content, acceptInfo.getRawAccept(), builderModifier );
-                        }
-                        catch ( final IndyWorkflowException e )
-                        {
-                            logger.error( String.format( "Failed to render content listing: %s from: %s. Reason: %s", path,
-                                                         name, e.getMessage() ), e );
-                            response = formatResponse( e, builderModifier );
-                        }
+                        logger.debug( "Getting listing at: {}", path + "/" );
+                        response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
                     }
                     else
                     {
@@ -506,5 +456,7 @@ public class ContentAccessHandler
 
         return response;
     }
+
+
 
 }
