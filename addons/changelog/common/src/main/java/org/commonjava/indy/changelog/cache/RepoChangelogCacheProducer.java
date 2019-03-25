@@ -17,6 +17,7 @@ package org.commonjava.indy.changelog.cache;
 
 import org.commonjava.indy.model.change.RepositoryChangeLog;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -31,8 +32,8 @@ public class RepoChangelogCacheProducer
     @RepoChangelogCache
     @Produces
     @ApplicationScoped
-    public BasicCacheHandle<String, RepositoryChangeLog> contentIndexCacheCfg()
+    public CacheHandle<String, RepositoryChangeLog> contentIndexCacheCfg()
     {
-        return cacheProducer.getBasicCache( "repo-changelog" );
+        return cacheProducer.getCache( "repo-changelog" );
     }
 }

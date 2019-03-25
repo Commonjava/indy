@@ -20,6 +20,7 @@ import com.github.difflib.algorithm.DiffException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
+import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.change.RepoChangeType;
 import org.commonjava.indy.model.change.RepositoryChangeLog;
@@ -47,11 +48,19 @@ public class RepoChangeHandler
     private IndyObjectMapper objectMapper;
 
     @Inject
+    private RepoChangelogConfiguration config;
+
+    @Inject
     @RepoChangelogCache
     private CacheHandle<String, RepositoryChangeLog> repoChangelogCache;
 
     public void generateRepoChangeLog( @Observes ArtifactStorePreUpdateEvent event )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.warn( "Repository changelog module is not enabled. Will ignore all change logs for propagation." );
+            return;
+        }
         Collection<ArtifactStore> stores = event.getChanges();
         EventMetadata metadata = event.getEventMetadata();
         ChangeSummary changeSummary = (ChangeSummary) metadata.get( StoreDataManager.CHANGE_SUMMARY );
@@ -97,7 +106,7 @@ public class RepoChangeHandler
                 String error =
                         String.format( "Something wrong happened when doing repo change log generation for store %s",
                                        store.getKey() );
-                logger.error(error, e);
+                logger.error( error, e );
 
             }
         }

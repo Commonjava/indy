@@ -32,10 +32,6 @@
       <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.github.java-diff-utils</groupId>
       <artifactId>java-diff-utils</artifactId>
     </dependency>
@@ -43,24 +39,17 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
     </dependency>
+    <!--
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-test-fixtures-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.maven.galley</groupId>
-      <artifactId>galley-test-harness-maven</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.atlas</groupId>
-      <artifactId>atlas-identities</artifactId>
-    </dependency>
+    -->
   </dependencies>
 
   <build>
@@ -77,7 +66,6 @@
             <configuration>
               <descriptorRefs>
                 <descriptorRef>confset</descriptorRef>
-                <!-- <descriptorRef>dataset</descriptorRef> -->
               </descriptorRefs>
             </configuration>
           </execution>
