@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.diff;
+package org.commonjava.indy.changelog;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.difflib.DiffUtils;
-import com.github.difflib.UnifiedDiffUtils;
 import com.github.difflib.algorithm.DiffException;
-import com.github.difflib.patch.Patch;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
+import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.change.RepoChangeType;
 import org.commonjava.indy.model.change.RepositoryChangeLog;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.subsys.diff.cache.RepoChangelogCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -36,10 +33,8 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 @ApplicationScoped
 public class RepoChangeHandler
@@ -84,7 +79,7 @@ public class RepoChangeHandler
             try
             {
                 ArtifactStore origin = event.getOriginal( store );
-                String patchString = diffPatchString( store, origin );
+                String patchString = diffRepoChanges( store, origin );
 
                 RepositoryChangeLog changeLog = new RepositoryChangeLog();
                 changeLog.setStoreKey( store.getKey() );
@@ -108,21 +103,12 @@ public class RepoChangeHandler
         }
     }
 
-    private String diffPatchString( final ArtifactStore changed, final ArtifactStore origin )
+    private String diffRepoChanges( final ArtifactStore changed, final ArtifactStore origin )
             throws JsonProcessingException, DiffException
     {
-        String s = objectMapper.writeValueAsString( changed );
-        List<String> storeNewStrings = Arrays.asList( s.split( "\n" ) );
-        s = objectMapper.writeValueAsString( origin );
-        List<String> storeOriginStrings = Arrays.asList( s.split( "\n" ) );
-        Patch<String> patch = DiffUtils.diff( storeNewStrings, storeOriginStrings );
-        String storeFileName = changed.getName() + ".json";
-        List<String> patchDiff =
-                UnifiedDiffUtils.generateUnifiedDiff( "a/" + storeFileName, "b/" + storeFileName, storeOriginStrings,
-                                                      patch, DIFF_PATCH_CONTEXT_LINES );
-        StringBuilder builder = new StringBuilder();
-        patchDiff.forEach( ps -> builder.append( ps ).append( "\n" ) );
-        builder.deleteCharAt( builder.lastIndexOf( "\n" ) );
-        return builder.toString();
+        String changedString = objectMapper.writeValueAsString( changed );
+        String originString = objectMapper.writeValueAsString( origin );
+
+        return DiffUtil.diffPatch( changed.getName() + ".json", changedString, originString );
     }
 }

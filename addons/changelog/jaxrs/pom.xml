@@ -20,30 +20,48 @@
 
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-subsystems</artifactId>
+    <artifactId>indy-changelog</artifactId>
     <version>1.8.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-subsys-diff</artifactId>
+  <artifactId>indy-changelog-jaxrs</artifactId>
 
-  <name>Indy :: Subsystems :: Repo diff</name>
-  
+  <name>Indy :: Add-Ons :: ChangeLog :: JAX-RS Bindings</name>
+
   <dependencies>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-changelog-common</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-bindings-jaxrs</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+      <scope>compile</scope>
+    </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
+      <scope>compile</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-api</artifactId>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-jaxrs</artifactId>
     </dependency>
+    
     <dependency>
-      <groupId>io.github.java-diff-utils</groupId>
-      <artifactId>java-diff-utils</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-infinispan</artifactId>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-annotations</artifactId>
     </dependency>
   </dependencies>
+  
 </project>

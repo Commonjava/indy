@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.diff.cache;
+package org.commonjava.indy.changelog.cache;
 
 import org.commonjava.indy.model.change.RepositoryChangeLog;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
