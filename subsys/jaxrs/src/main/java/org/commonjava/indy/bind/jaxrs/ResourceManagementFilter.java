@@ -132,8 +132,6 @@ public class ResourceManagementFilter
 
             mdcManager.putExtraHeaders( hsr );
 
-            mdcManager.putEnvironment();
-
             logger.debug( "START request: {} (from: {})", tn, clientAddr );
 
             Thread.currentThread().setName( tn );

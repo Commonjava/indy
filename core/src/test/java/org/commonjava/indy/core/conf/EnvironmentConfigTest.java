@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.core.conf;
 
-import org.commonjava.indy.conf.IndyLoggingConfig;
+import org.commonjava.indy.conf.EnvironmentConfig;
 import org.commonjava.indy.test.utils.WeldJUnit4Runner;
 import org.commonjava.web.config.ConfigUtils;
 import org.junit.Test;
@@ -33,10 +33,10 @@ import static org.junit.Assert.assertThat;
  * Created by yma on 2019/3/21.
  */
 @RunWith( WeldJUnit4Runner.class )
-public class IndyLoggingConfigTest
+public class EnvironmentConfigTest
 {
     @Inject
-    private Instance<IndyLoggingConfig> instance;
+    private Instance<EnvironmentConfig> instance;
 
     @Test
     public void weldInjection_IterateIndyLoggingConfigurators()
@@ -49,6 +49,6 @@ public class IndyLoggingConfigTest
         } );
 
         System.out.println(sections);
-        assertThat( sections.contains( IndyLoggingConfig.SECTION_NAME ), equalTo( true ) );
+        assertThat( sections.contains( EnvironmentConfig.SECTION_NAME ), equalTo( true ) );
     }
 }
