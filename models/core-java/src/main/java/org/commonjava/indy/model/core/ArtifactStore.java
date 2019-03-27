@@ -74,9 +74,7 @@ public abstract class ArtifactStore
     @JsonProperty( "path_mask_patterns" )
     private Set<String> pathMaskPatterns;
 
-    // This field controls if this repo should be authoritative indexing enabled. This means if it is enabled,
-    // the content in this repo will be content-indexing dependent forcibly, which will be treated as missing if
-    // it is not included in content indexing.
+    // If true, the content in the repo will be authoritatively indexed. Transfers will be treated as missing if it is not in content-index.
     @JsonProperty("authoritative_index")
     private Boolean authoritativeIndex;
 
@@ -107,7 +105,7 @@ public abstract class ArtifactStore
         return key.getPackageType();
     }
 
-    public synchronized StoreKey getKey()
+    public StoreKey getKey()
     {
         return key;
     }

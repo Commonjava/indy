@@ -23,7 +23,6 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
@@ -40,7 +39,11 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.LOAD_FROM_DISK;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.deleteFromDisk;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.loadFromDiskAnd;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.storeToDisk;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @ApplicationScoped
@@ -48,8 +51,6 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 public class DataFileStoreDataManager
     extends MemoryStoreDataManager
 {
-
-    public static final String LOAD_FROM_DISK = "load-from-disk";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -66,9 +67,9 @@ public class DataFileStoreDataManager
     }
 
     public DataFileStoreDataManager( final DataFileManager manager, final IndyObjectMapper serializer,
-                                        final StoreEventDispatcher dispatcher, IndyConfiguration config )
+                                        final StoreEventDispatcher dispatcher )
     {
-        super( dispatcher, config );
+        super( dispatcher );
         this.manager = manager;
         this.serializer = serializer;
         this.started = true;
@@ -77,114 +78,21 @@ public class DataFileStoreDataManager
     @PostConstruct
     public void readDefinitions()
     {
-        final ChangeSummary summary =
-                new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                   "Reading definitions from disk, culling invalid definition files." );
+        ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                   "Reading definitions from disk, culling invalid definition files." );
 
-        try
-        {
-            DataFile[] packageDirs = manager.getDataFile( INDY_STORE ).listFiles( ( f ) -> true );
-            for ( DataFile pkgDir : packageDirs )
-            {
-                for ( StoreType type : StoreType.values() )
-                {
-                    DataFile[] files = pkgDir.getChild( type.singularEndpointName() ).listFiles(f->true);
-                    if ( files != null )
-                    {
-                        for ( final DataFile f : files )
-                        {
-                            try
-                            {
-                                final String json = f.readString();
-                                final ArtifactStore store = serializer.readValue( json, type.getStoreClass() );
-                                if ( store == null )
-                                {
-                                    f.delete( summary );
-                                }
-                                else
-                                {
-                                    storeArtifactStore( store, summary, false, false,
-                                                        new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
-                                }
-                            }
-                            catch ( final IOException e )
-                            {
-                                logger.error( String.format( "Failed to load %s store: %s. Reason: %s", type, f, e.getMessage() ),
-                                              e );
-                                try
-                                {
-                                    f.delete( summary );
-                                }
-                                catch ( IOException e1 )
-                                {
-                                    logger.error( "Failed to delete invalid store definition file: " + f, e );
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            started = true;
-        }
-        catch ( final IndyDataException e )
-        {
-            throw new IllegalStateException( "Failed to start store data manager: " + e.getMessage(), e );
-        }
-    }
-
-    private void store( final boolean skipIfExists, final ChangeSummary summary, final ArtifactStore... stores )
-        throws IndyDataException
-    {
-        for ( final ArtifactStore store : stores )
-        {
-            final DataFile f =
-                    manager.getDataFile( INDY_STORE, store.getPackageType(), store.getType().singularEndpointName(),
-                                         store.getName() + ".json" );
-
-            if ( skipIfExists && f.exists() )
-            {
-                continue;
-            }
-
-            final DataFile d = f.getParent();
-            if ( !d.mkdirs() )
-            {
-                throw new IndyDataException( "Cannot create storage directory: {} for definition: {}", d, store );
-            }
-
+        loadFromDiskAnd( manager, serializer, summary, ( store ) -> {
             try
             {
-                final String json = serializer.writeValueAsString( store );
-                f.writeString( json, "UTF-8", summary );
-                logger.debug( "Persisted {} to disk at: {}\n{}", store, f, json );
+                storeArtifactStore( store, summary, false, false,
+                                    new EventMetadata().set( StoreDataManager.EVENT_ORIGIN, LOAD_FROM_DISK ) );
             }
-            catch ( final IOException e )
+            catch ( IndyDataException e )
             {
-                throw new IndyDataException( "Cannot write definition: {} to: {}. Reason: {}", e, store, f,
-                                              e.getMessage() );
+                throw new IllegalStateException( "Failed to start store data manager: " + e.getMessage(), e );
             }
-        }
-    }
-
-    private void delete( final ArtifactStore store, final ChangeSummary summary )
-        throws IndyDataException
-    {
-        logger.trace( "Attempting to delete data file for store: {}", store.getKey() );
-
-        final DataFile f =
-                manager.getDataFile( INDY_STORE, store.getPackageType(), store.getType().singularEndpointName(),
-                                     store.getName() + ".json" );
-
-        try
-        {
-            logger.trace( "Deleting file: {}", f );
-            f.delete( summary );
-        }
-        catch ( final IOException e )
-        {
-            throw new IndyDataException( "Cannot delete store definition: {} in file: {}. Reason: {}", e,
-                                         store.getKey(), f, e.getMessage() );
-        }
+        } );
+        started = true;
     }
 
     @Override
@@ -192,7 +100,7 @@ public class DataFileStoreDataManager
                               final boolean fireEvents, final EventMetadata eventMetadata )
         throws IndyDataException
     {
-        store( false, summary, store );
+        storeToDisk( manager, serializer, false, summary, store );
         super.postStore( store, original, summary, exists, fireEvents, eventMetadata );
     }
 
@@ -201,7 +109,7 @@ public class DataFileStoreDataManager
                                final EventMetadata eventMetadata )
         throws IndyDataException
     {
-        delete( store, summary );
+        deleteFromDisk( manager, store, summary );
         super.postDelete( store, summary, fireEvents, eventMetadata );
     }
 

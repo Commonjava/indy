@@ -21,7 +21,7 @@ import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.mem.data.fixture.ThreadDumper;
+import org.commonjava.indy.infinispan.data.fixture.ThreadDumper;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -82,8 +82,7 @@ public class ConcurrencyTest
                 new TestUpdatingEventDispatcher( repo, completionService, count );
 
         MemoryStoreDataManager dataManager =
-                new MemoryStoreDataManager( dispatcher,
-                                            new DefaultIndyConfiguration() );
+                new MemoryStoreDataManager( dispatcher );
 
         dispatcher.setDataManager( dataManager );
 
@@ -131,8 +130,7 @@ public class ConcurrencyTest
                 new TestDeletingEventDispatcher( completionService );
 
         MemoryStoreDataManager dataManager =
-                new MemoryStoreDataManager( dispatcher,
-                                            new DefaultIndyConfiguration() );
+                new MemoryStoreDataManager( dispatcher );
 
         dispatcher.setDataManager( dataManager );
 

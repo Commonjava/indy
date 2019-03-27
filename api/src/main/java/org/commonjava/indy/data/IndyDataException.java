@@ -32,8 +32,6 @@ public class IndyDataException
 
     private Object[] params;
 
-    private String formattedMessage;
-
     private int status;
 
     public IndyDataException( final String message, final Throwable cause, final Object... params )
@@ -68,53 +66,31 @@ public class IndyDataException
     }
 
     @Override
-    public synchronized String getMessage()
+    public String getMessage()
     {
-        if ( formattedMessage == null )
+        String format = super.getMessage();
+
+        if ( format == null || params == null || params.length < 1 )
         {
-            final String format = super.getMessage();
-            if ( params == null || params.length < 1 )
+            return format;
+        }
+
+        String formattedMessage = null;
+        format = format.replaceAll( "\\{\\}", "%s" );
+
+        try
+        {
+            formattedMessage = String.format( format, params );
+        }
+        catch ( final Throwable e )
+        {
+            try
+            {
+                formattedMessage = MessageFormat.format( format, params );
+            }
+            catch ( Throwable ex )
             {
                 formattedMessage = format;
-            }
-            else
-            {
-                final String original = formattedMessage;
-                try
-                {
-                    formattedMessage = String.format( format.replaceAll( "\\{\\}", "%s" ), params );
-                }
-                catch ( final Error e )
-                {
-                }
-                catch ( final RuntimeException e )
-                {
-                }
-                catch ( final Exception e )
-                {
-                }
-
-                if ( formattedMessage == null || original == formattedMessage )
-                {
-                    try
-                    {
-                        formattedMessage = MessageFormat.format( format, params );
-                    }
-                    catch ( final Error e )
-                    {
-                        formattedMessage = format;
-                        throw e;
-                    }
-                    catch ( final RuntimeException e )
-                    {
-                        formattedMessage = format;
-                        throw e;
-                    }
-                    catch ( final Exception e )
-                    {
-                        formattedMessage = format;
-                    }
-                }
             }
         }
 

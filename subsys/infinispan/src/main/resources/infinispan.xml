@@ -7,7 +7,6 @@
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
-      <!--<eviction strategy="LRU" size="200000" type="COUNT"/>-->
       <memory>
         <!--
           Limits the cache to this by the amount of entries in the cache.
@@ -115,6 +114,23 @@
         <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/changelog"/>
       </persistence>
     </local-cache>
+
+    <!-- TODO: these should be a distributed, non-persistence cache when enable cluster -->
+    <local-cache name="store-data" configuration="local-template">
+      <persistence passivation="true">
+        <file-store shared="false" preload="true" fetch-state="false" path="${indy.data}/store"/>
+      </persistence>
+    </local-cache>
+
+    <!--
+    A clustered lock is a lock which is distributed and shared among all nodes in the Infinispan cluster and
+    provides a way to execute code that will be synchronized between the nodes. Since 9.x.
+    -->
+<!--
+    <clustered-locks:clustered-locks>
+      <clustered-locks:clustered-lock name="store-data-manager" />
+    </clustered-locks:clustered-locks>
+-->
 
   </cache-container>
 </infinispan>

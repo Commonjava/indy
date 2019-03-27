@@ -187,6 +187,16 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-db-common</artifactId>
+        <version>1.8.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-db-infinispan</artifactId>
+        <version>1.8.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-bindings-jaxrs</artifactId>
         <version>1.8.0-SNAPSHOT</version>
       </dependency>
@@ -983,6 +993,11 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-client-hotrod</artifactId>
+        <version>${infinispanVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-clustered-lock</artifactId>
         <version>${infinispanVersion}</version>
       </dependency>
       <dependency>

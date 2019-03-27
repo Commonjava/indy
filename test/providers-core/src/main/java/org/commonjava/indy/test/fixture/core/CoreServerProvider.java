@@ -77,7 +77,7 @@ public class CoreServerProvider
             this.nfc = new MemoryNotFoundCache();
             this.dataFileManager =
                 new DataFileManager( new DataFileConfiguration( folder.newFolder( "indy-data" ) ), dataFileEvents );
-            this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch , new DefaultIndyConfiguration() );
+            this.storeManager = new DataFileStoreDataManager( dataFileManager, objectMapper, storeDispatch );
 
             storageConfig.setStorageRootDirectory( folder.newFolder( "indy-storage" ) );
             this.xml = new XMLInfrastructure();

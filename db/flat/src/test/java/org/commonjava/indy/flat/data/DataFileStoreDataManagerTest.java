@@ -56,8 +56,7 @@ public class DataFileStoreDataManagerTest
 
         final DataFileManager fileMgr = new DataFileManager( fileCfg, new DataFileEventManager() );
 
-        mgr = new DataFileStoreDataManager( fileMgr, new IndyObjectMapper( false ), new StoreEventDispatcherStub(),
-                                            new DefaultIndyConfiguration() );
+        mgr = new DataFileStoreDataManager( fileMgr, new IndyObjectMapper( false ), new StoreEventDispatcherStub() );
     }
 
     @Test

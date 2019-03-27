@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.mem.data;
+package org.commonjava.indy.db.common;
 
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
@@ -26,6 +26,7 @@ import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.UrlInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,11 +45,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.model.core.StoreType.group;
-import static org.commonjava.indy.model.core.StoreType.hosted;
-import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
-
 /**
  * This query interface is intended to be reusable across any {@link StoreDataManager} implementation. It contains logic
  * for working with the {@link ArtifactStore}s contained in the StoreDataManager, but this logic is not tied directly to
@@ -63,7 +59,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
  * Created by jdcasey on 5/10/17.
  */
 // TODO: Eventually, it should probably be an error if packageType isn't set explicitly
-public class MemoryArtifactStoreQuery<T extends ArtifactStore>
+public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         implements ArtifactStoreQuery<T>
 {
 
@@ -71,19 +67,19 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
 
     private StoreDataManager dataManager;
 
-    private String packageType = MAVEN_PKG_KEY;
+    private String packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
     private Set<StoreType> types;
 
     private Boolean enabled;
 
-    public MemoryArtifactStoreQuery( StoreDataManager dataManager )
+    public DefaultArtifactStoreQuery( StoreDataManager dataManager )
     {
         this.dataManager = dataManager;
     }
 
-    private MemoryArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
-                                      final Boolean enabled, final Class<T> storeCls )
+    private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
+                                       final Boolean enabled, final Class<T> storeCls )
     {
         this.dataManager = dataManager;
         this.packageType = packageType;
@@ -99,7 +95,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public MemoryArtifactStoreQuery<T> packageType( String packageType )
+    public DefaultArtifactStoreQuery<T> packageType( String packageType )
             throws IndyDataException
     {
         if ( !PackageTypes.contains( packageType ) )
@@ -113,26 +109,26 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public <C extends ArtifactStore> MemoryArtifactStoreQuery<C> storeType( Class<C> storeCls )
+    public <C extends ArtifactStore> DefaultArtifactStoreQuery<C> storeType( Class<C> storeCls )
     {
         if ( RemoteRepository.class.equals( storeCls ) )
         {
-            this.types = Collections.singleton( remote );
+            this.types = Collections.singleton( StoreType.remote );
         }
         else if ( HostedRepository.class.equals( storeCls ) )
         {
-            this.types = Collections.singleton( hosted );
+            this.types = Collections.singleton( StoreType.hosted );
         }
         else
         {
-            this.types = Collections.singleton( group );
+            this.types = Collections.singleton( StoreType.group );
         }
 
-        return (MemoryArtifactStoreQuery<C>) this;
+        return (DefaultArtifactStoreQuery<C>) this;
     }
 
     @Override
-    public MemoryArtifactStoreQuery<T> storeTypes( StoreType... types )
+    public DefaultArtifactStoreQuery<T> storeTypes( StoreType... types )
     {
         this.types = new HashSet<>( Arrays.asList( types ) );
         return this;
@@ -141,7 +137,7 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     @Override
     public ArtifactStoreQuery<T> concreteStores()
     {
-        return storeTypes( remote, hosted );
+        return storeTypes( StoreType.remote, StoreType.hosted );
     }
 
     @Override
@@ -149,6 +145,12 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     {
         this.enabled = enabled;
         return this;
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return this.dataManager.isEmpty();
     }
 
     @Override
@@ -246,8 +248,8 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<>( dataManager, storeKey.getPackageType(), enabled,
-                                                    Group.class ).stream(
+        return new DefaultArtifactStoreQuery<>( dataManager, storeKey.getPackageType(), enabled,
+                                                Group.class ).stream(
                 store -> ( (Group) store ).getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
 
@@ -276,9 +278,9 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
 
         // first try to find the remote repo by urlWithNoSchemeAndLastSlash
         /* @formatter:off */
-        result = new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
+        result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
                 store -> {
-                    if ( ( remote == store.getType() ) && urlInfo != null )
+                    if ( ( StoreType.remote == store.getType() ) && urlInfo != null )
                     {
                         final String targetUrl = ( (RemoteRepository) store ).getUrl();
                         UrlInfo targetUrlInfo = null;
@@ -313,9 +315,9 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
         {
             // ...if not found by hostname try to search by IP
             /* @formatter:off */
-            result = new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
+            result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
                     store -> {
-                        if ( ( remote == store.getType() ) && urlInfo != null )
+                        if ( ( StoreType.remote == store.getType() ) && urlInfo != null )
                         {
                             final String targetUrl = ( (RemoteRepository) store ).getUrl();
                             UrlInfo targetUrlInfo = null;
@@ -408,8 +410,8 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
 
         Set<StoreKey> processed = new HashSet<>();
 
-        Set<Group> all = new MemoryArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
-                                                              Group.class ).stream().collect( Collectors.toSet() );
+        Set<Group> all = new DefaultArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
+                                                          Group.class ).stream().collect( Collectors.toSet() );
 
         while ( !toProcess.isEmpty() )
         {
@@ -447,48 +449,48 @@ public class MemoryArtifactStoreQuery<T extends ArtifactStore>
     public List<RemoteRepository> getAllRemoteRepositories()
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled,
-                                                               RemoteRepository.class ).getAll();
+        return new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled,
+                                                RemoteRepository.class ).getAll();
     }
 
     @Override
     public List<HostedRepository> getAllHostedRepositories()
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled,
-                                                               HostedRepository.class ).getAll();
+        return new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled,
+                                                HostedRepository.class ).getAll();
     }
 
     @Override
     public List<Group> getAllGroups()
             throws IndyDataException
     {
-        return new MemoryArtifactStoreQuery<>( dataManager, packageType, enabled, Group.class ).getAll();
+        return new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, Group.class ).getAll();
     }
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
             throws IndyDataException
     {
-        return (RemoteRepository) dataManager.getArtifactStore( new StoreKey( packageType, remote, name ) );
+        return (RemoteRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.remote, name ) );
     }
 
     @Override
     public HostedRepository getHostedRepository( final String name )
             throws IndyDataException
     {
-        return (HostedRepository) dataManager.getArtifactStore( new StoreKey( packageType, hosted, name ) );
+        return (HostedRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.hosted, name ) );
     }
 
     @Override
     public Group getGroup( final String name )
             throws IndyDataException
     {
-        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
+        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.group, name ) );
     }
 
     @Override
-    public MemoryArtifactStoreQuery<T> noPackageType()
+    public DefaultArtifactStoreQuery<T> noPackageType()
     {
         packageType = null;
         return this;

@@ -51,7 +51,7 @@ public class IDETestProvider
     @PostConstruct
     public void start()
     {
-        storeDataManager = new DataFileStoreDataManager( dataFileManager, objectMapper, dispatcher, config );
+        storeDataManager = new DataFileStoreDataManager( dataFileManager, objectMapper, dispatcher );
     }
 
     @Produces

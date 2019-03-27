@@ -128,9 +128,5 @@ public interface StoreDataManager
      */
     boolean isReadonly( ArtifactStore store );
 
-    /**
-     * Check if store is a readonly hosted repository. Return true only when store is a readonly {@link HostedRepository}
-     */
-    boolean isReadonly( StoreKey storeKey );
-
+    boolean isEmpty();
 }

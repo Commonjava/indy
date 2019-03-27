@@ -73,6 +73,12 @@
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-client-hotrod</artifactId>
     </dependency>
+<!--
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-clustered-lock</artifactId>
+    </dependency>
+-->
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>

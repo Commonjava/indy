@@ -125,10 +125,9 @@ public class TestAutoProxyDataManager
     }
 
     @Override
-    public boolean isReadonly( StoreKey storeKey )
+    public boolean isEmpty()
     {
-        return delegate.isReadonly( storeKey );
+        return delegate.isEmpty();
     }
-
 
 }

@@ -30,8 +30,10 @@
   <name>Indy :: DB :: Parent</name>
   
   <modules>
+    <module>common</module>
     <module>memory</module>
     <module>flat</module>
+    <module>infinispan</module>
   </modules>
   
 </project>

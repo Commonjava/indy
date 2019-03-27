@@ -56,6 +56,8 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
 
     ArtifactStoreQuery<T> enabledState( Boolean enabled );
 
+    boolean isEmpty();
+
     List<T> getAll()
             throws IndyDataException;
 

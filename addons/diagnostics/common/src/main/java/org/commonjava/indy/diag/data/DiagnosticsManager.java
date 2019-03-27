@@ -46,7 +46,7 @@ import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.apache.commons.lang.StringUtils.join;
-import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
 
 /**
  * Created by jdcasey on 1/11/17.
