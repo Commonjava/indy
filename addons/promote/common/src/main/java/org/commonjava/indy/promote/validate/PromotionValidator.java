@@ -116,18 +116,29 @@ public class PromotionValidator
     {
         ValidationRuleSet set = validationsManager.getRuleSetMatching( request.getTargetKey() );
 
-        final ArtifactStore store = getRequestStore( request, baseUrl );
-        final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
+        ArtifactStore source;
+        try
+        {
+            source = storeDataMgr.getArtifactStore( request.getSource() );
+        }
+        catch ( IndyDataException e )
+        {
+            throw new PromotionValidationException(
+                    String.format( "Failed to retrieve source ArtifactStore: %s for validation", request.getSource() ),
+                    e );
+        }
 
         if ( set != null )
         {
-            
+
             logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
 
             result.setRuleSet( set.getName() );
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
             {
+                final ArtifactStore store = getRequestStore( request, baseUrl );
+                final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
                 try
                 {
                     DrainingExecutorCompletionService<PromotionValidationException> svc =
@@ -202,15 +213,19 @@ public class PromotionValidator
                         }
                     }
                 }
-
+                return req;
+            }
+            else
+            {
+                logger.info( "No validation rules are defined for: {}", request.getTargetKey() );
+                return new ValidationRequest( request, set, validationTools, source );
             }
         }
         else
         {
             logger.info( "No validation rule-sets are defined for: {}", request.getTargetKey() );
+            return new ValidationRequest( request, set, validationTools, source );
         }
-
-        return req;
     }
 
     @Measure
@@ -281,10 +296,13 @@ public class PromotionValidator
                          baseUrl );
             final PathsPromoteRequest pathsReq = (PathsPromoteRequest) promoteRequest;
 
-            String tempName = PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName() + new SimpleDateFormat(
-                    "yyyyMMdd.hhmmss.SSSZ" ).format( new Date() );
+            String tempName =
+                    PROMOTE_REPO_PREFIX + "tmp_" + pathsReq.getSource().getName() + "_" + new SimpleDateFormat(
+                            "yyyyMMdd.hhmmss.SSSZ" ).format( new Date() );
 
-            final RemoteRepository tempRemote = new RemoteRepository( tempName, baseUrl );
+            String packageType = pathsReq.getSource().getPackageType();
+
+            final RemoteRepository tempRemote = new RemoteRepository( packageType, tempName, baseUrl );
 
             tempRemote.setPathMaskPatterns( pathsReq.getPaths() );
 

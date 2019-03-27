@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -42,6 +41,7 @@ import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
@@ -249,6 +249,15 @@ public class IndyMetricsManager
             getMeter( name( name, METER ) ).mark();
             logger.trace( "CALLS++ {}", metricName );
         }
+    }
+
+    public <T> void addGauges( Class<?> className, String method, Map<String, T> gauges )
+    {
+        String defaultName = IndyMetricsConstants.getDefaultName( className, method );
+        gauges.forEach( ( k, t ) -> {
+            String name = IndyMetricsConstants.getName( config.getNodePrefix(), DEFAULT, defaultName, k );
+            metricRegistry.gauge( name, () -> () -> t );
+        } );
     }
 
 }
