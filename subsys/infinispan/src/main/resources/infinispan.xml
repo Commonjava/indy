@@ -90,7 +90,8 @@
       </memory>
     </local-cache>
 
-    <local-cache name="partyline-GLM-locks">
+    <!-- TODO: this should be a distributed cache when enable cluster -->
+    <local-cache name="partyline-cluster-locks">
       <locking
               isolation="READ_COMMITTED"
               write-skew="true"/>
