@@ -13,12 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.model.change;
+package org.commonjava.indy.changelog.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.StoreKey;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -29,6 +32,8 @@ public class RepositoryChangeLog
 {
     @ApiModelProperty( required = true, dataType = "string",
                        value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
+    @JsonProperty
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private StoreKey storeKey;
 
     @ApiModelProperty( required = true, dataType = "java.util.Date", value = "Timestamp for this changing" )

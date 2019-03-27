@@ -32,6 +32,10 @@
       <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-changelog-model-java</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.github.java-diff-utils</groupId>
       <artifactId>java-diff-utils</artifactId>
     </dependency>
@@ -39,17 +43,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-memory</artifactId>
-      <scope>test</scope>
-    </dependency>
-    -->
   </dependencies>
 
   <build>

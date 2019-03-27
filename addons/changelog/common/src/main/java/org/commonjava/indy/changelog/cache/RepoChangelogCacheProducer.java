@@ -15,8 +15,7 @@
  */
 package org.commonjava.indy.changelog.cache;
 
-import org.commonjava.indy.model.change.RepositoryChangeLog;
-import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
+import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 
