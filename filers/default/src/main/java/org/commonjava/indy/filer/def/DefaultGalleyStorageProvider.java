@@ -16,20 +16,15 @@
 package org.commonjava.indy.filer.def;
 
 import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.cdi.util.weft.WeftScheduledExecutor;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
-import org.commonjava.maven.galley.cache.infinispan.FastLocalCacheProviderFactory;
 import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
-import org.commonjava.maven.galley.cache.routes.RoutingCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.NoCacheTransferDecorator;
@@ -41,7 +36,6 @@ import org.commonjava.maven.galley.io.checksum.Sha256GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.TransferMetadataConsumer;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.FilePatternMatcher;
-import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
@@ -65,10 +59,8 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.io.File;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
-import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 
@@ -89,7 +81,7 @@ public class DefaultGalleyStorageProvider
     @Inject
     private PathGenerator pathGenerator;
 
-    @PartylineGLMCache
+    @PartylineClusterLockCache
     @Inject
     private CacheHandle<String, GlobalLockOwner> partylineGLMCache;
 

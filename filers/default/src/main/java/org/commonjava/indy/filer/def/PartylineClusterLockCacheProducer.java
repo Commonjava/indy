@@ -15,17 +15,26 @@
  */
 package org.commonjava.indy.filer.def;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.util.partyline.lock.global.GlobalLockOwner;
 
-@Qualifier
-@Target( { ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
-@Retention( RetentionPolicy.RUNTIME)
-@Documented
-public @interface PartylineGLMCache
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
+
+@ApplicationScoped
+public class PartylineClusterLockCacheProducer
 {
+    @Inject
+    private CacheProducer cacheProducer;
+
+    @PartylineClusterLockCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<String, GlobalLockOwner> getPartylineLockCache()
+    {
+        return cacheProducer.getCache( "partyline-cluster-locks" );
+    }
+
 }
