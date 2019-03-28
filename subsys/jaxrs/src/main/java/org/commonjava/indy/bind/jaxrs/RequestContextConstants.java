@@ -61,4 +61,6 @@ public class RequestContextConstants
     @Thread @MDC
     public static final String PREFERRED_ID = "preferred-id";
 
+    @Thread @MDC
+    public static final String ENVIRONMENT = "environment";
 }
