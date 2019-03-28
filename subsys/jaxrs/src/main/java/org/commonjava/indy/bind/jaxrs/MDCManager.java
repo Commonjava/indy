@@ -15,9 +15,12 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.EnvironmentConfig;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
