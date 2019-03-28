@@ -201,7 +201,16 @@ public class DefaultContentIndexManager
         IndexedStorePath ispKey = new IndexedStorePath( key, path );
         IndexedStorePath val = contentIndex.get( ispKey );
         logger.trace( "Get index{}, key: {}", ( val == null ? " (NOT FOUND)" : "" ), ispKey );
-        return val == null ? null : val.getOriginStoreKey();
+        if ( val == null )
+        {
+            return null;
+        }
+        StoreKey ret = val.getOriginStoreKey();
+        if ( ret == null )
+        {
+            ret = val.getStoreKey(); // for self-to-self index
+        }
+        return ret;
     }
 
     @Override
@@ -227,7 +236,7 @@ public class DefaultContentIndexManager
 
         IndexedStorePath origin = new IndexedStorePath( originKey, path );
         logger.trace( "Indexing path: {} in: {}", path, originKey );
-        contentIndex.put( origin, origin );
+        contentIndex.put( origin, origin ); // self-to-self index
 
         Set<StoreKey> keySet = new HashSet<>( Arrays.asList( topKeys ) );
         keySet.forEach( ( key ) -> {
