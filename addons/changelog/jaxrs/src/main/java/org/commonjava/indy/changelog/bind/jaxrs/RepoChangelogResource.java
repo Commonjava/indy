@@ -40,9 +40,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-@Api( value = "Indy Repository change logs searching" )
+/**
+ * <strong>NOTE:</strong>
+ * This rest endpoint is just used for testing! Do not use it for real any real operations!
+ */
+@Api( value = "Indy Repository change logs searching."
+        + "/n *Warning*: This rest endpoint is only used for testing, "
+        + "and will not return all results. It should not be used for any real operations" )
 @Path( "/api/repo/changelog" )
 @ApplicationScoped
 public class RepoChangelogResource
@@ -75,7 +80,9 @@ public class RepoChangelogResource
         return Response.status( 200 ).entity( getLogsByStoreKey( key ) ).build();
     }
 
-    @ApiOperation( "Retrieve all change logs" )
+    @ApiOperation( "Retrieve all change logs./n "
+                           + "*Warning*: This rest endpoint is only used for testing, "
+                           + "and will not return all results. It should not be used for any real operations" )
     @ApiResponses( { @ApiResponse( code = 404, message = "Change logs are not available" ),
                            @ApiResponse( code = 200, response = String.class,
                                          message = "change logs for store key" ) } )
@@ -91,16 +98,42 @@ public class RepoChangelogResource
         return Response.status( 200 ).entity( getAllLogs() ).build();
     }
 
+    private final int RESULT_LIMITATION_FOR_TESTING = 10;
+
     private List<RepositoryChangeLog> getLogsByStoreKey( StoreKey storeKey )
     {
-        return changeLogCache.execute( c -> c.values()
-                                             .stream()
-                                             .filter( ch -> ch.getStoreKey().equals( storeKey ) )
-                                             .collect( Collectors.toList() ) );
+        final ArrayList<RepositoryChangeLog> results = new ArrayList<>( RESULT_LIMITATION_FOR_TESTING );
+
+        return changeLogCache.execute( c -> {
+            for ( RepositoryChangeLog log : c.values() )
+            {
+                if ( log.getStoreKey().equals( storeKey ) )
+                {
+                    results.add( log );
+                }
+                if ( results.size() >= RESULT_LIMITATION_FOR_TESTING )
+                {
+                    return results;
+                }
+            }
+            return results;
+        } );
+
     }
 
     private List<RepositoryChangeLog> getAllLogs()
     {
-        return changeLogCache.execute( c -> new ArrayList<>( c.values() ) );
+        final ArrayList<RepositoryChangeLog> results = new ArrayList<>( RESULT_LIMITATION_FOR_TESTING );
+        return changeLogCache.execute( c -> {
+            for ( RepositoryChangeLog log : c.values() )
+            {
+                results.add( log );
+                if ( results.size() >= RESULT_LIMITATION_FOR_TESTING )
+                {
+                    return results;
+                }
+            }
+            return results;
+        } );
     }
 }
