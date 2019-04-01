@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -69,10 +70,11 @@ public class ImpliedRepositoryDetectorTest
         public TestImpliedRepositoryDetector( MavenPomReader pomReader, StoreDataManager storeManager,
                                               ImpliedRepoMetadataManager metadataManager,
                                               ArtifactStoreValidator remoteValidator, ScriptEngine scriptEngine,
-                                              ImpliedRepoConfig config )
+                                              ImpliedRepoConfig config,
+                                              IndyObjectMapper mapper )
         {
             super( pomReader, storeManager, metadataManager, remoteValidator, scriptEngine,
-                   Executors.newSingleThreadExecutor(), config );
+                   Executors.newSingleThreadExecutor(), config, mapper );
         }
     }
 
@@ -123,9 +125,11 @@ public class ImpliedRepositoryDetectorTest
 
         validator = new ArtifactStoreValidator( fixture.getTransferManager() );
 
+        final IndyObjectMapper mapper = new IndyObjectMapper( Collections.emptySet() );
+
         ScriptEngine engine = new ScriptEngine( dataFiles );
         detector = new TestImpliedRepositoryDetector( fixture.getPomReader(), storeManager, metadataManager, validator,
-                                                      engine, config );
+                                                      engine, config, mapper );
 
         summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "test setup" );
 
