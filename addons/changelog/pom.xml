@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <!--
 
     Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
@@ -17,35 +18,21 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-addons</artifactId>
     <version>1.8.0-SNAPSHOT</version>
   </parent>
-  
-  <artifactId>indy-deployments</artifactId>
+  <artifactId>indy-changelog</artifactId>
+  <name>Indy :: Add-Ons :: ChangeLog :: Parent</name>
   <packaging>pom</packaging>
 
-  <name>Indy :: Deployments :: Parent</name>
-  
   <modules>
-    <module>launcher</module>
-    <module>cache-migrator</module>
+    <module>common</module>
+    <module>ftests</module>
+    <module>jaxrs</module>
+    <module>model-java</module>
+    <module>client-java</module>
   </modules>
 
-  <profiles>
-    <profile>
-      <id>docker</id>
-      <modules>
-        <module>docker</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>release</id>
-      <modules>
-        <module>docker</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
