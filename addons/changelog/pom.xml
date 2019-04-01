@@ -32,6 +32,7 @@
     <module>ftests</module>
     <module>jaxrs</module>
     <module>model-java</module>
+    <module>client-java</module>
   </modules>
 
 </project>

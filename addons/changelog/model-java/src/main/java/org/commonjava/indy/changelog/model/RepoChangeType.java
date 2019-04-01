@@ -1,4 +1,4 @@
-package org.commonjava.indy.model.change;
+package org.commonjava.indy.changelog.model;
 
 public enum RepoChangeType
 {

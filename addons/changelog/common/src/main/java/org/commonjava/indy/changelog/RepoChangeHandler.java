@@ -21,9 +21,9 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
+import org.commonjava.indy.changelog.model.RepoChangeType;
 import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.change.RepoChangeType;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -67,6 +67,7 @@ public class RepoChangeHandler
         String user = ChangeSummary.SYSTEM_USER;
         String summary = "";
         String version = "";
+        Date timeStamp = new Date();
         if ( changeSummary != null )
         {
             if ( changeSummary.getUser() != null )
@@ -80,6 +81,9 @@ public class RepoChangeHandler
             if ( changeSummary.getRevisionId() != null )
             {
                 version = changeSummary.getRevisionId();
+            }else{
+                //FIXME: we need version not null here to let it be a key, not sure if timestamp is good here
+                version = String.format( "%s", timeStamp.getTime() );
             }
         }
 
@@ -94,7 +98,7 @@ public class RepoChangeHandler
                 changeLog.setStoreKey( store.getKey() );
                 changeLog.setChangeTime( new Date() );
                 changeLog.setDiffContent( patchString );
-                changeLog.setChangeType( RepoChangeType.UPDATE.name() );
+                changeLog.setChangeType( origin == null ? RepoChangeType.CREATE : RepoChangeType.UPDATE );
                 changeLog.setUser( user );
                 changeLog.setSummary( summary );
                 changeLog.setVersion( version );

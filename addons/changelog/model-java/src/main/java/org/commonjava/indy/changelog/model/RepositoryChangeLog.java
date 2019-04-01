@@ -19,9 +19,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.StoreKey;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -33,7 +30,6 @@ public class RepositoryChangeLog
     @ApiModelProperty( required = true, dataType = "string",
                        value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
     @JsonProperty
-    @Field( index = Index.YES, analyze = Analyze.NO )
     private StoreKey storeKey;
 
     @ApiModelProperty( required = true, dataType = "java.util.Date", value = "Timestamp for this changing" )
@@ -50,7 +46,7 @@ public class RepositoryChangeLog
 
     @ApiModelProperty( required = true, dataType = "string", value = "The type of this change [delete|update|create]" )
     @JsonProperty
-    private String changeType;
+    private RepoChangeType changeType;
 
     @ApiModelProperty( required = true, dataType = "string", value = "User who did this change" )
     @JsonProperty
@@ -100,12 +96,12 @@ public class RepositoryChangeLog
         this.summary = summary;
     }
 
-    public String getChangeType()
+    public RepoChangeType getChangeType()
     {
         return changeType;
     }
 
-    public void setChangeType( String changeType )
+    public void setChangeType( RepoChangeType changeType )
     {
         this.changeType = changeType;
     }

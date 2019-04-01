@@ -25,11 +25,9 @@ import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
 import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.ApplicationContent;
-import org.infinispan.query.Search;
-import org.infinispan.query.dsl.Query;
-import org.infinispan.query.dsl.QueryFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -40,9 +38,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Api( value = "Indy Repository change logs searching")
+@Api( value = "Indy Repository change logs searching" )
 @Path( "/api/repo/changelog" )
 @ApplicationScoped
 public class RepoChangelogResource
@@ -60,16 +60,19 @@ public class RepoChangelogResource
                            @ApiResponse( code = 200, response = String.class,
                                          message = "Change logs for store key" ) } )
     @GET
-    @Path( "{storeKey}" )
+    @Path( "/{packageType}/{type: (hosted|group|remote)}/{name}" )
     @Produces( ApplicationContent.application_json )
-    public Response getChangelogByStoreKey( final @ApiParam( required = true ) @PathParam( "storeKey" ) String storeKey,
-                                            @Context final UriInfo uriInfo )
+    public Response getChangelogByStoreKey(
+            final @ApiParam( required = true ) @PathParam( "packageType" ) String packageType,
+            final @ApiParam( required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, @Context final UriInfo uriInfo )
     {
         if ( !config.isEnabled() )
         {
             return Response.status( 404 ).entity( "{\"error\":\"Change log module not enabled\"}" ).build();
         }
-        return Response.status( 200 ).entity( getLogsByStoreKey( storeKey ) ).build();
+        StoreKey key = new StoreKey( packageType, StoreType.valueOf( type ), name );
+        return Response.status( 200 ).entity( getLogsByStoreKey( key ) ).build();
     }
 
     @ApiOperation( "Retrieve all change logs" )
@@ -88,22 +91,16 @@ public class RepoChangelogResource
         return Response.status( 200 ).entity( getAllLogs() ).build();
     }
 
-    private List<RepositoryChangeLog> getLogsByStoreKey( String storeKey )
+    private List<RepositoryChangeLog> getLogsByStoreKey( StoreKey storeKey )
     {
-        QueryFactory queryFactory =
-                changeLogCache.execute( ( cache ) -> Search.getQueryFactory( changeLogCache.getCache() ) );
-        Query query = queryFactory.from( RepositoryChangeLog.class )
-                                  .having( "storeKey" )
-                                  .eq( StoreKey.fromString( storeKey ) )
-                                  .build();
-        return query.list();
+        return changeLogCache.execute( c -> c.values()
+                                             .stream()
+                                             .filter( ch -> ch.getStoreKey().equals( storeKey ) )
+                                             .collect( Collectors.toList() ) );
     }
 
     private List<RepositoryChangeLog> getAllLogs()
     {
-        QueryFactory queryFactory =
-                changeLogCache.execute( ( cache ) -> Search.getQueryFactory( changeLogCache.getCache() ) );
-        Query query = queryFactory.from( RepositoryChangeLog.class ).build();
-        return query.list();
+        return changeLogCache.execute( c -> new ArrayList<>( c.values() ) );
     }
 }
