@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.implrepo.change;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -30,6 +31,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
@@ -52,11 +54,14 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
+import static org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager.IMPLIED_BY_STORES;
+import static org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager.IMPLIED_STORES;
 import static org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator.IMPLIED_REPO_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -75,6 +80,9 @@ public class ImpliedRepositoryDetector
 
     @Inject
     private MavenPomReader pomReader;
+
+    @Inject
+    private IndyObjectMapper mapper;
 
     @Inject
     private StoreDataManager storeManager;
@@ -103,7 +111,8 @@ public class ImpliedRepositoryDetector
     public ImpliedRepositoryDetector( final MavenPomReader pomReader, final StoreDataManager storeManager,
                                       final ImpliedRepoMetadataManager metadataManager,
                                       final ArtifactStoreValidator remoteValidator, final ScriptEngine scriptEngine,
-                                      final ExecutorService executor, final ImpliedRepoConfig config )
+                                      final ExecutorService executor, final ImpliedRepoConfig config,
+                                      final IndyObjectMapper mapper )
     {
         this.pomReader = pomReader;
         this.storeManager = storeManager;
@@ -112,6 +121,7 @@ public class ImpliedRepositoryDetector
         this.scriptEngine = scriptEngine;
         this.config = config;
         this.executor = executor;
+        this.mapper = mapper;
     }
 
     public ImpliedRepositoryCreator createRepoCreator()
@@ -310,11 +320,19 @@ public class ImpliedRepositoryDetector
             logger.debug( "Adding implied-repo metadata to: {} and {}", job.store,
                           new JoinString( ", ", job.implied ) );
             metadataManager.addImpliedMetadata( job.store, job.implied );
+
+            ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Update " + IMPLIED_STORES );
+            storeManager.storeArtifactStore( job.store, summary, false, false, null );
+
             return true;
         }
         catch ( final ImpliedReposException e )
         {
             logger.error( "Failed to store list of implied stores in: " + job.store.getKey(), e );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Failed to update ArtifactStore {}", job.store );
         }
 
         return false;
@@ -395,6 +413,17 @@ public class ImpliedRepositoryDetector
                     }
 
                     rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
+                    try
+                    {
+                        rr.setMetadata( IMPLIED_BY_STORES, mapper.writeValueAsString(
+                                        new ImpliedRepoMetadataManager.ImpliedRemotesWrapper(
+                                                        Collections.singletonList( job.store.getKey() ) ) ) );
+                    }
+                    catch ( JsonProcessingException e )
+                    {
+                        logger.error( "Failed to set {}", IMPLIED_BY_STORES );
+                        continue;
+                    }
 
                     if ( !remoteValidator.isValid( rr ) )
                     {

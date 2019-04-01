@@ -154,11 +154,11 @@ public class ImpliedRepoMetadataManager
         }
     }
 
-    private static final class ImpliedRemotesWrapper
+    public static final class ImpliedRemotesWrapper
     {
         private List<StoreKey> items;
 
-        ImpliedRemotesWrapper( final List<StoreKey> items )
+        public ImpliedRemotesWrapper( final List<StoreKey> items )
         {
             this.items = items;
         }
