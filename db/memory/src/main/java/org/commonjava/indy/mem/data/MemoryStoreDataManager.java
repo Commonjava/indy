@@ -26,7 +26,6 @@ import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -50,7 +49,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
@@ -335,6 +333,10 @@ public class MemoryStoreDataManager
                 {
                     try
                     {
+                        if ( eventMetadata != null && summary != null )
+                        {
+                            eventMetadata.set( StoreDataManager.CHANGE_SUMMARY, summary );
+                        }
                         logger.debug( "Starting pre-store actions for update of: {}", storeKey );
                         preStore( store, original, summary, original != null, fireEvents, eventMetadata );
                         logger.debug( "Pre-store actions complete for update of: {}", storeKey );

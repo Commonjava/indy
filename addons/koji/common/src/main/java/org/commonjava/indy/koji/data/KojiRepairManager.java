@@ -239,7 +239,7 @@ public class KojiRepairManager
 
                         store.setPathMaskPatterns( patterns );
 
-                        final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                        final ChangeSummary changeSummary = new ChangeSummary( user,
                                                                                "Repairing remote repository path masks to Koji build: "
                                                                                        + build.getNvr() );
 
@@ -587,7 +587,7 @@ public class KojiRepairManager
                         if ( !request.isDryRun() )
                         {
                             ( (RemoteRepository) store ).setMetadataTimeoutSeconds( NEVER_TIMEOUT_VALUE );
-                            final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                            final ChangeSummary changeSummary = new ChangeSummary( user,
                                                                                    "Repairing remote repository path masks to Koji build: "
                                                                                            + nvr );
                             storeManager.storeArtifactStore( store, changeSummary, false, true, new EventMetadata() );
