@@ -290,6 +290,10 @@ public abstract class AbstractStoreDataManager
 
                 try
                 {
+                    if ( eventMetadata != null && summary != null )
+                    {
+                        eventMetadata.set( StoreDataManager.CHANGE_SUMMARY, summary );
+                    }
                     logger.debug( "Starting pre-store actions for {}", k );
                     preStore( store, original, summary, original != null, fireEvents, eventMetadata );
                     logger.debug( "Pre-store actions complete for {}", k );
