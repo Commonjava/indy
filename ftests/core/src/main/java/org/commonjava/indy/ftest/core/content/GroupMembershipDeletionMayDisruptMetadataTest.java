@@ -94,7 +94,7 @@ public class GroupMembershipDeletionMayDisruptMetadataTest
             action = "debug(\"generateGroupFileContent waiting...\"); rendezvous(\"myRendezvous\"); debug(\"generateGroupFileContent go.\")" ),
         @BMRule(
             name = "Wait after storeArtifactStore",
-            targetClass = "MemoryStoreDataManager",
+            targetClass = "AbstractStoreDataManager",
             targetMethod = "storeArtifactStore",
             targetLocation = "EXIT",
             condition = "org.commonjava.indy.ftest.core.content.GroupMembershipDeletionMayDisruptMetadataTest.isPrepareDone()",

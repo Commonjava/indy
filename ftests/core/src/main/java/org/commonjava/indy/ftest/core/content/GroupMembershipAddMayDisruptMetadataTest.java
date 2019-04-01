@@ -78,7 +78,7 @@ public class GroupMembershipAddMayDisruptMetadataTest
             action = "debug(\"generateGroupFileContent waiting...\"); rendezvous(\"myRendezvous\"); debug(\"generateGroupFileContent go.\")" ),
         @BMRule(
             name = "Wait after storeArtifactStore",
-            targetClass = "MemoryStoreDataManager",
+            targetClass = "AbstractStoreDataManager",
             targetMethod = "storeArtifactStore",
             targetLocation = "EXIT",
             action = "debug(\"storeArtifactStore waiting...\"); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
