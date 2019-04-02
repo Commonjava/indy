@@ -47,6 +47,7 @@
     <module>pkg-npm</module>
     <module>hosted-by-archive</module>
     <module>content-browse</module>
+    <module>changelog</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>

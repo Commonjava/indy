@@ -240,6 +240,12 @@
       <type>tar.gz</type>
       <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-changelog-common</artifactId>
+      <classifier>confset</classifier>
+      <type>tar.gz</type>
+    </dependency>
   </dependencies>
   
   <build>
