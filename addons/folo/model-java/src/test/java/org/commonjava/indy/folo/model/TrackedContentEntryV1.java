@@ -24,15 +24,11 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import static org.commonjava.indy.model.core.AccessChannel.GENERIC_PROXY;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
-public class TrackedContentEntry
-        implements Comparable<TrackedContentEntry>,Externalizable
+public class TrackedContentEntryV1
+        implements Comparable<TrackedContentEntryV1>, Externalizable
 {
-    private static final int VERSION = 2;
-
     private TrackingKey trackingKey;
 
     private StoreKey storeKey;
@@ -55,14 +51,14 @@ public class TrackedContentEntry
 
     private long index = System.currentTimeMillis();
 
-    public TrackedContentEntry()
+    public TrackedContentEntryV1()
     {
     }
 
-    public TrackedContentEntry( final TrackingKey trackingKey, final StoreKey storeKey,
-                                final AccessChannel accessChannel, final String originUrl, final String path,
-                                final StoreEffect effect, final Long size,
-                                final String md5, final String sha1, final String sha256 )
+    public TrackedContentEntryV1( final TrackingKey trackingKey, final StoreKey storeKey,
+                                  final AccessChannel accessChannel, final String originUrl, final String path,
+                                  final StoreEffect effect, final Long size,
+                                  final String md5, final String sha1, final String sha256 )
     {
         this.trackingKey = trackingKey;
         this.storeKey = storeKey;
@@ -142,7 +138,7 @@ public class TrackedContentEntry
     }
 
     @Override
-    public int compareTo( final TrackedContentEntry other )
+    public int compareTo( final TrackedContentEntryV1 other )
     {
         int comp = trackingKey.getId().compareTo( other.getTrackingKey().getId() );
         if ( comp == 0 )
@@ -193,7 +189,7 @@ public class TrackedContentEntry
         {
             return false;
         }
-        final TrackedContentEntry other = (TrackedContentEntry) obj;
+        final TrackedContentEntryV1 other = (TrackedContentEntryV1) obj;
         if ( trackingKey == null )
         {
             if ( other.trackingKey != null )
@@ -264,9 +260,7 @@ public class TrackedContentEntry
     public void writeExternal( final ObjectOutput out )
             throws IOException
     {
-        out.writeObject( Integer.toString( VERSION ) );
         out.writeObject( trackingKey );
-        out.writeObject( storeKey.getPackageType() );
         out.writeObject( storeKey.getName() );
         out.writeObject( storeKey.getType().name() );
         out.writeObject( accessChannel.name() );
@@ -284,47 +278,14 @@ public class TrackedContentEntry
     public void readExternal( final ObjectInput in )
             throws IOException, ClassNotFoundException
     {
-        // This is a little awkward. The original version didn't have a version constant, so it wasn't possible
-        // to just read it from the data stream and use it to guide the deserialization process. Instead,
-        // we have to read the first object and determine whether it's the object version or the tracking key,
-        // which was the first field in the serialized data stream back in the first version of this class.
-        Object whatIsThis = in.readObject();
-
-        int version;
-        String packageType = null;
-        if ( whatIsThis instanceof TrackingKey )
-        {
-            version = 1;
-            trackingKey = (TrackingKey) whatIsThis;
-            packageType = PKG_TYPE_MAVEN;
-        }
-        else
-        {
-            version = Integer.parseInt( String.valueOf( whatIsThis ) );
-            trackingKey = (TrackingKey) in.readObject();
-            packageType = (String) in.readObject();
-        }
-
-        // TODO: We should make future versioning / deserialization decisions based on the version we read / infer above
-        if ( version > VERSION )
-        {
-            throw new IOException(
-                    "This class is of an older version: " + VERSION + " vs. the version read from the data stream: "
-                            + version + ". Cannot deserialize." );
-        }
+        trackingKey = (TrackingKey) in.readObject();
 
         final String storeKeyName = (String) in.readObject();
         final StoreType storeType = StoreType.get( (String) in.readObject() );
+        storeKey = new StoreKey( storeType, storeKeyName );
 
         final String accessChannelStr = (String) in.readObject();
         accessChannel = "".equals( accessChannelStr ) ? null : AccessChannel.valueOf( accessChannelStr );
-
-        if ( version == 1 && accessChannel == GENERIC_PROXY )
-        {
-            packageType = PKG_TYPE_GENERIC_HTTP;
-        }
-
-        storeKey = new StoreKey( packageType, storeType, storeKeyName );
 
         final String pathStr = (String) in.readObject();
         path = "".equals( pathStr ) ? null : pathStr;
