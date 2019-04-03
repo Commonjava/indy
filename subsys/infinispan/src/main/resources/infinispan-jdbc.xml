@@ -120,7 +120,7 @@
       -->
       <expiration lifespan="259200000" max-idle="259200000" interval="900000" />
       <indexing index="LOCAL">
-        <property name="default.directory_provider">ram</property>
+        <property name="default.directory_provider">infinispan</property>
       </indexing>
     </local-cache>
 
@@ -133,5 +133,37 @@
       </memory>
     </local-cache>
 
+    <local-cache name="LuceneIndexesMetadata">
+      <persistence passivation="false">
+        <jdbc:string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_index">
+            <jdbc:id-column name="K" type="TEXT"/>
+            <jdbc:data-column name="V" type="BYTEA"/>
+            <jdbc:timestamp-column name="T" type="BIGINT"/>
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+
+    <local-cache name="LuceneIndexesData">
+      <persistence passivation="false">
+        <jdbc:string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper">
+          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_index">
+            <jdbc:id-column name="K" type="TEXT"/>
+            <jdbc:data-column name="V" type="BYTEA"/>
+            <jdbc:timestamp-column name="T" type="BIGINT"/>
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+      <indexing index="NONE" />
+    </local-cache>
+    
+    <!-- not sure if this locking is needed in local mode for lucene index
+    <local-cache name="LuceneIndexesLocking" mode="SYNC" remote-timeout="25000">
+      <indexing index="NONE"/>
+    </local-cache>
+    -->
   </cache-container>
 </infinispan>
