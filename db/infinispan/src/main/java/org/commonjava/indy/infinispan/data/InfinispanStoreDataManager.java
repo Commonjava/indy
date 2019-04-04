@@ -51,7 +51,7 @@ public class InfinispanStoreDataManager
 
     @Inject
     @StoreDataCache
-    private CacheHandle<String, String> stores;
+    private CacheHandle<StoreKey, String> stores;
 
     @Inject
     private CacheProducer cacheProducer;
@@ -88,7 +88,7 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore getArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.get( key.toString() );
+        String json = stores.get( key );
         return readValueByJson( json, key );
     }
 
@@ -112,7 +112,7 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.executeCache( ( c ) -> c.remove( key.toString() ) );
+        String json = stores.executeCache( ( c ) -> c.remove( key ) );
         return readValueByJson( json, key );
     }
 
@@ -131,7 +131,7 @@ public class InfinispanStoreDataManager
         return stores.executeCache( c -> {
             Set<ArtifactStore> ret = new HashSet<>();
             c.forEach( ( k, v ) -> {
-                ArtifactStore store = readValueByJson( v, StoreKey.fromString( k ) );
+                ArtifactStore store = readValueByJson( v, k );
                 if ( store != null )
                 {
                     ret.add( store );
@@ -147,7 +147,7 @@ public class InfinispanStoreDataManager
         return stores.executeCache( c -> {
             Map<StoreKey, ArtifactStore> ret = new HashMap<>();
             c.forEach( ( k, v ) -> {
-                ArtifactStore store = readValueByJson( v, StoreKey.fromString( k ) );
+                ArtifactStore store = readValueByJson( v, k );
                 if ( store != null )
                 {
                     ret.put( store.getKey(), store );
@@ -160,7 +160,7 @@ public class InfinispanStoreDataManager
     @Override
     public boolean hasArtifactStore( final StoreKey key )
     {
-        return stores.containsKey( key.toString() );
+        return stores.containsKey( key );
     }
 
     @Override
@@ -189,7 +189,7 @@ public class InfinispanStoreDataManager
             return null;
         }
 
-        String org = stores.put( storeKey.toString(), json );
+        String org = stores.put( storeKey, json );
         return readValueByJson( org, storeKey );
     }
 
