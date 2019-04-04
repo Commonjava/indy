@@ -112,42 +112,49 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.getCache().remove( key.toString() );
+        String json = stores.executeCache( ( c ) -> c.remove( key.toString() ) );
         return readValueByJson( json, key );
     }
 
     @Override
     public void clear( final ChangeSummary summary ) throws IndyDataException
     {
-        stores.getCache().clear(); // should we allow this? sounds dangerous
+        stores.executeCache( c -> {
+            c.clear();
+            return null;
+        } );
     }
 
     @Override
     public Set<ArtifactStore> getAllArtifactStores() throws IndyDataException
     {
-        Set<ArtifactStore> ret = new HashSet<>();
-        stores.getCache().forEach( ( k, v ) -> {
-            ArtifactStore store = readValueByJson( v, StoreKey.fromString( k ) );
-            if ( store != null )
-            {
-                ret.add( store );
-            }
+        return stores.executeCache( c -> {
+            Set<ArtifactStore> ret = new HashSet<>();
+            c.forEach( ( k, v ) -> {
+                ArtifactStore store = readValueByJson( v, StoreKey.fromString( k ) );
+                if ( store != null )
+                {
+                    ret.add( store );
+                }
+            } );
+            return ret;
         } );
-        return ret;
     }
 
     @Override
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
-        Map<StoreKey, ArtifactStore> ret = new HashMap<>();
-        stores.getCache().forEach( ( k, v ) -> {
-            ArtifactStore store = readValueByJson( v, StoreKey.fromString( k ) );
-            if ( store != null )
-            {
-                ret.put( store.getKey(), store );
-            }
+        return stores.executeCache( c -> {
+            Map<StoreKey, ArtifactStore> ret = new HashMap<>();
+            c.forEach( ( k, v ) -> {
+                ArtifactStore store = readValueByJson( v, StoreKey.fromString( k ) );
+                if ( store != null )
+                {
+                    ret.put( store.getKey(), store );
+                }
+            } );
+            return ret;
         } );
-        return ret;
     }
 
     @Override
