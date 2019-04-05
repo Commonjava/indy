@@ -82,43 +82,6 @@
     </encoder>
   </appender>
 
-  <!-- This appender is used for reporting to elasticsearch. -->
-  <!-- appender name="ELASTIC" class="com.internetitem.logback.elasticsearch.ElasticsearchAppender">
-    <url>${elasticsearch.server.url}</url>
-    <index>${elasticsearch.index}</index>
-    <type>${elasticsearch.type}</type>
-    <loggerName>${elasticsearch.loggerName}</loggerName>
-    <properties>
-      <property>
-        <name>host</name>
-        <value>${HOSTNAME}</value>
-        <allowEmpty>false</allowEmpty>
-      </property>
-      <property>
-        <name>severity</name>
-        <value>%level</value>
-      </property>
-      <property>
-        <name>thread</name>
-        <value>%thread</value>
-      </property>
-      <property>
-        <name>stacktrace</name>
-        <value>%ex</value>
-      </property>
-      <property>
-        <name>logger</name>
-        <value>%logger</value>
-      </property>
-    </properties>
-    <headers>
-      <header>
-        <name>Content-Type</name>
-        <value>text/plain</value>
-      </header>
-    </headers>
-  </appender -->
-
   <!-- This example configuration is probably most unreliable under
     failure conditions but wont block your application at all -->
   <!-- The encoder part is using JsonLayout format encoder to generate structured logs using json format -->
@@ -134,9 +97,16 @@
   <!--
   <appender name="KAFKA" class="com.github.danielwegener.logback.kafka.KafkaAppender">
     <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-      <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+      <layout class="org.commonjava.indy.CustomJsonLayout">
         <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter"/>
         <appendLineSeparator>true</appendLineSeparator>
+
+        <environmentMappings><![CDATA[
+          OPENSHIFT_BUILD_NAMESPACE=NAMESPACE,
+          OPENSHIFT_BUILD_NAME=BUILD_NAME,
+          OPENSHIFT_BUILD_COMMIT=BUILD_COMMIT,
+          HOSTNAME=HOSTNAME
+        ]]></environmentMappings>
       </layout>
     </encoder>
 
@@ -171,8 +141,6 @@
   <logger name="org.commonjava.indy.action.IndyLifecycleManager" level="INFO" />
   <logger name="org.commonjava.indy.subsys.infinispan.CacheProducer" level="INFO" />
 
-  <!-- <logger name="org.commonjava.maven.galley.transport" level="DEBUG" /> -->
-
   <logger name="org.commonjava.topic.content.delete" level="INFO">
     <appender-ref ref="CONTENT-DELETE" />
   </logger>
@@ -193,14 +161,6 @@
     <!--
     <appender-ref ref="KAFKA" />
     -->
-
-    <!-- if elasticsearch function is on, include ELASTIC appender-->
-    <!-- if condition='property("elasticsearch.enable").equalsIgnoreCase("true")'>
-      <then>
-        <appender-ref ref="ELASTIC" />
-      </then>
-    </if -->
-
   </root>
 
 </configuration>
