@@ -141,19 +141,19 @@ public class PromotionValidator
                 final ValidationRequest req = new ValidationRequest( request, set, validationTools, store );
                 try
                 {
-                    DrainingExecutorCompletionService<PromotionValidationException> svc =
+                    DrainingExecutorCompletionService<Exception> svc =
                             new DrainingExecutorCompletionService<>( validateService );
 
                     detectOverloadVoid(()->{
                         for ( String ruleRef : ruleNames )
                         {
                             svc.submit( () -> {
-                                PromotionValidationException err = null;
+                                Exception err = null;
                                 try
                                 {
                                     executeValidationRule( ruleRef, req, result, request );
                                 }
-                                catch ( PromotionValidationException e )
+                                catch ( Exception e )
                                 {
                                     err = e;
                                 }
