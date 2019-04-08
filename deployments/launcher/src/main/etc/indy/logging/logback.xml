@@ -185,10 +185,6 @@
     <appender-ref ref="INBOUND" />
   </logger>
 
-  <logger name="org.commonjava.indy.event.audit" level="INFO">
-    <appender-ref ref="FILE" />
-  </logger>
-
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

@@ -59,7 +59,7 @@ public class EventAuditListener
     @Inject
     EventAuditConfig eventAuditConfig;
 
-    private final Logger logger = LoggerFactory.getLogger( "org.commonjava.indy.event.audit" );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
@@ -68,7 +68,6 @@ public class EventAuditListener
         {
             return;
         }
-
         FileEvent fileEvent = new FileEvent( FileEventType.ACCESS );
         transformFileEvent( event, fileEvent );
         eventPublisher.publishFileEvent( fileEvent );
@@ -103,7 +102,7 @@ public class EventAuditListener
     private void transformFileEvent( org.commonjava.maven.galley.event.FileEvent event, FileEvent fileEvent )
     {
         EventMetadata metadata = event.getEventMetadata();
-        final TrackingKey trackingKey = (TrackingKey) metadata.get( "tracking-id" );
+        final TrackingKey trackingKey = (TrackingKey) metadata.get( EventConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
             logger.trace( "No tracking key. Skip audit." );
@@ -117,36 +116,49 @@ public class EventAuditListener
             return;
         }
 
-        fileEvent.setTargetPath( transfer.getPath() );
+        final String path = transfer.getPath();
+
+        fileEvent.setTargetPath( path );
+        //TODO figure out what's the NodeId
         fileEvent.setNodeId( "" );
         fileEvent.setSessionId( trackingKey.getId() );
         fileEvent.setTimestamp( new Date() );
 
         final KeyedLocation keyedLocation = (KeyedLocation) transfer.getLocation();
-        final String path = transfer.getPath();
+
         try
         {
             StoreKey affectedStore = keyedLocation.getKey();
-            final Transfer txfr = downloadManager.getStorageReference( keyedLocation.getKey(), transfer.getPath() );
-            if ( txfr != null )
+            final Transfer txfr = downloadManager.getStorageReference( keyedLocation.getKey(), path );
+            if ( txfr.exists() )
             {
-
-                if ( StoreType.remote == affectedStore.getType() )
-                {
-                    final RemoteRepository repo = (RemoteRepository) storeManager.getArtifactStore( affectedStore );
-                    if ( repo != null )
-                    {
-                        fileEvent.setTargetLocation( repo.getUrl() );
-                    }
-                }
 
                 TransferMetadata artifactData = contentDigester.digest( affectedStore, path, event.getEventMetadata() );
                 Map<String, String> extra = new HashMap<>();
                 extra.put( ContentDigest.MD5.name(), artifactData.getDigests().get( ContentDigest.MD5 ) );
                 extra.put( ContentDigest.SHA_1.name(), artifactData.getDigests().get( ContentDigest.SHA_1 ) );
                 extra.put( ContentDigest.SHA_256.name(), artifactData.getDigests().get( ContentDigest.SHA_256 ) );
-                extra.put( "Size", String.valueOf( artifactData.getSize() ) );
+                extra.put( EventConstants.SIZE, String.valueOf( artifactData.getSize() ) );
+                extra.put( EventConstants.PATH, path );
+                extra.put( EventConstants.STORE_KEY, affectedStore.toString() );
+                extra.put( EventConstants.ACCESS_CHANNEL, affectedStore.getPackageType() );
+                if ( event instanceof FileStorageEvent )
+                {
+                    extra.put( EventConstants.STORE_EFFECT, ( (FileStorageEvent) event ).getType().name() );
+                }
 
+                if ( StoreType.remote == affectedStore.getType())
+                {
+                    final RemoteRepository repo = (RemoteRepository) storeManager.getArtifactStore( affectedStore );
+                    if ( repo != null )
+                    {
+                        extra.put( EventConstants.SOURCE_LOCATION, repo.getUrl() );
+                        extra.put( EventConstants.SOURCE_PATH, txfr.getPath() );
+                    }
+                }
+
+                //TODO fix this, it should be the url of indy, or recalculate it in AuditQuery side.
+                fileEvent.setTargetLocation( "" );
                 fileEvent.setChecksum( artifactData.getDigests().get( ContentDigest.MD5 ) );
 
                 fileEvent.setExtra( extra );
@@ -166,6 +178,11 @@ public class EventAuditListener
         if ( event instanceof PathsPromoteCompleteEvent )
         {
             pathsPromoteCompleteEvent = (PathsPromoteCompleteEvent) event;
+        }
+        else
+        {
+            logger.trace( "Unsupported grouping event: {}", event.getClass() );
+            return;
         }
 
         PathsPromoteResult promoteResult = pathsPromoteCompleteEvent.getPromoteResult();
@@ -188,13 +205,6 @@ public class EventAuditListener
         StoreKey source = req.getSource();
         StoreKey target = req.getTarget();
 
-        Map<String, String> extra = new HashMap<>();
-        extra.put( "source", source.toString() );
-        extra.put( "target", target.toString() );
-
-        fileGroupingEvent.setExtra( extra );
-        fileGroupingEvent.setTimestamp( new Date() );
-
         TrackingKey trackingKey = getTrackingKey( source );
         if ( trackingKey == null )
         {
@@ -202,6 +212,12 @@ public class EventAuditListener
             return;
         }
 
+        Map<String, String> extra = new HashMap<>();
+        extra.put( EventConstants.SOURCE, source.toString() );
+        extra.put( EventConstants.TARGET, target.toString() );
+
+        fileGroupingEvent.setExtra( extra );
+        fileGroupingEvent.setTimestamp( new Date() );
         fileGroupingEvent.setSessionId( trackingKey.getId() );
     }
 
