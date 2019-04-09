@@ -21,7 +21,9 @@ import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.propulsor.content.audit.model.FileEvent;
 import org.commonjava.propulsor.content.audit.model.FileEventType;
 import org.commonjava.propulsor.content.audit.model.FileGroupingEvent;
@@ -36,6 +38,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
+import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
 public class EventAuditListener
@@ -82,6 +86,12 @@ public class EventAuditListener
             return;
         }
 
+        if ( TransferOperation.UPLOAD != event.getType() )
+        {
+            logger.trace( "Not a file upload from client; skipping audit." );
+            return;
+        }
+
         FileEvent fileEvent = new FileEvent( FileEventType.STORAGE );
         transformFileEvent( event, fileEvent );
         eventPublisher.publishFileEvent( fileEvent );
@@ -116,24 +126,37 @@ public class EventAuditListener
             return;
         }
 
-        final String path = transfer.getPath();
-
-        fileEvent.setTargetPath( path );
-        //TODO figure out what's the NodeId
-        fileEvent.setNodeId( "" );
-        fileEvent.setSessionId( trackingKey.getId() );
-        fileEvent.setTimestamp( new Date() );
-
-        final KeyedLocation keyedLocation = (KeyedLocation) transfer.getLocation();
+        final Location location = transfer.getLocation();
+        if ( !( location instanceof KeyedLocation ) )
+        {
+            logger.trace( "Not in a keyed location: {}", transfer );
+            return;
+        }
 
         try
         {
-            StoreKey affectedStore = keyedLocation.getKey();
-            final Transfer txfr = downloadManager.getStorageReference( keyedLocation.getKey(), path );
-            if ( txfr.exists() )
+            final KeyedLocation keyedLocation = (KeyedLocation) location;
+            final StoreKey affectedStore = keyedLocation.getKey();
+            if ( affectedStore.getType() == group )
+            {
+                logger.trace( "Not auditing content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
+                              affectedStore );
+                return;
+            }
+
+            final String path = transfer.getPath();
+
+            fileEvent.setTargetPath( path );
+            //TODO figure out what's the NodeId
+            fileEvent.setNodeId( "" );
+            fileEvent.setSessionId( trackingKey.getId() );
+            //fileEvent.setTimestamp( new Date() );
+
+            final Transfer txfr = downloadManager.getStorageReference( affectedStore, path );
+            if ( txfr != null && txfr.exists() )
             {
 
-                TransferMetadata artifactData = contentDigester.digest( affectedStore, path, event.getEventMetadata() );
+                TransferMetadata artifactData = contentDigester.digest( affectedStore, path, metadata );
                 Map<String, String> extra = new HashMap<>();
                 extra.put( ContentDigest.MD5.name(), artifactData.getDigests().get( ContentDigest.MD5 ) );
                 extra.put( ContentDigest.SHA_1.name(), artifactData.getDigests().get( ContentDigest.SHA_1 ) );

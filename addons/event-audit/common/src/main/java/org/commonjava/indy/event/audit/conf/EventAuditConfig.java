@@ -47,6 +47,8 @@ public class EventAuditConfig implements IndyConfigInfo
     @Override
     public InputStream getDefaultConfig()
     {
-        return null;
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-event-audit.conf" );
     }
 }
