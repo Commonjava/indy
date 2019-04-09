@@ -233,7 +233,7 @@ public abstract class ArtifactStore
 
     protected void copyBase( ArtifactStore store )
     {
-        store.setRescanInProgress( store.isRescanInProgress() );
+        store.setRescanInProgress( isRescanInProgress() );
         store.setDescription( getDescription() );
         store.setDisabled( isDisabled() );
         store.setMetadata( getMetadata() );
