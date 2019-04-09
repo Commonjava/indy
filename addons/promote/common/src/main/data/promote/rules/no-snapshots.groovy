@@ -11,7 +11,7 @@ class NoSnapshots implements ValidationRule {
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true)
 
-        def errors = new ArrayList()
+        def errors = Collections.synchronizedList(new ArrayList());
         def tools = request.getTools()
         def dc = new ModelProcessorConfig().setIncludeBuildSection(true).setIncludeManagedPlugins(true).setIncludeManagedDependencies(true)
 
@@ -20,20 +20,16 @@ class NoSnapshots implements ValidationRule {
                 def ref = tools.getArtifact(it)
                 if (ref != null) {
                     if (!ref.getVersionSpec().isRelease()) {
-                        synchronized (errors) {
-                            errors.add(String.format("%s is a variable/snapshot version.", it))
-                        }
+                        errors.add(String.format("%s is a variable/snapshot version.", it))
                     }
                 }
 
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    tools.paralleledEach(relationships, { rel ->
+                    tools.forEach(relationships, { rel ->
                         def target = rel.getTarget()
                         if (!target.getVersionSpec().isRelease()) {
-                            synchronized (errors) {
-                                errors.add(String.format("%s uses a variable/snapshot version in: %s", target, it))
-                            }
+                            errors.add(String.format("%s uses a variable/snapshot version in: %s", target, it))
                         }
                     })
                 }

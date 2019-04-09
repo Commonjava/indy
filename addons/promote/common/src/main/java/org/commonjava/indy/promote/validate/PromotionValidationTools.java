@@ -79,6 +79,8 @@ import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE
  */
 public class PromotionValidationTools
 {
+    final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
     public static final String AVAILABLE_IN_STORES = "availableInStores";
 
     @Deprecated
@@ -561,7 +563,7 @@ public class PromotionValidationTools
 
     private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )
     {
-        Set<T> todo = new HashSet<>( runCollection);
+        Set<T> todo = new HashSet<>( runCollection );
         final CountDownLatch latch = new CountDownLatch( todo.size() );
         todo.forEach( e -> ruleParallelExecutor.execute( () -> {
             try
@@ -586,4 +588,22 @@ public class PromotionValidationTools
         }
     }
 
+    public <T> void forEach( Collection<T> collection, Closure closure )
+    {
+        logger.trace( "Exe on collection {} with closure {}", collection, closure );
+        collection.forEach( e -> closure.call( e ) );
+    }
+
+    public <T> void forEach( T[] array, Closure closure )
+    {
+        logger.trace( "Exe on array {} with closure {}", array, closure );
+        Arrays.asList( array ).forEach( e -> closure.call( e ) );
+    }
+
+    public <K, V> void forEach( Map<K, V> map, Closure closure )
+    {
+        Set<Map.Entry<K, V>> entries = map.entrySet();
+        logger.trace( "Exe on map {} with closure {}", entries, closure );
+        entries.forEach( e -> closure.call( e ) );
+    }
 }

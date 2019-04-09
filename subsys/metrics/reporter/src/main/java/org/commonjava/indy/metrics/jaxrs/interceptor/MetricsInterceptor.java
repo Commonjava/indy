@@ -69,6 +69,11 @@ public class MetricsInterceptor
             measure = method.getDeclaringClass().getAnnotation( Measure.class );
         }
 
+        if ( measure == null )
+        {
+            return context.proceed();
+        }
+
         String defaultName = getDefaultName( context.getMethod().getDeclaringClass(), context.getMethod().getName() );
         logger.trace( "Gathering metrics for: {} using context: {}", defaultName, context.getContextData() );
 

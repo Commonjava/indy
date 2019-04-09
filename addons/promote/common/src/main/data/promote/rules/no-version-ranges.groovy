@@ -10,7 +10,7 @@ class NoVersionRanges implements ValidationRule {
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true)
 
-        def errors = new ArrayList()
+        def errors = Collections.synchronizedList(new ArrayList());
         def tools = request.getTools()
         def dc = new ModelProcessorConfig().setIncludeBuildSection(true).setIncludeManagedPlugins(true).setIncludeManagedDependencies(true)
 
@@ -18,12 +18,10 @@ class NoVersionRanges implements ValidationRule {
             if (it.endsWith(".pom")) {
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    tools.paralleledEach(relationships, { rel ->
+                    tools.forEach(relationships, { rel ->
                         def target = rel.getTarget()
                         if (!target.getVersionSpec().isSingle()) {
-                            synchronized(errors) {
-                                errors.add(String.format( "%s uses a compound version in: %s", target, it))
-                            }
+                            errors.add(String.format("%s uses a compound version in: %s", target, it))
                         }
                     })
                 }
