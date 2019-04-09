@@ -86,7 +86,7 @@ public class PromotionValidationTools
     @Deprecated
     public static final String AVAILABLE_IN_STORE_KEY = "availableInStoreKey";
 
-    private static final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 10;
+    private static final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 30;
 
     @Inject
     private ContentManager contentManager;
@@ -579,7 +579,12 @@ public class PromotionValidationTools
 
         try
         {
-            latch.await( DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS, TimeUnit.MINUTES );
+            // true if the count reached zero and false if timeout
+            boolean finished = latch.await( DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS, TimeUnit.MINUTES );
+            if ( !finished )
+            {
+                throw new RuntimeException( "Parallel execution timeout" );
+            }
         }
         catch ( InterruptedException e )
         {
