@@ -16,6 +16,7 @@
 package org.commonjava.indy.promote.validate;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
@@ -27,6 +28,7 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.promote.conf.PromoteConfig;
@@ -51,7 +53,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static com.codahale.metrics.MetricRegistry.name;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -79,6 +83,9 @@ public class PromotionValidator
     private PromoteConfig config;
 
     @Inject
+    private IndyMetricsManager metricsManager;
+
+    @Inject
     @WeftManaged
     @ExecutorConfig( named = "promote-validation-rules-runner", threads = 20, priority = 5, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE, maxLoadFactor = 400 )
     private WeftExecutorService validateService;
@@ -90,13 +97,15 @@ public class PromotionValidator
     }
 
     public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools,
-                               StoreDataManager storeDataMgr, DownloadManager downloadManager, WeftExecutorService validateService )
+                               StoreDataManager storeDataMgr, DownloadManager downloadManager,
+                               WeftExecutorService validateService, IndyMetricsManager metricsManager )
     {
         this.validationsManager = validationsManager;
         this.validationTools = validationTools;
         this.storeDataMgr = storeDataMgr;
         this.downloadManager = downloadManager;
         this.validateService = validateService;
+        this.metricsManager = metricsManager;
     }
 
     /**
@@ -228,7 +237,7 @@ public class PromotionValidator
         }
     }
 
-    @Measure
+    //@Measure <-- this does not work. Internal calls can never be intercepted.
     private void executeValidationRule( final String ruleRef, final ValidationRequest req,
                                         final ValidationResult result, final PromoteRequest request )
             throws PromotionValidationException
@@ -239,32 +248,68 @@ public class PromotionValidator
         ValidationRuleMapping rule = validationsManager.getRuleMappingNamed( ruleName );
         if ( rule != null )
         {
-            try
+            logger.debug( "Running promotion validation rule: {}", rule.getName() );
+            String error = null;
+            if ( metricsManager != null )
             {
-                logger.debug( "Running promotion validation rule: {}", rule.getName() );
-                String error = rule.getRule().validate( req );
-                if ( StringUtils.isNotEmpty( error ) )
+                AtomicReference<Exception> ex = new AtomicReference<>();
+                error = metricsManager.wrapWithStandardMetrics( () -> {
+                    try
+                    {
+                        return rule.getRule().validate( req );
+                    }
+                    catch ( Exception e )
+                    {
+                        ex.set( e );
+                        return null;
+                    }
+                }, () -> getMetricName( rule.getName() ) );
+
+                if ( ex.get() != null )
                 {
-                    logger.debug( "{} failed", rule.getName() );
-                    result.addValidatorError( rule.getName(), error );
-                }
-                else
-                {
-                    logger.debug( "{} succeeded", rule.getName() );
+                    throwException( ex.get(), rule, request );
                 }
             }
-            catch ( Exception e )
+            else
             {
-                if ( e instanceof PromotionValidationException )
+                try
                 {
-                    throw (PromotionValidationException) e;
+                    error = rule.getRule().validate( req );
                 }
+                catch ( Exception e )
+                {
+                    throwException( e, rule, request );
+                }
+            }
 
-                throw new PromotionValidationException(
-                        "Failed to run validation rule: {} for request: {}. Reason: {}", e,
-                        rule.getName(), request, e );
+            if ( StringUtils.isNotEmpty( error ) )
+            {
+                logger.debug( "{} failed", rule.getName() );
+                result.addValidatorError( rule.getName(), error );
+            }
+            else
+            {
+                logger.debug( "{} succeeded", rule.getName() );
             }
         }
+    }
+
+    private void throwException( Exception e, ValidationRuleMapping rule, PromoteRequest request )
+                    throws PromotionValidationException
+    {
+        if ( e instanceof PromotionValidationException )
+        {
+            throw (PromotionValidationException) e;
+        }
+
+        throw new PromotionValidationException( "Failed to run validation rule: {} for request: {}. Reason: {}", e,
+                                                rule.getName(), request, e );
+    }
+
+    private String getMetricName( String ruleName )
+    {
+        String cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 );
+        return name( cls, "rule", ruleName );
     }
 
     private boolean needTempRepo( PromoteRequest promoteRequest )
