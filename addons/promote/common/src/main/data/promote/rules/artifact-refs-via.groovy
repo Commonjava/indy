@@ -15,7 +15,7 @@ class ArtifactRefAvailability implements ValidationRule {
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true);
 
-        def errors = new ArrayList()
+        def errors = Collections.synchronizedList(new ArrayList());
         def tools = request.getTools()
         def dc = new ModelProcessorConfig().setIncludeBuildSection(false).setIncludeManagedDependencies(false)
 
@@ -62,17 +62,15 @@ class ArtifactRefAvailability implements ValidationRule {
                                 }
                             })
 
-                            synchronized (errors) {
-                                if (!found) {
-                                    errors.add(String.format("%s is invalid: %s is not available via: %s",
-                                            it, path, StringUtils.join(verifyStoreKeys, ", ")))
-                                }
+                            if (!found) {
+                                errors.add(String.format("%s is invalid: %s is not available via: %s",
+                                        it, path, StringUtils.join(verifyStoreKeys, ", ")))
+                            }
 
-                                if (!foundPom) {
-                                    errors.add(String.format("%s is invalid: %s is not available via: %s", it,
-                                            tools.toArtifactPath(target.asPomArtifact()),
-                                            StringUtils.join(verifyStoreKeys, ", ")))
-                                }
+                            if (!foundPom) {
+                                errors.add(String.format("%s is invalid: %s is not available via: %s", it,
+                                        tools.toArtifactPath(target.asPomArtifact()),
+                                        StringUtils.join(verifyStoreKeys, ", ")))
                             }
                         }
                     })
