@@ -115,6 +115,13 @@
     <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy" />
 
     <producerConfig>bootstrap.servers=localhost:9092</producerConfig>
+
+    <producerConfig>security.protocol=SSL</producerConfig>
+    <producerConfig>ssl.keystore.location=/path/to/secret/keystore.jks</producerConfig>
+    <producerConfig>ssl.keystore.password=changeit</producerConfig>
+    <producerConfig>ssl.truststore.location=/path/to/secret/truststore.jks</producerConfig>
+    <producerConfig>ssl.truststore.password=changeit</producerConfig>
+
     <producerConfig>acks=0</producerConfig>
     <producerConfig>linger.ms=1000</producerConfig>
     <producerConfig>max.block.ms=0</producerConfig>
