@@ -178,7 +178,7 @@ public class PromotionManagerTest
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager(),
-                                                                          contentDigester ), storeManager, downloadManager, validateService );
+                                                                          contentDigester ), storeManager, downloadManager, validateService, null );
 
         PromoteConfig config = new PromoteConfig();
 

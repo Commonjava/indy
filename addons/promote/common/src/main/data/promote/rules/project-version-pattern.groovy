@@ -9,7 +9,7 @@ class ProjectVersionPattern implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
         def versionPattern = request.getValidationParameter("versionPattern")
-        def errors = new ArrayList()
+        def errors = Collections.synchronizedList(new ArrayList());
 
         if (versionPattern != null) {
             def tools = request.getTools()
@@ -18,10 +18,8 @@ class ProjectVersionPattern implements ValidationRule {
                 if (ref != null) {
                     def vs = ref.getVersionString()
                     if (!vs.matches(versionPattern)) {
-                        synchronized (errors) {
-                            errors.add(String.format("%s does not match version pattern: '%s' (version was: '%s')",
-                                    it, versionPattern, vs))
-                        }
+                        errors.add(String.format("%s does not match version pattern: '%s' (version was: '%s')",
+                                it, versionPattern, vs))
                     }
                 }
             })

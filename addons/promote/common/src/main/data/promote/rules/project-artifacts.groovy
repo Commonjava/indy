@@ -11,7 +11,7 @@ class ProjectArtifacts implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
         def classifierAndTypeSet = request.getValidationParameter("classifierAndTypeSet")
-        def errors = new ArrayList()
+        def errors = Collections.synchronizedList(new ArrayList());
 
         if (classifierAndTypeSet != null) {
             def ctStrings = classifierAndTypeSet.split("\\s*,\\s*")
@@ -57,9 +57,7 @@ class ProjectArtifacts implements ValidationRule {
                     tcs.each { tc ->
                         logger.trace("Checking if TC: {} is in: {} for: {}", tc, entry.value, entry.key)
                         if (!entry.value.contains(tc)) {
-                            synchronized(errors) {
-                                errors.add(String.format("%s: missing artifact with type/classifier: %s", entry.key, tc))
-                            }
+                            errors.add(String.format("%s: missing artifact with type/classifier: %s", entry.key, tc))
                         }
                     }
                 }

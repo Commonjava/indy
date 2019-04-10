@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 class ParsablePom implements ValidationRule {
 
     String validate(ValidationRequest request) {
-        def errors = new ArrayList()
+        def errors = Collections.synchronizedList(new ArrayList());
         def tools = request.getTools()
         def logger = LoggerFactory.getLogger(ValidationRule.class)
         logger.info("Parsing POMs in:\n  {}.", request.getSourcePaths().join("\n  "))
@@ -20,9 +20,7 @@ class ParsablePom implements ValidationRule {
                     def pom = tools.readLocalPom(it, request)
                 }
                 catch (Exception e) {
-                    synchronized(errors) {
-                        errors.add(String.format("%s: Failed to parse POM. Error was: %s", it, e))
-                    }
+                    errors.add(String.format("%s: Failed to parse POM. Error was: %s", it, e))
                 }
             }
         })
