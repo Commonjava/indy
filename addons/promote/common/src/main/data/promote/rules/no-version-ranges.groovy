@@ -18,7 +18,7 @@ class NoVersionRanges implements ValidationRule {
             if (it.endsWith(".pom")) {
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    tools.forEach(relationships, { rel ->
+                    tools.paralleledEach(relationships, { rel ->
                         def target = rel.getTarget()
                         if (!target.getVersionSpec().isSingle()) {
                             errors.add(String.format("%s uses a compound version in: %s", target, it))

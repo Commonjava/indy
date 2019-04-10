@@ -25,7 +25,7 @@ class ArtifactRefAvailability implements ValidationRule {
             if (it.endsWith(".pom")) {
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    tools.forEach(relationships, { rel ->
+                    tools.paralleledEach(relationships, { rel ->
                         def skip = false
                         if (rel.getType() == RelationshipType.DEPENDENCY) {
                             def dr = (DependencyRelationship) rel
@@ -42,7 +42,7 @@ class ArtifactRefAvailability implements ValidationRule {
                             def found = false
                             def foundPom = false
 
-                            tools.forEach(verifyStoreKeys, { verifyStoreKey ->
+                            tools.paralleledEach(verifyStoreKeys, { verifyStoreKey ->
                                 if (!found) {
                                     def txfr = tools.getTransfer(verifyStoreKey, path)
                                     logger.info("{} in {}: {}. Exists? {}", target, verifyStoreKey, txfr, txfr == null ? false : txfr.exists())

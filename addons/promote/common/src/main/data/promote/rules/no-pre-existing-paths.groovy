@@ -16,7 +16,7 @@ class NoPreExistingPaths implements ValidationRule {
         tools.paralleledEach(request.getSourcePaths(), { it ->
             def aref = tools.getArtifact(it);
             if (aref != null) {
-                tools.forEach(verifyStoreKeys, { verifyStoreKey ->
+                tools.paralleledEach(verifyStoreKeys, { verifyStoreKey ->
                     if (tools.exists(verifyStoreKey, it)) {
                         errors.add(String.format("%s is already available in: %s", it, verifyStoreKey))
                     }
