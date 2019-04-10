@@ -18,6 +18,7 @@ package org.commonjava.indy.pkg.maven.content;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.apache.maven.artifact.repository.metadata.Plugin;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
@@ -597,7 +598,12 @@ public class MavenMetadataGenerator
         if ( versions != null && !versions.isEmpty() )
         {
             merger.sortVersions( master );
+            return master;
+        }
 
+        List<Plugin> plugins = master.getPlugins();
+        if ( plugins != null && !plugins.isEmpty() )
+        {
             return master;
         }
 
