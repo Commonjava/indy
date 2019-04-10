@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Named( "legacy-storedb-migration" )

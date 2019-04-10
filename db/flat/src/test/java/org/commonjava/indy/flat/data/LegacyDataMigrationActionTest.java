@@ -16,7 +16,6 @@
 package org.commonjava.indy.flat.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.core.data.testutil.StoreEventDispatcherStub;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -29,7 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import static org.commonjava.indy.flat.data.DataFileStoreConstants.INDY_STORE;
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -59,7 +58,7 @@ public class LegacyDataMigrationActionTest
         final StoreEventDispatcher sed = new StoreEventDispatcherStub();
 
         action = new LegacyDataMigrationAction(
-                dfm, new DataFileStoreDataManager( dfm, mapper, sed, new DefaultIndyConfiguration() ), mapper );
+                dfm, new DataFileStoreDataManager( dfm, mapper, sed ), mapper );
     }
 
     @Test

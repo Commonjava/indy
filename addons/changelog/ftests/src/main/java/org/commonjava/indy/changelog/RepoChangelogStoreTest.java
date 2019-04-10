@@ -41,16 +41,15 @@ import static org.junit.Assert.assertThat;
  * </ul>
  * WHEN: <br />
  * <ul>
- *      <li>Create this repo use indy store api</li>
- *      <li>Update this repo use indy store api</li>
+ *      <li>Create this test repo use indy store api</li>
+ *      <li>Update this repo twice</li>
  * </ul>
  * THEN: <br />
  * <ul>
- *     <li>The published UPDATE changelog entries for this repo should be 2 through searching from this repo</li>
- *     <li>The published CREATE changelog entries for this repo should be 1 through searching from this repo</li>
- *     <li>The published changelog entries for this repo should be 3 through searching all</li>
- *     <li>The published CREATE changelog entries should be 2 through searching all</li>
- *     <li>The published UPDATE changelog entries should be 2 through searching all</li>
+ *     <li>The UPDATE changelog entries for this repo should be 2 through searching from this repo</li>
+ *     <li>The CREATE changelog entries for this repo should be 1 through searching from this repo</li>
+ *     <li>The all changelog entries for this repo should be 3 through searching all</li>
+ *     <li>The UPDATE changelog entries should be 2 through searching all</li>
  * </ul>
  */
 public class RepoChangelogStoreTest
@@ -91,15 +90,10 @@ public class RepoChangelogStoreTest
 
         logs = client.module( IndyRepoChangelogClientModule.class ).getAll();
 
-        final AtomicInteger createCount2 = new AtomicInteger( 0 );
         final AtomicInteger updateCount2 = new AtomicInteger( 0 );
         final AtomicInteger testRepoCount = new AtomicInteger( 0 );
 
         logs.forEach( c -> {
-            if ( c.getChangeType() == RepoChangeType.CREATE )
-            {
-                createCount2.getAndIncrement();
-            }
             if ( c.getChangeType() == RepoChangeType.UPDATE )
             {
                 updateCount2.getAndIncrement();
@@ -110,7 +104,6 @@ public class RepoChangelogStoreTest
             }
         } );
 
-        assertThat( createCount2.get(), equalTo( 2 ) );
         assertThat( updateCount2.get(), equalTo( 2 ) );
         assertThat( testRepoCount.get(), equalTo( 3 ) );
 

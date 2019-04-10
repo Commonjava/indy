@@ -84,6 +84,10 @@
       <artifactId>indy-db-flat</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-infinispan</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
       <artifactId>indy-booter-jaxrs</artifactId>
     </dependency>

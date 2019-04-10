@@ -36,9 +36,10 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.IndyLifecycleEvent;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.flat.data.DataFileStoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
+
+import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.revisions.conf.RevisionsConfig;
@@ -82,7 +83,7 @@ public class RevisionsManager
     }
 
     public RevisionsManager( final RevisionsConfig revisionsConfig, final DataFileManager dataFileManager,
-                             final DataFileStoreDataManager storeManager )
+                             final StoreDataManager storeManager )
         throws GitSubsystemException, IOException
     {
         this.revisionsConfig = revisionsConfig;
@@ -265,8 +266,13 @@ public class RevisionsManager
             return Collections.emptyList();
         }
 
-        final DataFile dataFile = ( (DataFileStoreDataManager) storeManager ).getDataFile( key );
+        final DataFile dataFile = getDataFile( key );
         return dataFileGit.getChangelog( dataFile.getDetachedFile(), start, count );
+    }
+
+    private DataFile getDataFile( final StoreKey key )
+    {
+        return dataFileManager.getDataFile( INDY_STORE, key.getType().singularEndpointName(), key.getName() + ".json" );
     }
 
     public List<ChangeSummary> getDataChangeLog( String path, final int start, final int length )

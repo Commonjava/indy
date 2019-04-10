@@ -94,6 +94,12 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    public boolean isEmpty()
+    {
+        return delegate.isEmpty();
+    }
+
+    @Override
     public List<T> getAll()
             throws IndyDataException
     {

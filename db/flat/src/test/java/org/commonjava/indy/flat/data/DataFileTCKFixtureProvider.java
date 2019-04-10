@@ -72,7 +72,7 @@ public class DataFileTCKFixtureProvider
         public TestFlatFileDataManager( final DataFileConfiguration config, final IndyObjectMapper serializer )
         {
             super( new DataFileManager( config, new DataFileEventManager() ), serializer,
-                   new StoreEventDispatcherStub(), new DefaultIndyConfiguration() );
+                   new StoreEventDispatcherStub() );
         }
 
         //        @Override

@@ -29,11 +29,11 @@
   
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>${project.groupId}</groupId>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-db-memory</artifactId>
     </dependency>
     <dependency>

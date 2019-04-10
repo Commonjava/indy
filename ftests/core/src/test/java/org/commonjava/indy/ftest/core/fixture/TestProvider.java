@@ -34,7 +34,7 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class TestProvider
 {
-    private StoreDataManager storeDataManager;
+/*    private StoreDataManager storeDataManager;
 
     @Inject
     private StoreEventDispatcher dispatcher;
@@ -51,7 +51,7 @@ public class TestProvider
     @PostConstruct
     public void start()
     {
-        storeDataManager = new DataFileStoreDataManager( dataFileManager, objectMapper, dispatcher, config );
+        storeDataManager = new DataFileStoreDataManager( dataFileManager, objectMapper, dispatcher );
     }
 
 //    @Produces
@@ -59,5 +59,5 @@ public class TestProvider
     public StoreDataManager getStoreDataManager()
     {
         return storeDataManager;
-    }
+    }*/
 }
