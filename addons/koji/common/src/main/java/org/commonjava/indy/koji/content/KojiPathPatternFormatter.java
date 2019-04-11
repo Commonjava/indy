@@ -46,11 +46,16 @@ public class KojiPathPatternFormatter
 
     public Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
     {
+        return getPatterns( artifactRef, archives, false );
+    }
+
+    public Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives, boolean skipVersionTest )
+    {
         Set<String> patterns = new HashSet<>();
         for ( KojiArchiveInfo a : archives )
         {
             ArtifactRef ar = a.asArtifact();
-            if ( !kojiUtils.isVersionSignatureAllowedWithVersion( a.getVersion() ) )
+            if ( !skipVersionTest && !kojiUtils.isVersionSignatureAllowedWithVersion( a.getVersion() ) )
             {
                 logger.warn(
                         "Cannot use Koji archive for path_mask_patterns: {}. Version '{}' is not allowed from Koji.", a,
