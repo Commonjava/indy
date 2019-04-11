@@ -25,6 +25,7 @@ import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.infinispan.config.ISPNClusterConfiguration;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
@@ -68,6 +69,7 @@ public class CacheProducer
     Logger logger = LoggerFactory.getLogger( getClass() );
 
     private static final String ISPN_XML = "infinispan.xml";
+    private static final String ISPN_CLUSTER_XML = "infinispan-cluster.xml";
 
     private EmbeddedCacheManager cacheManager;
 
@@ -82,6 +84,9 @@ public class CacheProducer
 
     @Inject
     private IndyMetricsConfig metricsConfig;
+
+    @Inject
+    private ISPNClusterConfiguration clusterConfiguration;
 
     private Map<String, BasicCacheHandle> caches = new ConcurrentHashMap<>(); // hold embedded and remote caches
 
@@ -101,9 +106,12 @@ public class CacheProducer
     {
         startRemoteManager();
         startEmbeddedManager();
+        startClusterManager();
     }
 
     private RemoteCacheManager remoteCacheManager;
+
+    private EmbeddedCacheManager clusterCacheManager;
 
     private void startRemoteManager()
     {
@@ -121,6 +129,21 @@ public class CacheProducer
 
     private void startEmbeddedManager()
     {
+        startCacheManager( ISPN_XML, false );
+    }
+
+    private void startClusterManager()
+    {
+        if ( clusterConfiguration == null || !clusterConfiguration.isEnabled() )
+        {
+            logger.info( "Infinispan cluster configuration not enabled. Skip." );
+            return;
+        }
+        startCacheManager( ISPN_CLUSTER_XML, true );
+    }
+
+    private void startCacheManager( String configFile, Boolean isCluster )
+    {
         // FIXME This is just here to trigger shutdown hook init for embedded log4j in infinispan-embedded-query.
         // FIXES:
         //
@@ -130,12 +153,13 @@ public class CacheProducer
         new MarshallableTypeHints().getBufferSizePredictor( CacheHandle.class );
 
         File confDir = indyConfiguration.getIndyConfDir();
-        File ispnConf = new File( confDir, ISPN_XML );
+        File ispnConf = new File( confDir, configFile );
 
-        try(InputStream resouceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream( ISPN_XML ))
+        try(InputStream resouceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                        configFile ))
         {
 
-            String resourceStr = interpolateStrFromStream( resouceStream, "CLASSPATH:" + ISPN_XML );
+            String resourceStr = interpolateStrFromStream( resouceStream, "CLASSPATH:" + configFile );
 
             if ( ispnConf.exists() )
             {
@@ -155,20 +179,29 @@ public class CacheProducer
                 try
                 {
                     logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
-                    cacheManager = new DefaultCacheManager(
-                            new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
+                    if ( isCluster )
+                    {
+                        clusterCacheManager = new DefaultCacheManager(
+                                        new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
+                        clusterCacheManager.startCaches( String.join( ",",  clusterCacheManager.getCacheNames()) );
+                    }
+                    else
+                    {
+                        cacheManager = new DefaultCacheManager(
+                                        new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
+                    }
                 }
                 catch ( IOException e )
                 {
                     throw new RuntimeException(
-                            "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
+                                    "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
                 }
             }
         }
         catch ( IOException e )
         {
             throw new RuntimeException(
-                    "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
+                            "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
         }
     }
 
@@ -237,7 +270,17 @@ public class CacheProducer
     {
         logger.debug( "Get embedded cache, name: {}", named );
         return (CacheHandle) caches.computeIfAbsent( named, ( k ) -> {
-            Cache<K, V> cache = cacheManager.getCache( k );
+            Cache<K, V> cache;
+            if ( clusterConfiguration != null
+                            && clusterConfiguration.isEnabled()
+                            && clusterCacheManager.cacheExists( k ) )
+            {
+                cache = clusterCacheManager.getCache( k );
+            }
+            else
+            {
+                cache = cacheManager.getCache( k );
+            }
             return new CacheHandle( k, cache, metricsManager, getCacheMetricPrefix( k ) );
         } );
     }
