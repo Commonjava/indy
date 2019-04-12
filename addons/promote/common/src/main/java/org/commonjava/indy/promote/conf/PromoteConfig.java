@@ -39,6 +39,8 @@ public class PromoteConfig
 
     private static final String AUTOLOCK_HOSTED_REPOS = "autolock.hosted.repos";
 
+    public static final int DEFAULT_PARALLELED_BATCH_SIZE = 100;
+
     public static final long DEFAULT_LOCK_TIMEOUT_SECONDS = 30;
 
     public static final boolean DEFAULT_AUTOLOCK = true;
@@ -52,6 +54,8 @@ public class PromoteConfig
     private Boolean autoLockHostedRepos;
 
     private Long lockTimeoutSeconds;
+
+    private Integer paralleledBatchSize;
 
     public PromoteConfig()
     {
@@ -131,4 +135,19 @@ public class PromoteConfig
                      .getResourceAsStream( "default-promote.conf" );
     }
 
+    @ConfigName( "paralleled.batch.size" )
+    public void setParalleledBatchSize( Integer paralleledBatchSize )
+    {
+        this.paralleledBatchSize = paralleledBatchSize;
+    }
+
+    public int getParalleledBatchSize()
+    {
+        int ret = paralleledBatchSize == null ? DEFAULT_PARALLELED_BATCH_SIZE : paralleledBatchSize;
+        if ( ret <= 0 )
+        {
+            ret = DEFAULT_PARALLELED_BATCH_SIZE;
+        }
+        return ret;
+    }
 }
