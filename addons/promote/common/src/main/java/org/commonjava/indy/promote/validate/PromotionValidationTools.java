@@ -27,6 +27,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.atlas.maven.graph.rel.ProjectRelationship;
@@ -113,6 +114,9 @@ public class PromotionValidationTools
     private ContentDigester contentDigester;
 
     @Inject
+    private PromoteConfig promoteConfig;
+
+    @Inject
     @WeftManaged
     @ExecutorConfig( named = "promote-validation-rules-executor", threads = 8 )
     private Executor ruleParallelExecutor;
@@ -125,7 +129,7 @@ public class PromotionValidationTools
                                      final MavenPomReader pomReader, final MavenMetadataReader metadataReader,
                                      final MavenModelProcessor modelProcessor, final TypeMapper typeMapper,
                                      final TransferManager transferManager, final ContentDigester contentDigester,
-                                     final Executor ruleParallelExecutor )
+                                     final Executor ruleParallelExecutor, final PromoteConfig config )
     {
         contentManager = manager;
         this.storeDataManager = storeDataManager;
@@ -136,6 +140,7 @@ public class PromotionValidationTools
         this.transferManager = transferManager;
         this.contentDigester = contentDigester;
         this.ruleParallelExecutor = ruleParallelExecutor;
+        this.promoteConfig = config;
     }
 
     public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
@@ -563,25 +568,27 @@ public class PromotionValidationTools
         runParallelAndWait( entries, closure, logger );
     }
 
-    public <T> void paralleledInBatch( Collection<T> collection, int batchSize, Closure closure )
+    public <T> void paralleledInBatch( Collection<T> collection, Closure closure )
     {
+        int batchSize = promoteConfig.getParalleledBatchSize();
         logger.trace( "Exe parallel on collection {} with closure {} in batch {}", collection, closure, batchSize );
         Collection<Collection<T>> batches = batch( collection, batchSize );
         runParallelInBatchAndWait( batches, closure, logger );
     }
 
-    public <T> void paralleledInBatch( T[] array, int batchSize, Closure closure )
+    public <T> void paralleledInBatch( T[] array, Closure closure )
     {
+        int batchSize = promoteConfig.getParalleledBatchSize();
         logger.trace( "Exe parallel on array {} with closure {} in batch {}", array, closure, batchSize );
         Collection<Collection<T>> batches = batch( Arrays.asList( array ), batchSize );
         runParallelInBatchAndWait( batches, closure, logger );
     }
 
-    public <K, V> void paralleledInBatch( Map<K, V> map, int batchSize, Closure closure )
+    public <K, V> void paralleledInBatch( Map<K, V> map, Closure closure )
     {
+        int batchSize = promoteConfig.getParalleledBatchSize();
         Set<Map.Entry<K, V>> entries = map.entrySet();
         logger.trace( "Exe parallel on map {} with closure {} in batch {}", entries, closure, batchSize );
-        runParallelAndWait( entries, closure, logger );
         Collection<Collection<Map.Entry<K, V>>> batches = batch( entries, batchSize );
         runParallelInBatchAndWait( batches, closure, logger );
     }
@@ -607,7 +614,7 @@ public class PromotionValidationTools
     private <T> Collection<Collection<T>> batch( Collection<T> collection, int batchSize )
     {
         Collection<Collection<T>> batches = new ArrayList<>();
-        Collection<T> batch = new ArrayList<>();
+        Collection<T> batch = new ArrayList<>( batchSize );
         int count = 0;
         for ( T t : collection )
         {
@@ -616,9 +623,13 @@ public class PromotionValidationTools
             if ( count >= batchSize )
             {
                 ( (ArrayList<Collection<T>>) batches ).add( batch );
-                batch = new ArrayList<>();
+                batch = new ArrayList<>( batchSize );
                 count = 0;
             }
+        }
+        if ( batch != null && !batch.isEmpty() )
+        {
+            ( (ArrayList<Collection<T>>) batches ).add( batch ); // first batch
         }
         return batches;
     }
