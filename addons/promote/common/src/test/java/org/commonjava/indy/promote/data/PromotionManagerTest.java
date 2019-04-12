@@ -172,15 +172,15 @@ public class PromotionManagerTest
         WeftExecutorService validateService =
                         new PoolWeftExecutorService( "test-validate-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         MavenModelProcessor modelProcessor = new MavenModelProcessor();
+
+        PromoteConfig config = new PromoteConfig();
         validator = new PromotionValidator( validationsManager,
                                             new PromotionValidationTools( contentManager, storeManager,
                                                                           galleyParts.getPomReader(),
                                                                           galleyParts.getMavenMetadataReader(),
                                                                           modelProcessor, galleyParts.getTypeMapper(),
                                                                           galleyParts.getTransferManager(),
-                                                                          contentDigester ), storeManager, downloadManager, validateService, null );
-
-        PromoteConfig config = new PromoteConfig();
+                                                                          contentDigester, null, config ), storeManager, downloadManager, validateService, null );
 
         WeftExecutorService svc =
                 new PoolWeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
