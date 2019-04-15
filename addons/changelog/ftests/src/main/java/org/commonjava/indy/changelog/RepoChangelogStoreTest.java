@@ -74,7 +74,7 @@ public class RepoChangelogStoreTest
         final AtomicInteger createCount = new AtomicInteger( 0 );
         final AtomicInteger updateCount = new AtomicInteger( 0 );
         logs.forEach( c -> {
-            assertThat( c.getStoreKey(), equalTo( hostedKey ) );
+            assertThat( c.getStoreKey(), equalTo( hostedKey.toString() ) );
             if ( c.getChangeType() == RepoChangeType.CREATE )
             {
                 createCount.getAndIncrement();
@@ -98,7 +98,7 @@ public class RepoChangelogStoreTest
             {
                 updateCount2.getAndIncrement();
             }
-            if ( c.getStoreKey().equals( hostedKey ) )
+            if ( c.getStoreKey().equals( hostedKey.toString() ) )
             {
                 testRepoCount.getAndIncrement();
             }

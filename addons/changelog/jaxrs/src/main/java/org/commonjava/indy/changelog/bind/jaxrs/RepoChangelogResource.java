@@ -107,7 +107,7 @@ public class RepoChangelogResource
         return changeLogCache.execute( c -> {
             for ( RepositoryChangeLog log : c.values() )
             {
-                if ( log.getStoreKey().equals( storeKey ) )
+                if ( log.getStoreKey().equals( storeKey.toString() ) )
                 {
                     results.add( log );
                 }
