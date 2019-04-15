@@ -29,6 +29,7 @@ import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -122,6 +123,9 @@ public class FoloContentAccessResource
 
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+
+        MDC.put( TRACKING_KEY, id );
+
         return handler.doHead( packageType, type, name, path, cacheOnly, baseUri, request, metadata );
     }
 
@@ -144,6 +148,9 @@ public class FoloContentAccessResource
 
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+
+        MDC.put( TRACKING_KEY, id );
+
         return handler.doGet( packageType, type, name, path, baseUri, request, metadata );
     }
 
