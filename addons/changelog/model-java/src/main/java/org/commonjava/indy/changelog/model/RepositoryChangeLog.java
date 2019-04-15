@@ -30,7 +30,7 @@ public class RepositoryChangeLog
     @ApiModelProperty( required = true, dataType = "string",
                        value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
     @JsonProperty
-    private StoreKey storeKey;
+    private String storeKey;
 
     @ApiModelProperty( required = true, dataType = "java.util.Date", value = "Timestamp for this changing" )
     @JsonProperty
@@ -56,14 +56,19 @@ public class RepositoryChangeLog
     @JsonProperty
     private String diffContent;
 
-    public StoreKey getStoreKey()
+    public String getStoreKey()
     {
         return storeKey;
     }
 
-    public void setStoreKey( StoreKey storeKey )
+    public void setStoreKey( String storeKey )
     {
         this.storeKey = storeKey;
+    }
+
+    public StoreKey getStoreKeyObj()
+    {
+        return StoreKey.fromString( storeKey );
     }
 
     public Date getChangeTime()

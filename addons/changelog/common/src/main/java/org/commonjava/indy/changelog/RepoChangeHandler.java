@@ -95,7 +95,7 @@ public class RepoChangeHandler
                 String patchString = diffRepoChanges( store, origin );
 
                 RepositoryChangeLog changeLog = new RepositoryChangeLog();
-                changeLog.setStoreKey( store.getKey() );
+                changeLog.setStoreKey( store.getKey().toString() );
                 changeLog.setChangeTime( new Date() );
                 changeLog.setDiffContent( patchString );
                 changeLog.setChangeType( origin == null ? RepoChangeType.CREATE : RepoChangeType.UPDATE );
