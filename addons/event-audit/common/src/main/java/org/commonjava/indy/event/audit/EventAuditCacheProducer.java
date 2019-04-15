@@ -1,9 +1,9 @@
 package org.commonjava.indy.event.audit;
 
+import org.commonjava.auditquery.fileevent.FileEvent;
+import org.commonjava.auditquery.fileevent.FileGroupingEvent;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.propulsor.content.audit.model.FileEvent;
-import org.commonjava.propulsor.content.audit.model.FileGroupingEvent;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;

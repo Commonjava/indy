@@ -24,10 +24,10 @@ import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
-import org.commonjava.propulsor.content.audit.model.FileEvent;
-import org.commonjava.propulsor.content.audit.model.FileEventType;
-import org.commonjava.propulsor.content.audit.model.FileGroupingEvent;
-import org.commonjava.propulsor.content.audit.model.FileGroupingEventType;
+import org.commonjava.auditquery.fileevent.FileEvent;
+import org.commonjava.auditquery.fileevent.FileEventType;
+import org.commonjava.auditquery.fileevent.FileGroupingEvent;
+import org.commonjava.auditquery.fileevent.FileGroupingEventType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,9 +104,17 @@ public class EventAuditListener
             return;
         }
 
-        FileGroupingEvent fileGroupingEvent = new FileGroupingEvent( FileGroupingEventType.BY_PATH_PROMOTION );
-        transformFileGroupingEvent( event, fileGroupingEvent );
-        eventPublisher.publishFileGroupingEvent( fileGroupingEvent );
+        if ( event instanceof PathsPromoteCompleteEvent )
+        {
+            FileGroupingEvent fileGroupingEvent = new FileGroupingEvent( FileGroupingEventType.BY_PATH_PROMOTION );
+            transformFileGroupingEvent( event, fileGroupingEvent );
+            eventPublisher.publishFileGroupingEvent( fileGroupingEvent );
+        }
+        else
+        {
+            logger.trace( "Unsupported grouping event: {}", event.getClass() );
+            return;
+        }
     }
 
     private void transformFileEvent( org.commonjava.maven.galley.event.FileEvent event, FileEvent fileEvent )
@@ -150,42 +158,34 @@ public class EventAuditListener
             //TODO figure out what's the NodeId
             fileEvent.setNodeId( "" );
             fileEvent.setSessionId( trackingKey.getId() );
-            //fileEvent.setTimestamp( new Date() );
+            fileEvent.setTimestamp( new Date() );
 
-            final Transfer txfr = downloadManager.getStorageReference( affectedStore, path );
-            if ( txfr != null && txfr.exists() )
+            TransferMetadata artifactData = contentDigester.digest( affectedStore, path, metadata );
+            fileEvent.setMd5( artifactData.getDigests().get( ContentDigest.MD5 ) );
+            fileEvent.setSha1( artifactData.getDigests().get( ContentDigest.SHA_1 ) );
+            fileEvent.setChecksum( artifactData.getDigests().get( ContentDigest.SHA_256 ) );
+            fileEvent.setSize( artifactData.getSize() );
+            fileEvent.setStoreKey( affectedStore.toString() );
+            Map<String, String> extra = new HashMap<>();
+            if ( event instanceof FileStorageEvent )
             {
-
-                TransferMetadata artifactData = contentDigester.digest( affectedStore, path, metadata );
-                Map<String, String> extra = new HashMap<>();
-                extra.put( ContentDigest.MD5.name(), artifactData.getDigests().get( ContentDigest.MD5 ) );
-                extra.put( ContentDigest.SHA_1.name(), artifactData.getDigests().get( ContentDigest.SHA_1 ) );
-                extra.put( ContentDigest.SHA_256.name(), artifactData.getDigests().get( ContentDigest.SHA_256 ) );
-                extra.put( EventConstants.SIZE, String.valueOf( artifactData.getSize() ) );
-                extra.put( EventConstants.PATH, path );
-                extra.put( EventConstants.STORE_KEY, affectedStore.toString() );
-                extra.put( EventConstants.ACCESS_CHANNEL, affectedStore.getPackageType() );
-                if ( event instanceof FileStorageEvent )
-                {
-                    extra.put( EventConstants.STORE_EFFECT, ( (FileStorageEvent) event ).getType().name() );
-                }
-
-                if ( StoreType.remote == affectedStore.getType())
-                {
-                    final RemoteRepository repo = (RemoteRepository) storeManager.getArtifactStore( affectedStore );
-                    if ( repo != null )
-                    {
-                        extra.put( EventConstants.SOURCE_LOCATION, repo.getUrl() );
-                        extra.put( EventConstants.SOURCE_PATH, txfr.getPath() );
-                    }
-                }
-
-                //TODO fix this, it should be the url of indy, or recalculate it in AuditQuery side.
-                fileEvent.setTargetLocation( "" );
-                fileEvent.setChecksum( artifactData.getDigests().get( ContentDigest.MD5 ) );
-
-                fileEvent.setExtra( extra );
+                extra.put( EventConstants.STORE_EFFECT, ( (FileStorageEvent) event ).getType().name() );
             }
+
+            if ( StoreType.remote == affectedStore.getType())
+            {
+                final RemoteRepository repo = (RemoteRepository) storeManager.getArtifactStore( affectedStore );
+                if ( repo != null )
+                {
+                    fileEvent.setSourceLocation( repo.getUrl() );
+                    fileEvent.setSourcePath( transfer.getPath() );
+                }
+            }
+
+            //TODO fix this, it should be the url of indy, or recalculate it in AuditQuery side.
+            fileEvent.setTargetLocation( "" );
+
+            fileEvent.setExtra( extra );
 
         }
         catch ( final IndyWorkflowException | IndyDataException e )
@@ -197,16 +197,7 @@ public class EventAuditListener
     private void transformFileGroupingEvent( PromoteCompleteEvent event, FileGroupingEvent fileGroupingEvent )
     {
 
-        PathsPromoteCompleteEvent pathsPromoteCompleteEvent = null;
-        if ( event instanceof PathsPromoteCompleteEvent )
-        {
-            pathsPromoteCompleteEvent = (PathsPromoteCompleteEvent) event;
-        }
-        else
-        {
-            logger.trace( "Unsupported grouping event: {}", event.getClass() );
-            return;
-        }
+        PathsPromoteCompleteEvent pathsPromoteCompleteEvent = (PathsPromoteCompleteEvent)event;
 
         PathsPromoteResult promoteResult = pathsPromoteCompleteEvent.getPromoteResult();
 
@@ -228,6 +219,7 @@ public class EventAuditListener
         StoreKey source = req.getSource();
         StoreKey target = req.getTarget();
 
+        //TODO How about generating the key if it does not exist.
         TrackingKey trackingKey = getTrackingKey( source );
         if ( trackingKey == null )
         {

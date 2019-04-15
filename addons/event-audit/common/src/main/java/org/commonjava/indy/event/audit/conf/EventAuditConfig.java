@@ -13,7 +13,7 @@ import java.io.InputStream;
 public class EventAuditConfig implements IndyConfigInfo
 {
 
-    public static final boolean DEFAULT_ENABLED = true;
+    public static final boolean DEFAULT_ENABLED = false;
 
     private Boolean enabled;
 

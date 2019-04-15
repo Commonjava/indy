@@ -1,12 +1,10 @@
 package org.commonjava.indy.event.audit;
 
+import org.commonjava.auditquery.fileevent.FileEvent;
+import org.commonjava.auditquery.fileevent.FileEventPublisher;
+import org.commonjava.auditquery.fileevent.FileEventPublisherException;
+import org.commonjava.auditquery.fileevent.FileGroupingEvent;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
-import org.commonjava.propulsor.content.audit.FileEventPublisher;
-import org.commonjava.propulsor.content.audit.FileEventPublisherException;
-import org.commonjava.propulsor.content.audit.model.FileEvent;
-import org.commonjava.propulsor.content.audit.model.FileGroupingEvent;
 
 import javax.inject.Inject;
 

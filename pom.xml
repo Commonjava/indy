@@ -79,6 +79,7 @@
     <weftVersion>1.14</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4-SNAPSHOT</propulsorVersion>
+    <auditQueryVersion>0.13.0-SNAPSHOT</auditQueryVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
@@ -928,7 +929,12 @@
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
-
+      
+      <dependency>
+        <groupId>org.commonjava.auditquery</groupId>
+        <artifactId>auditquery-api</artifactId>
+        <version>${auditQueryVersion}</version>
+      </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-event-audit-common</artifactId>
