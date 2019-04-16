@@ -212,6 +212,7 @@ public class PromoteValidationsManager
     {
         if ( ruleSets == null )
         {
+            logger.debug( "No rule sets to match against. No validations will be executed for: {}", storeKey );
             return null;
         }
 
@@ -220,13 +221,15 @@ public class PromoteValidationsManager
                                                  String.format( "%s:%s", storeKey.getType().singularEndpointName(),
                                                                 storeKey.getName() ) );
 
-        for ( ValidationRuleSet set : ruleSets.values() )
+        for ( Map.Entry<String, ValidationRuleSet> entry : ruleSets.entrySet() )
         {
             for ( String keyStr : keyStrings )
             {
-                if ( set.matchesKey( keyStr ) )
+                logger.debug( "Checking for rule-set match. Key='{}', rule-set: '{}'", keyStr, entry.getKey() );
+                if ( entry.getValue().matchesKey( keyStr ) )
                 {
-                    return set;
+                    logger.debug( "Rule set '{}' matches key: '{}'", entry.getKey(), keyStr );
+                    return entry.getValue();
                 }
             }
         }

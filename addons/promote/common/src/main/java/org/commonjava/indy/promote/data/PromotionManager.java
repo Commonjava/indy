@@ -58,6 +58,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -96,6 +97,18 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 @ApplicationScoped
 public class PromotionManager
 {
+
+    private static final String PROMOTION_TYPE = "promotion-type";
+
+    private static final String PATH_PROMOTION = "path";
+
+    private static final String GROUP_PROMOTION = "group";
+
+    private static final String PROMOTION_SOURCE = "promotion-source";
+
+    private static final String PROMOTION_TARGET = "promotion-target";
+
+    private static final String PROMOTION_CONTENT_PATH = "promotion-content-path";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -189,6 +202,10 @@ public class PromotionManager
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        MDC.put( PROMOTION_TYPE, GROUP_PROMOTION );
+        MDC.put( PROMOTION_SOURCE, request.getSource().toString() );
+        MDC.put( PROMOTION_TARGET, request.getTargetKey().toString() );
+
         if ( !storeManager.hasArtifactStore( request.getSource() ) )
         {
             String error = String.format( "Cannot promote from missing source: %s", request.getSource() );
@@ -485,6 +502,10 @@ public class PromotionManager
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        MDC.put( PROMOTION_TYPE, PATH_PROMOTION );
+        MDC.put( PROMOTION_SOURCE, request.getSource().toString() );
+        MDC.put( PROMOTION_TARGET, request.getTargetKey().toString() );
+
         Future<PathsPromoteResult> future = submitPathsPromoteRequest( request, baseUrl );
         if ( request.isAsync() )
         {
@@ -1023,6 +1044,8 @@ public class PromotionManager
                                                                   final PathsPromoteRequest request )
     {
         return () -> {
+            MDC.put( PROMOTION_CONTENT_PATH, transfer.getPath() );
+
             PathTransferResult result = new PathTransferResult( transfer.getPath() );
             final String path = transfer.getPath();
 

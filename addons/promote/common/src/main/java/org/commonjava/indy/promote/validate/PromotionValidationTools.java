@@ -17,6 +17,7 @@ package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
@@ -54,6 +55,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -68,6 +70,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,6 +91,10 @@ public class PromotionValidationTools
     public static final String AVAILABLE_IN_STORE_KEY = "availableInStoreKey";
 
     private static final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 30;
+
+    private static final String ITERATION_DEPTH = "promotion-validation-parallel-depth";
+
+    private static final String ITERATION_ITEM = "promotion-validation-parallel-item";
 
     @Inject
     private ContentManager contentManager;
@@ -595,20 +602,47 @@ public class PromotionValidationTools
 
     private <T> void runParallelInBatchAndWait( Collection<Collection<T>> batches, Closure closure, Logger logger )
     {
-        final CountDownLatch latch = new CountDownLatch( batches.size() );
-        batches.forEach( batch -> ruleParallelExecutor.execute( () -> {
-            try
-            {
-                logger.trace( "The paralleled exe on batch {}", batch );
-                batch.forEach( e -> closure.call( e ) );
-            }
-            finally
-            {
-                latch.countDown();
-            }
-        } ) );
+        ThreadContext ctx = ThreadContext.getContext( true );
+        AtomicInteger depth = (AtomicInteger) ctx.computeIfAbsent( ITERATION_DEPTH, k -> new AtomicInteger( -1 ) );
+        int nextDepth = depth.incrementAndGet();
+        if ( nextDepth > 0 )
+        {
+            logger.warn( "Nested parallel iteration detected in promotion validation rule!!" );
+        }
 
-        waitForCompletion( latch );
+        try
+        {
+            final CountDownLatch latch = new CountDownLatch( batches.size() );
+            batches.forEach( batch -> ruleParallelExecutor.execute( () -> {
+                try
+                {
+                    logger.trace( "The paralleled exe on batch {}", batch );
+                    batch.forEach( e -> {
+                        MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+                        MDC.put( ITERATION_DEPTH, String.valueOf( depth.get() ) );
+                        try
+                        {
+                            closure.call( e );
+                        }
+                        finally
+                        {
+                            MDC.remove( ITERATION_ITEM );
+                            MDC.remove( ITERATION_DEPTH );
+                        }
+                    } );
+                }
+                finally
+                {
+                    latch.countDown();
+                }
+            } ) );
+
+            waitForCompletion( latch );
+        }
+        finally
+        {
+            depth.decrementAndGet();
+        }
     }
 
     private <T> Collection<Collection<T>> batch( Collection<T> collection, int batchSize )
@@ -636,21 +670,42 @@ public class PromotionValidationTools
 
     private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )
     {
-        Set<T> todo = new HashSet<>( runCollection );
-        final CountDownLatch latch = new CountDownLatch( todo.size() );
-        todo.forEach( e -> ruleParallelExecutor.execute( () -> {
-            try
-            {
-                logger.trace( "The paralleled exe on element {}", e );
-                closure.call( e );
-            }
-            finally
-            {
-                latch.countDown();
-            }
-        } ) );
+        ThreadContext ctx = ThreadContext.getContext( true );
+        AtomicInteger depth = (AtomicInteger) ctx.computeIfAbsent( ITERATION_DEPTH, k -> new AtomicInteger( -1 ) );
+        int nextDepth = depth.incrementAndGet();
+        if ( nextDepth > 0 )
+        {
+            logger.warn( "Nested parallel iteration detected in promotion validation rule!!" );
+        }
 
-        waitForCompletion( latch );
+        try
+        {
+            Set<T> todo = new HashSet<>( runCollection );
+            final CountDownLatch latch = new CountDownLatch( todo.size() );
+            todo.forEach( e -> ruleParallelExecutor.execute( () -> {
+                MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+                MDC.put( ITERATION_DEPTH, String.valueOf( depth.get() ) );
+
+                try
+                {
+                    logger.trace( "The paralleled exe on element {}", e );
+                    closure.call( e );
+                }
+                finally
+                {
+                    latch.countDown();
+                    MDC.remove( ITERATION_ITEM );
+                    MDC.remove( ITERATION_DEPTH );
+                }
+            } ) );
+
+            waitForCompletion( latch );
+        }
+        finally
+        {
+            depth.decrementAndGet();
+        }
+
     }
 
     private void waitForCompletion( CountDownLatch latch )
