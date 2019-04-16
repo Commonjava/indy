@@ -11,7 +11,7 @@ class ParsablePom implements ValidationRule {
         def errors = Collections.synchronizedList(new ArrayList());
         def tools = request.getTools()
         def logger = LoggerFactory.getLogger(ValidationRule.class)
-        logger.info("Parsing POMs in:\n  {}.", request.getSourcePaths().join("\n  "))
+        logger.info("Parsing POMs in:\n  {}", request.getSourcePaths().join("\n  "))
 
         tools.paralleledEach(request.getSourcePaths(), { it ->
             if (it.endsWith(".pom")) {

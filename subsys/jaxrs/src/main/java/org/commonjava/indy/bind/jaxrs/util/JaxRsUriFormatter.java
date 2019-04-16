@@ -19,6 +19,9 @@ import static org.apache.commons.lang.StringUtils.join;
 
 import java.net.MalformedURLException;
 
+import org.commonjava.indy.model.core.PackageTypeDescriptor;
+import org.commonjava.indy.model.core.PackageTypes;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.maven.galley.util.PathUtils;
@@ -26,8 +29,10 @@ import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriInfo;
+
 public class JaxRsUriFormatter
-    implements UriFormatter
+                implements UriFormatter
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -55,31 +60,16 @@ public class JaxRsUriFormatter
         logger.debug( "Resulting URL: '{}'", url );
 
         return url;
-
-        //        URL baseUrl = null;
-        //        String path = base;
-        //        try
-        //        {
-        //            baseUrl = new URL( base );
-        //            path = baseUrl.getPath();
-        //        }
-        //        catch ( MalformedURLException e )
-        //        {
-        //            // not a URL.
-        //        }
-        //        
-        //        path = PathUtils.normalize( base, PathUtils.normalize( parts ) );
-        //        if ( !path.startsWith( "/" ) )
-        //        {
-        //            path = "/" + path;
-        //        }
-        //        
-        //        if ( baseUrl != null )
-        //        {
-        //            // reconstruct...
-        //        }
-        //
-        //        return path;
     }
 
+    public static String getBaseUrlByStoreKey( UriInfo uriInfo, StoreKey storeKey )
+    {
+        PackageTypeDescriptor typeDescriptor = PackageTypes.getPackageTypeDescriptor( storeKey.getPackageType() );
+        return uriInfo.getBaseUriBuilder()
+                      .path( typeDescriptor.getContentRestBasePath() )
+                      .path( storeKey.getType().singularEndpointName() )
+                      .path( storeKey.getName() )
+                      .build()
+                      .toString();
+    }
 }

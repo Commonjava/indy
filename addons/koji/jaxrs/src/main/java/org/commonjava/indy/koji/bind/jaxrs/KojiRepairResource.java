@@ -46,6 +46,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+import static org.commonjava.indy.bind.jaxrs.util.JaxRsUriFormatter.getBaseUrlByStoreKey;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.ALL_MASKS;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.MASK;
@@ -86,15 +87,8 @@ public class KojiRepairResource
     {
         try
         {
-            PackageTypeDescriptor packageTypeDescriptor =
-                            PackageTypes.getPackageTypeDescriptor( request.getSource().getPackageType() );
-
             String user = securityManager.getUser( securityContext, servletRequest );
-            final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( packageTypeDescriptor.getContentRestBasePath() )
-                                          .build( request.getSource().getType().singularEndpointName(),
-                                                  request.getSource().getName() )
-                                          .toString();
+            final String baseUrl = getBaseUrlByStoreKey( uriInfo, request.getSource() );
             return repairManager.repairVol( request, user, baseUrl );
         }
         catch ( KojiRepairException | KojiClientException e )
