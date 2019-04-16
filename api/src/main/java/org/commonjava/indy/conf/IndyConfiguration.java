@@ -73,4 +73,6 @@ public interface IndyConfiguration
     int getForkJoinPoolCommonParallelism();
 
     boolean isClusterEnabled();
+
+    String getNodeId();
 }

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.conf;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.web.config.annotation.ConfigName;
 import org.commonjava.web.config.annotation.SectionName;
 import org.commonjava.web.config.section.ConfigurationSectionListener;
@@ -22,6 +23,8 @@ import org.commonjava.web.config.section.ConfigurationSectionListener;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
@@ -70,6 +73,8 @@ public class DefaultIndyConfiguration
     private Boolean allowRemoteListDownload;
 
     private Boolean clusterEnabled;
+
+    private String nodeId;
 
     public DefaultIndyConfiguration()
     {
@@ -227,6 +232,18 @@ public class DefaultIndyConfiguration
         this.remoteMetadataTimeoutSeconds = remoteMetadataTimeoutSeconds;
     }
 
+    @ConfigName( "node.id" )
+    public void setNodeId( final String nodeId )
+    {
+        this.nodeId = nodeId;
+    }
+
+    @Override
+    public String getNodeId()
+    {
+        return getEnv( nodeId );
+    }
+
     @Override
     public String getDefaultConfigFileName()
     {
@@ -237,6 +254,17 @@ public class DefaultIndyConfiguration
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-main.conf" );
+    }
+
+    private String getEnv( final String exp )
+    {
+        Matcher m = Pattern.compile( "env+\\.[a-zA-Z]+" ).matcher( exp );
+        if ( m.find() )
+        {
+            String[] env = m.group(0).split( "\\." );
+            return env.length > 1 ? System.getenv( env[1] ) : null;
+        }
+        return null;
     }
 
 }

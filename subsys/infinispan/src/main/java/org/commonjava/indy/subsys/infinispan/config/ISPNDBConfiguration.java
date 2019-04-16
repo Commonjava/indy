@@ -24,6 +24,8 @@ import org.commonjava.web.config.annotation.SectionName;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SectionName( "infinispan-db" )
 @ApplicationScoped
@@ -40,6 +42,8 @@ public class ISPNDBConfiguration
     private static final String INDY_CACHE_DB_USER = "datasource_user";
 
     private static final String INDY_CACHE_DB_PASS = "datasource_password";
+
+    private static final String INDY_NODE_ID = "node.id";
 
     private static final String DEFAULT_INDY_CACHE_DB_SERVER = "localhost";
 
@@ -60,6 +64,8 @@ public class ISPNDBConfiguration
     private String cacheDBUser;
 
     private String cacheDBPassword;
+
+    private String nodeId;
 
     public ISPNDBConfiguration()
     {
@@ -120,6 +126,17 @@ public class ISPNDBConfiguration
         this.cacheDBPassword = cacheDBPassword;
     }
 
+    public String getNodeId()
+    {
+        return getEnv( nodeId );
+    }
+
+    @ConfigName( INDY_NODE_ID )
+    public void setNodeId( final String nodeId )
+    {
+        this.nodeId = nodeId;
+    }
+
     @Override
     public String getDefaultConfigFileName()
     {
@@ -163,5 +180,16 @@ public class ISPNDBConfiguration
                          .replace( ">", "&gt;" );
 
         props.setProperty( propName, propVal );
+    }
+
+    private String getEnv( final String exp )
+    {
+        Matcher m = Pattern.compile( "env+\\.[a-zA-Z]+" ).matcher( exp );
+        if ( m.find() )
+        {
+            String[] env = m.group(0).split( "\\." );
+            return env.length > 1 ? System.getenv( env[1] ) : null;
+        }
+        return null;
     }
 }
