@@ -155,7 +155,7 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
     {
         ValidationRuleSet ruleSet = new ValidationRuleSet();
         ruleSet.setName( "test" );
-        ruleSet.setStoreKeyPattern( new StoreKey( group, TARGET_NAME ).toString() );
+        ruleSet.setStoreKeyPattern( "maven:[^:]+:" + TARGET_NAME );
         ruleSet.setRuleNames( Collections.singletonList( getRuleScriptFile() ) );
 
         return ruleSet;
