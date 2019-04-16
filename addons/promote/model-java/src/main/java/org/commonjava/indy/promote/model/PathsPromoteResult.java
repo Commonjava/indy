@@ -42,12 +42,6 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     @ApiModelProperty( "List of paths that were skipped (path already exists in target location)" )
     private Set<String> skippedPaths;
 
-    @ApiModelProperty( "Result of validation rule executions, if applicable" )
-    private ValidationResult validations;
-
-    @ApiModelProperty( "Error message, if promotion failed" )
-    private String error;
-
     public PathsPromoteResult()
     {
     }
@@ -55,6 +49,7 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
                                final Set<String> skipped, final String error, ValidationResult validations )
     {
+        super( error, validations );
         this.request = request;
         this.pendingPaths = pending;
         this.completedPaths = complete;
@@ -66,12 +61,11 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
                                final Set<String> skipped, final ValidationResult validations )
     {
+        super( null, validations );
         this.request = request;
         this.pendingPaths = pending;
         this.completedPaths = complete;
         this.skippedPaths = skipped;
-        this.validations = validations;
-        this.error = null;
     }
 
     public PathsPromoteResult( PathsPromoteRequest request )
@@ -83,16 +77,6 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     {
         this.request = request;
         this.error = error;
-    }
-
-    public ValidationResult getValidations()
-    {
-        return validations;
-    }
-
-    public void setValidations( ValidationResult validations )
-    {
-        this.validations = validations;
     }
 
     public Set<String> getPendingPaths()
@@ -123,16 +107,6 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     public void setSkippedPaths( Set<String> skippedPaths )
     {
         this.skippedPaths = skippedPaths;
-    }
-
-    public String getError()
-    {
-        return error;
-    }
-
-    public void setError( final String error )
-    {
-        this.error = error;
     }
 
     public PathsPromoteRequest getRequest()
