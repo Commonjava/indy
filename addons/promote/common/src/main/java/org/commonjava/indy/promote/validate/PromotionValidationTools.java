@@ -604,7 +604,11 @@ public class PromotionValidationTools
     {
         ThreadContext ctx = ThreadContext.getContext( true );
         AtomicInteger depth = (AtomicInteger) ctx.computeIfAbsent( ITERATION_DEPTH, k -> new AtomicInteger( -1 ) );
-        depth.incrementAndGet();
+        int nextDepth = depth.incrementAndGet();
+        if ( nextDepth > 0 )
+        {
+            logger.warn( "Nested parallel iteration detected in promotion validation rule!!" );
+        }
 
         try
         {
@@ -615,7 +619,16 @@ public class PromotionValidationTools
                     logger.trace( "The paralleled exe on batch {}", batch );
                     batch.forEach( e -> {
                         MDC.put( ITERATION_ITEM, String.valueOf( e ) );
-                        closure.call( e );
+                        MDC.put( ITERATION_DEPTH, String.valueOf( depth.get() ) );
+                        try
+                        {
+                            closure.call( e );
+                        }
+                        finally
+                        {
+                            MDC.remove( ITERATION_ITEM );
+                            MDC.remove( ITERATION_DEPTH );
+                        }
                     } );
                 }
                 finally
@@ -659,7 +672,11 @@ public class PromotionValidationTools
     {
         ThreadContext ctx = ThreadContext.getContext( true );
         AtomicInteger depth = (AtomicInteger) ctx.computeIfAbsent( ITERATION_DEPTH, k -> new AtomicInteger( -1 ) );
-        depth.incrementAndGet();
+        int nextDepth = depth.incrementAndGet();
+        if ( nextDepth > 0 )
+        {
+            logger.warn( "Nested parallel iteration detected in promotion validation rule!!" );
+        }
 
         try
         {
@@ -677,6 +694,8 @@ public class PromotionValidationTools
                 finally
                 {
                     latch.countDown();
+                    MDC.remove( ITERATION_ITEM );
+                    MDC.remove( ITERATION_DEPTH );
                 }
             } ) );
 
