@@ -335,6 +335,8 @@ public class PromotionValidator
     {
         final ArtifactStore store;
         final Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Promotion baseUrl: {} ", baseUrl );
+
         if ( needTempRepo( promoteRequest ) )
         {
             logger.info( "Promotion temporary repo is needed for {}, points to {} ", promoteRequest.getSource(),
