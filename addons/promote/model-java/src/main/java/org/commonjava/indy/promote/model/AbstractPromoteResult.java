@@ -22,7 +22,7 @@ import java.util.UUID;
 /**
  * Created by ruhan on 12/5/18.
  */
-public class AbstractPromoteResult<T extends AbstractPromoteResult>
+public abstract class AbstractPromoteResult<T extends AbstractPromoteResult>
 {
     public static final String DONE = "DONE";
 
@@ -33,6 +33,20 @@ public class AbstractPromoteResult<T extends AbstractPromoteResult>
 
     @ApiModelProperty( "Result code" )
     protected String resultCode = DONE; // default
+
+    @ApiModelProperty( "Result of validation rule executions, if applicable" )
+    protected ValidationResult validations;
+
+    @ApiModelProperty( "Error message, if promotion failed" )
+    protected String error;
+
+    protected AbstractPromoteResult(){}
+
+    protected AbstractPromoteResult( final String error, final ValidationResult validations )
+    {
+        this.validations = validations;
+        this.error = error == null && validations.isValid() ? null : "Promotion validation failed";
+    }
 
     public String getPromotionId()
     {
@@ -64,5 +78,30 @@ public class AbstractPromoteResult<T extends AbstractPromoteResult>
     {
         this.promotionId = promotionId;
         return (T) this;
+    }
+
+    public boolean succeeded()
+    {
+        return error == null && ( validations == null || validations.isValid() );
+    }
+
+    public String getError()
+    {
+        return error;
+    }
+
+    public void setError( final String error )
+    {
+        this.error = error;
+    }
+
+    public ValidationResult getValidations()
+    {
+        return validations;
+    }
+
+    public void setValidations( ValidationResult validations )
+    {
+        this.validations = validations;
     }
 }

@@ -30,46 +30,26 @@ public class GroupPromoteResult extends AbstractPromoteResult<GroupPromoteResult
     @ApiModelProperty( "Original request" )
     private GroupPromoteRequest request;
 
-    @ApiModelProperty( "Result of validation rule executions, if applicable" )
-    private ValidationResult validations;
-
-    @ApiModelProperty( "Error message, if promotion failed" )
-    private String error;
-
     public GroupPromoteResult()
     {
     }
 
     public GroupPromoteResult( final GroupPromoteRequest request, final String error )
     {
+        super( error, null );
         this.request = request;
         this.error = error;
     }
 
     public GroupPromoteResult( GroupPromoteRequest request, ValidationResult validations )
     {
+        super( null, validations );
         this.request = request;
-        this.validations = validations;
     }
 
     public GroupPromoteResult( GroupPromoteRequest request )
     {
         this.request = request;
-    }
-
-    public boolean succeeded()
-    {
-        return error == null && ( validations == null || validations.isValid() );
-    }
-
-    public String getError()
-    {
-        return error;
-    }
-
-    public void setError( final String error )
-    {
-        this.error = error;
     }
 
     public GroupPromoteRequest getRequest()
@@ -82,20 +62,11 @@ public class GroupPromoteResult extends AbstractPromoteResult<GroupPromoteResult
         this.request = request;
     }
 
-    public ValidationResult getValidations()
-    {
-        return validations;
-    }
-
-    public void setValidations( ValidationResult validations )
-    {
-        this.validations = validations;
-    }
-
     @Override
     public String toString()
     {
-        return String.format( "GroupPromoteResult [\n  request=%s\n  error=%s\n  validations:\n  %s\n]", request, error, validations );
+        return String.format( "GroupPromoteResult [\n  request=%s\n  error=%s\n  validations:\n  %s\n]", request,
+                              getError(), getValidations() );
     }
 
 }
