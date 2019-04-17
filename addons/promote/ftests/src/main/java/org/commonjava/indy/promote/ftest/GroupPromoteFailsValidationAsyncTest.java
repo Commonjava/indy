@@ -56,7 +56,8 @@ public class GroupPromoteFailsValidationAsyncTest
         assertThat( result.getRequest()
                           .getTargetGroup(), equalTo( target.getName() ) );
 
-        assertThat( result.getError(), nullValue() );
+        assertThat( result.getError(), notNullValue() );
+        assertThat( result.succeeded(), equalTo( false ) );
 
         ValidationResult validations = result.getValidations();
         assertThat( validations, notNullValue() );

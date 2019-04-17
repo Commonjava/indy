@@ -548,25 +548,67 @@ public class PromotionManager
             pending.add( transfer.getPath() );
         }
 
-        ValidationResult validation = new ValidationResult();
-        ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
-        if ( request.isDryRun() )
+        AtomicReference<Exception> ex = new AtomicReference<>();
+
+        PathsPromoteResult promoteResult = byPathTargetLocks.lockAnd( request.getTargetKey(), config.getLockTimeoutSeconds(), k -> {
+            try
+            {
+                ValidationResult validation = new ValidationResult();
+                ValidationRequest validationRequest = validator.validate( request, validation, baseUrl );
+                if ( request.isDryRun() )
+                {
+                    return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
+                                                   validation );
+                }
+                else if ( validation.isValid() )
+                {
+                    PathsPromoteResult result = runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(),
+                                                                   contents, validation, validationRequest );
+                    doPathPromoteMetrics( contents.size(), result );
+                    return result;
+                }
+                else
+                {
+                    return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
+                                                   validation );
+                }
+            }
+            catch ( PromotionValidationException e )
+            {
+                ex.set( e );
+            }
+            catch ( IndyWorkflowException e )
+            {
+                ex.set( e );
+            }
+
+            return null;
+        }, ( k, lock ) -> {
+            String error = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.",
+                                          request.getTargetKey(), config.getLockTimeoutSeconds() );
+
+            logger.error( error );
+            ex.set( new IndyWorkflowException( error ) );
+
+            return false;
+        } );
+
+        Exception e = ex.get();
+        if ( e != null )
         {
-            return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
-                                           validation );
+            if ( e instanceof PromotionValidationException )
+            {
+                throw (PromotionValidationException) e;
+            }
+            else if ( e instanceof IndyWorkflowException )
+            {
+                throw (IndyWorkflowException) e;
+            }
+
+            throw new IndyWorkflowException( "Promotion failed.", e );
         }
-        else if ( validation.isValid() )
-        {
-            PathsPromoteResult result = runPathPromotions( request, pending, Collections.emptySet(), Collections.emptySet(), contents,
-                                                           validation, validationRequest );
-            doPathPromoteMetrics( contents.size(), result );
-            return result;
-        }
-        else
-        {
-            return new PathsPromoteResult( request, pending, Collections.emptySet(), Collections.emptySet(),
-                                           validation );
-        }
+
+        return promoteResult;
     }
 
     private void doPathPromoteMetrics( int total, PathsPromoteResult result )
@@ -909,69 +951,49 @@ public class PromotionManager
 
             AtomicReference<IndyWorkflowException> wfError = new AtomicReference<>();
 
-            Set<PathTransferResult> results =
-                    byPathTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
-                        logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", src,
-                                     request.getSource(), tgt, request.getTarget() );
+            logger.info( "Running promotions from: {} (key: {})\n  to: {} (key: {})", src, request.getSource(), tgt,
+                         request.getTarget() );
 
-                        DrainingExecutorCompletionService<PathTransferResult> svc =
-                                new DrainingExecutorCompletionService<>( transferService );
+            DrainingExecutorCompletionService<PathTransferResult> svc =
+                    new DrainingExecutorCompletionService<>( transferService );
 
-                        try
-                        {
-                            detectOverloadVoid( () -> contents.forEach( ( transfer ) -> svc.submit(
-                                    newPathsPromoteTransfer( transfer, src, tgt, request ) ) ) );
+            Set<PathTransferResult> results = new HashSet<>();
+            detectOverloadVoid( () -> contents.forEach( ( transfer ) -> svc.submit(
+                    newPathsPromoteTransfer( transfer, src, tgt, request ) ) ) );
 
-                            Set<PathTransferResult> pathResults = new HashSet<>();
-                            try
-                            {
-                                svc.drain( ptr -> pathResults.add( ptr ) );
-                            }
-                            catch ( InterruptedException | ExecutionException e )
-                            {
-                                Set<String> paths;
-                                try
-                                {
-                                    paths = validationRequest.getSourcePaths();
-                                }
-                                catch ( PromotionValidationException e1 )
-                                {
-                                    paths = contents.stream()
-                                                    .map( txfr -> txfr.getPath() )
-                                                    .collect( Collectors.toSet() );
-                                }
+            try
+            {
+                svc.drain( ptr -> results.add( ptr ) );
+            }
+            catch ( InterruptedException | ExecutionException e )
+            {
+                Set<String> paths;
+                try
+                {
+                    paths = validationRequest.getSourcePaths();
+                }
+                catch ( PromotionValidationException e1 )
+                {
+                    paths = contents.stream()
+                                    .map( txfr -> txfr.getPath() )
+                                    .collect( Collectors.toSet() );
+                }
 
-                                logger.error(
-                                        String.format( "Error waiting for promotion of: %s to: %s\nPaths:\n\n%s\n\n",
-                                                       request.getSource(), targetKey, paths ), e );
-                            }
+                logger.error(
+                        String.format( "Error waiting for promotion of: %s to: %s\nPaths:\n\n%s\n\n",
+                                       request.getSource(), targetKey, paths ), e );
+            }
 
-                            try
-                            {
-                                clearStoreNFC( validationRequest.getSourcePaths(), tgt );
-                            }
-                            catch ( IndyDataException | PromotionValidationException e )
-                            {
-                                String msg = String.format( "Failed to promote to: %s. Reason: %s", tgt, e.getMessage() );
-                                errors.add( msg );
-                                logger.error( msg, e );
-                            }
-                            return pathResults;
-                        }
-                        catch ( IndyWorkflowException e )
-                        {
-                            wfError.set( e );
-                            return null;
-                        }
-                    }, ( k, lock ) -> {
-                        String error = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.",
-                                                      targetKey, config.getLockTimeoutSeconds() );
-
-                        errors.add( error );
-                        logger.warn( error );
-
-                        return false;
-                    } );
+            try
+            {
+                clearStoreNFC( validationRequest.getSourcePaths(), tgt );
+            }
+            catch ( IndyDataException | PromotionValidationException e )
+            {
+                String msg = String.format( "Failed to promote to: %s. Reason: %s", tgt, e.getMessage() );
+                errors.add( msg );
+                logger.error( msg, e );
+            }
 
             if ( wfError.get() != null )
             {
@@ -1018,6 +1040,7 @@ public class PromotionManager
             PathsPromoteCompleteEvent evt = new PathsPromoteCompleteEvent( result );
             fireEvent( promoteCompleteEvent, evt );
         }
+
         return result;
     }
 
