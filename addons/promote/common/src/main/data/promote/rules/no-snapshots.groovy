@@ -26,7 +26,7 @@ class NoSnapshots implements ValidationRule {
 
                 def relationships = tools.getRelationshipsForPom(it, dc, request, verifyStoreKeys)
                 if (relationships != null) {
-                    tools.paralleledEach(relationships, { rel ->
+                    tools.forEach(relationships, { rel ->
                         def target = rel.getTarget()
                         if (!target.getVersionSpec().isRelease()) {
                             errors.add(String.format("%s uses a variable/snapshot version in: %s", target, it))
