@@ -602,47 +602,33 @@ public class PromotionValidationTools
 
     private <T> void runParallelInBatchAndWait( Collection<Collection<T>> batches, Closure closure, Logger logger )
     {
-        ThreadContext ctx = ThreadContext.getContext( true );
-        AtomicInteger depth = (AtomicInteger) ctx.computeIfAbsent( ITERATION_DEPTH, k -> new AtomicInteger( -1 ) );
-        int nextDepth = depth.incrementAndGet();
-        if ( nextDepth > 0 )
-        {
-            logger.warn( "Nested parallel iteration detected in promotion validation rule!!" );
-        }
+        final CountDownLatch latch = new CountDownLatch( batches.size() );
+        batches.forEach( batch -> ruleParallelExecutor.execute( () -> {
+            try
+            {
+                logger.trace( "The paralleled exe on batch {}", batch );
+                batch.forEach( e -> {
+                    String depthStr = MDC.get( ITERATION_DEPTH );
+                    MDC.put( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
+                    MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+                    try
+                    {
+                        closure.call( e );
+                    }
+                    finally
+                    {
+                        MDC.remove( ITERATION_ITEM );
+                        MDC.remove( ITERATION_DEPTH );
+                    }
+                } );
+            }
+            finally
+            {
+                latch.countDown();
+            }
+        } ) );
 
-        try
-        {
-            final CountDownLatch latch = new CountDownLatch( batches.size() );
-            batches.forEach( batch -> ruleParallelExecutor.execute( () -> {
-                try
-                {
-                    logger.trace( "The paralleled exe on batch {}", batch );
-                    batch.forEach( e -> {
-                        MDC.put( ITERATION_ITEM, String.valueOf( e ) );
-                        MDC.put( ITERATION_DEPTH, String.valueOf( depth.get() ) );
-                        try
-                        {
-                            closure.call( e );
-                        }
-                        finally
-                        {
-                            MDC.remove( ITERATION_ITEM );
-                            MDC.remove( ITERATION_DEPTH );
-                        }
-                    } );
-                }
-                finally
-                {
-                    latch.countDown();
-                }
-            } ) );
-
-            waitForCompletion( latch );
-        }
-        finally
-        {
-            depth.decrementAndGet();
-        }
+        waitForCompletion( latch );
     }
 
     private <T> Collection<Collection<T>> batch( Collection<T> collection, int batchSize )
@@ -670,42 +656,27 @@ public class PromotionValidationTools
 
     private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )
     {
-        ThreadContext ctx = ThreadContext.getContext( true );
-        AtomicInteger depth = (AtomicInteger) ctx.computeIfAbsent( ITERATION_DEPTH, k -> new AtomicInteger( -1 ) );
-        int nextDepth = depth.incrementAndGet();
-        if ( nextDepth > 0 )
-        {
-            logger.warn( "Nested parallel iteration detected in promotion validation rule!!" );
-        }
+        Set<T> todo = new HashSet<>( runCollection );
+        final CountDownLatch latch = new CountDownLatch( todo.size() );
+        todo.forEach( e -> ruleParallelExecutor.execute( () -> {
+            String depthStr = MDC.get( ITERATION_DEPTH );
+            MDC.put( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
+            MDC.put( ITERATION_ITEM, String.valueOf( e ) );
 
-        try
-        {
-            Set<T> todo = new HashSet<>( runCollection );
-            final CountDownLatch latch = new CountDownLatch( todo.size() );
-            todo.forEach( e -> ruleParallelExecutor.execute( () -> {
-                MDC.put( ITERATION_ITEM, String.valueOf( e ) );
-                MDC.put( ITERATION_DEPTH, String.valueOf( depth.get() ) );
+            try
+            {
+                logger.trace( "The paralleled exe on element {}", e );
+                closure.call( e );
+            }
+            finally
+            {
+                latch.countDown();
+                MDC.remove( ITERATION_ITEM );
+                MDC.remove( ITERATION_DEPTH );
+            }
+        } ) );
 
-                try
-                {
-                    logger.trace( "The paralleled exe on element {}", e );
-                    closure.call( e );
-                }
-                finally
-                {
-                    latch.countDown();
-                    MDC.remove( ITERATION_ITEM );
-                    MDC.remove( ITERATION_DEPTH );
-                }
-            } ) );
-
-            waitForCompletion( latch );
-        }
-        finally
-        {
-            depth.decrementAndGet();
-        }
-
+        waitForCompletion( latch );
     }
 
     private void waitForCompletion( CountDownLatch latch )
