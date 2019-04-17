@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.promote.bind.jaxrs;
 
+import static org.commonjava.indy.bind.jaxrs.util.JaxRsUriFormatter.getBaseUrlByStoreKey;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,8 +27,6 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
-import org.commonjava.indy.model.core.PackageTypeDescriptor;
-import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.data.PromotionManager;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -87,18 +86,12 @@ public class PromoteResource
                                               final @Context SecurityContext securityContext,
                                               final @Context UriInfo uriInfo)
     {
-        Response response = null;
+        Response response;
         try
         {
-            PackageTypeDescriptor packageTypeDescriptor =
-                    PackageTypes.getPackageTypeDescriptor( request.getSource().getPackageType() );
-
             String user = securityManager.getUser( securityContext, servletRequest );
-            final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( packageTypeDescriptor.getContentRestBasePath() )
-                                          .build( request.getSource().getType().singularEndpointName(),
-                                                  request.getSource().getName() )
-                                          .toString();
+            final String baseUrl = getBaseUrlByStoreKey( uriInfo, request.getSource() );
+
             return manager.promoteToGroup( request, user, baseUrl );
         }
         catch ( PromotionException | IndyWorkflowException e )
@@ -148,8 +141,8 @@ public class PromoteResource
     @Consumes( ApplicationContent.application_json )
     public Response promotePaths( final @Context HttpServletRequest request, final @Context UriInfo uriInfo )
     {
-        PathsPromoteRequest req = null;
-        Response response = null;
+        PathsPromoteRequest req;
+        Response response;
         try
         {
             final String json = IOUtils.toString( request.getInputStream() );
@@ -159,27 +152,16 @@ public class PromoteResource
         catch ( final IOException e )
         {
             response = formatResponse( e, "Failed to read DTO from request body." );
-        }
-
-        if ( response != null )
-        {
             return response;
         }
 
         try
         {
-            PackageTypeDescriptor packageTypeDescriptor =
-                    PackageTypes.getPackageTypeDescriptor( req.getSource().getPackageType() );
-
-            final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( packageTypeDescriptor.getContentRestBasePath() )
-                                          .build( req.getSource().getType().singularEndpointName(),
-                                                  req.getSource().getName() )
-                                          .toString();
+            final String baseUrl = getBaseUrlByStoreKey( uriInfo, req.getSource() );
             final PathsPromoteResult result = manager.promotePaths( req, baseUrl );
 
-            // TODO: Amend response status code based on presence of error? This would have consequences for client API...
             response = formatOkResponseWithJsonEntity( result, mapper );
+            logger.info( "Send promotion result:\n{}", response.getEntity() );
         }
         catch ( PromotionException | IndyWorkflowException e )
         {
@@ -201,8 +183,8 @@ public class PromoteResource
     @Consumes( ApplicationContent.application_json )
     public Response resumePaths( @Context final HttpServletRequest request, final @Context UriInfo uriInfo )
     {
-        PathsPromoteResult result = null;
-        Response response = null;
+        PathsPromoteResult result;
+        Response response;
         try
         {
             result = mapper.readValue( request.getInputStream(), PathsPromoteResult.class );
@@ -210,30 +192,17 @@ public class PromoteResource
         catch ( final IOException e )
         {
             response = formatResponse( e, "Failed to read DTO from request body." );
-        }
-
-        if ( response != null )
-        {
             return response;
         }
 
         try
         {
             PathsPromoteRequest req = result.getRequest();
-
-            PackageTypeDescriptor packageTypeDescriptor =
-                    PackageTypes.getPackageTypeDescriptor( req.getSource().getPackageType() );
-
-            final String baseUrl = uriInfo.getBaseUriBuilder()
-                                          .path( packageTypeDescriptor.getContentRestBasePath() )
-                                          .build( req.getSource().getType().singularEndpointName(),
-                                                  req.getSource().getName() )
-                                          .toString();
+            final String baseUrl = getBaseUrlByStoreKey( uriInfo, req.getSource() );
 
             result = manager.resumePathsPromote( result, baseUrl );
-
-            // TODO: Amend response status code based on presence of error? This would have consequences for client API...
             response = formatOkResponseWithJsonEntity( result, mapper );
+            logger.info( "Send promotion result:\n{}", response.getEntity() );
         }
         catch ( PromotionException | IndyWorkflowException e )
         {
@@ -255,8 +224,8 @@ public class PromoteResource
     @Consumes( ApplicationContent.application_json )
     public Response rollbackPaths( @Context final HttpServletRequest request, @Context final UriInfo uriInfo  )
     {
-        PathsPromoteResult result = null;
-        Response response = null;
+        PathsPromoteResult result;
+        Response response;
         try
         {
             result = mapper.readValue( request.getInputStream(), PathsPromoteResult.class );
@@ -264,18 +233,12 @@ public class PromoteResource
         catch ( final IOException e )
         {
             response = formatResponse( e, "Failed to read DTO from request body." );
-        }
-
-        if ( response != null )
-        {
             return response;
         }
 
         try
         {
             result = manager.rollbackPathsPromote( result );
-
-            // TODO: Amend response status code based on presence of error? This would have consequences for client API...
             response = formatOkResponseWithJsonEntity( result, mapper );
         }
         catch ( PromotionException | IndyWorkflowException e )
