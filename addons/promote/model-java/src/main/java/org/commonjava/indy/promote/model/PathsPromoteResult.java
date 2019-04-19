@@ -117,7 +117,7 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
 
     public Set<String> getSkippedPaths()
     {
-        return skippedPaths;
+        return skippedPaths == null ? Collections.<String> emptySet() : skippedPaths;
     }
 
     public void setSkippedPaths( Set<String> skippedPaths )

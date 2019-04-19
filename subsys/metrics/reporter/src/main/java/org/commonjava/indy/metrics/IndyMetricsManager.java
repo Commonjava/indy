@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.metrics;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
@@ -46,6 +47,7 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -251,12 +253,12 @@ public class IndyMetricsManager
         }
     }
 
-    public <T> void addGauges( Class<?> className, String method, Map<String, T> gauges )
+    public void addGauges( Class<?> className, String method, Map<String, Gauge<Integer>> gauges )
     {
-        String defaultName = IndyMetricsConstants.getDefaultName( className, method );
-        gauges.forEach( ( k, t ) -> {
+        String defaultName = getDefaultName( className, method );
+        gauges.forEach( ( k, v ) -> {
             String name = IndyMetricsConstants.getName( config.getNodePrefix(), DEFAULT, defaultName, k );
-            metricRegistry.gauge( name, () -> () -> t );
+            metricRegistry.gauge( name, () -> v );
         } );
     }
 
