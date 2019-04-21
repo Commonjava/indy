@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.promote.data;
 
+import com.codahale.metrics.Gauge;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
@@ -58,6 +59,7 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
@@ -74,6 +76,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -144,8 +147,24 @@ public class PromotionManager
     @Inject
     private NotFoundCache nfc;
 
+    private final AtomicInteger pathPromotionTotal = new AtomicInteger();
+
+    private final AtomicInteger pathPromotionCompleted = new AtomicInteger();
+
+    private final AtomicInteger pathPromotionSkipped = new AtomicInteger();
+
     protected PromotionManager()
     {
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        Map<String, Gauge<Integer>> gauges = new HashMap<>();
+        gauges.put( "total", () -> pathPromotionTotal.get() );
+        gauges.put( "completed", () -> pathPromotionCompleted.get() );
+        gauges.put( "skipped", () -> pathPromotionSkipped.get() );
+        metricsManager.addGauges( this.getClass(), "path.promote.last", gauges );
     }
 
     public PromotionManager( PromotionValidator validator, final ContentManager contentManager,
@@ -531,18 +550,9 @@ public class PromotionManager
 
     private void doPathPromoteMetrics( int total, PathsPromoteResult result )
     {
-        try
-        {
-            Map<String, Integer> pathPromoteMetrics = new HashMap<>();
-            pathPromoteMetrics.put( "total", total );
-            pathPromoteMetrics.put( "complete", result.getCompletedPaths().size() );
-            pathPromoteMetrics.put( "skipped", result.getSkippedPaths().size() );
-            metricsManager.addGauges( this.getClass(), "path.promote", pathPromoteMetrics );
-        }
-        catch ( Throwable e )
-        {
-            logger.warn( "Failed to get path promote files metrics. Reason: {} ", e.getMessage() );
-        }
+        pathPromotionTotal.set( total );
+        pathPromotionCompleted.set( result.getCompletedPaths().size() );
+        pathPromotionSkipped.set( result.getSkippedPaths().size() );
     }
 
     private Future<PathsPromoteResult> submitPathsPromoteRequest( PathsPromoteRequest request, final String baseUrl )
