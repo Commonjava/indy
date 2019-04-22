@@ -13,32 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.metrics.system;
+package org.commonjava.indy.subsys.template.fixture;
 
-import com.codahale.metrics.MetricRegistry;
-import org.commonjava.indy.metrics.MetricSetProvider;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.metrics.system.StoragePathProvider;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-
-import static com.codahale.metrics.MetricRegistry.name;
+import java.io.File;
 
 @ApplicationScoped
-public class SystemGaugesSetProvider
-        implements MetricSetProvider
+public class MockStoragePathProvider implements StoragePathProvider
 {
-    @Inject
-    private SystemGaugesSet systemGaugesSet;
-
-    @Inject
-    private IndyMetricsConfig metricsConfig;
-
-    private static final String SYSTEM = "system";
-
     @Override
-    public void registerMetricSet( MetricRegistry registry )
+    public File getStoragePath()
     {
-        registry.register( name( metricsConfig.getNodePrefix(), SYSTEM ), systemGaugesSet );
+        return null;
     }
 }

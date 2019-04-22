@@ -13,32 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.metrics.system;
+package org.commonjava.indy.filer.def.metrics;
 
-import com.codahale.metrics.MetricRegistry;
-import org.commonjava.indy.metrics.MetricSetProvider;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.indy.metrics.system.StoragePathProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.io.File;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
+/**
+ * Used to provide storage path in {@link org.commonjava.indy.metrics.system.SystemGaugesSet} to monitor
+ * storage space usage
+ */
 @ApplicationScoped
-public class SystemGaugesSetProvider
-        implements MetricSetProvider
+public class DefaultStoragePathProvider
+        implements StoragePathProvider
 {
     @Inject
-    private SystemGaugesSet systemGaugesSet;
-
-    @Inject
-    private IndyMetricsConfig metricsConfig;
-
-    private static final String SYSTEM = "system";
+    private DefaultStorageProviderConfiguration storageConfig;
 
     @Override
-    public void registerMetricSet( MetricRegistry registry )
+    public File getStoragePath()
     {
-        registry.register( name( metricsConfig.getNodePrefix(), SYSTEM ), systemGaugesSet );
+        return storageConfig != null ? storageConfig.getStorageRootDirectory() : null;
     }
 }

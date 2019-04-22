@@ -43,6 +43,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.io.File;
@@ -66,6 +67,10 @@ import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 public class PromotionValidator
 {
     private static final String PROMOTE_REPO_PREFIX = "Promote_";
+
+    private static final String PROMOTION_VALIDATION_RULE = "promotion-validation-rule";
+
+    private static final String PROMOTION_VALIDATION_RULE_SET = "promotion-validation-rule-set";
 
     @Inject
     private PromoteValidationsManager validationsManager;
@@ -143,6 +148,8 @@ public class PromotionValidator
             logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
 
             result.setRuleSet( set.getName() );
+            MDC.put( PROMOTION_VALIDATION_RULE_SET, set.getName() );
+
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
             {
@@ -157,6 +164,7 @@ public class PromotionValidator
                         for ( String ruleRef : ruleNames )
                         {
                             svc.submit( () -> {
+                                MDC.put( PROMOTION_VALIDATION_RULE, ruleRef );
                                 Exception err = null;
                                 try
                                 {
@@ -165,6 +173,10 @@ public class PromotionValidator
                                 catch ( Exception e )
                                 {
                                     err = e;
+                                }
+                                finally
+                                {
+                                    MDC.remove( PROMOTION_VALIDATION_RULE );
                                 }
 
                                 return err;

@@ -17,6 +17,7 @@ package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
@@ -54,6 +55,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.net.URI;
@@ -68,6 +70,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -88,6 +91,10 @@ public class PromotionValidationTools
     public static final String AVAILABLE_IN_STORE_KEY = "availableInStoreKey";
 
     private static final int DEFAULT_RULE_PARALLEL_WAIT_TIME_MINS = 30;
+
+    private static final String ITERATION_DEPTH = "promotion-validation-parallel-depth";
+
+    private static final String ITERATION_ITEM = "promotion-validation-parallel-item";
 
     @Inject
     private ContentManager contentManager;
@@ -600,7 +607,20 @@ public class PromotionValidationTools
             try
             {
                 logger.trace( "The paralleled exe on batch {}", batch );
-                batch.forEach( e -> closure.call( e ) );
+                batch.forEach( e -> {
+                    String depthStr = MDC.get( ITERATION_DEPTH );
+                    MDC.put( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
+                    MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+                    try
+                    {
+                        closure.call( e );
+                    }
+                    finally
+                    {
+                        MDC.remove( ITERATION_ITEM );
+                        MDC.remove( ITERATION_DEPTH );
+                    }
+                } );
             }
             finally
             {
@@ -639,6 +659,10 @@ public class PromotionValidationTools
         Set<T> todo = new HashSet<>( runCollection );
         final CountDownLatch latch = new CountDownLatch( todo.size() );
         todo.forEach( e -> ruleParallelExecutor.execute( () -> {
+            String depthStr = MDC.get( ITERATION_DEPTH );
+            MDC.put( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
+            MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+
             try
             {
                 logger.trace( "The paralleled exe on element {}", e );
@@ -647,6 +671,8 @@ public class PromotionValidationTools
             finally
             {
                 latch.countDown();
+                MDC.remove( ITERATION_ITEM );
+                MDC.remove( ITERATION_DEPTH );
             }
         } ) );
 
