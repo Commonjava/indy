@@ -20,8 +20,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.FileAppender;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.subsys.datafile.DataFile;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.LoggerFactory;
 
@@ -36,17 +38,18 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import static org.apache.commons.io.IOUtils.toInputStream;
 import static org.apache.commons.lang.StringUtils.join;
-import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
 
 /**
  * Created by jdcasey on 1/11/17.
@@ -68,6 +71,12 @@ public class DiagnosticsManager
 
     @Inject
     private DataFileManager dataFileManager;
+
+    @Inject
+    private StoreDataManager storeDataManager;
+
+    @Inject
+    private IndyObjectMapper serializer;
 
     public String getThreadDumpString()
     {
@@ -177,34 +186,27 @@ public class DiagnosticsManager
         return out;
     }
 
-    /**
-     * TODO: dump the repo definitions as they exist in the StoreDataManager instead.
-     * Currently, those are the same thing, but when we move to a cluster-enabled Indy implementation we're
-     * going to need to escape the filesystem for things like repo definition storage, and use an ISPN cache
-     * or similar instead.
-     */
     private void zipRepositoryFiles( ZipOutputStream zip ) throws IOException
     {
-        DataFile[] packageDirs = dataFileManager.getDataFile( INDY_STORE ).listFiles( ( f ) -> true );
-        for ( DataFile pkgDir : packageDirs )
+        Set<ArtifactStore> stores = null;
+        try
         {
-            String pkgDirName = REPOS_DIR + "/" + pkgDir.getName();
-            for ( StoreType type : StoreType.values() )
-            {
-                String typeDirName = pkgDirName + "/" + type.singularEndpointName();
-                DataFile[] files = pkgDir.getChild( type.singularEndpointName() ).listFiles( f -> true );
-                if ( files != null )
-                {
-                    for ( DataFile f : files )
-                    {
-                        final String json = f.readString();
-                        String name = typeDirName + "/" + f.getName();
-                        logger.debug( "Adding {} to repo zip", name );
-                        zip.putNextEntry( new ZipEntry( name ) );
-                        IOUtils.copy( toInputStream( json ), zip );
-                    }
-                }
-            }
+            stores = storeDataManager.getAllArtifactStores();
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Failed to get stores definition", e );
+            throw new IOException( e );
+        }
+
+        for ( ArtifactStore store : stores )
+        {
+            String path = Paths.get( REPOS_DIR, store.getPackageType(), store.getType().singularEndpointName(),
+                                     store.getName() ).toString();
+            logger.debug( "Adding {} to repo zip", path );
+            zip.putNextEntry( new ZipEntry( path ) );
+            String json = serializer.writeValueAsString( store );
+            IOUtils.copy( toInputStream( json ), zip );
         }
     }
 
