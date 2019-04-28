@@ -52,6 +52,9 @@ public class PathsPromoteRequest
     @ApiModelProperty( value="Fire events, e.g. PromoteCompleteEvent" )
     private boolean fireEvents;
 
+    @ApiModelProperty( value="Whether to fail the promotion if path exists in target repo" )
+    private boolean failWhenExists;
+
     public PathsPromoteRequest()
     {
     }
@@ -148,5 +151,16 @@ public class PathsPromoteRequest
     public void setFireEvents( boolean fireEvents )
     {
         this.fireEvents = fireEvents;
+    }
+
+    public boolean isFailWhenExists()
+    {
+        return failWhenExists;
+    }
+
+    public PathsPromoteRequest setFailWhenExists( boolean failWhenExists )
+    {
+        this.failWhenExists = failWhenExists;
+        return this;
     }
 }

@@ -50,12 +50,15 @@ import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.TransferTimeoutException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.ListingResult;
 import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.VirtualResource;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.LocationExpander;
 import org.slf4j.Logger;
@@ -122,6 +125,9 @@ public class DefaultDownloadManager
     private NotFoundCache nfc;
 
     @Inject
+    private SpecialPathManager specialPathManager;
+
+    @Inject
     @Any
     private Instance<ContentAdvisor> contentAdvisors;
 
@@ -137,6 +143,7 @@ public class DefaultDownloadManager
         this.locationExpander = locationExpander;
         this.fileEventManager = new IndyFileEventManager();
         this.rescanService = rescanService;
+        this.specialPathManager = new SpecialPathManagerImpl();
     }
 
     public DefaultDownloadManager( final StoreDataManager storeManager, final TransferManager transfers,
@@ -1138,7 +1145,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public List<Transfer> listRecursively( final StoreKey src, final String startPath )
             throws IndyWorkflowException
     {
@@ -1171,7 +1178,11 @@ public class DefaultDownloadManager
         }
         else if ( transfer.exists() )
         {
-            result.add( transfer );
+            SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( transfer.getPath() );
+            if ( spi == null || spi.isListable() )
+            {
+                result.add( transfer );
+            }
         }
     }
 

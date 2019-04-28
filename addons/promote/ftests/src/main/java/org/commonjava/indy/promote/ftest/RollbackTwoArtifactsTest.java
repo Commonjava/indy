@@ -49,8 +49,7 @@ public class RollbackTwoArtifactsTest
 
         Set<String> completed = result.getCompletedPaths();
         assertThat( completed, notNullValue() );
-        // Because NOS-1166 implementation, here we will have 4 promotion results: artifacts and their accompanied http metadata
-        assertThat( completed.size(), equalTo( 4 ) );
+        assertThat( completed.size(), equalTo( 2 ) );
 
         assertThat( result.getError(), nullValue() );
 
@@ -67,16 +66,11 @@ public class RollbackTwoArtifactsTest
 
         pending = result.getPendingPaths();
         assertThat( pending, notNullValue() );
-        // Because NOS-1166 implementation, here we will have 4 promotion results: artifacts and their accompanied http metadata
-        assertThat( pending.size(), equalTo( 4 ) );
+        assertThat( pending.size(), equalTo( 2 ) );
 
         assertThat( result.getError(), nullValue() );
 
         assertThat( client.content().exists( target.getKey(), first ), equalTo( false ) );
-        assertThat( client.content().exists( target.getKey(), first + SpecialPathConstants.HTTP_METADATA_EXT ),
-                    equalTo( false ) );
         assertThat( client.content().exists( target.getKey(), second ), equalTo( false ) );
-        assertThat( client.content().exists( target.getKey(), second + SpecialPathConstants.HTTP_METADATA_EXT ),
-                    equalTo( false ) );
     }
 }

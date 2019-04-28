@@ -17,7 +17,6 @@ package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
@@ -70,10 +69,10 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.promote.util.Batcher.batch;
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrapper;
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrappers;
 import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
@@ -629,29 +628,6 @@ public class PromotionValidationTools
         } ) );
 
         waitForCompletion( latch );
-    }
-
-    private <T> Collection<Collection<T>> batch( Collection<T> collection, int batchSize )
-    {
-        Collection<Collection<T>> batches = new ArrayList<>();
-        Collection<T> batch = new ArrayList<>( batchSize );
-        int count = 0;
-        for ( T t : collection )
-        {
-            ( (ArrayList<T>) batch ).add( t );
-            count++;
-            if ( count >= batchSize )
-            {
-                ( (ArrayList<Collection<T>>) batches ).add( batch );
-                batch = new ArrayList<>( batchSize );
-                count = 0;
-            }
-        }
-        if ( batch != null && !batch.isEmpty() )
-        {
-            ( (ArrayList<Collection<T>>) batches ).add( batch ); // first batch
-        }
-        return batches;
     }
 
     private <T> void runParallelAndWait( Collection<T> runCollection, Closure closure, Logger logger )

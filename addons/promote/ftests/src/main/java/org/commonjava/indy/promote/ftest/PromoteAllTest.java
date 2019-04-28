@@ -49,16 +49,11 @@ public class PromoteAllTest
 
         final Set<String> completed = result.getCompletedPaths();
         assertThat( completed, notNullValue() );
-        // Because NOS-1166 implementation, here we will have 4 promotion results: artifacts and their accompanied http metadata
-        assertThat( completed.size(), equalTo( 4 ) );
+        assertThat( completed.size(), equalTo( 2 ) );
 
         assertThat( result.getError(), nullValue() );
 
         assertThat( client.content().exists( target.getKey(), first ), equalTo( true ) );
-        assertThat( client.content().exists( target.getKey(), first + SpecialPathConstants.HTTP_METADATA_EXT ),
-                    equalTo( true ) );
         assertThat( client.content().exists( target.getKey(), second ), equalTo( true ) );
-        assertThat( client.content().exists( target.getKey(), second + SpecialPathConstants.HTTP_METADATA_EXT ),
-                    equalTo( true ) );
     }
 }

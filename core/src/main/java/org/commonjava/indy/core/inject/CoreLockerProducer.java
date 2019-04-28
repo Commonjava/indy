@@ -17,6 +17,7 @@ package org.commonjava.indy.core.inject;
 
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreKeyPaths;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -27,7 +28,7 @@ public class CoreLockerProducer
 
     private Locker<StoreKey> groupMembershipLocker;
 
-    private Locker<StoreKey> storeContentLocker;
+    private Locker<StoreKeyPaths> storeContentLocker;
 
     @PostConstruct
     public void init()
@@ -47,7 +48,7 @@ public class CoreLockerProducer
     @StoreContentLocks
     @Produces
     @ApplicationScoped
-    public Locker<StoreKey> getStoreContentLocker()
+    public Locker<StoreKeyPaths> getStoreContentLocker()
     {
         return storeContentLocker;
     }

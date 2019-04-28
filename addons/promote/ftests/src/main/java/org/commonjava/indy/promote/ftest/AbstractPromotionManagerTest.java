@@ -47,8 +47,8 @@ public class AbstractPromotionManagerTest
     {
         final String changelog = "Setup " + name.getMethodName();
         final IndyPromoteClientModule module = client.module( IndyPromoteClientModule.class );
-        System.out.printf( "\n\n\n\nBASE-URL: %s\nPROMOTE-URL: %s\nRESUME-URL: %s\nROLLBACK-URL: %s\n\n\n\n",
-                           client.getBaseUrl(), module.promoteUrl(), module.resumeUrl(), module.rollbackUrl() );
+        System.out.printf( "\n\n\n\nBASE-URL: %s\nPROMOTE-URL: %s\nROLLBACK-URL: %s\n\n\n\n",
+                           client.getBaseUrl(), module.promoteUrl(), module.rollbackUrl() );
 
         source = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, "source" );
         client.stores()

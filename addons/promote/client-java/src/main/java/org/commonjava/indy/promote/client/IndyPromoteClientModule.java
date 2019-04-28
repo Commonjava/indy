@@ -30,6 +30,8 @@ import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
+
 public class IndyPromoteClientModule
     extends IndyClientModule
 {
@@ -37,8 +39,6 @@ public class IndyPromoteClientModule
     public static final String PROMOTE_BASEPATH = "promotion";
 
     public static final String PATHS_PROMOTE_PATH = PROMOTE_BASEPATH + "/paths/promote";
-
-    public static final String PATHS_RESUME_PATH = PROMOTE_BASEPATH + "/paths/resume";
 
     public static final String PATHS_ROLLBACK_PATH = PROMOTE_BASEPATH + "/paths/rollback";
 
@@ -84,7 +84,7 @@ public class IndyPromoteClientModule
         throws IndyClientException
     {
         final PathsPromoteRequest req =
-            new PathsPromoteRequest( new StoreKey( srcType, srcName ), new StoreKey( targetType, targetName ),
+            new PathsPromoteRequest( new StoreKey( MAVEN_PKG_KEY, srcType, srcName ), new StoreKey( MAVEN_PKG_KEY, targetType, targetName ),
                                 new HashSet<String>( Arrays.asList( paths ) ) ).setPurgeSource( purgeSource );
 
         final PathsPromoteResult
@@ -115,16 +115,10 @@ public class IndyPromoteClientModule
     public Set<String> getPromotablePaths( final StoreType type, final String name )
         throws IndyClientException
     {
-        final StoreKey sk = new StoreKey( type, name );
+        final StoreKey sk = new StoreKey( MAVEN_PKG_KEY, type, name );
         final PathsPromoteResult result = promoteByPath( new PathsPromoteRequest( sk, sk ).setDryRun( true ) );
 
         return result.getPendingPaths();
-    }
-
-    public PathsPromoteResult resumePathPromote( final PathsPromoteResult result )
-        throws IndyClientException
-    {
-        return http.postWithResponse( PATHS_RESUME_PATH, result, PathsPromoteResult.class, HttpStatus.SC_OK );
     }
 
     public PathsPromoteResult rollbackPathPromote( final PathsPromoteResult result )
@@ -136,11 +130,6 @@ public class IndyPromoteClientModule
     public String promoteUrl()
     {
         return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_PROMOTE_PATH );
-    }
-
-    public String resumeUrl()
-    {
-        return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_RESUME_PATH );
     }
 
     public String rollbackUrl()
