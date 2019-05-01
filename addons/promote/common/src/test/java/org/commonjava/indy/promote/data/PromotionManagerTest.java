@@ -249,8 +249,9 @@ public class PromotionManagerTest
             assertThat( value, equalTo( originalString ) );
         }
 
-        result = manager.promotePaths( new PathsPromoteRequest( source1.getKey(), target.getKey(), path ),
-                                       FAKE_BASE_URL );
+        result = manager.promotePaths(
+                        new PathsPromoteRequest( source1.getKey(), target.getKey(), path ).setFailWhenExists( false ),
+                        FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source1.getKey() ) );
         assertThat( result.getRequest().getTarget(), equalTo( target.getKey() ) );

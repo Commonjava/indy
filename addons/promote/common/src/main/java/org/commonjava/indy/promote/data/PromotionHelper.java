@@ -9,6 +9,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.promote.metrics.PathGauges;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.validate.PromotionValidationException;
@@ -208,7 +209,7 @@ public class PromotionHelper
     }
 
     /**
-     * Check whether the srouce and target repo exists.
+     * Check whether the source and target repo exists.
      * @param request
      * @return errors
      */
@@ -242,9 +243,10 @@ public class PromotionHelper
             errors.add( msg );
         }
 
-        if ( targetStore == null )
+        if ( targetStore == null || sourceStore == null )
         {
-            String msg = String.format( "Failed to retrieve target store: %s", request.getTarget() );
+            String msg = String.format( "Failed to retrieve stores, source: %s, target: %s", request.getSource(),
+                                        request.getTarget() );
             logger.error( msg );
             errors.add( msg );
         }

@@ -52,8 +52,11 @@ public class PathsPromoteRequest
     @ApiModelProperty( value="Fire events, e.g. PromoteCompleteEvent" )
     private boolean fireEvents;
 
+    /**
+     * Default is true. Conflicted paths can be detected by no-pre-existing-paths validation rule.
+     */
     @ApiModelProperty( value="Whether to fail the promotion if path exists in target repo" )
-    private boolean failWhenExists;
+    private boolean failWhenExists = true;
 
     public PathsPromoteRequest()
     {

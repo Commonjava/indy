@@ -1,4 +1,4 @@
-package org.commonjava.indy.promote.data;
+package org.commonjava.indy.promote.metrics;
 
 import com.codahale.metrics.Gauge;
 import org.commonjava.indy.metrics.IndyMetricsManager;

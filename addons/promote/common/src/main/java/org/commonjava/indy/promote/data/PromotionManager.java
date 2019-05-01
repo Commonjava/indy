@@ -585,6 +585,8 @@ public class PromotionManager
             PathsPromoteRequest newRequest = new PathsPromoteRequest( request.getTarget(), request.getSource(),
                                                                       result.getCompletedPaths() );
             newRequest.setPurgeSource( true );
+            newRequest.setFailWhenExists( false ); // so the un-purged prev source files won't bring any trouble
+
 
             PathsPromoteResult ret;
             try
