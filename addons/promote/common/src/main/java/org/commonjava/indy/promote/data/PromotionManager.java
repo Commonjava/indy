@@ -26,7 +26,6 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.inject.GroupMembershipLocks;
-import org.commonjava.indy.core.inject.StoreContentLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -34,7 +33,6 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreKeyPaths;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.callback.PromotionCallbackHelper;
@@ -72,6 +70,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
@@ -95,6 +94,7 @@ import static org.commonjava.maven.galley.model.TransferOperation.UPLOAD;
 @ApplicationScoped
 public class PromotionManager
 {
+    private static final String PROMOTION_ID = "promotion-id";
 
     private static final String PROMOTION_TYPE = "promotion-type";
 
@@ -128,10 +128,6 @@ public class PromotionManager
     @Inject
     private Event<PromoteCompleteEvent> promoteCompleteEvent;
 
-    @StoreContentLocks
-    @Inject
-    private Locker<StoreKeyPaths> byPathTargetLocks;
-
     @Inject
     private PathConflictManager conflictManager;
 
@@ -164,7 +160,7 @@ public class PromotionManager
 
     public PromotionManager( PromotionValidator validator, ContentManager contentManager,
                              DownloadManager downloadManager, StoreDataManager storeManager,
-                             Locker<StoreKeyPaths> byPathTargetLocks, Locker<StoreKey> byGroupTargetLocks,
+                             Locker<StoreKey> byGroupTargetLocks,
                              PromoteConfig config, NotFoundCache nfc, WeftExecutorService asyncPromotionService,
                              WeftExecutorService transferService )
     {
@@ -172,7 +168,6 @@ public class PromotionManager
         this.contentManager = contentManager;
         this.downloadManager = downloadManager;
         this.storeManager = storeManager;
-        this.byPathTargetLocks = byPathTargetLocks;
         this.byGroupTargetLocks = byGroupTargetLocks;
         this.config = config;
         this.asyncPromotionService = asyncPromotionService;
@@ -185,6 +180,7 @@ public class PromotionManager
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        MDC.put( PROMOTION_ID, request.getPromotionId() );
         MDC.put( PROMOTION_TYPE, GROUP_PROMOTION );
         MDC.put( PROMOTION_SOURCE, request.getSource().toString() );
         MDC.put( PROMOTION_TARGET, request.getTargetKey().toString() );
@@ -409,7 +405,7 @@ public class PromotionManager
                     + request.getSource() );
         }
 
-        return ret.withPromotionId( result.getPromotionId() );
+        return ret;
     }
 
     private Future<GroupPromoteResult> submitGroupPromoteRollback( final GroupPromoteResult result, final Group target, final String user )
@@ -427,7 +423,7 @@ public class PromotionManager
                 String msg = "Group promotion rollback failed. Target: " + target.getKey() + ", Source: "
                         + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
-                ret = new GroupPromoteResult( request, msg ).withPromotionId( result.getPromotionId() );
+                ret = new GroupPromoteResult( request, msg );
             }
 
             if ( ret.getRequest().getCallback() != null )
@@ -484,6 +480,7 @@ public class PromotionManager
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
+        MDC.put( PROMOTION_ID, request.getPromotionId() );
         MDC.put( PROMOTION_TYPE, PATH_PROMOTION );
         MDC.put( PROMOTION_SOURCE, request.getSource().toString() );
         MDC.put( PROMOTION_TARGET, request.getTargetKey().toString() );
@@ -611,8 +608,6 @@ public class PromotionManager
                 result.setError( ret.getError() );
             }
 
-            result.withPromotionId( result.getPromotionId() );
-
             if ( result.getRequest().getCallback() != null )
             {
                 return callbackHelper.callback( result.getRequest().getCallback(), result );
@@ -638,11 +633,7 @@ public class PromotionManager
             contents = promotionHelper.getTransfersForPaths( source, paths );
         }
 
-        final Set<String> pending = new HashSet<>();
-        for ( final Transfer transfer : contents )
-        {
-            pending.add( transfer.getPath() );
-        }
+        final Set<String> pending = contents.stream().map( transfer -> transfer.getPath() ).collect( Collectors.toSet() );
 
         if ( pending.isEmpty() )
         {
@@ -652,54 +643,45 @@ public class PromotionManager
         AtomicReference<Exception> ex = new AtomicReference<>();
         StoreKeyPaths plk = new StoreKeyPaths( request.getTargetKey(), pending );
 
-        PathsPromoteResult promoteResult =
-                        byPathTargetLocks.lockAnd( plk, config.getLockTimeoutSeconds(), k ->
-        {
-            return conflictManager.checkAnd( k, pathsLockKey -> {
-                ValidationResult validationResult = new ValidationResult();
-                if ( !skipValidation )
+        PathsPromoteResult promoteResult = conflictManager.checkAnd( plk, pathsLockKey -> {
+            ValidationResult validationResult = new ValidationResult();
+            if ( !skipValidation )
+            {
+                try
                 {
-                    try
-                    {
-                        ValidationRequest vr = validator.validate( request, validationResult, baseUrl );
-                    }
-                    catch ( Exception e )
-                    {
-                        ex.set( e );
-                        return null;
-                    }
+                    ValidationRequest vr = validator.validate( request, validationResult, baseUrl );
                 }
-
-                if ( validationResult.isValid() )
+                catch ( Exception e )
                 {
-                    if ( request.isDryRun() )
-                    {
-                        return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
-                    }
-
-                    PathsPromoteResult result = runPathPromotions( request, pending, contents, validationResult );
-                    if ( result.succeeded() )
-                    {
-                        promotionHelper.updatePathPromoteMetrics( contents.size(), result );
-                    }
-
-                    return result;
+                    ex.set( e );
+                    return null;
                 }
+            }
 
-                return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
+            if ( validationResult.isValid() )
+            {
+                if ( request.isDryRun() )
+                {
+                    return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
+                }
+                PathsPromoteResult result = runPathPromotions( request, pending, contents, validationResult );
+                if ( result.succeeded() )
+                {
+                    promotionHelper.updatePathPromoteMetrics( contents.size(), result );
+                }
+                else
+                {
+                    logger.info( "Path promotion failed. Result: " + result );
+                }
+                return result;
+            }
 
-            }, pathsLockKey -> {
-                String msg = String.format( "Conflict detected, store: %s, paths: %s", k, pending );
-                logger.warn( msg );
-                return new PathsPromoteResult( request, pending, emptySet(), emptySet(), msg, null );
-            });
+            return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
 
-        }, ( k, lock ) -> {
-            String error = String.format( "Failed to acquire promotion lock on target: %s in %d seconds.",
-                                          request.getTargetKey(), config.getLockTimeoutSeconds() );
-            logger.error( error );
-            ex.set( new IndyWorkflowException( error ) );
-            return false;
+        }, pathsLockKey -> {
+            String msg = String.format( "Conflict detected, store: %s, paths: %s", pathsLockKey.getTarget(), pending );
+            logger.warn( msg );
+            return new PathsPromoteResult( request, pending, emptySet(), emptySet(), msg, null );
         } );
 
         if ( ex.get() != null )
@@ -721,7 +703,7 @@ public class PromotionManager
     {
         long begin = System.currentTimeMillis();
 
-        PromotionHelper.ReposCheckResult checkResult = promotionHelper.checkSourceAndTargetRepos( request );
+        PromotionHelper.PromotionRepoRetrievalResult checkResult = promotionHelper.checkAndRetrieveSourceAndTargetRepos( request );
         if ( checkResult.hasErrors() )
         {
             return new PathsPromoteResult( request, pending, emptySet(), emptySet(),
@@ -804,7 +786,7 @@ public class PromotionManager
             }
         }
 
-        logger.info( "Promotion completed, promotionId: {}, timeInSeconds: {}", result.getPromotionId(),
+        logger.info( "Promotion completed, promotionId: {}, timeInSeconds: {}", request.getPromotionId(),
                      timeInSeconds( begin ) );
         return result;
     }
@@ -840,6 +822,7 @@ public class PromotionManager
         if ( !transfer.exists() )
         {
             String msg = String.format( "Failed to promote: %s. Source file not exists.", transfer );
+            logger.info( msg );
             result.error = msg;
             return result;
         }
@@ -855,6 +838,7 @@ public class PromotionManager
             {
                 String msg = String.format( "Failed to promote: %s. Target: %s. Target file already exists.",
                                             transfer, request.getTarget() );
+                logger.info( msg );
                 result.error = msg;
             }
             else

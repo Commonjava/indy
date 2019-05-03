@@ -53,9 +53,9 @@ public class PathsPromoteRequest
     private boolean fireEvents;
 
     /**
-     * Default is true. Conflicted paths can be detected by no-pre-existing-paths validation rule.
+     * Default is true. For internal use, e.g., rollback. When doing rollback, set it to false so the previously
+     * un-purged files won't bring any trouble.
      */
-    @ApiModelProperty( value="Whether to fail the promotion if path exists in target repo" )
     private boolean failWhenExists = true;
 
     public PathsPromoteRequest()

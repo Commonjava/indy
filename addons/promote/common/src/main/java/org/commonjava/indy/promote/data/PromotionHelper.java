@@ -190,12 +190,12 @@ public class PromotionHelper
     }
 
     // util class to hold repos check results
-    class ReposCheckResult
+    class PromotionRepoRetrievalResult
     {
         final List<String> errors;
         final ArtifactStore targetStore, sourceStore;
 
-        public ReposCheckResult( List<String> errors, ArtifactStore sourceStore, ArtifactStore targetStore )
+        public PromotionRepoRetrievalResult( List<String> errors, ArtifactStore sourceStore, ArtifactStore targetStore )
         {
             this.errors = errors;
             this.targetStore = targetStore;
@@ -213,7 +213,7 @@ public class PromotionHelper
      * @param request
      * @return errors
      */
-    ReposCheckResult checkSourceAndTargetRepos( PathsPromoteRequest request )
+    PromotionRepoRetrievalResult checkAndRetrieveSourceAndTargetRepos( PathsPromoteRequest request )
     {
         List<String> errors = new ArrayList<>();
         ArtifactStore sourceStore = null;
@@ -251,7 +251,7 @@ public class PromotionHelper
             errors.add( msg );
         }
 
-        return new ReposCheckResult( errors, sourceStore, targetStore );
+        return new PromotionRepoRetrievalResult( errors, sourceStore, targetStore );
     }
 
     public static long timeInSeconds( long begin )

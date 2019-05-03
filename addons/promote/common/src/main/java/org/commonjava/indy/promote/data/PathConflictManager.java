@@ -1,7 +1,6 @@
 package org.commonjava.indy.promote.data;
 
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreKeyPaths;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,31 +19,31 @@ public class PathConflictManager
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final Map<StoreKey, Set<StoreKeyPaths>> conflictsMap = new HashMap<>();
+    private final Map<StoreKey, Set<StoreKeyPaths>> inUseMap = new HashMap<>();
 
     public PathsPromoteResult checkAnd( StoreKeyPaths k, Function<StoreKeyPaths, PathsPromoteResult> function,
                                         Function<StoreKeyPaths, PathsPromoteResult> conflictedFunction )
     {
-        Set<StoreKeyPaths> conflicts = null;
+        Set<StoreKeyPaths> inUse = null;
         boolean conflicted = false;
         try
         {
             logger.debug( "Check paths conflict for {}", k );
-            synchronized ( conflictsMap )
+            synchronized ( inUseMap )
             {
-                conflicts = conflictsMap.get( k.getTarget() );
-                if ( conflicts == null )
+                inUse = inUseMap.get( k.getTarget() );
+                if ( inUse == null )
                 {
-                    conflicts = new HashSet<>();
-                    conflicts.add( k );
-                    conflictsMap.put( k.getTarget(), conflicts );
+                    inUse = new HashSet<>();
+                    inUse.add( k );
+                    inUseMap.put( k.getTarget(), inUse );
                 }
                 else
                 {
-                    conflicted = hasConflict( k.getPaths(), conflicts );
+                    conflicted = hasConflict( k.getPaths(), inUse );
                     if ( !conflicted )
                     {
-                        conflicts.add( k );
+                        inUse.add( k );
                     }
                 }
             }
@@ -62,22 +61,25 @@ public class PathConflictManager
         finally
         {
             // clean up
-            synchronized ( conflictsMap )
+            synchronized ( inUseMap )
             {
-                conflicts.remove( k );
+                inUse.remove( k );
+                if ( inUse.isEmpty() )
+                {
+                    inUseMap.remove( k.getTarget() );
+                }
             }
         }
     }
 
-    private boolean hasConflict( Set<String> paths, Set<StoreKeyPaths> conflicts )
+    private boolean hasConflict( Set<String> paths, Set<StoreKeyPaths> inUse )
     {
-        for ( StoreKeyPaths keyPaths : conflicts )
+        for ( StoreKeyPaths keyPaths : inUse )
         {
             Set<String> s = keyPaths.getPaths();
-            // if anyone specify null paths (which means to lock whole store) or if the two have elements in common
-            if ( s == null || paths == null || !disjoint( paths, s ) )
+            if ( !disjoint( paths, s ) )
             {
-                logger.debug( "Conflict detected, key: {}, paths: {}, conflict: {}", keyPaths.getTarget(), paths, s );
+                logger.warn( "Conflict detected, key: {}, paths: {}, inUse: {}", keyPaths.getTarget(), paths, s );
                 return true;
             }
         }

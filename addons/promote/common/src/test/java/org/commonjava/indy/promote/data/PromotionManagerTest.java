@@ -37,7 +37,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.StoreKeyPaths;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -186,7 +185,7 @@ public class PromotionManagerTest
                 new PoolWeftExecutorService( "test-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
 
         manager =
-                new PromotionManager( validator, contentManager, downloadManager, storeManager, new Locker<StoreKeyPaths>(),
+                new PromotionManager( validator, contentManager, downloadManager, storeManager,
                                       new Locker<>(), config, nfc, svc, svc );
 
         executor = Executors.newCachedThreadPool();

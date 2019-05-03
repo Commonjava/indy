@@ -1,4 +1,6 @@
-package org.commonjava.indy.model.core;
+package org.commonjava.indy.promote.data;
+
+import org.commonjava.indy.model.core.StoreKey;
 
 import java.util.Objects;
 import java.util.Set;
