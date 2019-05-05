@@ -61,11 +61,7 @@ public class PathsPromoteResult extends AbstractPromoteResult<PathsPromoteResult
     public PathsPromoteResult( final PathsPromoteRequest request, final Set<String> pending, final Set<String> complete,
                                final Set<String> skipped, final ValidationResult validations )
     {
-        super( null, validations );
-        this.request = request;
-        this.pendingPaths = pending;
-        this.completedPaths = complete;
-        this.skippedPaths = skipped;
+        this( request, pending, complete, skipped, null, validations );
     }
 
     public PathsPromoteResult( PathsPromoteRequest request )

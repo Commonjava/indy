@@ -37,16 +37,6 @@ public class IndyPromoteClientModuleUrlsTest
     }
 
     @Test
-    public void resumeUrl()
-        throws Exception
-    {
-        final String url = new Indy( BASE, new IndyPromoteClientModule() ).module( IndyPromoteClientModule.class )
-                                                                            .resumeUrl();
-
-        assertThat( url, equalTo( BASE + "/" + IndyPromoteClientModule.PATHS_RESUME_PATH ) );
-    }
-
-    @Test
     public void rollbackUrl()
         throws Exception
     {

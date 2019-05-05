@@ -172,47 +172,6 @@ public class PromoteResource
         return response;
     }
 
-    @ApiOperation( "RESUME promotion of paths from a source repository into a target repository/group (subject to validation), presumably after a previous failure condition has been corrected." )
-    @ApiResponse( code=200, message = "Promotion operation finished (consult response content for success/failure).", response=PathsPromoteResult.class )
-    @ApiImplicitParam( name = "body", paramType = "body",
-                       value = "JSON result from previous attempt, specifying source and target, with other configuration options",
-                       allowMultiple = false, required = true,
-                       dataType = "org.commonjava.indy.promote.model.PathsPromoteResult" )
-    @Path( "/paths/resume" )
-    @POST
-    @Consumes( ApplicationContent.application_json )
-    public Response resumePaths( @Context final HttpServletRequest request, final @Context UriInfo uriInfo )
-    {
-        PathsPromoteResult result;
-        Response response;
-        try
-        {
-            result = mapper.readValue( request.getInputStream(), PathsPromoteResult.class );
-        }
-        catch ( final IOException e )
-        {
-            response = formatResponse( e, "Failed to read DTO from request body." );
-            return response;
-        }
-
-        try
-        {
-            PathsPromoteRequest req = result.getRequest();
-            final String baseUrl = getBaseUrlByStoreKey( uriInfo, req.getSource() );
-
-            result = manager.resumePathsPromote( result, baseUrl );
-            response = formatOkResponseWithJsonEntity( result, mapper );
-            logger.info( "Send promotion result:\n{}", response.getEntity() );
-        }
-        catch ( PromotionException | IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = formatResponse( e );
-        }
-
-        return response;
-    }
-
     @ApiOperation( "Rollback promotion of any completed paths to a source repository from a target repository/group." )
     @ApiResponse( code=200, message = "Promotion operation finished (consult response content for success/failure).", response=PathsPromoteResult.class )
     @ApiImplicitParam( name = "body", paramType = "body",

@@ -52,6 +52,12 @@ public class PathsPromoteRequest
     @ApiModelProperty( value="Fire events, e.g. PromoteCompleteEvent" )
     private boolean fireEvents;
 
+    /**
+     * Default is true. For internal use, e.g., rollback. When doing rollback, set it to false so the previously
+     * un-purged files won't bring any trouble.
+     */
+    private boolean failWhenExists = true;
+
     public PathsPromoteRequest()
     {
     }
@@ -148,5 +154,16 @@ public class PathsPromoteRequest
     public void setFireEvents( boolean fireEvents )
     {
         this.fireEvents = fireEvents;
+    }
+
+    public boolean isFailWhenExists()
+    {
+        return failWhenExists;
+    }
+
+    public PathsPromoteRequest setFailWhenExists( boolean failWhenExists )
+    {
+        this.failWhenExists = failWhenExists;
+        return this;
     }
 }

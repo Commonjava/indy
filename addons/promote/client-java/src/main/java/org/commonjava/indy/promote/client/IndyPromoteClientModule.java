@@ -24,7 +24,6 @@ import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
 import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -38,20 +37,16 @@ public class IndyPromoteClientModule
 
     public static final String PATHS_PROMOTE_PATH = PROMOTE_BASEPATH + "/paths/promote";
 
-    public static final String PATHS_RESUME_PATH = PROMOTE_BASEPATH + "/paths/resume";
-
     public static final String PATHS_ROLLBACK_PATH = PROMOTE_BASEPATH + "/paths/rollback";
 
     public static final String GROUP_PROMOTE_PATH = PROMOTE_BASEPATH + "/groups/promote";
 
     public static final String GROUP_ROLLBACK_PATH = PROMOTE_BASEPATH + "/groups/rollback";
 
-    public GroupPromoteResult promoteToGroup( final StoreType srcType, final String srcName, final String targetGroup )
+    public GroupPromoteResult promoteToGroup( final StoreKey src, final String targetGroup )
             throws IndyClientException
     {
-        final GroupPromoteRequest req =
-                new GroupPromoteRequest( new StoreKey( srcType, srcName ), targetGroup );
-
+        final GroupPromoteRequest req = new GroupPromoteRequest( src, targetGroup );
         final GroupPromoteResult
                 result = http.postWithResponse( GROUP_PROMOTE_PATH, req, GroupPromoteResult.class, HttpStatus.SC_OK );
 
@@ -79,19 +74,6 @@ public class IndyPromoteClientModule
         return http.postWithResponse( GROUP_ROLLBACK_PATH, new GroupPromoteResult( request ), GroupPromoteResult.class, HttpStatus.SC_OK );
     }
 
-    public PathsPromoteResult promoteByPath( final StoreType srcType, final String srcName, final StoreType targetType,
-                                             final String targetName, final boolean purgeSource, final String... paths )
-        throws IndyClientException
-    {
-        final PathsPromoteRequest req =
-            new PathsPromoteRequest( new StoreKey( srcType, srcName ), new StoreKey( targetType, targetName ),
-                                new HashSet<String>( Arrays.asList( paths ) ) ).setPurgeSource( purgeSource );
-
-        final PathsPromoteResult
-                result = http.postWithResponse( PATHS_PROMOTE_PATH, req, PathsPromoteResult.class, HttpStatus.SC_OK );
-        return result;
-    }
-
     public PathsPromoteResult promoteByPath( final StoreKey src, final StoreKey target, final boolean purgeSource,
                                              final String... paths )
         throws IndyClientException
@@ -112,19 +94,11 @@ public class IndyPromoteClientModule
         return result;
     }
 
-    public Set<String> getPromotablePaths( final StoreType type, final String name )
+    public Set<String> getPromotablePaths( final StoreKey storeKey )
         throws IndyClientException
     {
-        final StoreKey sk = new StoreKey( type, name );
-        final PathsPromoteResult result = promoteByPath( new PathsPromoteRequest( sk, sk ).setDryRun( true ) );
-
+        final PathsPromoteResult result = promoteByPath( new PathsPromoteRequest( storeKey, storeKey ).setDryRun( true ) );
         return result.getPendingPaths();
-    }
-
-    public PathsPromoteResult resumePathPromote( final PathsPromoteResult result )
-        throws IndyClientException
-    {
-        return http.postWithResponse( PATHS_RESUME_PATH, result, PathsPromoteResult.class, HttpStatus.SC_OK );
     }
 
     public PathsPromoteResult rollbackPathPromote( final PathsPromoteResult result )
@@ -136,11 +110,6 @@ public class IndyPromoteClientModule
     public String promoteUrl()
     {
         return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_PROMOTE_PATH );
-    }
-
-    public String resumeUrl()
-    {
-        return UrlUtils.buildUrl( http.getBaseUrl(), PATHS_RESUME_PATH );
     }
 
     public String rollbackUrl()

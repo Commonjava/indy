@@ -17,6 +17,8 @@ package org.commonjava.indy.promote.model;
 
 import io.swagger.annotations.ApiModelProperty;
 
+import java.util.UUID;
+
 /**
  * Created by ruhan on 12/5/18.
  */
@@ -25,6 +27,9 @@ public abstract class AbstractPromoteRequest<T extends PromoteRequest> implement
     @ApiModelProperty( value="Asynchronous call. A callback url is needed when it is true." )
     protected boolean async;
 
+    @ApiModelProperty( "Optional promotion Id" )
+    protected String promotionId = UUID.randomUUID().toString(); // default
+
     @ApiModelProperty( value="Callback which is used to send the promotion result." )
     protected CallbackTarget callback;
 
@@ -32,6 +37,16 @@ public abstract class AbstractPromoteRequest<T extends PromoteRequest> implement
     public boolean isAsync()
     {
         return async;
+    }
+
+    public String getPromotionId()
+    {
+        return promotionId;
+    }
+
+    public void setPromotionId( String promotionId )
+    {
+        this.promotionId = promotionId;
     }
 
     @Override
