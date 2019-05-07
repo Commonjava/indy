@@ -178,6 +178,12 @@ public class DefaultIndyConfigFactory
         if ( configStream != null )
         {
             final String fname = section.getDefaultConfigFileName();
+            if ( fname != null )
+            {
+                logger.info( "NOT writing default configuration for: {}. No defaults available.", sectionName );
+                return;
+            }
+
             final File file = new File( dir, fname );
             if ( !"main.conf".equals( fname ) && file.exists() )
             {

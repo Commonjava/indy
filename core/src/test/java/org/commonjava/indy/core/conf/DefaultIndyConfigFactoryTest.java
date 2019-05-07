@@ -15,7 +15,10 @@
  */
 package org.commonjava.indy.core.conf;
 
+import org.apache.commons.io.FileUtils;
+import org.commonjava.indy.conf.IndyConfigFactory;
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.test.utils.WeldJUnit4Runner;
 import org.commonjava.propulsor.config.ConfigUtils;
 import org.commonjava.propulsor.config.ConfigurationException;
@@ -32,6 +35,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.commonjava.indy.conf.IndyConfiguration.PROP_NODE_ID;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -68,6 +72,9 @@ public class DefaultIndyConfigFactoryTest
     @Inject
     private DefaultIndyConfigFactory factory;
 
+    @Inject
+    private IndyConfiguration config;
+
     @Test
     public void weldInjection_writeDefaults()
             throws IOException, ConfigurationException
@@ -78,6 +85,21 @@ public class DefaultIndyConfigFactoryTest
         factory.writeDefaultConfigs( dir );
 
         assertThat( new File( dir, "main.conf" ).exists(), equalTo( true ) );
+    }
+
+    @Test
+    public void readNodeIdAs_USER_FromEnvarExpression()
+            throws IOException, ConfigurationException
+    {
+        File dir = temp.newFolder( "indy-config" );
+        File mainConf = new File( dir, "main.conf" );
+        FileUtils.write( mainConf, PROP_NODE_ID + "=${env.USER}" );
+
+        String user = System.getenv( "USER" );
+        factory.load( mainConf.getAbsolutePath() );
+
+        assertThat( config.getNodeId(), equalTo( user ) );
+
     }
 
 }
