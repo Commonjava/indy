@@ -48,6 +48,7 @@
     <module>hosted-by-archive</module>
     <module>content-browse</module>
     <module>changelog</module>
+    <module>event-audit</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>

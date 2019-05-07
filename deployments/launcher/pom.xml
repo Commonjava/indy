@@ -246,6 +246,13 @@
       <classifier>confset</classifier>
       <type>tar.gz</type>
     </dependency>
+
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-event-audit-common</artifactId>
+      <classifier>confset</classifier>
+      <type>tar.gz</type>
+    </dependency>
   </dependencies>
   
   <build>

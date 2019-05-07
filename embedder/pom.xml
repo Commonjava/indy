@@ -214,6 +214,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-changelog-jaxrs</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-event-audit-common</artifactId>
+    </dependency>
 
 
     <dependency>
