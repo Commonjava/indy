@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static java.lang.Math.max;
+
 @SectionName( "rest")
 @ApplicationScoped
 public class RestConfig
@@ -73,23 +75,22 @@ public class RestConfig
         this.workerThreads = workerThreads;
     }
 
-    public void configureBuilder( final Undertow.Builder builder )
-            throws IOException
+    public void configureBuilder( final Undertow.Builder builder ) throws IOException
     {
-        int ioThreads = this.ioThreads == null ? Math.max(Runtime.getRuntime().availableProcessors(), 2) : this.ioThreads;
+        int ioThreads = this.ioThreads == null ? max( Runtime.getRuntime().availableProcessors(), 2 ) : this.ioThreads;
         int workerThreads = this.workerThreads == null ? ioThreads * 8 : this.workerThreads;
 
         Xnio xnio = Xnio.getInstance( Undertow.class.getClassLoader() );
         final OptionMap.Builder omBuilder = OptionMap.builder()
-                                                     .set( Options.WORKER_IO_THREADS, ioThreads)
-                                                     .set(Options.CONNECTION_HIGH_WATER, 1000000)
-                                                     .set(Options.CONNECTION_LOW_WATER, 1000000)
-                                                     .set(Options.TCP_NODELAY, true)
-                                                     .set(Options.CORK, true)
+                                                     .set( Options.WORKER_IO_THREADS, ioThreads )
+                                                     .set( Options.CONNECTION_HIGH_WATER, 1000000 )
+                                                     .set( Options.CONNECTION_LOW_WATER, 1000000 )
+                                                     .set( Options.TCP_NODELAY, true )
+                                                     .set( Options.CORK, true )
                                                      .set( Options.WORKER_TASK_CORE_THREADS, workerThreads )
                                                      .set( Options.WORKER_TASK_MAX_THREADS, workerThreads );
 
         final OptionMap optionMap = omBuilder.getMap();
-        builder.setWorker( xnio.createWorker( new ThreadGroup("REST" ), optionMap ) );
+        builder.setWorker( xnio.createWorker( new ThreadGroup( "REST" ), optionMap ) );
     }
 }

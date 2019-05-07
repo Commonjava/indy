@@ -41,6 +41,9 @@ public class IndyDeployer
     @Inject
     private IndyDeployment indyDeployment;
 
+    @Inject
+    private RestConfig restConfig;
+
     @Override
     public void stop()
     {
@@ -69,47 +72,33 @@ public class IndyDeployer
             {
                 logger.info( "Looking for open Undertow port..." );
 
-                final AtomicReference<ServletException> errorHolder = new AtomicReference<>();
-                AtomicReference<Integer> usingPort = new AtomicReference<>();
+                final AtomicReference<Exception> errorHolder = new AtomicReference<>();
+                final AtomicReference<Integer> usingPort = new AtomicReference<>();
 
                 server = PortFinder.findPortFor( 16, ( foundPort ) -> {
-                    Undertow undertow = null;
+                    usingPort.set( foundPort );
                     try
                     {
-                        EncodingHandler eh = getGzipEncodeHandler( dm );
-                        undertow = Undertow.builder()
-                                           .setHandler( eh )
-                                           .addHttpListener( foundPort, bootOptions.getBind() )
-                                           .build();
-
-                        undertow.start();
-                        usingPort.set( foundPort );
+                        return buildAndStartUndertow( dm, foundPort, bootOptions.getBind(), restConfig );
                     }
-                    catch ( ServletException e )
+                    catch ( Exception e )
                     {
                         errorHolder.set( e );
                     }
-
-                    return undertow;
+                    return null;
                 } );
 
-                ServletException e = errorHolder.get();
+                Exception e = errorHolder.get();
                 if ( e != null )
                 {
                     throw e;
                 }
-
                 bootOptions.setPort( usingPort.get() );
             }
             else
             {
                 logger.info( "Start Undertow server, bind: {}, port: {}", bootOptions.getBind(), port );
-                server = Undertow.builder()
-                                 .setHandler( getGzipEncodeHandler( dm ) )
-                                 .addHttpListener( port, bootOptions.getBind() )
-                                 .build();
-
-                server.start();
+                server = buildAndStartUndertow( dm, port, bootOptions.getBind(), restConfig );
             }
 
             logger.info( "Indy listening on {}:{}\n\n", bootOptions.getBind(), bootOptions.getPort() );
@@ -119,6 +108,17 @@ public class IndyDeployer
             logger.error( "Deploy failed", e );
             throw new DeployException( "Deploy failed", e );
         }
+    }
+
+    private Undertow buildAndStartUndertow( DeploymentManager dm, Integer port, String bind, RestConfig restConfig )
+                    throws Exception
+    {
+        Undertow.Builder builder =
+                        Undertow.builder().setHandler( getGzipEncodeHandler( dm ) ).addHttpListener( port, bind );
+        restConfig.configureBuilder( builder );
+        Undertow t = builder.build();
+        t.start();
+        return t;
     }
 
     private EncodingHandler getGzipEncodeHandler( final DeploymentManager dm ) throws ServletException
