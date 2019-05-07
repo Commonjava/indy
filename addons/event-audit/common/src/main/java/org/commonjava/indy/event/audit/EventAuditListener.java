@@ -1,6 +1,7 @@
 package org.commonjava.indy.event.audit;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
@@ -62,6 +63,9 @@ public class EventAuditListener
 
     @Inject
     EventAuditConfig eventAuditConfig;
+
+    @Inject
+    IndyConfiguration indyConfig;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -156,7 +160,7 @@ public class EventAuditListener
 
             fileEvent.setTargetPath( path );
             //TODO figure out what's the NodeId
-            fileEvent.setNodeId( "" );
+            fileEvent.setNodeId( indyConfig.getNodeId() );
             fileEvent.setSessionId( trackingKey.getId() );
             fileEvent.setTimestamp( new Date() );
 
