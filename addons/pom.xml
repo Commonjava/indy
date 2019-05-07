@@ -31,7 +31,6 @@
   <name>Indy :: Add-Ons :: Parent</name>
   
   <modules>
-    <module>autoprox</module>
     <module>content-index</module>
     <module>dot-maven</module>
     <module>folo</module>
@@ -40,10 +39,8 @@
     <module>koji</module>
     <module>promote</module>
     <module>revisions</module>
-    <module>setback</module>
     <module>pkg-maven</module>
     <module>diagnostics</module>
-    <module>relate</module>
     <module>pkg-npm</module>
     <module>hosted-by-archive</module>
     <module>content-browse</module>

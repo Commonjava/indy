@@ -131,22 +131,6 @@
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-setback-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-setback-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-content-index</artifactId>
     </dependency>
     <dependency>
@@ -164,10 +148,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-koji-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-relate-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -315,17 +295,7 @@
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-autoprox</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-folo</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-relate</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -424,7 +394,6 @@
           <configuration>
             <dependenciesToScan>
               <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-autoprox</dependency>
               <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
               <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
               <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
@@ -432,7 +401,6 @@
               <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
               <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-relate</dependency>
               <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>

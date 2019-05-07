@@ -71,7 +71,7 @@
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
     <galleyVersion>0.16.10-SNAPSHOT</galleyVersion>
-    <bomVersion>24</bomVersion>
+    <bomVersion>25-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>2.0-SNAPSHOT</partylineVersion>
     <kojijiVersion>2.7</kojijiVersion>
@@ -236,89 +236,6 @@
         <scope>provided</scope>
       </dependency>
 
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-jaxrs</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>dataset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>docset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>uiset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-model-java</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-autoprox-client-java</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-ftests-autoprox</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-setback-jaxrs</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-setback-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-setback-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>dataset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-setback-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-revisions-jaxrs</artifactId>
@@ -606,24 +523,6 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-implied-repos</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-relate-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-relate-common</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-ftests-relate</artifactId>
         <version>1.8.0-SNAPSHOT</version>
       </dependency>
       <dependency>

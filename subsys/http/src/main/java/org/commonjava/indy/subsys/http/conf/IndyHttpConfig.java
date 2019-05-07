@@ -17,13 +17,13 @@ package org.commonjava.indy.subsys.http.conf;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 import org.commonjava.util.jhttpc.auth.PasswordType;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.model.SiteTrustType;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ import static org.commonjava.util.jhttpc.auth.AttributePasswordManager.PASSWORD_
 @ApplicationScoped
 @SectionName( IndyHttpConfig.SECTION_NAME )
 public class IndyHttpConfig
-                extends MapSectionListener
+        extends MapSectionListener
                 implements IndyConfigInfo
 {
     final Logger logger = LoggerFactory.getLogger( getClass() );

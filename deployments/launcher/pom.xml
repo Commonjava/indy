@@ -47,45 +47,9 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>docset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>uiset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-dot-maven-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-setback-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-setback-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -150,12 +114,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-metrics-reporter</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-relate-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>

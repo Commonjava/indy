@@ -54,7 +54,6 @@ public class LegacyQuartzDBMigrationActionTest
         data.mkdirs();
         new File( data, "scheduler.mv.db" ).createNewFile();
         new File( data, "scheduler.trace.db" ).createNewFile();
-        new File( data, "autoprox" ).mkdir();
         new File( data, "content-index" ).mkdir();
         new File( data, "indy" ).mkdir();
         new File( data, "promote" ).mkdir();
@@ -71,14 +70,12 @@ public class LegacyQuartzDBMigrationActionTest
     {
         File dbMv = new File( data, "scheduler.mv.db" );
         File dbTrace = new File( data, "scheduler.mv.db" );
-        File autoprox = new File( data, "autoprox" );
         File index = new File( data, "content-index" );
         File indy = new File( data, "indy" );
         File promote = new File( data, "promote" );
         File normal = new File( data, "schedule.mv.db" );
         assertTrue( dbMv.exists() );
         assertTrue( dbTrace.exists() );
-        assertTrue( autoprox.exists() );
         assertTrue( index.exists() );
         assertTrue( indy.exists() );
         assertTrue( promote.exists() );
@@ -87,7 +84,6 @@ public class LegacyQuartzDBMigrationActionTest
 
         assertFalse( dbMv.exists() );
         assertFalse( dbTrace.exists() );
-        assertTrue( autoprox.exists() );
         assertTrue( index.exists() );
         assertTrue( indy.exists() );
         assertTrue( promote.exists() );

@@ -16,9 +16,9 @@
 package org.commonjava.indy.core.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
@@ -30,7 +30,7 @@ import java.util.Properties;
 @SectionName( IndySchedulerConfig.SECTION_NAME )
 @Deprecated
 public class IndySchedulerConfig
-    extends MapSectionListener
+        extends MapSectionListener
         implements IndyConfigInfo
 {
 
@@ -72,7 +72,7 @@ public class IndySchedulerConfig
     }
 
     public IndySchedulerConfig( final Properties props )
-        throws ConfigurationException
+            throws ConfigurationException
     {
         this.sectionStarted( SECTION_NAME );
         for ( final String key : props.stringPropertyNames() )

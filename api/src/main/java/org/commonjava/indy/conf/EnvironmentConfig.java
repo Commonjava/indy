@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.conf;
 
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

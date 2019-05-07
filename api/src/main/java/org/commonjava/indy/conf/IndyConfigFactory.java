@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.conf;
 
-import java.io.File;
+import org.commonjava.propulsor.config.ConfigurationException;
 
-import org.commonjava.web.config.ConfigurationException;
+import java.io.File;
 
 /**
  * Describes a facility for loading all the configurations related to Indy, only one of which is {@link IndyConfiguration}.
@@ -47,7 +47,7 @@ public interface IndyConfigFactory
      * Return the configuration instance corresponding to the given class.
      */
     <T> T getConfiguration( Class<T> configCls )
-        throws ConfigurationException;
+            throws ConfigurationException;
 
     /**
      * Read all configurations and apply them to the different configuration-class instances available.

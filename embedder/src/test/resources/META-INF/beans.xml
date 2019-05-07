@@ -20,8 +20,4 @@
     <class>org.commonjava.indy.infinispan.data.InfinispanStoreDataManager</class>
   </alternatives>
   
-  <decorators>
-    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
-  </decorators>
-      
 </beans>

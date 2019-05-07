@@ -60,8 +60,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>configuration-api</artifactId>
+      <groupId>org.commonjava.propulsor.config</groupId>
+      <artifactId>propulsor-configuration-core</artifactId>
     </dependency>
     
     <dependency>

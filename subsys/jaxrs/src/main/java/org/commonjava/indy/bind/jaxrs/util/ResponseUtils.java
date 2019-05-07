@@ -465,7 +465,14 @@ public final class ResponseUtils
             code = Status.fromStatusCode( sc );
         }
 
-        LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+        if ( code.getStatusCode() != ApplicationStatus.NOT_FOUND.code() )
+        {
+            LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+        }
+        else
+        {
+            LOGGER.debug( "Sending not-found response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+        }
 
         ResponseBuilder builder = Response.status( code ).type( MediaType.TEXT_PLAIN ).entity( msg );
 

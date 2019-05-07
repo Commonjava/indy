@@ -18,9 +18,9 @@ package org.commonjava.indy.core.conf;
 import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.inject.Production;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -66,7 +66,7 @@ public class IndyWeftConfig
 
     @Override
     public void parameter( final String name, final String value )
-        throws ConfigurationException
+            throws ConfigurationException
     {
 
 //        if ( !value.matches( numericPattern ) )

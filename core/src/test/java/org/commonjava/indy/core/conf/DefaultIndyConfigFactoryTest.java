@@ -17,9 +17,9 @@ package org.commonjava.indy.core.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.test.utils.WeldJUnit4Runner;
-import org.commonjava.web.config.ConfigUtils;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.commonjava.propulsor.config.ConfigUtils;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.section.ConfigurationSectionListener;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

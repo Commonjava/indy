@@ -17,8 +17,8 @@ package org.commonjava.indy.boot.jaxrs;
 
 import io.undertow.Undertow;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Xnio;

@@ -20,12 +20,12 @@ import org.commonjava.indy.conf.IndyConfigFactory;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.indy.util.PathUtils;
-import org.commonjava.web.config.ConfigUtils;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.ConfigurationListener;
-import org.commonjava.web.config.DefaultConfigurationListener;
-import org.commonjava.web.config.dotconf.DotConfConfigurationReader;
-import org.commonjava.web.config.io.ConfigFileUtils;
+import org.commonjava.propulsor.config.ConfigUtils;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.ConfigurationListener;
+import org.commonjava.propulsor.config.DefaultConfigurationListener;
+import org.commonjava.propulsor.config.dotconf.DotConfConfigurationReader;
+import org.commonjava.propulsor.config.io.ConfigFileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,10 +41,11 @@ import java.util.List;
 import java.util.Properties;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.propulsor.config.ConfigUtils.loadStandardConfigProperties;
 
 @ApplicationScoped
 public class DefaultIndyConfigFactory
-    extends DefaultConfigurationListener
+        extends DefaultConfigurationListener
     implements IndyConfigFactory
 {
 
@@ -66,10 +67,8 @@ public class DefaultIndyConfigFactory
     //    @PostConstruct
     @Override
     public synchronized void load( final String configPath )
-        throws ConfigurationException
+            throws ConfigurationException
     {
-        Properties props = getBaseSystemProperties();
-
         logger.info( "\n\n\n\n[CONFIG] Reading Indy configuration in: '{}'\n\nAdding configuration section listeners:",
                      Thread.currentThread()
                            .getName() );
@@ -129,22 +128,20 @@ public class DefaultIndyConfigFactory
         InputStream stream = null;
         try
         {
-            stream = ConfigFileUtils.readFileWithIncludes( config, props );
-
-            new DotConfConfigurationReader( listeners ).loadConfiguration( stream );
-
-            Properties sysprops = System.getProperties();
-            props.stringPropertyNames().forEach( ( name ) -> sysprops.setProperty( name, props.getProperty( name ) ) );
+            Properties props = getBaseSystemProperties();
 
             configSections.forEach( (section)->{
                 if ( section instanceof SystemPropertyProvider)
                 {
                     Properties p = ( (SystemPropertyProvider) section ).getSystemProperties();
-                    p.stringPropertyNames().forEach( ( name ) -> sysprops.setProperty( name, p.getProperty( name ) ) );
+                    p.stringPropertyNames().forEach( ( name ) -> props.setProperty( name, p.getProperty( name ) ) );
                 }
             });
 
-            System.setProperties( sysprops );
+            stream = ConfigFileUtils.readFileWithIncludes( config );
+            new DotConfConfigurationReader( listeners ).loadConfiguration( stream, props );
+
+            System.setProperties( props );
         }
         catch ( final IOException e )
         {
@@ -164,8 +161,6 @@ public class DefaultIndyConfigFactory
     public void writeDefaultConfigs( final File dir )
         throws ConfigurationException
     {
-        Properties props = getBaseSystemProperties();
-
         for ( final IndyConfigInfo section : configSections )
         {
             String sectionName = ConfigUtils.getSectionName( section.getClass() );
@@ -225,7 +220,7 @@ public class DefaultIndyConfigFactory
 
     private Properties getBaseSystemProperties()
     {
-        Properties props = new Properties();
+        Properties props = loadStandardConfigProperties();
 
         /* Set config path */
         String confPath = System.getProperty( IndyConfigFactory.CONFIG_PATH_PROP );
