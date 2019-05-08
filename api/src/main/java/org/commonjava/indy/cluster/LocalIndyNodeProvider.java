@@ -26,7 +26,7 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class LocalIndyNodeProvider
 {
-    public final Logger logger = LoggerFactory.getLogger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private IndyConfiguration indyConfig;
