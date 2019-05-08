@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 
+from __future__ import print_function
 
 import os
 import sys
@@ -62,7 +63,7 @@ OPTS = os.environ.get(INDY_OPTS_ENVAR) or ''
 
 
 def handle_shutdown(signum, frame):
-    print "SIGTERM: Stopping Indy."
+    print("SIGTERM: Stopping Indy.")
     process.send_signal(signal.SIGTERM)
 
 def handle_output(process):
@@ -70,76 +71,76 @@ def handle_output(process):
         for c in iter(lambda: process.stdout.read(1), ''):
           sys.stdout.write(c)
     except KeyboardInterrupt:
-        print ""
+        print("")
     return
 
 def run(cmd, fail_message='Error running command', fail=True):
     cmd += " 2>&1"
-    print cmd
+    print(cmd)
     ret = os.system(cmd)
     if fail is True and ret != 0:
-        print "%s (failed with code: %s)" % (fail_message, ret)
+        print("%s (failed with code: %s)" % (fail_message, ret))
         sys.exit(ret)
 
 def runIn(cmd, workdir, fail_message='Error running command', fail=True):
     cmd += " 2>&1"
     olddir = os.getcwd()
     os.chdir(workdir)
-  
-    print "In: %s, executing: %s" % (workdir, cmd)
-  
+
+    print("In: %s, executing: %s" % (workdir, cmd))
+
     ret = os.system(cmd)
     if fail is True and ret != 0:
-        print "%s (failed with code: %s)" % (fail_message, ret)
+        print("%s (failed with code: %s)" % (fail_message, ret))
         sys.exit(ret)
-  
+
     os.chdir(olddir)
 
 def link(src, target):
-    print "Source: %s (exists? %s)" % (src, os.path.isdir(src))
-    print "Target: %s (exists? %s)" % (target, os.path.exists(target))
+    print("Source: %s (exists? %s)" % (src, os.path.isdir(src)))
+    print("Target: %s (exists? %s)" % (target, os.path.exists(target)))
 
     targetParent = os.path.dirname(target)
     if os.path.isdir(targetParent) is False:
-        os.makedirs(targetParent, 0755)
+        os.makedirs(targetParent, 0o755)
 
     if os.path.islink(target):
-        print "rm -f %s" % src
+        print("rm -f %s" % src)
         os.unlink(target)
-  
+
     if os.path.isdir(target):
-        print "rm -rf %s" % src
+        print("rm -rf %s" % src)
         shutil.rmtree(target)
 
-    print "ln -s %s %s" % (src, target)
+    print("ln -s %s %s" % (src, target))
     os.symlink(src, target)
 
 
 
-print "Read environment:\n  indy cli opts: %s" % (OPTS)
+print("Read environment:\n  indy cli opts: %s" % (OPTS))
 
 if os.path.isdir(INDY_DIR) is False:
-    print "Cannot start, %s does not exist!" % INDY_DIR
+    print("Cannot start, %s does not exist!" % INDY_DIR)
     exit(1)
 
 if os.path.isdir(VOL_SSH) and len(os.listdir(VOL_SSH)) > 0:
-    print "Importing SSH configurations from volume: %s" % VOL_SSH
+    print("Importing SSH configurations from volume: %s" % VOL_SSH)
     run("cp -vrf %s /root/.ssh" % VOL_SSH)
     run("chmod -v 700 /root/.ssh", fail=False)
     run("chmod -v 600 /root/.ssh/*", fail=False)
     run("restorecon -R /root/.ssh/*", fail=False)
 
 if os.path.exists(os.path.join(VOL_DATA, 'indy')) is False:
-    print "Extracting default Indy data content: %s to: %s" % (DEFAULT_DATA, VOL_DATA)
+    print("Extracting default Indy data content: %s to: %s" % (DEFAULT_DATA, VOL_DATA))
     run("tar -zxvf %s -C /indy" % DEFAULT_DATA)
 
 etc_src=VOL_ETC
 if ETC_URL is not None:
     if os.path.isdir(GIT_ETC):
-        print "clearing pre-existing Indy etc directory"
+        print("clearing pre-existing Indy etc directory")
         shutil.rmtree(GIT_ETC)
 
-    print "Cloning: %s" % ETC_URL
+    print("Cloning: %s" % ETC_URL)
     run("git clone --branch %s --verbose --progress %s %s 2>&1" % (ETC_BRANCH, ETC_URL, GIT_ETC), "Failed to checkout %s branch of indy/etc from: %s" % (ETC_BRANCH, ETC_URL))
 
     if ETC_SUBPATH is not None and ETC_SUBPATH != '.':
@@ -148,7 +149,7 @@ if ETC_URL is not None:
     etc_src=GIT_ETC
 
 elif os.path.exists(os.path.join(VOL_ETC, 'main.conf')) is False:
-    print "Extracting default etc/indy content: %s to: %s" % (DEFAULT_ETC, VOL_ETC)
+    print("Extracting default etc/indy content: %s to: %s" % (DEFAULT_ETC, VOL_ETC))
     run("tar -zxvf %s -C /indy" % DEFAULT_ETC)
 
 link(etc_src, INDY_ETC)
@@ -159,7 +160,7 @@ link(VOL_LOGS, INDY_LOGS)
 cmd_parts = [os.path.join(INDY_DIR, 'bin', 'indy.sh')]
 cmd_parts += shlex.split(OPTS)
 
-print "Command parts: %s" % cmd_parts
+print("Command parts: %s" % cmd_parts)
 process = subprocess.Popen(cmd_parts, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
 signal.signal(signal.SIGTERM, handle_shutdown)
