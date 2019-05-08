@@ -64,7 +64,7 @@ public class ISPNClusterConfiguration
     }
 
     @Override
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties properties = new Properties();
         preparePropertyInSysEnv( properties, INDY_JGROUPS_GOSSIP_ROUTER_HOSTS, getGossipRouterHosts() );

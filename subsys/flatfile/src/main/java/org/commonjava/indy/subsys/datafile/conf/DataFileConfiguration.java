@@ -37,7 +37,7 @@ public class DataFileConfiguration
 
     private static final String INDY_DATA_BASEDIR = "indy.data";
 
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties properties = new Properties();
         properties.setProperty( INDY_DATA_BASEDIR, getDataBasedir().getAbsolutePath() );

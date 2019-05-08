@@ -25,5 +25,5 @@ import java.util.Properties;
  */
 public interface SystemPropertyProvider
 {
-    Properties getSystemProperties();
+    Properties getSystemPropertyAdditions();
 }

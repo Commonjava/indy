@@ -283,7 +283,7 @@ public class DefaultIndyConfiguration
     }
 
     @Override
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties props = new Properties();
         props.setProperty( PROP_NODE_ID, getNodeId() );

@@ -133,7 +133,7 @@ public class ISPNDBConfiguration
     }
 
     @Override
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties properties = new Properties();
         preparePropertyInSysEnv( properties, INDY_CACHE_DB_SERVER, getCacheDbServer() );

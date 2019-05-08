@@ -98,7 +98,7 @@ public class DefaultStorageProviderConfiguration
     }
 
     @Override
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties p = new Properties();
         p.setProperty( STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );

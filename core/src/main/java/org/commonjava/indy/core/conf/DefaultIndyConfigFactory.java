@@ -133,7 +133,7 @@ public class DefaultIndyConfigFactory
             configSections.forEach( (section)->{
                 if ( section instanceof SystemPropertyProvider)
                 {
-                    Properties p = ( (SystemPropertyProvider) section ).getSystemProperties();
+                    Properties p = ( (SystemPropertyProvider) section ).getSystemPropertyAdditions();
                     p.stringPropertyNames().forEach( ( name ) -> props.setProperty( name, p.getProperty( name ) ) );
                 }
             });
