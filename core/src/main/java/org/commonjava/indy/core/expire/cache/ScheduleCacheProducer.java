@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.expire.cache;
 
+import org.commonjava.indy.cluster.IndyNode;
 import org.commonjava.indy.core.expire.ScheduleKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -27,8 +28,11 @@ import javax.inject.Inject;
 import java.util.Map;
 
 /**
- * This ISPN cache producer is used to generate {@link ScheduleCache}. This type of cache is used as a job control center
- * to control the content expiration scheduling.
+ * This ISPN cache producer is used to generate {@link ScheduleCache} and {@link ScheduleEventLockCache}.
+ * <ul>
+ * <li>{@link ScheduleCache} is used as a job control center to control the content expiration scheduling.</li>
+ * <li>{@link ScheduleEventLockCache} is used for control clustered event scheduling synchronization.</li>
+ * </ul>
  */
 public class ScheduleCacheProducer
 {
@@ -39,12 +43,22 @@ public class ScheduleCacheProducer
 
     private static final String SCHEDULE_EXPIRE = "schedule-expire-cache";
 
+    private static final String SCHEDULE_EVENT_LOCK = "schedule-event-lock-cache";
+
     @ScheduleCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<ScheduleKey, Map> versionMetadataCache()
+    public CacheHandle<ScheduleKey, Map> scheduleExpireCache()
     {
         return cacheProducer.getCache( SCHEDULE_EXPIRE );
+    }
+
+    @ScheduleEventLockCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<ScheduleKey, IndyNode> scheduleEventLockCache()
+    {
+        return cacheProducer.getCache( SCHEDULE_EVENT_LOCK );
     }
 
 }
