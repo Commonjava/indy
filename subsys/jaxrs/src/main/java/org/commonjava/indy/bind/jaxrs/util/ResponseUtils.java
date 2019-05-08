@@ -465,7 +465,15 @@ public final class ResponseUtils
             code = Status.fromStatusCode( sc );
         }
 
-        LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+        // if this is a server error, let's promote the log level. Otherwise, keep it in the background.
+        if ( code.getStatusCode() > 499 )
+        {
+            LOGGER.error( "Sending error response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+        }
+        else
+        {
+            LOGGER.debug( "Sending response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
+        }
 
         ResponseBuilder builder = Response.status( code ).type( MediaType.TEXT_PLAIN ).entity( msg );
 

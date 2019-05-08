@@ -23,6 +23,13 @@ import java.io.File;
 public interface IndyConfiguration
 {
 
+    String PROP_NODE_ID = "indy.node.id";
+
+    /**
+     * Retrieve the node identifier to be used when deploying in a clustered context.
+     */
+    String getNodeId();
+
     /**
      * Number of seconds before the content in a repository marked as "pass-through" will timeout. Pass-through remote repos are designed
      * to hold content for a minimal amount of time. They would be a simple pass-through, non-caching proxy, but in reality artifacts are usually 

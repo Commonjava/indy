@@ -17,7 +17,7 @@ package org.commonjava.indy.core.conf;
 
 import org.commonjava.indy.conf.EnvironmentConfig;
 import org.commonjava.indy.test.utils.WeldJUnit4Runner;
-import org.commonjava.web.config.ConfigUtils;
+import org.commonjava.propulsor.config.ConfigUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

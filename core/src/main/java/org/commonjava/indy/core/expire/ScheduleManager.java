@@ -16,12 +16,14 @@
 package org.commonjava.indy.core.expire;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
+import org.commonjava.indy.cluster.IndyNode;
+import org.commonjava.indy.cluster.LocalIndyNodeProvider;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndySchedulerConfig;
 import org.commonjava.indy.core.expire.cache.ScheduleCache;
+import org.commonjava.indy.core.expire.cache.ScheduleEventLockCache;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -49,6 +51,8 @@ import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
+import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,7 +89,7 @@ import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE
  */
 @SuppressWarnings( "RedundantThrows" )
 @ApplicationScoped
-@Listener
+@Listener(clustered = true)
 public class ScheduleManager
         implements ShutdownAction
 {
@@ -101,6 +105,8 @@ public class ScheduleManager
     public static final String JOB_TYPE = "JOB_TYPE";
 
     public static final String SCHEDULE_TIME = "SCHEDULE_TIME";
+
+    public static final String SCHEDULE_UUID = "SCHEDULE_UUID";
 
     @Inject
     private StoreDataManager dataManager;
@@ -122,12 +128,20 @@ public class ScheduleManager
     private CacheHandle<ScheduleKey, Map> scheduleCache;
 
     @Inject
+    @ScheduleEventLockCache
+    private CacheHandle<ScheduleKey, IndyNode> scheduleEventLockCache;
+
+    @Inject
     @Any
     private Instance<ContentAdvisor> contentAdvisor;
 
     @Inject
     private Event<SchedulerEvent> eventDispatcher;
 
+    @Inject
+    private LocalIndyNodeProvider nodeHolder;
+
+    @PostConstruct
     public void init()
             throws IndyLifecycleException
     {
@@ -138,8 +152,13 @@ public class ScheduleManager
         }
 
         // register this producer as schedule cache listener
-        scheduleCache.executeCache( cache -> {
-            cache.addListener( ScheduleManager.this );
+        registerCacheListener( scheduleCache );
+//        registerCacheListener( scheduleEventLockCache );
+    }
+
+    private <K,V> void registerCacheListener(CacheHandle<K, V> cache){
+        cache.executeCache( c->{
+            c.addListener( ScheduleManager.this );
             return null;
         } );
     }
@@ -296,7 +315,6 @@ public class ScheduleManager
         }
 
         dataMap.put( SCHEDULE_TIME, System.currentTimeMillis() );
-
 
         final ScheduleKey cacheKey = new ScheduleKey( key, jobType, jobName );
 
@@ -753,6 +771,12 @@ public class ScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
+            if ( scheduleEventLockCache.containsKey( expiredKey ) )
+            {
+                logger.info( "Another instance {} is still handling expiration event for {}", expiredKey,
+                             scheduleEventLockCache.containsKey( expiredKey ) );
+                return;
+            }
             final Map expiredContent = e.getValue();
             if ( expiredKey != null && expiredContent != null )
             {
@@ -760,6 +784,9 @@ public class ScheduleManager
                 final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
                 final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
                 fireEvent( eventDispatcher, new SchedulerTriggerEvent( type, data ) );
+                scheduleEventLockCache.executeCache( cache -> cache.put( expiredKey, nodeHolder.getLocalIndyNode(),
+                                                                         schedulerConfig.getClusterLockExpiration(),
+                                                                         TimeUnit.SECONDS ) );
             }
         }
     }
@@ -773,6 +800,14 @@ public class ScheduleManager
             return;
         }
         logger.info( "Cache removed to cancel scheduling, Key is {}, Value is {}", e.getKey(), e.getValue() );
+    }
+
+    // This method is only used to check clustered schedule expire cache nodes topology changing
+    @ViewChanged
+    public void checkClusterChange( ViewChangedEvent event )
+    {
+        logger.debug( "Schedule cache cluster members changed, old members: {}; new members: {}", event.getOldMembers(),
+                      event.getNewMembers() );
     }
 
 }

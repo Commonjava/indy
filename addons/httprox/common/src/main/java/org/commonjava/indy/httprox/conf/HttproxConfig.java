@@ -16,17 +16,12 @@
 package org.commonjava.indy.httprox.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.terracotta.quartz.collections.SerializedToolkitStore;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URI;
 
 @SectionName( "httprox" )
 @ApplicationScoped

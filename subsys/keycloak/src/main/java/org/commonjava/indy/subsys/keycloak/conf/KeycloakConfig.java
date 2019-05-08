@@ -18,8 +18,8 @@ package org.commonjava.indy.subsys.keycloak.conf;
 import org.commonjava.indy.conf.IndyConfigFactory;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.maven.galley.util.PathUtils;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;

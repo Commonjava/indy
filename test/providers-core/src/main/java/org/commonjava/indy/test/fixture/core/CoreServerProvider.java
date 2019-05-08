@@ -37,7 +37,6 @@ import org.commonjava.maven.galley.maven.internal.type.StandardTypeMapper;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.web.config.ConfigurationException;
 import org.junit.rules.TemporaryFolder;
 
 @ApplicationScoped
@@ -86,9 +85,6 @@ public class CoreServerProvider
         catch ( IOException e )
         {
             throw new IllegalStateException( "Failed to start core server provider: " + e.getMessage(), e );
-        }
-        finally
-        {
         }
     }
 

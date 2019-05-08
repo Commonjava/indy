@@ -125,22 +125,6 @@
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-autoprox-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-setback-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-setback-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-content-index</artifactId>
     </dependency>
     <dependency>
@@ -162,10 +146,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-koji-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-relate-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -301,17 +281,7 @@
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-autoprox</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-folo</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-relate</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -415,7 +385,6 @@
                 indy-test-utils,
                 indy-ftests-core,
                 indy-ftests-common,
-                indy-ftests-autoprox,
                 indy-ftests-dot-maven,
                 indy-ftests-folo,
                 indy-ftests-httprox,
@@ -423,7 +392,6 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-relate,
                 indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
@@ -454,7 +422,6 @@
                 indy-test-utils,
                 indy-ftests-core,
                 indy-ftests-common,
-                indy-ftests-autoprox,
                 indy-ftests-dot-maven,
                 indy-ftests-folo,
                 indy-ftests-httprox,
@@ -462,7 +429,6 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-relate,
                 indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
@@ -524,7 +490,6 @@
                 indy-test-utils,
                 indy-ftests-core,
                 indy-ftests-common,
-                indy-ftests-autoprox,
                 indy-ftests-dot-maven,
                 indy-ftests-folo,
                 indy-ftests-httprox,
@@ -532,7 +497,6 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-relate,
                 indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
@@ -557,7 +521,6 @@
                 indy-test-utils,
                 indy-ftests-core,
                 indy-ftests-common,
-                indy-ftests-autoprox,
                 indy-ftests-dot-maven,
                 indy-ftests-folo,
                 indy-ftests-httprox,
@@ -565,7 +528,6 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-relate,
                 indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,

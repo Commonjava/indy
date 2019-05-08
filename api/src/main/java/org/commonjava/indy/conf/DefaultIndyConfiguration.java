@@ -15,20 +15,24 @@
  */
 package org.commonjava.indy.conf;
 
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.ConfigurationSectionListener;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.ConfigurationSectionListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.util.Properties;
 
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
 @SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
 @ApplicationScoped
 public class DefaultIndyConfiguration
-    implements IndyConfiguration, IndyConfigInfo
+    implements IndyConfiguration, IndyConfigInfo, SystemPropertyProvider
 {
 
     public static final int DEFAULT_PASSTHROUGH_TIMEOUT_SECONDS = 300;
@@ -71,8 +75,47 @@ public class DefaultIndyConfiguration
 
     private Boolean clusterEnabled;
 
+    private String nodeId;
+
     public DefaultIndyConfiguration()
     {
+    }
+
+    @Override
+    public String getNodeId()
+    {
+        return nodeId == null ? getDefaultNodeId() : nodeId;
+    }
+
+    private String getDefaultNodeId()
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        String nodeId = System.getenv( "HOSTNAME" );
+        if ( isBlank( nodeId ) )
+        {
+            nodeId = System.getenv( "HOST" );
+        }
+
+        if ( isBlank( nodeId ) )
+        {
+            // Windows uses %COMPUTERNAME% instead of hostanme, apparently
+            nodeId = System.getenv( "COMPUTERNAME" );
+        }
+
+        if ( isBlank( nodeId ) )
+        {
+            logger.warn( "No nodeId found! Using 'localhost'." );
+            nodeId = "localhost";
+        }
+
+        return nodeId;
+    }
+
+    @ConfigName( IndyConfiguration.PROP_NODE_ID )
+    public void setNodeId( String nodeId )
+    {
+        this.nodeId = nodeId;
     }
 
     @Override
@@ -239,4 +282,12 @@ public class DefaultIndyConfiguration
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-main.conf" );
     }
 
+    @Override
+    public Properties getSystemPropertyAdditions()
+    {
+        Properties props = new Properties();
+        props.setProperty( PROP_NODE_ID, getNodeId() );
+
+        return props;
+    }
 }

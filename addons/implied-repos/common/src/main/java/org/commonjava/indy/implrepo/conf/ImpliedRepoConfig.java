@@ -17,9 +17,9 @@ package org.commonjava.indy.implrepo.conf;
 
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +176,7 @@ public class ImpliedRepoConfig
 
     @Override
     public synchronized void parameter( final String name, final String value )
-        throws ConfigurationException
+            throws ConfigurationException
     {
         switch ( name )
         {

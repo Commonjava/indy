@@ -16,8 +16,8 @@
 package org.commonjava.indy.hostedbyarc.config;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;

@@ -17,12 +17,12 @@ package org.commonjava.indy.koji.conf;
 
 import com.redhat.red.build.koji.config.KojiConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.commonjava.util.jhttpc.model.SiteTrustType;
-import org.commonjava.web.config.ConfigurationException;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.MapSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

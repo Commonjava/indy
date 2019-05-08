@@ -1,14 +1,14 @@
 package org.commonjava.indy.event.audit.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 
-@SectionName("event-audit")
+@SectionName( "event-audit")
 @ApplicationScoped
 public class EventAuditConfig implements IndyConfigInfo
 {

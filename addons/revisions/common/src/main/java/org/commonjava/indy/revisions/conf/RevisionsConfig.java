@@ -17,8 +17,8 @@ package org.commonjava.indy.revisions.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.subsys.git.ConflictStrategy;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;

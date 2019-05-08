@@ -3,8 +3,8 @@ package org.commonjava.indy.subsys.infinispan.config;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -64,7 +64,7 @@ public class ISPNClusterConfiguration
     }
 
     @Override
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties properties = new Properties();
         preparePropertyInSysEnv( properties, INDY_JGROUPS_GOSSIP_ROUTER_HOSTS, getGossipRouterHosts() );

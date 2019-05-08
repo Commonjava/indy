@@ -17,8 +17,8 @@ package org.commonjava.indy.filer.def.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -98,7 +98,7 @@ public class DefaultStorageProviderConfiguration
     }
 
     @Override
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties p = new Properties();
         p.setProperty( STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );

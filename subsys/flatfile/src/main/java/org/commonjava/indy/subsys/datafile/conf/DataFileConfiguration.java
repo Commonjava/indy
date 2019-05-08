@@ -17,10 +17,8 @@ package org.commonjava.indy.subsys.datafile.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
-import org.commonjava.web.config.annotation.ConfigName;
-import org.commonjava.web.config.annotation.SectionName;
-import org.commonjava.web.config.section.BeanSectionListener;
-import org.commonjava.web.config.section.SectionListenerWrapper;
+import org.commonjava.propulsor.config.annotation.ConfigName;
+import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -39,7 +37,7 @@ public class DataFileConfiguration
 
     private static final String INDY_DATA_BASEDIR = "indy.data";
 
-    public Properties getSystemProperties()
+    public Properties getSystemPropertyAdditions()
     {
         Properties properties = new Properties();
         properties.setProperty( INDY_DATA_BASEDIR, getDataBasedir().getAbsolutePath() );

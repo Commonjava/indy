@@ -41,7 +41,6 @@
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
 
     <!-- StoreDataManager decorators -->
-    <class>org.commonjava.indy.autoprox.data.AutoProxDataManagerDecorator</class>
     <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
     <!--<class>org.commonjava.indy.implrepo.data.ValidRemoteStoreDataManagerDecorator</class>-->
     
