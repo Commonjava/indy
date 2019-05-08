@@ -16,11 +16,10 @@
 package org.commonjava.indy.core.expire;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.cluster.IndyNode;
-import org.commonjava.indy.cluster.IndyNodeHolder;
+import org.commonjava.indy.cluster.LocalIndyNodeProvider;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndySchedulerConfig;
 import org.commonjava.indy.core.expire.cache.ScheduleCache;
@@ -140,7 +139,7 @@ public class ScheduleManager
     private Event<SchedulerEvent> eventDispatcher;
 
     @Inject
-    private IndyNodeHolder nodeHolder;
+    private LocalIndyNodeProvider nodeHolder;
 
     @PostConstruct
     public void init()
@@ -785,7 +784,7 @@ public class ScheduleManager
                 final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
                 final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
                 fireEvent( eventDispatcher, new SchedulerTriggerEvent( type, data ) );
-                scheduleEventLockCache.executeCache( cache -> cache.put( expiredKey, nodeHolder.getIndyNode(),
+                scheduleEventLockCache.executeCache( cache -> cache.put( expiredKey, nodeHolder.getLocalIndyNode(),
                                                                          schedulerConfig.getClusterLockExpiration(),
                                                                          TimeUnit.SECONDS ) );
             }

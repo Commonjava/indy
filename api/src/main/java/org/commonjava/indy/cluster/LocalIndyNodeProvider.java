@@ -15,29 +15,32 @@
  */
 package org.commonjava.indy.cluster;
 
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import javax.inject.Inject;
 
 @ApplicationScoped
-public class IndyNodeHolder
+public class LocalIndyNodeProvider
 {
-    public static final Logger logger = LoggerFactory.getLogger( IndyNodeHolder.class );
+    public final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public IndyNode getIndyNode()
+    @Inject
+    private IndyConfiguration indyConfig;
+
+    private IndyNode localNode;
+
+    @PostConstruct
+    public void setup()
     {
-        //TODO: here is just a temporary solution to get a local indy node indicator. Will think more about this way future
-        try
-        {
-            return new IndyNode( InetAddress.getLocalHost().getHostName() );
-        }
-        catch ( UnknownHostException e )
-        {
-            logger.error( "Unable to get " );
-        }
-        return null;
+        localNode = new IndyNode( indyConfig.getNodeId() );
+    }
+
+    public IndyNode getLocalIndyNode()
+    {
+        return localNode;
     }
 }
