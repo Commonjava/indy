@@ -483,8 +483,8 @@ public class MavenMetadataGenerator
 
         if ( mergingDone )
         {
-            logger.error(
-                    "Merging finished but got some error, which is caused the merging file not created correctly. See merging related error log for details. Merging group: {}, path: {}",
+            logger.info(
+                    "Merging finished but the merging file not created correctly. See merging related log for details. Merging group: {}, path: {}",
                     group, path );
         }
         else
@@ -607,7 +607,7 @@ public class MavenMetadataGenerator
             return master;
         }
 
-        logger.error( "The group metadata generation is not successful for path: {} in group: {}", path, group );
+        logger.info( "The group metadata generation is not successful for path: {} in group: {}", path, group );
         return null;
     }
 
