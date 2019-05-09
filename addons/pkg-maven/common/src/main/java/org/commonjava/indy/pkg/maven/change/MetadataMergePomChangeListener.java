@@ -24,7 +24,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -62,8 +62,8 @@ public class MetadataMergePomChangeListener
     private IndyFileEventManager fileEvent;
 
     @Inject
-    @MavenVersionMetadataCache
-    private CacheHandle<StoreKey, Map> versionMetadataCache;
+    @MavenMetadataCache
+    private CacheHandle<StoreKey, Map> mavenMetadataCache;
 
     /**
      * this listener observes {@link org.commonjava.maven.galley.event.FileStorageEvent}
@@ -106,7 +106,7 @@ public class MetadataMergePomChangeListener
                 {
                     if ( doClear( hosted, clearPath ) )
                     {
-                        versionMetadataCache.remove( hosted.getKey() );
+                        mavenMetadataCache.remove( hosted.getKey() );
                     }
                 }
                 catch ( final IOException e )
@@ -125,7 +125,7 @@ public class MetadataMergePomChangeListener
                         {
                             if ( doClear( group, clearPath ) )
                             {
-                                versionMetadataCache.remove( group.getKey() );
+                                mavenMetadataCache.remove( group.getKey() );
                             }
                         }
                         catch ( final IOException e )

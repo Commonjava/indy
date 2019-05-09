@@ -73,7 +73,7 @@
 
     <local-cache name="content-metadata" configuration="local-template"/>
 
-    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
+    <local-cache name="maven-metadata" deadlock-detection-spin="10000" configuration="local-template">
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper">
           <write-behind />

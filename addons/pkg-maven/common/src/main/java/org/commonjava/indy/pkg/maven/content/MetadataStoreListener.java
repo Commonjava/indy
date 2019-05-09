@@ -25,7 +25,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
-import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
@@ -38,11 +38,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
@@ -65,8 +62,8 @@ public class MetadataStoreListener
     private StoreDataManager storeManager;
 
     @Inject
-    @MavenVersionMetadataCache
-    private CacheHandle<StoreKey, Map> versionMetadataCache;
+    @MavenMetadataCache
+    private CacheHandle<StoreKey, Map> mavenMetadataCache;
 
     /**
      * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache due to changed memeber in that event
@@ -223,7 +220,7 @@ public class MetadataStoreListener
     {
         logger.trace( "Removing cached metadata for: {}", store.getKey() );
 
-        versionMetadataCache.remove( store.getKey() );
+        mavenMetadataCache.remove( store.getKey() );
         try
         {
             storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g, store ) );
@@ -236,7 +233,7 @@ public class MetadataStoreListener
 
     private void clearGroupMetaCache( final Group group, final ArtifactStore store )
     {
-        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( group.getKey() );
+        final Map<String, MetadataInfo> metadataMap = mavenMetadataCache.get( group.getKey() );
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Clearing metadata for group: {} on store update: {}\n{}", group.getKey(), store.getKey(), metadataMap );
@@ -261,7 +258,7 @@ public class MetadataStoreListener
         logger.trace( "Clearing cached, merged paths for: {} as a result of change in: {} (paths: {})", group.getKey(),
                       store.getKey(), pathsList );
 
-        versionMetadataCache.remove( group.getKey() );
+        mavenMetadataCache.remove( group.getKey() );
     }
 
 }

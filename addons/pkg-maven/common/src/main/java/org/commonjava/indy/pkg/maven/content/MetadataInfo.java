@@ -29,6 +29,10 @@ public class MetadataInfo
 
     private String metadataMergeInfo;
 
+    public MetadataInfo()
+    {
+    }
+
     public MetadataInfo( final Metadata metadata )
     {
         this.metadata = metadata;

@@ -34,11 +34,11 @@ public class MetadataCacheProducer
     private DataFileConfiguration config;
 
 
-    @MavenVersionMetadataCache
+    @MavenMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<StoreKey, Map> mavenVersionMetaCacheCfg()
+    public CacheHandle<StoreKey, Map> getMavenMetadataCache()
     {
-        return cacheProducer.getCache( "maven-version-metadata-cache" );
+        return cacheProducer.getCache( "maven-metadata" );
     }
 }

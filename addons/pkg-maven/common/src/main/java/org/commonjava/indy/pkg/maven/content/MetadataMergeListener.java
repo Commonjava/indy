@@ -20,7 +20,7 @@ import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,8 +46,8 @@ public class MetadataMergeListener
     private DirectContentAccess fileManager;
 
     @Inject
-    @MavenVersionMetadataCache
-    private CacheHandle<StoreKey, Map> versionMetadataCache;
+    @MavenMetadataCache
+    private CacheHandle<StoreKey, Map> mavenMetadataCache;
 
     /**
      * Will clear the both merge path and merge info file of member and group contains that member(cascaded)
@@ -56,7 +56,7 @@ public class MetadataMergeListener
     @Override
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
-        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
+        final Map<String, MetadataInfo> metadataMap = mavenMetadataCache.get( originatingStore.getKey() );
 
         if ( metadataMap != null && !metadataMap.isEmpty() )
         {
@@ -64,7 +64,7 @@ public class MetadataMergeListener
             {
                 metadataMap.remove( path );
                 affectedGroups.forEach( group -> {
-                    final Map<String, MetadataInfo> grpMetaMap = versionMetadataCache.get( group.getKey() );
+                    final Map<String, MetadataInfo> grpMetaMap = mavenMetadataCache.get( group.getKey() );
                     if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
                     {
                         grpMetaMap.remove( path );
