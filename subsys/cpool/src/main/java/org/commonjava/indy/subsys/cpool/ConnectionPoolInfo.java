@@ -17,6 +17,7 @@ package org.commonjava.indy.subsys.cpool;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
@@ -33,15 +34,18 @@ public class ConnectionPoolInfo
 
     private String driverClassname;
 
+    private Properties datasourceProperties;
+
     private boolean useMetrics;
 
     private boolean useHealthChecks;
 
-    private final Map<String, String> properties;
+    private final Properties properties;
 
     public ConnectionPoolInfo( final String name, final String url, final String user, final String password,
-                               final String dataSourceClassname, final String driverClassname, final boolean useMetrics, final boolean useHealthChecks,
-                               final Map<String, String> properties )
+                               final String dataSourceClassname, final String driverClassname,
+                               final Properties datasourceProperties, final boolean useMetrics, final boolean useHealthChecks,
+                               final Properties properties )
     {
         this.name = name;
         this.url = url;
@@ -49,6 +53,7 @@ public class ConnectionPoolInfo
         this.password = password;
         this.dataSourceClassname = dataSourceClassname;
         this.driverClassname = driverClassname;
+        this.datasourceProperties = datasourceProperties;
         this.useMetrics = useMetrics;
         this.useHealthChecks = useHealthChecks;
         this.properties = properties;
@@ -56,7 +61,7 @@ public class ConnectionPoolInfo
 
     public boolean isValid()
     {
-        return isNotBlank( name ) && isNotBlank( url ) && isNotBlank( dataSourceClassname );
+        return isNotBlank( name );
     }
 
     public boolean isUseMetrics()
@@ -79,6 +84,11 @@ public class ConnectionPoolInfo
         return dataSourceClassname;
     }
 
+    public Properties getDatasourceProperties()
+    {
+        return datasourceProperties;
+    }
+
     public String getDriverClassname()
     {
         return driverClassname;
@@ -99,9 +109,9 @@ public class ConnectionPoolInfo
         return password;
     }
 
-    public Map<String, String> getProperties()
+    public Properties getProperties()
     {
-        return Collections.unmodifiableMap( properties );
+        return properties;
     }
 
     @Override

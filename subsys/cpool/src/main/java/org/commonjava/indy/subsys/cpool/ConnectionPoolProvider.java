@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @ApplicationScoped
 public class ConnectionPoolProvider
@@ -112,24 +113,33 @@ public class ConnectionPoolProvider
         {
             HikariConfig cfg = new HikariConfig();
             cfg.setPoolName( poolInfo.getName() );
-            cfg.setJdbcUrl( poolInfo.getUrl() );
 
-            if ( poolInfo.getUser() != null )
+            if ( isNotBlank( poolInfo.getUrl() ) )
+            {
+                cfg.setJdbcUrl( poolInfo.getUrl() );
+            }
+
+            if ( isNotBlank( poolInfo.getUser() ) )
             {
                 cfg.setUsername( poolInfo.getUser() );
             }
 
-            if ( poolInfo.getPassword() != null )
+            if ( isNotBlank( poolInfo.getPassword() ) )
             {
                 cfg.setPassword( poolInfo.getPassword() );
             }
 
-            if ( poolInfo.getDataSourceClassname() != null )
+            if ( isNotBlank( poolInfo.getDataSourceClassname() ) )
             {
                 cfg.setDataSourceClassName( poolInfo.getDataSourceClassname() );
             }
 
-            if ( poolInfo.getDriverClassname() != null )
+            if ( poolInfo.getDatasourceProperties() != null )
+            {
+                cfg.setDataSourceProperties( poolInfo.getDatasourceProperties() );
+            }
+
+            if ( isNotBlank( poolInfo.getDriverClassname() ) )
             {
                 cfg.setDriverClassName( poolInfo.getDriverClassname() );
             }
@@ -144,11 +154,9 @@ public class ConnectionPoolProvider
                 cfg.setHealthCheckRegistry( healthCheckRegistry );
             }
 
-            Properties props = new Properties();
-            poolInfo.getProperties().forEach( props::setProperty );
-            if ( !props.isEmpty())
+            if ( poolInfo.getProperties() != null )
             {
-                cfg.setDataSourceProperties( props );
+                cfg.setDataSourceProperties( poolInfo.getProperties() );
             }
 
             HikariDataSource ds = new HikariDataSource( cfg );

@@ -27,6 +27,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 import static java.lang.Boolean.TRUE;
@@ -47,6 +48,8 @@ public class ConnectionPoolConfig
     private static final String PASSWORD_SUBKEY = "password";
 
     private static final String DS_CLASS_SUBKEY = "datasource.class";
+
+    private static final String DS_PROPERTY_PREFIX = "datasource.";
 
     private static final String METRICS_SUBKEY = "metrics";
 
@@ -81,15 +84,33 @@ public class ConnectionPoolConfig
         logger.info( "{}: Parsing connection pool {} from: '{}'", this, name, value );
 
         Map<String, String> valueMap = toMap( value );
-        final ConnectionPoolInfo cp = new ConnectionPoolInfo( name, valueMap.remove( URL_SUBKEY ), valueMap.remove( USER_SUBKEY ),
-                                                              valueMap.remove( PASSWORD_SUBKEY ), valueMap.remove( DS_CLASS_SUBKEY ),
-                                                              valueMap.remove( DRIVER_CLASS_SUBKEY ),
-                                                              TRUE.toString().equals( valueMap.remove( METRICS_SUBKEY ) ),
-                                                              TRUE.toString().equals( valueMap.remove( HEALTH_CHECKS_SUBKEY ) ),
-                                                              valueMap );
+        Properties dsProperties = new Properties();
+        new HashMap<>( valueMap ).entrySet()
+                .stream()
+                .filter( ( e ) -> e.getKey().startsWith( DS_PROPERTY_PREFIX ) && !e.getKey().equals( DS_CLASS_SUBKEY ) )
+                .forEach( e -> {
+                    valueMap.remove( e.getKey() );
+                    dsProperties.setProperty( e.getKey().substring( DS_PROPERTY_PREFIX.length() ), e.getValue() );
+                } );
+
+        final ConnectionPoolInfo cp =
+                new ConnectionPoolInfo( name, valueMap.remove( URL_SUBKEY ), valueMap.remove( USER_SUBKEY ),
+                                        valueMap.remove( PASSWORD_SUBKEY ), valueMap.remove( DS_CLASS_SUBKEY ),
+                                        valueMap.remove( DRIVER_CLASS_SUBKEY ), dsProperties,
+                                        TRUE.toString().equals( valueMap.remove( METRICS_SUBKEY ) ),
+                                        TRUE.toString().equals( valueMap.remove( HEALTH_CHECKS_SUBKEY ) ),
+                                        toProperties( valueMap ) );
 
         logger.info( "{}: Adding: {}", this, cp );
         pools.put( name, cp );
+    }
+
+    private Properties toProperties( final Map<String,String> valueMap )
+    {
+        Properties props = new Properties();
+        valueMap.forEach( ( k, v ) -> props.setProperty( k, v ) );
+
+        return props;
     }
 
     private Map<String,String> toMap( final String value )
