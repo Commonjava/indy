@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @ApplicationScoped
 public class ConnectionPoolProvider
@@ -110,29 +111,8 @@ public class ConnectionPoolProvider
         logger.info( "Creating bindings for {} pools from config: {}", poolConfigs.size(), config );
         for ( ConnectionPoolInfo poolInfo : poolConfigs.values() )
         {
-            HikariConfig cfg = new HikariConfig();
+            HikariConfig cfg = new HikariConfig( poolInfo.getProperties() );
             cfg.setPoolName( poolInfo.getName() );
-            cfg.setJdbcUrl( poolInfo.getUrl() );
-
-            if ( poolInfo.getUser() != null )
-            {
-                cfg.setUsername( poolInfo.getUser() );
-            }
-
-            if ( poolInfo.getPassword() != null )
-            {
-                cfg.setPassword( poolInfo.getPassword() );
-            }
-
-            if ( poolInfo.getDataSourceClassname() != null )
-            {
-                cfg.setDataSourceClassName( poolInfo.getDataSourceClassname() );
-            }
-
-            if ( poolInfo.getDriverClassname() != null )
-            {
-                cfg.setDriverClassName( poolInfo.getDriverClassname() );
-            }
 
             if ( poolInfo.isUseMetrics() )
             {
@@ -142,13 +122,6 @@ public class ConnectionPoolProvider
             if ( poolInfo.isUseHealthChecks() )
             {
                 cfg.setHealthCheckRegistry( healthCheckRegistry );
-            }
-
-            Properties props = new Properties();
-            poolInfo.getProperties().forEach( props::setProperty );
-            if ( !props.isEmpty())
-            {
-                cfg.setDataSourceProperties( props );
             }
 
             HikariDataSource ds = new HikariDataSource( cfg );

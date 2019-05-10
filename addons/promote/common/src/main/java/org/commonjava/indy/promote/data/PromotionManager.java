@@ -48,7 +48,9 @@ import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.promote.validate.PromotionValidator;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -130,6 +132,9 @@ public class PromotionManager
 
     @Inject
     private PathConflictManager conflictManager;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
 
     @GroupMembershipLocks
     @Inject
@@ -821,9 +826,21 @@ public class PromotionManager
 
         if ( !transfer.exists() )
         {
-            String msg = String.format( "Failed to promote: %s. Source file not exists.", transfer );
-            logger.info( msg );
-            result.error = msg;
+            SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( transfer, tgt.getPackageType() );
+            // if we can't decorate it, that's because we don't want to automatically generate checksums, etc. for it
+            // i.e. it's something we would generate on demand for another file.
+            if ( pathInfo != null && !pathInfo.isDecoratable() )
+            {
+                logger.info( "Skipping missing, decoratable path: {}", transfer );
+                result.skipped = true;
+            }
+            else
+            {
+                String msg = String.format( "Failed to promote: %s. Source file not exists.", transfer );
+                logger.info( msg );
+                result.error = msg;
+            }
+
             return result;
         }
 

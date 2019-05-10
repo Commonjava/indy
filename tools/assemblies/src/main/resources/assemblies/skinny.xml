@@ -46,17 +46,18 @@
         </excludes>
       </unpackOptions>
     </dependencySet>
-    
-    <!-- document sets -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:docset:*</include>
+        <include>org.commonjava.indy.rest*</include>
       </includes>
-      <outputDirectory>usr/share/doc/indy</outputDirectory>
-      <unpack>true</unpack>
+      <outputDirectory>var/lib/indy/ui</outputDirectory>
+      <outputFileNameMapping>swagger.${artifact.extension}</outputFileNameMapping>
+      <fileMode>664</fileMode>
+      <unpack>false</unpack>
     </dependencySet>
+    
     <!-- bin sets -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
@@ -77,11 +78,10 @@
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
-
     <!-- React UI sets -->
     <dependencySet>
       <useProjectArtifact>false</useProjectArtifact>
-      <scope>runtime</scope>
+      <scope>provided</scope>
       <includes>
         <include>*:tar.gz:reactui:*</include>
       </includes>
@@ -104,7 +104,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>runtime</scope>
       <excludes>
-        <exclude>org.commonjava.indy.embed:*</exclude>
+        <exclude>org.commonjava*:*</exclude>
       </excludes>
       <outputDirectory>lib/thirdparty</outputDirectory>
     </dependencySet>
