@@ -15,15 +15,13 @@
  */
 package org.commonjava.indy.subsys.cpool;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.Properties;
-
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 public class ConnectionPoolInfo
 {
     private final String name;
+
+    private Properties datasourceProperties;
 
     private boolean useMetrics;
 
