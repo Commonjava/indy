@@ -21,8 +21,6 @@ public class ConnectionPoolInfo
 {
     private final String name;
 
-    private Properties datasourceProperties;
-
     private boolean useMetrics;
 
     private boolean useHealthChecks;
