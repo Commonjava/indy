@@ -24,17 +24,6 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 public class ConnectionPoolInfo
 {
     private final String name;
-    private final String url;
-
-    private final String user;
-
-    private final String password;
-
-    private String dataSourceClassname;
-
-    private String driverClassname;
-
-    private Properties datasourceProperties;
 
     private boolean useMetrics;
 
@@ -42,26 +31,13 @@ public class ConnectionPoolInfo
 
     private final Properties properties;
 
-    public ConnectionPoolInfo( final String name, final String url, final String user, final String password,
-                               final String dataSourceClassname, final String driverClassname,
-                               final Properties datasourceProperties, final boolean useMetrics, final boolean useHealthChecks,
-                               final Properties properties )
+    public ConnectionPoolInfo( final String name, final Properties properties, final boolean useMetrics,
+                               final boolean useHealthChecks )
     {
         this.name = name;
-        this.url = url;
-        this.user = user;
-        this.password = password;
-        this.dataSourceClassname = dataSourceClassname;
-        this.driverClassname = driverClassname;
-        this.datasourceProperties = datasourceProperties;
         this.useMetrics = useMetrics;
         this.useHealthChecks = useHealthChecks;
         this.properties = properties;
-    }
-
-    public boolean isValid()
-    {
-        return isNotBlank( name );
     }
 
     public boolean isUseMetrics()
@@ -79,36 +55,6 @@ public class ConnectionPoolInfo
         return name;
     }
 
-    public String getDataSourceClassname()
-    {
-        return dataSourceClassname;
-    }
-
-    public Properties getDatasourceProperties()
-    {
-        return datasourceProperties;
-    }
-
-    public String getDriverClassname()
-    {
-        return driverClassname;
-    }
-
-    public String getUrl()
-    {
-        return url;
-    }
-
-    public String getUser()
-    {
-        return user;
-    }
-
-    public String getPassword()
-    {
-        return password;
-    }
-
     public Properties getProperties()
     {
         return properties;
@@ -117,8 +63,6 @@ public class ConnectionPoolInfo
     @Override
     public String toString()
     {
-        return "ConnectionPoolInfo{" + "name='" + name + '\'' + ", url='" + url + '\'' + ", dataSourceClassname='"
-                + dataSourceClassname + '\'' + ", driverClassname='" + driverClassname + '\'' + ", useMetrics="
-                + useMetrics + ", useHealthChecks=" + useHealthChecks + ", properties=" + properties + '}';
+        return "ConnectionPoolInfo{" + "name='" + name + "\'}";
     }
 }

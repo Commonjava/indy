@@ -111,38 +111,8 @@ public class ConnectionPoolProvider
         logger.info( "Creating bindings for {} pools from config: {}", poolConfigs.size(), config );
         for ( ConnectionPoolInfo poolInfo : poolConfigs.values() )
         {
-            HikariConfig cfg = new HikariConfig();
+            HikariConfig cfg = new HikariConfig( poolInfo.getProperties() );
             cfg.setPoolName( poolInfo.getName() );
-
-            if ( isNotBlank( poolInfo.getUrl() ) )
-            {
-                cfg.setJdbcUrl( poolInfo.getUrl() );
-            }
-
-            if ( isNotBlank( poolInfo.getUser() ) )
-            {
-                cfg.setUsername( poolInfo.getUser() );
-            }
-
-            if ( isNotBlank( poolInfo.getPassword() ) )
-            {
-                cfg.setPassword( poolInfo.getPassword() );
-            }
-
-            if ( isNotBlank( poolInfo.getDataSourceClassname() ) )
-            {
-                cfg.setDataSourceClassName( poolInfo.getDataSourceClassname() );
-            }
-
-            if ( poolInfo.getDatasourceProperties() != null )
-            {
-                cfg.setDataSourceProperties( poolInfo.getDatasourceProperties() );
-            }
-
-            if ( isNotBlank( poolInfo.getDriverClassname() ) )
-            {
-                cfg.setDriverClassName( poolInfo.getDriverClassname() );
-            }
 
             if ( poolInfo.isUseMetrics() )
             {
@@ -152,11 +122,6 @@ public class ConnectionPoolProvider
             if ( poolInfo.isUseHealthChecks() )
             {
                 cfg.setHealthCheckRegistry( healthCheckRegistry );
-            }
-
-            if ( poolInfo.getProperties() != null )
-            {
-                cfg.setDataSourceProperties( poolInfo.getProperties() );
             }
 
             HikariDataSource ds = new HikariDataSource( cfg );
