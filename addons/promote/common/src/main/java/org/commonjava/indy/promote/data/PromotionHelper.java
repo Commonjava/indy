@@ -117,10 +117,6 @@ public class PromotionHelper
         for ( final String path : paths )
         {
             final Transfer transfer = downloadManager.getStorageReference( source, path );
-            if ( transfer == null || !transfer.exists() )
-            {
-                throw new IndyWorkflowException( "Source transfer not exist! transfer: " + transfer );
-            }
             contents.add( transfer );
         }
         return contents;
