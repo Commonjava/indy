@@ -576,6 +576,11 @@ public class PromotionManager
         return detectOverload( () -> asyncPromotionService.submit( () -> {
             if ( result.getCompletedPaths().isEmpty() )
             {
+                // clear errors so client don't misunderstand rollback result
+                logger.info( "Nothing to rollback (completed empty), promotionId: {}",
+                             result.getRequest().getPromotionId() );
+                result.setError( null );
+                result.setValidations( null );
                 return result;
             }
 
@@ -831,7 +836,7 @@ public class PromotionManager
             // i.e. it's something we would generate on demand for another file.
             if ( pathInfo != null && !pathInfo.isDecoratable() )
             {
-                logger.info( "Skipping missing, decoratable path: {}", transfer );
+                logger.info( "Skipping missing, not decoratable path: {}", transfer );
                 result.skipped = true;
             }
             else
