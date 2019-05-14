@@ -829,7 +829,7 @@ public class PromotionManager
         final String path = transfer.getPath();
         PathTransferResult result = new PathTransferResult( path );
 
-        if ( !transfer.exists() )
+        if ( transfer == null || !transfer.exists() )
         {
             SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( transfer, tgt.getPackageType() );
             // if we can't decorate it, that's because we don't want to automatically generate checksums, etc. for it
