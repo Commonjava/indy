@@ -291,8 +291,17 @@ public class TrackedContentEntry
         Object whatIsThis = in.readObject();
 
         int version;
-        String packageType = null;
-        if ( whatIsThis instanceof TrackingKey )
+        String packageType;
+
+        if ( whatIsThis == null )
+        {
+            // we see NumberFormatException: For input string: "null" in parseInt. It might be because we forget
+            // to persist the trackingKey for some reason. In this case, we just ignore it and continues
+            version = 1;
+            trackingKey = null;
+            packageType = PKG_TYPE_MAVEN;
+        }
+        else if ( whatIsThis instanceof TrackingKey )
         {
             version = 1;
             trackingKey = (TrackingKey) whatIsThis;
