@@ -64,7 +64,7 @@
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <propulsorVersion>1.4-SNAPSHOT</propulsorVersion>
     <weldVersion>2.4.6.Final</weldVersion>
-    <jacksonVersion>2.9.8</jacksonVersion>
+    <jacksonVersion>2.9.9</jacksonVersion>
     <metricsVersion>4.0.2</metricsVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
 
