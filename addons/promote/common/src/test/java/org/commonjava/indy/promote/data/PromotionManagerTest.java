@@ -249,7 +249,7 @@ public class PromotionManagerTest
         }
 
         result = manager.promotePaths(
-                        new PathsPromoteRequest( source1.getKey(), target.getKey(), path ).setFailWhenExists( false ),
+                        new PathsPromoteRequest( source1.getKey(), target.getKey(), path ),
                         FAKE_BASE_URL );
 
         assertThat( result.getRequest().getSource(), equalTo( source1.getKey() ) );
