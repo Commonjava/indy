@@ -53,10 +53,9 @@ public class PathsPromoteRequest
     private boolean fireEvents;
 
     /**
-     * Default is true. For internal use, e.g., rollback. When doing rollback, set it to false so the previously
-     * un-purged files won't bring any trouble.
+     * Keep it in case when we need to enforce this rule
      */
-    private boolean failWhenExists = true;
+    private boolean failWhenExists;
 
     public PathsPromoteRequest()
     {
