@@ -24,7 +24,9 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.MetadataCacheKey;
+import org.commonjava.indy.pkg.maven.content.MetadataInfo;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -38,10 +40,10 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.maven.content.MetadataUtil.removeAll;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -62,8 +64,8 @@ public class MetadataMergePomChangeListener
     private IndyFileEventManager fileEvent;
 
     @Inject
-    @MavenVersionMetadataCache
-    private CacheHandle<StoreKey, Map> versionMetadataCache;
+    @MavenMetadataCache
+    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
 
     /**
      * this listener observes {@link org.commonjava.maven.galley.event.FileStorageEvent}
@@ -106,7 +108,7 @@ public class MetadataMergePomChangeListener
                 {
                     if ( doClear( hosted, clearPath ) )
                     {
-                        versionMetadataCache.remove( hosted.getKey() );
+                        removeAll( hosted.getKey(), metadataCache );
                     }
                 }
                 catch ( final IOException e )
@@ -125,7 +127,7 @@ public class MetadataMergePomChangeListener
                         {
                             if ( doClear( group, clearPath ) )
                             {
-                                versionMetadataCache.remove( group.getKey() );
+                                removeAll( group.getKey(), metadataCache );
                             }
                         }
                         catch ( final IOException e )

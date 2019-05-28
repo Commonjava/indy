@@ -42,12 +42,11 @@ import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -74,7 +73,6 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -91,7 +89,6 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -127,8 +124,8 @@ public class MavenMetadataGenerator
     private static final String CLASSIFIER = "classifier";
 
     @Inject
-    @MavenVersionMetadataCache
-    private CacheHandle<StoreKey, Map> versionMetadataCache;
+    @MavenMetadataCache
+    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
 
     private static final Set<String> HANDLED_FILENAMES = Collections.unmodifiableSet( new HashSet<String>()
     {
@@ -614,19 +611,8 @@ public class MavenMetadataGenerator
     @Measure
     private void putToMetadataCache( StoreKey key, String toMergePath, MetadataInfo meta )
     {
-        synchronized ( versionMetadataCache )
-        {
-            Map<String, MetadataInfo> cacheMap = versionMetadataCache.get( key );
-            if ( cacheMap == null )
-            {
-                cacheMap = new HashMap<>();
-            }
-
-            cacheMap.put( toMergePath, meta );
-            versionMetadataCache.put( key, cacheMap );
-
-            logger.trace( "Cached metadata: {} for: {}", toMergePath, key );
-        }
+        metadataCache.put( new MetadataCacheKey( key, toMergePath ), meta );
+        logger.trace( "Cache metadata: {} for: {}", toMergePath, key );
     }
 
     @Measure
@@ -888,14 +874,7 @@ public class MavenMetadataGenerator
 
     private MetadataInfo getMetaInfoFromCache( final StoreKey key, final String path )
     {
-        Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( key );
-
-        if ( metadataMap != null && !metadataMap.isEmpty() )
-        {
-            return metadataMap.get( path );
-        }
-
-        return null;
+        return metadataCache.get( new MetadataCacheKey( key, path ) );
     }
 
     @Override

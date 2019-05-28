@@ -22,13 +22,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Qualifier used to supply "metadata-cache" cache in infinispan.xml.
- */
 @Qualifier
 @Target( { ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD } )
 @Retention( RetentionPolicy.RUNTIME )
 @Documented
-public @interface MavenVersionMetadataCache
+public @interface MavenMetadataCache
 {
 }

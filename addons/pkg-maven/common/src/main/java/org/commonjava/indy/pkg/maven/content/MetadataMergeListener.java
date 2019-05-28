@@ -19,15 +19,13 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.maven.content.cache.MavenVersionMetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -46,8 +44,8 @@ public class MetadataMergeListener
     private DirectContentAccess fileManager;
 
     @Inject
-    @MavenVersionMetadataCache
-    private CacheHandle<StoreKey, Map> versionMetadataCache;
+    @MavenMetadataCache
+    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
 
     /**
      * Will clear the both merge path and merge info file of member and group contains that member(cascaded)
@@ -56,22 +54,11 @@ public class MetadataMergeListener
     @Override
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
-        final Map<String, MetadataInfo> metadataMap = versionMetadataCache.get( originatingStore.getKey() );
-
-        if ( metadataMap != null && !metadataMap.isEmpty() )
-        {
-            if ( metadataMap.get( path ) != null )
-            {
-                metadataMap.remove( path );
-                affectedGroups.forEach( group -> {
-                    final Map<String, MetadataInfo> grpMetaMap = versionMetadataCache.get( group.getKey() );
-                    if ( grpMetaMap != null && !grpMetaMap.isEmpty() )
-                    {
-                        grpMetaMap.remove( path );
-                    }
-                } );
-            }
-        }
+        logger.debug( "Clear merged path {}, origin: {}, affected: {}", path, originatingStore, affectedGroups );
+        metadataCache.remove( new MetadataCacheKey( originatingStore.getKey(), path ) );
+        affectedGroups.forEach( group -> {
+            metadataCache.remove( new MetadataCacheKey( group.getKey(), path ) );
+        } );
     }
 
 }
