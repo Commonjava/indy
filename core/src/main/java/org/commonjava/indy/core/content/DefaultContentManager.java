@@ -57,6 +57,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.IndyContentConstants.CASCADE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
@@ -501,30 +502,28 @@ public class DefaultContentManager
         boolean result = false;
         if ( group == store.getKey().getType() )
         {
-            List<ArtifactStore> members;
-            try
+            if ( Boolean.TRUE.equals( eventMetadata.get( CASCADE ) ) )
             {
-                members = storeManager.query()
-                                      .packageType( store.getPackageType() )
-                                      .enabledState( true )
-                                      .getOrderedConcreteStoresInGroup( store.getName() );
-            }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                 e.getMessage() );
-            }
-            for ( final ArtifactStore member : members )
-            {
-                if ( downloadManager.delete( member, path, eventMetadata ) )
+                List<ArtifactStore> members;
+                try
                 {
-                    for ( final ContentGenerator generator : contentGenerators )
+                    members = storeManager.query().packageType( store.getPackageType() ).enabledState( true ).getOrderedConcreteStoresInGroup( store.getName() );
+                }
+                catch ( final IndyDataException e )
+                {
+                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store, e.getMessage() );
+                }
+                for ( final ArtifactStore member : members )
+                {
+                    if ( downloadManager.delete( member, path, eventMetadata ) )
                     {
-                        generator.handleContentDeletion( member, path, eventMetadata );
+                        for ( final ContentGenerator generator : contentGenerators )
+                        {
+                            generator.handleContentDeletion( member, path, eventMetadata );
+                        }
                     }
                 }
             }
-
             for ( final ContentGenerator generator : contentGenerators )
             {
                 generator.handleContentDeletion( store, path, eventMetadata );
