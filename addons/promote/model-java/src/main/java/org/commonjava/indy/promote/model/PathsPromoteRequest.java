@@ -53,7 +53,9 @@ public class PathsPromoteRequest
     private boolean fireEvents;
 
     /**
-     * Keep it in case when we need to enforce this rule
+     * If true, path conflict check (against concurrent promotions) is enabled and the promotion fails if pre-existent files are detected.
+     * For repos holding target build artifacts, we need to make sure no conflicts and no files are overridden.
+     * For repos like shared-imports holding download files, we don't need these checks.
      */
     private boolean failWhenExists;
 
