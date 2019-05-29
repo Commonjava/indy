@@ -43,10 +43,9 @@ import java.io.IOException;
 import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
-import static org.commonjava.indy.pkg.maven.content.MetadataUtil.removeAll;
+import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getMetadataPath;
+import static org.commonjava.indy.pkg.maven.content.MetadataUtil.remove;
 import static org.commonjava.indy.util.LocationUtils.getKey;
-import static org.commonjava.maven.galley.util.PathUtils.normalize;
-import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
 @javax.enterprise.context.ApplicationScoped
 public class MetadataMergePomChangeListener
@@ -97,8 +96,7 @@ public class MetadataMergePomChangeListener
         }
 
         final StoreKey key = getKey( event );
-        final String versionPath = normalize( parentPath( path ) );
-        final String clearPath = normalize( normalize( parentPath( versionPath ) ), MavenMetadataMerger.METADATA_NAME );
+        final String clearPath = getMetadataPath( path );
         try
         {
             if ( hosted == key.getType() )
@@ -108,7 +106,7 @@ public class MetadataMergePomChangeListener
                 {
                     if ( doClear( hosted, clearPath ) )
                     {
-                        removeAll( hosted.getKey(), metadataCache );
+                        remove( hosted.getKey(), clearPath, metadataCache );
                     }
                 }
                 catch ( final IOException e )
@@ -127,7 +125,7 @@ public class MetadataMergePomChangeListener
                         {
                             if ( doClear( group, clearPath ) )
                             {
-                                removeAll( group.getKey(), metadataCache );
+                                remove( group.getKey(), clearPath, metadataCache );
                             }
                         }
                         catch ( final IOException e )

@@ -43,6 +43,7 @@ import java.util.Set;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getAllPaths;
+import static org.commonjava.indy.pkg.maven.content.MetadataUtil.remove;
 import static org.commonjava.indy.pkg.maven.content.MetadataUtil.removeAll;
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 
@@ -254,7 +255,7 @@ public class MetadataStoreListener
         logger.trace( "Clearing cached, merged paths for: {} as a result of change in: {} (paths: {})", group.getKey(),
                       store.getKey(), paths );
 
-        removeAll( group.getKey(), metadataCache );
+        remove( group.getKey(), paths, metadataCache );
     }
 
 }

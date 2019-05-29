@@ -38,7 +38,7 @@ public final class MetadataCacheKey
         if ( o == null || getClass() != o.getClass() )
             return false;
         MetadataCacheKey that = (MetadataCacheKey) o;
-        return storeKey.equals( that.storeKey ) && path.equals( that.path );
+        return Objects.equals( storeKey, that.storeKey ) && Objects.equals( path, that.path );
     }
 
     @Override
