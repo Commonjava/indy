@@ -76,6 +76,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
+import static org.apache.commons.lang3.exception.ExceptionUtils.rethrow;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverload;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -651,46 +652,22 @@ public class PromotionManager
         AtomicReference<Exception> ex = new AtomicReference<>();
         StoreKeyPaths plk = new StoreKeyPaths( request.getTargetKey(), pending );
 
-        PathsPromoteResult promoteResult = conflictManager.checkAnd( plk, pathsLockKey -> {
-            ValidationResult validationResult = new ValidationResult();
-            if ( !skipValidation )
-            {
-                try
-                {
-                    ValidationRequest vr = validator.validate( request, validationResult, baseUrl );
-                }
-                catch ( Exception e )
-                {
-                    ex.set( e );
-                    return null;
-                }
-            }
+        PathsPromoteResult promoteResult;
 
-            if ( validationResult.isValid() )
-            {
-                if ( request.isDryRun() )
-                {
-                    return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
-                }
-                PathsPromoteResult result = runPathPromotions( request, pending, contents, validationResult );
-                if ( result.succeeded() )
-                {
-                    promotionHelper.updatePathPromoteMetrics( contents.size(), result );
-                }
-                else
-                {
-                    logger.info( "Path promotion failed. Result: " + result );
-                }
-                return result;
-            }
-
-            return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
-
-        }, pathsLockKey -> {
-            String msg = String.format( "Conflict detected, store: %s, paths: %s", pathsLockKey.getTarget(), pending );
-            logger.warn( msg );
-            return new PathsPromoteResult( request, pending, emptySet(), emptySet(), msg, null );
-        } );
+        if ( request.isFailWhenExists() )
+        {
+            promoteResult = conflictManager.checkAnd( plk, pathsLockKey -> {
+                return runValidationAndPathPromotions( skipValidation, request, baseUrl, ex, pending, contents );
+            }, pathsLockKey -> {
+                String msg = String.format( "Conflict detected, store: %s, paths: %s", pathsLockKey.getTarget(), pending );
+                logger.warn( msg );
+                return new PathsPromoteResult( request, pending, emptySet(), emptySet(), msg, null );
+            } );
+        }
+        else
+        {
+            promoteResult = runValidationAndPathPromotions( skipValidation, request, baseUrl, ex, pending, contents );
+        }
 
         if ( ex.get() != null )
         {
@@ -704,6 +681,45 @@ public class PromotionManager
         }
 
         return promoteResult;
+    }
+
+    private PathsPromoteResult runValidationAndPathPromotions( boolean skipValidation, PathsPromoteRequest request,
+                                                               String baseUrl, AtomicReference<Exception> ex,
+                                                               Set<String> pending, List<Transfer> contents )
+    {
+        ValidationResult validationResult = new ValidationResult();
+        if ( !skipValidation )
+        {
+            try
+            {
+                ValidationRequest vr = validator.validate( request, validationResult, baseUrl );
+            }
+            catch ( Exception e )
+            {
+                ex.set( e );
+                return null;
+            }
+        }
+
+        if ( validationResult.isValid() )
+        {
+            if ( request.isDryRun() )
+            {
+                return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
+            }
+            PathsPromoteResult result = runPathPromotions( request, pending, contents, validationResult );
+            if ( result.succeeded() )
+            {
+                promotionHelper.updatePathPromoteMetrics( contents.size(), result );
+            }
+            else
+            {
+                logger.info( "Path promotion failed. Result: " + result );
+            }
+            return result;
+        }
+
+        return new PathsPromoteResult( request, pending, emptySet(), emptySet(), validationResult );
     }
 
     private PathsPromoteResult runPathPromotions( final PathsPromoteRequest request, final Set<String> pending,
