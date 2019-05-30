@@ -40,7 +40,14 @@ public abstract class AbstractPromoteResult<T extends AbstractPromoteResult>
     protected AbstractPromoteResult( final String error, final ValidationResult validations )
     {
         this.validations = validations;
-        this.error = error == null && validations.isValid() ? null : "Promotion validation failed";
+        if ( error != null )
+        {
+            this.error = error;
+        }
+        else
+        {
+            this.error = ( validations == null || validations.isValid() ) ? null : "Promotion validation failed";
+        }
     }
 
     public String getResultCode()
