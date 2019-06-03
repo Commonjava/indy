@@ -27,7 +27,6 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -58,8 +57,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.IndyContentConstants.CASCADE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
@@ -233,7 +232,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -366,7 +365,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -494,51 +493,42 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) )
-        {
-            return deleteCache( store, path, eventMetadata );
-        }
+        logger.info( "Delete from {}, path: {}", store.getKey(), path );
 
         boolean result = false;
         if ( group == store.getKey().getType() )
         {
-            List<ArtifactStore> members;
-            try
+            if ( Boolean.TRUE.equals( eventMetadata.get( CASCADE ) ) )
             {
-                members = storeManager.query()
-                                      .packageType( store.getPackageType() )
-                                      .enabledState( true )
-                                      .getOrderedConcreteStoresInGroup( store.getName() );
-            }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                  e.getMessage() );
-            }
-
-            for ( final ArtifactStore member : members )
-            {
-                if ( downloadManager.delete( member, path, eventMetadata ) )
+                List<ArtifactStore> members;
+                try
                 {
-                    result = true;
-                    for ( final ContentGenerator generator : contentGenerators )
+                    members = storeManager.query().packageType( store.getPackageType() ).enabledState( true ).getOrderedConcreteStoresInGroup( store.getName() );
+                }
+                catch ( final IndyDataException e )
+                {
+                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store, e.getMessage() );
+                }
+                for ( final ArtifactStore member : members )
+                {
+                    if ( downloadManager.delete( member, path, eventMetadata ) )
                     {
-                        generator.handleContentDeletion( member, path, eventMetadata );
+                        for ( final ContentGenerator generator : contentGenerators )
+                        {
+                            generator.handleContentDeletion( member, path, eventMetadata );
+                        }
                     }
                 }
             }
-
-            if ( result )
+            for ( final ContentGenerator generator : contentGenerators )
             {
-                for ( final ContentGenerator generator : contentGenerators )
-                {
-                    generator.handleContentDeletion( store, path, eventMetadata );
-                }
+                generator.handleContentDeletion( store, path, eventMetadata );
             }
+            result = true;
         }
         else
         {
@@ -553,23 +543,6 @@ public class DefaultContentManager
         }
 
         return result;
-    }
-
-    /**
-     * clean just the cache (storage of groups and remote repos)
-     */
-    private boolean deleteCache( ArtifactStore store, String path, EventMetadata eventMetadata )
-                    throws IndyWorkflowException
-    {
-        logger.trace( "Delete cache, store:{}, path:{}", store.getName(), path );
-        if ( hosted == store.getKey().getType() )
-        {
-            return false;
-        }
-        else
-        {
-            return downloadManager.delete( store, path, eventMetadata );
-        }
     }
 
     @Override
@@ -629,7 +602,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {

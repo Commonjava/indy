@@ -23,7 +23,8 @@ public final class IndyContentConstants
 
     public static final String CHECK_CACHE_ONLY = "cache-only";
 
-    private IndyContentConstants(){}
+    public static final String CASCADE = "cascade";
 
+    private IndyContentConstants(){}
 
 }

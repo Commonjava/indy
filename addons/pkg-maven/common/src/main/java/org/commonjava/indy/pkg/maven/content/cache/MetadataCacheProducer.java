@@ -15,14 +15,14 @@
  */
 package org.commonjava.indy.pkg.maven.content.cache;
 
-import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.maven.content.MetadataCacheKey;
+import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import java.util.Map;
 
 @ApplicationScoped
 public class MetadataCacheProducer
@@ -34,11 +34,11 @@ public class MetadataCacheProducer
     private DataFileConfiguration config;
 
 
-    @MavenVersionMetadataCache
+    @MavenMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<StoreKey, Map> mavenVersionMetaCacheCfg()
+    public CacheHandle<MetadataCacheKey, MetadataInfo> mavenMetaCacheCfg()
     {
-        return cacheProducer.getCache( "maven-version-metadata-cache" );
+        return cacheProducer.getCache( "maven-metadata-cache" );
     }
 }

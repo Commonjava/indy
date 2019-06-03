@@ -15,14 +15,17 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.junit.After;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -113,8 +116,11 @@ public class NPMGroupDeleteFileTest
         client.content().delete( groupC.getKey(), REAL_PATH );
 
         assertThat( client.content().exists( groupA.getKey(), PATH ), equalTo( true ) );
-        assertThat( client.content().exists( groupB.getKey(), REAL_PATH ), equalTo( false ) );
-        assertThat( client.content().exists( groupC.getKey(), REAL_PATH ), equalTo( false ) );
+
+        // We disable cascade deletion in DefaultContentManager.delete() by default.
+        // As of now, we just leave out these two lines. Rui
+        //assertThat( client.content().exists( groupB.getKey(), REAL_PATH ), equalTo( false ) );
+        //assertThat( client.content().exists( groupC.getKey(), REAL_PATH ), equalTo( false ) );
     }
 
     @Override

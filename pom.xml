@@ -62,7 +62,6 @@
     <kafkaVersion>1.1.0</kafkaVersion>
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
-    <propulsorVersion>1.4-SNAPSHOT</propulsorVersion>
     <weldVersion>2.4.6.Final</weldVersion>
     <jacksonVersion>2.9.9</jacksonVersion>
     <metricsVersion>4.0.2</metricsVersion>
@@ -593,13 +592,6 @@
         <artifactId>indy-koji-jaxrs</artifactId>
         <version>1.8.0-SNAPSHOT</version>
       </dependency>
-      <!--
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-ftests-koji</artifactId>
-        <version>1.6.1-SNAPSHOT</version>
-      </dependency>
-      -->
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
