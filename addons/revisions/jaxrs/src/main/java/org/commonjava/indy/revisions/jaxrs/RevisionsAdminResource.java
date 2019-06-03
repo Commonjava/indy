@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.revisions.RevisionsManager;
 import org.commonjava.indy.revisions.jaxrs.dto.ChangeSummaryDTO;
@@ -45,6 +46,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 @Api( "Data-Directory Revisions" )
 @Path( "/api/admin/revisions" )
 @ApplicationScoped
+@REST
 public class RevisionsAdminResource
         implements IndyResources
 {

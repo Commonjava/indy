@@ -44,8 +44,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
-
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CONTENT_TRACKING_ID;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
@@ -97,8 +97,10 @@ public class FoloContentAccessResource
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO ).set(
                         STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
+
+        Class cls = FoloContentAccessResource.class;
         return handler.doCreate( packageType, type, name, path, request, metadata, () -> uriInfo.getBaseUriBuilder()
-                                                                                   .path( getClass() )
+                                                                                   .path( cls )
                                                                                    .path( path )
                                                                                    .build( id, packageType, type, name ) );
     }
@@ -124,7 +126,7 @@ public class FoloContentAccessResource
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
 
-        MDC.put( TRACKING_KEY, id );
+        MDC.put( CONTENT_TRACKING_ID, id );
 
         return handler.doHead( packageType, type, name, path, cacheOnly, baseUri, request, metadata );
     }
@@ -149,7 +151,7 @@ public class FoloContentAccessResource
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
 
-        MDC.put( TRACKING_KEY, id );
+        MDC.put( CONTENT_TRACKING_ID, id );
 
         return handler.doGet( packageType, type, name, path, baseUri, request, metadata );
     }

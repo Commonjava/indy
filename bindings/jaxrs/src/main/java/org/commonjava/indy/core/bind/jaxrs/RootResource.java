@@ -27,8 +27,10 @@ import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 
 //@Path( "/" )
+@REST
 public class RootResource
     implements IndyResources
 {

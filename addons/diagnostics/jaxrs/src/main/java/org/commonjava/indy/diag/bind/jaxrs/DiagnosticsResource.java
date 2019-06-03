@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.diag.data.DiagnosticsManager;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
@@ -47,6 +48,7 @@ import static org.commonjava.indy.util.ApplicationContent.text_plain;
 @Api( value = "Diagnostics",
       description = "Tools to aid users when something goes wrong on the server, and you don't have access to logs." )
 @Path( "/api/diag" )
+@REST
 public class DiagnosticsResource
         implements IndyResources
 {

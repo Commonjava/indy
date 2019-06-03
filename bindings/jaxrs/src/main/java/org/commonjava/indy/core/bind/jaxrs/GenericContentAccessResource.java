@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
       description = "Handles retrieval and management of Maven artifact content. This is the main point of access for Maven/Gradle users." )
 @Path( "/api/content/generic-http/{type: (hosted|group|remote)}/{name}" )
 @ApplicationScoped
+@REST
 public class GenericContentAccessResource
         implements PackageContentAccessResource
 {
@@ -79,9 +81,10 @@ public class GenericContentAccessResource
             final @PathParam( "path" ) String path, final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request )
     {
+        Class cls = GenericContentAccessResource.class;
         return handler.doCreate( GENERIC_PKG_KEY, type, name, path, request,
                                  new EventMetadata(), () -> uriInfo.getBaseUriBuilder()
-                                                                   .path( getClass() )
+                                                                   .path( cls )
                                                                    .path( path )
                                                                    .build( GENERIC_PKG_KEY, type, name ) );
     }

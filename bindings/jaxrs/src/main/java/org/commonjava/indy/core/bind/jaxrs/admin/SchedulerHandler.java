@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.core.ctl.SchedulerController;
 import org.commonjava.indy.core.expire.Expiration;
@@ -50,6 +51,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
       description = "Retrieve and manipulate scheduled expirations for various parts of Indy" )
 @Path( "/api/admin/schedule" )
 @Produces( ApplicationContent.application_json )
+@REST
 public class SchedulerHandler
         implements IndyResources
 {

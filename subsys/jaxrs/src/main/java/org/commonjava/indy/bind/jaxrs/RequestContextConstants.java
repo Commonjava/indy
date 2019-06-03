@@ -43,6 +43,42 @@ public class RequestContextConstants
 
     //
 
+    @MDC
+    public static final String REST_CLASS_PATH = "REST-class-path";
+
+    @MDC
+    public static final String REST_METHOD_PATH = "REST-method-path";
+
+    @MDC
+    public static final String REST_CLASS = "REST-class";
+
+    @MDC
+    public static final String CONTENT_TRACKING_ID = "tracking-id";
+
+    @MDC
+    public static final String ACCESS_CHANNEL = "access-channel";
+
+    @MDC
+    public static final String REQUEST_LATENCY_NS = "request-latency-ns";
+
+    @MDC
+    public static final String PACKAGE_TYPE = "package-type";
+
+    @MDC
+    public static final String METADATA_CONTENT = "metadata-content";
+
+    @MDC
+    public static final String CONTENT_ENTRY_POINT = "content-entry-point";
+
+    @MDC
+    public static final String HTTP_METHOD = "http-method";
+
+    @MDC
+    public static final String PATH = "path";
+
+    @MDC
+    public static final String HTTP_STATUS = "http-status";
+
     @Header @MDC
     public static final String COMPONENT_ID = HEADER_COMPONENT_ID; // "component-id";
 

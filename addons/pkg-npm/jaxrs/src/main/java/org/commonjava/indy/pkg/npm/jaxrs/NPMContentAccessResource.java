@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
@@ -52,6 +53,7 @@ import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEA
 @Api( value = "NPM Content Access and Storage", description = "Handles retrieval and management of NPM artifact content. This is the main point of access for NPM users." )
 @Path( "/api/content/npm/{type: (hosted|group|remote)}/{name}" )
 @ApplicationScoped
+@REST
 public class NPMContentAccessResource
                 implements PackageContentAccessResource
 {
@@ -88,9 +90,10 @@ public class NPMContentAccessResource
                 new EventMetadata().set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() )
                                                          .set( STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
 
+        Class cls = NPMContentAccessResource.class;
         return handler.doCreate( NPM_PKG_KEY, type, name, packageName, request, eventMetadata,
                                  () -> uriInfo.getBaseUriBuilder()
-                                              .path( getClass() )
+                                              .path( cls )
                                               .path( packageName )
                                               .build( NPM_PKG_KEY, type, name ) );
     }
@@ -109,8 +112,9 @@ public class NPMContentAccessResource
             final @Context HttpServletRequest request )
     {
         final String path = Paths.get( packageName, versionTarball ).toString();
+        Class cls = NPMContentAccessResource.class;
         return handler.doCreate( NPM_PKG_KEY, type, name, path, request, new EventMetadata(), () -> uriInfo.getBaseUriBuilder()
-                                                                                                           .path( getClass() )
+                                                                                                           .path( cls )
                                                                                                            .path( path )
                                                                                                            .build( NPM_PKG_KEY,
                                                                                                                    type,

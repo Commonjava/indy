@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.PackageContentAccessResource;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
@@ -50,6 +51,7 @@ import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEA
 @Api( value = "Maven Content Access and Storage",
       description = "Handles retrieval and management of Maven artifact content. This is the main point of access for Maven/Gradle users." )
 @Path( "/api/content/maven/{type: (hosted|group|remote)}/{name}" )
+@REST
 public class MavenContentAccessResource
         implements PackageContentAccessResource
 {
@@ -82,9 +84,10 @@ public class MavenContentAccessResource
     {
         final EventMetadata metadata = new EventMetadata().set( STORE_HTTP_HEADERS,
                                                                 RequestUtils.extractRequestHeadersToMap( request ) );
+        Class cls = MavenContentAccessResource.class;
         return handler.doCreate( MAVEN_PKG_KEY, type, name, path, request,
                                  metadata, () -> uriInfo.getBaseUriBuilder()
-                                                                   .path( getClass() )
+                                                                   .path( cls )
                                                                    .path( path )
                                                                    .build( MAVEN_PKG_KEY, type, name ) );
     }

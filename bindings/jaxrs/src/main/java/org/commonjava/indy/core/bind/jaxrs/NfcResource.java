@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.NfcController;
 import org.commonjava.indy.core.model.Page;
 import org.commonjava.indy.model.core.StoreKey;
@@ -52,6 +53,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 
 @Api( description = "REST resource that manages the not-found cache", value = "Not-Found Cache" )
 @Path( "/api/nfc" )
+@REST
 public class NfcResource
         implements IndyResources
 {

@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
 import org.commonjava.indy.changelog.model.RepositoryChangeLog;
@@ -50,6 +51,7 @@ import java.util.List;
         + "and will not return all results. It should not be used for any real operations" )
 @Path( "/api/repo/changelog" )
 @ApplicationScoped
+@REST
 public class RepoChangelogResource
         implements IndyResources
 {

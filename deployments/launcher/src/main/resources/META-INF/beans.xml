@@ -21,6 +21,7 @@
   </alternatives>
   
   <interceptors>
+    <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
     <class>org.commonjava.indy.metrics.jaxrs.interceptor.MetricsInterceptor</class>
   </interceptors>
 

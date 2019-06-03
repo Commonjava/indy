@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
 import org.commonjava.indy.folo.ctl.FoloConstants;
@@ -63,6 +64,7 @@ import static org.commonjava.indy.util.ApplicationContent.application_zip;
 @Api( value = "FOLO Tracking Record Access", description = "Manages FOLO tracking records." )
 @Path( "/api/folo/admin" )
 @ApplicationScoped
+@REST
 public class FoloAdminResource
         implements IndyResources
 {

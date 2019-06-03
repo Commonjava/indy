@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -53,6 +54,7 @@ import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEA
       description = "Handles retrieval and management of file/artifact content. This is the main point of access for most users." )
 @Path( "/api/{type: (hosted|group|remote)}/{name}" )
 @ApplicationScoped
+@REST
 public class DeprecatedContentAccessResource
         implements IndyResources
 {

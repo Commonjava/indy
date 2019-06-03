@@ -21,6 +21,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.subsys.keycloak.rest.SecurityController;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
@@ -39,6 +40,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 
 @Api( "Security Infrastructure" )
 @Path( "/api/security" )
+@REST
 public class SecurityResource
         implements IndyResources
 {

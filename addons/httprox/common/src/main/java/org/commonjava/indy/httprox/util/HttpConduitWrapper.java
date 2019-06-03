@@ -33,6 +33,7 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.xnio.channels.Channels;
 import org.xnio.channels.StreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSinkChannel;
@@ -47,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_STATUS;
 import static org.commonjava.indy.httprox.util.ChannelUtils.DEFAULT_READ_BUF_SIZE;
 import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
 import static org.commonjava.indy.httprox.util.ChannelUtils.write;
@@ -104,6 +106,8 @@ public class HttpConduitWrapper
     public void writeStatus( final ApplicationStatus status )
             throws IOException
     {
+        MDC.put( HTTP_STATUS, String.valueOf( status.code() ) );
+
         final ByteBuffer b =
                 ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", status.code(), status.message() ).getBytes() );
         sinkChannel.write( b );
@@ -113,6 +117,8 @@ public class HttpConduitWrapper
     public void writeStatus( final int code, final String message )
             throws IOException
     {
+        MDC.put( HTTP_STATUS, String.valueOf( code ) );
+
         final ByteBuffer b = ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", code, message ).getBytes() );
         sinkChannel.write( b );
     }

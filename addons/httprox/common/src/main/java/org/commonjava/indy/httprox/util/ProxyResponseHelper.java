@@ -47,6 +47,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.net.URL;
@@ -55,6 +56,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CONTENT_ENTRY_POINT;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.METADATA_CONTENT;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PACKAGE_TYPE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PATH;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
@@ -102,21 +107,30 @@ public class ProxyResponseHelper
     public ArtifactStore getArtifactStore( String trackingId, final URL url )
                     throws IndyDataException
     {
+        ArtifactStore store = null;
         if ( metricsConfig == null || metricRegistry == null )
         {
-            return doGetArtifactStore( trackingId, url );
+            store = doGetArtifactStore( trackingId, url );
         }
 
-        Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "getArtifactStore" ) );
-        Timer.Context timerContext = timer.time();
-        try
+        if ( store == null )
         {
-            return doGetArtifactStore( trackingId, url );
+            Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "getArtifactStore" ) );
+            Timer.Context timerContext = timer.time();
+            try
+            {
+                store = doGetArtifactStore( trackingId, url );
+            }
+            finally
+            {
+                timerContext.stop();
+            }
         }
-        finally
-        {
-            timerContext.stop();
-        }
+
+        MDC.put( PACKAGE_TYPE, store.getKey().getPackageType() );
+        MDC.put( CONTENT_ENTRY_POINT, store.getKey().toString() );
+
+        return store;
     }
 
     private ArtifactStore doGetArtifactStore( String trackingId, final URL url )
@@ -276,6 +290,9 @@ public class ProxyResponseHelper
                    final boolean writeBody, final UserPass proxyUserPass )
                     throws IOException, IndyWorkflowException
     {
+        MDC.put( PATH, path );
+        MDC.put( METADATA_CONTENT, Boolean.toString( false ) );
+
         if ( metricsConfig == null || metricRegistry == null )
         {
             doTransfer( http, store, path, writeBody, proxyUserPass );

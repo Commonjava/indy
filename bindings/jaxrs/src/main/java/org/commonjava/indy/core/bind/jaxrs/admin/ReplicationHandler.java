@@ -39,6 +39,7 @@ import io.swagger.annotations.ApiOperation;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.ReplicationController;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.ReplicationDTO;
@@ -51,6 +52,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Api( description = "Replicate the artifact stores on a remote Indy instance, either by proxying the remote system's stores or by cloning the store definitions",
       value = "Indy Repository Replication" )
 @Path( "/api/admin/replicate" )
+@REST
 public class ReplicationHandler
         implements IndyResources
 {

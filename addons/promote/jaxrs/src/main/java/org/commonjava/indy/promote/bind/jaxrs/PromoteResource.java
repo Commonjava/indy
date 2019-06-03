@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.data.PromotionManager;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -56,6 +57,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 @Api( value="Content Promotion", description = "Promote content from a source repository to a target repository or group." )
 @Path( "/api/promotion" )
 @Produces( { application_json } )
+@REST
 public class PromoteResource
         implements IndyResources
 {

@@ -61,6 +61,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -77,6 +78,7 @@ import org.slf4j.LoggerFactory;
 @Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
 @ApplicationScoped
+@REST
 public class StoreAdminHandler
     implements IndyResources
 {
