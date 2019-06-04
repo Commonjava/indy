@@ -41,10 +41,10 @@
 
     <local-cache name="content-metadata" configuration="local-template"/>
 
-    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
-      <memory>
-        <object size="2000" strategy="REMOVE" />
-      </memory>
+    <local-cache name="maven-metadata-cache" configuration="local-template"/>
+
+    <local-cache name="maven-metadata-key-cache" configuration="local-template">
+      <indexing index="LOCAL" auto-config="true"/>
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">

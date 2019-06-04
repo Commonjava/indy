@@ -15,9 +15,8 @@
  */
 package org.commonjava.indy.pkg.maven.content.cache;
 
-import org.commonjava.indy.pkg.maven.content.MetadataCacheKey;
+import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
-import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import javax.enterprise.context.ApplicationScoped;
@@ -30,15 +29,19 @@ public class MetadataCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
-    @Inject
-    private DataFileConfiguration config;
-
-
     @MavenMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<MetadataCacheKey, MetadataInfo> mavenMetaCacheCfg()
+    public CacheHandle<MetadataKey, MetadataInfo> mavenMetadataCacheCfg()
     {
         return cacheProducer.getCache( "maven-metadata-cache" );
+    }
+
+    @MavenMetadataKeyCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<MetadataKey, MetadataKey> mavenMetadataKeyCacheCfg()
+    {
+        return cacheProducer.getCache( "maven-metadata-key-cache" );
     }
 }

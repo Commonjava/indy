@@ -1,20 +1,27 @@
 package org.commonjava.indy.pkg.maven.content;
 
 import org.commonjava.indy.model.core.StoreKey;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-public final class MetadataCacheKey
+@Indexed
+public final class MetadataKey
                 implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private final StoreKey storeKey;
 
+    @Field( index = Index.NO, analyze = Analyze.NO )
     private final String path;
 
-    public MetadataCacheKey( StoreKey storeKey, String path )
+    public MetadataKey( StoreKey storeKey, String path )
     {
         this.storeKey = storeKey;
         this.path = path;
@@ -37,7 +44,7 @@ public final class MetadataCacheKey
             return true;
         if ( o == null || getClass() != o.getClass() )
             return false;
-        MetadataCacheKey that = (MetadataCacheKey) o;
+        MetadataKey that = (MetadataKey) o;
         return Objects.equals( storeKey, that.storeKey ) && Objects.equals( path, that.path );
     }
 
@@ -55,11 +62,11 @@ public final class MetadataCacheKey
         return storeKey.toString() + DELIMIT + path; // e.g., maven:remote:central#/foo/bar/1.0/bar-1.0.pom
     }
 
-    public static MetadataCacheKey fromString( String str )
+    public static MetadataKey fromString( String str )
     {
         int idx = str.lastIndexOf( DELIMIT );
         String storekey = str.substring( 0, idx );
         String path = str.substring( idx + 1 );
-        return new MetadataCacheKey( StoreKey.fromString( storekey ), path );
+        return new MetadataKey( StoreKey.fromString( storekey ), path );
     }
 }

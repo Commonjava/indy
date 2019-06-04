@@ -19,8 +19,6 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +42,7 @@ public class MetadataMergeListener
     private DirectContentAccess fileManager;
 
     @Inject
-    @MavenMetadataCache
-    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
+    private MetadataCacheManager cacheManager;
 
     /**
      * Will clear the both merge path and merge info file of member and group contains that member(cascaded)
@@ -55,9 +52,9 @@ public class MetadataMergeListener
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
         logger.debug( "Clear merged path {}, origin: {}, affected: {}", path, originatingStore, affectedGroups );
-        metadataCache.remove( new MetadataCacheKey( originatingStore.getKey(), path ) );
+        cacheManager.remove( new MetadataKey( originatingStore.getKey(), path ) );
         affectedGroups.forEach( group -> {
-            metadataCache.remove( new MetadataCacheKey( group.getKey(), path ) );
+            cacheManager.remove( new MetadataKey( group.getKey(), path ) );
         } );
     }
 
