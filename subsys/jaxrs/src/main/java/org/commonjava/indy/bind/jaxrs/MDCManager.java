@@ -40,6 +40,7 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.COMPONENT_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_METHOD;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_REQUEST_URI;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
 
@@ -106,6 +107,7 @@ public class MDCManager
     public void putExtraHeaders( HttpServletRequest request )
     {
         MDC.put( HTTP_METHOD, request.getMethod() );
+        MDC.put( HTTP_REQUEST_URI, request.getRequestURI() );
         mdcHeadersList.forEach( ( header ) -> MDC.put( header, request.getHeader( header ) ) );
     }
 

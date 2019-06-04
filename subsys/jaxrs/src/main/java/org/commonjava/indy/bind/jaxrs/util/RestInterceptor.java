@@ -3,10 +3,12 @@ package org.commonjava.indy.bind.jaxrs.util;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
+import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
 
 import java.nio.file.Paths;
 
@@ -33,7 +35,7 @@ public class RestInterceptor
 
         if ( MDC.get( REST_CLASS ) == null )
         {
-            String targetName = context.getTarget().getClass().getSimpleName();
+            String targetName = context.getMethod().getDeclaringClass().getSimpleName();
             MDC.put( REST_CLASS, targetName );
 
             String classPath = "";

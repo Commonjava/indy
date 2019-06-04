@@ -80,6 +80,9 @@ public class RequestContextConstants
     public static final String HTTP_METHOD = "http-method";
 
     @MDC
+    public static final String HTTP_REQUEST_URI = "http-request-uri";
+
+    @MDC
     public static final String PATH = "path";
 
     @MDC
