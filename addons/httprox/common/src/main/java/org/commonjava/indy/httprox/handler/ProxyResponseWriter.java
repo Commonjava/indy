@@ -62,12 +62,16 @@ import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_METHOD;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_END;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_START;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.CONNECT_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.HEAD_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.OPTIONS_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
 import static org.commonjava.indy.subsys.http.util.UserPass.parse;
 import static org.commonjava.indy.util.ApplicationHeader.proxy_authenticate;
 import static org.commonjava.indy.util.ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED;
@@ -80,7 +84,7 @@ public final class ProxyResponseWriter
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final Logger restLogger = LoggerFactory.getLogger( "org.commonjava.topic.httprox.inbound" );
+    private final Logger restLogger = LoggerFactory.getLogger( PROXY_METRIC_LOGGER );
 
     private final ConduitStreamSourceChannel sourceChannel;
 
@@ -204,7 +208,7 @@ public final class ProxyResponseWriter
             return;
         }
 
-        restLogger.info( "START {} (from: {})", httpRequest.getRequestLine(), peerAddress );
+        restLogger.info( "SERVE {} (from: {})", httpRequest.getRequestLine(), peerAddress );
 
         // TODO: Can we handle this?
         final String oldThreadName = Thread.currentThread().getName();
@@ -214,7 +218,10 @@ public final class ProxyResponseWriter
             MDC.put( REQUEST_LATENCY_NS, String.valueOf( System.nanoTime() - startNanos ) );
             MDC.put( HTTP_METHOD, httpRequest.getRequestLine().getMethod() );
 
+            MDC.put( REQUEST_PHASE, REQUEST_PHASE_END );
             restLogger.info( "END {} (from: {})", httpRequest.getRequestLine(), peerAddress );
+            MDC.remove( REQUEST_PHASE );
+
             logger.trace("Sink channel closing.");
             Thread.currentThread().setName( oldThreadName );
             if ( sslTunnel != null )

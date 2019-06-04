@@ -24,6 +24,8 @@ import org.apache.commons.lang.StringUtils;
 
 public final class HttpProxyConstants
 {
+    public static final String PROXY_METRIC_LOGGER = "org.commonjava.topic.httprox.inbound";
+
     public static final String PROXY_REPO_PREFIX = "httprox_";
 
     public static final String GET_METHOD = "GET";

@@ -65,6 +65,9 @@ public class RequestContextConstants
     public static final String REQUEST_LATENCY_NS = "request-latency-ns";
 
     @MDC
+    public static final String REQUEST_PHASE = "request-phase";
+
+    @MDC
     public static final String PACKAGE_TYPE = "package-type";
 
     @MDC
@@ -99,4 +102,11 @@ public class RequestContextConstants
 
     @Thread @MDC
     public static final String PREFERRED_ID = "preferred-id";
+
+
+    // these are well-known values we'll be using in our log aggregation filters
+    public static final String REQUEST_PHASE_START = "start";
+
+    public static final String REQUEST_PHASE_END = "end";
+
 }

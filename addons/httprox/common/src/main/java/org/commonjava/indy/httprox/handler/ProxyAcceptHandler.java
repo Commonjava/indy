@@ -41,7 +41,11 @@ import javax.inject.Inject;
 import java.io.IOException;
 
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PACKAGE_TYPE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_END;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_START;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
+import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
 
 /**
  * Created by jdcasey on 8/13/15.
@@ -136,6 +140,12 @@ public class ProxyAcceptHandler
         try
         {
             accepted = channel.accept();
+
+            MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
+            LoggerFactory.getLogger( PROXY_METRIC_LOGGER )
+                         .info( "START HTTProx request (from: {})", accepted.getPeerAddress() );
+            MDC.remove( REQUEST_PHASE );
+
         }
         catch ( IOException e )
         {

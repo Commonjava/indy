@@ -45,6 +45,9 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_END;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_START;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.X_FORWARDED_FOR;
 
 @ApplicationScoped
@@ -137,7 +140,9 @@ public class ResourceManagementFilter
 
             Thread.currentThread().setName( tn );
 
+            MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
             restLogger.info( "START {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
+            MDC.remove( REQUEST_PHASE );
 
             AtomicReference<IOException> ioex = new AtomicReference<>();
             AtomicReference<ServletException> seex = new AtomicReference<>();
@@ -181,6 +186,7 @@ public class ResourceManagementFilter
             }
 
             long end = System.nanoTime();
+            MDC.put( REQUEST_PHASE, REQUEST_PHASE_END );
             MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
 
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
