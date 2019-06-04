@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -194,7 +195,8 @@ public class ContentController
     private void validatePath( final StoreKey key, final String path )
             throws IndyWorkflowException
     {
-        if ( path.contains( "{" ) || path.contains( "}" ) || path.contains("@@") || path.contains("%") )
+        if ( isNotBlank( path ) && ( path.contains( "{" ) || path.contains( "}" ) || path.contains( "@@" )
+                || path.contains( "%" ) ) )
         {
             throw new IndyWorkflowException( 400, "Invalid path: %s (target repo: %s)", path, key );
         }
