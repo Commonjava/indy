@@ -17,32 +17,20 @@ package org.commonjava.indy.subsys.cpool;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.sun.jndi.rmi.registry.RegistryContextFactory;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
-import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
 import java.util.Map;
 import java.util.Properties;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @ApplicationScoped
 public class ConnectionPoolProvider

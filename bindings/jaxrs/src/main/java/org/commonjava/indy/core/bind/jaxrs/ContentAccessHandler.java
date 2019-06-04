@@ -17,7 +17,9 @@ package org.commonjava.indy.core.bind.jaxrs;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.RequestContextConstants;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
@@ -33,12 +35,16 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -54,6 +60,11 @@ import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CONTENT_ENTRY_POINT;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_STATUS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.METADATA_CONTENT;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PACKAGE_TYPE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PATH;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
@@ -65,6 +76,7 @@ import static org.commonjava.indy.core.ctl.ContentController.BROWSER_USER_AGENT;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 @ApplicationScoped
+@REST
 public class ContentAccessHandler
         implements IndyResources
 {
@@ -85,6 +97,9 @@ public class ContentAccessHandler
 
     @Inject
     protected IndyMetricsConfig metricsConfig;
+
+    @Inject
+    protected SpecialPathManager specialPathManager;
 
 
     protected ContentAccessHandler()
@@ -110,10 +125,14 @@ public class ContentAccessHandler
                               final HttpServletRequest request, EventMetadata eventMetadata,
                               final Supplier<URI> uriBuilder, final Consumer<ResponseBuilder> builderModifier )
     {
+        MDC.put( PACKAGE_TYPE, packageType );
+        MDC.put( PATH, path );
+
         final StoreType st = StoreType.get( type );
         StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        MDC.put( CONTENT_ENTRY_POINT, sk.toString() );
 
         Response response;
         final Transfer transfer;
@@ -127,6 +146,7 @@ public class ContentAccessHandler
 
             final URI uri = uriBuilder.get();
 
+            MDC.put( HTTP_STATUS, String.valueOf( 201 ) );
             ResponseBuilder builder = Response.created( uri );
             if ( builderModifier != null )
             {
@@ -153,6 +173,9 @@ public class ContentAccessHandler
     public Response doDelete( final String packageType, final String type, final String name, final String path,
                               EventMetadata eventMetadata, final Consumer<ResponseBuilder> builderModifier )
     {
+        MDC.put( PACKAGE_TYPE, packageType );
+        MDC.put( PATH, path );
+
         if ( !PackageTypes.contains( packageType ) )
         {
             ResponseBuilder builder = Response.status( 400 );
@@ -167,11 +190,14 @@ public class ContentAccessHandler
         StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        MDC.put( CONTENT_ENTRY_POINT, sk.toString() );
 
         Response response;
         try
         {
             final ApplicationStatus result = contentController.delete( sk, path, eventMetadata );
+
+            MDC.put( HTTP_STATUS, String.valueOf( result.code() ) );
             ResponseBuilder builder = Response.status( result.code() );
             if ( builderModifier != null )
             {
@@ -199,6 +225,9 @@ public class ContentAccessHandler
                             final Boolean cacheOnly, final String baseUri, final HttpServletRequest request,
                             EventMetadata eventMetadata, final Consumer<ResponseBuilder> builderModifier )
     {
+        MDC.put( PACKAGE_TYPE, packageType );
+        MDC.put( PATH, path );
+
         if ( !PackageTypes.contains( packageType ) )
         {
             ResponseBuilder builder = Response.status( 400 );
@@ -213,6 +242,7 @@ public class ContentAccessHandler
         final StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        MDC.put( CONTENT_ENTRY_POINT, sk.toString() );
 
         Response response = null;
 
@@ -233,6 +263,10 @@ public class ContentAccessHandler
                     logger.debug( "Calling getTransfer()" );
                     item = contentController.getTransfer( sk, path, TransferOperation.DOWNLOAD );
                     exists = item != null && item.exists();
+
+                    SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( item, packageType );
+                    MDC.put( METADATA_CONTENT, Boolean.toString( spi != null && spi.isMetadata() ) );
+
                     logger.debug( "Got transfer reference: {}", item );
                 }
                 else
@@ -259,8 +293,15 @@ public class ContentAccessHandler
                         logger.debug( "Got retrieved transfer reference: {}", item );
                     }
 
+                    if ( MDC.get( METADATA_CONTENT ) != null )
+                    {
+                        SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( item, packageType );
+                        MDC.put( METADATA_CONTENT, Boolean.toString( spi != null && spi.isMetadata() ) );
+                    }
+
                     logger.trace( "Building 200 response. Using HTTP metadata: {}", httpMetadata );
 
+                    MDC.put( HTTP_STATUS, String.valueOf( 200 ) );
                     final ResponseBuilder builder = Response.ok();
 
                     // restrict the npm header contentType with json to avoid some parsing error
@@ -292,6 +333,7 @@ public class ContentAccessHandler
                     if ( response == null )
                     {
                         logger.debug( "No HTTP metadata; building generic 404 response." );
+                        MDC.put( HTTP_STATUS, String.valueOf( 404 ) );
                         ResponseBuilder builder = Response.status( Status.NOT_FOUND );
                         if ( builderModifier != null )
                         {
@@ -321,6 +363,9 @@ public class ContentAccessHandler
                            final String baseUri, final HttpServletRequest request, EventMetadata eventMetadata,
                            final Consumer<ResponseBuilder> builderModifier )
     {
+        MDC.put( PACKAGE_TYPE, packageType );
+        MDC.put( PATH, path );
+
         if ( !PackageTypes.contains( packageType ) )
         {
             ResponseBuilder builder = Response.status( 400 );
@@ -335,6 +380,7 @@ public class ContentAccessHandler
         final StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        MDC.put( CONTENT_ENTRY_POINT, sk.toString() );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
@@ -356,6 +402,9 @@ public class ContentAccessHandler
             {
                 logger.debug( "START: retrieval of content: {}:{}", sk, path );
                 final Transfer item = contentController.get( sk, path, eventMetadata );
+
+                SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( item, packageType );
+                MDC.put( METADATA_CONTENT, Boolean.toString( spi != null && spi.isMetadata() ) );
 
                 logger.debug( "HANDLE: retrieval of content: {}:{}", sk, path );
                 if ( item == null )

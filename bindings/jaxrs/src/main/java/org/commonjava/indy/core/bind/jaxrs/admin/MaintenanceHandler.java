@@ -34,6 +34,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.core.ctl.IspnCacheController;
 import org.commonjava.indy.model.core.StoreKey;
@@ -45,6 +46,7 @@ import java.nio.file.Paths;
 
 @Api( value="Maintenance", description = "Basic repository maintenance functions" )
 @Path( "/api/admin/maint" )
+@REST
 public class MaintenanceHandler
     implements IndyResources
 {

@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
@@ -39,6 +40,7 @@ import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 /**
  * Created by jdcasey on 5/10/17.
  */
+@REST
 public interface PackageContentAccessResource
         extends IndyResources
 {

@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.hostedbyarc.HostedByArchiveManager;
 import org.commonjava.indy.hostedbyarc.config.HostedByArchiveConfig;
@@ -64,6 +65,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 @Api( value = "Hosted by archive", description = "Create a new maven hosted store by zip file" )
 @Path( "/api/admin/stores/maven/hosted/{name}/compressed-content" )
 @ApplicationScoped
+@REST
 public class IndyHostedByArchiveResource
         implements IndyResources
 {

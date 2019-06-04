@@ -39,6 +39,7 @@ import io.swagger.annotations.ApiResponse;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.StatsController;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.dto.EndpointViewListing;
@@ -53,6 +54,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Api( description = "Various read-only operations for retrieving information about the system.", value = "Generic Infrastructure Queries (UI Support)" )
 @Path( "/api/stats" )
+@REST
 public class StatsHandler
     implements IndyResources
 {

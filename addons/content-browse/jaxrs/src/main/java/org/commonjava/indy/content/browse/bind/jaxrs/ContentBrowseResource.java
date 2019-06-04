@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.content.browse.ContentBrowseController;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
@@ -60,6 +61,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 @Api( value = "Indy Directory Content Browse", description = "Browse directory content in indy repository" )
 @Path( "/api/browse/{packageType}/{type: (hosted|group|remote)}/{name}" )
 @ApplicationScoped
+@REST
 public class ContentBrowseResource
         implements IndyResources
 {

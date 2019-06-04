@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -151,6 +152,7 @@ public class ContentController
     {
         final ArtifactStore store = getStore( key );
 
+        validatePath( key, path );
         return contentManager.retrieve( store, path, eventMetadata );
     }
 
@@ -184,9 +186,20 @@ public class ContentController
     {
         final ArtifactStore store = getStore( key );
 
+        validatePath( key, path );
         logger.info( "Storing: {} in: {} with event metadata: {}", path, store, eventMetadata );
 
         return contentManager.store( store, path, stream, TransferOperation.UPLOAD, eventMetadata );
+    }
+
+    private void validatePath( final StoreKey key, final String path )
+            throws IndyWorkflowException
+    {
+        if ( isNotBlank( path ) && ( path.contains( "{" ) || path.contains( "}" ) || path.contains( "@@" )
+                || path.contains( "%" ) ) )
+        {
+            throw new IndyWorkflowException( 400, "Invalid path: %s (target repo: %s)", path, key );
+        }
     }
 
     public void rescan( final StoreKey key )
@@ -309,6 +322,8 @@ public class ContentController
         {
             path = normalize( parentPath( path ) );
         }
+
+        validatePath( key, path );
 
         final List<StoreResource> listed = getListing( key, path, eventMetadata );
         if ( ApplicationContent.application_json.equals( acceptHeader ) )
@@ -456,6 +471,8 @@ public class ContentController
     public List<StoreResource> getListing( final StoreKey key, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
+        validatePath( key, path );
+
         final ArtifactStore store = getStore( key );
         return contentManager.list( store, path, eventMetadata );
     }
@@ -502,6 +519,7 @@ public class ContentController
     public Transfer getTransfer( final StoreKey storeKey, final String path, final TransferOperation op )
         throws IndyWorkflowException
     {
+        validatePath( storeKey, path );
         return contentManager.getTransfer( storeKey, path, op );
     }
 
@@ -519,6 +537,7 @@ public class ContentController
     }
 
     public boolean exists(StoreKey sk, String path) throws IndyWorkflowException {
+        validatePath( sk, path );
         return contentManager.exists( getStore( sk ), path );
     }
 }

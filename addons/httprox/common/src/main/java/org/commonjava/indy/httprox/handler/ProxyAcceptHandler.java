@@ -17,17 +17,20 @@ package org.commonjava.indy.httprox.handler;
 
 import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
+import org.commonjava.indy.bind.jaxrs.RequestContextConstants;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.xnio.ChannelListener;
 import org.xnio.StreamConnection;
 import org.xnio.channels.AcceptingChannel;
@@ -36,6 +39,9 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 
 import javax.inject.Inject;
 import java.io.IOException;
+
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PACKAGE_TYPE;
+import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 
 /**
  * Created by jdcasey on 8/13/15.
@@ -120,6 +126,10 @@ public class ProxyAcceptHandler
     @Override
     public void handleEvent( AcceptingChannel<StreamConnection> channel )
     {
+        long start = System.nanoTime();
+        MDC.put( RequestContextConstants.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY.toString() );
+        MDC.put( PACKAGE_TYPE, AccessChannel.GENERIC_PROXY.packageType() );
+
         final Logger logger = LoggerFactory.getLogger( getClass() );
 
         StreamConnection accepted;
@@ -148,7 +158,7 @@ public class ProxyAcceptHandler
         final ProxyResponseWriter writer =
                         new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator,
                                                  cacheProvider, mdcManager, creator, accepted,
-                                                 metricsConfig, metricRegistry, cacheProducer );
+                                                 metricsConfig, metricRegistry, cacheProducer, start );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter().set( writer );

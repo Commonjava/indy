@@ -33,11 +33,5 @@ public @interface Measure
 
     @Nonbinding MetricNamed[] timers() default {};
 
-    @Nonbinding MetricNamed[] guages() default {};
-
-    @Nonbinding MetricNamed[] counters() default {};
-
-    @Nonbinding MetricNamed[] hisograms() default {};
-
     @Nonbinding MetricNamed[] exceptions() default {};
 }

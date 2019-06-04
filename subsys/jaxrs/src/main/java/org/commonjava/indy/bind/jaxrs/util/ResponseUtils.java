@@ -19,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.CreationDTO;
 import org.commonjava.indy.model.util.HttpUtils;
@@ -31,6 +32,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -45,7 +47,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_STATUS;
 
 public final class ResponseUtils
 {
@@ -304,9 +307,11 @@ public final class ResponseUtils
         ResponseBuilder builder = null;
         if ( code / 100 == 5 )
         {
+            MDC.put( HTTP_STATUS, String.valueOf( 502 ) );
             builder = Response.status( 502 );
         }
 
+        MDC.put( HTTP_STATUS, String.valueOf( code ) );
         builder = Response.status( code );
         if ( builderModifier != null )
         {
@@ -474,6 +479,8 @@ public final class ResponseUtils
         {
             LOGGER.debug( "Sending response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
         }
+
+        MDC.put( HTTP_STATUS, String.valueOf( code ) );
 
         ResponseBuilder builder = Response.status( code ).type( MediaType.TEXT_PLAIN ).entity( msg );
 

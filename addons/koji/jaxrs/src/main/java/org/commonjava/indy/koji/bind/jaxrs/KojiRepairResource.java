@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponse;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.koji.data.KojiRepairException;
 import org.commonjava.indy.koji.data.KojiRepairManager;
 import org.commonjava.indy.koji.model.KojiMultiRepairResult;
@@ -59,6 +60,7 @@ import static org.commonjava.indy.util.ApplicationContent.application_json;
 @Api( value = "Koji repairVolume operation", description = "Repair Koji remote repositories." )
 @Path( "/api/" + REPAIR_KOJI )
 @Produces( { application_json } )
+@REST
 public class KojiRepairResource
                 implements IndyResources
 {

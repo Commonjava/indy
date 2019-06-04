@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
@@ -71,6 +72,7 @@ import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
 @NPMContentHandler
+@REST
 public class NPMContentAccessHandler
         extends ContentAccessHandler
 {

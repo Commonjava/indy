@@ -17,7 +17,6 @@ package org.commonjava.indy.bind.jaxrs;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.IndyMetricsConstants;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -25,6 +24,7 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -44,9 +44,8 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_LATENCY_NS;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.X_FORWARDED_FOR;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 
 @ApplicationScoped
 public class ResourceManagementFilter
@@ -100,6 +99,8 @@ public class ResourceManagementFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
+        long start = System.nanoTime();
+
         String name = Thread.currentThread().getName();
         String clientAddr = request.getRemoteAddr();
 
@@ -178,6 +179,9 @@ public class ResourceManagementFilter
             {
                 logger.error( "Failed to cleanup resources", e );
             }
+
+            long end = System.nanoTime();
+            MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
 
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
 

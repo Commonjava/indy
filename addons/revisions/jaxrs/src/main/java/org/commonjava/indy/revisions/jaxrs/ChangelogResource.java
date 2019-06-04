@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.revisions.RevisionsManager;
@@ -43,6 +44,7 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponse
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 
 @Path( "/api/revisions/changelog" )
+@REST
 public class ChangelogResource
         implements IndyResources
 {

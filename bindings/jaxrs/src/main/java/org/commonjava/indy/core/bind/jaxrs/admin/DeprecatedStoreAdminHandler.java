@@ -26,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
@@ -77,6 +78,7 @@ import static org.commonjava.indy.util.ApplicationContent.application_json;
 @Api( description = "DEPRECATED: Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/{type: (hosted|group|remote)}" )
 @ApplicationScoped
+@REST
 public class DeprecatedStoreAdminHandler
     implements IndyResources
 {
