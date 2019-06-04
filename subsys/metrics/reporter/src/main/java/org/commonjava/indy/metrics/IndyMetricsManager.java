@@ -245,6 +245,7 @@ public class IndyMetricsManager
         {
             mark( Arrays.asList( startName ) );
             logMetrics( true );
+            cleanupMetricLog( Arrays.asList( startName ) );
 
             return method.get();
         }
@@ -296,6 +297,8 @@ public class IndyMetricsManager
             MDC.put( METRICS_PHASE, FINAL_METRICS );
             metricLogger.info( "Final Metrics" );
         }
+
+        MDC.remove( METRICS_PHASE );
     }
 
     public void mark( final Collection<String> metricNames )
