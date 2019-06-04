@@ -33,8 +33,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -86,139 +88,78 @@ public class MetricsInterceptor
 
         boolean inject = measure.timers().length < 1 && measure.exceptions().length < 1 && measure.meters().length < 1;
 
-        Map<String, Timer.Context> timers = initTimers( measure, defaultName, inject );
-        List<String> exceptionMeters = initMeters( measure, measure.exceptions(), EXCEPTION, defaultName, inject );
-        List<String> meters = initMeters( measure, measure.meters(), METER, defaultName, inject );
+        Map<String, Timer.Context> timers = initTimers( measure, defaultName );
+        List<String> exceptionMeters = initMeters( measure, measure.exceptions(), EXCEPTION, defaultName );
+        List<String> meters = initMeters( measure, measure.meters(), METER, defaultName );
+
+        List<String> startMeters = meters.stream().map( name -> name( name, "starts" ) ).collect( Collectors.toList() );
+
+        Set<String> toClean = new HashSet<>();
+        toClean.addAll( meters );
+        toClean.addAll( startMeters );
+        toClean.addAll( timers.keySet() );
 
         try
         {
-            meters.forEach( ( name ) -> {
-                Meter meter = metricsManager.getMeter( name + ".starts" );
-                logger.trace( "CALLS++ {}", name );
-
-                MDC.put( name + ".starts", "1" );
-                meter.mark();
-
-                logger.trace("Meter count for: {} is: {}", name, new Object(){
-                    public String toString(){
-                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
-                    }
-                });
-            } );
-
-            MDC.put( METRICS_PHASE, PRELIMINARY_METRICS );
-            logger.info( "Preliminary metrics" );
+            metricsManager.mark( startMeters );
+            metricsManager.logMetrics( true );
 
             return context.proceed();
         }
         catch ( Exception e )
         {
-            new ArrayList<>( exceptionMeters).forEach( ( name ) -> {
-                MDC.put( name, "1" );
-                metricsManager.getMeter( name ).mark();
+            metricsManager.mark( exceptionMeters );
 
-                logger.trace("Meter count for: {} is: {}", name, new Object(){
-                    public String toString(){
-                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
-                    }
-                });
+            List<String> eClassMeters = exceptionMeters.stream()
+                                                       .map( name -> name( name, e.getClass().getSimpleName() ) )
+                                                       .filter( name -> !exceptionMeters.contains( name ) )
+                                                       .collect( Collectors.toList() );
 
-                String eMeterName = name( name, e.getClass().getSimpleName() );
-                if ( !exceptionMeters.contains( eMeterName ) )
-                {
-                    exceptionMeters.add( eMeterName );
+            toClean.addAll( eClassMeters );
 
-                    metricsManager.getMeter( eMeterName ).mark();
-                    MDC.put( name, "1" );
-
-                    logger.trace("Meter count for: {} is: {}", name, new Object(){
-                        public String toString(){
-                            return String.valueOf( metricsManager.getMeter( name ).getCount() );
-                        }
-                    });
-                }
-            } );
+            metricsManager.mark( eClassMeters );
 
             throw e;
         }
         finally
         {
-            if ( timers != null )
-            {
-                timers.forEach( (name, timer)->{
-                    long duration = timer.stop();
-                    MDC.put( name, Long.toString( duration ) );
-                    logger.trace( "STOP: {}", timer );
-                } );
-            }
-
-            meters.forEach( ( name ) -> {
-                Meter meter = metricsManager.getMeter( name );
-                logger.trace( "CALLS++ {}", name );
-
-                MDC.put( name, "1" );
-                meter.mark();
-
-                logger.trace("Meter count for: {} is: {}", name, new Object(){
-                    public String toString(){
-                        return String.valueOf( metricsManager.getMeter( name ).getCount() );
-                    }
-                });
-            } );
-
-            MDC.put( METRICS_PHASE, FINAL_METRICS );
-            logger.info( "Final metrics" );
-
-            meters.forEach( name -> {
-                MDC.remove( name + ".starts" );
-                MDC.remove( name );
-            } );
-            exceptionMeters.forEach( name -> MDC.remove( name ) );
-            timers.forEach( ( name, timer ) -> MDC.remove( name ) );
+            metricsManager.stopTimers( timers );
+            metricsManager.mark( meters );
+            metricsManager.logMetrics( false );
+            metricsManager.cleanupMetricLog( toClean );
         }
     }
 
     private List<String> initMeters( final Measure measure, final MetricNamed[] metrics, String classifier,
-                                     final String defaultName, final boolean inject )
+                                     final String defaultName )
     {
-        List<String> meters;
-        if ( inject && ( metrics == null || metrics.length == 0 ) )
-        {
-            meters = Collections.singletonList( getName( config.getNodePrefix(), DEFAULT, defaultName, classifier ) );
-        }
-        else
-        {
-            meters = Stream.of( metrics )
-                           .map( metric -> getName( config.getNodePrefix(), metric.value(), defaultName, classifier ) )
-                           .collect( Collectors.toList() );
-        }
+        List<String> meters = new ArrayList<>();
+
+        meters.add( getName( config.getNodePrefix(), DEFAULT, defaultName, classifier ) );
+        Stream.of( metrics )
+              .map( metric -> getName( config.getNodePrefix(), metric.value(), defaultName, classifier ) )
+              .forEach( metric -> meters.add( metric ) );
 
         logger.trace( "Got meters for {} with classifier: {}: {}", defaultName, classifier, meters );
 
         return meters;
     }
 
-    private Map<String, Timer.Context> initTimers( final Measure measure, String defaultName, final boolean inject )
+    private Map<String, Timer.Context> initTimers( final Measure measure, String defaultName )
     {
-        Map<String, Timer.Context> timers;
+        Map<String, Timer.Context> timers = new HashMap<>();
+
+        String name = getName( config.getNodePrefix(), DEFAULT, defaultName, TIMER );
+        timers.put(name,
+                metricsManager.getTimer( name ).time() );
 
         MetricNamed[] timerMetrics = measure.timers();
-        if ( inject && timerMetrics.length == 0 )
-        {
-            String name = getName( config.getNodePrefix(), DEFAULT, defaultName, TIMER );
-            timers = Collections.singletonMap(name,
-                    metricsManager.getTimer( name ).time() );
-        }
-        else
-        {
-            timers = new HashMap<>();
-            Stream.of( timerMetrics ).forEach( named -> {
-                String name = getName( config.getNodePrefix(), named.value(), defaultName, TIMER );
-                Timer.Context tc = metricsManager.getTimer( name ).time();
-                logger.trace( "START: {} ({})", name, tc );
-                timers.put( name, tc );
-            } );
-        }
+        Stream.of( timerMetrics ).forEach( named -> {
+            String timerName = getName( config.getNodePrefix(), named.value(), defaultName, TIMER );
+            Timer.Context tc = metricsManager.getTimer( timerName ).time();
+            logger.trace( "START: {} ({})", timerName, tc );
+            timers.put( timerName, tc );
+        } );
 
         return timers;
     }

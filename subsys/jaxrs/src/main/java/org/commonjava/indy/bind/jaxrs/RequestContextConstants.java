@@ -50,6 +50,9 @@ public class RequestContextConstants
     public static final String REST_METHOD_PATH = "REST-method-path";
 
     @MDC
+    public static final String REST_ENDPOINT_PATH = "REST-endpoint-path";
+
+    @MDC
     public static final String REST_CLASS = "REST-class";
 
     @MDC

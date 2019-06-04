@@ -29,6 +29,7 @@ import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.model.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -36,6 +37,9 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -44,10 +48,12 @@ import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
+import static org.commonjava.indy.metrics.MetricsConstants.FINAL_METRICS;
+import static org.commonjava.indy.metrics.MetricsConstants.METRICS_PHASE;
+import static org.commonjava.indy.metrics.MetricsConstants.PRELIMINARY_METRICS;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -58,6 +64,10 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 @ApplicationScoped
 public class IndyMetricsManager
 {
+
+    public static final String METRIC_LOGGER_NAME = "org.commonjava.indy.metrics";
+
+    private static final Logger metricLogger = LoggerFactory.getLogger( METRIC_LOGGER_NAME );
 
     private static final Logger logger = LoggerFactory.getLogger( IndyMetricsManager.class );
 
@@ -222,35 +232,78 @@ public class IndyMetricsManager
         String nodePrefix = config.getNodePrefix();
 
         String metricName = name( nodePrefix, name );
+        String startName = name( metricName, "starts"  );
 
-        Timer.Context timer = getTimer( name( metricName, TIMER ) ).time();
+        String timerName = name( metricName, TIMER );
+        String errorName = name( name, EXCEPTION );
+        String eClassName = null;
+
+        Timer.Context timer = getTimer( timerName ).time();
         logger.trace( "START: {} ({})", metricName, timer );
 
         try
         {
+            mark( Arrays.asList( startName ) );
+            logMetrics( true );
+
             return method.get();
         }
         catch ( Throwable e )
         {
-            getMeter(
-                   name( name, EXCEPTION ) )
-                         .mark();
-
-            getMeter(
-                   name( name, EXCEPTION, e.getClass().getSimpleName() ) ).mark();
+            eClassName = name( name, EXCEPTION, e.getClass().getSimpleName() );
+            mark( Arrays.asList( errorName, eClassName ) );
 
             throw e;
         }
         finally
         {
-            if ( timer != null )
-            {
-                timer.stop();
-            }
+            stopTimers( Collections.singletonMap( timerName, timer ) );
+            mark( Arrays.asList( metricName ) );
+            logMetrics( false );
 
-            getMeter( name( name, METER ) ).mark();
-            logger.trace( "CALLS++ {}", metricName );
+            cleanupMetricLog( Arrays.asList( startName, metricName, errorName, eClassName, timerName ) );
         }
+    }
+
+    public void cleanupMetricLog( final Collection<String> names )
+    {
+        names.stream().filter( name -> name != null ).forEach( name -> MDC.remove( name ) );
+    }
+
+    public void stopTimers( final Map<String, Timer.Context> timers )
+    {
+        if ( timers != null )
+        {
+            timers.forEach( (name, timer) ->{
+                if ( timer != null )
+                {
+                    long duration = timer.stop();
+                    MDC.put( name, Long.toString( duration ) );
+                }
+            } );
+        }
+    }
+
+    public void logMetrics( boolean preliminary )
+    {
+        if ( preliminary )
+        {
+            MDC.put( METRICS_PHASE, PRELIMINARY_METRICS );
+            metricLogger.info( "Preliminary Metrics" );
+        }
+        else
+        {
+            MDC.put( METRICS_PHASE, FINAL_METRICS );
+            metricLogger.info( "Final Metrics" );
+        }
+    }
+
+    public void mark( final Collection<String> metricNames )
+    {
+        metricNames.forEach( metricName -> {
+            MDC.put( metricName, "1" );
+            getMeter( metricName ).mark();
+        } );
     }
 
     public void addGauges( Class<?> className, String method, Map<String, Gauge<Integer>> gauges )
@@ -261,5 +314,4 @@ public class IndyMetricsManager
             metricRegistry.gauge( name, () -> v );
         } );
     }
-
 }

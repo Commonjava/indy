@@ -8,8 +8,11 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.ws.rs.Path;
 
+import java.nio.file.Paths;
+
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_CLASS;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_CLASS_PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_ENDPOINT_PATH;
 import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_METHOD_PATH;
 
 @Interceptor
@@ -33,15 +36,21 @@ public class RestInterceptor
             String targetName = context.getTarget().getClass().getSimpleName();
             MDC.put( REST_CLASS, targetName );
 
+            String classPath = "";
             if ( classAnno != null && MDC.get( REST_CLASS_PATH ) == null )
             {
-                MDC.put( REST_CLASS_PATH, classAnno.value() );
+                classPath = classAnno.value();
+                MDC.put( REST_CLASS_PATH, classPath );
             }
 
             Path methAnno = context.getMethod().getAnnotation( Path.class );
             if ( methAnno != null && MDC.get( REST_METHOD_PATH ) == null  )
             {
-                MDC.put( REST_METHOD_PATH, methAnno.value() );
+                String methodPath = methAnno.value();
+                MDC.put( REST_METHOD_PATH, methodPath );
+
+                String endpointPath = Paths.get( classPath, methodPath ).toString();
+                MDC.put( REST_ENDPOINT_PATH, endpointPath );
             }
         }
 
