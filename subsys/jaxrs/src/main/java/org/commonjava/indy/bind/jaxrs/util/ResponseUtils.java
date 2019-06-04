@@ -480,7 +480,7 @@ public final class ResponseUtils
             LOGGER.debug( "Sending response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
         }
 
-        MDC.put( HTTP_STATUS, String.valueOf( code ) );
+        MDC.put( HTTP_STATUS, String.valueOf( code.getStatusCode() ) );
 
         ResponseBuilder builder = Response.status( code ).type( MediaType.TEXT_PLAIN ).entity( msg );
 
