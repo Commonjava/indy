@@ -17,8 +17,13 @@ package org.commonjava.indy.pkg.maven.content.cache;
 
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
+import org.commonjava.indy.pkg.maven.content.MetadataKeyTransformer;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.infinispan.query.Search;
+import org.infinispan.query.spi.SearchManagerImplementor;
+
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
@@ -26,6 +31,10 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class MetadataCacheProducer
 {
+    private static final String METADATA_KEY_CACHE = "maven-metadata-key-cache";
+
+    private static final String METADATA_CACHE = "maven-metadata-cache";
+
     @Inject
     private CacheProducer cacheProducer;
 
@@ -34,7 +43,7 @@ public class MetadataCacheProducer
     @ApplicationScoped
     public CacheHandle<MetadataKey, MetadataInfo> mavenMetadataCacheCfg()
     {
-        return cacheProducer.getCache( "maven-metadata-cache" );
+        return cacheProducer.getCache( METADATA_CACHE );
     }
 
     @MavenMetadataKeyCache
@@ -42,6 +51,22 @@ public class MetadataCacheProducer
     @ApplicationScoped
     public CacheHandle<MetadataKey, MetadataKey> mavenMetadataKeyCacheCfg()
     {
-        return cacheProducer.getCache( "maven-metadata-key-cache" );
+        return cacheProducer.getCache( METADATA_KEY_CACHE );
+    }
+
+    @PostConstruct
+    public void initIndexing()
+    {
+        registerTransformer();
+    }
+
+    private void registerTransformer()
+    {
+        final CacheHandle<MetadataKey, MetadataKey> handler = cacheProducer.getCache( METADATA_KEY_CACHE );
+        handler.executeCache( cache -> {
+            SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
+            searchManager.registerKeyTransformer( MetadataKey.class, MetadataKeyTransformer.class );
+            return null;
+        } );
     }
 }

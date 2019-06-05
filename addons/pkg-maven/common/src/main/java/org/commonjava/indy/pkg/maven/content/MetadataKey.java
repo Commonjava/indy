@@ -3,6 +3,7 @@ package org.commonjava.indy.pkg.maven.content;
 import org.commonjava.indy.model.core.StoreKey;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 
@@ -16,6 +17,7 @@ public final class MetadataKey
     private static final long serialVersionUID = 1L;
 
     @Field( index = Index.YES, analyze = Analyze.NO )
+    @FieldBridge( impl = StoreKeyBridge.class )
     private final StoreKey storeKey;
 
     @Field( index = Index.NO, analyze = Analyze.NO )
@@ -54,12 +56,12 @@ public final class MetadataKey
         return Objects.hash( storeKey, path );
     }
 
-    private static final String DELIMIT = "#";
+    private static final String DELIMIT = ",";
 
     @Override
     public String toString()
     {
-        return storeKey.toString() + DELIMIT + path; // e.g., maven:remote:central#/foo/bar/1.0/bar-1.0.pom
+        return storeKey.toString() + DELIMIT + path; // e.g., maven:remote:central,/foo/bar/1.0/bar-1.0.pom
     }
 
     public static MetadataKey fromString( String str )
