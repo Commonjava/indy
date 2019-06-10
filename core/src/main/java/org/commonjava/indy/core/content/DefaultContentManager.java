@@ -497,6 +497,12 @@ public class DefaultContentManager
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
+        {
+            logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
+            return false;
+        }
+
         logger.info( "Delete from {}, path: {}", store.getKey(), path );
 
         boolean result = false;
@@ -513,6 +519,7 @@ public class DefaultContentManager
                 {
                     throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store, e.getMessage() );
                 }
+
                 for ( final ArtifactStore member : members )
                 {
                     if ( downloadManager.delete( member, path, eventMetadata ) )
