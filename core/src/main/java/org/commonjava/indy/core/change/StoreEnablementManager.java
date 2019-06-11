@@ -18,6 +18,7 @@ package org.commonjava.indy.core.change;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
+import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.expire.IndySchedulerException;
@@ -27,7 +28,6 @@ import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -39,8 +39,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
-
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 @ApplicationScoped
 public class StoreEnablementManager
@@ -64,69 +62,16 @@ public class StoreEnablementManager
     @Inject
     private IndyConfiguration config;
 
-    //FIXME: Convert to using ArtifactStoreEnablementEvent.
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
-        if ( event.isPreprocessing() )
-        {
-            return;
-        }
-
-        for ( ArtifactStore store : event )
-        {
-            if ( ! event.isDisabling() )
-            {
-                try
-                {
-                    cancelReEnablementTimeout( store.getKey() );
-                }
-                catch ( IndySchedulerException e )
-                {
-                    Logger logger = LoggerFactory.getLogger( getClass() );
-                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
-                }
-            }
-        }
     }
 
-//    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
-//    {
-//        for ( ArtifactStore store : event )
-//        {
-//            if ( store.isDisabled() )
-//            {
-//                String toStr = store.getMetadata( DISABLE_TIMEOUT );
-//                if ( isNotEmpty( toStr ) )
-//                {
-//                    int timeout = Integer.parseInt( toStr );
-//                    try
-//                    {
-//                        setReEnablementTimeout( store.getKey(), timeout );
-//                    }
-//                    catch ( IndySchedulerException e )
-//                    {
-//                        Logger logger = LoggerFactory.getLogger( getClass() );
-//                        logger.error( String.format( "Failed to schedule re-enablement of %s.", store.getKey() ), e );
-//                    }
-//                }
-//            }
-////            else
-////            {
-////                try
-////                {
-////                    cancelReEnablementTimeout( store.getKey() );
-////                }
-////                catch ( IndySchedulerException e )
-////                {
-////                    Logger logger = LoggerFactory.getLogger( getClass() );
-////                    logger.error( String.format( "Failed to delete re-enablement job for %s.", store.getKey() ), e );
-////                }
-////            }
-//        }
-//    }
+    public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent event )
+    {
+    }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -175,7 +120,7 @@ public class StoreEnablementManager
         }
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT) )
+    @Measure
     public void onDisableTimeout( @Observes SchedulerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -204,7 +149,6 @@ public class StoreEnablementManager
                     if ( store == null )
                     {
                         logger.warn( "Attempt to re-enable missing repository! Skipping." );
-                        cancelReEnablementTimeout( key );
                         return;
                     }
 
@@ -217,28 +161,14 @@ public class StoreEnablementManager
                                                                                        "Re-enabling " + key ),
                                                              false, true, new EventMetadata() );
 
-                        cancelReEnablementTimeout( key );
                     }
                 }
                 catch ( IndyDataException e )
                 {
                     logger.error( String.format( "Failed to re-enable %s", key ), e);
                 }
-                catch ( IndySchedulerException e )
-                {
-                    logger.error( String.format( "Failed to delete re-enablement job for %s.", key ), e );
-                }
             }
         }
-    }
-
-    private void cancelReEnablementTimeout( StoreKey key )
-            throws IndySchedulerException
-    {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.warn( "{} has been re-enabled for use.", key );
-
-        scheduleManager.deleteJob( ScheduleManager.groupName( key, DISABLE_TIMEOUT ), DISABLE_TIMEOUT );
     }
 
     private void setReEnablementTimeout( StoreKey key )

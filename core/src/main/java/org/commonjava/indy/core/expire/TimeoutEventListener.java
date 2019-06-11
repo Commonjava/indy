@@ -19,11 +19,9 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -46,13 +44,11 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @ApplicationScoped
 public class TimeoutEventListener
-        implements StoreContentAction
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -71,14 +67,10 @@ public class TimeoutEventListener
     @Inject
     private SpecialPathManager specialPathManager;
 
-    //    @Inject
-    //    @ExecutorConfig( daemon = true, priority = 7, named = "indy-events" )
-    //    private Executor executor;
-
     public void onExpirationEvent( @Observes final SchedulerEvent event )
     {
-        if ( !(event instanceof SchedulerTriggerEvent) || !event.getJobType()
-                                                                         .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
+        if ( !( event instanceof SchedulerTriggerEvent ) || !event.getJobType()
+                                                                  .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
         {
             return;
         }
@@ -110,10 +102,6 @@ public class TimeoutEventListener
             {
                 logger.error("Failed to delete Transfer for: {} in: {} (for content timeout).", path, key );
             }
-            else
-            {
-                deleteExpiration( key, path );
-            }
         }
         catch ( IndyWorkflowException e )
         {
@@ -123,7 +111,6 @@ public class TimeoutEventListener
         }
         catch ( IndyDataException e )
         {
-            scheduleManager.deleteJob( scheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
             logger.error(
                     String.format( "Failed to retrieve ArtifactStore for: %s (for content timeout). Reason: %s", key, e ), e );
         }
@@ -237,11 +224,6 @@ public class TimeoutEventListener
 
     public void onFileDeletionEvent( @Observes final FileDeletionEvent event )
     {
-        final StoreKey key = getKey( event );
-        if ( key != null )
-        {
-            deleteExpiration( key, event.getTransfer().getPath() );
-        }
     }
 
     public void onStoreUpdate( @Observes final ArtifactStorePostUpdateEvent event )
@@ -278,33 +260,6 @@ public class TimeoutEventListener
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void clearStoreContent( String path, ArtifactStore store, Set<Group> affectedGroups,
-                                   boolean clearOriginPath )
-    {
-        if ( clearOriginPath )
-        {
-            deleteExpiration( store.getKey(), path );
-        }
-
-        if ( affectedGroups != null && !affectedGroups.isEmpty() )
-        {
-            affectedGroups.forEach( g -> deleteExpiration( g.getKey(), path ) );
-        }
-    }
-
-    private void deleteExpiration( StoreKey key, String path )
-    {
-        if ( key != null )
-        {
-            scheduleManager.deleteJob( ScheduleManager.groupName( key, ScheduleManager.CONTENT_JOB_TYPE ), path );
-        }
-        else
-        {
-            logger.warn( "Store is no longer available. No need to do deletion for path: {}", path );
         }
     }
 

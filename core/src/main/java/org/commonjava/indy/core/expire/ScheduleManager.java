@@ -682,27 +682,6 @@ public class ScheduleManager
         return null;
     }
 
-    public boolean deleteJob( final String group, final String name )
-    {
-        if ( !schedulerConfig.isEnabled() )
-        {
-            logger.debug( "Scheduler disabled." );
-            return false;
-        }
-
-        // We're responding to a cache expiration...the following isn't necessary, because it already expired.
-        // In fact, this leads to circularity if the notification is processed synchronously.
-//        final ScheduleKey cacheKey = ScheduleKey.fromGroupWithName( group, name );
-//        if ( scheduleCache.containsKey( cacheKey ) )
-//        {
-//            removeCache( cacheKey );
-//            return true;
-//        }
-//
-//        return false;
-        return true;
-    }
-
     @Override
     public String getId()
     {
