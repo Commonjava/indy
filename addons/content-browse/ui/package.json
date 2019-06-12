@@ -6,7 +6,6 @@
   "license": "Apache-2.0",
   "private": true,
   "dependencies": {
-    "jquery": "3.3.1",
     "react": "16.5.2",
     "react-dom": "16.5.2"
   },
@@ -24,7 +23,6 @@
     "webpack-dev-server": "3.1.14"
   },
   "scripts": {
-    "yarn": "node node_modules/yarn/bin/yarn.js",
     "webpack": "node node_modules/webpack/bin/webpack.js",
     "start": "webpack-dev-server --open --config ./webpack.dev.config.js",
     "deploy": "cp ./src/main/html/* ./build/content-browse/",

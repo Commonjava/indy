@@ -17,9 +17,6 @@
 
 import React from 'react';
 import {render} from 'react-dom';
-import $ from 'jquery/src/core';
-import 'jquery/src/ajax';
-import 'jquery/src/ajax/xhr';
 import {styles} from './style.js';
 
 const URLList  = (props)=> {
@@ -75,24 +72,29 @@ class URLPage extends React.Component {
   }
 
   componentDidMount() {
-    $.getJSON({
-      url: "/api" + document.location.pathname,
-      type: "GET",
-      responseType: "application/json",
-      contentType: "application/json",
-      dataType: "json"
-    }).done((response) => {
-      let result = response;
-      this.setState({
-        isLoaded: true,
-        data: result
-      });
-    }).fail((jqxhr, textStatus, error) => {
-      this.setState({
-        isLoaded: true,
-        error: error
-      });
-    });
+    fetch("/api" + document.location.pathname, {
+      method: "GET",
+      credentials: 'same-origin',
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }).then(response => {
+      if(response.ok){
+        response.json().then(data=>{          
+          this.setState({
+            isLoaded: true,
+            data
+          });
+        });
+      }else if(!response.ok){
+        response.text().then(data=>{
+          this.setState({
+            isLoaded: true,
+            error: data
+          });         
+        });
+      }
+    });    
   }
   
   render() {

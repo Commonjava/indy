@@ -91,25 +91,15 @@
             <configuration>
               <arguments>ci</arguments>
             </configuration>
-          </execution>
+          </execution>          
 
           <execution>
-            <id>yarn install</id>
+            <id>npm build</id>
             <goals>
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>run-script yarn install</arguments>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>yarn build</id>
-            <goals>
-              <goal>npm</goal>
-            </goals>
-            <configuration>
-              <arguments>run-script yarn build</arguments>
+              <arguments>run-script build</arguments>
             </configuration>
           </execution>
 
