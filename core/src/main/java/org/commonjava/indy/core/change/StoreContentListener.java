@@ -251,19 +251,7 @@ public class StoreContentListener
 
             logger.debug( "Submit clean job for origin: {}", origin );
             final Set<Group> affectedGroups = affected;
-            Future<Integer> job = cleanupExecutor.submit(
-                            clearPathsProcessor( origin, pathFilter, affectedGroups, deleteOriginPath ) );
-            /*
-             * For debug only. When ftest fails due to not waiting enough time, use below to ascertain that is just timing problem.
-             *
-            try
-            {
-                job.get();
-            }
-            catch ( Exception e )
-            {
-                e.printStackTrace();
-            }*/
+            cleanupExecutor.submit( clearPathsProcessor( origin, pathFilter, affectedGroups, deleteOriginPath ) );
         } );
 
         //drainAndCount( clearService, "stores: " + keys );
@@ -287,14 +275,11 @@ public class StoreContentListener
     }
 
     /**
-     * Use listable to filter paths of http-metadata, checksum, etc.
+     * Clean all paths including http-metadata, checksum, etc, for complete data integrity.
      */
     private Predicate<? super String> allPath()
     {
-        return ( path ) -> {
-            SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( path );
-            return ( pathInfo != null && pathInfo.isListable() );
-        };
+        return ( path ) -> true;
     }
 
 }
