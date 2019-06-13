@@ -103,8 +103,6 @@ public class MetricsInterceptor
         try
         {
             metricsManager.mark( startMeters );
-            metricsManager.logMetrics( true );
-            metricsManager.cleanupMetricLog( startMeters );
 
             return context.proceed();
         }
@@ -127,8 +125,6 @@ public class MetricsInterceptor
         {
             metricsManager.stopTimers( timers );
             metricsManager.mark( meters );
-            metricsManager.logMetrics( false );
-            metricsManager.cleanupMetricLog( toClean );
         }
     }
 
