@@ -69,7 +69,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
-    <galleyVersion>0.16.10-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.16.11-SNAPSHOT</galleyVersion>
     <bomVersion>25-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>2.0-SNAPSHOT</partylineVersion>
