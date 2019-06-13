@@ -2,6 +2,7 @@ package org.commonjava.indy.core.change;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Transfer;
@@ -14,6 +15,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -101,7 +103,23 @@ public class StoreChangeUtil
     }
 
     /**
-     * List paths in the target store and execute pathAction for accepted paths. Return the accepted paths count.
+     * List paths in the affected groups and execute pathAction for accepted paths.
+     * @return accepted paths count
+     */
+    public static int listPathsAnd( Set<Group> affectedGroups, Predicate<? super String> pathFilter,
+                                    BiConsumer<String, ArtifactStore> pathAction, DirectContentAccess contentAccess )
+    {
+        final AtomicInteger accepted = new AtomicInteger( 0 );
+        affectedGroups.forEach( group -> {
+            accepted.addAndGet( listPathsAnd( group.getKey(), pathFilter, ( p ) -> pathAction.accept( p, group ),
+                                              contentAccess ) );
+        } );
+        return accepted.get();
+    }
+
+    /**
+     * List paths in the target store and execute pathAction for accepted paths.
+     * @return accepted paths count
      */
     public static int listPathsAnd( StoreKey key, Predicate<? super String> pathFilter, Consumer<String> pathAction,
                                      DirectContentAccess contentAccess )

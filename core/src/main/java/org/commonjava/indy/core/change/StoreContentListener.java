@@ -23,7 +23,6 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
-import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
@@ -32,6 +31,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -42,12 +42,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -110,17 +109,12 @@ public class StoreContentListener
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
         logger.trace( "Got store-update event: {}", event );
-
-        // we're only interested in existing stores, since new stores cannot have indexed keys
-        if ( ArtifactStoreUpdateType.UPDATE == event.getType() )
+        for ( ArtifactStore store : event )
         {
-            for ( ArtifactStore store : event )
+            // we're only interested in groups, since only adjustments to group memberships can invalidate cached content.
+            if ( group == store.getKey().getType() )
             {
-                // we're only interested in groups, since only adjustments to group memberships can invalidate cached content.
-                if ( group == store.getKey().getType() )
-                {
-                    cleanSupercededMemberContent( (Group) store, event.getChangeMap() );
-                }
+                cleanSupercededMemberContent( (Group) store, event.getChangeMap() );
             }
         }
     }
@@ -159,6 +153,24 @@ public class StoreContentListener
 
         clearPaths( added, mergablePath(), groups, deleteOriginPath );
         clearPaths( removed, allPath(), groups, deleteOriginPath );
+    }
+
+    private int clearPath( String path, ArtifactStore store )
+    {
+        logger.debug( "Clear path: {}, store: {}", path, store.getKey() );
+        try
+        {
+            delete( directContentAccess.getTransfer( store, path ) );
+        }
+        catch ( IndyWorkflowException e )
+        {
+            logger.warn( "Failed to delete path: {}, store: {}", path, store.getKey(), e );
+        }
+
+        boolean deleteOriginPath = true;
+        StreamSupport.stream( storeContentActions.spliterator(), false )
+                     .forEach( action -> action.clearStoreContent( path, store, Collections.emptySet(), deleteOriginPath ) );
+        return 1;
     }
 
     private int clearPath( String path, ArtifactStore origin, Set<Group> affectedGroups, boolean deleteOriginPath )
@@ -257,13 +269,25 @@ public class StoreContentListener
         //drainAndCount( clearService, "stores: " + keys );
     }
 
+    /**
+     * We do clean-up in different ways. If the origin is hosted repo, we list it and clean the paths in affected groups.
+     * If the origin is a remote repo, we find the affected groups, list them and clear ALL mergable paths. If the
+     * origin is a group, we list it (cached files) and clean the paths from affected groups.
+     */
     private Callable<Integer> clearPathsProcessor( ArtifactStore origin, Predicate<? super String> pathFilter,
                                           Set<Group> affectedGroups, boolean deleteOriginPath )
     {
-        return () ->
-            listPathsAnd( origin.getKey(), pathFilter,
-                          p -> clearPath( p, origin, affectedGroups, deleteOriginPath ),
-                          this.directContentAccess );
+        if ( origin.getType() == StoreType.remote )
+        {
+            return () -> listPathsAnd( affectedGroups, mergablePath(), ( p, g ) -> clearPath( p, g ),
+                                                this.directContentAccess );
+        }
+        else
+        {
+            return () -> listPathsAnd( origin.getKey(), pathFilter,
+                                       p -> clearPath( p, origin, affectedGroups, deleteOriginPath ),
+                                       this.directContentAccess );
+        }
     }
 
     private Predicate<? super String> mergablePath()
