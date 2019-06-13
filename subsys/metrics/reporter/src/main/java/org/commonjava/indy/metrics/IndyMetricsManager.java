@@ -29,7 +29,6 @@ import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.model.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -244,8 +243,6 @@ public class IndyMetricsManager
         try
         {
             mark( Arrays.asList( startName ) );
-            logMetrics( true );
-            cleanupMetricLog( Arrays.asList( startName ) );
 
             return method.get();
         }
@@ -260,15 +257,7 @@ public class IndyMetricsManager
         {
             stopTimers( Collections.singletonMap( timerName, timer ) );
             mark( Arrays.asList( metricName ) );
-            logMetrics( false );
-
-            cleanupMetricLog( Arrays.asList( startName, metricName, errorName, eClassName, timerName ) );
         }
-    }
-
-    public void cleanupMetricLog( final Collection<String> names )
-    {
-        names.stream().filter( name -> name != null ).forEach( name -> MDC.remove( name ) );
     }
 
     public void stopTimers( final Map<String, Timer.Context> timers )
@@ -278,33 +267,15 @@ public class IndyMetricsManager
             timers.forEach( (name, timer) ->{
                 if ( timer != null )
                 {
-                    long duration = timer.stop();
-                    MDC.put( name, Long.toString( duration ) );
+                    timer.stop();
                 }
             } );
         }
     }
 
-    public void logMetrics( boolean preliminary )
-    {
-        if ( preliminary )
-        {
-            MDC.put( METRICS_PHASE, PRELIMINARY_METRICS );
-            metricLogger.info( "Preliminary Metrics" );
-        }
-        else
-        {
-            MDC.put( METRICS_PHASE, FINAL_METRICS );
-            metricLogger.info( "Final Metrics" );
-        }
-
-        MDC.remove( METRICS_PHASE );
-    }
-
     public void mark( final Collection<String> metricNames )
     {
         metricNames.forEach( metricName -> {
-            MDC.put( metricName, "1" );
             getMeter( metricName ).mark();
         } );
     }
