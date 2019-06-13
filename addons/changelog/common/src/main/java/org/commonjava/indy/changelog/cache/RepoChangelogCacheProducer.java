@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.changelog.cache;
 
-import org.commonjava.indy.changelog.model.RepositoryChangeLog;
+import org.commonjava.auditquery.history.ChangeEvent;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 
@@ -31,7 +31,7 @@ public class RepoChangelogCacheProducer
     @RepoChangelogCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<String, RepositoryChangeLog> contentIndexCacheCfg()
+    public CacheHandle<String, ChangeEvent> contentIndexCacheCfg()
     {
         return cacheProducer.getCache( "repo-changelog" );
     }

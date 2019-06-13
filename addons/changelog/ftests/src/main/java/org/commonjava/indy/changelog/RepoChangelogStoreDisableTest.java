@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.changelog;
 
+import org.commonjava.auditquery.history.ChangeEvent;
 import org.commonjava.indy.changelog.client.IndyRepoChangelogClientModule;
-import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
@@ -71,7 +71,7 @@ public class RepoChangelogStoreDisableTest
 
         IndyRepoChangelogClientModule repoChangelogClientModule = client.module( IndyRepoChangelogClientModule.class );
 
-        List<RepositoryChangeLog> logs = null;
+        List<ChangeEvent> logs = null;
         try
         {
             logs = repoChangelogClientModule.getByStoreKey( repo.getKey() );

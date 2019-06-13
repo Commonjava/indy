@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.changelog.client;
 
-import org.commonjava.indy.changelog.model.RepositoryChangeLog;
+import org.commonjava.auditquery.history.ChangeEvent;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.util.UrlUtils;
@@ -28,12 +28,12 @@ import java.util.List;
 public class IndyRepoChangelogClientModule
         extends IndyClientModule
 {
-    public List<RepositoryChangeLog> getByStoreKey( final StoreKey key )
+    public List<ChangeEvent> getByStoreKey( final StoreKey key )
             throws IndyClientException
     {
 
-        RepositoryChangeLog[] logs =
-                http.get( UrlUtils.buildUrl( "repo/changelog", key.getPackageType(), key.getType().singularEndpointName(), key.getName() ), RepositoryChangeLog[].class );
+        ChangeEvent[] logs =
+                http.get( UrlUtils.buildUrl( "repo/changelog", key.getPackageType(), key.getType().singularEndpointName(), key.getName() ), ChangeEvent[].class );
 
         if ( logs != null && logs.length > 0 )
         {
@@ -45,11 +45,11 @@ public class IndyRepoChangelogClientModule
         }
     }
 
-    public List<RepositoryChangeLog> getAll()
+    public List<ChangeEvent> getAll()
             throws IndyClientException
     {
-        RepositoryChangeLog[] logs =
-                http.get( UrlUtils.buildUrl( "repo/changelog/all" ), RepositoryChangeLog[].class );
+        ChangeEvent[] logs =
+                http.get( UrlUtils.buildUrl( "repo/changelog/all" ), ChangeEvent[].class );
 
         if ( logs != null && logs.length > 0 )
         {

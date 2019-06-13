@@ -17,12 +17,12 @@ package org.commonjava.indy.changelog;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.difflib.algorithm.DiffException;
+import org.commonjava.auditquery.history.ChangeEvent;
+import org.commonjava.auditquery.history.ChangeType;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
-import org.commonjava.indy.changelog.model.RepoChangeType;
-import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -52,7 +52,7 @@ public class RepoChangeHandler
 
     @Inject
     @RepoChangelogCache
-    private CacheHandle<String, RepositoryChangeLog> repoChangelogCache;
+    private CacheHandle<String, ChangeEvent> repoChangelogCache;
 
     public void generateRepoChangeLog( @Observes ArtifactStorePreUpdateEvent event )
     {
@@ -94,11 +94,11 @@ public class RepoChangeHandler
                 ArtifactStore origin = event.getOriginal( store );
                 String patchString = diffRepoChanges( store, origin );
 
-                RepositoryChangeLog changeLog = new RepositoryChangeLog();
+                ChangeEvent changeLog = new ChangeEvent();
                 changeLog.setStoreKey( store.getKey().toString() );
                 changeLog.setChangeTime( new Date() );
                 changeLog.setDiffContent( patchString );
-                changeLog.setChangeType( origin == null ? RepoChangeType.CREATE : RepoChangeType.UPDATE );
+                changeLog.setChangeType( origin == null ? ChangeType.CREATE : ChangeType.UPDATE );
                 changeLog.setUser( user );
                 changeLog.setSummary( summary );
                 changeLog.setVersion( version );

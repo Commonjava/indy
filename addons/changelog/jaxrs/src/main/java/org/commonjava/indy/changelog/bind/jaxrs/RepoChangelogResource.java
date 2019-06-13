@@ -20,11 +20,11 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.commonjava.auditquery.history.ChangeEvent;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
-import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -57,7 +57,7 @@ public class RepoChangelogResource
 {
     @Inject
     @RepoChangelogCache
-    private CacheHandle<String, RepositoryChangeLog> changeLogCache;
+    private CacheHandle<String, ChangeEvent> changeLogCache;
 
     @Inject
     private RepoChangelogConfiguration config;
@@ -102,12 +102,12 @@ public class RepoChangelogResource
 
     private final int RESULT_LIMITATION_FOR_TESTING = 10;
 
-    private List<RepositoryChangeLog> getLogsByStoreKey( StoreKey storeKey )
+    private List<ChangeEvent> getLogsByStoreKey( StoreKey storeKey )
     {
-        final ArrayList<RepositoryChangeLog> results = new ArrayList<>( RESULT_LIMITATION_FOR_TESTING );
+        final ArrayList<ChangeEvent> results = new ArrayList<>( RESULT_LIMITATION_FOR_TESTING );
 
         return changeLogCache.execute( c -> {
-            for ( RepositoryChangeLog log : c.values() )
+            for ( ChangeEvent log : c.values() )
             {
                 if ( log.getStoreKey().equals( storeKey.toString() ) )
                 {
@@ -123,11 +123,11 @@ public class RepoChangelogResource
 
     }
 
-    private List<RepositoryChangeLog> getAllLogs()
+    private List<ChangeEvent> getAllLogs()
     {
-        final ArrayList<RepositoryChangeLog> results = new ArrayList<>( RESULT_LIMITATION_FOR_TESTING );
+        final ArrayList<ChangeEvent> results = new ArrayList<>( RESULT_LIMITATION_FOR_TESTING );
         return changeLogCache.execute( c -> {
-            for ( RepositoryChangeLog log : c.values() )
+            for ( ChangeEvent log : c.values() )
             {
                 results.add( log );
                 if ( results.size() >= RESULT_LIMITATION_FOR_TESTING )
