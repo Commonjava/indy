@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.changelog;
 
+import org.commonjava.auditquery.history.ChangeEvent;
+import org.commonjava.auditquery.history.ChangeType;
 import org.commonjava.indy.changelog.client.IndyRepoChangelogClientModule;
-import org.commonjava.indy.changelog.model.RepoChangeType;
-import org.commonjava.indy.changelog.model.RepositoryChangeLog;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -68,18 +68,18 @@ public class RepoChangelogStoreTest
         repo.setReadonly( true );
         client.stores().update( repo, name.getMethodName() );
 
-        List<RepositoryChangeLog> logs =
+        List<ChangeEvent> logs =
                 client.module( IndyRepoChangelogClientModule.class ).getByStoreKey( repo.getKey() );
 
         final AtomicInteger createCount = new AtomicInteger( 0 );
         final AtomicInteger updateCount = new AtomicInteger( 0 );
         logs.forEach( c -> {
             assertThat( c.getStoreKey(), equalTo( hostedKey.toString() ) );
-            if ( c.getChangeType() == RepoChangeType.CREATE )
+            if ( c.getChangeType() == ChangeType.CREATE )
             {
                 createCount.getAndIncrement();
             }
-            if ( c.getChangeType() == RepoChangeType.UPDATE )
+            if ( c.getChangeType() == ChangeType.UPDATE )
             {
                 updateCount.getAndIncrement();
             }
@@ -94,7 +94,7 @@ public class RepoChangelogStoreTest
         final AtomicInteger testRepoCount = new AtomicInteger( 0 );
 
         logs.forEach( c -> {
-            if ( c.getChangeType() == RepoChangeType.UPDATE )
+            if ( c.getChangeType() == ChangeType.UPDATE )
             {
                 updateCount2.getAndIncrement();
             }

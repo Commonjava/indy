@@ -33,11 +33,12 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-changelog-common</artifactId>
     </dependency>
+
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-changelog-model-java</artifactId>
+      <groupId>org.commonjava.auditquery</groupId>
+      <artifactId>auditquery-model-java</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-jaxrs</artifactId>

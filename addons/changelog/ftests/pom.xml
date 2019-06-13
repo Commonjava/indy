@@ -56,6 +56,10 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.auditquery</groupId>
+      <artifactId>auditquery-model-java</artifactId>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>compile</scope>

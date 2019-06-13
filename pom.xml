@@ -805,11 +805,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-changelog-model-java</artifactId>
-        <version>1.8.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-client-java</artifactId>
         <version>1.8.0-SNAPSHOT</version>
       </dependency>
@@ -835,6 +830,11 @@
       <dependency>
         <groupId>org.commonjava.auditquery</groupId>
         <artifactId>auditquery-api</artifactId>
+        <version>${auditQueryVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.auditquery</groupId>
+        <artifactId>auditquery-model-java</artifactId>
         <version>${auditQueryVersion}</version>
       </dependency>
       <dependency>
