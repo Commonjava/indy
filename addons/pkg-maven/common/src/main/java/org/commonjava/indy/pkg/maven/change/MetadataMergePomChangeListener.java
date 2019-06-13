@@ -24,11 +24,8 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.maven.content.MetadataCacheKey;
-import org.commonjava.indy.pkg.maven.content.MetadataInfo;
-import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
+import org.commonjava.indy.pkg.maven.content.MetadataCacheManager;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileEvent;
@@ -44,7 +41,6 @@ import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getMetadataPath;
-import static org.commonjava.indy.pkg.maven.content.MetadataUtil.remove;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
 @javax.enterprise.context.ApplicationScoped
@@ -63,8 +59,7 @@ public class MetadataMergePomChangeListener
     private IndyFileEventManager fileEvent;
 
     @Inject
-    @MavenMetadataCache
-    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
+    private MetadataCacheManager cacheManager;
 
     /**
      * this listener observes {@link org.commonjava.maven.galley.event.FileStorageEvent}
@@ -106,7 +101,7 @@ public class MetadataMergePomChangeListener
                 {
                     if ( doClear( hosted, clearPath ) )
                     {
-                        remove( hosted.getKey(), clearPath, metadataCache );
+                        cacheManager.remove( hosted.getKey(), clearPath );
                     }
                 }
                 catch ( final IOException e )
@@ -125,7 +120,7 @@ public class MetadataMergePomChangeListener
                         {
                             if ( doClear( group, clearPath ) )
                             {
-                                remove( group.getKey(), clearPath, metadataCache );
+                                cacheManager.remove( group.getKey(), clearPath );
                             }
                         }
                         catch ( final IOException e )

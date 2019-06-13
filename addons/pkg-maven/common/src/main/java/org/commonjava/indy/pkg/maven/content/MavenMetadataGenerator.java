@@ -46,10 +46,8 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.parse.GalleyMavenXMLException;
@@ -124,8 +122,7 @@ public class MavenMetadataGenerator
     private static final String CLASSIFIER = "classifier";
 
     @Inject
-    @MavenMetadataCache
-    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
+    private MetadataCacheManager cacheManager;
 
     private static final Set<String> HANDLED_FILENAMES = Collections.unmodifiableSet( new HashSet<String>()
     {
@@ -608,14 +605,11 @@ public class MavenMetadataGenerator
         return null;
     }
 
-    @Measure
     private void putToMetadataCache( StoreKey key, String toMergePath, MetadataInfo meta )
     {
-        metadataCache.put( new MetadataCacheKey( key, toMergePath ), meta );
-        logger.trace( "Cache metadata: {} for: {}", toMergePath, key );
+        cacheManager.put( new MetadataKey( key, toMergePath ), meta );
     }
 
-    @Measure
     private Callable<MetadataResult> generateMissing( ArtifactStore store, String toMergePath )
     {
         return ()->{
@@ -672,7 +666,6 @@ public class MavenMetadataGenerator
 
     }
 
-    @Measure
     private Callable<MetadataResult> retrieveCached( final ArtifactStore store, final String toMergePath )
     {
         return ()->{
@@ -767,7 +760,6 @@ public class MavenMetadataGenerator
         return new MetadataIncrementalResult( resultingMissing, included, master );
     }
 
-    @Measure
     private Metadata mergeProviderMetadata( final Group group, final Metadata master,
                                                              final String toMergePath )
             throws IndyWorkflowException
@@ -815,7 +807,6 @@ public class MavenMetadataGenerator
         return master;
     }
 
-    @Measure
     private Callable<MetadataResult> downloadMissing( ArtifactStore store, String toMergePath )
     {
         return () -> {
@@ -874,7 +865,7 @@ public class MavenMetadataGenerator
 
     private MetadataInfo getMetaInfoFromCache( final StoreKey key, final String path )
     {
-        return metadataCache.get( new MetadataCacheKey( key, path ) );
+        return cacheManager.get( new MetadataKey( key, path ) );
     }
 
     @Override

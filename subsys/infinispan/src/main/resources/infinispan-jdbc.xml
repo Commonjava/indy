@@ -73,9 +73,9 @@
 
     <local-cache name="content-metadata" configuration="local-template"/>
 
-    <local-cache name="maven-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
+    <local-cache name="maven-metadata-cache" configuration="local-template">
       <persistence>
-        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataCacheKey2StringMapper">
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
           <write-behind />
           <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
@@ -85,6 +85,21 @@
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
       </persistence>
+    </local-cache>
+
+    <local-cache name="maven-metadata-key-cache" configuration="local-template">
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
+          <write-behind />
+          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
+            <jdbc:id-column name="id_column" type="TEXT" />
+            <jdbc:data-column name="data_column" type="BYTEA" />
+            <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+      <indexing index="LOCAL" auto-config="true"/>
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">

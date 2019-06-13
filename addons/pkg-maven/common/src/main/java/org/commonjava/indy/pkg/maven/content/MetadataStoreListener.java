@@ -25,8 +25,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
-import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.model.Location;
@@ -42,9 +40,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getAllPaths;
-import static org.commonjava.indy.pkg.maven.content.MetadataUtil.remove;
-import static org.commonjava.indy.pkg.maven.content.MetadataUtil.removeAll;
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 
 /**
@@ -65,8 +60,7 @@ public class MetadataStoreListener
     private StoreDataManager storeManager;
 
     @Inject
-    @MavenMetadataCache
-    private CacheHandle<MetadataCacheKey, MetadataInfo> metadataCache;
+    private MetadataCacheManager cacheManager;
 
     /**
      * Listen to an #{@link ArtifactStorePreUpdateEvent} and clear the metadata cache due to changed memeber in that event
@@ -223,7 +217,7 @@ public class MetadataStoreListener
     {
         logger.trace( "Removing cached metadata for: {}", store.getKey() );
 
-        removeAll( store.getKey(), metadataCache );
+        cacheManager.removeAll( store.getKey() );
         try
         {
             storeManager.query().getGroupsAffectedBy( store.getKey() ).forEach( g -> clearGroupMetaCache( g, store ) );
@@ -236,7 +230,7 @@ public class MetadataStoreListener
 
     private void clearGroupMetaCache( final Group group, final ArtifactStore store )
     {
-        Set<String> paths = getAllPaths( group.getKey(), metadataCache );
+        Set<String> paths = cacheManager.getAllPaths( group.getKey() );
 
         logger.trace( "Clearing metadata for group: {} on store update: {}\n{}", group.getKey(), store.getKey(), paths );
 
@@ -255,7 +249,7 @@ public class MetadataStoreListener
         logger.trace( "Clearing cached, merged paths for: {} as a result of change in: {} (paths: {})", group.getKey(),
                       store.getKey(), paths );
 
-        remove( group.getKey(), paths, metadataCache );
+        cacheManager.remove( group.getKey(), paths );
     }
 
 }

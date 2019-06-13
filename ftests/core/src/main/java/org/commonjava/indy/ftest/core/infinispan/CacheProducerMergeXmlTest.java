@@ -72,7 +72,7 @@ public class CacheProducerMergeXmlTest
         assertThat( manager.getCacheConfiguration( "indy-nfs-owner-cache" ).memory().addressCount(), equalTo( 1048576 ) );
         assertThat( manager.getCacheConfiguration( "nfc" ), notNullValue() );
         assertThat( manager.getCacheConfiguration( "schedule-expire-cache" ), notNullValue() );
-        assertThat( manager.getCacheConfiguration( "maven-version-metadata-cache" ), notNullValue() );
+        assertThat( manager.getCacheConfiguration( "maven-metadata-cache" ), notNullValue() );
     }
 
     @Override
