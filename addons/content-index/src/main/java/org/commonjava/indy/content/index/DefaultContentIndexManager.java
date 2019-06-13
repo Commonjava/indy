@@ -15,11 +15,8 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
-import org.commonjava.indy.core.inject.NfcConcreteResourceWrapper;
-import org.commonjava.indy.core.inject.NfcKeyedLocation;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -27,10 +24,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
-import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.infinispan.Cache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
@@ -52,10 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
-
-import static org.commonjava.indy.model.core.StoreKey.fromString;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -80,9 +72,6 @@ public class DefaultContentIndexManager
     private BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
     @Inject
-    private NotFoundCache nfc;
-
-    @Inject
     private NFCContentListener listener;
 
     @Inject
@@ -98,14 +87,12 @@ public class DefaultContentIndexManager
 
     public DefaultContentIndexManager( StoreDataManager storeDataManager, SpecialPathManager specialPathManager,
                                 BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndex,
-                                Map<String, PackageIndexingStrategy> indexingStrategies,
-                                NotFoundCache nfc )
+                                Map<String, PackageIndexingStrategy> indexingStrategies )
     {
         this.storeDataManager = storeDataManager;
         this.specialPathManager = specialPathManager;
         this.contentIndex = contentIndex;
         this.indexingStrategies = indexingStrategies;
-        this.nfc = nfc;
     }
 
     @PostConstruct
@@ -355,19 +342,10 @@ public class DefaultContentIndexManager
             return;
         }
 
-//        logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, groups );
-
+        logger.debug( "Clearing path: '{}' from content index and storage of: {}", rawPath, groups );
         groups.forEach( (group)->{
             String path = getStrategyPath( group.getKey(), rawPath );
-
-            logger.debug( "Clearing path: '{}' from content index and storage of: {}", path, group.getName() );
-
-            // if we remove an indexed path, it SHOULD mean there was content. If not, we should delete the NFC entry.
-            if ( !removeIndexedStorePath( path, group.getKey(), pathConsumer ) )
-            {
-                ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
-                nfc.clearMissing( resource );
-            }
+            removeIndexedStorePath( path, group.getKey(), pathConsumer );
         } );
     }
 
