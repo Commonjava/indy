@@ -45,7 +45,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 public abstract class AbstractStoreDataManager
         implements StoreDataManager
 {
-    protected static final long LOCK_TIMEOUT_SECONDS = 10;
+    protected static final long LOCK_TIMEOUT_SECONDS = 30;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -271,69 +271,7 @@ public abstract class AbstractStoreDataManager
 
         final StoreKey storeKey = store.getKey();
 
-        Function<StoreKey, Boolean> lockHandler = k -> {
-            try
-            {
-                ArtifactStore original = getArtifactStoreInternal( k );
-                if ( original == store )
-                {
-                    // if they're the same instance, preUpdate events may not work correctly!
-                    logger.warn( "Storing changes on existing instance of: {}! You forgot to call {}.copyOf().", store,
-                                 store.getClass().getSimpleName() );
-                }
-
-                if ( skipIfExists && original != null )
-                {
-                    logger.info( "Skip storing for {} (repo exists)", original );
-                    return true;
-                }
-
-                try
-                {
-                    if ( eventMetadata != null && summary != null )
-                    {
-                        eventMetadata.set( StoreDataManager.CHANGE_SUMMARY, summary );
-                    }
-                    logger.debug( "Starting pre-store actions for {}", k );
-                    preStore( store, original, summary, original != null, fireEvents, eventMetadata );
-                    logger.debug( "Pre-store actions complete for {}", k );
-                }
-                catch ( IndyDataException e )
-                {
-                    error.set( e );
-                    return false;
-                }
-
-                logger.debug( "Put {} to stores map", k );
-                final ArtifactStore old = putArtifactStoreInternal( store.getKey(), store );
-
-                try
-                {
-                    logger.debug( "Starting post-store actions for {}", k );
-                    postStore( store, original, summary, original != null, fireEvents, eventMetadata );
-                    logger.debug( "Post-store actions complete for {}", k );
-                }
-                catch ( final IndyDataException e )
-                {
-                    if ( old != null )
-                    {
-                        logger.error( "postStore() failed for {}. Rollback to old value: {}", store, old );
-                        putArtifactStoreInternal( old.getKey(), old );
-                    }
-                    error.set( e );
-                    return false;
-                }
-
-                return true;
-            }
-            catch ( RuntimeException e )
-            {
-                //logger.error( "Runtime exception trying to store: " + k, e );
-                error.set( new IndyDataException( "Runtime exception trying to store: " + k, e ) );
-            }
-
-            return false;
-        };
+        Function<StoreKey, Boolean> lockHandler = k -> doStore( k, store, summary, error, skipIfExists, fireEvents, eventMetadata );
 
         BiFunction<StoreKey, ReentrantLock, Boolean> lockFailedHandler = (k,lock) -> {
             error.set( new IndyDataException( "Failed to lock: %s for STORE after %d seconds.", k,
@@ -341,7 +279,11 @@ public abstract class AbstractStoreDataManager
             return false;
         };
 
-        boolean result = opLocks.lockAnd( storeKey, LOCK_TIMEOUT_SECONDS, lockHandler, lockFailedHandler );
+        Boolean result = opLocks.lockAnd( storeKey, LOCK_TIMEOUT_SECONDS, lockHandler, lockFailedHandler );
+        if ( result == null )
+        {
+            throw new IndyDataException( "Store failed due to tryLock timeout." );
+        }
 
         IndyDataException ex = error.get();
         if ( ex != null )
@@ -350,6 +292,63 @@ public abstract class AbstractStoreDataManager
         }
 
         return result;
+    }
+
+    private Boolean doStore( StoreKey k, ArtifactStore store, ChangeSummary summary,
+                             AtomicReference<IndyDataException> error, boolean skipIfExists, boolean fireEvents,
+                             EventMetadata eventMetadata )
+    {
+        ArtifactStore original = getArtifactStoreInternal( k );
+        if ( original == store )
+        {
+            // if they're the same instance, preUpdate events may not work correctly!
+            logger.warn( "Storing changes on existing instance of: {}! You forgot to call {}.copyOf().", store,
+                         store.getClass().getSimpleName() );
+        }
+
+        if ( skipIfExists && original != null )
+        {
+            logger.info( "Skip storing for {} (repo exists)", original );
+            return true;
+        }
+
+        try
+        {
+            if ( eventMetadata != null && summary != null )
+            {
+                eventMetadata.set( StoreDataManager.CHANGE_SUMMARY, summary );
+            }
+            logger.debug( "Starting pre-store actions for {}", k );
+            preStore( store, original, summary, original != null, fireEvents, eventMetadata );
+            logger.debug( "Pre-store actions complete for {}", k );
+        }
+        catch ( IndyDataException e )
+        {
+            error.set( e );
+            return false;
+        }
+
+        logger.debug( "Put {} to stores map", k );
+        final ArtifactStore old = putArtifactStoreInternal( store.getKey(), store );
+
+        try
+        {
+            logger.debug( "Starting post-store actions for {}", k );
+            postStore( store, original, summary, original != null, fireEvents, eventMetadata );
+            logger.debug( "Post-store actions complete for {}", k );
+        }
+        catch ( final IndyDataException e )
+        {
+            if ( old != null )
+            {
+                logger.error( "postStore() failed for {}. Rollback to old value: {}", store, old );
+                putArtifactStoreInternal( old.getKey(), old );
+            }
+            error.set( e );
+            return false;
+        }
+
+        return true;
     }
 
 }
