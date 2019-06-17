@@ -5,10 +5,11 @@ scratch
 target
 
 # ui build
-uis/layover/bower_components/
+uis/layover/dist/
 **/node/
 **/node_modules/
 **/build/
+**/npm-debug.log
 
 # eclipse
 .classpath
