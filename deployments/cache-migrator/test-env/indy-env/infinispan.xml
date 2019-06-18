@@ -1,117 +1,172 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-
-    Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-            http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-
--->
-<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:infinispan:config:9.4 http://www.infinispan.org/schemas/infinispan-config-9.4.xsd
-                                urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
-            xmlns="urn:infinispan:config:9.4"
-            xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
+<infinispan
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="urn:infinispan:config:9.4 http://www.infinispan.org/schemas/infinispan-config-9.4.xsd
+                        urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
+    xmlns="urn:infinispan:config:9.4"
+    xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
-      <eviction strategy="LIRS" size="200000" type="COUNT"/>
+      <memory>
+        <object size="20000" strategy="REMOVE" />
+      </memory>
     </local-cache-configuration>
 
     <local-cache name="local" configuration="local-template"/>
 
     <local-cache name="koji-maven-version-metadata" configuration="local-template">
-      <eviction strategy="LRU" size="1000000" type="COUNT"/>
+      <expiration lifespan="345600000" max-idle="345600000" interval="900000" /> <!-- expire in 4 days -->
       <persistence>
-        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.koji.inject.KojiProjectRefStringKey2StringMapper">
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.koji.inject.KojiProjectRefStringKey2StringMapper">
           <write-behind />
-          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
-
-          <jdbc:string-keyed-table prefix="indy_cache" fetch-size="10" batch-size="10" create-on-start="true" drop-on-exit="false">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="ispn">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
             <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
           </jdbc:string-keyed-table>
-
         </jdbc:string-keyed-jdbc-store>
       </persistence>
     </local-cache>
 
     <local-cache name="content-index" configuration="local-template">
-      <eviction strategy="LRU" size="2000000" type="COUNT"/>
+      <expiration lifespan="345600000" max-idle="345600000" interval="900000" /> <!-- expire in 4 days -->
       <persistence>
-        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
-
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
           <write-behind />
-          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
-
-          <jdbc:string-keyed-table prefix="indy_cache" fetch-size="50" batch-size="50" create-on-start="true" drop-on-exit="false">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="ispn">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
             <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
           </jdbc:string-keyed-table>
-
         </jdbc:string-keyed-jdbc-store>
       </persistence>
+
+      <memory>
+        <object size="250000" strategy="REMOVE" />
+      </memory>
+
       <indexing index="LOCAL">
-        <property name="default.directory_provider">ram</property>
+        <property name="default.indexmanager">near-real-time</property>
+        <property name="default.directory_provider">local-heap</property>
       </indexing>
     </local-cache>
 
-    <local-cache name="maven-version-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
-      <eviction size="1000000" type="COUNT" strategy="LRU"/>
+    <local-cache name="maven-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
+      <expiration lifespan="345600000" max-idle="345600000" interval="900000" /> <!-- expire in 4 days -->
       <persistence>
-        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper">
-
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
           <write-behind />
-          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
-
-          <jdbc:string-keyed-table prefix="indy_cache" fetch-size="10" batch-size="10" create-on-start="true" drop-on-exit="false">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="ispn">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
             <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
           </jdbc:string-keyed-table>
-
         </jdbc:string-keyed-jdbc-store>
       </persistence>
+    </local-cache>
+
+    <local-cache name="maven-metadata-key-cache" deadlock-detection-spin="10000" configuration="local-template">
+      <expiration lifespan="345600000" max-idle="345600000" interval="900000" /> <!-- expire in 4 days -->
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
+          <write-behind />
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="ispn">
+            <jdbc:id-column name="id_column" type="TEXT" />
+            <jdbc:data-column name="data_column" type="BYTEA" />
+            <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+      <indexing index="LOCAL" auto-config="true"/>
     </local-cache>
 
     <local-cache name="schedule-expire-cache" configuration="local-template">
       <expiration interval="300" />
       <persistence>
-        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="false" key-to-string-mapper="org.commonjava.indy.core.expire.ScheduleCacheKey2StringMapper">
-
-          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan-caches" />
-
-          <jdbc:string-keyed-table prefix="indy_cache" fetch-size="50" batch-size="50" create-on-start="true" drop-on-exit="false">
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.core.expire.ScheduleCacheKey2StringMapper">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="ispn">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
             <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
-
       </persistence>
     </local-cache>
+     
 
     <local-cache name="nfc" configuration="local-template">
-      <locking isolation="NONE" concurrency-level="500"/>
-      <eviction size="2000000" type="COUNT" strategy="LIRS"/>
       <!--
         Expires in 3 hours and run expiration every 15 minutes.
       -->
       <expiration lifespan="10800000" max-idle="10800000" interval="900000" />
       <indexing index="LOCAL">
-        <property name="default.directory_provider">ram</property>
+        <property name="default.indexmanager">near-real-time</property>
+        <property name="default.directory_provider">infinispan</property>
       </indexing>
+    </local-cache>
+
+    <local-cache name="folo-in-progress" configuration="local-template">
+      <expiration lifespan="21600000" max-idle="21600000" interval="900000" />
+      <memory>
+        <object size="999999999" strategy="NONE" />
+      </memory>
+      <indexing index="LOCAL">
+        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
+        <property name="default.directory_provider">local-heap</property>
+        <!-- <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property> -->
+      </indexing>
+    </local-cache>
+
+    <local-cache name="folo-sealed" configuration="local-template">
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/folo"/>
+      </persistence>
+    </local-cache>
+
+    <local-cache name="LuceneIndexesMetadata">
+      <persistence passivation="false">
+        <jdbc:string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_index">
+            <jdbc:id-column name="K" type="TEXT"/>
+            <jdbc:data-column name="V" type="BYTEA"/>
+            <jdbc:timestamp-column name="T" type="BIGINT"/>
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+
+    <local-cache name="LuceneIndexesData">
+      <persistence passivation="false">
+        <jdbc:string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_index">
+            <jdbc:id-column name="K" type="TEXT"/>
+            <jdbc:data-column name="V" type="BYTEA"/>
+            <jdbc:timestamp-column name="T" type="BIGINT"/>
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+      <indexing index="NONE" />
+    </local-cache>
+
+    <local-cache name="store-data" configuration="local-template">
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="ispn">
+            <jdbc:id-column name="id_column" type="TEXT" />
+            <jdbc:data-column name="data_column" type="BYTEA" />
+            <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
     </local-cache>
 
   </cache-container>
