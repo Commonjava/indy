@@ -55,7 +55,7 @@
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.0.21.Final</undertowVersion>
-    <xnioVersion>3.3.0.Final</xnioVersion>
+    <xnioVersion>3.3.8.Final</xnioVersion>
     <keycloakVersion>4.6.0.Final</keycloakVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
     <bytemanVersion>3.0.6</bytemanVersion>
