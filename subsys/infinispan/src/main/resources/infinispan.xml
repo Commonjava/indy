@@ -109,12 +109,6 @@
               scheme="SIMPLE"/>
     </local-cache>
 
-    <local-cache name="repo-changelog" configuration="local-template">
-      <persistence passivation="true">
-        <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/changelog"/>
-      </persistence>
-    </local-cache>
-
     <!-- TODO: these should be a distributed persist cache when enable cluster -->
     <local-cache name="store-data" configuration="local-template">
       <persistence passivation="true">

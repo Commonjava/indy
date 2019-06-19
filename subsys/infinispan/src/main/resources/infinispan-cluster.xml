@@ -21,6 +21,13 @@
 
     <distributed-cache name="event-audit" configuration="cluster-template" />
 
+    <distributed-cache name="repo-change" configuration="cluster-template" >
+      <indexing index="LOCAL">
+        <property name="default.directory_provider">ram</property>
+      </indexing>
+
+    </distributed-cache>
+
     <distributed-cache name="cluster" configuration="cluster-template"/>
 
     <distributed-cache name="schedule-expire-cache" configuration="cluster-template">
@@ -115,6 +122,8 @@
       </memory>
     </local-cache>
     <!-- local caches configuration -->
+
+
 
   </cache-container>
 

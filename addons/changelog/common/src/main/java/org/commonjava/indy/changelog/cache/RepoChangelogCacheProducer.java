@@ -33,6 +33,6 @@ public class RepoChangelogCacheProducer
     @ApplicationScoped
     public CacheHandle<String, ChangeEvent> contentIndexCacheCfg()
     {
-        return cacheProducer.getCache( "repo-changelog" );
+        return cacheProducer.getCache( "repo-change" );
     }
 }
