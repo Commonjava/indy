@@ -36,6 +36,7 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Date;
+import java.util.UUID;
 
 @ApplicationScoped
 public class RepoChangeHandler
@@ -95,6 +96,7 @@ public class RepoChangeHandler
                 String patchString = diffRepoChanges( store, origin );
 
                 ChangeEvent changeLog = new ChangeEvent();
+                changeLog.setEventId( UUID.randomUUID().toString().replace( "-", "" ));
                 changeLog.setStoreKey( store.getKey().toString() );
                 changeLog.setChangeTime( new Date() );
                 changeLog.setDiffContent( patchString );

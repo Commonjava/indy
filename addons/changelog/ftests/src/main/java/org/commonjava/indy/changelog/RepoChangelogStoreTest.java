@@ -22,8 +22,10 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -115,4 +117,11 @@ public class RepoChangelogStoreTest
         return Collections.singletonList( new IndyRepoChangelogClientModule() );
     }
 
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/repo-changelog.conf", "[repo-changelog]\nenabled=true" );
+    }
 }

@@ -27,7 +27,7 @@ import java.io.InputStream;
 @ApplicationScoped
 public class RepoChangelogConfiguration implements IndyConfigInfo
 {
-    public static final boolean DEFAULT_ENABLED = true;
+    public static final boolean DEFAULT_ENABLED = false;
 
     private Boolean enabled;
 
