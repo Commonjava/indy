@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>13</version>
+    <version>14</version>
   </parent>
   
   <groupId>org.commonjava.indy</groupId>
@@ -38,6 +38,14 @@
     <developerConnection>scm:git:git@github.com:Commonjava/indy.git</developerConnection>
     <url>http://github.com/Commonjava/indy</url>
   </scm>
+
+  <repositories>
+    <repository>
+      <id>sonatype-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
   
   <properties>
     <apiVersion>1</apiVersion>
@@ -66,6 +74,8 @@
     <jacksonVersion>2.9.9</jacksonVersion>
     <metricsVersion>4.0.2</metricsVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
+    <httpcoreVersion>4.4.9</httpcoreVersion>
+    <httpclientVersion>4.5.9</httpclientVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
@@ -143,6 +153,18 @@
   
   <dependencyManagement>
     <dependencies>
+      <!-- Override httpclient dep versions -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${httpcoreVersion}</version>
+      </dependency>
+      
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
