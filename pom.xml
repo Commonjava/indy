@@ -79,7 +79,7 @@
     <weftVersion>1.14</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
-    <auditQueryVersion>0.13.0</auditQueryVersion>
+    <auditQueryVersion>0.13.1-SNAPSHOT</auditQueryVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
