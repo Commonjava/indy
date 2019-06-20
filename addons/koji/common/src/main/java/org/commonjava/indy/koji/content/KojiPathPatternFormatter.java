@@ -17,10 +17,10 @@ package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.indy.koji.util.KojiUtils;
 import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
 import org.commonjava.atlas.maven.ident.ref.SimpleProjectRef;
+import org.commonjava.indy.koji.util.KojiUtils;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.TransferException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,6 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
@@ -44,17 +43,24 @@ public class KojiPathPatternFormatter
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
+    public Set<String> getPatterns( final StoreKey inStore, ArtifactRef artifactRef, List<KojiArchiveInfo> archives )
     {
-        return getPatterns( artifactRef, archives, false );
+        return getPatterns( inStore, artifactRef, archives, false );
     }
 
-    public Set<String> getPatterns( ArtifactRef artifactRef, List<KojiArchiveInfo> archives, boolean skipVersionTest )
+    public Set<String> getPatterns( final StoreKey inStore, ArtifactRef artifactRef, List<KojiArchiveInfo> archives, boolean skipVersionTest )
     {
         Set<String> patterns = new HashSet<>();
         for ( KojiArchiveInfo a : archives )
         {
+            if ( !inStore.getPackageType().equals( a.getBuildType() ) )
+            {
+                logger.info( "Discarding non-{} archive from path patterns: {}", inStore.getPackageType(), a );
+                continue;
+            }
+
             ArtifactRef ar = a.asArtifact();
+
             if ( !skipVersionTest && !kojiUtils.isVersionSignatureAllowedWithVersion( a.getVersion() ) )
             {
                 logger.warn(
@@ -62,7 +68,17 @@ public class KojiPathPatternFormatter
                         a.getVersion() );
                 continue;
             }
+
             String pattern = getPatternString( ar, a );
+
+            if ( !skipVersionTest && !kojiUtils.isVersionSignatureAllowedWithVersion( a.getVersion() ) )
+            {
+                logger.warn(
+                        "Cannot use Koji archive for path_mask_patterns: {}. Version '{}' is not allowed from Koji.", a,
+                        a.getVersion() );
+                continue;
+            }
+
             if ( pattern != null )
             {
                 patterns.add( pattern );

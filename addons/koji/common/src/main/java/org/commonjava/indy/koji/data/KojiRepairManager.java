@@ -228,7 +228,7 @@ public class KojiRepairManager
                         }
 
                         // set pathMaskPatterns using build output paths
-                        Set<String> patterns = kojiPathFormatter.getPatterns( artifactRef, archives, true );
+                        Set<String> patterns = kojiPathFormatter.getPatterns( store.getKey(), artifactRef, archives, true );
                         logger.debug( "For repo: {}, resetting path_mask_patterns to:\n\n{}\n\n", store.getKey(),
                                      patterns );
 
