@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>13</version>
+    <version>14</version>
   </parent>
   
   <groupId>org.commonjava.indy</groupId>
@@ -39,6 +39,14 @@
     <url>http://github.com/Commonjava/indy</url>
     <tag>indy-parent-1.6.0</tag>
   </scm>
+
+  <repositories>
+    <repository>
+      <id>sonatype-snapshots</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+      <snapshots><enabled>true</enabled></snapshots>
+    </repository>
+  </repositories>
   
   <properties>
     <apiVersion>1</apiVersion>
@@ -63,6 +71,10 @@
     <kafkaVersion>1.1.0</kafkaVersion>
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
+    <jacksonVersion>2.9.9</jacksonVersion>
+    <metricsVersion>4.0.2</metricsVersion>
+    <httpcoreVersion>4.4.9</httpcoreVersion>
+    <httpclientVersion>4.5.9</httpclientVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.0.1</atlasVersion>
@@ -110,9 +122,6 @@
     <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
-
-    <metrics.version>4.0.2</metrics.version>
-    <jackson-version>2.9.8</jackson-version>
   </properties>
   
   <modules>
@@ -140,6 +149,18 @@
   
   <dependencyManagement>
     <dependencies>
+      <!-- Override httpclient dep versions -->
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpclient</artifactId>
+        <version>${httpclientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.httpcomponents</groupId>
+        <artifactId>httpcore</artifactId>
+        <version>${httpcoreVersion}</version>
+      </dependency>
+      
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
