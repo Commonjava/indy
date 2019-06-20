@@ -282,7 +282,9 @@ public abstract class KojiContentManagerDecorator
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug("When the koji is enabled , path:{},config instance is {}",path,config.toString());
+
         // TODO: This won't work for maven-metadata.xml files! We need to hit a POM or jar or something first.
+        // FIXME: This won't work for NPM!
         ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null )
         {
@@ -459,7 +461,7 @@ public abstract class KojiContentManagerDecorator
                 }
 
                 // set pathMaskPatterns using build output paths
-                Set<String> patterns = pathFormatter.getPatterns( artifactRef, archives );
+                Set<String> patterns = pathFormatter.getPatterns( inStore, artifactRef, archives );
 
                 // pre-index the koji build artifacts and set authoritative index of the remote to let the
                 // koji remote repo directly go through the content index
