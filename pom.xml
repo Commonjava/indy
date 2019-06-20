@@ -71,8 +71,8 @@
     <kafkaVersion>1.1.0</kafkaVersion>
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
-    <jacksonVersion>2.9.9</jacksonVersion>
-    <metricsVersion>4.0.2</metricsVersion>
+    <jackson-version>2.9.9</jackson-version>
+    <metrics.version>4.0.2</metrics.version>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
 
