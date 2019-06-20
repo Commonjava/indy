@@ -30,6 +30,7 @@ import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
@@ -37,8 +38,6 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +128,7 @@ public class CacheProducer
 
     private void startEmbeddedManager()
     {
-        startCacheManager( ISPN_XML, false );
+        cacheManager = startCacheManager( cacheManager, ISPN_XML, false );
     }
 
     private void startClusterManager()
@@ -139,10 +138,11 @@ public class CacheProducer
             logger.info( "Infinispan cluster configuration not enabled. Skip." );
             return;
         }
-        startCacheManager( ISPN_CLUSTER_XML, true );
+        clusterCacheManager = startCacheManager( clusterCacheManager, ISPN_CLUSTER_XML, true );
     }
 
-    private void startCacheManager( String configFile, Boolean isCluster )
+    private EmbeddedCacheManager startCacheManager( EmbeddedCacheManager cacheMgr, String configFile,
+                                                    Boolean isCluster )
     {
         // FIXME This is just here to trigger shutdown hook init for embedded log4j in infinispan-embedded-query.
         // FIXES:
@@ -155,6 +155,7 @@ public class CacheProducer
         File confDir = indyConfiguration.getIndyConfDir();
         File ispnConf = new File( confDir, configFile );
 
+        EmbeddedCacheManager mgr = cacheMgr;
         try(InputStream resouceStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(
                         configFile ))
         {
@@ -166,8 +167,8 @@ public class CacheProducer
                 try (InputStream confStream = FileUtils.openInputStream( ispnConf ))
                 {
                     String confStr = interpolateStrFromStream( confStream, ispnConf.getPath() );
-                    mergedCachesFromConfig( confStr, "CUSTOMER" );
-                    mergedCachesFromConfig( resourceStr, "CLASSPATH" );
+                    mgr = mergedCachesFromConfig( mgr, confStr, "CUSTOMER" );
+                    mgr = mergedCachesFromConfig( mgr, resourceStr, "CLASSPATH" );
                 }
                 catch ( IOException e )
                 {
@@ -179,17 +180,13 @@ public class CacheProducer
                 try
                 {
                     logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
+                    mgr = new DefaultCacheManager(
+                            new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
                     if ( isCluster )
                     {
-                        clusterCacheManager = new DefaultCacheManager(
-                                        new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
-                        clusterCacheManager.startCaches( String.join( ",",  clusterCacheManager.getCacheNames()) );
+                        mgr.startCaches( String.join( ",",  clusterCacheManager.getCacheNames()) );
                     }
-                    else
-                    {
-                        cacheManager = new DefaultCacheManager(
-                                        new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
-                    }
+
                 }
                 catch ( IOException e )
                 {
@@ -203,6 +200,8 @@ public class CacheProducer
             throw new RuntimeException(
                             "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
         }
+
+        return mgr;
     }
 
     /**
@@ -336,6 +335,12 @@ public class CacheProducer
             remoteCacheManager.stop();
             remoteCacheManager = null;
         }
+
+        if ( clusterCacheManager != null )
+        {
+            clusterCacheManager.stop();
+            clusterCacheManager = null;
+        }
     }
 
     @Override
@@ -391,23 +396,25 @@ public class CacheProducer
      * {@link ParserRegistry}
      * {@link ConfigurationManager}
      *
+     * @param cacheMgr
      * @param config
      * @param path
      */
-    private void mergedCachesFromConfig( String config, String path )
+    private EmbeddedCacheManager mergedCachesFromConfig( EmbeddedCacheManager cacheMgr, String config, String path )
     {
         logger.debug( "[ISPN xml merge] cache config xml to merge:\n {}", config );
         // FIXME: here may cause ISPN000343 problem if your cache config has enabled distributed cache. Because distributed
         //       cache needs transport support, so if the cache manager does not enable it and then add this type of cache
         //       by defineConfiguration, it will report ISPN000343. So we should ensure the transport has been added by initialization.
-        if ( cacheManager == null )
+        EmbeddedCacheManager mgr = cacheMgr;
+        if ( mgr == null )
         {
             try
             {
                 logger.info(
                         "Using {} resource Infinispan configuration to construct mergable cache configuration:\n\n{}\n\n", path,
                         config );
-                cacheManager = new DefaultCacheManager(
+                mgr = new DefaultCacheManager(
                         new ByteArrayInputStream( config.getBytes( StandardCharsets.UTF_8 ) ) );
             }
             catch ( IOException e )
@@ -421,16 +428,18 @@ public class CacheProducer
         final ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
         final ConfigurationManager manager = new ConfigurationManager( holder );
 
-        final Set<String> definedCaches = cacheManager.getCacheNames();
+        final Set<String> definedCaches = mgr.getCacheNames();
 
         for ( String name : manager.getDefinedCaches() )
         {
             if ( definedCaches.isEmpty() || !definedCaches.contains( name ) )
             {
                 logger.info( "[ISPN xml merge] Define cache: {} from {} config.", name, path );
-                cacheManager.defineConfiguration( name, manager.getConfiguration( name, false ) );
+                mgr.defineConfiguration( name, manager.getConfiguration( name, false ) );
             }
         }
+
+        return mgr;
     }
 
     public EmbeddedCacheManager getCacheManager()
