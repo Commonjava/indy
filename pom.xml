@@ -72,7 +72,7 @@
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <jackson-version>2.9.9</jackson-version>
-    <metricsVersion>4.0.2</metricsVersion>
+    <metrics.version>4.0.2</metrics.version>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
 
