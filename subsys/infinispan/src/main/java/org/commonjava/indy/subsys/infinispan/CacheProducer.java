@@ -51,9 +51,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
@@ -185,16 +187,20 @@ public class CacheProducer
                         mgr = new DefaultCacheManager(
                                 new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
                     }
-                    if ( isCluster )
-                    {
-                        mgr.startCaches( String.join( ",", clusterCacheManager.getCacheNames() ) );
-                    }
+
                 }
                 catch ( IOException e )
                 {
                     throw new RuntimeException(
                                     "Failed to construct ISPN cacheManger due to CLASSPATH xml stream read error.", e );
                 }
+            }
+
+            if ( isCluster )
+            {
+                String[] cacheNames = mgr.getCacheNames().toArray( new String[]{} );
+                logger.info( "Starting cluster caches to make sure they existed: {}", Arrays.toString( cacheNames ) );
+                mgr.startCaches( cacheNames );
             }
         }
         catch ( IOException e )
