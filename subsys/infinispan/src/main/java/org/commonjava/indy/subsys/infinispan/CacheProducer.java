@@ -180,13 +180,15 @@ public class CacheProducer
                 try
                 {
                     logger.info( "Using CLASSPATH resource Infinispan configuration:\n\n{}\n\n", resourceStr );
-                    mgr = new DefaultCacheManager(
-                            new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
+                    if ( mgr == null )
+                    {
+                        mgr = new DefaultCacheManager(
+                                new ByteArrayInputStream( resourceStr.getBytes( StandardCharsets.UTF_8 ) ) );
+                    }
                     if ( isCluster )
                     {
-                        mgr.startCaches( String.join( ",",  clusterCacheManager.getCacheNames()) );
+                        mgr.startCaches( String.join( ",", clusterCacheManager.getCacheNames() ) );
                     }
-
                 }
                 catch ( IOException e )
                 {
