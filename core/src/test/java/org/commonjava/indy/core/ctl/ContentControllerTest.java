@@ -23,6 +23,7 @@ import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.core.content.ContentGeneratorManager;
 import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
@@ -112,7 +113,7 @@ public class ContentControllerTest
                                            new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
                                            new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
                                                    "content-metadata", contentMetadata ) ),
-                                           Collections.<ContentGenerator>emptySet() );
+                                           new ContentGeneratorManager() );
 
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), new DataFileManager(
                 fixture.getTemp().newFolder( "indy-home" ), new DataFileEventManager() ) );

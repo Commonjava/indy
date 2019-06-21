@@ -128,7 +128,7 @@ public class DefaultDownloadManagerTest
 
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
                                                     new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
-                                                    contentDigester, Collections.<ContentGenerator>emptySet() );
+                                                    contentDigester, new ContentGeneratorManager() );
     }
 
     @Test

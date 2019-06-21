@@ -28,6 +28,7 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.IndyLocationExpander;
+import org.commonjava.indy.core.content.ContentGeneratorManager;
 import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
@@ -161,7 +162,7 @@ public class PromotionManagerTest
 
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
                                                     new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
-                                                    contentDigester, Collections.<ContentGenerator>emptySet() );
+                                                    contentDigester, new ContentGeneratorManager() );
 
         dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
         validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
