@@ -71,14 +71,7 @@ public class MavenMetadataMerger
         }
 
         Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Generating merged metadata in: {}:{}", group.getKey(), path );
-
-        if ( master.getVersioning() == null )
-        {
-            master.setVersioning( new Versioning() );
-        }
-
-        logger.trace( "Adding in metadata content from: {}", src );
+        logger.debug( "Merge metadata, group: {}, path: {}, src: {}", group.getKey(), path, src );
 
         // there is a lot of junk in here to make up for Metadata's anemic merge() method.
         if ( src.getGroupId() != null )
@@ -99,18 +92,17 @@ public class MavenMetadataMerger
         master.merge( src );
 
         Versioning versioning = master.getVersioning();
-        Versioning mdVersioning = src.getVersioning();
 
-        // FIXME: Should we try to merge snapshot lists instead of using the first one we encounter??
-        if ( versioning.getSnapshot() == null && mdVersioning != null )
+        Versioning srcVersioning = src.getVersioning();
+
+        if ( srcVersioning != null && srcVersioning.getSnapshot() != null )
         {
             logger.trace( "INCLUDING snapshot information from: {} in: {}:{}", src, group.getKey(), path );
-
-            versioning.setSnapshot( mdVersioning.getSnapshot() );
+            versioning.setSnapshot( srcVersioning.getSnapshot() );
 
             final List<SnapshotVersion> snapshotVersions = versioning.getSnapshotVersions();
             boolean added = false;
-            for ( final SnapshotVersion snap : mdVersioning.getSnapshotVersions() )
+            for ( final SnapshotVersion snap : srcVersioning.getSnapshotVersions() )
             {
                 if ( !snapshotVersions.contains( snap ) )
                 {

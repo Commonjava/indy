@@ -23,6 +23,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
+import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
@@ -52,6 +53,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.commonjava.indy.change.event.ArtifactStoreUpdateType.UPDATE;
 import static org.commonjava.indy.core.change.StoreChangeUtil.delete;
 import static org.commonjava.indy.core.change.StoreChangeUtil.getDiffMembers;
 import static org.commonjava.indy.core.change.StoreChangeUtil.listPathsAnd;
@@ -114,7 +116,10 @@ public class StoreContentListener
             // we're only interested in groups, since only adjustments to group memberships can invalidate cached content.
             if ( group == store.getKey().getType() )
             {
-                cleanSupercededMemberContent( (Group) store, event.getChangeMap() );
+                if ( event.getType() == UPDATE )
+                {
+                    cleanSupercededMemberContent( (Group) store, event.getChangeMap() );
+                }
             }
         }
     }
