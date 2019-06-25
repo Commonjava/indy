@@ -28,6 +28,7 @@ import java.io.InputStream;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertEquals;
 
 /**
  * <b>GIVEN:</b>
@@ -63,7 +64,7 @@ public class GroupMetadataForRemoteSnapshotTest
 
     /* @formatter:off */
     final String metadataContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-        + "<metadata modelVersion=\"1.1.0\">\n"
+        + "<metadata>\n"
         + "  <groupId>foo</groupId>\n"
         + "  <artifactId>bar</artifactId>\n"
         + "  <version>0.2-SNAPSHOT</version>\n"
@@ -98,7 +99,7 @@ public class GroupMetadataForRemoteSnapshotTest
         + "      </snapshotVersion>\n"
         + "    </snapshotVersions>\n"
         + "  </versioning>\n"
-        + "</metadata>";
+        + "</metadata>\n";
     /* @formatter:on */
 
     @Test
@@ -127,6 +128,7 @@ public class GroupMetadataForRemoteSnapshotTest
             assertThat( stream, notNullValue() );
             String meta = IOUtils.toString( stream );
             logger.debug( "Group meta >>>>\n" + meta );
+            assertEquals( metadataContent, meta );
         }
     }
 }
