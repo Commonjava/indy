@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Plugin;
+import org.apache.maven.artifact.repository.metadata.SnapshotVersion;
 import org.apache.maven.artifact.repository.metadata.Versioning;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Writer;
@@ -585,14 +586,21 @@ public class MavenMetadataGenerator
         if ( !incrementalResult.missing.isEmpty() )
         {
             logger.warn(
-                    "After download and generation attempts, metadata is still missing from the following stores: {}",
-                    incrementalResult.missing );
+                    "After download and generation attempts, metadata is still missing from the following stores: {}, size: {}",
+                    incrementalResult.missing, incrementalResult.missing.size() );
         }
 
-        List<String> versions = master.getVersioning().getVersions();
+        Versioning versioning = master.getVersioning();
+        List<String> versions = versioning.getVersions();
         if ( versions != null && !versions.isEmpty() )
         {
             merger.sortVersions( master );
+            return master;
+        }
+
+        List<SnapshotVersion> snapshotVersions = versioning.getSnapshotVersions();
+        if ( snapshotVersions != null && !snapshotVersions.isEmpty() )
+        {
             return master;
         }
 
@@ -720,9 +728,8 @@ public class MavenMetadataGenerator
         Set<ArtifactStore> missing = incrementalResult.missing;
         Metadata master = incrementalResult.result;
 
-        // TODO: This should be the outer wrapper for download- or generate-specific behavior.
-        logger.debug( "Download missing member metadata for {}, missing: {}, size: {}", group.getKey(), missing,
-                      missing.size() );
+        logger.debug( "Merge member metadata for {}, {}, missing: {}, size: {}", group.getKey(), description,
+                      missing, missing.size() );
 
         DrainingExecutorCompletionService<MetadataResult> svc =
                 new DrainingExecutorCompletionService<>( mavenMDGeneratorService );
@@ -792,7 +799,7 @@ public class MavenMetadataGenerator
             svc.drain( metadata -> {
                 if ( metadata != null )
                 {
-                        merger.merge( master, metadata, group, toMergePath );
+                    merger.merge( master, metadata, group, toMergePath );
                 }
             } );
         }
