@@ -128,6 +128,10 @@ public class AbstractContentManagementTest
             assertThat( "Content not found: " + path + " in store: " + store.getKey(), in, notNullValue() );
 
             String foundContent = IOUtils.toString( in );
+            logger.info(
+                    "Checking content result from path: {} in store: {} with value:\n\n{}\n\nagainst expected value:\n\n{}",
+                    path, store.getKey(), foundContent, expected );
+
             assertThat( "Content is wrong: " + path + " in store: " + store.getKey(), foundContent,
                         equalTo( expected ) );
 
