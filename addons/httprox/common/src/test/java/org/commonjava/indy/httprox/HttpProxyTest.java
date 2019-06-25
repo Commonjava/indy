@@ -38,6 +38,7 @@ import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.core.content.ContentGeneratorManager;
 import org.commonjava.indy.core.content.DefaultContentDigester;
 import org.commonjava.indy.core.content.DefaultContentManager;
 import org.commonjava.indy.core.content.DefaultDirectContentAccess;
@@ -189,7 +190,7 @@ public class HttpProxyTest
 
         final ContentManager contentManager =
                 new DefaultContentManager( storeManager, downloadManager, mapper, new SpecialPathManagerImpl(),
-                                           new MemoryNotFoundCache(), contentDigester, Collections.emptySet() );
+                                           new MemoryNotFoundCache(), contentDigester, new ContentGeneratorManager() );
 
         DataFileManager dfm = new DataFileManager( temp.newFolder(), new DataFileEventManager() );
         final TemplatingEngine templates = new TemplatingEngine( new GStringTemplateEngine(), dfm );

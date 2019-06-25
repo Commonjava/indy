@@ -471,6 +471,7 @@ public class MavenMetadataGenerator
             Transfer original = fileManager.getTransfer( group, path );
             if ( exists( original ) )
             {
+                logger.debug( "This is a checksum file, return the original path {}", path );
                 return original;
             }
         }

@@ -20,7 +20,6 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
-import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
@@ -46,15 +45,11 @@ import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CASCADE;
@@ -71,9 +66,7 @@ public class DefaultContentManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private Instance<ContentGenerator> contentProducerInstances;
-
-    private Set<ContentGenerator> contentGenerators;
+    private ContentGeneratorManager contentGeneratorManager;
 
     @Inject
     private StoreDataManager storeManager;
@@ -102,7 +95,8 @@ public class DefaultContentManager
 
     public DefaultContentManager( final StoreDataManager storeManager, final DownloadManager downloadManager,
                                   final IndyObjectMapper mapper, final SpecialPathManager specialPathManager,
-                                  final NotFoundCache nfc, final ContentDigester contentDigester, final Set<ContentGenerator> contentProducers )
+                                  final NotFoundCache nfc, final ContentDigester contentDigester,
+                                  final ContentGeneratorManager contentGeneratorManager )
     {
         this.storeManager = storeManager;
         this.downloadManager = downloadManager;
@@ -110,20 +104,7 @@ public class DefaultContentManager
         this.specialPathManager = specialPathManager;
         this.nfc = nfc;
         this.contentDigester = contentDigester;
-        this.contentGenerators = contentProducers == null ? new HashSet<>() : contentProducers;
-    }
-
-    @PostConstruct
-    public void initialize()
-    {
-        contentGenerators = new HashSet<>();
-        if ( contentProducerInstances != null )
-        {
-            for ( final ContentGenerator producer : contentProducerInstances )
-            {
-                contentGenerators.add( producer );
-            }
-        }
+        this.contentGeneratorManager = contentGeneratorManager;
     }
 
     @Override
@@ -183,15 +164,7 @@ public class DefaultContentManager
                 }
 
                 final List<Transfer> storeTransfers = new ArrayList<>();
-                for ( final ContentGenerator generator : contentGenerators )
-                {
-                    final Transfer txfr =
-                            generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
-                    if ( txfr != null )
-                    {
-                        storeTransfers.add( txfr );
-                    }
-                }
+                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata, (txfr) -> storeTransfers.add( txfr ) );
 
                 // If the content was generated, don't try to retrieve it from a member store...this is the lone exception to retrieveAll
                 // ...if it's generated, it's merged in this case.
@@ -258,19 +231,8 @@ public class DefaultContentManager
                 logger.trace( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), StringUtils.join(members, "\n  ") );
             }
 
-            item = null;
-            boolean generated = false;
-            for ( final ContentGenerator generator : contentGenerators )
-            {
-                if ( generator.canProcess( path ) )
-                {
-                    item = generator.generateGroupFileContent( (Group) store, members, path, eventMetadata );
-                    logger.trace( "From content {}.generateGroupFileContent: {} (exists? {})",
-                                  generator.getClass().getSimpleName(), item, item != null && item.exists() );
-                    generated = true;
-                    break;
-                }
-            }
+            item = contentGeneratorManager.generateGroupFileContent( (Group) store, members, path, eventMetadata );
+            boolean generated = ( item != null );
 
             if ( !generated )
             {
@@ -325,27 +287,20 @@ public class DefaultContentManager
 
             if ( item == null )
             {
-                for ( final ContentGenerator generator : contentGenerators )
-                {
-                    logger.trace( "Attempting to generate content for path: {} in: {} via: {}", path, store,
-                                  generator );
-                    item = generator.generateFileContent( store, path, eventMetadata );
-                    if ( item != null )
+                item = contentGeneratorManager.generateFileContentAnd( store, path, eventMetadata, transfer -> {
+                    logger.debug( "Resource generated for {}, clean NFC and delete obsolete http-metadata.json",
+                                  transfer.getResource() );
+                    nfc.clearMissing( transfer.getResource() );
+                    Transfer httpMeta = transfer.getSiblingMeta( HTTP_METADATA_EXT );
+                    try
                     {
-                        logger.debug( "Resource generated for {}, clean NFC and delete obsolete http-metadata.json", item.getResource() );
-                        nfc.clearMissing( item.getResource() );
-                        Transfer httpMeta = item.getSiblingMeta( HTTP_METADATA_EXT );
-                        try
-                        {
-                            httpMeta.delete();
-                        }
-                        catch ( IOException e )
-                        {
-                            logger.warn( "Failed to delete {}", httpMeta.getResource() );
-                        }
-                        break;
+                        httpMeta.delete();
                     }
-                }
+                    catch ( IOException e )
+                    {
+                        logger.warn( "Failed to delete {}", httpMeta.getResource() );
+                    }
+                } );
             }
         }
         catch ( IndyWorkflowException e )
@@ -406,18 +361,7 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
-            for ( final ContentGenerator generator : contentGenerators )
-            {
-                generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
-            }
-
-            if ( !store.equals( transferStore ) )
-            {
-                for ( final ContentGenerator generator : contentGenerators )
-                {
-                    generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
-                }
-            }
+            contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
             clearNFCEntries(kl, path);
         }
@@ -444,14 +388,6 @@ public class DefaultContentManager
         }
     }
 
-    //    @Override
-//    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream,
-//                           final TransferOperation op )
-//            throws IndyWorkflowException
-//    {
-//        return store( stores, path, stream, op, new EventMetadata() );
-//    }
-
     @Override
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
@@ -473,11 +409,7 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
-            for ( final ContentGenerator generator : contentGenerators )
-            {
-                logger.debug( "{} Handling content storage of: {} in: {}", generator, path, transferStore.getKey() );
-                generator.handleContentStorage( transferStore, path, txfr, eventMetadata );
-            }
+            contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
             clearNFCEntries(kl, path);
         }
@@ -524,17 +456,11 @@ public class DefaultContentManager
                 {
                     if ( downloadManager.delete( member, path, eventMetadata ) )
                     {
-                        for ( final ContentGenerator generator : contentGenerators )
-                        {
-                            generator.handleContentDeletion( member, path, eventMetadata );
-                        }
+                        contentGeneratorManager.handleContentDeletion( member, path, eventMetadata );
                     }
                 }
             }
-            for ( final ContentGenerator generator : contentGenerators )
-            {
-                generator.handleContentDeletion( store, path, eventMetadata );
-            }
+            contentGeneratorManager.handleContentDeletion( store, path, eventMetadata );
             result = true;
         }
         else
@@ -542,10 +468,7 @@ public class DefaultContentManager
             if ( downloadManager.delete( store, path, eventMetadata ) )
             {
                 result = true;
-                for ( final ContentGenerator generator : contentGenerators )
-                {
-                    generator.handleContentDeletion( store, path, eventMetadata );
-                }
+                contentGeneratorManager.handleContentDeletion( store, path, eventMetadata );
             }
         }
 
@@ -633,15 +556,7 @@ public class DefaultContentManager
             }
 
             listed = new ArrayList<>();
-            for ( final ContentGenerator generator : contentGenerators )
-            {
-                final List<StoreResource> generated =
-                        generator.generateGroupDirectoryContent( (Group) store, members, path, eventMetadata );
-                if ( generated != null )
-                {
-                    listed.addAll( generated );
-                }
-            }
+            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata, (list) -> listed.addAll( list ) );
 
             for ( final ArtifactStore member : members )
             {
@@ -664,16 +579,7 @@ public class DefaultContentManager
         else
         {
             listed = downloadManager.list( store, path, metadata );
-
-            for ( final ContentGenerator producer : contentGenerators )
-            {
-                final List<StoreResource> produced =
-                        producer.generateDirectoryContent( store, path, listed, metadata );
-                if ( produced != null )
-                {
-                    listed.addAll( produced );
-                }
-            }
+            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, (produced) -> listed.addAll( produced ) );
         }
 
         return dedupeListing( listed );

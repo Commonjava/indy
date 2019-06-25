@@ -43,7 +43,7 @@
     </appender>
 
   <logger name="org.commonjava.indy" level="TRACE"/>
-  <logger name="org.commonjava.maven.galley" level="DEBUG"/>
+  <logger name="org.commonjava.maven.galley" level="TRACE"/>
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

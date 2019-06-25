@@ -30,6 +30,7 @@ import javax.inject.Inject;
 public class CoreCacheProducer
 {
 
+    // for content-metadata we mean checksum, md5, sha1, etc
     private static final String CONTENT_METADATA_NAME = "content-metadata";
 
     @Inject

@@ -24,8 +24,6 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
-import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
@@ -35,13 +33,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
-import static org.apache.commons.codec.binary.Hex.encodeHexString;
 import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**
@@ -76,7 +69,7 @@ public class DefaultContentDigester
     }
 
     @Override
-    public synchronized void addMetadata( final Transfer transfer, final TransferMetadata transferData )
+    public void addMetadata( final Transfer transfer, final TransferMetadata transferData )
     {
         if ( transferData != null )
         {
@@ -86,7 +79,7 @@ public class DefaultContentDigester
         }
     }
 
-    public synchronized boolean needsMetadataFor( final Transfer transfer )
+    public boolean needsMetadataFor( final Transfer transfer )
     {
         return true;
     }
@@ -98,7 +91,7 @@ public class DefaultContentDigester
     }
 
     @Override
-    public synchronized void removeMetadata( final Transfer transfer )
+    public void removeMetadata( final Transfer transfer )
     {
         String cacheKey = generateCacheKey( transfer );
         TransferMetadata meta = metadataCache.remove( cacheKey );
@@ -106,7 +99,7 @@ public class DefaultContentDigester
     }
 
     @Override
-    public synchronized TransferMetadata getContentMetadata( final Transfer transfer )
+    public TransferMetadata getContentMetadata( final Transfer transfer )
     {
         String cacheKey = generateCacheKey( transfer );
         logger.trace( "Getting TransferMetadata for: {}", cacheKey );
@@ -143,7 +136,6 @@ public class DefaultContentDigester
         logger.debug( "TransferMetadata missing for: {}. Re-reading with FORCE_CHECKSUM now to calculate it.",
                       cacheKey );
 
-        // FIXME: This IS NOT WORKING! It results in NPE for callers assuming a non-null TransferMetadata response.
         EventMetadata forcedEventMetadata = new EventMetadata( eventMetadata ).set( FORCE_CHECKSUM, Boolean.TRUE );
         try(InputStream stream = transfer.openInputStream( false, forcedEventMetadata ) )
         {

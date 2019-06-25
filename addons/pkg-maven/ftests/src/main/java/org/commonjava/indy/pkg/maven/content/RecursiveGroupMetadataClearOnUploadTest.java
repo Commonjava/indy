@@ -116,13 +116,6 @@ public class RecursiveGroupMetadataClearOnUploadTest
               .store( hostedRepo.getKey(), path, new ByteArrayInputStream( firstPassContent.getBytes( "UTF-8" ) ) );
     }
 
-    @BMRule( name = "slow_down", targetClass = "org.commonjava.indy.content.index.ContentIndexManager",
-             targetMethod = "clearIndexedPathFrom",
-             targetLocation = "ENTRY",
-             binding = "tctx:org.commonjava.cdi.util.weft.ThreadContext = ThreadContext.getContext(true);"
-                     + "key:org.commonjava.indy.model.core.StoreKey = tctx.get(\"ContentIndex:originKey\");"
-                     + "isFlagged:boolean = \"groupA\".equals(key.getName());",
-             condition = "isFlagged", action = "System.out.println(\"Slowing down 4s\");" + "Thread.sleep(4000);" )
     @Test
     @Category( EventDependent.class )
     public void run()
@@ -141,7 +134,6 @@ public class RecursiveGroupMetadataClearOnUploadTest
         //        assertContent( groupA, secondPassContent );
         assertContent( groupB, path, secondPassContent );
 
-        Thread.currentThread().sleep( 4000 );
     }
 
     @Override
