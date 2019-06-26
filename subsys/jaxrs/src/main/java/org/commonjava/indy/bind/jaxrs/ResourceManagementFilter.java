@@ -102,8 +102,6 @@ public class ResourceManagementFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
-        long start = System.nanoTime();
-
         String name = Thread.currentThread().getName();
         String clientAddr = request.getRemoteAddr();
 
@@ -184,10 +182,6 @@ public class ResourceManagementFilter
             {
                 logger.error( "Failed to cleanup resources", e );
             }
-
-            long end = System.nanoTime();
-            MDC.put( REQUEST_PHASE, REQUEST_PHASE_END );
-            MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
 
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
 
