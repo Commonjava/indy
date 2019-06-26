@@ -750,12 +750,14 @@ public class ScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
+/*
             if ( scheduleEventLockCache.containsKey( expiredKey ) )
             {
                 logger.info( "Another instance {} is still handling expiration event for {}", expiredKey,
                              scheduleEventLockCache.containsKey( expiredKey ) );
                 return;
             }
+*/
             final Map expiredContent = e.getValue();
             if ( expiredKey != null && expiredContent != null )
             {
@@ -763,9 +765,11 @@ public class ScheduleManager
                 final String type = (String) expiredContent.get( ScheduleManager.JOB_TYPE );
                 final String data = (String) expiredContent.get( ScheduleManager.PAYLOAD );
                 fireEvent( eventDispatcher, new SchedulerTriggerEvent( type, data ) );
+/*
                 scheduleEventLockCache.executeCache( cache -> cache.put( expiredKey, nodeHolder.getLocalIndyNode(),
                                                                          schedulerConfig.getClusterLockExpiration(),
                                                                          TimeUnit.SECONDS ) );
+*/
             }
         }
     }
