@@ -1,21 +1,19 @@
 package org.commonjava.indy.bind.jaxrs.util;
 
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-
 import java.nio.file.Paths;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_CLASS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_CLASS_PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_ENDPOINT_PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REST_METHOD_PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_CLASS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_CLASS_PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_ENDPOINT_PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_METHOD_PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 
 @Interceptor
 @REST
@@ -33,26 +31,26 @@ public class RestInterceptor
         }
         while( classAnno == null && targetClass != null );
 
-        if ( MDC.get( REST_CLASS ) == null )
+        if ( getContext( REST_CLASS ) == null )
         {
             String targetName = context.getMethod().getDeclaringClass().getSimpleName();
-            MDC.put( REST_CLASS, targetName );
+            setContext( REST_CLASS, targetName );
 
             String classPath = "";
-            if ( classAnno != null && MDC.get( REST_CLASS_PATH ) == null )
+            if ( classAnno != null && getContext( REST_CLASS_PATH ) == null )
             {
                 classPath = classAnno.value();
-                MDC.put( REST_CLASS_PATH, classPath );
+                setContext( REST_CLASS_PATH, classPath );
             }
 
             Path methAnno = context.getMethod().getAnnotation( Path.class );
-            if ( methAnno != null && MDC.get( REST_METHOD_PATH ) == null  )
+            if ( methAnno != null && getContext( REST_METHOD_PATH ) == null  )
             {
                 String methodPath = methAnno.value();
-                MDC.put( REST_METHOD_PATH, methodPath );
+                setContext( REST_METHOD_PATH, methodPath );
 
                 String endpointPath = Paths.get( classPath, methodPath ).toString();
-                MDC.put( REST_ENDPOINT_PATH, endpointPath );
+                setContext( REST_ENDPOINT_PATH, endpointPath );
             }
         }
 

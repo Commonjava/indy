@@ -16,6 +16,6 @@ public class GoldenSignalsMetricSetProvider
     @Override
     public void registerMetricSet( final MetricRegistry registry )
     {
-        registry.register( "indy.sli.gs", metricSet );
+        registry.register( "sli.golden", metricSet );
     }
 }

@@ -29,7 +29,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics</artifactId>
+      <artifactId>indy-subsys-metrics-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -38,6 +38,10 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -70,28 +74,5 @@
       <artifactId>jboss-servlet-api_3.0_spec</artifactId>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>confset</id>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <phase>package</phase>
-            <configuration>
-              <descriptorRefs>
-                <descriptorRef>confset</descriptorRef>
-                <!-- <descriptorRef>dataset</descriptorRef> -->
-              </descriptorRefs>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

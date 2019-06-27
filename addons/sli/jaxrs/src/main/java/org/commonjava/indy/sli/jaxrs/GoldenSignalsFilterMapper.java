@@ -13,7 +13,7 @@ import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
 @ApplicationScoped
-public class SLIDeploymentProvider
+public class GoldenSignalsFilterMapper
         extends IndyDeploymentProvider
 {
     @Inject
@@ -29,7 +29,11 @@ public class SLIDeploymentProvider
                                                             this.goldenSignalsFilter ) );
 
         di.addFilter( filterInfo )
-          .addFilterUrlMapping( filterInfo.getName(), "/api/*", DispatcherType.REQUEST );
+          .addFilterUrlMapping( filterInfo.getName(), "/api/folo*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/content*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/promote*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/admin/stores*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/browse*", DispatcherType.REQUEST );
 
         return di;
     }

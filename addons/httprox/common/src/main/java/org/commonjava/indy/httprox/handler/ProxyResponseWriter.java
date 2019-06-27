@@ -22,7 +22,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.bind.jaxrs.RequestContextConstants;
+import org.commonjava.indy.bind.jaxrs.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -34,6 +34,7 @@ import org.commonjava.indy.httprox.util.HttpConduitWrapper;
 import org.commonjava.indy.httprox.util.ProxyResponseHelper;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -50,7 +51,6 @@ import org.xnio.conduits.ConduitStreamSinkChannel;
 import org.xnio.conduits.ConduitStreamSourceChannel;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
@@ -59,12 +59,15 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static java.lang.Integer.parseInt;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_METHOD;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_LATENCY_NS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_END;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_START;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_END;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.CONNECT_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
@@ -118,6 +121,8 @@ public final class ProxyResponseWriter
 
     private final MetricRegistry metricRegistry;
 
+    private GoldenSignalsMetricSet sliMetricSet;
+
     private long startNanos;
 
     private final IndyMetricsConfig metricsConfig;
@@ -132,7 +137,8 @@ public final class ProxyResponseWriter
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
                                 final MDCManager mdcManager, final ProxyRepositoryCreator repoCreator,
                                 final StreamConnection accepted, final IndyMetricsConfig metricsConfig,
-                                final MetricRegistry metricRegistry, final CacheProducer cacheProducer,
+                                final MetricRegistry metricRegistry, final GoldenSignalsMetricSet sliMetricSet,
+                                final CacheProducer cacheProducer,
                                 final long start )
     {
         this.config = config;
@@ -146,6 +152,7 @@ public final class ProxyResponseWriter
         this.sourceChannel = accepted.getSourceChannel();
         this.metricsConfig = metricsConfig;
         this.metricRegistry = metricRegistry;
+        this.sliMetricSet = sliMetricSet;
         startNanos = start;
         this.cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 ); // e.g., foo.bar.ClassA -> f.b.ClassA
         this.proxyAuthCache = cacheProducer.getCache( HTTP_PROXY_AUTH_CACHE );
@@ -215,8 +222,20 @@ public final class ProxyResponseWriter
         Thread.currentThread().setName( "PROXY-" + httpRequest.getRequestLine().toString() );
         sinkChannel.getCloseSetter().set( ( c ) ->
         {
-            MDC.put( REQUEST_LATENCY_NS, String.valueOf( System.nanoTime() - startNanos ) );
-            MDC.put( HTTP_METHOD, httpRequest.getRequestLine().getMethod() );
+            long latency = System.nanoTime() - startNanos;
+
+            MDC.put( REQUEST_LATENCY_NS, String.valueOf( latency ) );
+            setContext( HTTP_METHOD, httpRequest.getRequestLine().getMethod() );
+
+            // log SLI metrics
+            sliMetricSet.function( GoldenSignalsMetricSet.FN_CONTENT_GENERIC ).ifPresent( ms ->{
+                ms.latency( latency ).call();
+
+                if ( parseInt( getContext( HTTP_STATUS, "200" ) ) > 499 )
+                {
+                    ms.error();
+                }
+            } );
 
             MDC.put( REQUEST_PHASE, REQUEST_PHASE_END );
             restLogger.info( "END {} (from: {})", httpRequest.getRequestLine(), peerAddress );
@@ -281,7 +300,7 @@ public final class ProxyResponseWriter
                         if ( trackingKey != null )
                         {
                             trackingId = trackingKey.getId();
-                            MDC.put( RequestContextConstants.CONTENT_TRACKING_ID, trackingId );
+                            MDC.put( RequestContextHelper.CONTENT_TRACKING_ID, trackingId );
                         }
 
                         String authCacheKey = generateAuthCacheKey( proxyUserPass );
@@ -336,7 +355,7 @@ public final class ProxyResponseWriter
 
                                 String[] toks = uri.split( ":" );
                                 String host = toks[0];
-                                int port = Integer.parseInt( toks[1] );
+                                int port = parseInt( toks[1] );
 
                                 directed = true;
 

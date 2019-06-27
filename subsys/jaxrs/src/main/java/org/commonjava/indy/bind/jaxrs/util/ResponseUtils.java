@@ -19,7 +19,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.bind.jaxrs.MDCManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.CreationDTO;
 import org.commonjava.indy.model.util.HttpUtils;
@@ -48,7 +47,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_STATUS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 
 public final class ResponseUtils
 {
@@ -307,11 +307,11 @@ public final class ResponseUtils
         ResponseBuilder builder = null;
         if ( code / 100 == 5 )
         {
-            MDC.put( HTTP_STATUS, String.valueOf( 502 ) );
+            setContext( HTTP_STATUS, String.valueOf( 502 ) );
             builder = Response.status( 502 );
         }
 
-        MDC.put( HTTP_STATUS, String.valueOf( code ) );
+        setContext( HTTP_STATUS, String.valueOf( code ) );
         builder = Response.status( code );
         if ( builderModifier != null )
         {
@@ -480,7 +480,7 @@ public final class ResponseUtils
             LOGGER.debug( "Sending response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
         }
 
-        MDC.put( HTTP_STATUS, code == null ? "000" : String.valueOf( code.getStatusCode() ) );
+        setContext( HTTP_STATUS, code == null ? "000" : String.valueOf( code.getStatusCode() ) );
 
         ResponseBuilder builder = Response.status( code ).type( MediaType.TEXT_PLAIN ).entity( msg );
 

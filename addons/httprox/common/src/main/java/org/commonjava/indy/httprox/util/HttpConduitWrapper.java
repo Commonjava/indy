@@ -15,15 +15,12 @@
  */
 package org.commonjava.indy.httprox.util;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
@@ -33,22 +30,17 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
-import org.xnio.channels.Channels;
 import org.xnio.channels.StreamSinkChannel;
-import org.xnio.conduits.ConduitStreamSinkChannel;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_STATUS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.ChannelUtils.DEFAULT_READ_BUF_SIZE;
 import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
 import static org.commonjava.indy.httprox.util.ChannelUtils.write;
@@ -106,7 +98,7 @@ public class HttpConduitWrapper
     public void writeStatus( final ApplicationStatus status )
             throws IOException
     {
-        MDC.put( HTTP_STATUS, String.valueOf( status.code() ) );
+        setContext( HTTP_STATUS, String.valueOf( status.code() ) );
 
         final ByteBuffer b =
                 ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", status.code(), status.message() ).getBytes() );
@@ -117,7 +109,7 @@ public class HttpConduitWrapper
     public void writeStatus( final int code, final String message )
             throws IOException
     {
-        MDC.put( HTTP_STATUS, String.valueOf( code ) );
+        setContext( HTTP_STATUS, String.valueOf( code ) );
 
         final ByteBuffer b = ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", code, message ).getBytes() );
         sinkChannel.write( b );

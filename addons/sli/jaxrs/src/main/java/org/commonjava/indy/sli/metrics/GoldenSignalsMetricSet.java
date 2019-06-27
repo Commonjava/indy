@@ -41,12 +41,15 @@ public class GoldenSignalsMetricSet
             FN_PROMOTION, FN_TRACKING_RECORD, FN_CONTENT_LISTING, FN_REPO_MGMT
     };
 
-    private Map<String, GoldenSignalsFunctionMetrics> functionMetrics;
+    private Map<String, GoldenSignalsFunctionMetrics> functionMetrics = new HashMap<>();
 
     public GoldenSignalsMetricSet()
     {
         Stream.of( FUNCTIONS )
-              .forEach( function -> functionMetrics.put( function, new GoldenSignalsFunctionMetrics( function ) ) );
+              .forEach( function -> {
+                  System.out.println( "Wiring SLI metrics for: " + function );
+                  functionMetrics.put( function, new GoldenSignalsFunctionMetrics( function ) );
+              } );
     }
 
     @Override

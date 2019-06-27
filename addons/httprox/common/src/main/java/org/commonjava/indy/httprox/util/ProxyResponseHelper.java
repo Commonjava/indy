@@ -47,7 +47,6 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.net.URL;
@@ -56,10 +55,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CONTENT_ENTRY_POINT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.METADATA_CONTENT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PACKAGE_TYPE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CONTENT_ENTRY_POINT;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.METADATA_CONTENT;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
@@ -127,8 +127,8 @@ public class ProxyResponseHelper
             }
         }
 
-        MDC.put( PACKAGE_TYPE, store.getKey().getPackageType() );
-        MDC.put( CONTENT_ENTRY_POINT, store.getKey().toString() );
+        setContext( PACKAGE_TYPE, store.getKey().getPackageType() );
+        setContext( CONTENT_ENTRY_POINT, store.getKey().toString() );
 
         return store;
     }
@@ -290,8 +290,8 @@ public class ProxyResponseHelper
                    final boolean writeBody, final UserPass proxyUserPass )
                     throws IOException, IndyWorkflowException
     {
-        MDC.put( PATH, path );
-        MDC.put( METADATA_CONTENT, Boolean.toString( false ) );
+        setContext( PATH, path );
+        setContext( METADATA_CONTENT, Boolean.toString( false ) );
 
         if ( metricsConfig == null || metricRegistry == null )
         {

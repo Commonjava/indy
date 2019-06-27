@@ -40,15 +40,13 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_LATENCY_NS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_END;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_START;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.X_FORWARDED_FOR;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.EXTERNAL_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.X_FORWARDED_FOR;
 
 @ApplicationScoped
 public class ResourceManagementFilter
