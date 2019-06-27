@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
+import org.commonjava.cdi.util.weft.ThreadContext;
+import org.slf4j.MDC;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
@@ -23,10 +26,45 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
 
 /**
- * The scope annotations (Thread, Header, MDC) tell where the constant is available/used.
+ * The scope annotations (Thread, Header, MDC) tell where the constant is available/used. The static methods are used
+ * to manage contextual state in both MDC and ThreadContext.
  */
-public class RequestContextConstants
+public class RequestContextHelper
 {
+    public static void setContext( final String key, final String value )
+    {
+        org.slf4j.MDC.put( key, value );
+        ThreadContext.getContext( true ).computeIfAbsent( key, k -> value );
+    }
+
+    public static String getContext( final String key )
+    {
+        return getContext( key, null );
+    }
+
+    public static String getContext( final String key, final String defaultValue )
+    {
+        ThreadContext ctx = ThreadContext.getContext( false );
+        if ( ctx != null )
+        {
+            Object v = ctx.get( key );
+            return v == null ? defaultValue : String.valueOf( v );
+        }
+
+        return defaultValue;
+    }
+
+    public static void clearContext( final String key )
+    {
+        org.slf4j.MDC.remove( key );
+
+        ThreadContext ctx = ThreadContext.getContext( false );
+        if ( ctx != null )
+        {
+            ctx.remove( key );
+        }
+    }
+
     // Scope annotations
 
     @Target( { FIELD } )
@@ -43,16 +81,16 @@ public class RequestContextConstants
 
     //
 
-    @MDC
+    @Thread @MDC
     public static final String REST_CLASS_PATH = "REST-class-path";
 
-    @MDC
+    @Thread @MDC
     public static final String REST_METHOD_PATH = "REST-method-path";
 
-    @MDC
+    @Thread @MDC
     public static final String REST_ENDPOINT_PATH = "REST-endpoint-path";
 
-    @MDC
+    @Thread @MDC
     public static final String REST_CLASS = "REST-class";
 
     @MDC
@@ -67,25 +105,25 @@ public class RequestContextConstants
     @MDC
     public static final String REQUEST_PHASE = "request-phase";
 
-    @MDC
+    @Thread @MDC
     public static final String PACKAGE_TYPE = "package-type";
 
-    @MDC
+    @Thread @MDC
     public static final String METADATA_CONTENT = "metadata-content";
 
-    @MDC
+    @Thread @MDC
     public static final String CONTENT_ENTRY_POINT = "content-entry-point";
 
-    @MDC
+    @Thread @MDC
     public static final String HTTP_METHOD = "http-method";
 
-    @MDC
+    @Thread @MDC
     public static final String HTTP_REQUEST_URI = "http-request-uri";
 
-    @MDC
+    @Thread @MDC
     public static final String PATH = "path";
 
-    @MDC
+    @Thread @MDC
     public static final String HTTP_STATUS = "http-status";
 
     @Header @MDC

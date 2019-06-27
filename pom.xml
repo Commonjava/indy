@@ -738,6 +738,12 @@
       </dependency>
 
       <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-sli-jaxrs</artifactId>
+        <version>1.8.0-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.commonjava.indy.rest</groupId>
         <artifactId>indy-rest-api</artifactId>
         <type>yaml</type>
@@ -878,6 +884,19 @@
         <artifactId>jgroups</artifactId>
         <version>${jgroupsVersion}</version>
       </dependency>
+<dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-sli-common</artifactId>
+        <version>1.8.0-SNAPSHOT</version>
+      </dependency>
+<dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-sli-common</artifactId>
+        <version>1.8.0-SNAPSHOT</version>
+        <classifier>confset</classifier>
+        <type>tar.gz</type>
+      </dependency>
+
       <!-- DO NOT REMOVE: append::depMgmt -->
 
 

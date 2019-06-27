@@ -15,12 +15,9 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.conf.EnvironmentConfig;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -36,13 +33,14 @@ import java.util.UUID;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.CLIENT_ADDR;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.COMPONENT_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.EXTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_METHOD;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.HTTP_REQUEST_URI;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.INTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PREFERRED_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.COMPONENT_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.EXTERNAL_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_REQUEST_URI;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class MDCManager
@@ -106,7 +104,8 @@ public class MDCManager
 
     public void putExtraHeaders( HttpServletRequest request )
     {
-        MDC.put( HTTP_METHOD, request.getMethod() );
+        // use setContext here so we get this value in ThreadContext too, for decision-making in the workflow, SLI classification, etc.
+        setContext( HTTP_METHOD, request.getMethod() );
         MDC.put( HTTP_REQUEST_URI, request.getRequestURI() );
         mdcHeadersList.forEach( ( header ) -> MDC.put( header, request.getHeader( header ) ) );
     }

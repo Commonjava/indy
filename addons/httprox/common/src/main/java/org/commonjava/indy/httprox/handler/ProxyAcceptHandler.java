@@ -17,13 +17,14 @@ package org.commonjava.indy.httprox.handler;
 
 import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.bind.jaxrs.RequestContextConstants;
+import org.commonjava.indy.bind.jaxrs.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.AccessChannel;
+import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
@@ -40,11 +41,10 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 import javax.inject.Inject;
 import java.io.IOException;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.PACKAGE_TYPE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_END;
-import static org.commonjava.indy.bind.jaxrs.RequestContextConstants.REQUEST_PHASE_START;
-import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
 
 /**
@@ -86,6 +86,9 @@ public class ProxyAcceptHandler
 
     @Inject
     private CacheProducer cacheProducer;
+
+    @Inject
+    private GoldenSignalsMetricSet sliMetricSet;
 
     protected ProxyAcceptHandler()
     {
@@ -131,8 +134,8 @@ public class ProxyAcceptHandler
     public void handleEvent( AcceptingChannel<StreamConnection> channel )
     {
         long start = System.nanoTime();
-        MDC.put( RequestContextConstants.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY.toString() );
-        MDC.put( PACKAGE_TYPE, AccessChannel.GENERIC_PROXY.packageType() );
+        MDC.put( RequestContextHelper.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY.toString() );
+        setContext( PACKAGE_TYPE, AccessChannel.GENERIC_PROXY.packageType() );
 
         final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -168,7 +171,7 @@ public class ProxyAcceptHandler
         final ProxyResponseWriter writer =
                         new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator,
                                                  cacheProvider, mdcManager, creator, accepted,
-                                                 metricsConfig, metricRegistry, cacheProducer, start );
+                                                 metricsConfig, metricRegistry, sliMetricSet, cacheProducer, start );
 
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter().set( writer );
