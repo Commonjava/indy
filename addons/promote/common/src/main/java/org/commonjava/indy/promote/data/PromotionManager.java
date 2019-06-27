@@ -168,7 +168,8 @@ public class PromotionManager
                              DownloadManager downloadManager, StoreDataManager storeManager,
                              Locker<StoreKey> byGroupTargetLocks,
                              PromoteConfig config, NotFoundCache nfc, WeftExecutorService asyncPromotionService,
-                             WeftExecutorService transferService )
+                             WeftExecutorService transferService,
+                             SpecialPathManager specialPathManager )
     {
         this.validator = validator;
         this.contentManager = contentManager;
@@ -180,6 +181,7 @@ public class PromotionManager
         this.transferService = transferService;
         this.promotionHelper = new PromotionHelper( storeManager, downloadManager, contentManager, nfc );
         this.conflictManager = new PathConflictManager();
+        this.specialPathManager = specialPathManager;
     }
 
     @Measure

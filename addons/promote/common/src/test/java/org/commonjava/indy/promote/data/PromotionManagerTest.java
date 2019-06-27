@@ -59,6 +59,7 @@ import org.commonjava.maven.galley.maven.rel.MavenModelProcessor;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.testing.maven.GalleyMavenFixture;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -121,6 +122,8 @@ public class PromotionManagerTest
 
     private static Cache<String, TransferMetadata> contentMetadata;
 
+    private SpecialPathManager specialPathManager;
+
     @BeforeClass
     public static void setupClass()
     {
@@ -160,8 +163,10 @@ public class PromotionManagerTest
         ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
                 "content-metadata", contentMetadata ) );
 
+        specialPathManager = new SpecialPathManagerImpl();
+
         contentManager = new DefaultContentManager( storeManager, downloadManager, new IndyObjectMapper( true ),
-                                                    new SpecialPathManagerImpl(), new MemoryNotFoundCache(),
+                                                    specialPathManager, new MemoryNotFoundCache(),
                                                     contentDigester, new ContentGeneratorManager() );
 
         dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
@@ -187,7 +192,7 @@ public class PromotionManagerTest
 
         manager =
                 new PromotionManager( validator, contentManager, downloadManager, storeManager,
-                                      new Locker<>(), config, nfc, svc, svc );
+                                      new Locker<>(), config, nfc, svc, svc, specialPathManager );
 
         executor = Executors.newCachedThreadPool();
     }
