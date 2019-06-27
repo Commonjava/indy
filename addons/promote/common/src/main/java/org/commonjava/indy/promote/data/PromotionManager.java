@@ -867,6 +867,30 @@ public class PromotionManager
         if ( target != null && target.exists() )
         {
             /*
+             * if we hit an existing metadata.xml, we remove it from both target repo and affected groups. The metadata
+             * will be regenerated on next request.
+             */
+            SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( target, tgt.getPackageType() );
+            if ( pathInfo != null && pathInfo.isMetadata() )
+            {
+                try
+                {
+                    target.delete( true );
+                    result.skipped = true;
+                    logger.info( "Metadata exists, mark as skipped and remove it, target: {}", target );
+                }
+                catch ( IOException e )
+                {
+                    String msg = String.format( "Failed to promote: %s. Target: %s. Failed to remove metadata.",
+                                                transfer, request.getTarget() );
+                    logger.info( msg );
+                    result.error = msg;
+                }
+
+                return result;
+            }
+
+            /*
              * e.g., fail in case of promotion of built artifacts into pnc-builds while it should pass (skip them)
              * in case of promotion of dependencies into shared-imports.
              */
