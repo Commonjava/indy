@@ -22,7 +22,6 @@ import org.commonjava.auditquery.history.ChangeType;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
-import org.commonjava.indy.change.event.IndyStoreEvent;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
 import org.commonjava.indy.data.StoreDataManager;
@@ -58,41 +57,73 @@ public class RepoChangeHandler
 
     public void generateRepoUpdateLog( @Observes final ArtifactStorePreUpdateEvent event )
     {
-        handleRepoChange( event, event::getOriginal, s -> s, false );
+        handleRepoChange( new DiffStoreFetcher()
+        {
+            @Override
+            public ArtifactStore getOriginal( ArtifactStore store )
+            {
+                return event.getOriginal( store );
+            }
+
+            @Override
+            public ArtifactStore getChanged( ArtifactStore store )
+            {
+                return store;
+            }
+
+            @Override
+            public Collection<ArtifactStore> getStores()
+            {
+                return event.getChanges();
+            }
+
+            @Override
+            public ChangeSummary getSummary()
+            {
+                return (ChangeSummary) event.getEventMetadata().get( StoreDataManager.CHANGE_SUMMARY );
+            }
+        }, false );
     }
 
     public void generateRepoDeleteLog( @Observes final ArtifactStoreDeletePreEvent event )
     {
-        handleRepoChange( event, s -> s, s -> null, true );
+        handleRepoChange( new DiffStoreFetcher()
+        {
+            @Override
+            public ArtifactStore getOriginal( ArtifactStore store )
+            {
+                return store;
+            }
+
+            @Override
+            public ArtifactStore getChanged( ArtifactStore store )
+            {
+                return null;
+            }
+
+            @Override
+            public Collection<ArtifactStore> getStores()
+            {
+                return event.getStores();
+            }
+
+            @Override
+            public ChangeSummary getSummary()
+            {
+                return (ChangeSummary) event.getEventMetadata().get( StoreDataManager.CHANGE_SUMMARY );
+            }
+        }, true );
     }
 
-    private void handleRepoChange( IndyStoreEvent event, OriginalStoreFetcher oriFetcher, ChangedStoreFetcher chgFetcher, boolean isDelete )
+    private void handleRepoChange( DiffStoreFetcher fetcher, boolean isDelete )
     {
         if ( !config.isEnabled() )
         {
             logger.info( "Repository changelog module is not enabled. Will ignore all change logs for propagation." );
             return;
         }
-        ChangeSummary changeSummary;
-        Collection<ArtifactStore> stores;
-        if ( event instanceof ArtifactStorePreUpdateEvent )
-        {
-            ArtifactStorePreUpdateEvent preUpdate = (ArtifactStorePreUpdateEvent) event;
-            stores = preUpdate.getChanges();
-            changeSummary = (ChangeSummary) preUpdate.getEventMetadata().get( StoreDataManager.CHANGE_SUMMARY );
-        }
-        else if ( event instanceof ArtifactStoreDeletePreEvent )
-        {
-            ArtifactStoreDeletePreEvent preDelete = (ArtifactStoreDeletePreEvent) event;
-            stores = preDelete.getStores();
-            changeSummary = (ChangeSummary) preDelete.getEventMetadata().get( StoreDataManager.CHANGE_SUMMARY );
-        }
-        else
-        {
-            logger.info(
-                    "Repository changelog module only handles artifact creation/update/delete event in pre phase." );
-            return;
-        }
+        ChangeSummary changeSummary = fetcher.getSummary();
+        Collection<ArtifactStore> stores = fetcher.getStores();
         String user = ChangeSummary.SYSTEM_USER;
         String summary = "";
         String version = "";
@@ -122,8 +153,8 @@ public class RepoChangeHandler
         {
             try
             {
-                ArtifactStore origin = oriFetcher.getOriginal( store );
-                ArtifactStore changed = chgFetcher.getChanged( store );
+                ArtifactStore origin = fetcher.getOriginal( store );
+                ArtifactStore changed = fetcher.getChanged( store );
                 String patchString = diffRepoChanges( changed, origin );
 
                 ChangeEvent changeLog = new ChangeEvent();
@@ -156,14 +187,12 @@ public class RepoChangeHandler
         }
     }
 
-    private interface OriginalStoreFetcher
+    private interface DiffStoreFetcher
     {
         ArtifactStore getOriginal( ArtifactStore store );
-    }
-
-    private interface ChangedStoreFetcher
-    {
-        ArtifactStore getChanged( ArtifactStore store );
+        ArtifactStore getChanged(ArtifactStore store);
+        Collection<ArtifactStore> getStores();
+        ChangeSummary getSummary();
     }
 
     private String diffRepoChanges( final ArtifactStore changed, final ArtifactStore origin )
