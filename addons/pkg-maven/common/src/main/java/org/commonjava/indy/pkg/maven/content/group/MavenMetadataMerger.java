@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
+
 @ApplicationScoped
 public class MavenMetadataMerger
 {
@@ -151,7 +153,10 @@ public class MavenMetadataMerger
             {
                 String latest = versionObjects.get( versionObjects.size() - 1 ).renderStandard();
                 versioning.setLatest( latest );
-                versioning.setRelease( latest );
+                if ( !latest.endsWith( LOCAL_SNAPSHOT_VERSION_PART ) )
+                {
+                    versioning.setRelease( latest );
+                }
             }
         }
     }
