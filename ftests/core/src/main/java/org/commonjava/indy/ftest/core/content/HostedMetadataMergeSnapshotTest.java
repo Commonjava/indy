@@ -25,6 +25,8 @@ public class HostedMetadataMergeSnapshotTest
 
     private static final String PATH = "/org/foo/bar/maven-metadata.xml";
 
+    private static final String SNAPSHOT_METADATA_PATH = "/org/foo/bar/%version%/maven-metadata.xml";
+
     private static final String POM_PATH_TEMPLATE = "/org/foo/bar/%version%/bar-%version%.pom";
 
     /* @formatter:off */
@@ -57,6 +59,25 @@ public class HostedMetadataMergeSnapshotTest
         "    <lastUpdated>20150722164334</lastUpdated>\n" +
         "  </versioning>\n" +
         "</metadata>\n";
+
+    private static final String SNAPSHOT_METADATA_CONTENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        + "<metadata>\n"
+        + "  <groupId>org.foo</groupId>\n"
+        + "  <artifactId>bar</artifactId>\n"
+        + "  <version>1.1-SNAPSHOT</version>\n"
+        + "  <versioning>\n"
+        + "    <snapshot>\n"
+        + "      <localCopy>true</localCopy>\n"
+        + "    </snapshot>\n"
+        + "    <snapshotVersions>\n"
+        + "      <snapshotVersion>\n"
+        + "        <extension>pom</extension>\n"
+        + "        <value>1.1-SNAPSHOT</value>\n"
+        + "        <updated>20190629074244</updated>\n"
+        + "      </snapshotVersion>\n"
+        + "    </snapshotVersions>\n"
+        + "  </versioning>\n"
+        + "</metadata>\n";
     /* @formatter:on */
 
     private HostedRepository hosted;
@@ -96,6 +117,9 @@ public class HostedMetadataMergeSnapshotTest
                     throws Exception
     {
         assertMetadataContent( hosted, PATH, AFTER_PROMOTE_CONTENT );
+
+        assertMetadataContent( hosted, SNAPSHOT_METADATA_PATH.replaceAll( "%version%", B_VERSION ),
+                               SNAPSHOT_METADATA_CONTENT );
     }
 
     @Override

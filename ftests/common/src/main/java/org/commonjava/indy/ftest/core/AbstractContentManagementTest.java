@@ -208,7 +208,7 @@ public class AbstractContentManagementTest
             {
                 sb.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
             }
-            else if ( line.contains( "<lastUpdated>" ) )
+            else if ( line.contains( "<lastUpdated>" ) || line.contains( "<updated>" ) )
             {
                 ; // skip
             }
