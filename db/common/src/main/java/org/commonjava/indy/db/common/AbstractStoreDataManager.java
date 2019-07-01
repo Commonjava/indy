@@ -135,6 +135,7 @@ public abstract class AbstractStoreDataManager
         StoreEventDispatcher dispatcher = getStoreEventDispatcher();
         if ( dispatcher != null && isStarted() && fireEvents )
         {
+            eventMetadata.set( StoreDataManager.CHANGE_SUMMARY, summary );
             dispatcher.deleting( eventMetadata, store );
         }
     }

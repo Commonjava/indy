@@ -20,6 +20,7 @@ import com.github.difflib.algorithm.DiffException;
 import org.commonjava.auditquery.history.ChangeEvent;
 import org.commonjava.auditquery.history.ChangeType;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
 import org.commonjava.indy.changelog.cache.RepoChangelogCache;
 import org.commonjava.indy.changelog.conf.RepoChangelogConfiguration;
@@ -27,7 +28,6 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,16 +55,75 @@ public class RepoChangeHandler
     @RepoChangelogCache
     private CacheHandle<String, ChangeEvent> repoChangelogCache;
 
-    public void generateRepoChangeLog( @Observes ArtifactStorePreUpdateEvent event )
+    public void generateRepoUpdateLog( @Observes final ArtifactStorePreUpdateEvent event )
+    {
+        handleRepoChange( new DiffStoreFetcher()
+        {
+            @Override
+            public ArtifactStore getOriginal( ArtifactStore store )
+            {
+                return event.getOriginal( store );
+            }
+
+            @Override
+            public ArtifactStore getChanged( ArtifactStore store )
+            {
+                return store;
+            }
+
+            @Override
+            public Collection<ArtifactStore> getStores()
+            {
+                return event.getChanges();
+            }
+
+            @Override
+            public ChangeSummary getSummary()
+            {
+                return (ChangeSummary) event.getEventMetadata().get( StoreDataManager.CHANGE_SUMMARY );
+            }
+        }, false );
+    }
+
+    public void generateRepoDeleteLog( @Observes final ArtifactStoreDeletePreEvent event )
+    {
+        handleRepoChange( new DiffStoreFetcher()
+        {
+            @Override
+            public ArtifactStore getOriginal( ArtifactStore store )
+            {
+                return store;
+            }
+
+            @Override
+            public ArtifactStore getChanged( ArtifactStore store )
+            {
+                return null;
+            }
+
+            @Override
+            public Collection<ArtifactStore> getStores()
+            {
+                return event.getStores();
+            }
+
+            @Override
+            public ChangeSummary getSummary()
+            {
+                return (ChangeSummary) event.getEventMetadata().get( StoreDataManager.CHANGE_SUMMARY );
+            }
+        }, true );
+    }
+
+    private void handleRepoChange( DiffStoreFetcher fetcher, boolean isDelete )
     {
         if ( !config.isEnabled() )
         {
-            logger.warn( "Repository changelog module is not enabled. Will ignore all change logs for propagation." );
+            logger.info( "Repository changelog module is not enabled. Will ignore all change logs for propagation." );
             return;
         }
-        Collection<ArtifactStore> stores = event.getChanges();
-        EventMetadata metadata = event.getEventMetadata();
-        ChangeSummary changeSummary = (ChangeSummary) metadata.get( StoreDataManager.CHANGE_SUMMARY );
+        ChangeSummary changeSummary = fetcher.getSummary();
+        Collection<ArtifactStore> stores = fetcher.getStores();
         String user = ChangeSummary.SYSTEM_USER;
         String summary = "";
         String version = "";
@@ -82,7 +141,9 @@ public class RepoChangeHandler
             if ( changeSummary.getRevisionId() != null )
             {
                 version = changeSummary.getRevisionId();
-            }else{
+            }
+            else
+            {
                 //FIXME: we need version not null here to let it be a key, not sure if timestamp is good here
                 version = String.format( "%s", timeStamp.getTime() );
             }
@@ -92,15 +153,23 @@ public class RepoChangeHandler
         {
             try
             {
-                ArtifactStore origin = event.getOriginal( store );
-                String patchString = diffRepoChanges( store, origin );
+                ArtifactStore origin = fetcher.getOriginal( store );
+                ArtifactStore changed = fetcher.getChanged( store );
+                String patchString = diffRepoChanges( changed, origin );
 
                 ChangeEvent changeLog = new ChangeEvent();
-                changeLog.setEventId( UUID.randomUUID().toString().replace( "-", "" ));
+                changeLog.setEventId( UUID.randomUUID().toString().replace( "-", "" ) );
                 changeLog.setStoreKey( store.getKey().toString() );
                 changeLog.setChangeTime( new Date() );
                 changeLog.setDiffContent( patchString );
-                changeLog.setChangeType( origin == null ? ChangeType.CREATE : ChangeType.UPDATE );
+                if ( isDelete )
+                {
+                    changeLog.setChangeType( ChangeType.DELETE );
+                }
+                else
+                {
+                    changeLog.setChangeType( origin == null ? ChangeType.CREATE : ChangeType.UPDATE );
+                }
                 changeLog.setUser( user );
                 changeLog.setSummary( summary );
                 changeLog.setVersion( version );
@@ -118,12 +187,21 @@ public class RepoChangeHandler
         }
     }
 
+    private interface DiffStoreFetcher
+    {
+        ArtifactStore getOriginal( ArtifactStore store );
+        ArtifactStore getChanged(ArtifactStore store);
+        Collection<ArtifactStore> getStores();
+        ChangeSummary getSummary();
+    }
+
     private String diffRepoChanges( final ArtifactStore changed, final ArtifactStore origin )
             throws JsonProcessingException, DiffException
     {
-        String changedString = objectMapper.writeValueAsString( changed );
+        String changedString = changed == null ? "{}" : objectMapper.writeValueAsString( changed );
         String originString = objectMapper.writeValueAsString( origin );
 
-        return DiffUtil.diffPatch( changed.getName() + ".json", changedString, originString );
+        return DiffUtil.diffPatch( changed == null ? origin.getName() : changed.getName() + ".json", changedString,
+                                   originString );
     }
 }
