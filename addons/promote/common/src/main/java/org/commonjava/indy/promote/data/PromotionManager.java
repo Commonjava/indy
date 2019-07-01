@@ -829,6 +829,7 @@ public class PromotionManager
             for ( Transfer transfer : transfers )
             {
                 pathsForMDC.add( transfer.getPath() );
+
                 PathTransferResult ret = doPathTransfer( transfer, tgt, request );
                 results.add( ret );
             }
@@ -840,6 +841,8 @@ public class PromotionManager
     private PathTransferResult doPathTransfer( Transfer transfer, ArtifactStore tgt, PathsPromoteRequest request )
                     throws IndyWorkflowException
     {
+        logger.debug( "doPathTransfer, transfer: {}, target: {}", transfer, tgt );
+
         long begin = System.currentTimeMillis();
 
         final String path = transfer.getPath();
@@ -866,32 +869,36 @@ public class PromotionManager
         }
 
         Transfer target = contentManager.getTransfer( tgt, path, UPLOAD );
-        if ( target != null && target.exists() )
+
+        /*
+         * if we hit an existing metadata.xml, we remove it from both target repo and affected groups. The metadata
+         * will be regenerated on next request.
+         */
+        SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( target, tgt.getPackageType() );
+        if ( pathInfo != null && pathInfo.isMetadata() )
         {
-            /*
-             * if we hit an existing metadata.xml, we remove it from both target repo and affected groups. The metadata
-             * will be regenerated on next request.
-             */
-            SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( target, tgt.getPackageType() );
-            if ( pathInfo != null && pathInfo.isMetadata() )
+            try
             {
-                try
+                if ( target != null && target.exists() )
                 {
                     target.delete( true );
-                    result.skipped = true;
-                    logger.info( "Metadata exists, mark as skipped and remove it, target: {}", target );
                 }
-                catch ( IOException e )
-                {
-                    String msg = String.format( "Failed to promote: %s. Target: %s. Failed to remove metadata.",
-                                                transfer, request.getTarget() );
-                    logger.info( msg );
-                    result.error = msg;
-                }
-
-                return result;
+                result.skipped = true;
+                logger.info( "Metadata, mark as skipped and remove it if exists, target: {}", target );
+            }
+            catch ( IOException e )
+            {
+                String msg = String.format( "Failed to promote: %s. Target: %s. Failed to remove metadata.",
+                                            transfer, request.getTarget() );
+                logger.info( msg );
+                result.error = msg;
             }
 
+            return result;
+        }
+
+        if ( target != null && target.exists() )
+        {
             /*
              * e.g., fail in case of promotion of built artifacts into pnc-builds while it should pass (skip them)
              * in case of promotion of dependencies into shared-imports.

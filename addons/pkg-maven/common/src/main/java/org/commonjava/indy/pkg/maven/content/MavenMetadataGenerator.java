@@ -85,6 +85,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -233,12 +234,6 @@ public class MavenMetadataGenerator
                                          store, parentPath ), e );
             return null;
         }
-        //
-        //        if ( firstLevel == null || firstLevel.isEmpty() )
-        //        {
-        //            logger.error( String.format( "SKIP: Listing is empty for: %s under path: %s", store, parentPath ) );
-        //            return null;
-        //        }
 
         String toGenPath = path;
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
@@ -248,13 +243,12 @@ public class MavenMetadataGenerator
 
         ArtifactPathInfo snapshotPomInfo = null;
 
-        if ( parentPath.endsWith( SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART ) )
+        if ( parentPath.endsWith( LOCAL_SNAPSHOT_VERSION_PART ) )
         {
             // If we're in a version directory, first-level listing should include a .pom file
             for ( final StoreResource resource : firstLevel )
             {
-                if ( resource.getPath()
-                             .endsWith( ".pom" ) )
+                if ( resource.getPath().endsWith( ".pom" ) )
                 {
                     snapshotPomInfo = ArtifactPathInfo.parse( resource.getPath() );
                     break;
@@ -592,6 +586,7 @@ public class MavenMetadataGenerator
 
         Versioning versioning = master.getVersioning();
         List<String> versions = versioning.getVersions();
+        logger.debug( "Get versioning, versions: {}, release: {}, latest: {}", versions, versioning.getRelease(), versioning.getLatest() );
         if ( versions != null && !versions.isEmpty() )
         {
             merger.sortVersions( master );
@@ -601,6 +596,12 @@ public class MavenMetadataGenerator
         List<SnapshotVersion> snapshotVersions = versioning.getSnapshotVersions();
         if ( snapshotVersions != null && !snapshotVersions.isEmpty() )
         {
+            if ( logger.isTraceEnabled() )
+            {
+                snapshotVersions.forEach( snapshotVersion -> {
+                    logger.trace( "snapshotVersion: {}", snapshotVersion.getVersion() );
+                } );
+            }
             return master;
         }
 
@@ -1004,6 +1005,7 @@ public class MavenMetadataGenerator
             }
 
             final String xmlStr = xml.toXML( doc, true );
+            logger.debug( "writeVersionMetadata, xmlStr: {}", xmlStr );
             stream = metadataFile.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
             stream.write( xmlStr.getBytes( "UTF-8" ) );
         }

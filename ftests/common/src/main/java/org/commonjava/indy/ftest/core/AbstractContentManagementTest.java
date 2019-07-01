@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.ftest.core;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -22,9 +23,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
@@ -164,4 +167,74 @@ public class AbstractContentManagementTest
               .store( repo.getKey(), path,
                       new ByteArrayInputStream( template.replaceAll( "%version%", version ).getBytes() ) );
     }
+
+    protected String assertMetadataContent( ArtifactStore store, String path, String expected )
+                    throws IndyClientException, IOException
+    {
+        try (InputStream in = client.content().get( store.getKey(), path ))
+        {
+            assertThat( "Content not found: " + path + " in store: " + store.getKey(), in, notNullValue() );
+
+            String foundContent = IOUtils.toString( in );
+
+            foundContent = groom( foundContent );
+            expected = groom( expected );
+
+            logger.info( "Checking content result from path: {} in store: {} with value:\n\n{}\n\nagainst expected value:\n\n{}",
+                         path, store.getKey(), foundContent, expected );
+
+            assertThat( "Content is wrong: " + path + " in store: " + store.getKey(), foundContent,
+                        equalTo( expected ) );
+
+            return foundContent;
+        }
+    }
+
+    /**
+     * Normalize xml, ignore the lastUpdated, sort the versioning release/latest, etc
+     */
+    private String groom( String metadataXML ) throws IOException
+    {
+        String release = null;
+        String latest = null;
+
+        StringBuilder sb = new StringBuilder();
+        BufferedReader reader = new BufferedReader(
+                        new InputStreamReader( new ByteArrayInputStream( metadataXML.getBytes() ) ) );
+        while ( reader.ready() )
+        {
+            String line = reader.readLine();
+            if ( line.contains( "<?xml" ) )
+            {
+                sb.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" );
+            }
+            else if ( line.contains( "<lastUpdated>" ) || line.contains( "<updated>" ) )
+            {
+                ; // skip
+            }
+            else if ( line.contains( "<release>" ) )
+            {
+                release = line;
+            }
+            else if ( line.contains( "<latest>" ) )
+            {
+                latest = line;
+            }
+            else
+            {
+                if ( line.contains( "<versions>" ) )
+                {
+                    if ( isNotBlank( release ) )
+                    {
+                        sb.append( release + "\n" );
+                    }
+                    sb.append( latest + "\n" );
+                }
+                sb.append( line + "\n" );
+            }
+        }
+        reader.close();
+        return sb.toString();
+    }
+
 }

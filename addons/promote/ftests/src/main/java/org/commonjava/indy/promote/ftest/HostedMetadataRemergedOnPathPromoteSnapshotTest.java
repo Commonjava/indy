@@ -15,12 +15,10 @@
  */
 package org.commonjava.indy.promote.ftest;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
-import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
@@ -30,17 +28,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -66,7 +59,7 @@ import static org.junit.Assert.assertThat;
  *     <li>Group G's metadata path P should reflect values in A and B</li>
  * </ul>
  */
-public class HostedMetadataRemergedOnPathPromoteTest
+public class HostedMetadataRemergedOnPathPromoteSnapshotTest
         extends AbstractContentManagementTest
 {
     private static final String HOSTED_A_NAME= "A";
@@ -74,8 +67,8 @@ public class HostedMetadataRemergedOnPathPromoteTest
 
     private static final String GROUP_G_NAME= "G";
 
-    private static final String A_VERSION = "1.0";
-    private static final String B_VERSION = "1.1";
+    private static final String A_VERSION = "1.0-SNAPSHOT";
+    private static final String B_VERSION = "1.1-SNAPSHOT";
 
     private static final String PATH = "/org/foo/bar/maven-metadata.xml";
 
@@ -87,7 +80,6 @@ public class HostedMetadataRemergedOnPathPromoteTest
         "  <groupId>org.foo</groupId>\n" +
         "  <artifactId>bar</artifactId>\n" +
         "  <versioning>\n" +
-        "    <release>%version%</release>\n" +
         "    <latest>%version%</latest>\n" +
         "    <versions>\n" +
         "      <version>%version%</version>\n" +
@@ -120,11 +112,10 @@ public class HostedMetadataRemergedOnPathPromoteTest
         "  <groupId>org.foo</groupId>\n" +
         "  <artifactId>bar</artifactId>\n" +
         "  <versioning>\n" +
-        "    <release>1.1</release>\n" +
-        "    <latest>1.1</latest>\n" +
+        "    <latest>1.1-SNAPSHOT</latest>\n" +
         "    <versions>\n" +
-        "      <version>1.0</version>\n" +
-        "      <version>1.1</version>\n" +
+        "      <version>1.0-SNAPSHOT</version>\n" +
+        "      <version>1.1-SNAPSHOT</version>\n" +
         "    </versions>\n" +
         "    <lastUpdated>20150722164334</lastUpdated>\n" +
         "  </versioning>\n" +
@@ -152,8 +143,13 @@ public class HostedMetadataRemergedOnPathPromoteTest
     {
         String message = "test setup";
 
-        a = client.stores().create( new HostedRepository( PKG_TYPE_MAVEN, HOSTED_A_NAME ), message, HostedRepository.class );
-        b = client.stores().create( new HostedRepository( PKG_TYPE_MAVEN, HOSTED_B_NAME ), message, HostedRepository.class );
+        a = new HostedRepository( PKG_TYPE_MAVEN, HOSTED_A_NAME );
+        a.setAllowSnapshots( true );
+        a = client.stores().create( a, message, HostedRepository.class );
+
+        b = new HostedRepository( PKG_TYPE_MAVEN, HOSTED_B_NAME );
+        b.setAllowSnapshots( true );
+        b = client.stores().create( b, message, HostedRepository.class );
 
         g = client.stores().create( new Group( PKG_TYPE_MAVEN, GROUP_G_NAME, a.getKey() ), message, Group.class );
 
