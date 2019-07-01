@@ -857,15 +857,21 @@ public class PromotionManager
             {
                 logger.info( "Skipping missing, not decoratable path: {}", transfer );
                 result.skipped = true;
+                return result;
             }
-            else
+
+            if ( promotionHelper.isRemoteTransfer( transfer ) )
+            {
+                transfer = promotionHelper.redownload( transfer ); // try re-download it for remote artifacts
+            }
+
+            if ( transfer == null || !transfer.exists() )
             {
                 String msg = String.format( "Failed to promote: %s. Source file not exists.", transfer );
                 logger.info( msg );
                 result.error = msg;
+                return result;
             }
-
-            return result;
         }
 
         Transfer target = contentManager.getTransfer( tgt, path, UPLOAD );

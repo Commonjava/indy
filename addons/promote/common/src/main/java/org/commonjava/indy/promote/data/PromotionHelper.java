@@ -8,6 +8,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.promote.metrics.PathGauges;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -16,7 +17,9 @@ import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -183,6 +186,30 @@ public class PromotionHelper
             }
         } );
         return errors;
+    }
+
+    public boolean isRemoteTransfer( Transfer transfer )
+    {
+        Location loc = transfer.getLocation();
+        if ( loc instanceof KeyedLocation )
+        {
+            return ((KeyedLocation) loc).getKey().getType() == StoreType.remote;
+        }
+        return false;
+    }
+
+    public Transfer redownload( Transfer transfer ) throws IndyWorkflowException
+    {
+        StoreKey key = ( (KeyedLocation) transfer.getLocation() ).getKey();
+        try
+        {
+            return contentManager.retrieve( storeManager.getArtifactStore( key ), transfer.getPath() );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Can not get store, key: {}", key );
+        }
+        return null;
     }
 
     // util class to hold repos check results
