@@ -50,7 +50,7 @@ public class IndyHealthCheckDeploymentProvider
         }
 
         final ServletInfo servlet =
-                        Servlets.servlet( "healthcheck", HealthCheckServlet.class ).addMapping( "/healthcheck" );
+                        Servlets.servlet( "healthcheck", HealthCheckServlet.class ).addMapping( "/healthcheck" ).addMapping( "/healthchecks" );
 
         final DeploymentInfo di = new DeploymentInfo().addListener(
                         Servlets.listener( IndyHealthCheckServletContextListener.class ) )

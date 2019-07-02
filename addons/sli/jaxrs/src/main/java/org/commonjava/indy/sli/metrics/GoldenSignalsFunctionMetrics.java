@@ -3,6 +3,7 @@ package org.commonjava.indy.sli.metrics;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.health.HealthCheck;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,5 +52,27 @@ public class GoldenSignalsFunctionMetrics
     {
         throughput.mark();
         return this;
+    }
+
+    public HealthCheck getHealthCheck()
+    {
+        return new GSFunctionHealthCheck();
+    }
+
+    final class GSFunctionHealthCheck
+            extends HealthCheck
+    {
+        @Override
+        protected Result check()
+                throws Exception
+        {
+            // FIXME: We need need to incorporate the SLO targets to determine whether health / unhealthy.
+            return Result.builder()
+                         .withDetail( "latency", latency.getSnapshot().get99thPercentile() )
+                         .withDetail( "errors", errors.getOneMinuteRate() )
+                         .withDetail( "throughput", throughput.getOneMinuteRate() )
+                         .healthy()
+                         .build();
+        }
     }
 }
