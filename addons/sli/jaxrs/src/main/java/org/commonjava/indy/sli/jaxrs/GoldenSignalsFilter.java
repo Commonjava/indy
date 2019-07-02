@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,7 +94,16 @@ public class GoldenSignalsFilter
     private List<String> getFunctions()
     {
         String restPath = getContext( REST_ENDPOINT_PATH );
+        if ( restPath == null )
+        {
+            return Collections.emptyList();
+        }
+
         String method = getContext( HTTP_METHOD );
+        if ( method == null )
+        {
+            return Collections.emptyList();
+        }
 
         if ( restPath.matches( "/api/promotion/.+/promote" ) )
         {
