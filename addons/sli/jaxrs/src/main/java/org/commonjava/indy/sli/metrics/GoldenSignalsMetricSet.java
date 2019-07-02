@@ -2,6 +2,8 @@ package org.commonjava.indy.sli.metrics;
 
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
+import com.codahale.metrics.health.HealthCheck;
+import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
@@ -11,7 +13,7 @@ import java.util.stream.Stream;
 
 @ApplicationScoped
 public class GoldenSignalsMetricSet
-        implements MetricSet
+        implements MetricSet, IndyCompoundHealthCheck
 {
     public static final String FN_CONTENT = "content";
 
@@ -64,5 +66,13 @@ public class GoldenSignalsMetricSet
     public Optional<GoldenSignalsFunctionMetrics> function( String name )
     {
         return functionMetrics.containsKey( name ) ? Optional.of( functionMetrics.get( name ) ) : Optional.empty();
+    }
+
+    @Override
+    public Map<String, HealthCheck> getHealthChecks()
+    {
+        Map<String, HealthCheck> checks = new HashMap<>();
+        functionMetrics.forEach( (key,value)-> checks.put( "sli.golden." + key, value.getHealthCheck() ) );
+        return checks;
     }
 }
