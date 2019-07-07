@@ -31,6 +31,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import org.commonjava.indy.subsys.http.util.IndySiteConfigLookup;
+import org.commonjava.maven.galley.io.TransferDecoratorManager;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.test.http.expect.ContentResponse;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.rules.ExternalResource;
@@ -46,17 +50,25 @@ public class HttpTestFixture
 
     private final IndyHttpProvider http;
 
+    private final TestCacheProvider cache;
+
     public HttpTestFixture( final String baseResource )
+    {
+        this( baseResource, null );
+    }
+
+    public HttpTestFixture( String baseResource, TransferDecorator transferDecorator )
     {
         server = new ExpectationServer( baseResource );
 
         try
         {
             folder.create();
+            cache = new TestCacheProvider( folder.newFolder( "cache" ), new TestFileEventManager(), new TransferDecoratorManager( transferDecorator ) );
         }
         catch ( final IOException e )
         {
-            throw new RuntimeException( "Failed to setup temp folder.", e );
+            throw new RuntimeException( "Failed to setup test fixture", e );
         }
 
         http = new IndyHttpProvider( new IndySiteConfigLookup( new MemoryStoreDataManager( true ) ) );
@@ -211,4 +223,8 @@ public class HttpTestFixture
         server.expect( method, testUrl, responseCode, (String) null );
     }
 
+    public Transfer getTransfer( ConcreteResource resource )
+    {
+        return cache.getTransfer( resource );
+    }
 }

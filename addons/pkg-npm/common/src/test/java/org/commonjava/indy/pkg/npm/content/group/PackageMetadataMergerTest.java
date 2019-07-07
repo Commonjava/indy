@@ -32,6 +32,7 @@ import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
 import org.commonjava.maven.galley.io.HashedLocationPathGenerator;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
+import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -70,7 +71,7 @@ public class PackageMetadataMergerTest
     public void setup() throws Exception
     {
         cacheProvider = new FileCacheProvider( temp.newFolder( "cache" ), new HashedLocationPathGenerator(),
-                                               new NoOpFileEventManager(), new NoOpTransferDecorator(), false );
+                                               new NoOpFileEventManager(), new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
     }
 
     @Test
