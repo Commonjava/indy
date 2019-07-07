@@ -39,6 +39,8 @@ public interface ContentManager
 
     String ENTRY_POINT_STORE = "entry-point-store";
 
+    String ENTRY_POINT_BASE_URI = "entry-point-base-uri";
+
     String SUPPRESS_EVENTS = "suppress-events";
 
     /**
