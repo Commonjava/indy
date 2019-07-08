@@ -314,14 +314,16 @@ public class DefaultIndyConfiguration
     }
     
     @ConfigName(value = "remote.nossl.hosts")
-    public void setRemoteNoSSLHosts(String hosts) {
+    public void setRemoteNoSSLHosts(String hosts) 
+    {
         String[] arrayNSSLHosts = hosts.split(",");
         this.remoteNoSSLHosts = new ArrayList<>();
         this.remoteNoSSLHosts.addAll(Arrays.asList(arrayNSSLHosts));
     }
 
     @Override
-    public List<String> remoteNoSSLHosts() {
+    public List<String> remoteNoSSLHosts() 
+    {
         return this.remoteNoSSLHosts;
     }
 }
