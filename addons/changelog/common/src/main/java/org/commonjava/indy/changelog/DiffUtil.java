@@ -46,7 +46,10 @@ public class DiffUtil
                                                                        DIFF_PATCH_CONTEXT_LINES );
         StringBuilder builder = new StringBuilder();
         patchDiff.forEach( ps -> builder.append( ps ).append( LINE_BREAK ) );
-        builder.deleteCharAt( builder.lastIndexOf( LINE_BREAK ) );
+        if ( builder.lastIndexOf( LINE_BREAK ) > 0 )
+        {
+            builder.deleteCharAt( builder.lastIndexOf( LINE_BREAK ) );
+        }
         return builder.toString();
     }
 
