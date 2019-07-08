@@ -60,7 +60,7 @@
     <profile>
       <id>release</id>
       <modules>
-        <module>docker</module>
+        <!-- <module>docker</module> -->
       </modules>
     </profile>
   </profiles>

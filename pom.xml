@@ -100,7 +100,7 @@
     <testEnvTimeoutMultiplier>2</testEnvTimeoutMultiplier>
     <testTimeout>120</testTimeout>
 
-    <disableLauncher>false</disableLauncher>
+    <disableLauncher>true</disableLauncher>
 
     <skipTests>false</skipTests>
 
