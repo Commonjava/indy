@@ -16,6 +16,7 @@
 package org.commonjava.indy.conf;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Base configuration for Indy's core. This basically sets timeouts for a couple different (relatively obscure) features.
@@ -80,4 +81,10 @@ public interface IndyConfiguration
     int getForkJoinPoolCommonParallelism();
 
     boolean isClusterEnabled();
+    
+    // #!#
+    boolean isSSLEnabled();
+    
+    List<String> remoteNoSSLHosts();
+    
 }

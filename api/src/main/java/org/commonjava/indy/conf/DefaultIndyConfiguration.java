@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -76,6 +79,12 @@ public class DefaultIndyConfiguration
     private Boolean clusterEnabled;
 
     private String nodeId;
+    
+    
+    // #!#
+    private Boolean sslEnabled;
+    
+    private List<String> remoteNoSSLHosts;
 
     public DefaultIndyConfiguration()
     {
@@ -289,5 +298,30 @@ public class DefaultIndyConfiguration
         props.setProperty( PROP_NODE_ID, getNodeId() );
 
         return props;
+    }
+    
+    // #!#
+    @ConfigName(value = "remote.ssl.required")
+    public void setSSLEnabled(Boolean sslEnabled) 
+    {
+        this.sslEnabled = sslEnabled;
+    }
+
+    @Override
+    public boolean isSSLEnabled() 
+    {
+        return this.sslEnabled == null ? false : this.sslEnabled;
+    }
+    
+    @ConfigName(value = "remote.nossl.hosts")
+    public void setRemoteNoSSLHosts(String hosts) {
+        String[] arrayNSSLHosts = hosts.split(",");
+        this.remoteNoSSLHosts = new ArrayList<>();
+        this.remoteNoSSLHosts.addAll(Arrays.asList(arrayNSSLHosts));
+    }
+
+    @Override
+    public List<String> remoteNoSSLHosts() {
+        return this.remoteNoSSLHosts;
     }
 }
