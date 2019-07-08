@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.8.0-SNAPSHOT</version>
+    <version>1.8.1-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-test</artifactId>
@@ -60,7 +60,7 @@
     <profile>
       <id>release</id>
       <modules>
-        <module>docker</module>
+        <!-- <module>docker</module> -->
       </modules>
     </profile>
   </profiles>
