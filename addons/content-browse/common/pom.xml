@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-content-browse</artifactId>
-    <version>1.8.0</version>
+    <version>1.8.1-SNAPSHOT</version>
   </parent>
   <artifactId>indy-content-browse-common</artifactId>
   <name>Indy :: Add-Ons :: Directory Content Browse :: Common</name>
