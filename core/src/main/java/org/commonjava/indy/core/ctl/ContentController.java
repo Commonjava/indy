@@ -43,7 +43,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.ws.rs.core.MediaType;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -57,11 +56,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
+import static org.jsoup.helper.StringUtil.isBlank;
 
 @ApplicationScoped
 public class ContentController
@@ -81,6 +81,8 @@ public class ContentController
     private static final int MAX_PEEK_COUNT = 100;
 
     public static final String HTML_TAG_PATTERN = ".*\\<(!DOCTYPE|[-_.a-zA-Z0-9]+).*";
+
+    public static final Pattern PATH_PATTERN = Pattern.compile( "^([-\\w:@&?=+,.!/~*'%$_;\\(\\)]*)?$");
 
     private static final int MAX_PEEK_BYTES = 16384;
 
@@ -192,13 +194,25 @@ public class ContentController
         return contentManager.store( store, path, stream, TransferOperation.UPLOAD, eventMetadata );
     }
 
-    private void validatePath( final StoreKey key, final String path )
-            throws IndyWorkflowException
+    private void validatePath( final StoreKey key, final String path ) throws IndyWorkflowException
     {
-        if ( isNotBlank( path ) && ( path.contains( "{" ) || path.contains( "}" ) || path.contains( "@@" ) ) )
+        if ( !isValidPath( path ) )
         {
             throw new IndyWorkflowException( 400, "Invalid path: %s (target repo: %s)", path, key );
         }
+    }
+
+    boolean isValidPath( String path )
+    {
+        if ( isBlank( path ) )
+        {
+            return false;
+        }
+        if ( !PATH_PATTERN.matcher( path ).matches() )
+        {
+            return false;
+        }
+        return true;
     }
 
     public void rescan( final StoreKey key )
