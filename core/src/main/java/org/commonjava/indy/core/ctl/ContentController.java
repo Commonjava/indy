@@ -82,7 +82,7 @@ public class ContentController
 
     public static final String HTML_TAG_PATTERN = ".*\\<(!DOCTYPE|[-_.a-zA-Z0-9]+).*";
 
-    public static final Pattern PATH_PATTERN = Pattern.compile( "^(/[-\\w:@&?=+,.!/~*'%$_;\\(\\)]*)?$");
+    public static final Pattern PATH_PATTERN = Pattern.compile( "^([-\\w:@&?=+,.!/~*'%$_;\\(\\)]*)?$");
 
     private static final int MAX_PEEK_BYTES = 16384;
 
@@ -207,10 +207,6 @@ public class ContentController
         if ( isBlank( path ) )
         {
             return false;
-        }
-        if ( !path.startsWith( "/" ) )
-        {
-            path = "/" + path;
         }
         if ( !PATH_PATTERN.matcher( path ).matches() )
         {
