@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>1.8.0.1-SNAPSHOT</version>
+    <version>1.8.0.1</version>
   </parent>
   <artifactId>indy-hosted-by-archive</artifactId>
   <name>Indy :: Add-Ons :: Hosted By Archive :: Parent</name>
