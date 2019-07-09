@@ -195,8 +195,7 @@ public class ContentController
     private void validatePath( final StoreKey key, final String path )
             throws IndyWorkflowException
     {
-        if ( isNotBlank( path ) && ( path.contains( "{" ) || path.contains( "}" ) || path.contains( "@@" )
-                || path.contains( "%" ) ) )
+        if ( isNotBlank( path ) && ( path.contains( "{" ) || path.contains( "}" ) || path.contains( "@@" ) ) )
         {
             throw new IndyWorkflowException( 400, "Invalid path: %s (target repo: %s)", path, key );
         }
