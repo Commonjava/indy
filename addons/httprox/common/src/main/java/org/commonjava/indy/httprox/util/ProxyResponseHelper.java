@@ -55,10 +55,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static java.lang.Integer.parseInt;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CONTENT_ENTRY_POINT;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.METADATA_CONTENT;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PATH;
+import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
@@ -287,7 +289,7 @@ public class ProxyResponseHelper
     }
 
     public void transfer( final HttpConduitWrapper http, final ArtifactStore store, final String path,
-                   final boolean writeBody, final UserPass proxyUserPass )
+                   final boolean writeBody, final UserPass proxyUserPass, final ProxyMeter meter )
                     throws IOException, IndyWorkflowException
     {
         setContext( PATH, path );
@@ -295,7 +297,7 @@ public class ProxyResponseHelper
 
         if ( metricsConfig == null || metricRegistry == null )
         {
-            doTransfer( http, store, path, writeBody, proxyUserPass );
+            doTransfer( http, store, path, writeBody, proxyUserPass, meter );
             return;
         }
 
@@ -303,7 +305,7 @@ public class ProxyResponseHelper
         Timer.Context timerContext = timer.time();
         try
         {
-            doTransfer( http, store, path, writeBody, proxyUserPass );
+            doTransfer( http, store, path, writeBody, proxyUserPass, meter );
         }
         finally
         {
@@ -312,7 +314,7 @@ public class ProxyResponseHelper
     }
 
     private void doTransfer( final HttpConduitWrapper http, final ArtifactStore store, final String path,
-                             final boolean writeBody, final UserPass proxyUserPass )
+                             final boolean writeBody, final UserPass proxyUserPass, final ProxyMeter meter )
                     throws IOException, IndyWorkflowException
     {
         if ( transferred )
@@ -344,6 +346,7 @@ public class ProxyResponseHelper
 
         if ( txfr != null && txfr.exists() )
         {
+            meter.reportResponseSummary();
             http.writeExistingTransfer( txfr, writeBody, path, eventMetadata );
         }
         else
