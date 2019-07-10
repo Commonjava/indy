@@ -45,7 +45,7 @@
               <exclude>**/LICENSE*</exclude>
               <exclude>app/docs/**</exclude>
               <exclude>**/*.groovy</exclude>
-              <exclude>bower_components/**</exclude>
+              <exclude>dist/**</exclude>
               <exclude>node/**</exclude>
               <exclude>node_modules/**</exclude>
               <exclude>.babelrc</exclude>
@@ -88,6 +88,7 @@
             <goals>
               <goal>npm</goal>
             </goals>
+            <phase>generate-resources</phase>
             <configuration>
               <arguments>ci</arguments>
             </configuration>
