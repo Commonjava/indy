@@ -15,10 +15,14 @@
  */
 package org.commonjava.indy.httprox.handler;
 
+import org.apache.http.ProtocolVersion;
+import org.apache.http.RequestLine;
+import org.apache.http.message.BasicRequestLine;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.util.CertificateAndKeys;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
+import org.commonjava.indy.httprox.util.ProxyMeter;
 import org.commonjava.indy.httprox.util.ProxyResponseHelper;
 import org.commonjava.indy.httprox.util.OutputStreamSinkChannel;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -50,7 +54,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
+import static java.lang.Integer.parseInt;
 import static javax.ws.rs.HttpMethod.GET;
 import static javax.ws.rs.HttpMethod.HEAD;
 import static org.commonjava.propulsor.boot.PortFinder.findOpenPort;
@@ -80,6 +86,8 @@ public class ProxyMITMSSLServer implements Runnable
 
     private final HttproxConfig config;
 
+    private ProxyMeter meterTemplate;
+
     private volatile int serverPort;
 
     private final String trackingId;
@@ -93,8 +101,8 @@ public class ProxyMITMSSLServer implements Runnable
     private final ProxyResponseHelper proxyResponseHelper;
 
     public ProxyMITMSSLServer( String host, int port, String trackingId, UserPass proxyUserPass,
-                               ProxyResponseHelper proxyResponseHelper,
-                               ContentController contentController, CacheProvider cacheProvider, HttproxConfig config )
+                               ProxyResponseHelper proxyResponseHelper, ContentController contentController,
+                               CacheProvider cacheProvider, HttproxConfig config, final ProxyMeter meterTemplate )
     {
         this.host = host;
         this.port = port;
@@ -104,6 +112,7 @@ public class ProxyMITMSSLServer implements Runnable
         this.contentController = contentController;
         this.cacheProvider = cacheProvider;
         this.config = config;
+        this.meterTemplate = meterTemplate;
     }
 
     @Override
@@ -127,6 +136,7 @@ public class ProxyMITMSSLServer implements Runnable
 
     private char[] keystorePassword = "password".toCharArray(); // keystore password can not be null
 
+    // TODO: What are the memory footprint implications of this? It seems like these will never be purged.
     private static Map<String, KeyStore> keystoreMap = new ConcurrentHashMap(); // cache keystore, key: hostname
 
     /**
@@ -182,62 +192,80 @@ public class ProxyMITMSSLServer implements Runnable
         SSLServerSocketFactory sslServerSocketFactory = getSSLServerSocketFactory( host );
 
         serverPort = findOpenPort( FIND_OPEN_PORT_MAX_RETRIES );
+
+        // TODO: What is the performance implication of opening a new server socket each time? Should we try to cache these?
         sslServerSocket = sslServerSocketFactory.createServerSocket( serverPort );
 
         logger.debug( "MITM server started, {}", sslServerSocket );
         started = true;
 
         socket = sslServerSocket.accept();
-        socket.setSoTimeout( (int) TimeUnit.MINUTES.toMillis( config.getMITMSoTimeoutMinutes() ) );
-
-        logger.debug( "MITM server accepted" );
-        BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
-
-        String path = null;
-        StringBuilder sb = new StringBuilder();
-        String line;
+        long startNanos = System.nanoTime();
         String method = null;
-        while ( ( line = in.readLine() ) != null )
-        {
-            sb.append( line + "\n" );
-            if ( line.startsWith( GET ) || line.startsWith( HEAD ) ) // only care about GET/HEAD
-            {
-                String[] toks = line.split("\\s+");
-                method = toks[0];
-                path = toks[1];
-            }
-            else if ( line.isEmpty() )
-            {
-                logger.debug( "Get empty line and break" );
-                break;
-            }
-        }
+        String requestLine = null;
 
-        logger.debug( "Request:\n{}", sb.toString() );
-
-        if ( path != null )
+        ProxyMeter meter = meterTemplate.copy( startNanos, method, requestLine );
+        try
         {
-            try
-            {
-                transferRemote( socket, host, port, method, path );
-            }
-            catch ( Exception e )
-            {
-                logger.error( "Transfer remote failed", e );
-            }
-        }
-        else
-        {
-            logger.debug( "MITM server failed to get request from client" );
-        }
+            socket.setSoTimeout( (int) TimeUnit.MINUTES.toMillis( config.getMITMSoTimeoutMinutes() ) );
 
-        in.close();
-        socket.close();
-        sslServerSocket.close();
-        logger.debug( "MITM server closed" );
+            logger.debug( "MITM server accepted" );
+            BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
+
+            // TODO: Should we implement a while loop around this with some sort of read timeout, in case multiple requests are inlined?
+            // In principle, any sort of network communication is permitted over this port, but even if we restrict this to
+            // HTTPS only, couldn't there be multiple requests over the port at a time?
+            String path = null;
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ( ( line = in.readLine() ) != null )
+            {
+                sb.append( line + "\n" );
+                if ( line.startsWith( GET ) || line.startsWith( HEAD ) ) // only care about GET/HEAD
+                {
+                    String[] toks = line.split("\\s+");
+                    method = toks[0];
+                    path = toks[1];
+                    requestLine = line;
+                }
+                else if ( line.isEmpty() )
+                {
+                    logger.debug( "Get empty line and break" );
+                    break;
+                }
+            }
+
+            logger.debug( "Request:\n{}", sb.toString() );
+
+            if ( path != null )
+            {
+                try
+                {
+                    transferRemote( socket, host, port, method, path, meter );
+                }
+                catch ( Exception e )
+                {
+                    logger.error( "Transfer remote failed", e );
+                }
+            }
+            else
+            {
+                logger.debug( "MITM server failed to get request from client" );
+            }
+
+            in.close();
+            socket.close();
+            sslServerSocket.close();
+            logger.debug( "MITM server closed" );
+        }
+        finally
+        {
+            meter.reportResponseSummary();
+        }
     }
 
-    private void transferRemote( Socket socket, String host, int port, String method, String path ) throws Exception
+    private void transferRemote( Socket socket, String host, int port, String method, String path,
+                                 final ProxyMeter meter ) throws Exception
     {
         String protocol = "https";
         String auth = null;
@@ -254,7 +282,7 @@ public class ProxyMITMSSLServer implements Runnable
                             new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
                                                     cacheProvider );
             proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ),
-                                          proxyUserPass );
+                                          proxyUserPass, meter );
             http.close();
         }
     }
