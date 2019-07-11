@@ -63,14 +63,17 @@ public class ProxyMeter
             setContext( HTTP_METHOD, method );
 
             // log SLI metrics
-            sliMetricSet.function( GoldenSignalsMetricSet.FN_CONTENT_GENERIC ).ifPresent( ms ->{
-                ms.latency( latency ).call();
+            if ( sliMetricSet != null )
+            {
+                sliMetricSet.function( GoldenSignalsMetricSet.FN_CONTENT_GENERIC ).ifPresent( ms ->{
+                    ms.latency( latency ).call();
 
-                if ( parseInt( getContext( HTTP_STATUS, "200" ) ) > 499 )
-                {
-                    ms.error();
-                }
-            } );
+                    if ( parseInt( getContext( HTTP_STATUS, "200" ) ) > 499 )
+                    {
+                        ms.error();
+                    }
+                } );
+            }
 
             MDC.put( REQUEST_PHASE, REQUEST_PHASE_END );
             restLogger.info( "END {} (from: {})", requestLine, peerAddress );
