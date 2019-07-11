@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-models-parent</artifactId>
-    <version>1.8.0-SNAPSHOT</version>
+    <version>1.8.1-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-model-core-java</artifactId>

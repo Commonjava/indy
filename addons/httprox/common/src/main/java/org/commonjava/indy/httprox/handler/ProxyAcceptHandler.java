@@ -143,23 +143,23 @@ public class ProxyAcceptHandler
         try
         {
             accepted = channel.accept();
-
-            MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
-            LoggerFactory.getLogger( PROXY_METRIC_LOGGER )
-                         .info( "START HTTProx request (from: {})", accepted.getPeerAddress() );
-            MDC.remove( REQUEST_PHASE );
-
         }
         catch ( IOException e )
         {
-            logger.error( "Failed to addMetadata httprox connection: " + e.getMessage(), e );
-            return;
+            logger.error( "Failed to accept httprox connection: " + e.getMessage(), e );
+            accepted = null;
         }
 
+        // to remove the return in the catch clause, which is bad form...
         if ( accepted == null )
         {
             return;
         }
+
+        MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
+        LoggerFactory.getLogger( PROXY_METRIC_LOGGER )
+                     .info( "START HTTProx request (from: {})", accepted.getPeerAddress() );
+        MDC.remove( REQUEST_PHASE );
 
         logger.debug( "accepted {}", accepted.getPeerAddress() );
 
