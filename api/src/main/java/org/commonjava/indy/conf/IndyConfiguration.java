@@ -81,10 +81,9 @@ public interface IndyConfiguration
     int getForkJoinPoolCommonParallelism();
 
     boolean isClusterEnabled();
+
+    boolean isSSLRequired();
     
-    // #!#
-    boolean isSSLEnabled();
-    
-    List<String> remoteNoSSLHosts();
+    List<String> getRemoteNoSSLHosts();
     
 }
