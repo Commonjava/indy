@@ -23,7 +23,6 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreUpdateEvent;
-import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
@@ -48,6 +47,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -235,10 +235,11 @@ public class StoreContentListener
     private void clearPaths( final Set<StoreKey> keys, Predicate<? super String> pathFilter, final Set<Group> groups,
                              final boolean deleteOriginPath )
     {
-        // ### Not use completion service and drain. We need to make this thread-off since the clean-up may take long time.
-        //
-        //DrainingExecutorCompletionService<Integer> clearService =
-        //                new DrainingExecutorCompletionService<>( cleanupExecutor );
+        //NOSSUP-76 we still need to use synchronized/drain way to clean the paths now, because sometimes the new used metadata
+        //          not updated in time when some builds want to consume them as the obsolete metadata not cleared under
+        //          async way.
+        DrainingExecutorCompletionService<Integer> clearService =
+                        new DrainingExecutorCompletionService<>( cleanupExecutor );
 
         keys.forEach( key -> {
             ArtifactStore origin;
@@ -271,7 +272,24 @@ public class StoreContentListener
             cleanupExecutor.submit( clearPathsProcessor( origin, pathFilter, affectedGroups, deleteOriginPath ) );
         } );
 
-        //drainAndCount( clearService, "stores: " + keys );
+        drainAndCount( clearService, "stores: " + keys );
+    }
+
+    private int drainAndCount( final DrainingExecutorCompletionService<Integer> clearService, final String description )
+    {
+        AtomicInteger count = new AtomicInteger( 0 );
+        try
+        {
+            clearService.drain( count::addAndGet );
+        }
+        catch ( InterruptedException | ExecutionException e )
+        {
+            logger.error( "Failed to clear paths related to change in " + description, e );
+        }
+
+        logger.debug( "Cleared {} paths for changes in {}", count.get(), description );
+
+        return count.get();
     }
 
     /**
@@ -284,8 +302,8 @@ public class StoreContentListener
     {
         if ( origin.getType() == StoreType.remote )
         {
-            return () -> listPathsAnd( affectedGroups, mergablePath(), ( p, g ) -> clearPath( p, g ),
-                                                this.directContentAccess );
+            return () -> listPathsAnd( affectedGroups, mergablePath(), this::clearPath,
+                                       this.directContentAccess );
         }
         else
         {
