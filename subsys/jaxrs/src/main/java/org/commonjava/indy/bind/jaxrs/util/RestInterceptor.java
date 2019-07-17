@@ -69,7 +69,7 @@ public class RestInterceptor
             }
         }
 
-        LoggerFactory.getLogger( context.getTarget().getClass() ).info( "Interceptor decorating MDC." );
+        LoggerFactory.getLogger( context.getTarget().getClass() ).trace( "Interceptor decorating MDC." );
 
         return context.proceed();
     }
