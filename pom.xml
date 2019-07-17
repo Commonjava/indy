@@ -37,7 +37,6 @@
     <connection>scm:git:https://github.com/Commonjava/indy.git</connection>
     <developerConnection>scm:git:git@github.com:Commonjava/indy.git</developerConnection>
     <url>http://github.com/Commonjava/indy</url>
-    <tag>indy-parent-1.8.0</tag>
   </scm>
 
   <repositories>
