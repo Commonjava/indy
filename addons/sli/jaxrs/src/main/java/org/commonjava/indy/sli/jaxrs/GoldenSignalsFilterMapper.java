@@ -46,7 +46,7 @@ public class GoldenSignalsFilterMapper
         di.addFilter( filterInfo )
           .addFilterUrlMapping( filterInfo.getName(), "/api/folo/*", DispatcherType.REQUEST )
           .addFilterUrlMapping( filterInfo.getName(), "/api/content/*", DispatcherType.REQUEST )
-          .addFilterUrlMapping( filterInfo.getName(), "/api/promote/*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/promotion/*", DispatcherType.REQUEST )
           .addFilterUrlMapping( filterInfo.getName(), "/api/admin/stores/*", DispatcherType.REQUEST )
           .addFilterUrlMapping( filterInfo.getName(), "/api/browse/*", DispatcherType.REQUEST );
 
