@@ -28,7 +28,7 @@ import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.NoCacheTransferDecorator;
-import org.commonjava.maven.galley.io.TransferDecoratorPipeline;
+import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
 import org.commonjava.maven.galley.io.checksum.Sha1GeneratorFactory;
@@ -43,7 +43,6 @@ import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
-import org.commonjava.maven.galley.transport.htcli.ContentsFilteringTransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
 import org.commonjava.util.partyline.lock.global.GlobalLockManager;
 import org.commonjava.util.partyline.lock.global.GlobalLockOwner;
@@ -58,6 +57,8 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -100,7 +101,6 @@ public class DefaultGalleyStorageProvider
     private SpecialPathManager specialPathManager;
 
     @ExecutorConfig( named = "galley-delete-executor", threads = 5, priority = 2 )
-//    @WeftManaged
     @WeftScheduledExecutor
     @Inject
     private ScheduledExecutorService deleteExecutor;
@@ -111,9 +111,12 @@ public class DefaultGalleyStorageProvider
     @Inject
     private Instance<IndyChecksumAdvisor> checksumAdvisors;
 
+    @Inject
+    private Instance<TransferDecorator> transferDecorators;
+
     private TransportManagerConfig transportManagerConfig;
 
-    private TransferDecorator transferDecorator;
+    private TransferDecoratorManager transferDecorator;
 
     private CacheProvider cacheProvider;
 
@@ -143,67 +146,6 @@ public class DefaultGalleyStorageProvider
 
         specialPathManager.registerSpecialPathInfo( infoSpi );
 
-        ChecksummingDecoratorAdvisor readAdvisor = (transfer, op, eventMetadata)->{
-            ChecksummingDecoratorAdvisor.ChecksumAdvice result = NO_DECORATE;
-            if ( checksumAdvisors != null )
-            {
-                for ( IndyChecksumAdvisor advisor : checksumAdvisors )
-                {
-                    Optional<ChecksummingDecoratorAdvisor.ChecksumAdvice> advice =
-                            advisor.getChecksumReadAdvice( transfer, op, eventMetadata );
-
-                    if ( advice.isPresent() )
-                    {
-                        ChecksummingDecoratorAdvisor.ChecksumAdvice checksumAdvice = advice.get();
-
-                        if ( checksumAdvice.ordinal() > result.ordinal() )
-                        {
-                            result = checksumAdvice;
-                            if ( checksumAdvice == CALCULATE_AND_WRITE )
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            logger.debug( "Advising {} for {} of: {}", result, op, transfer );
-            return result;
-        };
-
-        ChecksummingDecoratorAdvisor writeAdvisor = (transfer, op, eventMetadata)->{
-            ChecksummingDecoratorAdvisor.ChecksumAdvice result = NO_DECORATE;
-            if ( TransferOperation.GENERATE == op )
-            {
-                result = CALCULATE_AND_WRITE;
-            }
-            else if ( checksumAdvisors != null )
-            {
-                for ( IndyChecksumAdvisor advisor : checksumAdvisors )
-                {
-                    Optional<ChecksummingDecoratorAdvisor.ChecksumAdvice> advice =
-                            advisor.getChecksumWriteAdvice( transfer, op, eventMetadata );
-
-                    if ( advice.isPresent() )
-                    {
-                        ChecksummingDecoratorAdvisor.ChecksumAdvice checksumAdvice = advice.get();
-                        if ( checksumAdvice.ordinal() > result.ordinal() )
-                        {
-                            result = checksumAdvice;
-                            if ( checksumAdvice == CALCULATE_AND_WRITE )
-                            {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            logger.debug( "Advising {} for {} of: {}", result, op, transfer );
-            return result;
-        };
-
         if ( specialPathSetProducers != null )
         {
             specialPathSetProducers.forEach(
@@ -213,14 +155,7 @@ public class DefaultGalleyStorageProvider
                     } );
         }
 
-        transferDecorator = new TransferDecoratorPipeline(
-                new ChecksummingTransferDecorator( readAdvisor, writeAdvisor,
-                                                   specialPathManager, contentMetadataConsumer,
-                                                   new Md5GeneratorFactory(), new Sha1GeneratorFactory(),
-                                                   new Sha256GeneratorFactory() ),
-                new ContentsFilteringTransferDecorator(),
-                new NoCacheTransferDecorator( specialPathManager ),
-                new UploadMetadataGenTransferDecorator( specialPathManager ) );
+        setupTransferDecoratorPipeline();
 
         final File storeRoot = config.getStorageRootDirectory();
 
@@ -237,6 +172,90 @@ public class DefaultGalleyStorageProvider
         transportManagerConfig = new TransportManagerConfig();
     }
 
+    /**
+     * The order is important. We put the checksum decorator at the last because some decorators may change the content.
+     */
+    private void setupTransferDecoratorPipeline()
+    {
+        List<TransferDecorator> decorators = new ArrayList<>();
+        decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
+        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager ) );
+        for ( TransferDecorator decorator : transferDecorators )
+        {
+            decorators.add( decorator );
+        }
+        decorators.add( getChecksummingTransferDecorator() );
+        transferDecorator = new TransferDecoratorManager( decorators );
+    }
+
+    private ChecksummingTransferDecorator getChecksummingTransferDecorator()
+    {
+        ChecksummingDecoratorAdvisor readAdvisor = ( transfer, op, eventMetadata ) -> {
+            ChecksummingDecoratorAdvisor.ChecksumAdvice result = NO_DECORATE;
+            if ( checksumAdvisors != null )
+            {
+                for ( IndyChecksumAdvisor advisor : checksumAdvisors )
+                {
+                    Optional<ChecksummingDecoratorAdvisor.ChecksumAdvice> advice =
+                                    advisor.getChecksumReadAdvice( transfer, op, eventMetadata );
+
+                    if ( advice.isPresent() )
+                    {
+                        ChecksummingDecoratorAdvisor.ChecksumAdvice checksumAdvice = advice.get();
+
+                        if ( checksumAdvice.ordinal() > result.ordinal() )
+                        {
+                            result = checksumAdvice;
+                            if ( checksumAdvice == CALCULATE_AND_WRITE )
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            logger.debug( "Advising {} for {} of: {}", result, op, transfer );
+            return result;
+        };
+
+        ChecksummingDecoratorAdvisor writeAdvisor = ( transfer, op, eventMetadata ) -> {
+            ChecksummingDecoratorAdvisor.ChecksumAdvice result = NO_DECORATE;
+            if ( TransferOperation.GENERATE == op )
+            {
+                result = CALCULATE_AND_WRITE;
+            }
+            else if ( checksumAdvisors != null )
+            {
+                for ( IndyChecksumAdvisor advisor : checksumAdvisors )
+                {
+                    Optional<ChecksummingDecoratorAdvisor.ChecksumAdvice> advice =
+                                    advisor.getChecksumWriteAdvice( transfer, op, eventMetadata );
+
+                    if ( advice.isPresent() )
+                    {
+                        ChecksummingDecoratorAdvisor.ChecksumAdvice checksumAdvice = advice.get();
+                        if ( checksumAdvice.ordinal() > result.ordinal() )
+                        {
+                            result = checksumAdvice;
+                            if ( checksumAdvice == CALCULATE_AND_WRITE )
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            logger.debug( "Advising {} for {} of: {}", result, op, transfer );
+            return result;
+        };
+
+        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager,
+                                                  contentMetadataConsumer, new Md5GeneratorFactory(),
+                                                  new Sha1GeneratorFactory(), new Sha256GeneratorFactory() );
+    }
+
     @Produces
     @Default
     public TransportManagerConfig getTransportManagerConfig()
@@ -244,12 +263,14 @@ public class DefaultGalleyStorageProvider
         return transportManagerConfig;
     }
 
+/*
     @Produces
     @Default
     public TransferDecorator getTransferDecorator()
     {
         return transferDecorator;
     }
+*/
 
     @Produces
     @Default

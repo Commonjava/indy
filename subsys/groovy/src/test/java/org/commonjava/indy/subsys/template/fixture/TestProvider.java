@@ -28,6 +28,7 @@ import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
+import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
@@ -95,7 +96,7 @@ public class TestProvider
 
             cacheProvider =
                     new FileCacheProvider( temp.newFolder( "storage" ), indyPathGenerator, fileEventManager,
-                                           transferDecorator );
+                                           new TransferDecoratorManager( transferDecorator ) );
         }
         catch ( IOException e )
         {

@@ -305,7 +305,8 @@ public class NPMContentAccessHandler
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( packageType, st, name );
 
-        eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
+        eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, baseUri );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
