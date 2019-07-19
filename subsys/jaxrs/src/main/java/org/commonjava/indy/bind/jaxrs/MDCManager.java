@@ -80,11 +80,6 @@ public class MDCManager
 
     public void putExternalID( String externalID )
     {
-        if ( externalID == null )
-        {
-            logger.debug( "No externalId" );
-            return;
-        }
         String internalID = UUID.randomUUID().toString();
         String preferredID = externalID != null ? externalID : internalID;
         putRequestIDs( internalID, externalID, preferredID );
@@ -92,9 +87,13 @@ public class MDCManager
 
     public void putRequestIDs( String internalID, String externalID, String preferredID )
     {
-        MDC.put( INTERNAL_ID, internalID );
-        MDC.put( EXTERNAL_ID, externalID );
         MDC.put( PREFERRED_ID, preferredID );
+        MDC.put( INTERNAL_ID, internalID );
+
+        if ( externalID != null )
+        {
+            MDC.put( EXTERNAL_ID, externalID );
+        }
     }
 
     public void putUserIP( String userIp )

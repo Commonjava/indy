@@ -253,12 +253,10 @@ public final class ProxyResponseWriter
                     }
 
                     final UserPass proxyUserPass = parse( ApplicationHeader.proxy_authorization, httpRequest, null );
+                    logger.info( "Using proxy authentication: {}", proxyUserPass );
 
                     mdcManager.putExtraHeaders( httpRequest );
-                    if ( proxyUserPass != null )
-                    {
-                        mdcManager.putExternalID( proxyUserPass.getUser() );
-                    }
+                    mdcManager.putExternalID( proxyUserPass == null ? null : proxyUserPass.getUser() );
 
                     logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass,
                                   config.isSecured(), config.getTrackingType() );
