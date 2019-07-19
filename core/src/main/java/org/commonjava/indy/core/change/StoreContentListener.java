@@ -269,7 +269,7 @@ public class StoreContentListener
 
             logger.debug( "Submit clean job for origin: {}", origin );
             final Set<Group> affectedGroups = affected;
-            cleanupExecutor.submit( clearPathsProcessor( origin, pathFilter, affectedGroups, deleteOriginPath ) );
+            clearService.submit( clearPathsProcessor( origin, pathFilter, affectedGroups, deleteOriginPath ) );
         } );
 
         drainAndCount( clearService, "stores: " + keys );
