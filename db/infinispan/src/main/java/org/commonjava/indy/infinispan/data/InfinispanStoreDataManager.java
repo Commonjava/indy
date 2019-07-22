@@ -17,9 +17,7 @@ package org.commonjava.indy.infinispan.data;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.data.NoOpStoreEventDispatcher;
-import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.data.*;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
@@ -52,6 +50,10 @@ public class InfinispanStoreDataManager
     @Inject
     @StoreDataCache
     private CacheHandle<StoreKey, String> stores;
+
+    @Inject
+    @RemoteStoreValidator
+    StoreValidatorRemote storeValidatorRemote;
 
     @Inject
     private CacheProducer cacheProducer;

@@ -18,10 +18,7 @@ package org.commonjava.indy.db.common;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
-import org.commonjava.indy.data.ArtifactStoreQuery;
-import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.data.*;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -31,6 +28,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +50,10 @@ public abstract class AbstractStoreDataManager
     protected final Locker<StoreKey> opLocks = new Locker<>(); // used internally
 
     abstract protected StoreEventDispatcher getStoreEventDispatcher();
+
+    @Inject
+    @RemoteStoreValidator
+    StoreValidatorRemote storeValidatorRemote;
 
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
