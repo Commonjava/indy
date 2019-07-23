@@ -65,7 +65,8 @@
               <exclude>**/*.groovy</exclude>
               <exclude>bower_components/**</exclude>
               <exclude>node/**</exclude>
-              <exclude>node_modules/**</exclude>
+              <exclude>**/node_modules/**</exclude>
+              <exclude>**/.gitkeep</exclude>
             </excludes>
             <mapping>
               <service>SCRIPT_STYLE</service>
