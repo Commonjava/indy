@@ -31,7 +31,6 @@
   <name>Indy :: Embedder-Tests :: Parent</name>
 
   <modules>
-    <module>savant</module>
     <module>sonar-report</module>
   </modules>
 
