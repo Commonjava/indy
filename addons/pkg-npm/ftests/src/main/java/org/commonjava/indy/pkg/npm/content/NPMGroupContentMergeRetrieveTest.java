@@ -17,6 +17,7 @@ package org.commonjava.indy.pkg.npm.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -90,7 +91,10 @@ public class NPMGroupContentMergeRetrieveTest
         assertThat( remote, notNullValue() );
         assertThat( group, notNullValue() );
 
-        assertThat( IOUtils.toString( remote ), equalTo( CONTENT_1 ) );
+        String contextUrl = UrlUtils.buildUrl( fixture.getUrl(), "content", NPM_PKG_KEY, repoX.getType().name(), REPO_X );
+        String maskedUrl = contextUrl + "/jquery/-/jquery-1.5.1.tgz";
+
+        assertThat( IOUtils.toString( remote ), equalTo( CONTENT_1.replace( "https://registry.npmjs.org/jquery/-/jquery-1.5.1.tgz", maskedUrl ) ) );
 
         IndyObjectMapper mapper = new IndyObjectMapper( true );
         PackageMetadata merged = mapper.readValue( IOUtils.toString( group ), PackageMetadata.class );

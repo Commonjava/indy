@@ -15,40 +15,17 @@
  */
 package org.commonjava.indy.pkg.maven.content.group;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.maven.artifact.repository.metadata.Metadata;
-import org.apache.maven.artifact.repository.metadata.Versioning;
-import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
-import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
-import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.atlas.maven.ident.util.VersionUtils;
-import org.commonjava.atlas.maven.ident.version.SingleVersion;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
 import org.commonjava.maven.galley.io.HashedLocationPathGenerator;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
-import org.commonjava.maven.galley.model.ConcreteResource;
-import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -71,7 +48,7 @@ public class MavenMetadataMergerTest
             throws Exception
     {
         cacheProvider = new FileCacheProvider( temp.newFolder( "cache" ), new HashedLocationPathGenerator(),
-                                               new NoOpFileEventManager(), new NoOpTransferDecorator(), false );
+                                               new NoOpFileEventManager(), new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
     }
 
 //    @Test

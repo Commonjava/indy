@@ -32,10 +32,10 @@ import org.commonjava.maven.galley.internal.xfer.ListingHandler;
 import org.commonjava.maven.galley.internal.xfer.UploadHandler;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
 import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
+import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
-import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
@@ -53,7 +53,7 @@ public class GalleyFixture
 
     private final FileEventManager events;
 
-    private final TransferDecorator decorator;
+    private final TransferDecoratorManager decorator;
 
     private final ExecutorService executor;
 
@@ -70,7 +70,7 @@ public class GalleyFixture
         transports = new TransportManagerImpl( new HttpClientTransport( new HttpImpl(passwordManager) ) );
 
         events = new IndyFileEventManager();
-        decorator = new NoOpTransferDecorator();
+        decorator = new TransferDecoratorManager( new NoOpTransferDecorator() );
         cache = new FileCacheProvider( repoRoot, new IndyPathGenerator(), events, decorator );
         executor = Executors.newFixedThreadPool( 2 );
         batchExecutor = Executors.newFixedThreadPool( 2 );
@@ -107,7 +107,7 @@ public class GalleyFixture
         return events;
     }
 
-    public TransferDecorator getDecorator()
+    public TransferDecoratorManager getDecorator()
     {
         return decorator;
     }

@@ -37,6 +37,11 @@
             <groupId>org.commonjava.indy</groupId>
             <artifactId>indy-pkg-npm-model-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-test-fixtures-core</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>
