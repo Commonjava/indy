@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.sli.jaxrs;
 
+import org.commonjava.indy.sli.metrics.GoldenSignalsFunctionMetrics;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.slf4j.MDC;
 
@@ -79,6 +80,12 @@ public class GoldenSignalsFilter
         try
         {
             filterChain.doFilter( servletRequest, servletResponse );
+        }
+        catch ( IOException | ServletException | RuntimeException e )
+        {
+            new HashSet<>( getFunctions() ).forEach(
+                    function -> metricSet.function( function ).ifPresent( GoldenSignalsFunctionMetrics::error ) );
+            throw e;
         }
         finally
         {
