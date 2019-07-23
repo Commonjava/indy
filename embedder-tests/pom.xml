@@ -31,7 +31,6 @@
   <name>Indy :: Embedder-Tests :: Parent</name>
 
   <modules>
-    <module>savant</module>
     <module>sonar-report</module>
   </modules>
 
@@ -100,7 +99,6 @@
   <profiles>
     <profile>
       <id>run-its</id>
-
       <properties>
         <skipITs>${quickITs}</skipITs>
       </properties>
@@ -108,7 +106,6 @@
     <profile>
       <id>run-metrics</id>
       <modules>
-        <module>savant</module>
         <module>sonar-report</module>
       </modules>
     </profile>
