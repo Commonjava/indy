@@ -26,6 +26,8 @@ import org.commonjava.indy.client.core.helper.HttpResources;
 import java.io.IOException;
 import java.util.zip.ZipInputStream;
 
+import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 
 /**
@@ -40,22 +42,29 @@ public class IndyDiagnosticsClientModule
     {
         HttpGet get = new HttpGet( buildUrl( getHttp().getBaseUrl(), "/diag/bundle" ) );
         HttpResources resources = getHttp().getRaw( get );
-
-        HttpResponse response = resources.getResponse();
-        StatusLine sl = response.getStatusLine();
-        if ( sl.getStatusCode() != 200 )
-        {
-            throw new IndyClientException( sl.getStatusCode(), "Error retrieving diagnostic bundle: %s",
-                                           new IndyResponseErrorDetails( response ) );
-        }
-
+        HttpResponse response = null;
         try
         {
+            response = resources.getResponse();
+            StatusLine sl = response.getStatusLine();
+            if ( sl.getStatusCode() != 200 )
+            {
+                closeQuietly( resources );
+                throw new IndyClientException( sl.getStatusCode(), "Error retrieving diagnostic bundle: %s",
+                                               new IndyResponseErrorDetails( response ) );
+            }
+
             return new ZipInputStream( resources.getResponseStream() );
         }
         catch ( IOException e )
         {
+            closeQuietly( resources );
             throw new IndyClientException( "Failed to read bundle stream from response: %s", e, new IndyResponseErrorDetails( response ) );
+        }
+        catch ( RuntimeException e )
+        {
+            closeQuietly( resources );
+            throw e;
         }
     }
 }
