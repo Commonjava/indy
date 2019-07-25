@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.folo.model.TrackingKey;
@@ -59,6 +60,7 @@ import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEA
 @Api( value = "FOLO Tracked Content Access and Storage",
       description = "Tracks retrieval and management of file/artifact content." )
 @Path( "/api/folo/track/{id}/{packageType}/{type: (hosted|group|remote)}/{name}" )
+@REST
 public class FoloContentAccessResource
         implements IndyResources
 {
