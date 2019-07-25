@@ -63,6 +63,7 @@ public class IndyHttpProvider
     {
         passwordManager = new org.commonjava.maven.galley.auth.AttributePasswordManager();
         http = new HttpImpl( passwordManager );
+
         httpFactory = new HttpFactory( new AttributePasswordManager( siteConfigLookup ) );
     }
 
