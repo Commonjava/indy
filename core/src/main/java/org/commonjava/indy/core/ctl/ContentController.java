@@ -17,6 +17,7 @@ package org.commonjava.indy.core.ctl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.commonjava.indy.IndyRequestConstants;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
@@ -69,7 +70,8 @@ public class ContentController
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public static final String LISTING_HTML_FILE = "index.html";
+    @Deprecated
+    public static final String LISTING_HTML_FILE = IndyRequestConstants.LISTING_HTML_FILE;
 
     public static final String CONTENT_BROWSE_ROOT = "/browse";
 

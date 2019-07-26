@@ -31,24 +31,24 @@ import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
  */
 public class RequestContextHelper
 {
-    public static void setContext( final String key, final String value )
+    public static void setContext( final String key, final Object value )
     {
-        org.slf4j.MDC.put( key, value );
+        org.slf4j.MDC.put( key, String.valueOf( value ) );
         ThreadContext.getContext( true ).computeIfAbsent( key, k -> value );
     }
 
-    public static String getContext( final String key )
+    public static <T> T getContext( final String key )
     {
         return getContext( key, null );
     }
 
-    public static String getContext( final String key, final String defaultValue )
+    public static <T> T getContext( final String key, final T defaultValue )
     {
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( ctx != null )
         {
             Object v = ctx.get( key );
-            return v == null ? defaultValue : String.valueOf( v );
+            return v == null ? defaultValue : (T) v;
         }
 
         return defaultValue;
@@ -63,6 +63,11 @@ public class RequestContextHelper
         {
             ctx.remove( key );
         }
+    }
+
+    public static long getRequestEndNanos()
+    {
+        return getContext( END_NANOS, System.nanoTime() );
     }
 
     // Scope annotations
@@ -80,6 +85,9 @@ public class RequestContextHelper
     private @interface Thread{}
 
     //
+
+    @Thread
+    public static final String END_NANOS = "latency-end-nanos";
 
     @Thread @MDC
     public static final String REST_CLASS_PATH = "REST-class-path";

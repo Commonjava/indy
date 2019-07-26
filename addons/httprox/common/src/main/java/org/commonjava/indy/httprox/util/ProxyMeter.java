@@ -68,7 +68,7 @@ public class ProxyMeter
                 sliMetricSet.function( GoldenSignalsMetricSet.FN_CONTENT_GENERIC ).ifPresent( ms ->{
                     ms.latency( latency ).call();
 
-                    if ( parseInt( getContext( HTTP_STATUS, "200" ) ) > 499 )
+                    if ( getContext( HTTP_STATUS, 200 ) > 499 )
                     {
                         ms.error();
                     }

@@ -98,7 +98,7 @@ public class HttpConduitWrapper
     public void writeStatus( final ApplicationStatus status )
             throws IOException
     {
-        setContext( HTTP_STATUS, String.valueOf( status.code() ) );
+        setContext( HTTP_STATUS, status.code() );
 
         final ByteBuffer b =
                 ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", status.code(), status.message() ).getBytes() );
@@ -109,7 +109,7 @@ public class HttpConduitWrapper
     public void writeStatus( final int code, final String message )
             throws IOException
     {
-        setContext( HTTP_STATUS, String.valueOf( code ) );
+        setContext( HTTP_STATUS, code );
 
         final ByteBuffer b = ByteBuffer.wrap( String.format( "HTTP/1.1 %d %s\r\n", code, message ).getBytes() );
         sinkChannel.write( b );
