@@ -624,14 +624,7 @@ public class IndyClientHttp
     public void close()
     {
         logger.debug( "Shutting down indy client HTTP manager" );
-        try
-        {
-            factory.close();
-        }
-        catch ( IOException e )
-        {
-            logger.debug( "Shutting down indy client HTTP factory error", e ); // log and return quietly
-        }
+        factory.shutdownNow();
     }
 
     /**

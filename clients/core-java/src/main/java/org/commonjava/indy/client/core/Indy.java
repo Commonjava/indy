@@ -30,12 +30,9 @@ import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Properties;
 import java.util.Set;
 
 import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
@@ -124,6 +121,7 @@ public class Indy
         loadApiVersion();
         this.http = new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location,
                                         getApiVersion() );
+
         this.moduleRegistry = new HashSet<>();
 
         setupStandardModules();
@@ -139,7 +137,6 @@ public class Indy
     {
         this( location, passwordManager, null, modules );
     }
-
 
     public Indy( SiteConfig location, PasswordManager passwordManager, IndyObjectMapper objectMapper, IndyClientModule... modules )
             throws IndyClientException
