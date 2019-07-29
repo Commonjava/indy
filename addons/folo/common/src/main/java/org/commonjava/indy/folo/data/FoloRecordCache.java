@@ -17,6 +17,7 @@ package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.folo.change.FoloBackupListener;
+import org.commonjava.indy.folo.change.FoloExpirationWarningListener;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
@@ -65,11 +66,19 @@ public class FoloRecordCache
     @Inject
     private FoloBackupListener foloBackupListener;
 
+    @Inject
+    private FoloExpirationWarningListener expirationWarningListener;
+
     @PostConstruct
     private void init()
     {
         sealedRecordCache.executeCache( (cache) -> {
             cache.addListener( foloBackupListener );
+            return null;
+        } );
+
+        inProgressRecordCache.executeCache( (cache) ->{
+            cache.addListener( expirationWarningListener );
             return null;
         } );
     }
