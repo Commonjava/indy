@@ -22,13 +22,14 @@ import com.codahale.metrics.health.HealthCheck;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class GoldenSignalsFunctionMetrics
 {
     private String name;
+
+    private Meter load = new Meter();
 
     private Timer latency = new Timer();
 
@@ -47,6 +48,7 @@ public class GoldenSignalsFunctionMetrics
         metrics.put( name + ".latency", latency );
         metrics.put( name + ".errors", errors );
         metrics.put( name + ".throughput", throughput );
+        metrics.put( name + ".load", load );
 
         return metrics;
     }
@@ -74,6 +76,12 @@ public class GoldenSignalsFunctionMetrics
         return new GSFunctionHealthCheck();
     }
 
+    public GoldenSignalsFunctionMetrics started()
+    {
+        load.mark();
+        return this;
+    }
+
     final class GSFunctionHealthCheck
             extends HealthCheck
     {
@@ -86,6 +94,7 @@ public class GoldenSignalsFunctionMetrics
                          .withDetail( "latency", latency.getSnapshot().get99thPercentile() )
                          .withDetail( "errors", errors.getOneMinuteRate() )
                          .withDetail( "throughput", throughput.getOneMinuteRate() )
+                         .withDetail( "load", load.getOneMinuteRate() )
                          .healthy()
                          .build();
         }

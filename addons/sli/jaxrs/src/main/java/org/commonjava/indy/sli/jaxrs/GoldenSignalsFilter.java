@@ -15,8 +15,21 @@
  */
 package org.commonjava.indy.sli.jaxrs;
 
+import org.commonjava.indy.IndyRequestConstants;
+import org.commonjava.indy.bind.jaxrs.RequestContextHelper;
+import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.CacheOnlyLocation;
+import org.commonjava.indy.model.galley.GroupLocation;
+import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.indy.sli.metrics.GoldenSignalsFunctionMetrics;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
+import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -27,24 +40,19 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.Integer.parseInt;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.METADATA_CONTENT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_LATENCY_NS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_ENDPOINT_PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_CONTENT;
@@ -62,8 +70,20 @@ import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_TRACKING
 public class GoldenSignalsFilter
     implements Filter
 {
+    private static final Set<String> MODIFY_METHODS = new HashSet<>( asList( "POST", "PUT", "DELETE" ) );
+
+    private static final Set<String> FOLO_RECORD_ENDPOINTS = new HashSet<>( asList( "record", "report" ) );
+
+    private static final Set<String> DEPRECATED_CONTENT_ENDPOINTS =
+            new HashSet<>( asList( "group", "hosted", "remote" ) );
+
     @Inject
     private GoldenSignalsMetricSet metricSet;
+
+    @Inject
+    private SpecialPathManager specialPathManager;
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
     public void init( final FilterConfig filterConfig )
@@ -77,23 +97,36 @@ public class GoldenSignalsFilter
     {
         long start = System.nanoTime();
 
+        HttpServletRequest req = (HttpServletRequest) servletRequest;
+        HttpServletResponse resp = (HttpServletResponse) servletResponse;
         try
         {
-            filterChain.doFilter( servletRequest, servletResponse );
+            Set<String> functions = new HashSet<>( getFunctions( req.getPathInfo(), req.getMethod() ) );
+            functions.forEach( function -> metricSet.function( function ).ifPresent(
+                    GoldenSignalsFunctionMetrics::started ) );
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Failed to classify / measure load for: " + req.getPathInfo(), e );
+        }
+
+        try
+        {
+            filterChain.doFilter( req, resp );
         }
         catch ( IOException | ServletException | RuntimeException e )
         {
-            new HashSet<>( getFunctions() ).forEach(
+            new HashSet<>( getFunctions( req.getPathInfo(), req.getMethod() ) ).forEach(
                     function -> metricSet.function( function ).ifPresent( GoldenSignalsFunctionMetrics::error ) );
             throw e;
         }
         finally
         {
-            long end = System.nanoTime();
+            long end = RequestContextHelper.getRequestEndNanos();
             MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
 
-            Set<String> functions = new HashSet<>( getFunctions() );
-            boolean error = isError();
+            Set<String> functions = new HashSet<>( getFunctions( req.getPathInfo(), req.getMethod() ) );
+            boolean error = resp.getStatus() > 499;
 
             functions.forEach( function -> metricSet.function( function ).ifPresent( ms -> {
                 ms.latency( end-start ).call();
@@ -105,75 +138,123 @@ public class GoldenSignalsFilter
         }
     }
 
-    private boolean isError()
+    private List<String> getFunctions( String restPath, String method )
     {
-        int status = parseInt( getContext( HTTP_STATUS, "200" ) );
-        return status > 499;
-    }
-
-    private static final Set<String> MODIFY_METHODS = new HashSet<>( asList( "POST", "PUT", "DELETE" ) );
-
-    private List<String> getFunctions()
-    {
-        String restPath = getContext( REST_ENDPOINT_PATH );
-        if ( restPath == null )
+        String[] pathParts = restPath.split("/" );
+        if ( pathParts.length < 2 )
         {
-            return Collections.emptyList();
+            return emptyList();
         }
 
-        String method = getContext( HTTP_METHOD );
-        if ( method == null )
-        {
-            return Collections.emptyList();
-        }
+        String[] classifierParts = new String[pathParts.length-1];
+        System.arraycopy( pathParts, 1, classifierParts, 0, classifierParts.length );
 
-        if ( restPath.matches( "/api/promotion/.+/promote" ) )
+        String restPrefix = join( classifierParts, '/' );
+
+        if ( "promotion".equals( classifierParts[0] ) && "promote".equals( classifierParts[2] ) )
         {
             // this is a promotion request
             return singletonList( FN_PROMOTION );
         }
-        else if ( restPath.matches( "/api/admin/stores/.+" ) )
+        else if ( "admin".equals( classifierParts[0] ) && "stores".equals( classifierParts[1] )
+                && classifierParts.length > 2 )
         {
-            if ( MODIFY_METHODS.contains( method ))
+            if ( MODIFY_METHODS.contains( method ) )
             {
                 // this is a store modification request
                 return singletonList( FN_REPO_MGMT );
             }
         }
-        else if ( restPath.matches( "/api/browse/.+" ) )
+        else if ( "browse".equals( classifierParts[0] ) )
         {
             // this is a browse / list request
             return singletonList( FN_CONTENT_LISTING );
         }
-        else if ( restPath.matches( "/api/folo/admin/[^/]+/(record|report)" ) )
+        else if ( ( "content".equals( classifierParts[0] ) && classifierParts.length > 4 && ( restPath.endsWith( "/" )
+                || restPath.endsWith( IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
+        {
+            // this is an old version of the browse / list request
+            return singletonList( FN_CONTENT_LISTING );
+        }
+        else if ( ( DEPRECATED_CONTENT_ENDPOINTS.contains( classifierParts[0] ) && ( restPath.endsWith( "/" )
+                || restPath.endsWith( IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
+        {
+            // this is an old, OLD version of the browse / list request
+            return singletonList( FN_CONTENT_LISTING );
+        }
+        else if ( restPrefix.startsWith( "folo/admin/" ) && FOLO_RECORD_ENDPOINTS.contains( classifierParts[3] ) )
         {
             // this is a request for a tracking record
             return singletonList( FN_TRACKING_RECORD );
         }
-        else if ( restPath.matches( "/api/(content/.+|folo/track/[^/]+/.+)" ) )
+        else if ( restPrefix.startsWith( "folo/track/" ) && classifierParts.length > 6 )
         {
-            boolean isMetadata = parseBoolean( getContext( METADATA_CONTENT, "false" ) );
-            String packageType = getContext( PACKAGE_TYPE );
+            String packageType = classifierParts[3];
+            boolean isMetadata = isMetadata( packageType, classifierParts[4], classifierParts[5], pathParts, 6 );
 
             if ( PKG_TYPE_MAVEN.equals( packageType ) )
             {
-                return isMetadata ?
-                        asList( FN_METADATA, FN_METADATA_MAVEN ) :
-                        asList( FN_CONTENT, FN_CONTENT_MAVEN );
+                return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
             }
             else if ( PKG_TYPE_NPM.equals( packageType ) )
             {
-                return isMetadata ?
-                        asList( FN_METADATA, FN_METADATA_NPM ) :
-                        asList( FN_CONTENT, FN_CONTENT_NPM );
+                return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
             }
+        }
+        else if ( "content".equals( classifierParts[0] ) && classifierParts.length > 4 )
+        {
+            String packageType = classifierParts[1];
+            boolean isMetadata = isMetadata( packageType, classifierParts[2], classifierParts[3], pathParts, 5 );
+
+            if ( PKG_TYPE_MAVEN.equals( packageType ) )
+            {
+                return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
+            }
+            else if ( PKG_TYPE_NPM.equals( packageType ) )
+            {
+                return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+            }
+        }
+        else if ( DEPRECATED_CONTENT_ENDPOINTS.contains( classifierParts[0] ) && classifierParts.length > 2 )
+        {
+            boolean isMetadata = isMetadata( PKG_TYPE_MAVEN, classifierParts[0], classifierParts[1], pathParts, 2 );
+            return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
         }
 
         return emptyList();
+    }
+
+    private boolean isMetadata( final String packageType, final String storeType, final String storeName, final String[] pathParts, final int realPathStartIdx )
+    {
+        Location location = getLightweightLocation( packageType, storeType, storeName );
+
+        String[] realPathParts = new String[pathParts.length-(realPathStartIdx+1)];
+        System.arraycopy( pathParts, 2, realPathParts, 0, realPathParts.length );
+
+        String realPath = join( realPathParts, '/' );
+
+        SpecialPathInfo specialPathInfo = specialPathManager.getSpecialPathInfo( location, realPath, packageType );
+
+        return specialPathInfo != null && specialPathInfo.isMetadata();
+    }
+
+    private Location getLightweightLocation( final String packageType, final String storeType, final String storeName )
+    {
+        StoreType st = StoreType.get( storeType );
+        switch ( st )
+        {
+            case remote:
+                return new RepositoryLocation( new RemoteRepository( packageType, storeName, "http://used.to.classify.requests.only/" ) );
+            case hosted:
+                return new CacheOnlyLocation( new HostedRepository( packageType, storeName ) );
+            default:
+                return new GroupLocation( packageType, storeName );
+        }
     }
 
     @Override
     public void destroy()
     {
     }
+
 }
