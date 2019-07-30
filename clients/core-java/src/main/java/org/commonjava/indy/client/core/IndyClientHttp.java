@@ -35,9 +35,12 @@ import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.entity.InputStreamEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.VersionInfo;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.helper.HttpResources;
+import org.commonjava.indy.inject.IndyVersioningProvider;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.util.jhttpc.HttpFactory;
@@ -93,6 +96,7 @@ public class IndyClientHttp
         baseUrl = location.getUri();
         checkBaseUrl( baseUrl );
         addApiVersionHeader( apiVersion );
+        initUserAgent( apiVersion );
 
         factory = new HttpFactory( authenticator );
     }
@@ -106,8 +110,19 @@ public class IndyClientHttp
         baseUrl = location.getUri();
         checkBaseUrl( baseUrl );
         addApiVersionHeader( apiVersion );
+        initUserAgent( apiVersion );
 
         factory = new HttpFactory( passwordManager );
+    }
+
+    private void initUserAgent( final String apiVersion )
+    {
+        String hcUserAgent =
+                VersionInfo.getUserAgent( "Apache-HttpClient", "org.apache.http.client", HttpClientBuilder.class );
+
+        String indyVersion = new IndyVersioningProvider().getVersioningInstance().getVersion();
+
+        addDefaultHeader( "User-Agent", String.format("Indy/%s (api: %s) via %s", indyVersion, apiVersion, hcUserAgent ) );
     }
 
     private void addApiVersionHeader( String apiVersion )
