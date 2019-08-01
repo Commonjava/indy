@@ -48,7 +48,10 @@ public class GoldenSignalsFilterMapper
           .addFilterUrlMapping( filterInfo.getName(), "/api/content/*", DispatcherType.REQUEST )
           .addFilterUrlMapping( filterInfo.getName(), "/api/promotion/*", DispatcherType.REQUEST )
           .addFilterUrlMapping( filterInfo.getName(), "/api/admin/stores/*", DispatcherType.REQUEST )
-          .addFilterUrlMapping( filterInfo.getName(), "/api/browse/*", DispatcherType.REQUEST );
+          .addFilterUrlMapping( filterInfo.getName(), "/api/browse/*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/remote/*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/hosted/*", DispatcherType.REQUEST )
+          .addFilterUrlMapping( filterInfo.getName(), "/api/group/*", DispatcherType.REQUEST );
 
         return di;
     }
