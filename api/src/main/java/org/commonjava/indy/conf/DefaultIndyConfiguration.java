@@ -84,6 +84,8 @@ public class DefaultIndyConfiguration
     
     private List<String> remoteNoSSLHosts;
 
+    private Boolean storeValidation;
+
     public DefaultIndyConfiguration()
     {
     }
@@ -322,5 +324,15 @@ public class DefaultIndyConfiguration
     public List<String> getRemoteNoSSLHosts()
     {
         return this.remoteNoSSLHosts;
+    }
+
+    // #!#
+    @ConfigName(value = "_internal.store.validation.enabled")
+    public void setStoreValidation(Boolean storeValidationEnabled) {
+        this.storeValidation = storeValidationEnabled;
+    }
+
+    public boolean isStoreValidationEnabled() {
+        return storeValidation;
     }
 }
