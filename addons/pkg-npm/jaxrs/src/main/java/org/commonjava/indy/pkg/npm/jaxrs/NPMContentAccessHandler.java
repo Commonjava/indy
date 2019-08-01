@@ -331,6 +331,7 @@ public class NPMContentAccessHandler
                     // make sure the right mapping path for hosted and group when retrieve content
                     path = PathUtils.storagePath( path, eventMetadata );
                 }
+
                 logger.info( "START: retrieval of content: {}:{}", sk, path );
                 Transfer item = contentController.get( sk, path, eventMetadata );
 
@@ -365,9 +366,17 @@ public class NPMContentAccessHandler
                         // the item here will be a directory, so reassign the path and item as the mapping one
                         if ( item.isDirectory() && StoreType.remote == st )
                         {
+                            String origPath = path;
                             path = PathUtils.storagePath( path, eventMetadata );
                             origItem = item;
                             item = contentController.get( sk, path, eventMetadata );
+                            // Sometimes the storepath(should be package.json) will be removed(expired),
+                            // so we need to trigger a re-download of it here using the original package path
+                            if ( item == null || !item.exists() )
+                            {
+                                eventMetadata.set( TransferManager.PKG_METDATA_RE_DOWNLOAD, Boolean.TRUE );
+                                item = contentController.get( sk, origPath, eventMetadata );
+                            }
                         }
 
                         if ( item == null )

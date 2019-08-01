@@ -69,15 +69,6 @@ public class NPMMetadataTimeoutTest
             resp.getWriter().flush();
         } );
 
-        //FIXME: After using galley-0.16.8, I'm not sure the second retrieval of npm metadata will get path of
-        //       "A/jquery/package.json" while the first retrieval is "A/jquery". So I add a new expectation here
-        //       to let the second retrieval can work. Need further checking.
-        server.expect( "GET", server.formatUrl( REPO, PATH+"/package.json" ), (req, resp)->{
-            resp.setStatus( 200 );
-            mapper.writeValue( resp.getWriter(), src );
-            resp.getWriter().flush();
-        } );
-
         final RemoteRepository repo = new RemoteRepository( NPM_PKG_KEY, REPO, server.formatUrl( REPO ) );
         repo.setMetadataTimeoutSeconds( 1 );
 

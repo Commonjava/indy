@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.content.index;
 
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
@@ -30,13 +31,17 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.Resource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +60,7 @@ import java.util.Set;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
+import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 /**
  * Decorator for ContentManager which uses Infinispan to index content to avoid having to iterate all members of large
@@ -389,7 +395,10 @@ public abstract class IndexingContentManagerDecorator
         if ( indexedStoreKey != null )
         {
             Transfer transfer = delegate.getTransfer( indexedStoreKey, path, op );
-            if ( transfer == null || !transfer.exists() )
+            String storePath = (String) metadata.get( STORAGE_PATH );
+            Boolean metaRedownload = (Boolean) metadata.get( TransferManager.PKG_METDATA_RE_DOWNLOAD );
+            boolean reDownload = StringUtils.isNotBlank( storePath ) && metaRedownload != null && metaRedownload;
+            if ( transfer == null || !transfer.exists() || reDownload )
             {
                 if ( indexedStoreKey.getType() == StoreType.remote )
                 {
@@ -405,6 +414,10 @@ public abstract class IndexingContentManagerDecorator
                         if ( transfer != null && transfer.exists() )
                         {
                             logger.debug( "Downloaded and found it: {}", transfer );
+                            if ( reDownload )
+                            {
+                                nfc.clearMissing( transfer.getLocation() );
+                            }
                             return transfer;
                         }
                     }
