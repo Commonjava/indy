@@ -85,6 +85,14 @@ public class GoldenSignalsFilter
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    // For Unit-testing
+    GoldenSignalsFilter(final GoldenSignalsMetricSet metricSet, final SpecialPathManager specialPathManager){
+        this.metricSet = metricSet;
+        this.specialPathManager = specialPathManager;
+    }
+
+    GoldenSignalsFilter() {}
+
     @Override
     public void init( final FilterConfig filterConfig )
     {
@@ -138,7 +146,7 @@ public class GoldenSignalsFilter
         }
     }
 
-    private List<String> getFunctions( String restPath, String method )
+    List<String> getFunctions( String restPath, String method )
     {
         String[] pathParts = restPath.split("/" );
         if ( pathParts.length < 2 )
@@ -170,7 +178,7 @@ public class GoldenSignalsFilter
             // this is a browse / list request
             return singletonList( FN_CONTENT_LISTING );
         }
-        else if ( ( "content".equals( classifierParts[0] ) && classifierParts.length > 4 && ( restPath.endsWith( "/" )
+        else if ( ( "content".equals( classifierParts[0] ) && classifierParts.length >= 4 && ( restPath.endsWith( "/" )
                 || restPath.endsWith( IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
         {
             // this is an old version of the browse / list request
@@ -190,7 +198,7 @@ public class GoldenSignalsFilter
         else if ( restPrefix.startsWith( "folo/track/" ) && classifierParts.length > 6 )
         {
             String packageType = classifierParts[3];
-            boolean isMetadata = isMetadata( packageType, classifierParts[4], classifierParts[5], pathParts, 6 );
+            boolean isMetadata = isMetadata( packageType, classifierParts[4], classifierParts[5], pathParts, 7 );
 
             if ( PKG_TYPE_MAVEN.equals( packageType ) )
             {
@@ -224,12 +232,12 @@ public class GoldenSignalsFilter
         return emptyList();
     }
 
-    private boolean isMetadata( final String packageType, final String storeType, final String storeName, final String[] pathParts, final int realPathStartIdx )
+    boolean isMetadata( final String packageType, final String storeType, final String storeName, final String[] pathParts, final int realPathStartIdx )
     {
         Location location = getLightweightLocation( packageType, storeType, storeName );
 
-        String[] realPathParts = new String[pathParts.length-(realPathStartIdx+1)];
-        System.arraycopy( pathParts, 2, realPathParts, 0, realPathParts.length );
+        String[] realPathParts = new String[pathParts.length - realPathStartIdx];
+        System.arraycopy( pathParts, realPathStartIdx, realPathParts, 0, realPathParts.length );
 
         String realPath = join( realPathParts, '/' );
 
