@@ -15,13 +15,8 @@ import java.net.MalformedURLException;
 @ApplicationScoped
 public interface StoreValidator {
 
-    final static String MAILFORMED_URL = "MalformedURLException";
-    final static String HTTP_GET_OR_HEAD = "IOException" ;
-    final static String GENERAL = "Exception" ;
-    final static String HTTP_GET_STATUS = "HTTP_GET_STATUS";
-    final static String HTTP_HEAD_STATUS = "HTTP_HEAD_STATUS";
-    final static String HTTP_PROTOCOL = "HTTP_PROTOCOL";
-    final static String NON_SSL = "NON-SSL";
+
+
 
     /*
             Validate ArtifactStore instances

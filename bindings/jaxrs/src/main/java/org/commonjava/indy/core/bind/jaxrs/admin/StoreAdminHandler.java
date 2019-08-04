@@ -454,7 +454,8 @@ public class StoreAdminHandler
     @GET
     public Response getRemoteByUrl( final @PathParam( "packageType" ) String packageType,
                                     final @ApiParam( allowableValues = "remote", required = true )
-                                    @PathParam( "type" ) String type, final @QueryParam( "url" ) String url,
+                                    @PathParam( "type" ) String type,
+                                    final @QueryParam( "url" ) String url,
                                     @Context final HttpServletRequest request,
                                     final @Context SecurityContext securityContext )
     {
@@ -495,9 +496,14 @@ public class StoreAdminHandler
         @ApiResponse( code = 404, message = "Revalidation is not successfull" ), } )
     @Path( "/revalidate" )
     @POST
-    public Response revalidateArtifactStores(@PathParam("package") String packageType,@PathParam( "type" ) String type) {
+    public Response revalidateArtifactStores(
+        @PathParam("package") String packageType,
+        @PathParam( "type" ) String type) {
+
         ArtifactStoreValidateData result = null;
         Map<String,String> results = new HashMap<>();
+        Response response;
+
         try {
             StoreType storeType =  StoreType.get(type);
 
@@ -506,22 +512,24 @@ public class StoreAdminHandler
             for(ArtifactStore artifactStore: allArtifactStores) {
                 result = storeValidator.validate(artifactStore);
                 results.put(artifactStore.getKey().toString(), result.getErrors().toString());
+
             }
+            response = formatOkResponseWithJsonEntity(results, objectMapper);
 
         } catch (IndyDataException ide) {
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
-            return Response.status(404).entity(result).build();
+            response = formatResponse(ide);
 
         } catch (MalformedURLException mue) {
             logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
-            return Response.status(404).entity(result).build();
+            response = formatResponse(mue);
 
         } catch (IndyWorkflowException iwe) {
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
-            return Response.status(404).entity(result).build();
+            response = formatResponse(iwe);
 
         }
-        return Response.status(Status.OK).entity(results).build();
+        return response;
     }
 
     @ApiOperation( "Revalidation of Artifact Stored on demand based on package, type and name" )
@@ -530,13 +538,14 @@ public class StoreAdminHandler
     @Path( "/{name}/revalidate" )
     @POST
     public Response revalidateArtifactStore(
-        @PathParam("package") String packageType,
-        @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam("type") String type,
-        @PathParam("name") String name ) {
+        final @ApiParam( required = true ) @PathParam("package") String packageType,
+        final @ApiParam( required = true ) @PathParam("type") String type,
+        final @ApiParam( required = true ) @PathParam("name") String name ) {
 
 
         ArtifactStoreValidateData result = null;
         Map<String,String> data =  new HashMap<>();
+        Response response;
 
         try {
             StoreType storeType = StoreType.get(type);
@@ -544,35 +553,21 @@ public class StoreAdminHandler
             ArtifactStore artifactStore = adminController.get(storeKey);
 
             result = storeValidator.validate(artifactStore);
-            data.put("valid", result.toString());
+            response = formatOkResponseWithJsonEntity(result, objectMapper);
 
         } catch (IndyDataException ide) {
-            data.put("error", ide.getMessage());
-            data.put("result", result.toString());
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
-            return Response.status(404).entity(data).build();
+            response = formatResponse(ide);
 
         } catch (MalformedURLException mue) {
-            data.put("error", mue.getMessage());
-            data.put("result", result.toString());
             logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
-            return Response.status(404).entity(data).build();
+            response = formatResponse(mue);
 
         } catch (IndyWorkflowException iwe) {
-            data.put("error", iwe.getMessage());
-            data.put("result", result.toString());
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
-            return Response.status(404).entity(data).build();
-
-        } catch (Exception e) {
-            data.put("error", e.getMessage());
-            data.put("result", result.toString());
-            logger.warn("=> [Exception] exception message: " + e.getMessage());
-            return Response.status(404).entity(data).build();
-
+            response = formatResponse(iwe);
         }
-
-        return Response.status(Status.OK).entity(data).build();
+        return response;
     }
 
 

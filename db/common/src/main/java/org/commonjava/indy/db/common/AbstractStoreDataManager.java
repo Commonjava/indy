@@ -18,6 +18,7 @@ package org.commonjava.indy.db.common;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.*;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -29,7 +30,9 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Map;
@@ -281,29 +284,24 @@ public abstract class AbstractStoreDataManager
 
         final StoreKey storeKey = store.getKey();
 
-
+        logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
         if(configuration != null) {
             ArtifactStoreValidateData validateData = null ;
             try {
-                logger.warn("=> [AbstractStoreDataManager] Check Config Value [_internal.store.validation.enabled]: " +
-                    configuration.isStoreValidationEnabled()
-                );
-                // Validate Artifact Store here and catch MailformedURLException or InvalidArtifactStoreException
-                // Eitherway check returned object if it is Remote Repository and if it is valid
-                // if it is not valid then disable that repository
-                if(configuration.isStoreValidationEnabled() && configuration.isSSLRequired()) {
+
+                logger.warn("=> [AbstractStoreDataManager] Check Config: " + configuration );
+
+                if(configuration.isSSLRequired() && configuration.isStoreValidationEnabled() ) {
                     validateData = storeValidator.validate(store);
                     logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
+                    // if it is not valid then disable that repository
                     if(!validateData.isValid()) {
                         disableNotValidStore(store,validateData);
                     }
                 }
-            } catch (NullPointerException npe) {
-                logger.warn("=> [AbstractStoreDataManager] Config Value [_internal.store.validation.enabled] is not initialized yet! ");
-
-//                disableNotValidStore(store,validateData);
-            } catch (MalformedURLException mue) {
+            }
+            catch (MalformedURLException mue) {
                 logger.warn("=> [AbstractStoreDataManager] MalformedURLException:" + mue.getMessage());
                 // Disable Store
                 disableNotValidStore(store,validateData);
@@ -312,9 +310,9 @@ public abstract class AbstractStoreDataManager
                 // Disable Store
                 disableNotValidStore(store,validateData);
             } catch (Exception e) {
-                logger.warn("=> [AbstractStoreDataManager] Exception:" + e.getMessage());
+                logger.warn("=> [AbstractStoreDataManager] Exception:" + e);
                 // Disable Store
-                disableNotValidStore(store,validateData);
+//                disableNotValidStore(store,validateData);
             }
 
         }
@@ -400,13 +398,22 @@ public abstract class AbstractStoreDataManager
         return true;
     }
 
-    public void disableNotValidStore(ArtifactStore store,ArtifactStoreValidateData validateData) {
+    public void disableNotValidStore(ArtifactStore store,ArtifactStoreValidateData validateData) throws IndyDataException {
         store.setDisabled(true);
+
+        // Problem with this way ( how it is sugested in NOS-1892 issue ) is that this is circular reference
+        // Calling storeDataManager.storeArtifactStore()  ( No matter if parameter "skipIfExist" is set to true )
+        // Will call StoreDataManager default implementation , which is this class store() method.
+
 //        final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER,
 //            String.format("Disabling %s due to Unvalid Store: %s StoreKey: %s ",store.getType(), validateData.getErrors() ,store.getKey())
 //        );
-        // Is this neccessery?
-        // storeDataManager.storeArtifactStore( store, changeSummary, true, true, new EventMetadata() );
+//        try {
+//            storeDataManager.storeArtifactStore( store, changeSummary, true, true, new EventMetadata() );
+//        } catch (IndyDataException e) {
+//            logger.warn("=> Disabling this store has thrown IndyDataException: " + e.getMessage());
+//            throw new IndyDataException("=> Disabling store is not applicable!", null);
+//        }
     }
 
 }

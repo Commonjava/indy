@@ -1,5 +1,6 @@
 package org.commonjava.indy.data;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.apache.kafka.common.protocol.types.Field;
 import org.bouncycastle.util.Store;
 import org.commonjava.indy.model.core.StoreKey;
@@ -12,7 +13,6 @@ public class ArtifactStoreValidateData {
 
     private boolean valid;
     private String repositoryUrl;
-    private StoreType storeType;
 
     private StoreKey storeKey;
     private Map<String,String> errors;
@@ -26,12 +26,12 @@ public class ArtifactStoreValidateData {
 
         private boolean valid;
         private String repositoryUrl;
-        private StoreType storeType;
 
         private StoreKey storeKey;
         private Map<String,String> errors;
 
         public Builder(StoreKey storeKey) {
+
             this.storeKey = storeKey;
             this.errors = new HashMap<>();
             this.valid = false;
@@ -43,15 +43,13 @@ public class ArtifactStoreValidateData {
             return this;
         }
 
-        public Builder setStoreType(StoreType storeType) {
-            this.storeType = storeType;
+        public Builder setValid(Boolean valid) {
+            this.valid = valid;
             return this;
         }
 
-
         public Builder setErrors(Map<String,String> errors) {
             this.errors = errors;
-            this.valid = errors.isEmpty();
             return this;
         }
 
@@ -59,7 +57,6 @@ public class ArtifactStoreValidateData {
             ArtifactStoreValidateData artifactStoreValidateData = new ArtifactStoreValidateData();
             artifactStoreValidateData.valid = this.valid;
             artifactStoreValidateData.repositoryUrl = this.repositoryUrl;
-            artifactStoreValidateData.storeType = this.storeType;
             artifactStoreValidateData.errors = this.errors;
             artifactStoreValidateData.storeKey = this.storeKey;
             return artifactStoreValidateData;
@@ -82,16 +79,6 @@ public class ArtifactStoreValidateData {
         this.repositoryUrl = repositoryUrl;
     }
 
-    public StoreType getStoreType() {
-        return storeType;
-    }
-
-    public void setStoreType(StoreType storeType) {
-        this.storeType = storeType;
-    }
-
-
-
     public StoreKey getStoreKey() {
         return storeKey;
     }
@@ -112,7 +99,6 @@ public class ArtifactStoreValidateData {
     public String toString() {
         return "{ valid:" + this.valid +
             ", repositoryUrl:" + this.repositoryUrl +
-            ", storeType: " + this.storeType +
             ", errors: " + this.errors +
             ", storeKey: " + this.storeKey +
             "}";
