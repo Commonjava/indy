@@ -28,8 +28,12 @@ import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -64,6 +68,9 @@ import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
 import org.commonjava.indy.core.ctl.AdminController;
+import org.commonjava.indy.data.ArtifactStoreValidateData;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreValidator;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -93,6 +100,11 @@ public class StoreAdminHandler
 
     @Inject
     private SecurityManager securityManager;
+
+    @Inject
+    StoreValidator storeValidator;
+
+
 
     public StoreAdminHandler()
     {
@@ -442,7 +454,8 @@ public class StoreAdminHandler
     @GET
     public Response getRemoteByUrl( final @PathParam( "packageType" ) String packageType,
                                     final @ApiParam( allowableValues = "remote", required = true )
-                                    @PathParam( "type" ) String type, final @QueryParam( "url" ) String url,
+                                    @PathParam( "type" ) String type,
+                                    final @QueryParam( "url" ) String url,
                                     @Context final HttpServletRequest request,
                                     final @Context SecurityContext securityContext )
     {
@@ -476,5 +489,86 @@ public class StoreAdminHandler
         }
         return response;
     }
+
+
+    @ApiOperation( "Revalidation of Artifacts Stored on demand" )
+    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repositories was successfull" ),
+        @ApiResponse( code = 404, message = "Revalidation is not successfull" ), } )
+    @Path( "/revalidate" )
+    @POST
+    public Response revalidateArtifactStores(
+        @PathParam("package") String packageType,
+        @PathParam( "type" ) String type) {
+
+        ArtifactStoreValidateData result = null;
+        Map<String,String> results = new HashMap<>();
+        Response response;
+
+        try {
+            StoreType storeType =  StoreType.get(type);
+
+            List<ArtifactStore> allArtifactStores = adminController.getAllOfType(packageType, storeType);
+
+            for(ArtifactStore artifactStore: allArtifactStores) {
+                result = storeValidator.validate(artifactStore);
+                results.put(artifactStore.getKey().toString(), result.getErrors().toString());
+
+            }
+            response = formatOkResponseWithJsonEntity(results, objectMapper);
+
+        } catch (IndyDataException ide) {
+            logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
+            response = formatResponse(ide);
+
+        } catch (MalformedURLException mue) {
+            logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
+            response = formatResponse(mue);
+
+        } catch (IndyWorkflowException iwe) {
+            logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
+            response = formatResponse(iwe);
+
+        }
+        return response;
+    }
+
+    @ApiOperation( "Revalidation of Artifact Stored on demand based on package, type and name" )
+    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repository was successfull" ),
+        @ApiResponse( code = 404, message = "Revalidation is not successfull" ), } )
+    @Path( "/{name}/revalidate" )
+    @POST
+    public Response revalidateArtifactStore(
+        final @ApiParam( required = true ) @PathParam("package") String packageType,
+        final @ApiParam( required = true ) @PathParam("type") String type,
+        final @ApiParam( required = true ) @PathParam("name") String name ) {
+
+
+        ArtifactStoreValidateData result = null;
+        Map<String,String> data =  new HashMap<>();
+        Response response;
+
+        try {
+            StoreType storeType = StoreType.get(type);
+            StoreKey storeKey = new StoreKey(packageType, storeType, name);
+            ArtifactStore artifactStore = adminController.get(storeKey);
+
+            result = storeValidator.validate(artifactStore);
+            response = formatOkResponseWithJsonEntity(result, objectMapper);
+
+        } catch (IndyDataException ide) {
+            logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
+            response = formatResponse(ide);
+
+        } catch (MalformedURLException mue) {
+            logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
+            response = formatResponse(mue);
+
+        } catch (IndyWorkflowException iwe) {
+            logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
+            response = formatResponse(iwe);
+        }
+        return response;
+    }
+
 
 }
