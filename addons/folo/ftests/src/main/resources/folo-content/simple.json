@@ -1,0 +1,124 @@
+{
+  "_id": "simple",
+  "_rev": "9-dac331b3e187a16cf7583e97467992bb",
+  "name": "simple",
+  "description": "A naive Node.js clone of Python's simpleHttpServer",
+  "dist-tags": {
+    "latest": "0.2.0"
+  },
+  "versions": {
+    "0.1.0": {
+      "author": "",
+      "name": "simple",
+      "description": "A naive Node.js clone of Python's simpleHttpServer",
+      "version": "0.1.0",
+      "repository": {
+        "url": "https://github.com/thisandagain/simple.git"
+      },
+      "main": "./bin/index.js",
+      "scripts": {},
+      "preferGlobal": "true",
+      "bin": {
+        "simple": "./bin/index.js"
+      },
+      "dependencies": {
+        "commander": "~1.0.0",
+        "mime": "~1.2.6"
+      },
+      "devDependencies": {
+        "vows": "0.6.3"
+      },
+      "optionalDependencies": {},
+      "engines": {
+        "node": "*"
+      },
+      "_npmUser": {
+        "name": "diy",
+        "email": "help@diy.org"
+      },
+      "_id": "simple@0.1.0",
+      "_engineSupported": true,
+      "_npmVersion": "1.1.21",
+      "_nodeVersion": "v0.6.17",
+      "_defaultsLoaded": true,
+      "dist": {
+        "shasum": "224dead7842d56bf4ba8ec9fcbce2ae420a71c0b",
+        "tarball": "https://registry.npmjs.org/simple/-/simple-0.1.0.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "diy",
+          "email": "help@diy.org"
+        }
+      ],
+      "directories": {}
+    },
+    "0.2.0": {
+      "author": "",
+      "name": "simple",
+      "description": "A naive Node.js clone of Python's simpleHttpServer",
+      "version": "0.2.0",
+      "repository": {
+        "url": "https://github.com/thisandagain/simple.git"
+      },
+      "main": "./bin/index.js",
+      "scripts": {},
+      "preferGlobal": "true",
+      "bin": {
+        "simple": "./bin/index.js"
+      },
+      "dependencies": {
+        "commander": "~1.0.0",
+        "mime": "~1.2.6"
+      },
+      "devDependencies": {
+        "vows": "0.6.3"
+      },
+      "optionalDependencies": {},
+      "engines": {
+        "node": "*"
+      },
+      "readme": "# Simple\n### HTTP all the things!\n\nSimple is a binary created using Node.js that clones some of the functionality of Python's `simpleHttpServer`. It's a rather naive and simple static HTTP server, but it gets the job done in a pinch. Please don't use this in production... it's a development tool. Really.\n\n#### Installation\n```bash\nnpm install -g simple\n```\n\n#### Basic Use\n```bash\ncd /my/awesome/website\nsimple\n```\n```bash\nServing HTTP on 0.0.0.0 port 8000 ...\n```\n\n#### Options\n`-p` Port to listen on (defaults to 8000)\n\n`-h` Hostname to listen on (defaults to 127.0.0.1)\n\n`-d` Default index (defaults to `index.html`)\n\n`-s` Silent mode\n\n`-h` Help",
+      "readmeFilename": "README.md",
+      "_id": "simple@0.2.0",
+      "dist": {
+        "shasum": "1e74ccf707f243ba74f1cbedc7c49c51899653f1",
+        "tarball": "https://registry.npmjs.org/simple/-/simple-0.2.0.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.2.11",
+      "_npmUser": {
+        "name": "diy",
+        "email": "help@diy.org"
+      },
+      "maintainers": [
+        {
+          "name": "diy",
+          "email": "help@diy.org"
+        }
+      ],
+      "directories": {}
+    }
+  },
+  "readme": "# Simple\n### HTTP all the things!\n\nSimple is a binary created using Node.js that clones some of the functionality of Python's `simpleHttpServer`. It's a rather naive and simple static HTTP server, but it gets the job done in a pinch. Please don't use this in production... it's a development tool. Really.\n\n#### Installation\n```bash\nnpm install -g simple\n```\n\n#### Basic Use\n```bash\ncd /my/awesome/website\nsimple\n```\n```bash\nServing HTTP on 0.0.0.0 port 8000 ...\n```\n\n#### Options\n`-p` Port to listen on (defaults to 8000)\n\n`-d` Default index (defaults to `index.html`)\n\n`-s` Silent mode\n\n`-h` Help",
+  "maintainers": [
+    {
+      "name": "diy",
+      "email": "help@diy.org"
+    }
+  ],
+  "time": {
+    "modified": "2013-10-17T16:14:23.069Z",
+    "created": "2012-07-11T01:35:20.393Z",
+    "0.1.0": "2012-07-11T01:35:21.822Z",
+    "0.2.0": "2013-10-17T16:14:23.069Z"
+  },
+  "repository": {
+    "url": "https://github.com/thisandagain/simple.git"
+  },
+  "users": {
+    "vlad1988": true,
+    "pgilad": true
+  },
+  "_attachments": {}
+}
