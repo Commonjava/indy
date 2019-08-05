@@ -17,16 +17,13 @@ package org.commonjava.indy.folo.ftest.content;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
-import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
