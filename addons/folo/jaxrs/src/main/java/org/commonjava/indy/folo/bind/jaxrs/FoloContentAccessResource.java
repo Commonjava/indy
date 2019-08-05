@@ -59,7 +59,7 @@ import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEA
  */
 @Api( value = "FOLO Tracked Content Access and Storage",
       description = "Tracks retrieval and management of file/artifact content." )
-@Path( "/api/folo/track/{id}/{packageType}/{type: (hosted|group|remote)}/{name}" )
+@Path( "/api/folo/track/{id}/{packageType: (maven|generic)}/{type: (hosted|group|remote)}/{name}" )
 @REST
 public class FoloContentAccessResource
         implements IndyResources
@@ -87,7 +87,7 @@ public class FoloContentAccessResource
     @PUT
     @Path( "/{path: (.*)}" )
     public Response doCreate( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
-                              @ApiParam( "Package type (eg. maven, npm)" ) @PathParam( "packageType" )
+                              @ApiParam( "Package type (eg. maven, generic)" ) @PathParam( "packageType" )
                               final String packageType,
                               @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
                               final String type, @PathParam( "name" ) final String name,
@@ -113,7 +113,7 @@ public class FoloContentAccessResource
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
-                            @ApiParam( "Package type (eg. maven, npm)" ) @PathParam( "packageType" )
+                            @ApiParam( "Package type (eg. maven, generic)" ) @PathParam( "packageType" )
                             final String packageType,
                             @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
                             final String type, @PathParam( "name" ) final String name,
@@ -140,7 +140,7 @@ public class FoloContentAccessResource
     @GET
     @Path( "/{path: (.*)}" )
     public Response doGet( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
-                           @ApiParam( "Package type (eg. maven, npm)" ) @PathParam( "packageType" )
+                           @ApiParam( "Package type (eg. maven, generic)" ) @PathParam( "packageType" )
                            final String packageType,
                            @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
                            final String type, @PathParam( "name" ) final String name,
