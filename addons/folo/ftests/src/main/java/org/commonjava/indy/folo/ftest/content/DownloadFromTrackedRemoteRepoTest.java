@@ -26,6 +26,24 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.junit.Test;
 
+/**
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>RemoteRepository for maven and path</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Access path through folo track</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>The path can be got correctly</li>
+ * </ul>
+ */
 public class DownloadFromTrackedRemoteRepoTest
     extends AbstractFoloContentManagementTest
 {
