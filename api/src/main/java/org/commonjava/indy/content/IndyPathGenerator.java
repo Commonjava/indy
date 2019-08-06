@@ -26,11 +26,19 @@ import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.commonjava.indy.model.core.PathStyle.hashed;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
+import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 /**
  * {@link PathGenerator} implementation that assumes the locations it sees will be {@link KeyedLocation}, and translates them into storage locations
@@ -41,6 +49,30 @@ import static org.commonjava.indy.model.core.PathStyle.hashed;
 public class IndyPathGenerator
     implements PathGenerator
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private Instance<StoragePathCalculator> injectedStoragePathCalculators;
+
+    private Set<StoragePathCalculator> pathCalculators;
+
+    public IndyPathGenerator(){}
+
+    public IndyPathGenerator( Set<StoragePathCalculator> pathCalculators )
+    {
+        this.pathCalculators = pathCalculators;
+    }
+
+    @PostConstruct
+    public void postConstruct()
+    {
+        pathCalculators = new HashSet<>();
+        if ( !injectedStoragePathCalculators.isUnsatisfied() )
+        {
+            injectedStoragePathCalculators.forEach( pathCalculators::add );
+        }
+    }
 
     @Override
     public String getFilePath( final ConcreteResource resource )
@@ -68,7 +100,6 @@ public class IndyPathGenerator
 
             String digest = DigestUtils.sha256Hex( dir );
 
-            Logger logger = LoggerFactory.getLogger( getClass() );
             logger.trace( "Using SHA-256 digest: '{}' for dir: '{}' of path: '{}'", digest, dir, path );
 
             // Format examples:
@@ -77,7 +108,13 @@ public class IndyPathGenerator
             // - 00/11/001122334455667788/gulp-size-1.3.0.tgz
             path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, f.getName() );
         }
-        // else it's plain and we leave it alone.
+        else
+        {
+            AtomicReference<String> pathref = new AtomicReference<>( path );
+            pathCalculators.forEach( c -> pathref.set( c.calculateStoragePath( key, pathref.get() ) ) );
+
+            path = pathref.get();
+        }
 
         return PathUtils.join( name, path );
     }

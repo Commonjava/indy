@@ -68,7 +68,6 @@ import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -326,15 +325,18 @@ public class NPMContentAccessHandler
         {
             try
             {
-                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
-                {
-                    // make sure the right mapping path for hosted and group when retrieve content
-                    path = PathUtils.storagePath( path, eventMetadata );
-                }
-                logger.info( "START: retrieval of content: {}:{}", sk, path );
+                // NOTE: We do NOT want to map this here. Instead, let's map it when we retrieve a Transfer instance as
+                // we access the file storage on this system...we do that via StoragePathCalculator, in pkg-npm/common.
+//                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
+//                {
+//                    // make sure the right mapping path for hosted and group when retrieve content
+//                    path = PathUtils.storagePath( path, eventMetadata );
+//                }
+
+                logger.info( "START: retrieval of content: {}/{}", sk, path );
                 Transfer item = contentController.get( sk, path, eventMetadata );
 
-                logger.info( "HANDLE: retrieval of content: {}:{}", sk, path );
+                logger.info( "HANDLE: retrieval of content: {}/{}", sk, path );
                 if ( item == null )
                 {
                     return handleMissingContentQuery( sk, path, builderModifier );
@@ -386,13 +388,14 @@ public class NPMContentAccessHandler
                         setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
-                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
-                        // hosted .http-metadata.json will be generated when publish
-                        // only package.json file will generate this customized http meta to satisfy npm client header check
-                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
-                        {
-                            generateHttpMetadataHeaders( item, request, response );
-                        }
+
+//                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
+//                        // hosted .http-metadata.json will be generated when publish
+//                        // only package.json file will generate this customized http meta to satisfy npm client header check
+//                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
+//                        {
+//                            generateHttpMetadataHeaders( item, request, response );
+//                        }
                     }
                 }
                 finally
