@@ -86,6 +86,5 @@ public interface IndyConfiguration
     
     List<String> getRemoteNoSSLHosts();
 
-    boolean isStoreValidationEnabled();
     
 }
