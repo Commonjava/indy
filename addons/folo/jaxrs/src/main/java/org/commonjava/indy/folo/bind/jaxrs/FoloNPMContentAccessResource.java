@@ -55,8 +55,7 @@ import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
-@Api( value = "FOLO Tracked Content Access and Storage For NPM related artifacts",
-      description = "Tracks retrieval and management of file/artifact content." )
+@Api( value = "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks retrieval and management of file/artifact content." )
 @Path( "/api/folo/track/{id}/npm/{type: (hosted|group|remote)}/{name}" )
 @REST
 public class FoloNPMContentAccessResource
@@ -238,29 +237,6 @@ public class FoloNPMContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, metadata );
-    }
-
-    @ApiOperation( "Retrieve and track NPM root listing under the given artifact store (type/name)" )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
-                           @ApiResponse( code = 200, response = String.class,
-                                         message = "Rendered root content listing" ),
-                           @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
-    @GET
-    @Path( "/" )
-    public Response doGet( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
-                           @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                           final String type, @PathParam( "name" ) final String name,
-                           @Context final HttpServletRequest request, @Context final UriInfo uriInfo )
-    {
-        final TrackingKey tk = new TrackingKey( id );
-        EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
-                                                    .set( ACCESS_CHANNEL, AccessChannel.NPM_REPO )
-                                                    .set( STORAGE_PATH, "" );
-        MDC.put( CONTENT_TRACKING_ID, id );
-
-        final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
-
-        return handler.doGet( NPM_PKG_KEY, type, name, "", baseUri, request, metadata );
     }
 
 }
