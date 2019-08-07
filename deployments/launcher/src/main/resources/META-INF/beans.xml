@@ -18,6 +18,7 @@
     <stereotype>org.commonjava.indy.inject.Production</stereotype>
 
     <class>org.commonjava.indy.infinispan.data.InfinispanStoreDataManager</class>
+    <class>org.commonjava.indy.filer.def.DefaultGalleyStorageProvider</class>
   </alternatives>
   
   <interceptors>

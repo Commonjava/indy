@@ -28,6 +28,7 @@ import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.NoCacheTransferDecorator;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor;
 import org.commonjava.maven.galley.io.checksum.Md5GeneratorFactory;
@@ -52,6 +53,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
@@ -97,9 +99,6 @@ public class DefaultGalleyStorageProvider
     @Inject
     private Instance<SpecialPathSetProducer> specialPathSetProducers;
 
-    @Inject
-    private SpecialPathManager specialPathManager;
-
     @ExecutorConfig( named = "galley-delete-executor", threads = 5, priority = 2 )
     @WeftScheduledExecutor
     @Inject
@@ -122,6 +121,8 @@ public class DefaultGalleyStorageProvider
 
     private CacheProviderFactory cacheProviderFactory;
 
+    private SpecialPathManager specialPathManager;
+
     public DefaultGalleyStorageProvider()
     {
     }
@@ -135,6 +136,26 @@ public class DefaultGalleyStorageProvider
     @PostConstruct
     public void setup()
     {
+        getSpecialPathManager();
+
+        setupTransferDecoratorPipeline();
+
+        final File storeRoot = config.getStorageRootDirectory();
+
+        // Apply partyline gloable lock manager if in cluster Env
+        GlobalLockManager globalLockManager = null;
+        if ( indyConfiguration.isClusterEnabled() )
+        {
+            logger.info( "Enable ISPN transactional GLM via {}", partylineGLMCache.getName() );
+            globalLockManager = new InfinispanTransactionalGLM( partylineGLMCache.getCache() );
+        }
+        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, deleteExecutor, globalLockManager );
+
+        // TODO: Tie this into a config file!
+        transportManagerConfig = new TransportManagerConfig();
+    }
+
+    private void initSpecialPathManager(final SpecialPathManager specialPathManager){
         SpecialPathInfo infoSpi = SpecialPathInfo.from( new FilePatternMatcher( ".+\\.info" ) )
                                                  .setDecoratable( false )
                                                  .setDeletable( false )
@@ -154,22 +175,6 @@ public class DefaultGalleyStorageProvider
                         specialPathManager.registerSpecialPathSet( producer.getSpecialPathSet() );
                     } );
         }
-
-        setupTransferDecoratorPipeline();
-
-        final File storeRoot = config.getStorageRootDirectory();
-
-        // Apply partyline gloable lock manager if in cluster Env
-        GlobalLockManager globalLockManager = null;
-        if ( indyConfiguration.isClusterEnabled() )
-        {
-            logger.info( "Enable ISPN transactional GLM via {}", partylineGLMCache.getName() );
-            globalLockManager = new InfinispanTransactionalGLM( partylineGLMCache.getCache() );
-        }
-        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, deleteExecutor, globalLockManager );
-
-        // TODO: Tie this into a config file!
-        transportManagerConfig = new TransportManagerConfig();
     }
 
     /**
@@ -291,5 +296,17 @@ public class DefaultGalleyStorageProvider
         }
 
         return cacheProvider;
+    }
+
+    @Produces
+    @Alternative
+    @ApplicationScoped
+    public synchronized SpecialPathManager getSpecialPathManager()
+    {
+        if ( specialPathManager == null )
+        {
+            specialPathManager = new SpecialPathManagerImpl( pathGenerator );
+        }
+        return specialPathManager;
     }
 }

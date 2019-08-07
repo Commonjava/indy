@@ -37,8 +37,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.commonjava.indy.model.core.PathStyle.hashed;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
-import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 /**
  * {@link PathGenerator} implementation that assumes the locations it sees will be {@link KeyedLocation}, and translates them into storage locations
@@ -47,7 +45,7 @@ import static org.commonjava.maven.galley.util.PathUtils.normalize;
 @Default
 @ApplicationScoped
 public class IndyPathGenerator
-    implements PathGenerator
+        implements PathGenerator
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -57,7 +55,9 @@ public class IndyPathGenerator
 
     private Set<StoragePathCalculator> pathCalculators;
 
-    public IndyPathGenerator(){}
+    public IndyPathGenerator()
+    {
+    }
 
     public IndyPathGenerator( Set<StoragePathCalculator> pathCalculators )
     {
@@ -80,9 +80,16 @@ public class IndyPathGenerator
         final KeyedLocation kl = (KeyedLocation) resource.getLocation();
         final StoreKey key = kl.getKey();
 
-        final String name = key.getPackageType() + "/" + key.getType()
-                               .name() + "-" + key.getName();
+        final String name = key.getPackageType() + "/" + key.getType().name() + "-" + key.getName();
 
+        return PathUtils.join( name, getPath( resource ) );
+    }
+
+    @Override
+    public String getPath( final ConcreteResource resource )
+    {
+        final KeyedLocation kl = (KeyedLocation) resource.getLocation();
+        final StoreKey key = kl.getKey();
         String path = resource.getPath();
         if ( hashed == kl.getAttribute( LocationUtils.PATH_STYLE, PathStyle.class ) )
         {
@@ -95,7 +102,7 @@ public class IndyPathGenerator
 
             if ( dir.length() > 1 && dir.startsWith( "/" ) )
             {
-                dir = dir.substring( 1, dir.length() );
+                dir = dir.substring( 1 );
             }
 
             String digest = DigestUtils.sha256Hex( dir );
@@ -106,7 +113,8 @@ public class IndyPathGenerator
             // - aa/bb/aabbccddeeff001122/simple-1.0.pom
             // - aa/bb/aabbccddeeff001122/gulp-size
             // - 00/11/001122334455667788/gulp-size-1.3.0.tgz
-            path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, f.getName() );
+            path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest,
+                                      f.getName() );
         }
         else
         {
@@ -116,7 +124,7 @@ public class IndyPathGenerator
             path = pathref.get();
         }
 
-        return PathUtils.join( name, path );
+        return path;
     }
 
 }

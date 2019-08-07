@@ -17,6 +17,7 @@ package org.commonjava.indy.core.content;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentGenerator;
+import org.commonjava.indy.content.StoragePathCalculator;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -44,9 +45,15 @@ public class ContentGeneratorManager
 
     private Set<ContentGenerator> contentGenerators;
 
+    @Inject
+    private Instance<StoragePathCalculator> injectedPathCalculators;
+
+    private Set<StoragePathCalculator> pathCalculators;
+
     public ContentGeneratorManager()
     {
         contentGenerators = new HashSet<>();
+        pathCalculators = new HashSet<>();
     }
 
     @PostConstruct
@@ -57,6 +64,13 @@ public class ContentGeneratorManager
             for ( final ContentGenerator producer : contentGeneratorInstance )
             {
                 contentGenerators.add( producer );
+            }
+        }
+        if ( injectedPathCalculators != null )
+        {
+            for ( final StoragePathCalculator calculator : injectedPathCalculators )
+            {
+                pathCalculators.add( calculator );
             }
         }
     }
@@ -85,7 +99,13 @@ public class ContentGeneratorManager
         Transfer item = null;
         for ( final ContentGenerator generator : contentGenerators )
         {
-            if ( generator.canProcess( path ) )
+            String storagePath = path;
+            for ( final StoragePathCalculator calculator : pathCalculators )
+            {
+                storagePath = calculator.calculateStoragePath( group.getKey(), storagePath );
+            }
+            final boolean canProcess =  generator.canProcess( path ) || generator.canProcess( storagePath );
+            if ( canProcess )
             {
                 item = generator.generateGroupFileContent( group, members, path, eventMetadata );
                 logger.trace( "From content {}.generateGroupFileContent: {} (exists? {})",
