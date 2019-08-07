@@ -127,6 +127,8 @@ public class DefaultStoreValidator implements StoreValidator {
         else {
             return new ArtifactStoreValidateData
                 .Builder(artifactStore.getKey())
+                .setValid(true)
+                .setErrors(errors)
                 .build();
         }
     }

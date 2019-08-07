@@ -20,6 +20,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.SSLStoreValidationConfig;
 import org.commonjava.indy.data.*;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -63,6 +64,9 @@ public abstract class AbstractStoreDataManager
     private IndyConfiguration configuration;
 
     @Inject StoreDataManager storeDataManager;
+
+    @Inject
+    SSLStoreValidationConfig sslStoreValidationConfig;
 
 
     @Override
@@ -294,7 +298,7 @@ public abstract class AbstractStoreDataManager
 
                 logger.warn("=> [AbstractStoreDataManager] Check Config: " + configuration );
 
-                if(configuration.isSSLRequired() && configuration.isStoreValidationEnabled() ) {
+                if(configuration.isSSLRequired() && sslStoreValidationConfig.getSslValidation() ) {
                     validateData = storeValidator.validate(store);
                     logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
                     // if it is not valid then disable that repository

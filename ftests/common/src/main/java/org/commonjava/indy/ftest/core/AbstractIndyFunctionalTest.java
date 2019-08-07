@@ -221,6 +221,8 @@ public abstract class AbstractIndyFunctionalTest
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
+
+            writeConfigFile( "conf.d/ssl_validation.conf", "[ssl_validation]\n_internal.store.validation.enabled=false" );
         }
         else
         {
