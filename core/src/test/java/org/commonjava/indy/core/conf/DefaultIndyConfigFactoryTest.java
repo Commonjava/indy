@@ -97,9 +97,10 @@ public class DefaultIndyConfigFactoryTest
 
         String user = System.getenv( "USER" );
         factory.load( mainConf.getAbsolutePath() );
-
-        assertThat( config.getNodeId(), equalTo( user ) );
-
+        if ( user != null ) // because in some case USER is not in env and it won't be populated
+        {
+            assertThat( config.getNodeId(), equalTo( user ) );
+        }
     }
 
 }
