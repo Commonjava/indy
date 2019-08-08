@@ -114,6 +114,10 @@ public class FoloTrackingListener
             logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
                           keyedLocation.getKey() );
 
+            //Here we need to think about npm metadata retrieving case. As almost all npm metadata retrieving is through
+            // /$pkg from remote, but we use STORAGE_PATH in EventMetadata with /$pkg/package.json to store this metadata,
+            //so the real path for this transfer should be /$pkg but its current path is /$pkg/package.json. We need to
+            //think about if need to do the replacement here, especially for the originalUrl.
             recordManager.recordArtifact(
                     createEntry( trackingKey, keyedLocation.getKey(), accessChannel, transfer.getPath(),
                                  StoreEffect.DOWNLOAD, event.getEventMetadata() ) );
