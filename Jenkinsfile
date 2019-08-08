@@ -3,7 +3,7 @@ pipeline {
    stages {
       stage('Build') {
          steps {
-            sh 'mvn -B -V clean verify'
+            sh 'mvn -B -V clean verify -Prun-its -Pci'
          }
       }
    }
