@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.model.core;
 
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
+
+import static org.commonjava.indy.pkg.PackageTypeConstants.*;
 
 /**
  * Enumeration to distinguish between different access channels to stores.
@@ -29,7 +29,9 @@ public enum AccessChannel
     /** Used when the store is accessed via httprox addon. */
     GENERIC_PROXY(PKG_TYPE_GENERIC_HTTP),
     /** Used when the store is accessed via regular Maven repo. */
-    MAVEN_REPO(PKG_TYPE_MAVEN);
+    MAVEN_REPO(PKG_TYPE_MAVEN),
+    /** Used when the store is accessed via npm.*/
+    NPM_REPO( PKG_TYPE_NPM );
 
     private final String packageType;
 
