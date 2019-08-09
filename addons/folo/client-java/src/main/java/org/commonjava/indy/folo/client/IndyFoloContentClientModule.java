@@ -96,6 +96,7 @@ public class IndyFoloContentClientModule
         return getInfo( trackingId, new StoreKey( MAVEN_PKG_KEY, type, name ), path );
     }
 
+    @Deprecated
     public InputStream get( final String trackingId, final StoreType type, final String name, final String path )
             throws IndyClientException
     {
