@@ -18,9 +18,8 @@ package org.commonjava.indy.db.common;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
-import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.conf.SSLStoreValidationConfig;
+import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.data.*;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -31,9 +30,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Map;
@@ -66,7 +63,7 @@ public abstract class AbstractStoreDataManager
     @Inject StoreDataManager storeDataManager;
 
     @Inject
-    SSLStoreValidationConfig sslStoreValidationConfig;
+    InternalFeatureConfig internalFeatureConfig;
 
 
     @Override
@@ -296,7 +293,7 @@ public abstract class AbstractStoreDataManager
 
                 logger.warn("=> [AbstractStoreDataManager] Check Config: " + configuration );
 
-                if(configuration.isSSLRequired() && sslStoreValidationConfig.getSslValidation() ) {
+                if(internalFeatureConfig.getSslValidation() ) {
                     validateData = storeValidator.validate(store);
                     logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
                     // if it is not valid then disable that repository

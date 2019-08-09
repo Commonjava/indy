@@ -17,12 +17,14 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
@@ -50,7 +52,12 @@ public class DefaultStoreValidator implements StoreValidator {
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
                 boolean disabled = remoteRepository.isDisabled();
                 if(disabled) {
-                    throw new InvalidArtifactStoreException("Disabled Store", null, null);
+                    errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Remote Repository is disabled");
+                    return new ArtifactStoreValidateData
+                        .Builder(remoteRepository.getKey())
+                        .setValid(true).setErrors(errors)
+                        .build();
+                    //throw new InvalidArtifactStoreException("Disabled Store", null, null);
                 }
                 //Validate URL from remote Repository URL
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
@@ -134,7 +141,33 @@ public class DefaultStoreValidator implements StoreValidator {
     }
 
     private boolean allowedNonSSLHostname(String remoteHost, String host) {
-        return host.contains(remoteHost);
+        String[] remoteHostPartsTrimed =
+                                        Arrays.asList(remoteHost.split("\\."))
+                                            .stream()
+                                            .map(val -> val.trim())
+                                            .collect(Collectors.toList())
+                                            .toArray(new String[0]);
+        int remoteHostPartsLength = remoteHostPartsTrimed.length;
+        String[] hostParts = host.split("\\.");
+        int hostPartsLength = hostParts.length;
+        int i = 1;
+        int iter = remoteHostPartsLength;
+        while (iter > 0) {
+            String partRemoteHost = remoteHostPartsTrimed[remoteHostPartsLength - i];
+            if(i > (hostPartsLength-1)) {
+                return true;
+            }
+            String partHost = hostParts[hostPartsLength - i];
+
+            if(partRemoteHost.equalsIgnoreCase(partHost)
+                || (partRemoteHost.equalsIgnoreCase("*") || partRemoteHost.equals("") )) {
+                iter--;
+            } else {
+                return false;
+            }
+            i++;
+        }
+        return true;
     }
 
     private Future<Integer> executeGetHttp(HttpGet httpGetTask , CountDownLatch countDownLatch) {
