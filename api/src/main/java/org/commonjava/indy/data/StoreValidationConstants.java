@@ -12,4 +12,5 @@ public class StoreValidationConstants {
     public final static String NOT_ALLOWED_SSL = "NOT_ALLOWED_SSL";
     public final static String ALLOWED_SSL = "ALLOWED_SSL";
     public final static String HTTPS = "https";
+    public final static String DISABLED_REMOTE_REPO = "disabled";
 }
