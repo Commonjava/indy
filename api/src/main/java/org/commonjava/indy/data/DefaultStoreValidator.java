@@ -55,7 +55,8 @@ public class DefaultStoreValidator implements StoreValidator {
                     errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Remote Repository is disabled");
                     return new ArtifactStoreValidateData
                         .Builder(remoteRepository.getKey())
-                        .setValid(true).setErrors(errors)
+                        .setValid(true)
+                        .setErrors(errors)
                         .build();
                     //throw new InvalidArtifactStoreException("Disabled Store", null, null);
                 }
@@ -68,20 +69,34 @@ public class DefaultStoreValidator implements StoreValidator {
                     //Check First if this remote repository is in allowed repositories from remote.nossl.hosts Config Variable
                     List<String> remoteNoSSLHosts = configuration.getRemoteNoSSLHosts();
                     String host = remoteUrl.get().getHost();
+                    boolean allowedByRule = false;
 
                     for(String remoteHost : remoteNoSSLHosts) {
-                        LOGGER.warn(
-                            " RemoteHost " +host+ " in allowed list of remote hosts " + remoteNoSSLHosts + " is " +
-                                allowedNonSSLHostname(remoteHost, host) + " allowed " +
-                                " Remote URL: " + remoteUrl.get().toString()
-                        );
+                        LOGGER.warn("\n=> Validating RemoteHost: " + remoteHost + " For Host: " + host + "\n");
                         // .apache.org , 10.192. , .maven.redhat.com
                         if(allowedNonSSLHostname(remoteHost,host)) {
                             errors.put(StoreValidationConstants.ALLOWED_SSL,remoteUrl.get().toString());
                             LOGGER.warn(
                                 "NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost
                             );
+                            allowedByRule = true;
+                            break;
+                        } else {
+                            errors.put(StoreValidationConstants.NON_SSL,remoteUrl.get().toString());
+                            LOGGER.warn(
+                                "NON-SSL RemoteRepository with URL: "+ host +" is NOT ALLOWED under RULE: " + remoteHost
+                            );
+
                         }
+                    }
+                    // If this Non-SSL remote repository is not allowed by provided rules from configuration
+                    // then return valid=false data object
+                    if(!allowedByRule) {
+                        return new ArtifactStoreValidateData
+                            .Builder(remoteRepository.getKey())
+                            .setErrors(errors)
+                            .setValid(false)
+                            .build();
                     }
                 }
                 // Execute HTTP GET & HEAD requests in separate thread pool from executor service
@@ -154,10 +169,15 @@ public class DefaultStoreValidator implements StoreValidator {
         int iter = remoteHostPartsLength;
         while (iter > 0) {
             String partRemoteHost = remoteHostPartsTrimed[remoteHostPartsLength - i];
+
+            LOGGER.warn("=> Checking Remote host:[" + partRemoteHost + "]");
+
             if(i > (hostPartsLength-1)) {
                 return true;
             }
             String partHost = hostParts[hostPartsLength - i];
+
+            LOGGER.warn("=> Checking Host:[" + partHost + "]");
 
             if(partRemoteHost.equalsIgnoreCase(partHost)
                 || (partRemoteHost.equalsIgnoreCase("*") || partRemoteHost.equals("") )) {
