@@ -170,14 +170,10 @@ public class DefaultStoreValidator implements StoreValidator {
         while (iter > 0) {
             String partRemoteHost = remoteHostPartsTrimed[remoteHostPartsLength - i];
 
-            LOGGER.warn("=> Checking Remote host:[" + partRemoteHost + "]");
-
             if(i > (hostPartsLength-1)) {
                 return true;
             }
             String partHost = hostParts[hostPartsLength - i];
-
-            LOGGER.warn("=> Checking Host:[" + partHost + "]");
 
             if(partRemoteHost.equalsIgnoreCase(partHost)
                 || (partRemoteHost.equalsIgnoreCase("*") || partRemoteHost.equals("") )) {
