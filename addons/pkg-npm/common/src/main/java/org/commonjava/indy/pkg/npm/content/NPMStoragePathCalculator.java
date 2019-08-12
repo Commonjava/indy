@@ -9,6 +9,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
+import static org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger.METADATA_NAME;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 /**
@@ -35,8 +36,8 @@ public class NPMStoragePathCalculator
     {
         if ( PKG_TYPE_NPM.equals( key.getPackageType() ) && path.split("/").length < 2 )
         {
-            logger.debug( "Modifying target path: {}, appending 'package.json'", path );
-            return normalize( path, "package.json" );
+            logger.debug( "Modifying target path: {}, appending '{}'", path, METADATA_NAME );
+            return normalize( path, METADATA_NAME );
         }
 
         return path;
