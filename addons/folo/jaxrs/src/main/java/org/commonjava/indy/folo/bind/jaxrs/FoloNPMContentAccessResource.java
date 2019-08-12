@@ -52,7 +52,6 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CONTENT_TRACKI
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
-import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
 @Api( value = "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks retrieval and management of file/artifact content." )
@@ -97,9 +96,7 @@ public class FoloNPMContentAccessResource
         EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
                                                     .set( ACCESS_CHANNEL, AccessChannel.NPM_REPO )
                                                     .set( STORE_HTTP_HEADERS,
-                                                          RequestUtils.extractRequestHeadersToMap( request ) )
-                                                    .set( STORAGE_PATH,
-                                                          Paths.get( packageName, PACKAGE_JSON ).toString() );
+                                                          RequestUtils.extractRequestHeadersToMap( request ) );
 
         Class cls = FoloNPMContentAccessResource.class;
         return handler.doCreate( NPM_PKG_KEY, type, name, packageName, request, metadata,
@@ -153,9 +150,7 @@ public class FoloNPMContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
-                                                    .set( ACCESS_CHANNEL, AccessChannel.NPM_REPO )
-                                                    .set( STORAGE_PATH,
-                                                          Paths.get( packageName, PACKAGE_JSON ).toString() );
+                                                    .set( ACCESS_CHANNEL, AccessChannel.NPM_REPO );
 
         MDC.put( CONTENT_TRACKING_ID, id );
 
@@ -205,9 +200,7 @@ public class FoloNPMContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
-                                                    .set( ACCESS_CHANNEL, AccessChannel.NPM_REPO )
-                                                    .set( STORAGE_PATH,
-                                                          Paths.get( packageName, PACKAGE_JSON ).toString() );
+                                                    .set( ACCESS_CHANNEL, AccessChannel.NPM_REPO );
 
         MDC.put( CONTENT_TRACKING_ID, id );
 

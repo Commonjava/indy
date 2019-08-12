@@ -24,11 +24,13 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 
 import javax.inject.Inject;
@@ -36,7 +38,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -50,17 +51,22 @@ public class PackageMetadataGenerator
     @Inject
     private PackageMetadataMerger merger;
 
+    @Inject
+    private PathGenerator pathGenerator;
+
     protected PackageMetadataGenerator()
     {
     }
 
     public PackageMetadataGenerator( final DirectContentAccess fileManager, final StoreDataManager storeManager,
-                                     final XMLInfrastructure xml, final TypeMapper typeMapper,
-                                     final PackageMetadataMerger merger, final GroupMergeHelper mergeHelper,
-                                     final NotFoundCache nfc, final MergedContentAction... mergedContentActions )
+                                     final TypeMapper typeMapper, final PackageMetadataMerger merger,
+                                     final GroupMergeHelper mergeHelper, final NotFoundCache nfc,
+                                     final PathGenerator pathGenerator,
+                                     final MergedContentAction... mergedContentActions )
     {
         super( fileManager, storeManager, mergeHelper, nfc, mergedContentActions );
         this.typeMapper = typeMapper;
+        this.pathGenerator = pathGenerator;
         this.merger = merger;
     }
 
@@ -68,68 +74,69 @@ public class PackageMetadataGenerator
     public Transfer generateGroupFileContent( Group group, List<ArtifactStore> members, String path,
                                               EventMetadata eventMetadata ) throws IndyWorkflowException
     {
+        String realPath = path;
+        boolean canProcess;
+        if ( canProcess( realPath ) )
         {
-            if ( !canProcess( path ) )
-            {
-                return null;
-            }
-
-            final Transfer target = fileManager.getTransfer( group, path );
-
-            logger.debug( "Working on metadata file: {} (already exists? {})", target,
-                          target != null && target.exists() );
-
-            if ( !target.exists() )
-            {
-                String toMergePath = path;
-                if ( !path.endsWith( PackageMetadataMerger.METADATA_NAME ) )
-                {
-                    toMergePath = normalize( normalize( parentPath( toMergePath ) ),
-                                             PackageMetadataMerger.METADATA_NAME );
-                }
-
-                final List<Transfer> sources = fileManager.retrieveAllRaw( members, toMergePath, new EventMetadata() );
-                final byte[] merged = merger.merge( sources, group, toMergePath );
-                if ( merged != null )
-                {
-                    OutputStream fos = null;
-                    try
-                    {
-                        fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-                        fos.write( merged );
-
-                    }
-                    catch ( final IOException e )
-                    {
-                        throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}", e,
-                                                         target, e.getMessage() );
-                    }
-                    finally
-                    {
-                        closeQuietly( fos );
-                    }
-
-                    helper.writeMergeInfo( merged, sources, group, toMergePath );
-                }
-            }
-
-            if ( target.exists() )
-            {
-                return target;
-            }
-
+            canProcess = true;
+        }
+        else
+        {
+            realPath = pathGenerator.getPath( new ConcreteResource( LocationUtils.toLocation( group ), path ) );
+            canProcess = canProcess( realPath );
+        }
+        if ( !canProcess )
+        {
             return null;
         }
+
+        final Transfer target = fileManager.getTransfer( group, realPath );
+
+        logger.debug( "Working on metadata file: {} (already exists? {})", target, exists( target ) );
+
+        if ( !exists( target ) )
+        {
+            String toMergePath = realPath;
+            if ( !realPath.endsWith( PackageMetadataMerger.METADATA_NAME ) )
+            {
+                toMergePath = normalize( normalize( parentPath( toMergePath ) ), PackageMetadataMerger.METADATA_NAME );
+            }
+
+            final List<Transfer> sources = fileManager.retrieveAllRaw( members, toMergePath, new EventMetadata() );
+            final byte[] merged = merger.merge( sources, group, toMergePath );
+            if ( merged != null )
+            {
+                try (OutputStream fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata ))
+                {
+                    fos.write( merged );
+                }
+                catch ( final IOException e )
+                {
+                    throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}", e, target,
+                                                     e.getMessage() );
+                }
+
+                helper.writeMergeInfo( helper.generateMergeInfo( sources ), group, toMergePath );
+            }
+        }
+
+        if ( target.exists() )
+        {
+            return target;
+        }
+
+        return null;
+    }
+
+    private boolean exists( final Transfer transfer )
+    {
+        return transfer != null && transfer.exists();
     }
 
     @Override
     public boolean canProcess( String path )
     {
-        if ( path.endsWith( PackageMetadataMerger.METADATA_NAME ) )
-        {
-            return true;
-        }
-        return false;
+        return path.endsWith( PackageMetadataMerger.METADATA_NAME );
     }
 
     @Override

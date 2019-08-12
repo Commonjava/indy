@@ -37,8 +37,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.commonjava.indy.model.core.PathStyle.hashed;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
-import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 /**
  * {@link PathGenerator} implementation that assumes the locations it sees will be {@link KeyedLocation}, and translates them into storage locations
@@ -47,7 +45,7 @@ import static org.commonjava.maven.galley.util.PathUtils.normalize;
 @Default
 @ApplicationScoped
 public class IndyPathGenerator
-    implements PathGenerator
+        implements PathGenerator
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -83,6 +81,14 @@ public class IndyPathGenerator
         final String name = key.getPackageType() + "/" + key.getType()
                                .name() + "-" + key.getName();
 
+        return PathUtils.join( name, getPath( resource ) );
+    }
+
+    @Override
+    public String getPath( final ConcreteResource resource )
+    {
+        final KeyedLocation kl = (KeyedLocation) resource.getLocation();
+        final StoreKey key = kl.getKey();
         String path = resource.getPath();
         if ( hashed == kl.getAttribute( LocationUtils.PATH_STYLE, PathStyle.class ) )
         {
@@ -116,7 +122,7 @@ public class IndyPathGenerator
             path = pathref.get();
         }
 
-        return PathUtils.join( name, path );
+        return path;
     }
 
 }
