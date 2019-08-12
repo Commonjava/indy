@@ -33,21 +33,18 @@ import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.util.AcceptInfo;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
-import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.TransferManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
-import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -67,8 +64,6 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
 import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORAGE_PATH;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -98,8 +93,6 @@ public class NPMContentAccessHandler
                               EventMetadata eventMetadata, Supplier<URI> uriBuilder,
                               Consumer<Response.ResponseBuilder> builderModifier )
     {
-        path = PathUtils.storagePath( path, eventMetadata );
-
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( packageType, st, name );
 
@@ -223,7 +216,7 @@ public class NPMContentAccessHandler
                 {
                     // for npm will fetch the http-meta as the mapping path directly to get the headers info for further header set
                     HttpExchangeMetadata httpMetadata =
-                            contentController.getHttpMetadata( sk, PathUtils.storagePath( path, eventMetadata ) );
+                            contentController.getHttpMetadata( sk, path );
 
                     if ( item == null )
                     {
@@ -326,15 +319,18 @@ public class NPMContentAccessHandler
         {
             try
             {
-                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
-                {
-                    // make sure the right mapping path for hosted and group when retrieve content
-                    path = PathUtils.storagePath( path, eventMetadata );
-                }
-                logger.info( "START: retrieval of content: {}:{}", sk, path );
+                // NOTE: We do NOT want to map this here. Instead, let's map it when we retrieve a Transfer instance as
+                // we access the file storage on this system...we do that via StoragePathCalculator, in pkg-npm/common.
+//                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
+//                {
+//                    // make sure the right mapping path for hosted and group when retrieve content
+//                    path = PathUtils.storagePath( path, eventMetadata );
+//                }
+
+                logger.info( "START: retrieval of content: {}/{}", sk, path );
                 Transfer item = contentController.get( sk, path, eventMetadata );
 
-                logger.info( "HANDLE: retrieval of content: {}:{}", sk, path );
+                logger.info( "HANDLE: retrieval of content: {}/{}", sk, path );
                 if ( item == null )
                 {
                     return handleMissingContentQuery( sk, path, builderModifier );
@@ -347,7 +343,6 @@ public class NPMContentAccessHandler
                     handleLocking = true;
                 }
 
-                Transfer origItem = null;
                 try
                 {
                     if ( !item.exists() )
@@ -363,18 +358,20 @@ public class NPMContentAccessHandler
                     {
                         // for remote retrieve, when content has downloaded and cached in the mapping path,
                         // the item here will be a directory, so reassign the path and item as the mapping one
-                        if ( item.isDirectory() && StoreType.remote == st )
-                        {
-                            path = PathUtils.storagePath( path, eventMetadata );
-                            origItem = item;
-                            item = contentController.get( sk, path, eventMetadata );
-                        }
 
-                        if ( item == null )
-                        {
-                            logger.error( "Retrieval of actual storage path: {} FAILED!", path );
-                            throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
-                        }
+                        // Note: as STORAGE_PATH is not used, these code is also useless now.
+//                        if ( item.isDirectory() && StoreType.remote == st )
+//                        {
+//                            path = PathUtils.storagePath( path, eventMetadata );
+//                            origItem = item;
+//                            item = contentController.get( sk, path, eventMetadata );
+//                        }
+
+//                        if ( item == null )
+//                        {
+//                            logger.error( "Retrieval of actual storage path: {} FAILED!", path );
+//                            throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
+//                        }
 
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
@@ -386,28 +383,21 @@ public class NPMContentAccessHandler
                         setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
-                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
-                        // hosted .http-metadata.json will be generated when publish
-                        // only package.json file will generate this customized http meta to satisfy npm client header check
-                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
-                        {
-                            generateHttpMetadataHeaders( item, request, response );
-                        }
+
+//                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
+//                        // hosted .http-metadata.json will be generated when publish
+//                        // only package.json file will generate this customized http meta to satisfy npm client header check
+//                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
+//                        {
+//                            generateHttpMetadataHeaders( item, request, response );
+//                        }
                     }
                 }
                 finally
                 {
                     if ( handleLocking )
                     {
-                        if ( origItem != null )
-                        {
-                            origItem.unlock();
-                        }
-
-                        if ( item != null )
-                        {
-                            item.unlock();
-                        }
+                        item.unlock();
                     }
                 }
             }

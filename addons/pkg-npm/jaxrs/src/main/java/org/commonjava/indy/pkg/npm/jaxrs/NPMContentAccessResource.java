@@ -60,7 +60,7 @@ public class NPMContentAccessResource
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private static final String PACKAGE_JSON = "/package.json";
+//    private static final String PACKAGE_JSON = "/package.json";
 
     @Inject
     @NPMContentHandler
@@ -87,8 +87,7 @@ public class NPMContentAccessResource
             final @Context HttpServletRequest request )
     {
         EventMetadata eventMetadata =
-                new EventMetadata().set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() )
-                                                         .set( STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
+                new EventMetadata().set( STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
 
         Class cls = NPMContentAccessResource.class;
         return handler.doCreate( NPM_PKG_KEY, type, name, packageName, request, eventMetadata,
@@ -134,8 +133,6 @@ public class NPMContentAccessResource
             final @PathParam( "packageName" ) String packageName,
             final @ApiParam( name = CHECK_CACHE_ONLY, value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
     {
-        EventMetadata eventMetadata = new EventMetadata();
-        eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
         return handler.doDelete( NPM_PKG_KEY, type, name, packageName, new EventMetadata() );
     }
 
@@ -167,8 +164,6 @@ public class NPMContentAccessResource
             @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         EventMetadata eventMetadata = new EventMetadata();
-        eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
-
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doHead( NPM_PKG_KEY, type, name, packageName, cacheOnly, baseUri, request, eventMetadata );
     }
@@ -206,8 +201,6 @@ public class NPMContentAccessResource
             @Context final HttpServletRequest request )
     {
         EventMetadata eventMetadata = new EventMetadata();
-        eventMetadata.set( STORAGE_PATH, Paths.get( packageName, PACKAGE_JSON ).toString() );
-
         final String baseUri = uriInfo.getBaseUriBuilder().path( NPM_CONTENT_REST_BASE_PATH ).build().toString();
         return handler.doGet( NPM_PKG_KEY, type, name, packageName, baseUri, request, eventMetadata );
     }
