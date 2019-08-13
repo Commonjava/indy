@@ -5,6 +5,7 @@ import org.commonjava.maven.galley.util.UrlUtils;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.Function;
 
 public class DecoratorUtils
 {
@@ -29,7 +30,7 @@ public class DecoratorUtils
 
             int nextQuote = raw.indexOf( "\"", quote + 1 );
             String url = raw.substring( quote + 1, nextQuote );
-            String path = getPath( url );
+            String path = getPath(url);
 
             url = UrlUtils.buildUrl( contextURL, path );
             sb.append( "\"" + url + "\"" );
@@ -50,7 +51,29 @@ public class DecoratorUtils
         {
             throw new IOException( "Failed to parse URL " + url, e ); // should not happen
         }
-        return url1.getPath();
+
+        String[] pathParts = url1.getPath().split( "\\/" );
+        if ( pathParts.length < 1 )
+        {
+            return "";
+        }
+        else if ( pathParts.length == 1 )
+        {
+            return pathParts[0];
+        }
+
+        String lastPart = pathParts[pathParts.length - 1];
+        if ( ( "package.json".equals( lastPart ) || lastPart.endsWith( "tgz" ) ) && pathParts.length > 2 )
+        {
+            return String.format( "%s/%s/%s", pathParts[pathParts.length - 3], pathParts[pathParts.length - 2],
+                                  pathParts[pathParts.length - 1] );
+        }
+        else if ( "-".equals( lastPart ) )
+        {
+            return String.format( "%s/%s", pathParts[pathParts.length - 2], pathParts[pathParts.length - 1] );
+        }
+
+        return lastPart;
     }
 
 }

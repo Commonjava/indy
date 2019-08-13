@@ -30,8 +30,6 @@ import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -47,7 +45,7 @@ import static org.junit.Assert.assertThat;
  *     <li>the metadata content can be retrieved with all tarball urls decorated to proper context indy urls</li>
  * </ul>
  */
-public class NPMRemoteMetadataContentDecoratorTest
+public class NPMRemoteMetadataContentDecorator_InternalUrlTest
                 extends AbstractContentManagementTest
 {
     protected static final String GROUP = "G";
@@ -57,17 +55,21 @@ public class NPMRemoteMetadataContentDecoratorTest
     @Test
     public void test() throws Exception
     {
-        final String packageContent = IOUtils.toString(
-                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "package-1.5.1.json" ) );
 
         final String packagePath = "jquery";
 
-        final String tarballUrl = "https://registry.npmjs.org/jquery/-/jquery-1.5.1.tgz";
+        final String baseUrl = server.formatUrl( STORE, SUBPATH );
 
-        server.expect( server.formatUrl( STORE, packagePath ), 200,
+        final String tarballUrl = baseUrl + "/jquery/-/jquery-1.5.1.tgz";
+
+        final String packageContent = IOUtils.toString(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "subpath-package-1.5.1.json" ) )
+                                             .replace( "@@REGISTRY@@", baseUrl );
+
+        server.expect( server.formatUrl( STORE, SUBPATH, packagePath ), 200,
                        new ByteArrayInputStream( packageContent.getBytes() ) );
 
-        final RemoteRepository remoteRepository = new RemoteRepository( NPM_PKG_KEY, STORE, server.formatUrl( STORE ) );
+        final RemoteRepository remoteRepository = new RemoteRepository( NPM_PKG_KEY, STORE, baseUrl );
         client.stores().create( remoteRepository, "adding npm remote repo", RemoteRepository.class );
 
         final Group group = new Group( NPM_PKG_KEY, GROUP, remoteRepository.getKey() );
@@ -79,7 +81,7 @@ public class NPMRemoteMetadataContentDecoratorTest
         assertThat( stream, notNullValue() );
 
         String contextUrl =
-                        UrlUtils.buildUrl( fixture.getUrl(), "content", NPM_PKG_KEY, storeKey.getType().name(), STORE );
+                UrlUtils.buildUrl( fixture.getUrl(), "content", NPM_PKG_KEY, storeKey.getType().name(), STORE );
         String decoratedContent = packageContent.replaceAll( tarballUrl, contextUrl + "/jquery/-/jquery-1.5.1.tgz" );
         assertThat( IOUtils.toString( stream ), equalTo( decoratedContent ) );
         stream.close();
