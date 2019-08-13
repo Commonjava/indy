@@ -18,7 +18,8 @@
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.koji.inject.KojiProjectRefStringKey2StringMapper">
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <!--<jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>-->
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -32,18 +33,28 @@
     </local-cache>
 
     <local-cache name="folo-in-progress" configuration="local-template">
-      <indexing index="LOCAL">
-        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
-        <property name="default.directory_provider">ram</property>
-        <!-- <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property> -->
-      </indexing>
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.folo.data.idxmodel.TrackedContentEntry2StringMapper">
+          <write-behind />
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
+            <jdbc:id-column name="id_column" type="TEXT" />
+            <jdbc:data-column name="data_column" type="BYTEA" />
+            <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+
+      <memory>
+        <object size="1000" strategy="REMOVE" />
+      </memory>
     </local-cache>
 
     <local-cache name="folo-sealed" configuration="local-template">
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.folo.data.idxmodel.TrackingKey2StringMapper">
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -61,7 +72,7 @@
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper">
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -77,7 +88,7 @@
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -91,7 +102,7 @@
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
           <write-behind />
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -119,7 +130,7 @@
       <expiration interval="300" />
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.core.expire.ScheduleCacheKey2StringMapper">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
             <jdbc:id-column name="id_column" type="TEXT" />
             <jdbc:data-column name="data_column" type="BYTEA" />
@@ -151,7 +162,7 @@
     <local-cache name="LuceneIndexesMetadata">
       <persistence passivation="false">
         <jdbc:string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_index">
             <jdbc:id-column name="K" type="TEXT"/>
             <jdbc:data-column name="V" type="BYTEA"/>
@@ -164,7 +175,7 @@
     <local-cache name="LuceneIndexesData">
       <persistence passivation="false">
         <jdbc:string-keyed-jdbc-store preload="true" key-to-string-mapper="org.infinispan.lucene.LuceneKey2StringMapper">
-          <jdbc:connection-pool connection-url="jdbc:postgresql://${datasource_server}:${datasource_port}/${datasource_name}" username="${datasource_user}" password="${datasource_password}" driver="org.postgresql.Driver"/>
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
           <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_index">
             <jdbc:id-column name="K" type="TEXT"/>
             <jdbc:data-column name="V" type="BYTEA"/>
