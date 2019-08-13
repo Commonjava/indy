@@ -24,7 +24,7 @@ pipeline {
     }
     post {
         success {
-            archiveArtifacts artifacts: 'deployments/launcher/target/*-complete.tar.gz', fingerprint: true
+            archiveArtifacts artifacts: 'deployments/launcher/target/*-skinny.tar.gz', fingerprint: true
         }
     }
 }
