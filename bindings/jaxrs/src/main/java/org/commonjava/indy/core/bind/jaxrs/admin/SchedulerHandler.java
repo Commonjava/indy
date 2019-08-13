@@ -24,7 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
-import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.SchedulerController;
 import org.commonjava.indy.core.expire.Expiration;
 import org.commonjava.indy.core.expire.ExpirationSet;
@@ -42,9 +42,6 @@ import javax.ws.rs.core.Response;
 
 import java.nio.file.Paths;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Api( value = "Schedules and Expirations",
@@ -60,6 +57,9 @@ public class SchedulerHandler
 
     @Inject
     private ObjectMapper objectMapper;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation( "[Deprecated] Retrieve the expiration information related to re-enablement of a repository" )
     @ApiResponses( { @ApiResponse( code = 200, message = "Expiration information retrieved successfully.", response = Expiration.class ),
@@ -83,11 +83,12 @@ public class SchedulerHandler
                 throw new WebApplicationException( Response.Status.NOT_FOUND );
             }
 
-            return formatOkResponseWithJsonEntity( timeout, objectMapper, rb -> markDeprecated( rb, altPath ) );
+            return responseHelper.formatOkResponseWithJsonEntity( timeout,
+                                                                  rb -> responseHelper.markDeprecated( rb, altPath ) );
         }
         catch ( IndyWorkflowException e )
         {
-            throwError( e, rb->markDeprecated( rb, altPath ) );
+            responseHelper.throwError( e, rb->responseHelper.markDeprecated( rb, altPath ) );
         }
 
         return null;
@@ -113,7 +114,7 @@ public class SchedulerHandler
         }
         catch ( IndyWorkflowException e )
         {
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         if ( timeout == null )
@@ -136,7 +137,7 @@ public class SchedulerHandler
         }
         catch ( IndyWorkflowException e )
         {
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         throw new WebApplicationException( "Impossible Error", 500 );

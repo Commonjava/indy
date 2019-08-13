@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.ftest.core.jaxrs;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +26,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-
 @Path( "/api/test" )
 public class VersioningTestHandlerDeprecated
                 implements IndyResources
@@ -36,7 +34,7 @@ public class VersioningTestHandlerDeprecated
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private ObjectMapper objectMapper;
+    private ResponseHelper responseHelper;
 
     @Path( "/info" )
     @GET
@@ -44,7 +42,7 @@ public class VersioningTestHandlerDeprecated
     public Response getTestInfo()
     {
         logger.debug( "Accessing deprecated getTestInfo..." );
-        return formatOkResponseWithJsonEntity( new TestInfo( "This is a test." ), objectMapper );
+        return responseHelper.formatOkResponseWithJsonEntity( new TestInfo( "This is a test." ) );
     }
 
     static class TestInfo

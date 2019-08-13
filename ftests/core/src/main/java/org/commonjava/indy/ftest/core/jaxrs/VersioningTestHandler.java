@@ -17,6 +17,7 @@ package org.commonjava.indy.ftest.core.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,8 +27,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
 
 @Path( "/api/test" )
 public class VersioningTestHandler
@@ -39,6 +38,9 @@ public class VersioningTestHandler
     @Inject
     private ObjectMapper objectMapper;
 
+    @Inject
+    private ResponseHelper responseHelper;
+
     /**
      * Assuming we want to upgrade this to a new version, we will deprecate old impl by moving old code to somewhere
      * like VersioningTestHandlerDeprecated and keep working on the new impl here.
@@ -49,7 +51,7 @@ public class VersioningTestHandler
     public Response getTestInfo()
     {
         logger.debug( "Accessing getTestInfo..." );
-        return formatOkResponseWithJsonEntity( new TestInfo( "001", "This is a test." ), objectMapper );
+        return responseHelper.formatOkResponseWithJsonEntity( new TestInfo( "001", "This is a test." ) );
     }
 
     @Path( "/another" )
@@ -57,7 +59,7 @@ public class VersioningTestHandler
     @Produces( ApplicationContent.application_json )
     public Response getAnotherInfo()
     {
-        return formatOkResponseWithJsonEntity( new AnotherInfo( "This is another info." ), objectMapper );
+        return responseHelper.formatOkResponseWithJsonEntity( new AnotherInfo( "This is another info." ) );
     }
 
     /** this class changed in new version */

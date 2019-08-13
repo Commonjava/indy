@@ -27,7 +27,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.bind.jaxrs.util.REST;
-import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.content.browse.ContentBrowseController;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.model.core.PackageTypes;
@@ -56,8 +56,6 @@ import javax.ws.rs.core.UriInfo;
 
 import java.util.Date;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-
 @Api( value = "Indy Directory Content Browse", description = "Browse directory content in indy repository" )
 @Path( "/api/browse/{packageType}/{type: (hosted|group|remote)}/{name}" )
 @ApplicationScoped
@@ -82,6 +80,9 @@ public class ContentBrowseResource
 
     @Inject
     protected JaxRsRequestHelper jaxRsRequestHelper;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation( "Retrieve directory content under the given artifact store (type/name) and directory path." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
@@ -145,11 +146,11 @@ public class ContentBrowseResource
         {
             logger.error( String.format( "Failed to list content: %s from: %s. Reason: %s",
                                          StringUtils.isBlank( path ) ? "/" : path, name, e.getMessage() ), e );
-            response = ResponseUtils.formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         catch ( JsonProcessingException e )
         {
-            response = ResponseUtils.formatResponse( e, "Failed to serialize DTO to JSON: " + result );
+            response = responseHelper.formatResponse( e, "Failed to serialize DTO to JSON: " + result );
         }
 
         return response;
@@ -202,13 +203,13 @@ public class ContentBrowseResource
         {
             result = getBrowseResult( packageType, type, name, path, uriInfo );
 
-            response = formatOkResponseWithJsonEntity( result, mapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( result );
         }
         catch ( IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to list content: %s from: %s. Reason: %s",
                                          StringUtils.isBlank( path ) ? "/" : path, name, e.getMessage() ), e );
-            response = ResponseUtils.formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;

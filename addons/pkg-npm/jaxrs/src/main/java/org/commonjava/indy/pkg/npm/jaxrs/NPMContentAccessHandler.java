@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
@@ -61,9 +62,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -80,6 +78,9 @@ public class NPMContentAccessHandler
 
     @Inject
     private ObjectMapper mapper;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @Override
     public Response doCreate( String packageType, String type, String name, String path, HttpServletRequest request,
@@ -145,7 +146,7 @@ public class NPMContentAccessHandler
         {
             logger.error( String.format( "Failed to upload: %s to: %s. Reason: %s", path, name, e.getMessage() ), e );
 
-            response = formatResponse( e, builderModifier );
+            response = responseHelper.formatResponse( e, builderModifier );
         }
         finally
         {
@@ -229,7 +230,7 @@ public class NPMContentAccessHandler
 
                     final Response.ResponseBuilder builder = Response.ok();
 
-                    setInfoHeaders( builder, item, sk, path, true, getNPMContentType( path ),
+                    responseHelper.setInfoHeaders( builder, item, sk, path, true, getNPMContentType( path ),
                                     httpMetadata );
                     if ( builderModifier != null )
                     {
@@ -246,7 +247,7 @@ public class NPMContentAccessHandler
                         if ( metadata != null )
                         {
                             logger.debug( "Using HTTP metadata to build negative response." );
-                            response = formatResponseFromMetadata( metadata );
+                            response = responseHelper.formatResponseFromMetadata( metadata );
                         }
                     }
 
@@ -266,7 +267,7 @@ public class NPMContentAccessHandler
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
+                response = responseHelper.formatResponse( e, builderModifier );
             }
         }
         return response;
@@ -370,7 +371,7 @@ public class NPMContentAccessHandler
 //                        if ( item == null )
 //                        {
 //                            logger.error( "Retrieval of actual storage path: {} FAILED!", path );
-//                            throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
+//                            responseHelper.throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
 //                        }
 
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
@@ -380,7 +381,7 @@ public class NPMContentAccessHandler
                         final Response.ResponseBuilder builder =
                                 Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
 
-                        setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
+                        responseHelper.setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
 
@@ -405,7 +406,7 @@ public class NPMContentAccessHandler
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
+                response = responseHelper.formatResponse( e, builderModifier );
             }
         }
 
