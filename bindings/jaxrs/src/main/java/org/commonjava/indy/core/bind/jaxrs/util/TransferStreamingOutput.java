@@ -18,6 +18,7 @@ package org.commonjava.indy.core.bind.jaxrs.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import javax.ws.rs.WebApplicationException;
@@ -43,7 +44,9 @@ public class TransferStreamingOutput
     implements StreamingOutput
 {
 
-    private static final String TRANSFER_METRIC_NAME = "indy.transferred";
+    private static final String TRANSFER_METRIC_NAME = "indy.transferred.content";
+
+    private static final double NANOS_PER_SEC = 1000000000.0;
 
     private InputStream stream;
 
@@ -64,6 +67,7 @@ public class TransferStreamingOutput
     public void write( final OutputStream out )
         throws IOException, WebApplicationException
     {
+        long start = System.nanoTime();
         try
         {
             CountingOutputStream cout = new CountingOutputStream( out );
@@ -75,8 +79,11 @@ public class TransferStreamingOutput
             String name = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME,
                                    getDefaultName( TransferStreamingOutput.class, "write" ), METER );
 
+            long end = System.nanoTime();
+            double elapsed = (end-start)/NANOS_PER_SEC;
+
             Meter meter = metricsManager.getMeter( name );
-            meter.mark( cout.getByteCount() );
+            meter.mark( Math.round( cout.getByteCount() / elapsed ) );
         }
         finally
         {
