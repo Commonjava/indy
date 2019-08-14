@@ -24,7 +24,9 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 public class DTOStreamingOutput
         implements StreamingOutput
 {
-    private static final String TRANSFER_METRIC_NAME = "indy.dto";
+    private static final String TRANSFER_METRIC_NAME = "indy.transferred.dto";
+
+    private static final double NANOS_PER_SEC = 1000000000.0;
 
     private final ObjectMapper mapper;
 
@@ -50,6 +52,7 @@ public class DTOStreamingOutput
         AtomicReference<IOException> ioe = new AtomicReference<>();
         metricsManager.wrapWithStandardMetrics( () -> {
             CountingOutputStream cout = new CountingOutputStream( outputStream );
+            long start = System.nanoTime();
             try
             {
                 mapper.writeValue( cout, dto );
@@ -66,8 +69,11 @@ public class DTOStreamingOutput
                 String name = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME,
                                        getDefaultName( dto.getClass().getSimpleName(), "write" ), METER );
 
+                long end = System.nanoTime();
+                double elapsed = (end-start)/NANOS_PER_SEC;
+
                 Meter meter = metricsManager.getMeter( name );
-                meter.mark( cout.getByteCount() );
+                meter.mark( Math.round( cout.getByteCount() / elapsed ) );
             }
 
             return null;
