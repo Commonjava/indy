@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.revisions.RevisionsManager;
@@ -40,9 +41,6 @@ import javax.ws.rs.core.Response.Status;
 import java.util.Date;
 import java.util.List;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
 @Path( "/api/revisions/changelog" )
 @REST
 public class ChangelogResource
@@ -58,6 +56,9 @@ public class ChangelogResource
 
     @Inject
     private ObjectMapper objectMapper;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation(
             "Retrieve the changelog for the Indy group/repository definition with the start-index and number of results" )
@@ -92,7 +93,7 @@ public class ChangelogResource
         try
         {
             final List<ChangeSummary> dataChangeLog = revisions.getDataChangeLog( key, start, count );
-            response = formatOkResponseWithJsonEntity( new ChangeSummaryDTO( dataChangeLog ), objectMapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( new ChangeSummaryDTO( dataChangeLog ) );
 
             logger.info( "\n\n\n\n\n\n{} Sent changelog for: {}\n\n{}\n\n\n\n\n\n\n", new Date(), key, dataChangeLog );
         }
@@ -102,7 +103,7 @@ public class ChangelogResource
                     String.format( "Failed to lookup changelog for: %s. Reason: %s", key, e.getMessage() );
             logger.error( message, e );
 
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;

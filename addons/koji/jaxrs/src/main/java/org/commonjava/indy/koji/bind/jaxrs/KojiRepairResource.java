@@ -25,13 +25,12 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.koji.data.KojiRepairException;
 import org.commonjava.indy.koji.data.KojiRepairManager;
 import org.commonjava.indy.koji.model.KojiMultiRepairResult;
 import org.commonjava.indy.koji.model.KojiRepairRequest;
 import org.commonjava.indy.koji.model.KojiRepairResult;
-import org.commonjava.indy.model.core.PackageTypeDescriptor;
-import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +47,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.bind.jaxrs.util.JaxRsUriFormatter.getBaseUrlByStoreKey;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.ALL_MASKS;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.MASK;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.META_TIMEOUT;
@@ -75,6 +73,9 @@ public class KojiRepairResource
     @Inject
     private KojiRepairManager repairManager;
 
+    @Inject
+    private ResponseHelper responseHelper;
+
     @ApiOperation( "Repair koji repository remote url /vol." )
     @ApiResponse( code = 200, message = "Operation finished (consult response content for success/failure).",
                     response = KojiRepairResult.class )
@@ -96,7 +97,7 @@ public class KojiRepairResource
         catch ( KojiRepairException | KojiClientException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -122,7 +123,7 @@ public class KojiRepairResource
         catch ( KojiRepairException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -145,7 +146,7 @@ public class KojiRepairResource
         catch ( KojiRepairException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -171,7 +172,7 @@ public class KojiRepairResource
         catch ( KojiRepairException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -201,7 +202,7 @@ public class KojiRepairResource
         catch ( KojiRepairException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;

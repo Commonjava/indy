@@ -24,6 +24,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.NfcController;
 import org.commonjava.indy.core.model.Page;
 import org.commonjava.indy.model.core.StoreKey;
@@ -46,9 +47,6 @@ import javax.ws.rs.core.Response;
 import java.nio.file.Paths;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Api( description = "REST resource that manages the not-found cache", value = "Not-Found Cache" )
@@ -63,6 +61,9 @@ public class NfcResource
 
     @Inject
     private ObjectMapper serializer;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -105,11 +106,11 @@ public class NfcResource
                 controller.clear( key, p );
             }
 
-            response = markDeprecated( Response.ok(), altPath ).build();
+            response = responseHelper.markDeprecated( Response.ok(), altPath ).build();
         }
         catch ( final IndyWorkflowException e )
         {
-            response = formatResponse( e, ( rb ) -> markDeprecated( rb, altPath ) );
+            response = responseHelper.formatResponse( e, ( rb ) -> responseHelper.markDeprecated( rb, altPath ) );
         }
 
         return response;
@@ -148,7 +149,7 @@ public class NfcResource
         }
         catch ( final IndyWorkflowException e )
         {
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -175,7 +176,7 @@ public class NfcResource
         else {
             dto = controller.getAllMissing();
         }
-        return formatOkResponseWithJsonEntity( dto, serializer );
+        return responseHelper.formatOkResponseWithJsonEntity( dto );
     }
 
     @GET
@@ -187,7 +188,7 @@ public class NfcResource
     public Response getInfo( )
     {
         NotFoundCacheInfoDTO dto = controller.getInfo();
-        return formatOkResponseWithJsonEntity( dto, serializer );
+        return responseHelper.formatOkResponseWithJsonEntity( dto );
     }
 
     @Path( "/{type: (hosted|group|remote)}/{name}" )
@@ -225,11 +226,12 @@ public class NfcResource
             {
                 dto = controller.getMissing( key );
             }
-            response = formatOkResponseWithJsonEntity( dto, serializer, rb->markDeprecated( rb, altPath ) );
+            response = responseHelper.formatOkResponseWithJsonEntity( dto,
+                                                                      rb->responseHelper.markDeprecated( rb, altPath ) );
         }
         catch ( final IndyWorkflowException e )
         {
-            response = formatResponse( e, ( rb ) -> markDeprecated( rb, altPath ) );
+            response = responseHelper.formatResponse( e, ( rb ) -> responseHelper.markDeprecated( rb, altPath ) );
         }
 
         return response;
@@ -255,11 +257,11 @@ public class NfcResource
         try
         {
             NotFoundCacheInfoDTO dto = controller.getInfo( key );
-            response = formatOkResponseWithJsonEntity( dto, serializer );
+            response = responseHelper.formatOkResponseWithJsonEntity( dto );
         }
         catch ( final IndyWorkflowException e )
         {
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -299,11 +301,11 @@ public class NfcResource
             {
                 dto = controller.getMissing( key );
             }
-            response = formatOkResponseWithJsonEntity( dto, serializer );
+            response = responseHelper.formatOkResponseWithJsonEntity( dto );
         }
         catch ( final IndyWorkflowException e )
         {
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }

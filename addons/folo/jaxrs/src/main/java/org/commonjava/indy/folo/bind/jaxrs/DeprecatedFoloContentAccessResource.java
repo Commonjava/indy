@@ -23,8 +23,8 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
-import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -43,14 +43,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -75,6 +73,9 @@ public class DeprecatedFoloContentAccessResource
 
     @Inject
     private ContentAccessHandler handler;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     public DeprecatedFoloContentAccessResource()
     {
@@ -107,7 +108,7 @@ public class DeprecatedFoloContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecation = builder -> {
             String alt = Paths.get( "/api/folo/track/", id, MAVEN_PKG_KEY, type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doCreate( MAVEN_PKG_KEY, type, name, path, request, metadata, uriSupplier, deprecation );
@@ -134,7 +135,7 @@ public class DeprecatedFoloContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecation = builder -> {
             String alt = Paths.get( "/api/folo/track/", id, MAVEN_PKG_KEY, type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doHead( MAVEN_PKG_KEY, type, name, path, cacheOnly, baseUri, request, metadata, deprecation );
@@ -160,7 +161,7 @@ public class DeprecatedFoloContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecation = builder -> {
             String alt = Paths.get( "/api/folo/track/", id, MAVEN_PKG_KEY, type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doGet( MAVEN_PKG_KEY, type, name, path, baseUri, request, metadata, deprecation );

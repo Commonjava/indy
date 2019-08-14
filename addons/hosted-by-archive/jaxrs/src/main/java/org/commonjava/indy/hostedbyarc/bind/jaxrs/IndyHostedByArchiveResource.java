@@ -27,6 +27,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.hostedbyarc.HostedByArchiveManager;
 import org.commonjava.indy.hostedbyarc.config.HostedByArchiveConfig;
@@ -54,12 +55,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatCreatedResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Api( value = "Hosted by archive", description = "Create a new maven hosted store by zip file" )
@@ -85,6 +83,9 @@ public class IndyHostedByArchiveResource
 
     @Inject
     private IndyObjectMapper objectMapper;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation( "Create a new maven hosted store by a zip file" )
     @ApiResponses( { @ApiResponse( code = 201, response = ArtifactStore.class, message = "The store was created" ),
@@ -128,7 +129,7 @@ public class IndyHostedByArchiveResource
     {
         if ( !config.isEnabled() )
         {
-            return formatResponse( ApplicationStatus.METHOD_NOT_ALLOWED,
+            return responseHelper.formatResponse( ApplicationStatus.METHOD_NOT_ALLOWED,
                                    "This REST end point is disabled, please enable it first to use" );
         }
 
@@ -136,7 +137,7 @@ public class IndyHostedByArchiveResource
         StoreKey storeKey = new StoreKey( MAVEN_PKG_KEY, StoreType.hosted, name );
         if ( adminController.exists( storeKey ) )
         {
-            return formatResponse( ApplicationStatus.CONFLICT,
+            return responseHelper.formatResponse( ApplicationStatus.CONFLICT,
                                    String.format( "Hosted repository %s already exists, can not create it again.",
                                                   name ) );
         }
@@ -161,7 +162,7 @@ public class IndyHostedByArchiveResource
         catch ( IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            return formatResponse( e );
+            return responseHelper.formatResponse( e );
         }
         finally
         {
@@ -176,11 +177,11 @@ public class IndyHostedByArchiveResource
                                    .path( repo.getType().singularEndpointName() )
                                    .build( repo.getName() );
 
-            return formatCreatedResponseWithJsonEntity( uri, repo, objectMapper );
+            return responseHelper.formatCreatedResponseWithJsonEntity( uri, repo );
         }
         else
         {
-            return formatResponse( new IndyWorkflowException( "Hosted creation failed with some unknown error!" ) );
+            return responseHelper.formatResponse( new IndyWorkflowException( "Hosted creation failed with some unknown error!" ) );
         }
 
     }

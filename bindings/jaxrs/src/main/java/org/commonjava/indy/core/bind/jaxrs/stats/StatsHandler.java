@@ -15,12 +15,6 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.stats;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.TreeSet;
@@ -40,6 +34,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.StatsController;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.dto.EndpointViewListing;
@@ -70,6 +65,9 @@ public class StatsHandler
     @Inject
     private ObjectMapper objectMapper;
 
+    @Inject
+    private ResponseHelper responseHelper;
+
     @ApiOperation( "Retrieve JSON describing the add-ons that are available on the system" )
     @ApiResponse( code = 200, response = AddOnListing.class, message = "The description object" )
     @Path( "/addons/active" )
@@ -77,7 +75,7 @@ public class StatsHandler
     @Produces( ApplicationContent.application_json )
     public Response getAddonList()
     {
-        return formatOkResponseWithJsonEntity( statsController.getActiveAddOns(), objectMapper );
+        return responseHelper.formatOkResponseWithJsonEntity( statsController.getActiveAddOns() );
     }
 
     @ApiOperation( "Aggregate javascript content for all add-ons and format as a single Javascript stream (this gives the UI a static URL to load add-on logic)" )
@@ -91,13 +89,13 @@ public class StatsHandler
         try
         {
             response =
-                formatOkResponseWithEntity( statsController.getActiveAddOnsJavascript(),
+                    responseHelper.formatOkResponseWithEntity( statsController.getActiveAddOnsJavascript(),
                                             ApplicationContent.application_json );
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to format active-addons javascript: %s", formatEntity( e ) ), e );
-            response = formatResponse( e );
+            logger.error( String.format( "Failed to format active-addons javascript: %s", responseHelper.formatEntity( e ) ), e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -109,7 +107,7 @@ public class StatsHandler
     @Produces( ApplicationContent.application_json )
     public Response getIndyVersion()
     {
-        return formatOkResponseWithJsonEntity( statsController.getVersionInfo(), objectMapper );
+        return responseHelper.formatOkResponseWithJsonEntity( statsController.getVersionInfo() );
     }
 
     @ApiOperation( "Retrieve a mapping of the package type names to descriptors (eg. maven, npm, generic-http, etc) available on the system." )
@@ -148,14 +146,14 @@ public class StatsHandler
                                           .toString();
 
             final EndpointViewListing listing = statsController.getEndpointsListing( baseUri, uriFormatter );
-            response = formatOkResponseWithJsonEntity( listing, objectMapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( listing );
 
             logger.info( "\n\n\n\n\n\n{} Sent all-endpoints:\n\n{}\n\n\n\n\n\n\n", new Date(), listing );
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to retrieve endpoint listing: %s", formatEntity( e ) ), e );
-            response = formatResponse( e );
+            logger.error( String.format( "Failed to retrieve endpoint listing: %s", responseHelper.formatEntity( e ) ), e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }

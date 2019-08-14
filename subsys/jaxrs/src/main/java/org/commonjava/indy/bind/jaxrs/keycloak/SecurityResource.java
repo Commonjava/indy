@@ -22,6 +22,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.subsys.keycloak.rest.SecurityController;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
@@ -35,8 +36,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.net.URISyntaxException;
-
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
 
 @Api( "Security Infrastructure" )
 @Path( "/api/security" )
@@ -53,6 +52,9 @@ public class SecurityResource
 
     @Inject
     private SecurityController controller;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation( "Retrieve the keycloak JSON configuration (for use by the UI)" )
     @ApiResponses( { @ApiResponse( code = 400, message = "Keycloak is disabled" ),
@@ -82,7 +84,7 @@ public class SecurityResource
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to load client-side keycloak.json. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -106,7 +108,7 @@ public class SecurityResource
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to load keycloak-init.js. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -140,7 +142,7 @@ public class SecurityResource
         catch ( final IndyWorkflowException | URISyntaxException e )
         {
             logger.error( String.format( "Failed to load keycloak.js. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;

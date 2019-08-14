@@ -15,11 +15,10 @@
  */
 package org.commonjava.indy.core.bind.jaxrs;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatRedirect;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
 import java.net.URISyntaxException;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -28,12 +27,17 @@ import javax.ws.rs.core.UriInfo;
 
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 
 //@Path( "/" )
 @REST
+@ApplicationScoped
 public class RootResource
     implements IndyResources
 {
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @GET
     public Response rootStats( @Context final UriInfo uriInfo )
@@ -41,13 +45,13 @@ public class RootResource
         Response response;
         try
         {
-            response = formatRedirect( uriInfo.getBaseUriBuilder()
+            response = responseHelper.formatRedirect( uriInfo.getBaseUriBuilder()
                                               .path( "stats/version-info" )
                                               .build() );
         }
-        catch ( UriBuilderException | URISyntaxException e )
+        catch ( UriBuilderException e )
         {
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;

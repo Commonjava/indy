@@ -15,14 +15,11 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
@@ -31,10 +28,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.core.ctl.IspnCacheController;
 import org.commonjava.indy.model.core.StoreKey;
@@ -56,6 +53,9 @@ public class MaintenanceHandler
     @Inject
     private ContentController contentController;
 
+    @Inject
+    private ResponseHelper responseHelper;
+
     @ApiOperation( "[Deprecated] Rescan all content in the specified repository to re-initialize metadata, capture missing index keys, etc." )
     @ApiResponse( code = 200, message = "Rescan was started successfully. (NOTE: There currently is no way to determine when rescanning is complete.)" )
     @Path( "/rescan/{type: (hosted|group|remote)}/{name}" )
@@ -73,13 +73,13 @@ public class MaintenanceHandler
         try
         {
             contentController.rescan( key );
-            response = markDeprecated( Response.ok(), altPath )
+            response = responseHelper.markDeprecated( Response.ok(), altPath )
                                .build();
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to rescan: %s. Reason: %s", key, e.getMessage() ), e );
-            response = formatResponse( e, rb->markDeprecated( rb, altPath ) );
+            response = responseHelper.formatResponse( e, rb->responseHelper.markDeprecated( rb, altPath ) );
         }
         return response;
     }
@@ -108,7 +108,7 @@ public class MaintenanceHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to rescan: %s. Reason: %s", key, e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -129,7 +129,7 @@ public class MaintenanceHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to rescan: ALL. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -150,7 +150,7 @@ public class MaintenanceHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -171,7 +171,7 @@ public class MaintenanceHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -195,7 +195,7 @@ public class MaintenanceHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to clean: %s. Reason: %s", name, e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }

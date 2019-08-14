@@ -15,9 +15,6 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,6 +37,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.ReplicationController;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.dto.ReplicationDTO;
@@ -68,6 +66,9 @@ public class ReplicationHandler
     @Inject
     private SecurityManager securityManager;
 
+    @Inject
+    private ResponseHelper responseHelper;
+
     @ApiOperation( "Replicate the stores of a remote Indy" )
     @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body",
                                              dataType = "org.commonjava.indy.model.core.dto.ReplicationDTO",
@@ -90,12 +91,12 @@ public class ReplicationHandler
             params.put( "replicationCount", replicated.size() );
             params.put( "items", replicated );
 
-            response = formatOkResponseWithJsonEntity( params, serializer );
+            response = responseHelper.formatOkResponseWithJsonEntity( params );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
             logger.error( String.format( "Replication failed: %s", e.getMessage() ), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
