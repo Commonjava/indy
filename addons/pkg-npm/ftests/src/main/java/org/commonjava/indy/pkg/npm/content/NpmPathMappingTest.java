@@ -45,8 +45,6 @@ public class NpmPathMappingTest
 {
     private static final String REMOTE = "REMOTE";
 
-    private static final String SUBPATH = "subpath";
-
     private static final String HOSTED = "HOSTED";
 
     private static final String GROUP = "GROUP";
@@ -64,7 +62,7 @@ public class NpmPathMappingTest
         server.expect( server.formatUrl( REMOTE, PATH ), 200,
                        new ByteArrayInputStream( CONTENT_1.getBytes( "UTF-8" ) ) );
 
-        final RemoteRepository remote = new RemoteRepository( NPM_PKG_KEY, REMOTE, server.formatUrl( REMOTE, SUBPATH ) );
+        final RemoteRepository remote = new RemoteRepository( NPM_PKG_KEY, REMOTE, server.formatUrl( REMOTE ) );
         client.stores().create( remote, "adding npm remote repo", RemoteRepository.class );
 
         final HostedRepository hosted = new HostedRepository( NPM_PKG_KEY, HOSTED );

@@ -15,35 +15,26 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Arrays.asList;
 import static org.commonjava.indy.content.ContentManager.ENTRY_POINT_BASE_URI;
-import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.pkg.npm.content.DecoratorUtils.updatePackageJson;
-import static org.commonjava.maven.galley.util.UrlUtils.buildUrl;
 import static org.jsoup.helper.StringUtil.isBlank;
 
 @ApplicationScoped
@@ -51,9 +42,6 @@ public class NPMPackageMaskingTransferDecorator
                 extends AbstractTransferDecorator
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
-
-    @Inject
-    private StoreDataManager storeDataManager;
 
     public NPMPackageMaskingTransferDecorator()
     {
@@ -89,27 +77,8 @@ public class NPMPackageMaskingTransferDecorator
         }
 
         StoreKey key = keyedLocation.getKey();
-        String contextURL = buildUrl( baseURI, key.getType().name(), key.getName() );
-
-        if ( remote == key.getType() )
-        {
-            try
-            {
-                RemoteRepository repo = (RemoteRepository) storeDataManager.getArtifactStore( key );
-                if ( repo == null )
-                {
-                    logger.warn( "Cannot find RemoteRepository for: {}", key );
-                    throw new IOException( "Cannot find RemoteRepository for: " + key );
-                }
-            }
-            catch ( IndyDataException e )
-            {
-                logger.error( "Cannot retrieve RemoteRepository for: " + key, e );
-                throw new IOException( "Failed to retrieve RemoteRepository for: " + key, e );
-            }
-        }
-
-        logger.debug( "Using contextURL: {}", contextURL );
+        String contextURL = UrlUtils.buildUrl( baseURI, key.getType().name(), key.getName() );
+        logger.debug( "Use contextURL: {}", contextURL );
         return new PackageMaskingInputStream( stream, contextURL );
     }
 

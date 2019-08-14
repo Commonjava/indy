@@ -52,8 +52,6 @@ public class NPMRemoteMetadataContentDecoratorTest
 {
     protected static final String GROUP = "G";
 
-    private static final String SUBPATH = "subpath";
-
     @Test
     public void test() throws Exception
     {
@@ -77,7 +75,6 @@ public class NPMRemoteMetadataContentDecoratorTest
         StoreKey storeKey = remoteRepository.getKey();
         InputStream stream = client.content().get( storeKey, packagePath );
         assertThat( stream, notNullValue() );
-
         String contextUrl =
                         UrlUtils.buildUrl( fixture.getUrl(), "content", NPM_PKG_KEY, storeKey.getType().name(), STORE );
         String decoratedContent = packageContent.replaceAll( tarballUrl, contextUrl + "/jquery/-/jquery-1.5.1.tgz" );
