@@ -23,6 +23,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.CacheOnlyLocation;
 import org.commonjava.indy.model.galley.GroupLocation;
 import org.commonjava.indy.model.galley.RepositoryLocation;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.sli.metrics.GoldenSignalsFunctionMetrics;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.commonjava.maven.galley.model.Location;
@@ -43,7 +44,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -76,6 +76,7 @@ public class GoldenSignalsFilter
 
     private static final Set<String> DEPRECATED_CONTENT_ENDPOINTS =
             new HashSet<>( asList( "group", "hosted", "remote" ) );
+
 
     @Inject
     private GoldenSignalsMetricSet metricSet;
@@ -197,39 +198,61 @@ public class GoldenSignalsFilter
         }
         else if ( restPrefix.startsWith( "folo/track/" ) && classifierParts.length > 6 )
         {
-            String packageType = classifierParts[3];
-            boolean isMetadata = isMetadata( packageType, classifierParts[4], classifierParts[5], pathParts, 7 );
+            final String packageType = classifierParts[3];
+            final String storeType = classifierParts[4];
+            if ( isValidContent( packageType, storeType ) )
+            {
+                boolean isMetadata = isMetadata( packageType, storeType, classifierParts[5], pathParts, 7 );
 
-            if ( PKG_TYPE_MAVEN.equals( packageType ) )
-            {
-                return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
-            }
-            else if ( PKG_TYPE_NPM.equals( packageType ) )
-            {
-                return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+                if ( PKG_TYPE_MAVEN.equals( packageType ) )
+                {
+                    return isMetadata ?
+                            asList( FN_METADATA, FN_METADATA_MAVEN ) :
+                            asList( FN_CONTENT, FN_CONTENT_MAVEN );
+                }
+                else if ( PKG_TYPE_NPM.equals( packageType ) )
+                {
+                    return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+                }
             }
         }
         else if ( "content".equals( classifierParts[0] ) && classifierParts.length > 4 )
         {
-            String packageType = classifierParts[1];
-            boolean isMetadata = isMetadata( packageType, classifierParts[2], classifierParts[3], pathParts, 5 );
+            final String packageType = classifierParts[1];
+            final String storeType = classifierParts[2];
+            if ( isValidContent( packageType, storeType ) )
+            {
+                boolean isMetadata = isMetadata( packageType, storeType, classifierParts[3], pathParts, 5 );
 
-            if ( PKG_TYPE_MAVEN.equals( packageType ) )
-            {
-                return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
-            }
-            else if ( PKG_TYPE_NPM.equals( packageType ) )
-            {
-                return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+                if ( PKG_TYPE_MAVEN.equals( packageType ) )
+                {
+                    return isMetadata ?
+                            asList( FN_METADATA, FN_METADATA_MAVEN ) :
+                            asList( FN_CONTENT, FN_CONTENT_MAVEN );
+                }
+                else if ( PKG_TYPE_NPM.equals( packageType ) )
+                {
+                    return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+                }
             }
         }
         else if ( DEPRECATED_CONTENT_ENDPOINTS.contains( classifierParts[0] ) && classifierParts.length > 2 )
         {
-            boolean isMetadata = isMetadata( PKG_TYPE_MAVEN, classifierParts[0], classifierParts[1], pathParts, 2 );
-            return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
+            final String packageType = PKG_TYPE_MAVEN;
+            final String storeType = classifierParts[0];
+            if ( isValidContent( packageType, storeType ) )
+            {
+                boolean isMetadata = isMetadata( packageType, storeType, classifierParts[1], pathParts, 2 );
+                return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
+            }
         }
 
         return emptyList();
+    }
+
+    boolean isValidContent( final String packageType, final String storeType )
+    {
+        return PackageTypeConstants.isValidPackageType( packageType ) && StoreType.get( storeType ) != null;
     }
 
     boolean isMetadata( final String packageType, final String storeType, final String storeName, final String[] pathParts, final int realPathStartIdx )
