@@ -22,6 +22,8 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.diag.data.DiagnosticsManager;
+import org.commonjava.indy.diag.log.LoggerDTO;
+import org.commonjava.indy.diag.log.LoggerManager;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +32,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
+import static org.commonjava.indy.util.ApplicationContent.application_json;
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
 import static org.commonjava.indy.util.ApplicationContent.text_plain;
 
@@ -54,6 +59,9 @@ public class DiagnosticsResource
 {
     @Inject
     private DiagnosticsManager diagnosticsManager;
+
+    @Inject
+    private LoggerManager loggerManager;
 
     @ApiOperation(
             "Retrieve a thread dump for Indy." )
@@ -123,4 +131,69 @@ public class DiagnosticsResource
                             "Cannot retrieve repository files, or failed to write to bundle zip.", e );
         }
     }
+
+    @ApiOperation( "Retrieve all configured logger status" )
+    @ApiResponses( { @ApiResponse( code = 200, response = List.class, message = "Logger status" ),
+                           @ApiResponse( code = 500, message = "Logger status can not be fetched" ) } )
+    @GET
+    @Path( "/logger/all" )
+    @Produces( application_json )
+    public Response getAllLoggers()
+    {
+        try
+        {
+            return Response.ok( loggerManager.getConfiguredLoggers() ).build();
+        }
+        catch ( Exception e )
+        {
+            throw new WebApplicationException( "Cannot retrieve configured logger status.", e );
+        }
+    }
+
+    @ApiOperation( "Retrieve logger status by name" )
+    @ApiResponses( { @ApiResponse( code = 200, response = LoggerDTO.class, message = "Logger status by name" ),
+                           @ApiResponse( code = 500, message = "Logger status can not be fetched" ) } )
+    @GET
+    @Path( "/logger/name/{name}" )
+    @Produces( application_json )
+    public Response getNamedLogger( @PathParam( "name" ) final String name )
+    {
+        try
+        {
+            final LoggerDTO dto = loggerManager.getLogger( name );
+            if ( dto != null )
+            {
+                return Response.ok( dto ).build();
+            }
+            return Response.status( Response.Status.NOT_FOUND ).build();
+        }
+        catch ( Exception e )
+        {
+            throw new WebApplicationException( "Cannot retrieve configured logger status.", e );
+        }
+    }
+
+    @ApiOperation( "Retrieve configured logger status by name" )
+    @ApiResponses( { @ApiResponse( code = 200, response = LoggerDTO.class, message = "Configured logger status by name" ),
+                           @ApiResponse( code = 500, message = "Logger status can not be fetched" ) } )
+    @GET
+    @Path( "/logger/configured/name/{name}" )
+    @Produces( application_json )
+    public Response getConfiguredLogger( @PathParam( "name" ) final String name )
+    {
+        try
+        {
+            final LoggerDTO dto = loggerManager.getConfiguredLogger( name );
+            if ( dto != null )
+            {
+                return Response.ok( dto ).build();
+            }
+            return Response.status( Response.Status.NOT_FOUND ).build();
+        }
+        catch ( Exception e )
+        {
+            throw new WebApplicationException( "Cannot retrieve configured logger status.", e );
+        }
+    }
+
 }
