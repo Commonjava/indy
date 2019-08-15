@@ -31,10 +31,12 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
@@ -194,6 +196,34 @@ public class DiagnosticsResource
         {
             throw new WebApplicationException( "Cannot retrieve configured logger status.", e );
         }
+    }
+
+    @ApiOperation( "Change configured logger level by name" )
+    @ApiResponses( { @ApiResponse( code = 200, response = LoggerDTO.class, message = "Changed configured logger status by name" ),
+                           @ApiResponse( code = 500, message = "Logger status can not be fetched" ) } )
+    @PUT
+    @Path( "/logger/name/{name}/{level}" )
+    @Produces( application_json )
+    public Response changeConfiguredLoggerLevel( @PathParam( "name" ) final String name,
+                                                 @PathParam( "level" ) final String level )
+    {
+        try
+        {
+            final LoggerDTO dto = loggerManager.changeConfiguredLogLevel( name, level );
+            if ( dto != null )
+            {
+                return Response.ok( dto ).build();
+            }
+            return Response.status( Response.Status.BAD_REQUEST )
+                           .type( MediaType.TEXT_PLAIN_TYPE )
+                           .entity( String.format( "Invalid log level: %s", level ) )
+                           .build();
+        }
+        catch ( Exception e )
+        {
+            throw new WebApplicationException( "Cannot retrieve configured logger status.", e );
+        }
+
     }
 
 }

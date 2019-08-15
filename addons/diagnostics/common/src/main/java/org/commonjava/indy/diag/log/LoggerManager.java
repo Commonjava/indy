@@ -35,18 +35,6 @@ public class LoggerManager
 
     private final static List VALID_LEVELS = Arrays.asList( "TRACE", "DEBUG", "INFO", "WARN", "ERROR" );
 
-    private void setLogLevel( String packageName, String logLevel )
-    {
-        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-
-        Logger logger = loggerContext.getLogger( packageName );
-
-        if ( VALID_LEVELS.contains( logLevel ) )
-        {
-            logger.setLevel( Level.toLevel( logLevel ) );
-        }
-    }
-
     private List<String> getAppenders( Logger logger )
     {
         final Iterator<Appender<ILoggingEvent>> it = logger.iteratorForAppenders();
@@ -61,14 +49,14 @@ public class LoggerManager
 
     public List<LoggerDTO> getConfiguredLoggers()
     {
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        List<LoggerDTO> loggers = new ArrayList<>();
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final List<LoggerDTO> loggers = new ArrayList<>();
         for ( Logger log : lc.getLoggerList() )
         {
             final List<String> appenderNames = getAppenders( log );
             if ( log.getLevel() != null || !appenderNames.isEmpty() )
             {
-                LoggerDTO dto = new LoggerDTO();
+                final LoggerDTO dto = new LoggerDTO();
                 dto.setName( log.getName() );
                 dto.setLevel( log.getLevel().toString() );
                 dto.setAdditive( log.isAdditive() );
@@ -82,11 +70,11 @@ public class LoggerManager
 
     public LoggerDTO getLogger( final String name )
     {
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger log = lc.getLogger( name );
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger log = lc.getLogger( name );
         if ( log != null )
         {
-            LoggerDTO dto = new LoggerDTO();
+            final LoggerDTO dto = new LoggerDTO();
             dto.setName( log.getName() );
             dto.setLevel( log.getLevel() != null ? log.getLevel().toString() : log.getEffectiveLevel().toString() );
             dto.setAdditive( log.isAdditive() );
@@ -98,11 +86,11 @@ public class LoggerManager
 
     public LoggerDTO getConfiguredLogger( final String name )
     {
-        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
-        Logger log = lc.getLogger( name );
+        final LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        final Logger log = lc.getLogger( name );
         if ( log.getLevel() != null || !getAppenders( log ).isEmpty() )
         {
-            LoggerDTO dto = new LoggerDTO();
+            final LoggerDTO dto = new LoggerDTO();
             dto.setName( log.getName() );
             dto.setLevel( log.getLevel().toString() );
             dto.setAdditive( log.isAdditive() );
@@ -110,6 +98,30 @@ public class LoggerManager
             return dto;
         }
         return null;
+    }
+
+    public LoggerDTO changeConfiguredLogLevel( String name, String logLevel )
+    {
+        if ( !VALID_LEVELS.contains( logLevel ) )
+        {
+            return null;
+        }
+        final LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        final Logger log = loggerContext.getLogger( name );
+        final String originalLevel =
+                log.getLevel() != null ? log.getLevel().toString() : log.getEffectiveLevel().toString();
+
+        log.setLevel( Level.toLevel( logLevel ) );
+
+        final LoggerDTO dto = new LoggerDTO();
+        dto.setName( log.getName() );
+        dto.setLevel( log.getLevel() != null ? log.getLevel().toString() : log.getEffectiveLevel().toString() );
+        dto.setOriginalLevel( originalLevel );
+        dto.setAdditive( log.isAdditive() );
+        dto.setAppenders( getAppenders( log ) );
+
+        return dto;
     }
 
 }

@@ -27,6 +27,8 @@ public class LoggerDTO
 
     private Boolean additive;
 
+    private String originalLevel;
+
     public String getName()
     {
         return name;
@@ -65,5 +67,15 @@ public class LoggerDTO
     public void setAdditive( Boolean additive )
     {
         this.additive = additive;
+    }
+
+    public String getOriginalLevel()
+    {
+        return originalLevel;
+    }
+
+    public void setOriginalLevel( String originalLevel )
+    {
+        this.originalLevel = originalLevel;
     }
 }
