@@ -138,7 +138,7 @@ public class DiagnosticsResource
     @ApiResponses( { @ApiResponse( code = 200, response = List.class, message = "Logger status" ),
                            @ApiResponse( code = 500, message = "Logger status can not be fetched" ) } )
     @GET
-    @Path( "/logger/all" )
+    @Path( "/logger/configured/all" )
     @Produces( application_json )
     public Response getAllLoggers()
     {
@@ -190,7 +190,10 @@ public class DiagnosticsResource
             {
                 return Response.ok( dto ).build();
             }
-            return Response.status( Response.Status.NOT_FOUND ).build();
+            return Response.status( Response.Status.NOT_FOUND )
+                           .type( MediaType.TEXT_PLAIN_TYPE )
+                           .entity( String.format( "The logger for %s is not configured.", name ) )
+                           .build();
         }
         catch ( Exception e )
         {
