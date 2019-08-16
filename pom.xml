@@ -1111,11 +1111,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
-        <artifactId>galley-cache-infinispan</artifactId>
-        <version>${galleyVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-filearc</artifactId>
         <version>${galleyVersion}</version>
       </dependency>
