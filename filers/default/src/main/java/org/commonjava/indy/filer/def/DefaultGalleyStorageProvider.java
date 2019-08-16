@@ -21,7 +21,6 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
 import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
@@ -77,10 +76,6 @@ public class DefaultGalleyStorageProvider
 
     @Inject
     private PathGenerator pathGenerator;
-
-    @NFSOwnerCache
-    @Inject
-    private CacheHandle<String, String> nfsOwnerCache;
 
     @Inject
     private Instance<SpecialPathSetProducer> specialPathSetProducers;
