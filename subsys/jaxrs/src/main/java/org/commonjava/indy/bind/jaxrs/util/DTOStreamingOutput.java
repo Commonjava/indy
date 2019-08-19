@@ -1,6 +1,7 @@
 package org.commonjava.indy.bind.jaxrs.util;
 
 import com.codahale.metrics.Meter;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -43,6 +44,21 @@ public class DTOStreamingOutput
         this.dto = dto;
         this.metricsManager = metricsManager;
         this.metricsConfig = metricsConfig;
+    }
+
+    @Override
+    public String toString()
+    {
+        try
+        {
+            return mapper.writeValueAsString( dto );
+        }
+        catch ( JsonProcessingException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( "Could not render toString() for DTO: " + dto, e );
+            return String.valueOf( dto );
+        }
     }
 
     @Override
