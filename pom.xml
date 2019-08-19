@@ -83,7 +83,7 @@
     <galleyVersion>0.16.12-SNAPSHOT</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
-    <partylineVersion>1.9.4</partylineVersion>
+    <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.7</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.11-SNAPSHOT</jhttpcVersion>
