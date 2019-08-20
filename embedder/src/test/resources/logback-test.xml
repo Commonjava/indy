@@ -44,6 +44,8 @@
 
   <logger name="org.commonjava.indy" level="TRACE"/>
   <logger name="org.commonjava.maven.galley" level="TRACE"/>
+  <logger name="org.commonjava.indy.model.core.StoreKey" level="INFO" />
+  <logger name="org.commonjava.indy.pkg.npm.content.NPMStoragePathCalculator" level="INFO" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />
