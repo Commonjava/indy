@@ -55,7 +55,7 @@ public class TrackedContentEntryDTO
     public TrackedContentEntryDTO( final StoreKey storeKey, final AccessChannel accessChannel, final String path )
     {
         this.storeKey = storeKey;
-        this.accessChannel = accessChannel;
+        setAccessChannel( accessChannel );
         this.path = path.startsWith( "/" ) ? path : "/" + path;
     }
 
@@ -125,7 +125,7 @@ public class TrackedContentEntryDTO
 
     public void setAccessChannel( final AccessChannel accessChannel )
     {
-        this.accessChannel = accessChannel;
+        this.accessChannel = accessChannel == AccessChannel.MAVEN_REPO ? AccessChannel.NATIVE : accessChannel;
     }
 
     public String getPath()
@@ -220,10 +220,14 @@ public class TrackedContentEntryDTO
                 return false;
             }
         }
-        else if ( !accessChannel.equals( other.accessChannel ) )
+        // this is complicated by the transition from using MAVEN_REPO to NATIVE for non-proxy access channels.
+        else if ( !accessChannel.equals( other.accessChannel ) && !( accessChannel == AccessChannel.NATIVE
+                && other.accessChannel == AccessChannel.MAVEN_REPO ) && !( accessChannel == AccessChannel.MAVEN_REPO
+                && other.accessChannel == AccessChannel.NATIVE ) )
         {
             return false;
         }
+
         return true;
     }
 
