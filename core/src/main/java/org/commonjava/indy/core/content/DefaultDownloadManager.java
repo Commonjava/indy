@@ -996,7 +996,11 @@ public class DefaultDownloadManager
     {
         if ( store.getKey().getType() == hosted )
         {
-            return false;
+            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+            if ( info == null || !info.isMetadata() )
+            {
+                return false;
+            }
         }
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
         logger.trace( "Delete cache, item: {}", item );
