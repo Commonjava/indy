@@ -46,6 +46,7 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_START;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 
 /**
  * Created by jdcasey on 8/13/15.
@@ -135,7 +136,7 @@ public class ProxyAcceptHandler
     {
         long start = System.nanoTime();
         MDC.put( RequestContextHelper.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY.toString() );
-        setContext( PACKAGE_TYPE, AccessChannel.GENERIC_PROXY.packageType() );
+        setContext( PACKAGE_TYPE, PKG_TYPE_GENERIC_HTTP );
 
         final Logger logger = LoggerFactory.getLogger( getClass() );
 
