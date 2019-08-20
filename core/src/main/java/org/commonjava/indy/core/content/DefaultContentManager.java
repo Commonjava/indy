@@ -431,8 +431,12 @@ public class DefaultContentManager
     {
         if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
         {
-            logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
-            return false;
+            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+            if ( info == null || !info.isMetadata() )
+            {
+                logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
+                return false;
+            }
         }
 
         logger.info( "Delete from {}, path: {}", store.getKey(), path );
