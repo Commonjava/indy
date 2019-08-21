@@ -43,16 +43,18 @@ pipeline {
                 echo "Check Image Build Hook"
                 script {
                     def jsonObj = readJSON text: env.IMG_BUILD_HOOKS
-                    if (env.GIT_URL in jsonObj && env.BRANCH_NAME in jsonObj[env.GIT_URL]) {
-                        echo "Build docker image"
-                        img_build_hook = jsonObj[env.GIT_URL][env.BRANCH_NAME]
+                    if (env.GIT_URL in jsonObj) {
+                        img_build_hook = jsonObj[env.GIT_URL]
                     }
                 }
             }
         }
         stage('Build & Push Image') {
             when {
-                expression { img_build_hook != null }
+                allOf {
+                    expression { img_build_hook != null }
+                    expression { env.CHANGE_ID == null } // Not pull request
+                }
             }
             steps {
                 script {
