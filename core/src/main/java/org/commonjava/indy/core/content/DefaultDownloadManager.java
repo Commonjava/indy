@@ -85,7 +85,6 @@ import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
 import static org.commonjava.maven.galley.model.TransferOperation.DOWNLOAD;
@@ -169,7 +168,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -299,7 +298,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -355,7 +354,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -407,7 +406,7 @@ public class DefaultDownloadManager
      * @see org.commonjava.indy.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -446,7 +445,7 @@ public class DefaultDownloadManager
      * java.lang.String)
      */
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -513,7 +512,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public boolean exists(final ArtifactStore store, String path)
             throws IndyWorkflowException
     {
@@ -562,7 +561,7 @@ public class DefaultDownloadManager
      * java.lang.String, java.io.InputStream)
      */
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -593,7 +592,7 @@ public class DefaultDownloadManager
 
 //            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
             final ContentQuality quality = getQuality( path );
-            if ( quality != null && quality == ContentQuality.SNAPSHOT )
+            if ( quality == ContentQuality.SNAPSHOT )
             {
                 if ( !deploy.isAllowSnapshots() )
                 {
@@ -700,7 +699,7 @@ public class DefaultDownloadManager
         {
             if ( !isIgnoreReadonly( eventMetadata ) && storeManager.isReadonly( store ) )
             {
-                logger.debug( "The store {} is readonly, store operation not allowed" );
+                logger.debug( "The store {} is readonly, store operation not allowed", store.getKey() );
                 continue;
             }
             if ( storeIsSuitableFor( store, quality, op ) )
@@ -900,7 +899,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -911,7 +910,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure( timers = @MetricNamed() )
     public Transfer getStorageReference( final StoreKey key, final String... path )
             throws IndyWorkflowException
     {
@@ -943,7 +942,7 @@ public class DefaultDownloadManager
         {
             if ( storeManager.isReadonly( store ) )
             {
-                logger.warn( "The store {} is readonly, store operation not allowed" );
+                logger.warn( "The store {} is readonly, store operation not allowed", store.getKey() );
                 continue;
             }
 
@@ -974,7 +973,7 @@ public class DefaultDownloadManager
             return false;
         }
 
-        if ( storeManager.isReadonly( store ) )
+        if ( storeManager.isReadonly( store ) && !isIgnoreReadonly( eventMetadata ) )
         {
             throw new IndyWorkflowException( ApplicationStatus.METHOD_NOT_ALLOWED.code(),
                                              "The store {} is readonly. If you want to store any content to this store, please modify it to non-readonly",
@@ -983,9 +982,7 @@ public class DefaultDownloadManager
 
         final Transfer item = getStorageReference( store, path == null ? ROOT_PATH : path );
 
-        final boolean deleted = doDelete( item, eventMetadata );
-
-        return deleted;
+        return doDelete( item, eventMetadata );
     }
 
     /**
@@ -1012,8 +1009,13 @@ public class DefaultDownloadManager
     {
         try
         {
-            final ConcreteResource res = item.getResource();
-            transfers.delete( res, eventMetadata );
+            Location loc = item.getLocation();
+            if ( isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation )
+            {
+                ( (CacheOnlyLocation) loc ).setReadonly( false );
+            }
+            final ConcreteResource resource = new ConcreteResource( loc, item.getPath() );
+            transfers.delete( resource, eventMetadata );
         }
         catch ( final TransferException e )
         {
@@ -1139,7 +1141,8 @@ public class DefaultDownloadManager
                 }
                 catch ( final IOException e )
                 {
-                    logger.error( "Failed to list local contents: {}. Reason: {}", e, item, e.getMessage() );
+                    logger.error(
+                            String.format( "Failed to list local contents: %s. Reason: %s", item, e.getMessage() ), e );
                 }
             }
 
