@@ -623,14 +623,25 @@ public class DefaultDownloadManager
         try
         {
             KeyedLocation loc = LocationUtils.toLocation( store );
-            if ( isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation )
+            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
+            try
             {
-                ( (CacheOnlyLocation) loc ).setReadonly( false );
+                if ( resetReadonly )
+                {
+                    ( (CacheOnlyLocation) loc ).setReadonly( false );
+                }
+                final ConcreteResource resource = new ConcreteResource( loc, path );
+                Transfer txfr = transfers.store( resource, stream, eventMetadata );
+                nfc.clearMissing( resource );
+                return txfr;
             }
-            final ConcreteResource resource = new ConcreteResource( loc, path );
-            Transfer txfr = transfers.store( resource, stream, eventMetadata );
-            nfc.clearMissing( resource );
-            return txfr;
+            finally
+            {
+                if ( resetReadonly )
+                {
+                    ( (CacheOnlyLocation) loc ).setReadonly( true );
+                }
+            }
         }
         catch ( final BadGatewayException e )
         {
@@ -1017,12 +1028,23 @@ public class DefaultDownloadManager
         try
         {
             Location loc = item.getLocation();
-            if ( isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation )
+            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
+            try
             {
-                ( (CacheOnlyLocation) loc ).setReadonly( false );
+                if ( resetReadonly )
+                {
+                    ( (CacheOnlyLocation) loc ).setReadonly( false );
+                }
+                final ConcreteResource resource = new ConcreteResource( loc, item.getPath() );
+                transfers.delete( resource, eventMetadata );
             }
-            final ConcreteResource resource = new ConcreteResource( loc, item.getPath() );
-            transfers.delete( resource, eventMetadata );
+            finally
+            {
+                if ( resetReadonly )
+                {
+                    ( (CacheOnlyLocation) loc ).setReadonly( true );
+                }
+            }
         }
         catch ( final TransferException e )
         {
