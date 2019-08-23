@@ -970,7 +970,14 @@ public class DefaultDownloadManager
 
         if ( store.getKey().getType() == StoreType.group )
         {
-            return false;
+            // We should allow deletion of the group level mergeable metadata here, for supporting
+            // the cascading deletion from hosted member pom file deletion. See MetadataMergePomChangeListener.metaClear
+            // for details
+            final SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( path );
+            if ( pathInfo == null || !pathInfo.isMetadata() || !pathInfo.isMergable() )
+            {
+                return false;
+            }
         }
 
         if ( storeManager.isReadonly( store ) && !isIgnoreReadonly( eventMetadata ) )
