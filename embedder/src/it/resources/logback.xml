@@ -36,6 +36,7 @@
   <logger name="org.commonjava" level="TRACE" />
   <logger name="org.commonjava.indy.model.core.StoreKey" level="INFO" />
   <logger name="org.commonjava.indy.pkg.npm.content.NPMStoragePathCalculator" level="INFO" />
+  <logger name="org.commonjava.indy.metrics" level="INFO" />
   <!-- <logger name="org.commonjava.maven.galley.transport" level="DEBUG" /> -->
 
   <root level="INFO">

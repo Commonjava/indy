@@ -19,7 +19,6 @@ import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
-import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -37,12 +36,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * Check that metadata in a hosted repo is merged with content from a new hosted repository when it is promoted by path.
+ * Check that metadata in a hosted repo is merged with content from a new readonly hosted repository when it is promoted by path.
  * <br/>
  * GIVEN:
  * <ul>
  *     <li>HostedRepository A contains path for GA + V1</li>
  *     <li>HostedRepository B contains path for GA + V2</li>
+ *     <li>HostedRepository A is readonly</li>
  * </ul>
  * <br/>
  * WHEN:
@@ -55,7 +55,7 @@ import static org.junit.Assert.assertThat;
  *     <li>HostedRepository A's metadata path P should reflect values in both V1 and V2</li>
  * </ul>
  */
-public class HostedMetadataRemergedOnPathPromoteWithOnlyArtifactTest
+public class HostedMetadataRemergedOnPathPromoteToReadonlyHostedTest
         extends AbstractContentManagementTest
 {
     private static final String HOSTED_A_NAME= "A";
@@ -160,6 +160,10 @@ public class HostedMetadataRemergedOnPathPromoteWithOnlyArtifactTest
         client.content()
               .store( b.getKey(), bPomPath, new ByteArrayInputStream(
                               bPomContent.getBytes() ) );
+
+        a.setReadonly( true );
+        client.stores().update( a, message );
+
     }
 
     @Test
