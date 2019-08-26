@@ -138,7 +138,7 @@ public class MetadataMergePomChangeListener
         catch ( final IndyDataException e )
         {
             logger.warn( "Failed to regenerate maven-metadata.xml for artifacts after deployment to: {}"
-                                 + "\nCannot retrieve associated groups: {}", e, key, e.getMessage() );
+                                 + "\nCannot retrieve associated groups: {}", key, e.getMessage() );
         }
     }
 
@@ -180,6 +180,15 @@ public class MetadataMergePomChangeListener
                     logger.trace( "Firing deletion event for: {}", item );
                     fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
                 }
+            }
+            else if ( item.getPath().endsWith( MavenMetadataMerger.METADATA_NAME ) )
+            {
+                // we should return true here to trigger cache cleaning, because file not exists in store does not mean
+                // metadata not exists in cache.
+                logger.debug(
+                        "Metadata clean for {}: metadata not existed in store, so skipped deletion and mark as deleted",
+                        item );
+                return true;
             }
         }
         return isCleared;
