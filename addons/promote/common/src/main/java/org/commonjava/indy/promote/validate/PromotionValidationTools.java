@@ -168,7 +168,7 @@ public class PromotionValidationTools
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Got extra validation keys string: '{}'", verifyStores );
 
-        List<StoreKey> verifyStoreKeys = new ArrayList<>();
+        Set<StoreKey> verifyStoreKeys = new HashSet<>();
         if ( includeSource )
         {
             verifyStoreKeys.add( request.getSourceRepository().getKey() );
@@ -204,7 +204,7 @@ public class PromotionValidationTools
 
         logger.debug( "Using validation StoreKeys: {}", verifyStoreKeys );
 
-        return verifyStoreKeys.toArray( new StoreKey[verifyStoreKeys.size()] );
+        return verifyStoreKeys.toArray( new StoreKey[0] );
     }
 
     public String toArtifactPath( final ProjectVersionRef ref )
@@ -676,19 +676,19 @@ public class PromotionValidationTools
     public <T> void forEach( Collection<T> collection, Closure closure )
     {
         logger.trace( "Exe on collection {} with closure {}", collection, closure );
-        collection.forEach( e -> closure.call( e ) );
+        collection.forEach( closure::call );
     }
 
     public <T> void forEach( T[] array, Closure closure )
     {
         logger.trace( "Exe on array {} with closure {}", array, closure );
-        Arrays.asList( array ).forEach( e -> closure.call( e ) );
+        Arrays.asList( array ).forEach( closure::call );
     }
 
     public <K, V> void forEach( Map<K, V> map, Closure closure )
     {
         Set<Map.Entry<K, V>> entries = map.entrySet();
         logger.trace( "Exe on map {} with closure {}", entries, closure );
-        entries.forEach( e -> closure.call( e ) );
+        entries.forEach( closure::call );
     }
 }
