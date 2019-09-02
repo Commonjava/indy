@@ -174,10 +174,7 @@ public class PromotionValidationTools
             verifyStoreKeys.add( request.getSourceRepository().getKey() );
         }
 
-        if ( includeTarget )
-        {
-            verifyStoreKeys.add( request.getTarget() );
-        }
+
         if ( verifyStores == null )
         {
             logger.warn(
@@ -200,6 +197,11 @@ public class PromotionValidationTools
             {
                 verifyStoreKeys.addAll( extras );
             }
+        }
+
+        if ( verifyStoreKeys.isEmpty() )
+        {
+            verifyStoreKeys.add( request.getTarget() );
         }
 
         logger.debug( "Using validation StoreKeys: {}", verifyStoreKeys );
