@@ -149,14 +149,24 @@ public class PromotionValidationTools
         this.promoteConfig = config;
     }
 
-    public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
+    public StoreKey[] getValidationStoreKeys( final ValidationRequest request )
             throws PromotionValidationException
     {
-        return getValidationStoreKeys( request, includeSource, true );
+        return getValidationStoreKeys( request, false );
     }
 
+    /**
+     * @deprecated This method now is only used for api backward compatible
+     */
+    @Deprecated
     public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource,
                                               final boolean includeTarget )
+            throws PromotionValidationException
+    {
+        return getValidationStoreKeys( request, includeSource );
+    }
+
+    public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
             throws PromotionValidationException
     {
         String verifyStores = request.getValidationParameter( PromotionValidationTools.AVAILABLE_IN_STORES );
