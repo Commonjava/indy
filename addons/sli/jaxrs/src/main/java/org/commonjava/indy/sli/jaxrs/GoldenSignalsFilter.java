@@ -44,6 +44,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,9 +60,13 @@ import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_CONTENT;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_CONTENT_LISTING;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_CONTENT_MAVEN;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_CONTENT_NPM;
+import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_MAVEN_DOWNLOAD;
+import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_MAVEN_UPLOAD;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_METADATA;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_METADATA_MAVEN;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_METADATA_NPM;
+import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_NPM_DOWNLOAD;
+import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_NPM_UPLOAD;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_PROMOTION;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_REPO_MGMT;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_TRACKING_RECORD;
@@ -203,16 +208,10 @@ public class GoldenSignalsFilter
             if ( isValidContent( packageType, storeType ) )
             {
                 boolean isMetadata = isMetadata( packageType, storeType, classifierParts[5], pathParts, 7 );
-
-                if ( PKG_TYPE_MAVEN.equals( packageType ) )
+                final List<String> fns = handleContentFns( isMetadata, packageType, method );
+                if ( !fns.isEmpty() )
                 {
-                    return isMetadata ?
-                            asList( FN_METADATA, FN_METADATA_MAVEN ) :
-                            asList( FN_CONTENT, FN_CONTENT_MAVEN );
-                }
-                else if ( PKG_TYPE_NPM.equals( packageType ) )
-                {
-                    return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+                    return fns;
                 }
             }
         }
@@ -223,16 +222,10 @@ public class GoldenSignalsFilter
             if ( isValidContent( packageType, storeType ) )
             {
                 boolean isMetadata = isMetadata( packageType, storeType, classifierParts[3], pathParts, 5 );
-
-                if ( PKG_TYPE_MAVEN.equals( packageType ) )
+                final List<String> fns = handleContentFns( isMetadata, packageType, method );
+                if ( !fns.isEmpty() )
                 {
-                    return isMetadata ?
-                            asList( FN_METADATA, FN_METADATA_MAVEN ) :
-                            asList( FN_CONTENT, FN_CONTENT_MAVEN );
-                }
-                else if ( PKG_TYPE_NPM.equals( packageType ) )
-                {
-                    return isMetadata ? asList( FN_METADATA, FN_METADATA_NPM ) : asList( FN_CONTENT, FN_CONTENT_NPM );
+                    return fns;
                 }
             }
         }
@@ -243,11 +236,59 @@ public class GoldenSignalsFilter
             if ( isValidContent( packageType, storeType ) )
             {
                 boolean isMetadata = isMetadata( packageType, storeType, classifierParts[1], pathParts, 2 );
-                return isMetadata ? asList( FN_METADATA, FN_METADATA_MAVEN ) : asList( FN_CONTENT, FN_CONTENT_MAVEN );
+                final List<String> fns = handleContentFns( isMetadata, packageType, method );
+                if ( !fns.isEmpty() )
+                {
+                    return fns;
+                }
             }
         }
 
         return emptyList();
+    }
+
+    List<String> handleContentFns( final boolean isMetadata, final String packageType, final String method )
+    {
+        final ArrayList<String> fns = new ArrayList<>();
+        if ( PKG_TYPE_MAVEN.equals( packageType ) )
+        {
+            if ( isMetadata )
+            {
+                fns.addAll( asList( FN_METADATA, FN_METADATA_MAVEN ) );
+            }
+            else
+            {
+                fns.addAll( asList( FN_CONTENT, FN_CONTENT_MAVEN ) );
+            }
+            if ( "PUT".equals( method ) || "POST".equals( method ) )
+            {
+                fns.add( FN_MAVEN_UPLOAD );
+            }
+            if ( "GET".equals( method ) )
+            {
+                fns.add( FN_MAVEN_DOWNLOAD );
+            }
+        }
+        else if ( PKG_TYPE_NPM.equals( packageType ) )
+        {
+            if ( isMetadata )
+            {
+                fns.addAll( asList( FN_METADATA, FN_METADATA_NPM ) );
+            }
+            else
+            {
+                fns.addAll( asList( FN_CONTENT, FN_CONTENT_NPM ) );
+            }
+            if ( "PUT".equals( method ) || "POST".equals( method ) )
+            {
+                fns.add( FN_NPM_UPLOAD );
+            }
+            if ( "GET".equals( method ) )
+            {
+                fns.add( FN_NPM_DOWNLOAD );
+            }
+        }
+        return fns;
     }
 
     boolean isValidContent( final String packageType, final String storeType )
