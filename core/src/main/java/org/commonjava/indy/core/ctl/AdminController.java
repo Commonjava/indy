@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.ctl;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -23,9 +24,7 @@ import javax.inject.Inject;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.core.expire.ScheduleManager;
-import org.commonjava.indy.data.ArtifactStoreQuery;
-import org.commonjava.indy.data.IndyDataException;
-import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.data.*;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
@@ -49,6 +48,9 @@ public class AdminController
     @SuppressWarnings( "unused" )
     @Inject
     private ScheduleManager scheduleManager;
+
+    @Inject
+    private StoreValidator storeValidator;
 
     protected AdminController()
     {
@@ -169,6 +171,12 @@ public class AdminController
     public boolean exists( final StoreKey key )
     {
         return storeManager.hasArtifactStore( key );
+    }
+
+
+
+    public ArtifactStoreValidateData validateStore(ArtifactStore artifactStore) throws InvalidArtifactStoreException, MalformedURLException {
+        return storeValidator.validate(artifactStore);
     }
 
 }

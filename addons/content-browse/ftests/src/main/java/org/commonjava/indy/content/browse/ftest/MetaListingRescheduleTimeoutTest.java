@@ -155,7 +155,9 @@ public class MetaListingRescheduleTimeoutTest
             throws IOException
     {
         writeConfigFile( "main.conf", "remote.list.download.enabled=true\n"
-                + "[storage-default]\nstorage.dir=${indy.home}/var/lib/indy/storage" );
+            + "[storage-default]\nstorage.dir=${indy.home}/var/lib/indy/storage\n"
+            +   "[internal]\n_internal.store.validation.enabled=false"
+        );
     }
 
     @Override

@@ -53,6 +53,9 @@ public class RemoteRepoTimeoutDisablesThenReEnabledTest
     {
         writeConfigFile( "main.conf", "store.disable.timeout=2\n\nInclude conf.d/*.conf\n" );
         writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-scheduler.conf" ) );
+
+        writeConfigFile( "conf.d/internal_validation.conf", "[internal]\n_internal.store.validation.enabled=false" );
+
     }
 
     @Test
