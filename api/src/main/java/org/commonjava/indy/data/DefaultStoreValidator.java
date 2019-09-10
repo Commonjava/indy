@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,72 +53,21 @@ public class DefaultStoreValidator implements StoreValidator {
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
-                    errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Remote Repository is disabled");
-                    return new ArtifactStoreValidateData
-                        .Builder(remoteRepository.getKey())
-                        .setValid(true)
-                        .setErrors(errors)
-                        .build();
+                    return disabledRemoteRepositoryData(remoteRepository);
                 }
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
                 if(configuration.isSSLRequired()
                     && !remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
-
-                    //Check First if this remote repository is in allowed repositories from remote.nossl.hosts Config Variable
-                    List<String> remoteNoSSLHosts = configuration.getRemoteNoSSLHosts();
-                    String host = remoteUrl.get().getHost();
-                    boolean allowedByRule = false;
-
-                    for(String remoteHost : remoteNoSSLHosts) {
-                        LOGGER.warn("=> Validating RemoteHost: " + remoteHost + " For Host: " + host + "\n");
-                        // .apache.org , 10.192. , .maven.redhat.com
-                        if(allowedNonSSLHostname(remoteHost,host)) {
-                            errors.put(StoreValidationConstants.ALLOWED_SSL,remoteUrl.get().toString());
-                            LOGGER.warn(
-                                "NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost
-                            );
-                            allowedByRule = true;
-                            break;
-                        } else {
-                            errors.put(StoreValidationConstants.NON_SSL,remoteUrl.get().toString());
-                            LOGGER.warn(
-                                "NON-SSL RemoteRepository with URL: "+ host +" is NOT ALLOWED under RULE: " + remoteHost
-                            );
-
-                        }
-                    }
+                    ArtifactStoreValidateData allowedByRule = compareRemoteHostToAllowedHostnames(remoteUrl,remoteRepository);
                     // If this Non-SSL remote repository is not allowed by provided rules from configuration
                     // then return valid=false data object
-                    if(!allowedByRule) {
-                        return new ArtifactStoreValidateData
-                            .Builder(remoteRepository.getKey())
-                            .setErrors(errors)
-                            .setValid(false)
-                            .build();
+                    if(!allowedByRule.isValid()) {
+                        return allowedByRule;
                     }
                 }
-                // Execute HTTP GET & HEAD requests in separate thread pool from executor service
-                Future<Integer> httpGetStatus = executeGetHttp(new HttpGet(remoteUrl.get().toURI()), httpRequestsLatch);
-                Future<Integer> httpHeadStatus = executeHeadHttp(new HttpHead(remoteUrl.get().toURI()), httpRequestsLatch);
-                // Waiting for Http GET & HEAD Request Executor tasks to finish
-                httpRequestsLatch.await();
-                errors.put(StoreValidationConstants.HTTP_GET_STATUS, httpGetStatus.get().toString());
-                errors.put(StoreValidationConstants.HTTP_HEAD_STATUS, httpHeadStatus.get().toString());
-                if(!remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
-                    errors.put(StoreValidationConstants.HTTP_PROTOCOL, remoteUrl.get().getProtocol());
-                }
-                // Check for Sucessfull Validation
-                if (httpGetStatus.get() < 400 && httpHeadStatus.get() < 400) {
-                    LOGGER.warn("=> Success HTTP GET and HEAD Response from Remote Repository: " + remoteUrl.get());
-                    return new ArtifactStoreValidateData
-                        .Builder(remoteRepository.getKey())
-                        .setRepositoryUrl(remoteUrl.get().toExternalForm())
-                        .setValid(true)
-                        .setErrors(errors)
-                        .build();
-                }
+                return availableSslRemoteRepository(httpRequestsLatch,remoteUrl,remoteRepository);
             }
         }
         catch (MalformedURLException mue) {
@@ -219,5 +169,78 @@ public class DefaultStoreValidator implements StoreValidator {
                 throw new Exception("=> Not valid remote Repository", e);
             }
         });
+    }
+
+    private ArtifactStoreValidateData disabledRemoteRepositoryData(RemoteRepository remoteRepository) {
+        HashMap<String, String> errors = new HashMap<>();
+        errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Remote Repository is disabled");
+        return new ArtifactStoreValidateData
+            .Builder(remoteRepository.getKey())
+            .setValid(true)
+            .setErrors(errors)
+            .build();
+    }
+
+    private ArtifactStoreValidateData compareRemoteHostToAllowedHostnames(Optional<URL> remoteUrl,RemoteRepository remoteRepository) {
+        //Check First if this remote repository is in allowed repositories from remote.nossl.hosts Config Variable
+        List<String> remoteNoSSLHosts = configuration.getRemoteNoSSLHosts();
+        String host = remoteUrl.get().getHost();
+        HashMap<String, String> errors = new HashMap<>();
+
+        for(String remoteHost : remoteNoSSLHosts) {
+            LOGGER.warn("=> Validating Allowed Remote Hostname: "+remoteHost+" For Host: "+host+"\n");
+            // .apache.org , 10.192. , .maven.redhat.com
+            if(allowedNonSSLHostname(remoteHost,host)) {
+                errors.put(StoreValidationConstants.ALLOWED_SSL,remoteUrl.get().toString());
+                LOGGER.warn(
+                    "NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost
+                );
+                return new ArtifactStoreValidateData
+                    .Builder(remoteRepository.getKey())
+                    .setErrors(errors)
+                    .setValid(true)
+                    .build();
+            } else {
+                errors.put(StoreValidationConstants.NON_SSL,remoteUrl.get().toString());
+            }
+        }
+        return new ArtifactStoreValidateData
+            .Builder(remoteRepository.getKey())
+            .setErrors(errors)
+            .setValid(false)
+            .build();
+    }
+
+    private ArtifactStoreValidateData availableSslRemoteRepository(CountDownLatch httpRequestsLatch,
+                                                                   Optional<URL> remoteUrl,RemoteRepository remoteRepository) throws InterruptedException, ExecutionException, URISyntaxException {
+        HashMap<String, String> errors = new HashMap<>();
+        // Execute HTTP GET & HEAD requests in separate thread pool from executor service
+        Future<Integer> httpGetStatus = executeGetHttp(new HttpGet(remoteUrl.get().toURI()), httpRequestsLatch);
+        Future<Integer> httpHeadStatus = executeHeadHttp(new HttpHead(remoteUrl.get().toURI()), httpRequestsLatch);
+        // Waiting for Http GET & HEAD Request Executor tasks to finish
+        httpRequestsLatch.await();
+        errors.put(StoreValidationConstants.HTTP_GET_STATUS, httpGetStatus.get().toString());
+        errors.put(StoreValidationConstants.HTTP_HEAD_STATUS, httpHeadStatus.get().toString());
+        if(!remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
+            errors.put(StoreValidationConstants.HTTP_PROTOCOL, remoteUrl.get().getProtocol());
+        }
+        // Check for Sucessfull Validation
+        if (httpGetStatus.get() < 400 && httpHeadStatus.get() < 400) {
+            LOGGER.warn("=> Success HTTP GET and HEAD Response from Remote Repository: " + remoteUrl.get());
+            return new ArtifactStoreValidateData
+                .Builder(remoteRepository.getKey())
+                .setRepositoryUrl(remoteUrl.get().toExternalForm())
+                .setValid(true)
+                .setErrors(errors)
+                .build();
+        } else {
+            LOGGER.warn("=> Failure @ HTTP GET and HEAD Response from Remote Repository: " + remoteUrl.get());
+            return new ArtifactStoreValidateData
+                .Builder(remoteRepository.getKey())
+                .setRepositoryUrl(remoteUrl.get().toExternalForm())
+                .setValid(false)
+                .setErrors(errors)
+                .build();
+        }
     }
 }
