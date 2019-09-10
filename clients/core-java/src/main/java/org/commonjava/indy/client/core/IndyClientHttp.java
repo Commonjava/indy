@@ -16,6 +16,7 @@
 package org.commonjava.indy.client.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -50,6 +51,7 @@ import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -87,13 +89,25 @@ public class IndyClientHttp
 
     private List<Header> defaultHeaders;
 
+    private Map<String, String> mdcCopyMappings = new HashMap<>();
+
+    /**
+     *
+     * @param authenticator
+     * @param mapper
+     * @param location
+     * @param apiVersion
+     * @param mdcCopyMappings a map of fields to copy from LoggingMDC to http request headers where key=MDCMey and value=headerName
+     * @throws IndyClientException
+     */
     public IndyClientHttp( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
-                           SiteConfig location, String apiVersion )
+                           SiteConfig location, String apiVersion, Map<String, String> mdcCopyMappings )
             throws IndyClientException
     {
         this.objectMapper = mapper;
         this.location = location;
         baseUrl = location.getUri();
+        this.mdcCopyMappings = mdcCopyMappings;
         checkBaseUrl( baseUrl );
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
@@ -182,6 +196,7 @@ public class IndyClientHttp
         try
         {
             request = newJsonHead( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(request);
             client = newClient();
             response = client.execute( request, newContext() );
 
@@ -233,6 +248,7 @@ public class IndyClientHttp
         {
             client = newClient();
             request = newJsonGet( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(request);
             response = client.execute( request, newContext() );
 
             final StatusLine sl = response.getStatusLine();
@@ -278,6 +294,7 @@ public class IndyClientHttp
         {
             client = newClient();
             request = newJsonGet( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(request);
             response = client.execute( request, newContext() );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
@@ -311,6 +328,7 @@ public class IndyClientHttp
     {
         connect();
 
+        addLoggingMDCToHeaders(req);
         CloseableHttpResponse response = null;
         try
         {
@@ -345,6 +363,7 @@ public class IndyClientHttp
         try
         {
             final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(req);
             if ( headers != null )
             {
                 headers.forEach( (k, v) -> { req.setHeader( k, v );} );
@@ -377,6 +396,7 @@ public class IndyClientHttp
         connect();
 
         final HttpPut put = newRawPut( buildUrl( baseUrl, path ) );
+        addLoggingMDCToHeaders(put);
         final CloseableHttpClient client = newClient();
         CloseableHttpResponse response = null;
         try
@@ -433,6 +453,7 @@ public class IndyClientHttp
         {
             client = newClient();
             put = newJsonPut( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(put);
 
             put.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -461,6 +482,7 @@ public class IndyClientHttp
     {
         connect();
 
+        addLoggingMDCToHeaders(request);
         CloseableHttpResponse response = null;
         try
         {
@@ -496,6 +518,7 @@ public class IndyClientHttp
         try
         {
             final HttpPost req = newRawPost( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(req);
             if ( headers != null )
             {
                 for ( String key : headers.keySet() )
@@ -552,6 +575,7 @@ public class IndyClientHttp
         {
             client = newClient();
             post = newJsonPost( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(post);
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -610,6 +634,7 @@ public class IndyClientHttp
         {
             client = newClient();
             post = newJsonPost( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(post);
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -669,6 +694,7 @@ public class IndyClientHttp
         {
             client = newClient();
             delete = newDelete( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(delete);
 
             response = client.execute( delete, newContext() );
             final StatusLine sl = response.getStatusLine();
@@ -706,6 +732,7 @@ public class IndyClientHttp
         {
             client = newClient();
             delete = newDelete( buildUrl( baseUrl, path ) );
+            addLoggingMDCToHeaders(delete);
             delete.setHeader( ArtifactStore.METADATA_CHANGELOG, changelog );
 
             response = client.execute( delete, newContext() );
@@ -756,6 +783,7 @@ public class IndyClientHttp
         {
             client = newClient();
             request = newJsonHead( buildUrl( baseUrl, querySupplier, path ) );
+            addLoggingMDCToHeaders(request);
 
             response = client.execute( request, newContext() );
             final StatusLine sl = response.getStatusLine();
@@ -900,5 +928,18 @@ public class IndyClientHttp
             defaultHeaders = new ArrayList<>();
         }
         defaultHeaders.add( new BasicHeader( key, value ) );
+    }
+
+    private void addLoggingMDCToHeaders(HttpRequestBase request)
+    {
+        Map<String, String> context = MDC.getCopyOfContextMap();
+        for (Map.Entry<String, String> mdcKeyHeaderKey : mdcCopyMappings.entrySet())
+        {
+            String mdcValue = context.get(mdcKeyHeaderKey.getKey());
+            if (!StringUtils.isEmpty(mdcValue))
+            {
+                request.addHeader(mdcKeyHeaderKey.getValue(), mdcValue);
+            }
+        }
     }
 }

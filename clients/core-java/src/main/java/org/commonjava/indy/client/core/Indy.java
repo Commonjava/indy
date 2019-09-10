@@ -32,7 +32,9 @@ import org.commonjava.util.jhttpc.model.SiteConfig;
 import java.io.Closeable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
@@ -115,12 +117,28 @@ public class Indy
               modules == null ? new IndyClientModule[0] : modules.toArray( new IndyClientModule[modules.size()] ) );
     }
 
+    @Deprecated
     public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper, final IndyClientModule... modules )
+    throws IndyClientException
+    {
+        this(location, authenticator, mapper, Collections.emptyMap(), modules);
+    }
+
+    /**
+     *
+     * @param location
+     * @param authenticator
+     * @param mapper
+     * @param mdcCopyMappings a map of fields to copy from LoggingMDC to http request headers where key=MDCMey and value=headerName
+     * @param modules
+     * @throws IndyClientException
+     */
+    public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper, final Map<String, String> mdcCopyMappings, final IndyClientModule... modules )
     throws IndyClientException
     {
         loadApiVersion();
         this.http = new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location,
-                                        getApiVersion() );
+                                        getApiVersion(), mdcCopyMappings );
 
         this.moduleRegistry = new HashSet<>();
 
