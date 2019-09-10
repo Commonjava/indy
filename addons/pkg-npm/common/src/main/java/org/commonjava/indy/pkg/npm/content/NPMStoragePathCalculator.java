@@ -49,10 +49,17 @@ public class NPMStoragePathCalculator
     @Override
     public String calculateStoragePath( final StoreKey key, final String path )
     {
-        if ( PKG_TYPE_NPM.equals( key.getPackageType() ) && path.split("/").length < 2 )
+        if ( PKG_TYPE_NPM.equals( key.getPackageType() ) )
         {
-            logger.debug( "Modifying target path: {}, appending '{}'", path, METADATA_NAME );
-            return normalize( path, METADATA_NAME );
+            // This is considering the single path for npm standard like "/jquery"
+            final boolean isSinglePath = path.split( "/" ).length < 2;
+            // This is considering the scoped path for npm standard like "/@type/jquery"
+            final boolean isScopedPath = path.startsWith( "@" ) && path.split( "/" ).length < 3;
+            if ( isSinglePath || isScopedPath )
+            {
+                logger.debug( "Modifying target path: {}, appending '{}'", path, METADATA_NAME );
+                return normalize( path, METADATA_NAME );
+            }
         }
 
         return path;
