@@ -30,6 +30,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -561,7 +562,7 @@ public class DefaultDownloadManager
      * java.lang.String, java.io.InputStream)
      */
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -631,6 +632,7 @@ public class DefaultDownloadManager
                     ( (CacheOnlyLocation) loc ).setReadonly( false );
                 }
                 final ConcreteResource resource = new ConcreteResource( loc, path );
+
                 Transfer txfr = transfers.store( resource, stream, eventMetadata );
                 nfc.clearMissing( resource );
                 return txfr;

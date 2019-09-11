@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.galley.RepositoryLocation;
@@ -80,7 +81,7 @@ public class IspnNotFoundCache
     }
 
     @PostConstruct
-    private void start()
+    public void start()
     {
         nfcCache.executeCache( (cache) -> {
             queryFactory = Search.getQueryFactory( cache ); // Obtain a query factory for the cache
@@ -102,6 +103,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public void addMissing( final ConcreteResource resource )
     {
         boolean withTimeout = true;
@@ -138,6 +140,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public boolean isMissing( final ConcreteResource resource )
     {
         String key = getResourceKey( resource );
@@ -153,6 +156,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public void clearMissing( final Location location )
     {
         nfcCache.execute( (cache) -> {
@@ -163,6 +167,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public void clearMissing( final ConcreteResource resource )
     {
         String key = getResourceKey( resource );
@@ -170,12 +175,14 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public void clearAllMissing()
     {
         nfcCache.execute( (cache) -> { cache.clear(); return null; } );
     }
 
     @Override
+    @Measure
     public Map<Location, Set<String>> getAllMissing()
     {
         logger.debug( "[NFC] getAllMissing start" );
@@ -199,6 +206,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public Set<String> getMissing( final Location location )
     {
         logger.debug( "[NFC] getMissing for {} start", location );
@@ -219,6 +227,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public Map<Location, Set<String>> getAllMissing( int pageIndex, int pageSize )
     {
         logger.debug( "[NFC] getAllMissing start, pageIndex: {}, pageSize: {}", pageIndex, pageSize );
@@ -255,6 +264,7 @@ public class IspnNotFoundCache
      * @return
      */
     @Override
+    @Measure
     public Set<String> getMissing( Location location, int pageIndex, int pageSize )
     {
         logger.debug( "[NFC] getMissing for {} start, pageIndex: {}, pageSize: {}", location, pageIndex, pageSize );
@@ -280,6 +290,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public long getSize( StoreKey storeKey )
     {
         Query query = queryFactory.from( NfcConcreteResourceWrapper.class )
@@ -295,6 +306,7 @@ public class IspnNotFoundCache
     }
 
     @Override
+    @Measure
     public long getSize()
     {
         return nfcCache.execute( (cache) -> new Long( cache.size() ) );
