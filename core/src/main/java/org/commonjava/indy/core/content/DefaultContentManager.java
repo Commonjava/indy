@@ -376,7 +376,8 @@ public class DefaultContentManager
         return txfr;
     }
 
-    private void clearNFCEntries( final KeyedLocation kl, final String path )
+    @Measure
+    protected void clearNFCEntries( final KeyedLocation kl, final String path )
     {
         try
         {
