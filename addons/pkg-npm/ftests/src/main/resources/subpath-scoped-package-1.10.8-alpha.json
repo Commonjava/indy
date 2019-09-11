@@ -1,0 +1,98 @@
+{
+  "_id": "@types/jquery",
+  "_rev": "804-f7e6bcad91344f46c1bc2a6448331767",
+  "name": "@types/jquery",
+  "description": "TypeScript definitions for jQuery",
+  "dist-tags": {
+    "beta": "2.2.1",
+    "latest": "2.2.1"
+  },
+  "versions": {
+    "1.10.8-alpha": {
+      "name": "@types/jquery",
+      "version": "1.10.8-alpha",
+      "description": "Type definitions for jQuery from https://www.github.com/DefinitelyTyped/DefinitelyTyped",
+      "main": "",
+      "scripts": {},
+      "author": {
+        "name": "Boris Yankov",
+        "email": "https://github.com/borisyankov/"
+      },
+      "license": "MIT",
+      "typings": "jquery.d.ts",
+      "dependencies": {},
+      "_id": "@types/jquery@1.10.8-alpha",
+      "_shasum": "2e0196ac0d0da999a874c57a17691eeb07b1ca2a",
+      "_from": ".",
+      "_npmVersion": "3.8.2",
+      "_nodeVersion": "5.5.0",
+      "_npmUser": {
+        "name": "types",
+        "email": "ryan.cavanaugh@microsoft.com"
+      },
+      "dist": {
+        "shasum": "2e0196ac0d0da999a874c57a17691eeb07b1ca2a",
+        "tarball": "@@REGISTRY@@/@types/jquery/-/jquery-1.10.8-alpha.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "types",
+          "email": "ryan.cavanaugh@microsoft.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "packages-12-west.internal.npmjs.com",
+        "tmp": "tmp/jquery-1.10.8-alpha.tgz_1459201471822_0.1997919890563935"
+      },
+      "directories": {}
+    }
+  },
+  "maintainers": [
+    {
+      "name": "dmethvin",
+      "email": "dave.methvin@gmail.com"
+    },
+    {
+      "name": "mgol",
+      "email": "m.goleb@gmail.com"
+    }
+  ],
+  "time": {
+    "modified": "2017-04-23T10:57:14.309Z",
+    "created": "2011-03-19T07:19:56.392Z",
+    "1.6.2": "2011-07-06T16:13:21.519Z",
+    "1.5.1": "2011-03-19T07:19:56.956Z",
+    "1.6.3": "2011-09-12T19:05:34.373Z"
+  },
+  "author": {
+    "name": "JS Foundation and other contributors",
+    "url": "https://github.com/jquery/jquery/blob/3.2.1/AUTHORS.txt"
+  },
+  "users": {
+    "dodo": true,
+    "fgribreau": false,
+    "parroit": true
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jquery1/jquery1.git"
+  },
+  "readme": "# jQuery\n\n> jQuery is a fast, small, and feature-rich JavaScript library.\n\nFor information on how to get started and how to use jQuery, please see [jQuery's documentation](http://api.jquery.com/).\nFor source files and issues, please visit the [jQuery repo](https://github.com/jquery/jquery).\n\nIf upgrading, please see the [blog post for 3.2.1](https://blog.jquery.com/2017/03/20/jquery-3-2-1-now-available/). This includes notable differences from the previous version and a more readable changelog.\n\n## Including jQuery\n\nBelow are some of the most common ways to include jQuery.\n\n### Browser\n\n#### Script tag\n\n```html\n<script src=\"https://code.jquery.com/jquery-3.2.1.min.js\"></script>\n```\n\n#### Babel\n\n[Babel](http://babeljs.io/) is a next generation JavaScript compiler. One of the features is the ability to use ES6/ES2015 modules now, even though browsers do not yet support this feature natively.\n\n```js\nimport $ from \"jquery\";\n```\n\n#### Browserify/Webpack\n\nThere are several ways to use [Browserify](http://browserify.org/) and [Webpack](https://webpack.github.io/). For more information on using these tools, please refer to the corresponding project's documention. In the script, including jQuery will usually look like this...\n\n```js\nvar $ = require(\"jquery\");\n```\n\n#### AMD (Asynchronous Module Definition)\n\nAMD is a module format built for the browser. For more information, we recommend [require.js' documentation](http://requirejs.org/docs/whyamd.html).\n\n```js\ndefine([\"jquery\"], function($) {\n\n});\n```\n\n### Node\n\nTo include jQuery in [Node](nodejs.org), first install with npm.\n\n```sh\nnpm install jquery\n```\n\nFor jQuery to work in Node, a window with a document is required. Since no such window exists natively in Node, one can be mocked by tools such as [jsdom](https://github.com/tmpvar/jsdom). This can be useful for testing purposes.\n\n```js\nrequire(\"jsdom\").env(\"\", function(err, window) {\n\tif (err) {\n\t\tconsole.error(err);\n\t\treturn;\n\t}\n\n\tvar $ = require(\"jquery\")(window);\n});\n```\n",
+  "readmeFilename": "README1.md",
+  "homepage": "https://jquery1.com",
+  "keywords": [
+    "jquery",
+    "javascript"
+  ],
+  "bugs": {
+    "url": "https://github.com/jquery1/jquery1/issues"
+  },
+  "license": "MIT1",
+  "_attachments": {
+    "jquery-1.5.1.tgz": {
+      "content_type": "application/octet-stream",
+      "data": "H4sIAAAAAAAAA+1Uz0/CMBgdIMYQDh703vTASaFdt0GIB43xoFwgxkQTLs1WoMp+pB2KGOJfzNG77YrEA8aDBEOytyzf9r3vfW3XviXUf6JD1khMrD/KOLI2DISQ5zhAx6bnZhHZ5l2DEAIsTLDruDbymk0LYYJsT/Gbnsg6TGRKhZrKX/uYtYBV3BG8VQCAEQ0ZbAP4GtJWC57o1DMTkseRztp1XCcmGzDpC56kSyYMAZdAsEkyjmlgSkLKM45HAZueRuxFHSnDGKlUpB5UJVImU13K/FEM+vBKiFi0QRQDTQCZMJ8POAv6ENRqgE15CjBUynnWjU7SUSy03HQfc59FMlvG9e0lrMwr//1pdwJL3zeyTV79BdLhbINj/OJ/G9mZ/wl2XOQa/xOMc/9vA91Oac84pVde3HxnitahZTfu7qvWe2/wMFP3R+FI1ReKx6WfFNWvx/PFhQ5af7DSdzvlfZ0tqOtMxa3sb44cOXLkWItPNfw2cQAMAAA=",
+      "length": 380
+    }
+  }
+}

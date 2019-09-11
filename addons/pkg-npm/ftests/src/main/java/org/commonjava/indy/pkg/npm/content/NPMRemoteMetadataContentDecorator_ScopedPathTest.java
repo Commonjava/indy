@@ -50,24 +50,26 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class NPMRemoteMetadataContentDecorator_ScopedPathTest
-                extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
     protected static final String GROUP = "G";
 
     private static final String SUBPATH = "subpath";
 
     @Test
-    public void test() throws Exception
+    public void test()
+            throws Exception
     {
 
-        final String packagePath = "@type/jquery";
+        final String packagePath = "@types/jquery";
+        final String tarball = "jquery-1.10.8-alpha.tgz";
 
         final String baseUrl = server.formatUrl( STORE, SUBPATH );
 
-        final String tarballUrl = baseUrl + "/jquery/-/jquery-1.5.1.tgz";
+        final String tarballUrl = String.format( "%s/%s/-/%s", baseUrl, packagePath, tarball );
 
         final String packageContent = IOUtils.toString(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream( "subpath-package-1.5.1.json" ) )
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( "subpath-scoped-package-1.10.8-alpha.json" ) )
                                              .replace( "@@REGISTRY@@", baseUrl );
 
         server.expect( server.formatUrl( STORE, SUBPATH, packagePath ), 200,
@@ -86,7 +88,7 @@ public class NPMRemoteMetadataContentDecorator_ScopedPathTest
 
         String contextUrl =
                 UrlUtils.buildUrl( fixture.getUrl(), "content", NPM_PKG_KEY, storeKey.getType().name(), STORE );
-        String decoratedContent = packageContent.replaceAll( tarballUrl, contextUrl + "/jquery/-/jquery-1.5.1.tgz" );
+        String decoratedContent = packageContent.replaceAll( tarballUrl, String.format( "%s/%s/-/%s", contextUrl, packagePath, tarball ) );
         assertThat( IOUtils.toString( stream ), equalTo( decoratedContent ) );
         stream.close();
 
@@ -95,7 +97,7 @@ public class NPMRemoteMetadataContentDecorator_ScopedPathTest
         stream = client.content().get( groupKey, packagePath );
         assertThat( stream, notNullValue() );
         contextUrl = UrlUtils.buildUrl( fixture.getUrl(), "content", NPM_PKG_KEY, groupKey.getType().name(), GROUP );
-        String maskedUrl = contextUrl + "/jquery/-/jquery-1.5.1.tgz";
+        String maskedUrl = String.format( "%s/%s/-/%s", contextUrl, packagePath, tarball );
         // group metadata is not a simple copy of the remote repo so we only check if the decorated tarball url exists
         assertThat( IOUtils.toString( stream ), containsString( maskedUrl ) );
         stream.close();

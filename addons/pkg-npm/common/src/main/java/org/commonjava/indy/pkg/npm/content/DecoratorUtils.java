@@ -67,7 +67,7 @@ public class DecoratorUtils
             throw new IOException( "Failed to parse URL " + url, e ); // should not happen
         }
 
-        String[] pathParts = url1.getPath().split( "\\/" );
+        String[] pathParts = url1.getPath().split( "/" );
         if ( pathParts.length < 1 )
         {
             return "";
@@ -80,12 +80,36 @@ public class DecoratorUtils
         String lastPart = pathParts[pathParts.length - 1];
         if ( ( "package.json".equals( lastPart ) || lastPart.endsWith( "tgz" ) ) && pathParts.length > 2 )
         {
-            return String.format( "%s/%s/%s", pathParts[pathParts.length - 3], pathParts[pathParts.length - 2],
+            final String firstPath;
+            //Handle if scopedPath like "@types/jquery/***" or singlePath like "jquery/***"
+            if ( pathParts.length > 3 && pathParts[pathParts.length - 4].startsWith( "@" ) )
+            {
+                // scoped path
+                firstPath = String.format( "%s/%s", pathParts[pathParts.length - 4], pathParts[pathParts.length - 3] );
+            }
+            else
+            {
+                // single path
+                firstPath = pathParts[pathParts.length - 3];
+            }
+            return String.format( "%s/%s/%s", firstPath, pathParts[pathParts.length - 2],
                                   pathParts[pathParts.length - 1] );
         }
         else if ( "-".equals( lastPart ) )
         {
-            return String.format( "%s/%s", pathParts[pathParts.length - 2], pathParts[pathParts.length - 1] );
+            final String firstPath;
+            //Handle if scopedPath like "@types/jquery/***" or singlePath like "jquery/***"
+            if ( pathParts.length > 2 && pathParts[pathParts.length - 3].startsWith( "@" ) )
+            {
+                // scoped path
+                firstPath = String.format( "%s/%s", pathParts[pathParts.length - 3], pathParts[pathParts.length - 2] );
+            }
+            else
+            {
+                // single path
+                firstPath = pathParts[pathParts.length - 2];
+            }
+            return String.format( "%s/%s", firstPath, pathParts[pathParts.length - 1] );
         }
 
         return lastPart;
