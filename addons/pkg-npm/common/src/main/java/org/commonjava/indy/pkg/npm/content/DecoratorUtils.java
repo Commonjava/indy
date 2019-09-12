@@ -16,14 +16,16 @@
 package org.commonjava.indy.pkg.npm.content;
 
 import org.commonjava.maven.galley.util.UrlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.function.Function;
 
 public class DecoratorUtils
 {
+    private static final Logger logger = LoggerFactory.getLogger( DecoratorUtils.class );
     /**
      * Replace tarball urls with context urls, e.g., "https://registry.npmjs.org/jquery/-/jquery-1.5.1.tgz" to
      * "http://${indy}/api/content/npm/remote/test/jquery/-/jquery-1.5.1.tgz".
@@ -32,30 +34,32 @@ public class DecoratorUtils
     {
         StringBuilder sb = new StringBuilder();
         int index;
-        while ( ( index = raw.indexOf( "\"tarball\"" ) ) >= 0 )
+        while ( ( index = raw.indexOf( "\"tarball\":" ) ) >= 0 )
         {
             int colon = raw.indexOf( ":", index );
-            String s = raw.substring( 0, colon + 1 );
-            sb.append( s );
+            final String key = raw.substring( 0, colon + 1 );
 
             raw = raw.substring( colon + 1 );
             int quote = raw.indexOf( "\"" );
-            s = raw.substring( 0, quote ); // blanks between : and "
-            sb.append( s );
+            final String extra = raw.substring( 0, quote ); // blanks between : and "
 
             int nextQuote = raw.indexOf( "\"", quote + 1 );
             String url = raw.substring( quote + 1, nextQuote );
-            String path = getPath(url);
+            String path = getPath( url );
 
-            url = UrlUtils.buildUrl( contextURL, path );
-            sb.append( "\"" + url + "\"" );
+            if ( path != null )
+            {
+                url = UrlUtils.buildUrl( contextURL, path );
+                final String value = "\"" + url + "\"";
+                sb.append( key ).append( extra ).append( value );
+            }
             raw = raw.substring( nextQuote + 1 );
         }
         sb.append( raw );
         return sb.toString();
     }
 
-    private static String getPath( String url ) throws IOException
+    private static String getPath( String url )
     {
         URL url1;
         try
@@ -64,7 +68,8 @@ public class DecoratorUtils
         }
         catch ( MalformedURLException e )
         {
-            throw new IOException( "Failed to parse URL " + url, e ); // should not happen
+            logger.warn( "Failed to parse URL {}" + url );
+            return null;
         }
 
         String[] pathParts = url1.getPath().split( "/" );
@@ -113,6 +118,7 @@ public class DecoratorUtils
         }
 
         return lastPart;
+
     }
 
 }
