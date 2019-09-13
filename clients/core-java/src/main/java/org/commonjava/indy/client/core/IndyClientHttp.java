@@ -933,6 +933,9 @@ public class IndyClientHttp
     private void addLoggingMDCToHeaders(HttpRequestBase request)
     {
         Map<String, String> context = MDC.getCopyOfContextMap();
+        if (context == null) {
+            return;
+        }
         for (Map.Entry<String, String> mdcKeyHeaderKey : mdcCopyMappings.entrySet())
         {
             String mdcValue = context.get(mdcKeyHeaderKey.getKey());
