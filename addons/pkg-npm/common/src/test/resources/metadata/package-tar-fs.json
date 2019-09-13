@@ -1,0 +1,207 @@
+{
+  "_id": "tar-fs",
+  "_rev": "96-43b3ce77e9834f745e8e220c45fb15b2",
+  "name": "tar-fs",
+  "description": "filesystem bindings for tar-stream",
+  "dist-tags": {
+    "latest": "2.0.0"
+  },
+  "versions": {
+    "1.16.3": {
+      "name": "tar-fs",
+      "version": "1.16.3",
+      "description": "filesystem bindings for tar-stream",
+      "dependencies": {
+        "chownr": "^1.0.1",
+        "mkdirp": "^0.5.1",
+        "pump": "^1.0.0",
+        "tar-stream": "^1.1.2"
+      },
+      "keywords": [
+        "tar",
+        "fs",
+        "file",
+        "tarball",
+        "directory",
+        "stream"
+      ],
+      "devDependencies": {
+        "rimraf": "^2.2.8",
+        "standard": "^4.5.4",
+        "tape": "^3.0.0"
+      },
+      "scripts": {
+        "test": "standard && tape test/index.js"
+      },
+      "bugs": {
+        "url": "https://github.com/mafintosh/tar-fs/issues"
+      },
+      "homepage": "https://github.com/mafintosh/tar-fs",
+      "main": "index.js",
+      "directories": {
+        "test": "test"
+      },
+      "author": {
+        "name": "Mathias Buus"
+      },
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mafintosh/tar-fs.git"
+      },
+      "gitHead": "873cda1e15503b1686aa544b4420f42bd6aa55a5",
+      "_id": "tar-fs@1.16.3",
+      "_npmVersion": "6.1.0",
+      "_nodeVersion": "10.3.0",
+      "_npmUser": {
+        "name": "mafintosh",
+        "email": "mathiasbuus@gmail.com"
+      },
+      "dist": {
+        "integrity": "sha512-NvCeXpYx7OsmOh8zIOP/ebG55zZmxLE0etfWRbWok+q2Qo8x/vOR/IJT1taADXPe+jsiu9axDb3X4B+iIgNlKw==",
+        "shasum": "966a628841da2c4010406a82167cbd5e0c72d509",
+        "tarball": "https://registry.npmjs.org/tar-fs/-/tar-fs-1.16.3.tgz",
+        "fileCount": 16,
+        "unpackedSize": 27601
+      },
+      "maintainers": [
+        {
+          "name": "mafintosh",
+          "email": "mathiasbuus@gmail.com"
+        },
+        {
+          "name": "maxogden",
+          "email": "max@maxogden.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/tar-fs_1.16.3_1529482839287_0.9628256030497233"
+      },
+      "_hasShrinkwrap": false
+    },
+    "2.0.0": {
+      "name": "tar-fs",
+      "version": "2.0.0",
+      "description": "filesystem bindings for tar-stream",
+      "dependencies": {
+        "chownr": "^1.1.1",
+        "mkdirp": "^0.5.1",
+        "pump": "^3.0.0",
+        "tar-stream": "^2.0.0"
+      },
+      "keywords": [
+        "tar",
+        "fs",
+        "file",
+        "tarball",
+        "directory",
+        "stream"
+      ],
+      "devDependencies": {
+        "rimraf": "^2.6.3",
+        "standard": "^12.0.1",
+        "tape": "^4.9.2"
+      },
+      "scripts": {
+        "test": "standard && tape test/index.js"
+      },
+      "bugs": {
+        "url": "https://github.com/mafintosh/tar-fs/issues"
+      },
+      "homepage": "https://github.com/mafintosh/tar-fs",
+      "main": "index.js",
+      "directories": {
+        "test": "test"
+      },
+      "author": {
+        "name": "Mathias Buus"
+      },
+      "license": "MIT",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/mafintosh/tar-fs.git"
+      },
+      "gitHead": "0f54a78bcc8735c4257177fd004c2f9e55c588bb",
+      "_id": "tar-fs@2.0.0",
+      "_npmVersion": "6.4.1",
+      "_nodeVersion": "10.15.1",
+      "_npmUser": {
+        "name": "mafintosh",
+        "email": "mathiasbuus@gmail.com"
+      },
+      "dist": {
+        "integrity": "sha512-vaY0obB6Om/fso8a8vakQBzwholQ7v5+uy+tF3Ozvxv1KNezmVQAiWtcNmMHFSFPqL3dJA8ha6gdtFbfX9mcxA==",
+        "shasum": "677700fc0c8b337a78bee3623fdc235f21d7afad",
+        "tarball" : "https://registry.npmjs.org/tar-fs/-/tar-fs-2.0.0.tgz",
+        "fileCount": 16,
+        "unpackedSize": 27705
+      },
+      "maintainers": [
+        {
+          "name": "mafintosh",
+          "email": "mathiasbuus@gmail.com"
+        },
+        {
+          "name": "maxogden",
+          "email": "max@maxogden.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/tar-fs_2.0.0_1549274570344_0.9889846152819155"
+      },
+      "_hasShrinkwrap": false
+    }
+  },
+  "maintainers": [
+    {
+      "name": "mafintosh",
+      "email": "mathiasbuus@gmail.com"
+    },
+    {
+      "name": "maxogden",
+      "email": "max@maxogden.com"
+    }
+  ],
+  "time": {
+    "modified": "2019-02-04T10:02:53.001Z",
+    "created": "2013-12-21T04:05:14.603Z",
+    "2.0.0": "2019-02-04T10:02:50.464Z"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mafintosh/tar-fs.git"
+  },
+  "users": {
+    "maxogden": true,
+    "julien-f": true,
+    "alxe.master": true,
+    "shanewholloway": true,
+    "itonyyo": true,
+    "coderaiser": true,
+    "panlw": true,
+    "brianneisler": true,
+    "gliviu": true,
+    "ahme-t": true,
+    "d0x7": true,
+    "maxorelus": true
+  },
+  "readmeFilename": "README.md",
+  "homepage": "https://github.com/mafintosh/tar-fs",
+  "keywords": [
+    "tar",
+    "fs",
+    "file",
+    "tarball",
+    "directory",
+    "stream"
+  ],
+  "bugs": {
+    "url": "https://github.com/mafintosh/tar-fs/issues"
+  },
+  "author": {
+    "name": "Mathias Buus"
+  },
+  "license": "MIT"
+}
