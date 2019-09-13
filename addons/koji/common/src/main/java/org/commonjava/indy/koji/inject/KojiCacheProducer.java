@@ -38,8 +38,8 @@ public class KojiCacheProducer
     @KojiMavenVersionMetadataCache
     @Produces
     @ApplicationScoped
-    public BasicCacheHandle<ProjectRef, Metadata> versionMetadataCache()
+    public CacheHandle<ProjectRef, Metadata> versionMetadataCache()
     {
-        return cacheProducer.getBasicCache( "koji-maven-version-metadata" );
+        return cacheProducer.getCache( "koji-maven-version-metadata" );
     }
 }
