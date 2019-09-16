@@ -88,10 +88,9 @@ import org.slf4j.LoggerFactory;
 @ApplicationScoped
 @REST
 public class StoreAdminHandler
-    implements IndyResources
-{
+    implements IndyResources {
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Inject
     private AdminController adminController;
@@ -109,10 +108,8 @@ public class StoreAdminHandler
     @Inject
     private ResponseHelper responseHelper;
 
-
-    public StoreAdminHandler()
-    {
-        logger.info( "\n\n\n\nStarted StoreAdminHandler\n\n\n\n" );
+    public StoreAdminHandler() {
+        logger.info("\n\n\n\nStarted StoreAdminHandler\n\n\n\n");
     }
 
     //    @Context
@@ -121,118 +118,99 @@ public class StoreAdminHandler
     //    @Context
     //    private HttpServletRequest request;
 
-    @ApiOperation( "Check if a given store exists" )
-    @ApiResponses( { @ApiResponse( code = 200, message = "The store exists" ),
-                           @ApiResponse( code = 404, message = "The store doesn't exist" ) } )
-    @Path( "/{name}" )
+    @ApiOperation("Check if a given store exists")
+    @ApiResponses({@ApiResponse(code = 200, message = "The store exists"),
+        @ApiResponse(code = 404, message = "The store doesn't exist")})
+    @Path("/{name}")
     @HEAD
-    public Response exists( final @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true )
-                            @PathParam( "type" ) String type,
-                            @ApiParam( required = true ) @PathParam( "name" ) final String name )
-    {
+    public Response exists(final @PathParam("packageType") String packageType,
+                           final @ApiParam(allowableValues = "hosted,group,remote", required = true)
+                           @PathParam("type") String type,
+                           @ApiParam(required = true) @PathParam("name") final String name) {
         Response response;
-        final StoreType st = StoreType.get( type );
+        final StoreType st = StoreType.get(type);
 
-        logger.info( "Checking for existence of: {}:{}:{}", packageType, st, name );
+        logger.info("Checking for existence of: {}:{}:{}", packageType, st, name);
 
-        if ( adminController.exists( new StoreKey( packageType, st, name ) ) )
-        {
+        if (adminController.exists(new StoreKey(packageType, st, name))) {
 
-            logger.info( "returning OK" );
+            logger.info("returning OK");
             response = Response.ok().build();
-        }
-        else
-        {
-            logger.info( "Returning NOT FOUND" );
-            response = Response.status( Status.NOT_FOUND ).build();
+        } else {
+            logger.info("Returning NOT FOUND");
+            response = Response.status(Status.NOT_FOUND).build();
         }
         return response;
     }
 
-    @ApiOperation( "Create a new store" )
-    @ApiResponses( { @ApiResponse( code = 201, response = ArtifactStore.class, message = "The store was created" ),
-        @ApiResponse( code = 409, message = "A store with the specified type and name already exists" ) } )
-    @ApiImplicitParams( { @ApiImplicitParam( allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
+    @ApiOperation("Create a new store")
+    @ApiResponses({@ApiResponse(code = 201, response = ArtifactStore.class, message = "The store was created"),
+        @ApiResponse(code = 409, message = "A store with the specified type and name already exists")})
+    @ApiImplicitParams({@ApiImplicitParam(allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON")})
     @POST
-    @Consumes( ApplicationContent.application_json )
-    @Produces( ApplicationContent.application_json )
-    public Response create( final @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                            final @Context UriInfo uriInfo,
-                            final @Context HttpServletRequest request,
-                            final @Context SecurityContext securityContext )
-    {
-        final StoreType st = StoreType.get( type );
+    @Consumes(ApplicationContent.application_json)
+    @Produces(ApplicationContent.application_json)
+    public Response create(final @PathParam("packageType") String packageType,
+                           final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
+                           final @Context UriInfo uriInfo,
+                           final @Context HttpServletRequest request,
+                           final @Context SecurityContext securityContext) {
+        final StoreType st = StoreType.get(type);
 
         Response response = null;
         String json = null;
-        try
-        {
-            json = IOUtils.toString( request.getInputStream() );
-            json = objectMapper.patchLegacyStoreJson( json );
-        }
-        catch ( final IOException e )
-        {
+        try {
+            json = IOUtils.toString(request.getInputStream());
+            json = objectMapper.patchLegacyStoreJson(json);
+        } catch (final IOException e) {
             final String message = "Failed to read " + st.getStoreClass()
-                                                         .getSimpleName() + " from request body.";
+                .getSimpleName() + " from request body.";
 
-            logger.error( message, e );
-            response = responseHelper.formatResponse( e, message );
+            logger.error(message, e);
+            response = responseHelper.formatResponse(e, message);
         }
 
-        if ( response != null )
-        {
+        if (response != null) {
             return response;
         }
 
         ArtifactStore store = null;
-        try
-        {
-            store = objectMapper.readValue( json, st.getStoreClass() );
-        }
-        catch ( final IOException e )
-        {
+        try {
+            store = objectMapper.readValue(json, st.getStoreClass());
+        } catch (final IOException e) {
             final String message = "Failed to parse " + st.getStoreClass()
-                                                         .getSimpleName() + " from request body.";
+                .getSimpleName() + " from request body.";
 
-            logger.error( message, e );
-            response = responseHelper.formatResponse( e, message );
+            logger.error(message, e);
+            response = responseHelper.formatResponse(e, message);
         }
 
-        if ( response != null )
-        {
+        if (response != null) {
             return response;
         }
 
-        logger.info( "\n\nGot artifact store: {}\n\n", store );
+        logger.info("\n\nGot artifact store: {}\n\n", store);
 
-        try
-        {
-            String user = securityManager.getUser( securityContext, request );
+        try {
+            String user = securityManager.getUser(securityContext, request);
 
-            if ( adminController.store( store, user, false ) )
-            {
+            if (adminController.store(store, user, false)) {
                 final URI uri = uriInfo.getBaseUriBuilder()
-                                       .path( "/api/admin/stores" )
-                                       .path( store.getPackageType() )
-                                       .path( store.getType().singularEndpointName() )
-                                       .build( store.getName() );
+                    .path("/api/admin/stores")
+                    .path(store.getPackageType())
+                    .path(store.getType().singularEndpointName())
+                    .build(store.getName());
 
-                response = responseHelper.formatCreatedResponseWithJsonEntity( uri, store );
+                response = responseHelper.formatCreatedResponseWithJsonEntity(uri, store);
+            } else {
+                response = status(CONFLICT)
+                    .entity("{\"error\": \"Store already exists.\"}")
+                    .type(application_json)
+                    .build();
             }
-            else
-            {
-                response = status( CONFLICT )
-                                   .entity( "{\"error\": \"Store already exists.\"}" )
-                                   .type( application_json )
-                                   .build();
-            }
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = responseHelper.formatResponse( e );
+        } catch (final IndyWorkflowException e) {
+            logger.error(e.getMessage(), e);
+            response = responseHelper.formatResponse(e);
         }
         return response;
     }
@@ -241,279 +219,235 @@ public class StoreAdminHandler
      * (non-Javadoc)
      * @see org.commonjava.indy.core.rest.admin.DeployPointAdminResource#store(java.lang.String)
      */
-    @ApiOperation( "Update an existing store" )
-    @ApiResponses( { @ApiResponse( code = 200, message = "The store was updated" ),
-        @ApiResponse( code = 400, message = "The store specified in the body JSON didn't match the URL parameters" ), } )
-    @ApiImplicitParams( { @ApiImplicitParam( allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
-    @Path( "/{name}" )
+    @ApiOperation("Update an existing store")
+    @ApiResponses({@ApiResponse(code = 200, message = "The store was updated"),
+        @ApiResponse(code = 400, message = "The store specified in the body JSON didn't match the URL parameters"),})
+    @ApiImplicitParams({@ApiImplicitParam(allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON")})
+    @Path("/{name}")
     @PUT
-    @Consumes( ApplicationContent.application_json )
-    public Response store( final @PathParam( "packageType" ) String packageType,
-                           final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                           final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                           final @Context HttpServletRequest request,
-                           final @Context SecurityContext securityContext )
-    {
-        final StoreType st = StoreType.get( type );
+    @Consumes(ApplicationContent.application_json)
+    public Response store(final @PathParam("packageType") String packageType,
+                          final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
+                          final @ApiParam(required = true) @PathParam("name") String name,
+                          final @Context HttpServletRequest request,
+                          final @Context SecurityContext securityContext) {
+        final StoreType st = StoreType.get(type);
 
         Response response = null;
         String json = null;
-        try
-        {
-            json = IOUtils.toString( request.getInputStream() );
-            json = objectMapper.patchLegacyStoreJson( json );
-        }
-        catch ( final IOException e )
-        {
+        try {
+            json = IOUtils.toString(request.getInputStream());
+            json = objectMapper.patchLegacyStoreJson(json);
+        } catch (final IOException e) {
             final String message = "Failed to read " + st.getStoreClass()
-                                                         .getSimpleName() + " from request body.";
+                .getSimpleName() + " from request body.";
 
-            logger.error( message, e );
-            response = responseHelper.formatResponse( e, message );
+            logger.error(message, e);
+            response = responseHelper.formatResponse(e, message);
         }
 
-        if ( response != null )
-        {
+        if (response != null) {
             return response;
         }
 
         ArtifactStore store = null;
-        try
-        {
-            store = objectMapper.readValue( json, st.getStoreClass() );
-        }
-        catch ( final IOException e )
-        {
+        try {
+            store = objectMapper.readValue(json, st.getStoreClass());
+        } catch (final IOException e) {
             final String message = "Failed to parse " + st.getStoreClass()
-                                                          .getSimpleName() + " from request body.";
+                .getSimpleName() + " from request body.";
 
-            logger.error( message, e );
-            response = responseHelper.formatResponse( e, message );
+            logger.error(message, e);
+            response = responseHelper.formatResponse(e, message);
         }
 
-        if ( response != null )
-        {
+        if (response != null) {
             return response;
         }
 
-        if ( !packageType.equals(store.getPackageType()) || st != store.getType() || !name.equals( store.getName() ) )
-        {
-            response = Response.status( Status.BAD_REQUEST )
-                               .entity( String.format( "Store in URL path is: '%s' but in JSON it is: '%s'",
-                                                       new StoreKey( packageType, st, name ), store.getKey() ) )
-                               .build();
+        if (!packageType.equals(store.getPackageType()) || st != store.getType() || !name.equals(store.getName())) {
+            response = Response.status(Status.BAD_REQUEST)
+                .entity(String.format("Store in URL path is: '%s' but in JSON it is: '%s'",
+                    new StoreKey(packageType, st, name), store.getKey()))
+                .build();
         }
 
-        try
-        {
-            String user = securityManager.getUser( securityContext, request );
+        try {
+            String user = securityManager.getUser(securityContext, request);
 
-            logger.info( "Storing: {}", store );
-            if ( adminController.store( store, user, false ) )
-            {
+            logger.info("Storing: {}", store);
+            if (adminController.store(store, user, false)) {
                 response = ok().build();
-            }
-            else
-            {
-                logger.warn( "{} NOT modified!", store );
+            } else {
+                logger.warn("{} NOT modified!", store);
                 response = notModified().build();
             }
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = responseHelper.formatResponse( e );
+        } catch (final IndyWorkflowException e) {
+            logger.error(e.getMessage(), e);
+            response = responseHelper.formatResponse(e);
         }
 
         return response;
     }
 
-    @ApiOperation( "Retrieve the definitions of all artifact stores of a given type on the system" )
+    @ApiOperation("Retrieve the definitions of all artifact stores of a given type on the system")
     @ApiResponses(
-            { @ApiResponse( code = 200, response = StoreListingDTO.class, message = "The store definitions" ), } )
+        {@ApiResponse(code = 200, response = StoreListingDTO.class, message = "The store definitions"),})
     @GET
-    @Produces( ApplicationContent.application_json )
-    public Response getAll( final @ApiParam(
-            "Filter only stores that support the package type (eg. maven, npm). NOTE: '_all' returns all." )
-                            @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true )
-                            @PathParam( "type" ) String type )
-    {
+    @Produces(ApplicationContent.application_json)
+    public Response getAll(final @ApiParam(
+        "Filter only stores that support the package type (eg. maven, npm). NOTE: '_all' returns all.")
+                           @PathParam("packageType") String packageType,
+                           final @ApiParam(allowableValues = "hosted,group,remote", required = true)
+                           @PathParam("type") String type) {
 
-        final StoreType st = StoreType.get( type );
+        final StoreType st = StoreType.get(type);
 
         Response response;
-        try
-        {
-            final List<ArtifactStore> stores = adminController.getAllOfType( packageType, st );
+        try {
+            final List<ArtifactStore> stores = adminController.getAllOfType(packageType, st);
 
-            logger.info( "Returning listing containing stores:\n\t{}", new JoinString( "\n\t", stores ) );
+            logger.info("Returning listing containing stores:\n\t{}", new JoinString("\n\t", stores));
 
-            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( stores );
+            final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>(stores);
 
-            response = responseHelper.formatOkResponseWithJsonEntity( dto );
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = responseHelper.formatResponse( e );
+            response = responseHelper.formatOkResponseWithJsonEntity(dto);
+        } catch (final IndyWorkflowException e) {
+            logger.error(e.getMessage(), e);
+            response = responseHelper.formatResponse(e);
         }
 
         return response;
     }
 
-    @ApiOperation( "Retrieve the definition of a specific artifact store" )
-    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "The store definition" ),
-        @ApiResponse( code = 404, message = "The store doesn't exist" ), } )
-    @Path( "/{name}" )
+    @ApiOperation("Retrieve the definition of a specific artifact store")
+    @ApiResponses({@ApiResponse(code = 200, response = ArtifactStore.class, message = "The store definition"),
+        @ApiResponse(code = 404, message = "The store doesn't exist"),})
+    @Path("/{name}")
     @GET
-    @Produces( ApplicationContent.application_json )
-    public Response get( final @PathParam( "packageType" ) String packageType,
-                         final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                         final @ApiParam( required = true ) @PathParam( "name" ) String name )
-    {
-        final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( packageType, st, name );
+    @Produces(ApplicationContent.application_json)
+    public Response get(final @PathParam("packageType") String packageType,
+                        final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
+                        final @ApiParam(required = true) @PathParam("name") String name) {
+        final StoreType st = StoreType.get(type);
+        final StoreKey key = new StoreKey(packageType, st, name);
 
         Response response;
-        try
-        {
-            final ArtifactStore store = adminController.get( key );
-            logger.info( "Returning repository: {}", store );
+        try {
+            final ArtifactStore store = adminController.get(key);
+            logger.info("Returning repository: {}", store);
 
-            if ( store == null )
-            {
-                response = Response.status( Status.NOT_FOUND )
-                                   .build();
+            if (store == null) {
+                response = Response.status(Status.NOT_FOUND)
+                    .build();
+            } else {
+                response = responseHelper.formatOkResponseWithJsonEntity(store);
             }
-            else
-            {
-                response = responseHelper.formatOkResponseWithJsonEntity( store );
-            }
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = responseHelper.formatResponse( e );
+        } catch (final IndyWorkflowException e) {
+            logger.error(e.getMessage(), e);
+            response = responseHelper.formatResponse(e);
         }
         return response;
     }
 
-    @ApiOperation( "Delete an artifact store" )
-    @ApiResponses( { @ApiResponse( code = 204, response = ArtifactStore.class, message = "The store was deleted (or didn't exist in the first place)" ), } )
-    @Path( "/{name}" )
+    @ApiOperation("Delete an artifact store")
+    @ApiResponses({@ApiResponse(code = 204, response = ArtifactStore.class, message = "The store was deleted (or didn't exist in the first place)"),})
+    @Path("/{name}")
     @DELETE
-    public Response delete( final @PathParam( "packageType" ) String packageType,
-                            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-                            final @ApiParam( required = true ) @PathParam( "name" ) String name,
-                            @Context final HttpServletRequest request,
-                            final @Context SecurityContext securityContext )
-    {
-        final StoreType st = StoreType.get( type );
-        final StoreKey key = new StoreKey( packageType, st, name );
+    public Response delete(final @PathParam("packageType") String packageType,
+                           final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
+                           final @ApiParam(required = true) @PathParam("name") String name,
+                           @Context final HttpServletRequest request,
+                           final @Context SecurityContext securityContext) {
+        final StoreType st = StoreType.get(type);
+        final StoreKey key = new StoreKey(packageType, st, name);
 
-        logger.info( "Deleting: {}", key );
+        logger.info("Deleting: {}", key);
         Response response;
-        try
-        {
+        try {
             String summary = null;
-            try
-            {
-                summary = IOUtils.toString( request.getInputStream() );
-            }
-            catch ( final IOException e )
-            {
+            try {
+                summary = IOUtils.toString(request.getInputStream());
+            } catch (final IOException e) {
                 // no problem, try to get the summary from a header instead.
-                logger.info( "store-deletion change summary not in request body, checking headers." );
+                logger.info("store-deletion change summary not in request body, checking headers.");
             }
 
-            if ( isEmpty( summary ) )
-            {
-                summary = request.getHeader( METADATA_CHANGELOG );
+            if (isEmpty(summary)) {
+                summary = request.getHeader(METADATA_CHANGELOG);
             }
 
-            if ( isEmpty( summary ) )
-            {
+            if (isEmpty(summary)) {
                 summary = "Changelog not provided";
             }
 
-            String user = securityManager.getUser( securityContext, request );
+            String user = securityManager.getUser(securityContext, request);
 
-            adminController.delete( key, user, summary );
+            adminController.delete(key, user, summary);
 
             response = noContent().build();
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = responseHelper.formatResponse( e );
+        } catch (final IndyWorkflowException e) {
+            logger.error(e.getMessage(), e);
+            response = responseHelper.formatResponse(e);
         }
         return response;
     }
 
-    @ApiOperation( "Retrieve the definition of a remote by specific url" )
-    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "The store definition" ),
-                           @ApiResponse( code = 404, message = "The remote repository doesn't exist" ), } )
-    @Path( "/query/byUrl" )
+    @ApiOperation("Retrieve the definition of a remote by specific url")
+    @ApiResponses({@ApiResponse(code = 200, response = ArtifactStore.class, message = "The store definition"),
+        @ApiResponse(code = 404, message = "The remote repository doesn't exist"),})
+    @Path("/query/byUrl")
     @GET
-    public Response getRemoteByUrl( final @PathParam( "packageType" ) String packageType,
-                                    final @ApiParam( allowableValues = "remote", required = true )
-                                    @PathParam( "type" ) String type,
-                                    final @QueryParam( "url" ) String url,
-                                    @Context final HttpServletRequest request,
-                                    final @Context SecurityContext securityContext )
-    {
-        if ( !"remote".equals( type ) )
-        {
+    public Response getRemoteByUrl(final @PathParam("packageType") String packageType,
+                                   final @ApiParam(allowableValues = "remote", required = true)
+                                   @PathParam("type") String type,
+                                   final @QueryParam("url") String url,
+                                   @Context final HttpServletRequest request,
+                                   final @Context SecurityContext securityContext) {
+        if (!"remote".equals(type)) {
             return responseHelper.formatBadRequestResponse(
-                    String.format( "Not supporte repository type of %s", type ) );
+                String.format("Not supporte repository type of %s", type));
         }
 
-        logger.info( "Get remote repository by url: {}", url );
+        logger.info("Get remote repository by url: {}", url);
         Response response;
-        try
-        {
-            final List<RemoteRepository> remotes = adminController.getRemoteByUrl( url, packageType );
-            logger.info( "According to url {}, Returning remote listing remote repositories: {}", url, remotes );
+        try {
+            final List<RemoteRepository> remotes = adminController.getRemoteByUrl(url, packageType);
+            logger.info("According to url {}, Returning remote listing remote repositories: {}", url, remotes);
 
-            if ( remotes == null || remotes.isEmpty() )
-            {
-                response = Response.status( Status.NOT_FOUND ).build();
+            if (remotes == null || remotes.isEmpty()) {
+                response = Response.status(Status.NOT_FOUND).build();
+            } else {
+                final StoreListingDTO<RemoteRepository> dto = new StoreListingDTO<>(remotes);
+                response = responseHelper.formatOkResponseWithJsonEntity(dto);
             }
-            else
-            {
-                final StoreListingDTO<RemoteRepository> dto = new StoreListingDTO<>( remotes );
-                response = responseHelper.formatOkResponseWithJsonEntity( dto );
-            }
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error( e.getMessage(), e );
-            response = responseHelper.formatResponse( e );
+        } catch (final IndyWorkflowException e) {
+            logger.error(e.getMessage(), e);
+            response = responseHelper.formatResponse(e);
         }
         return response;
     }
 
 
-    @ApiOperation( "Revalidation of Artifacts Stored on demand" )
-    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repositories was successfull" ),
-        @ApiResponse( code = 404, message = "Revalidation is not successfull" ), } )
-    @Path( "/revalidate" )
+    @ApiOperation("Revalidation of Artifacts Stored on demand")
+    @ApiResponses({@ApiResponse(code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repositories was successfull"),
+        @ApiResponse(code = 404, message = "Revalidation is not successfull"),})
+    @Path("/revalidate")
     @POST
     public Response revalidateArtifactStores(
         @PathParam("package") String packageType,
-        @PathParam( "type" ) String type) {
+        @PathParam("type") String type) {
 
         ArtifactStoreValidateData result = null;
-        Map<String,String> results = new HashMap<>();
+        Map<String, String> results = new HashMap<>();
         Response response;
 
         try {
-            StoreType storeType =  StoreType.get(type);
+            StoreType storeType = StoreType.get(type);
 
             List<ArtifactStore> allArtifactStores = adminController.getAllOfType(packageType, storeType);
 
-            for(ArtifactStore artifactStore: allArtifactStores) {
+            for (ArtifactStore artifactStore : allArtifactStores) {
                 // Validate this Store
                 result = adminController.validateStore(artifactStore);
                 results.put(artifactStore.getKey().toString(), result.getErrors().toString());
@@ -537,19 +471,19 @@ public class StoreAdminHandler
         return response;
     }
 
-    @ApiOperation( "Revalidation of Artifact Stored on demand based on package, type and name" )
-    @ApiResponses( { @ApiResponse( code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repository was successfull" ),
-        @ApiResponse( code = 404, message = "Revalidation is not successfull" ), } )
-    @Path( "/{name}/revalidate" )
+    @ApiOperation("Revalidation of Artifact Stored on demand based on package, type and name")
+    @ApiResponses({@ApiResponse(code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repository was successfull"),
+        @ApiResponse(code = 404, message = "Revalidation is not successfull"),})
+    @Path("/{name}/revalidate")
     @POST
     public Response revalidateArtifactStore(
-        final @ApiParam( required = true ) @PathParam("package") String packageType,
-        final @ApiParam( required = true ) @PathParam("type") String type,
-        final @ApiParam( required = true ) @PathParam("name") String name ) {
+        final @ApiParam(required = true) @PathParam("package") String packageType,
+        final @ApiParam(required = true) @PathParam("type") String type,
+        final @ApiParam(required = true) @PathParam("name") String name) {
 
 
         ArtifactStoreValidateData result = null;
-        Map<String,String> data =  new HashMap<>();
+        Map<String, String> data = new HashMap<>();
         Response response;
 
         try {
