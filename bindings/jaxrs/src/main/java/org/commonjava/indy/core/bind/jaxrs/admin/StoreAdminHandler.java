@@ -15,11 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 
->>>>>>> 6a6e57fabb483dd247715049cea9a6015c7f99d6
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.notModified;
@@ -59,11 +55,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-<<<<<<< HEAD
-=======
->>>>>>> upstream/master
-=======
->>>>>>> 6a6e57fabb483dd247715049cea9a6015c7f99d6
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -113,24 +105,12 @@ public class StoreAdminHandler
     @Inject
     private SecurityManager securityManager;
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-    @Inject
-<<<<<<< HEAD
+
     StoreValidator storeValidator;
 
 
-=======
-    private ResponseHelper responseHelper;
->>>>>>> upstream/master
-=======
->>>>>>> Change based on comments from PR NOS-1889.1891.1892_Comment_Changes
-=======
-
     @Inject
     private ResponseHelper responseHelper;
-
->>>>>>> 6a6e57fabb483dd247715049cea9a6015c7f99d6
 
     public StoreAdminHandler()
     {
@@ -541,19 +521,19 @@ public class StoreAdminHandler
                 results.put(artifactStore.getKey().toString(), result.getErrors().toString());
 
             }
-            response = formatOkResponseWithJsonEntity(results, objectMapper);
+            response = responseHelper.formatOkResponseWithJsonEntity(results);
 
         } catch (IndyDataException ide) {
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
-            response = formatResponse(ide);
+            response = responseHelper.formatResponse(ide);
 
         } catch (MalformedURLException mue) {
             logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
-            response = formatResponse(mue);
+            response = responseHelper.formatResponse(mue);
 
         } catch (IndyWorkflowException iwe) {
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
-            response = formatResponse(iwe);
+            response = responseHelper.formatResponse(iwe);
 
         }
         return response;
@@ -580,19 +560,19 @@ public class StoreAdminHandler
             ArtifactStore artifactStore = adminController.get(storeKey);
             // Validate this Store
             result = adminController.validateStore(artifactStore);
-            response = formatOkResponseWithJsonEntity(result, objectMapper);
+            response = responseHelper.formatOkResponseWithJsonEntity(result);
 
         } catch (IndyDataException ide) {
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
-            response = formatResponse(ide);
+            response = responseHelper.formatResponse(ide);
 
         } catch (MalformedURLException mue) {
             logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
-            response = formatResponse(mue);
+            response = responseHelper.formatResponse(mue);
 
         } catch (IndyWorkflowException iwe) {
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
-            response = formatResponse(iwe);
+            response = responseHelper.formatResponse(iwe);
         }
         return response;
     }
