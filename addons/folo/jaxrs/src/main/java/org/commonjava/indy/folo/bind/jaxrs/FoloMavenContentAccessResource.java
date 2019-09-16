@@ -95,7 +95,7 @@ public class FoloMavenContentAccessResource
         final TrackingKey tk = new TrackingKey( id );
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO ).set(
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE ).set(
                         STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
 
         Class cls = FoloMavenContentAccessResource.class;
@@ -122,7 +122,7 @@ public class FoloMavenContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
         MDC.put( CONTENT_TRACKING_ID, id );
 
@@ -145,7 +145,7 @@ public class FoloMavenContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.MAVEN_REPO );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
         MDC.put( CONTENT_TRACKING_ID, id );
 

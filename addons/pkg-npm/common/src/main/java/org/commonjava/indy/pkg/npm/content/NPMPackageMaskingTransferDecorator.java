@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 Red Hat, Inc. (nos-devel@redhat.com)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ public class NPMPackageMaskingTransferDecorator
     public InputStream decorateRead( final InputStream stream, final Transfer transfer, EventMetadata metadata )
                     throws IOException
     {
-        logger.debug( "Masking decorator decorateRead, transfer: {}", transfer );
         Location loc = transfer.getLocation();
         if ( !( loc instanceof KeyedLocation ) )
         {
@@ -63,6 +62,8 @@ public class NPMPackageMaskingTransferDecorator
         {
             return stream;
         }
+
+        logger.debug( "Masking decorator decorateRead, transfer: {}", transfer );
 
         if ( !( transfer.getFullPath().endsWith( "package.json" ) ) )
         {

@@ -18,10 +18,14 @@ package org.commonjava.indy.core.content;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +48,9 @@ public class ContentGeneratorManager
 
     private Set<ContentGenerator> contentGenerators;
 
+    @Inject
+    private PathGenerator pathGenerator;
+
     public ContentGeneratorManager()
     {
         contentGenerators = new HashSet<>();
@@ -61,6 +68,7 @@ public class ContentGeneratorManager
         }
     }
 
+    @Measure
     public Transfer generateFileContentAnd( final ArtifactStore store, final String path,
                                             final EventMetadata eventMetadata, Consumer<Transfer> consumer )
                     throws IndyWorkflowException
@@ -79,13 +87,17 @@ public class ContentGeneratorManager
         return item;
     }
 
+    @Measure
     public Transfer generateGroupFileContent( Group group, List<ArtifactStore> members, String path,
                                               EventMetadata eventMetadata ) throws IndyWorkflowException
     {
         Transfer item = null;
         for ( final ContentGenerator generator : contentGenerators )
         {
-            if ( generator.canProcess( path ) )
+            String storagePath =
+                    pathGenerator.getPath( new ConcreteResource( LocationUtils.toLocation( group ), path ) );
+            final boolean canProcess =  generator.canProcess( path ) || generator.canProcess( storagePath );
+            if ( canProcess )
             {
                 item = generator.generateGroupFileContent( group, members, path, eventMetadata );
                 logger.trace( "From content {}.generateGroupFileContent: {} (exists? {})",
@@ -99,6 +111,7 @@ public class ContentGeneratorManager
         return item;
     }
 
+    @Measure
     public void generateGroupFileContentAnd( Group group, List<ArtifactStore> members, String path,
                                              EventMetadata eventMetadata, Consumer<Transfer> consumer )
                     throws IndyWorkflowException
@@ -113,6 +126,7 @@ public class ContentGeneratorManager
         }
     }
 
+    @Measure
     public void handleContentStorage( ArtifactStore transferStore, String path, Transfer txfr,
                                       EventMetadata eventMetadata ) throws IndyWorkflowException
     {
@@ -123,6 +137,7 @@ public class ContentGeneratorManager
         }
     }
 
+    @Measure
     public void handleContentDeletion( ArtifactStore member, String path, EventMetadata eventMetadata )
                     throws IndyWorkflowException
     {
@@ -132,6 +147,7 @@ public class ContentGeneratorManager
         }
     }
 
+    @Measure
     public void generateGroupDirectoryContentAnd( Group group, List<ArtifactStore> members, String path,
                                                   EventMetadata eventMetadata, Consumer<List<StoreResource>> consumer )
                     throws IndyWorkflowException
@@ -147,6 +163,7 @@ public class ContentGeneratorManager
         }
     }
 
+    @Measure
     public void generateDirectoryContentAnd( ArtifactStore store, String path, List<StoreResource> listed,
                                              EventMetadata metadata, Consumer<List<StoreResource>> consumer )
                     throws IndyWorkflowException

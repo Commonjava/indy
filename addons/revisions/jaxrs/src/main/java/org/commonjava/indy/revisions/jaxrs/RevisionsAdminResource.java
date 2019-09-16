@@ -22,7 +22,7 @@ import io.swagger.annotations.ApiResponse;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
-import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.revisions.RevisionsManager;
 import org.commonjava.indy.revisions.jaxrs.dto.ChangeSummaryDTO;
 import org.commonjava.indy.subsys.git.GitSubsystemException;
@@ -40,9 +40,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.util.List;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-
 @Api( "Data-Directory Revisions" )
 @Path( "/api/admin/revisions" )
 @ApplicationScoped
@@ -58,6 +55,9 @@ public class RevisionsAdminResource
 
     @Inject
     private ObjectMapper objectMapper;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation(
             "Pull from the configured remote Git repository, updating the Indy data directory with files (merged according to configuration in the [revisions] section)" )
@@ -77,7 +77,7 @@ public class RevisionsAdminResource
         catch ( final GitSubsystemException e )
         {
             logger.error( "Failed to pull git updates for data dir: " + e.getMessage(), e );
-            response = ResponseUtils.formatResponse( e, "Failed to pull git updates for data dir: " + e.getMessage() );
+            response = responseHelper.formatResponse( e, "Failed to pull git updates for data dir: " + e.getMessage() );
         }
 
         return response;
@@ -101,7 +101,7 @@ public class RevisionsAdminResource
         catch ( final GitSubsystemException e )
         {
             logger.error( "Failed to push git updates for data dir: " + e.getMessage(), e );
-            response = ResponseUtils.formatResponse( e, "Failed to push git updates for data dir: " + e.getMessage() );
+            response = responseHelper.formatResponse( e, "Failed to push git updates for data dir: " + e.getMessage() );
         }
 
         return response;
@@ -121,12 +121,12 @@ public class RevisionsAdminResource
         {
             final List<ChangeSummary> listing = revisionsManager.getDataChangeLog( path, start, count );
 
-            response = formatOkResponseWithJsonEntity( new ChangeSummaryDTO( listing ), objectMapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( new ChangeSummaryDTO( listing ) );
         }
         catch ( final GitSubsystemException e )
         {
             logger.error( "Failed to read git changelog from data dir: " + e.getMessage(), e );
-            response = formatResponse( e, "Failed to read git changelog from data dir." );
+            response = responseHelper.formatResponse( e, "Failed to read git changelog from data dir." );
         }
 
         return response;

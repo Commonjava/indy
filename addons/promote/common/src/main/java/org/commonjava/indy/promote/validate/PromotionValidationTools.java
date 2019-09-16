@@ -149,14 +149,24 @@ public class PromotionValidationTools
         this.promoteConfig = config;
     }
 
-    public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
+    public StoreKey[] getValidationStoreKeys( final ValidationRequest request )
             throws PromotionValidationException
     {
-        return getValidationStoreKeys( request, includeSource, true );
+        return getValidationStoreKeys( request, false );
     }
 
+    /**
+     * @deprecated This method now is only used for api backward compatible
+     */
+    @Deprecated
     public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource,
                                               final boolean includeTarget )
+            throws PromotionValidationException
+    {
+        return getValidationStoreKeys( request, includeSource );
+    }
+
+    public StoreKey[] getValidationStoreKeys( final ValidationRequest request, final boolean includeSource )
             throws PromotionValidationException
     {
         String verifyStores = request.getValidationParameter( PromotionValidationTools.AVAILABLE_IN_STORES );
@@ -168,16 +178,13 @@ public class PromotionValidationTools
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Got extra validation keys string: '{}'", verifyStores );
 
-        List<StoreKey> verifyStoreKeys = new ArrayList<>();
+        Set<StoreKey> verifyStoreKeys = new HashSet<>();
         if ( includeSource )
         {
             verifyStoreKeys.add( request.getSourceRepository().getKey() );
         }
 
-        if ( includeTarget )
-        {
-            verifyStoreKeys.add( request.getTarget() );
-        }
+
         if ( verifyStores == null )
         {
             logger.warn(
@@ -202,9 +209,14 @@ public class PromotionValidationTools
             }
         }
 
+        if ( verifyStoreKeys.isEmpty() )
+        {
+            verifyStoreKeys.add( request.getTarget() );
+        }
+
         logger.debug( "Using validation StoreKeys: {}", verifyStoreKeys );
 
-        return verifyStoreKeys.toArray( new StoreKey[verifyStoreKeys.size()] );
+        return verifyStoreKeys.toArray( new StoreKey[0] );
     }
 
     public String toArtifactPath( final ProjectVersionRef ref )
@@ -676,19 +688,19 @@ public class PromotionValidationTools
     public <T> void forEach( Collection<T> collection, Closure closure )
     {
         logger.trace( "Exe on collection {} with closure {}", collection, closure );
-        collection.forEach( e -> closure.call( e ) );
+        collection.forEach( closure::call );
     }
 
     public <T> void forEach( T[] array, Closure closure )
     {
         logger.trace( "Exe on array {} with closure {}", array, closure );
-        Arrays.asList( array ).forEach( e -> closure.call( e ) );
+        Arrays.asList( array ).forEach( closure::call );
     }
 
     public <K, V> void forEach( Map<K, V> map, Closure closure )
     {
         Set<Map.Entry<K, V>> entries = map.entrySet();
         logger.trace( "Exe on map {} with closure {}", entries, closure );
-        entries.forEach( e -> closure.call( e ) );
+        entries.forEach( closure::call );
     }
 }

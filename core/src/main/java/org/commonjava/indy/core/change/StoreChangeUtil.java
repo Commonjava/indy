@@ -195,7 +195,7 @@ public class StoreChangeUtil
         {
             try
             {
-                logger.debug( "Deleting: {}", t );
+                logger.info( "Deleting: {}", t );
                 boolean deleted = t.delete( true );
                 if ( t.exists() )
                 {

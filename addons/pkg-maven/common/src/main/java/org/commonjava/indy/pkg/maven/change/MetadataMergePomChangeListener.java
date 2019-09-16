@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.maven.change;
 
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
@@ -34,6 +35,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -43,7 +45,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getMetadataPath;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 
-@javax.enterprise.context.ApplicationScoped
+@ApplicationScoped
 public class MetadataMergePomChangeListener
 {
 
@@ -136,7 +138,7 @@ public class MetadataMergePomChangeListener
         catch ( final IndyDataException e )
         {
             logger.warn( "Failed to regenerate maven-metadata.xml for artifacts after deployment to: {}"
-                                 + "\nCannot retrieve associated groups: {}", e, key, e.getMessage() );
+                                 + "\nCannot retrieve associated groups: {}", key, e.getMessage() );
         }
     }
 
@@ -155,7 +157,18 @@ public class MetadataMergePomChangeListener
 
             if ( item.exists() )
             {
-                final boolean result = item.delete();
+                boolean result = false;
+                try
+                {
+                    result = fileManager.delete( store, item.getPath(),
+                                                 new EventMetadata().set( StoreDataManager.IGNORE_READONLY, true ) );
+                }
+                catch ( IndyWorkflowException e )
+                {
+                    logger.warn( "Deletion failed for metadata clear, transfer is {}, failed reason:{}", item,
+                                 e.getMessage() );
+                }
+
                 logger.trace( "Deleted: {} (success? {})", item, result );
 
                 if ( item.getPath().endsWith( MavenMetadataMerger.METADATA_NAME ) )
@@ -167,6 +180,15 @@ public class MetadataMergePomChangeListener
                     logger.trace( "Firing deletion event for: {}", item );
                     fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
                 }
+            }
+            else if ( item.getPath().endsWith( MavenMetadataMerger.METADATA_NAME ) )
+            {
+                // we should return true here to trigger cache cleaning, because file not exists in store does not mean
+                // metadata not exists in cache.
+                logger.debug(
+                        "Metadata clean for {}: metadata not existed in store, so skipped deletion and mark as deleted",
+                        item );
+                return true;
             }
         }
         return isCleared;

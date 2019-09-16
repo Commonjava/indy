@@ -13,27 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.filer.ispn.fileio;
+package org.commonjava.indy.content;
 
-import org.infinispan.persistence.spi.AdvancedCacheLoader;
+import org.commonjava.indy.model.core.StoreKey;
 
 /**
- * Created by jdcasey on 3/11/16.
+ * Support separation between logical path and storage path, usually for package metadata. This allows package-specific
+ * path manipulations for how Indy stores content on the filesystem, without affecting the path used to transfer the
+ * content.
  */
-public class StorageFileTaskContext
-        implements AdvancedCacheLoader.TaskContext
+public interface StoragePathCalculator
 {
-    boolean stopped = false;
-
-    @Override
-    public void stop()
-    {
-        stopped = true;
-    }
-
-    @Override
-    public boolean isStopped()
-    {
-        return stopped;
-    }
+    String calculateStoragePath( StoreKey storeKey, String path );
 }

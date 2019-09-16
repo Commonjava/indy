@@ -74,6 +74,7 @@ public abstract class AbstractStoreDataManager
     protected abstract ArtifactStore getArtifactStoreInternal( final StoreKey key );
 
     @Override
+    @Measure
     public ArtifactStore getArtifactStore( final StoreKey key )
             throws IndyDataException
     {
@@ -166,6 +167,7 @@ public abstract class AbstractStoreDataManager
     protected abstract ArtifactStore removeArtifactStoreInternal( StoreKey key );
 
     @Override
+    @Measure
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
                                      final EventMetadata eventMetadata )
             throws IndyDataException

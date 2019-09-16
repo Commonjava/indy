@@ -263,7 +263,14 @@ public class DefaultContentManager
             item = doRetrieve( store, path, eventMetadata );
         }
 
-        logger.info( "Returning transfer {} from {}", item, store.getKey() );
+        if ( item != null )
+        {
+            logger.info( "Returning transfer {} from {}", item, store.getKey() );
+        }
+        else
+        {
+            logger.trace( "Not found path {} from {}", path, store.getKey() );
+        }
 
         return item;
     }
@@ -369,7 +376,8 @@ public class DefaultContentManager
         return txfr;
     }
 
-    private void clearNFCEntries( final KeyedLocation kl, final String path )
+    @Measure
+    protected void clearNFCEntries( final KeyedLocation kl, final String path )
     {
         try
         {
@@ -431,8 +439,12 @@ public class DefaultContentManager
     {
         if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
         {
-            logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
-            return false;
+            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+            if ( info == null || !info.isMetadata() )
+            {
+                logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
+                return false;
+            }
         }
 
         logger.info( "Delete from {}, path: {}", store.getKey(), path );

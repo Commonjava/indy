@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.9.0-SNAPSHOT</version>
+    <version>1.9.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-file-managers</artifactId>
@@ -32,13 +32,4 @@
   <modules>
     <module>default</module>
   </modules>
-
-  <profiles>
-    <profile>
-      <id>experimental</id>
-      <modules>
-        <module>infinispan</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>

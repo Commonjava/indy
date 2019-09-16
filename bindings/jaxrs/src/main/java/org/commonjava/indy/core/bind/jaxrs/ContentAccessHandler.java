@@ -19,6 +19,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
@@ -62,9 +63,6 @@ import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.METADATA_CONTE
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PATH;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponseFromMetadata;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.setInfoHeaders;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
@@ -93,6 +91,9 @@ public class ContentAccessHandler
 
     @Inject
     protected SpecialPathManager specialPathManager;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
 
     protected ContentAccessHandler()
@@ -151,7 +152,7 @@ public class ContentAccessHandler
         {
             logger.error( String.format( "Failed to upload: %s to: %s. Reason: %s", path, name, e.getMessage() ), e );
 
-            response = formatResponse( e, builderModifier );
+            response = responseHelper.formatResponse( e, builderModifier );
         }
 
         return response;
@@ -202,7 +203,7 @@ public class ContentAccessHandler
         {
             logger.error( String.format( "Failed to tryDelete artifact: %s from: %s. Reason: %s", path, name,
                                          e.getMessage() ), e );
-            response = formatResponse( e, builderModifier );
+            response = responseHelper.formatResponse( e, builderModifier );
         }
         return response;
     }
@@ -302,7 +303,7 @@ public class ContentAccessHandler
                             MediaType.APPLICATION_JSON :
                             contentController.getContentType( path );
 
-                    setInfoHeaders( builder, item, sk, path, true, contentType,
+                    responseHelper.setInfoHeaders( builder, item, sk, path, true, contentType,
                                     httpMetadata );
                     if ( builderModifier != null )
                     {
@@ -319,7 +320,7 @@ public class ContentAccessHandler
                         if ( metadata != null )
                         {
                             logger.trace( "Using HTTP metadata to build negative response." );
-                            response = formatResponseFromMetadata( metadata );
+                            response = responseHelper.formatResponseFromMetadata( metadata );
                         }
                     }
 
@@ -340,7 +341,7 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
+                response = responseHelper.formatResponse( e, builderModifier );
             }
         }
         return response;
@@ -431,7 +432,7 @@ public class ContentAccessHandler
                         final ResponseBuilder builder = Response.ok(
                                 new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
 
-                        setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
+                        responseHelper.setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );
                         if ( builderModifier != null )
                         {
@@ -452,7 +453,7 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Failed to download artifact: %s from: %s. Reason: %s", path, name,
                                              e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
+                response = responseHelper.formatResponse( e, builderModifier );
             }
         }
 
@@ -475,7 +476,7 @@ public class ContentAccessHandler
                 if ( metadata != null )
                 {
                     logger.trace( "Using HTTP metadata to formulate response status for: {}/{}", sk, path );
-                    response = formatResponseFromMetadata( metadata, builderModifier );
+                    response = responseHelper.formatResponseFromMetadata( metadata, builderModifier );
                 }
                 else
                 {
@@ -486,13 +487,13 @@ public class ContentAccessHandler
             {
                 logger.error( String.format( "Error retrieving status metadata for: %s from: %s. Reason: %s", path,
                                              sk.getName(), e.getMessage() ), e );
-                response = formatResponse( e, builderModifier );
+                response = responseHelper.formatResponse( e, builderModifier );
             }
         }
 
         if ( response == null )
         {
-            response = formatResponse( ApplicationStatus.NOT_FOUND, null,
+            response = responseHelper.formatResponse( ApplicationStatus.NOT_FOUND, null,
                                        "Path " + path + " is not available in store " + sk + ".", builderModifier );
         }
 

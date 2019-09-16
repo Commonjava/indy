@@ -28,6 +28,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.promote.data.PromotionManager;
 import org.commonjava.indy.promote.model.GroupPromoteRequest;
@@ -50,10 +51,6 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
-
 @Api( value="Content Promotion", description = "Promote content from a source repository to a target repository or group." )
 @Path( "/api/promotion" )
 @Produces( { application_json } )
@@ -72,6 +69,9 @@ public class PromoteResource
 
     @Inject
     private SecurityManager securityManager;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     @ApiOperation( "Promote a source repository into the membership of a target group (subject to validation)." )
     @ApiResponse( code = 200, message = "Promotion operation finished (consult response content for success/failure).",
@@ -99,7 +99,7 @@ public class PromoteResource
         catch ( PromotionException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -126,7 +126,7 @@ public class PromoteResource
         catch ( PromotionException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -153,7 +153,7 @@ public class PromoteResource
         }
         catch ( final IOException e )
         {
-            response = formatResponse( e, "Failed to read DTO from request body." );
+            response = responseHelper.formatResponse( e, "Failed to read DTO from request body." );
             return response;
         }
 
@@ -162,13 +162,13 @@ public class PromoteResource
             final String baseUrl = getBaseUrlByStoreKey( uriInfo, req.getSource() );
             final PathsPromoteResult result = manager.promotePaths( req, baseUrl );
 
-            response = formatOkResponseWithJsonEntity( result, mapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( result );
             logger.info( "Send promotion result:\n{}", response.getEntity() );
         }
         catch ( PromotionException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -193,19 +193,19 @@ public class PromoteResource
         }
         catch ( final IOException e )
         {
-            response = formatResponse( e, "Failed to read DTO from request body." );
+            response = responseHelper.formatResponse( e, "Failed to read DTO from request body." );
             return response;
         }
 
         try
         {
             result = manager.rollbackPathsPromote( result );
-            response = formatOkResponseWithJsonEntity( result, mapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( result );
         }
         catch ( PromotionException | IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
