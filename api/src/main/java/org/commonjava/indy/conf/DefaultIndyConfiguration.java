@@ -323,7 +323,7 @@ public class DefaultIndyConfiguration
     @Override
     public List<String> getRemoteNoSSLHosts()
     {
-        return this.remoteNoSSLHosts;
+        return this.remoteNoSSLHosts == null ? new ArrayList<>() : this.remoteNoSSLHosts;
     }
 
 

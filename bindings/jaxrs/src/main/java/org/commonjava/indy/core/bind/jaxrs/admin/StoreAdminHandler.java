@@ -16,6 +16,10 @@
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6a6e57fabb483dd247715049cea9a6015c7f99d6
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.notModified;
@@ -55,8 +59,11 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
+<<<<<<< HEAD
 =======
 >>>>>>> upstream/master
+=======
+>>>>>>> 6a6e57fabb483dd247715049cea9a6015c7f99d6
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -85,36 +92,7 @@ import org.commonjava.indy.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.net.URI;
-import java.util.List;
 
-import static javax.ws.rs.core.Response.Status.CONFLICT;
-import static javax.ws.rs.core.Response.noContent;
-import static javax.ws.rs.core.Response.notModified;
-import static javax.ws.rs.core.Response.ok;
-import static javax.ws.rs.core.Response.status;
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
-import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 @Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
@@ -136,6 +114,7 @@ public class StoreAdminHandler
     private SecurityManager securityManager;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     @Inject
 <<<<<<< HEAD
     StoreValidator storeValidator;
@@ -146,6 +125,12 @@ public class StoreAdminHandler
 >>>>>>> upstream/master
 =======
 >>>>>>> Change based on comments from PR NOS-1889.1891.1892_Comment_Changes
+=======
+
+    @Inject
+    private ResponseHelper responseHelper;
+
+>>>>>>> 6a6e57fabb483dd247715049cea9a6015c7f99d6
 
     public StoreAdminHandler()
     {
