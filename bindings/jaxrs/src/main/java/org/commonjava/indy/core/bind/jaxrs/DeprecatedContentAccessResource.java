@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -47,7 +48,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.markDeprecated;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
 
 @Api( value = "DEPRECATED: Content Access and Storage",
@@ -60,6 +60,9 @@ public class DeprecatedContentAccessResource
 {
     @Inject
     private ContentAccessHandler handler;
+
+    @Inject
+    private ResponseHelper responseHelper;
 
     public DeprecatedContentAccessResource()
     {
@@ -89,7 +92,7 @@ public class DeprecatedContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecated = builder -> {
             String alt = Paths.get( "/api/maven", type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         final EventMetadata metadata = new EventMetadata().set( STORE_HTTP_HEADERS,
@@ -110,7 +113,7 @@ public class DeprecatedContentAccessResource
         String packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
         final Consumer<Response.ResponseBuilder> deprecated = builder -> {
             String alt = Paths.get( "/api/maven", type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doDelete( packageType, type, name, path, new EventMetadata(), deprecated );
@@ -135,7 +138,7 @@ public class DeprecatedContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecated = builder -> {
             String alt = Paths.get( "/api/maven", type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doHead( packageType, type, name, path, cacheOnly, baseUri, request, new EventMetadata(), deprecated );
@@ -161,7 +164,7 @@ public class DeprecatedContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecated = builder -> {
             String alt = Paths.get( "/api/maven", type, name, path ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doGet( packageType, type, name, path, baseUri, request, new EventMetadata(), deprecated );
@@ -186,7 +189,7 @@ public class DeprecatedContentAccessResource
 
         final Consumer<Response.ResponseBuilder> deprecated = builder -> {
             String alt = Paths.get( "/api/maven", type, name ).toString();
-            markDeprecated( builder, alt );
+            responseHelper.markDeprecated( builder, alt );
         };
 
         return handler.doGet( packageType, type, name, "", baseUri, request, new EventMetadata(), deprecated );

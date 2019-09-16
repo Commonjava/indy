@@ -162,7 +162,7 @@ public class StoreContentListener
 
     private int clearPath( String path, ArtifactStore store )
     {
-        logger.debug( "Clear path: {}, store: {}", path, store.getKey() );
+        logger.info( "Clear path: {}, store: {}", path, store.getKey() );
         try
         {
             delete( directContentAccess.getTransfer( store, path ) );
@@ -180,7 +180,7 @@ public class StoreContentListener
 
     private int clearPath( String path, ArtifactStore origin, Set<Group> affectedGroups, boolean deleteOriginPath )
     {
-        logger.debug( "Clear path: {}, origin: {}, affectedGroups: {}", path, origin.getKey(), affectedGroups );
+        logger.info( "Clear path: {}, origin: {}, affectedGroups: {}", path, origin.getKey(), affectedGroups );
 
         AtomicInteger cleared = new AtomicInteger( 0 );
         if ( deleteOriginPath && !storeDataManager.isReadonly( origin ) )

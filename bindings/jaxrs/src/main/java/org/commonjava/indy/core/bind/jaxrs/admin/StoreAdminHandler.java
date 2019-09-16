@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
+
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.notModified;
@@ -62,11 +63,12 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
-import org.commonjava.indy.bind.jaxrs.util.ResponseUtils;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.data.ArtifactStoreValidateData;
 import org.commonjava.indy.data.IndyDataException;
@@ -78,9 +80,10 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 
 @Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
 @Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
@@ -100,6 +103,10 @@ public class StoreAdminHandler
 
     @Inject
     private SecurityManager securityManager;
+
+
+    @Inject
+    private ResponseHelper responseHelper;
 
 
     public StoreAdminHandler()
@@ -170,7 +177,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = responseHelper.formatResponse( e, message );
         }
 
         if ( response != null )
@@ -189,7 +196,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = responseHelper.formatResponse( e, message );
         }
 
         if ( response != null )
@@ -211,7 +218,7 @@ public class StoreAdminHandler
                                        .path( store.getType().singularEndpointName() )
                                        .build( store.getName() );
 
-                response = formatCreatedResponseWithJsonEntity( uri, store, objectMapper );
+                response = responseHelper.formatCreatedResponseWithJsonEntity( uri, store );
             }
             else
             {
@@ -224,7 +231,7 @@ public class StoreAdminHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -261,7 +268,7 @@ public class StoreAdminHandler
                                                          .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = responseHelper.formatResponse( e, message );
         }
 
         if ( response != null )
@@ -280,7 +287,7 @@ public class StoreAdminHandler
                                                           .getSimpleName() + " from request body.";
 
             logger.error( message, e );
-            response = formatResponse( e, message );
+            response = responseHelper.formatResponse( e, message );
         }
 
         if ( response != null )
@@ -314,7 +321,7 @@ public class StoreAdminHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -343,12 +350,12 @@ public class StoreAdminHandler
 
             final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>( stores );
 
-            response = formatOkResponseWithJsonEntity( dto, objectMapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( dto );
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -380,13 +387,13 @@ public class StoreAdminHandler
             }
             else
             {
-                response = formatOkResponseWithJsonEntity( store, objectMapper );
+                response = responseHelper.formatOkResponseWithJsonEntity( store );
             }
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -438,7 +445,7 @@ public class StoreAdminHandler
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }
@@ -457,7 +464,7 @@ public class StoreAdminHandler
     {
         if ( !"remote".equals( type ) )
         {
-            return ResponseUtils.formatBadRequestResponse(
+            return responseHelper.formatBadRequestResponse(
                     String.format( "Not supporte repository type of %s", type ) );
         }
 
@@ -475,13 +482,13 @@ public class StoreAdminHandler
             else
             {
                 final StoreListingDTO<RemoteRepository> dto = new StoreListingDTO<>( remotes );
-                response = formatOkResponseWithJsonEntity( dto, objectMapper );
+                response = responseHelper.formatOkResponseWithJsonEntity( dto );
             }
         }
         catch ( final IndyWorkflowException e )
         {
             logger.error( e.getMessage(), e );
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
         return response;
     }

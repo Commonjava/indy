@@ -456,7 +456,7 @@ public class FoloAdminController
         contentDigester.removeMetadata( transfer );
 
         TransferMetadata artifactData =
-                contentDigester.digest( affectedStore, path, new EventMetadata( channel.packageType() ) );
+                contentDigester.digest( affectedStore, path, new EventMetadata( affectedStore.getPackageType() ) );
 
         Map<ContentDigest, String> digests = artifactData.getDigests();
         return new TrackedContentEntry( entry.getTrackingKey(), affectedStore, channel, entry.getOriginUrl(), path,

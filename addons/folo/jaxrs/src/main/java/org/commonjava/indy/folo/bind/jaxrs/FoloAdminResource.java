@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
 import org.commonjava.indy.folo.ctl.FoloConstants;
@@ -53,9 +54,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatOkResponseWithJsonEntity;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.formatResponse;
-import static org.commonjava.indy.bind.jaxrs.util.ResponseUtils.throwError;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ALL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.IN_PROGRESS;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.SEALED;
@@ -80,6 +78,9 @@ public class FoloAdminResource
     @Inject
     private ContentController contentController;
 
+    @Inject
+    private ResponseHelper responseHelper;
+
     @ApiOperation( "Recalculate sizes and checksums for every file listed in a tracking record." )
     @ApiResponses(
             { @ApiResponse( code = 200, response = TrackedContentDTO.class, message = "Recalculated tracking report" ),
@@ -101,7 +102,7 @@ public class FoloAdminResource
             }
             else
             {
-                response = formatOkResponseWithJsonEntity( report, objectMapper );
+                response = responseHelper.formatOkResponseWithJsonEntity( report );
             }
         }
         catch ( final IndyWorkflowException e )
@@ -109,7 +110,7 @@ public class FoloAdminResource
             logger.error(
                     String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ), e );
 
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -134,7 +135,7 @@ public class FoloAdminResource
         }
         catch ( IndyWorkflowException e )
         {
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -162,7 +163,7 @@ public class FoloAdminResource
             }
             else
             {
-                response = formatOkResponseWithJsonEntity( report, objectMapper );
+                response = responseHelper.formatOkResponseWithJsonEntity( report );
             }
         }
         catch ( final IndyWorkflowException e )
@@ -170,7 +171,7 @@ public class FoloAdminResource
             logger.error(
                     String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ), e );
 
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -230,7 +231,7 @@ public class FoloAdminResource
             }
             else
             {
-                response = formatOkResponseWithJsonEntity( record, objectMapper );
+                response = responseHelper.formatOkResponseWithJsonEntity( record );
             }
         }
         catch ( final IndyWorkflowException e )
@@ -238,7 +239,7 @@ public class FoloAdminResource
             logger.error( String.format( "Failed to retrieve tracking report for: %s. Reason: %s", id, e.getMessage() ),
                           e );
 
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -256,7 +257,7 @@ public class FoloAdminResource
         }
         catch ( FoloContentException e )
         {
-            response = formatResponse( e );
+            response = responseHelper.formatResponse( e );
         }
 
         return response;
@@ -277,7 +278,7 @@ public class FoloAdminResource
         TrackingIdsDTO ids = controller.getTrackingIds( types );
         if ( ids != null )
         {
-            response = formatOkResponseWithJsonEntity( ids, objectMapper );
+            response = responseHelper.formatOkResponseWithJsonEntity( ids );
         }
         else
         {
@@ -301,7 +302,7 @@ public class FoloAdminResource
         }
         catch ( IndyWorkflowException e )
         {
-            throwError( e );
+            responseHelper.throwError( e );
         }
 
         return null;
@@ -319,11 +320,11 @@ public class FoloAdminResource
         }
         catch ( IndyWorkflowException e )
         {
-            throwError( e );
+            responseHelper.throwError( e );
         }
         catch ( IOException e )
         {
-            throwError( new IndyWorkflowException( "IO error", e ) );
+            responseHelper.throwError( new IndyWorkflowException( "IO error", e ) );
         }
 
         return Response.created( uriInfo.getRequestUri() ).build();

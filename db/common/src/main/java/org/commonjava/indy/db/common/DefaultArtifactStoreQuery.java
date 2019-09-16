@@ -154,6 +154,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public List<T> getAll()
             throws IndyDataException
     {
@@ -210,6 +211,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public List<T> getAll( Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
@@ -245,6 +247,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException
     {
@@ -254,6 +257,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String url )
             throws IndyDataException
     {
@@ -366,6 +370,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
             throws IndyDataException
     {
@@ -376,6 +381,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
             throws IndyDataException
     {
@@ -386,6 +392,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    @Measure
     public Set<Group> getGroupsAffectedBy( StoreKey... keys )
             throws IndyDataException
     {

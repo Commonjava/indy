@@ -76,7 +76,6 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
-import static org.apache.commons.lang3.exception.ExceptionUtils.rethrow;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverload;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;

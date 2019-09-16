@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 Red Hat, Inc. (nos-devel@redhat.com)
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,6 +63,28 @@ public class NPMPackageMaskingTransferDecoratorTest
         String ret = IOUtils.toString( stream );
 
         String expected = IOUtils.toString( getResourceAsStream( "metadata/package-1-decorated.json" ) );
+        assertEquals( expected, ret );
+    }
+
+    @Test
+    public void testDecorator2() throws Exception
+    {
+        String path = "package.json";
+        KeyedLocation location = new GroupLocation( PKG_TYPE_NPM, "test" );
+        File file = new File( temp.newFolder( location.getName() ), path );
+
+        IOUtils.copy( getResourceAsStream( "metadata/package-tar-fs.json" ), new FileOutputStream( file ) );
+
+        ConcreteResource resource = new ConcreteResource( location, path );
+        TestCacheProvider provider = new TestCacheProvider( temp.getRoot(), new TestFileEventManager(),
+                                                            new TransferDecoratorManager( new NPMPackageMaskingTransferDecorator() ) );
+        Transfer transfer = provider.getTransfer( resource );
+
+        InputStream stream = transfer.openInputStream( false, new EventMetadata().set( ENTRY_POINT_BASE_URI,
+                                                                                       "http://localhost/api/content/npm" ) );
+        String ret = IOUtils.toString( stream );
+
+        String expected = IOUtils.toString( getResourceAsStream( "metadata/package-tar-fs-decorated.json" ) );
         assertEquals( expected, ret );
     }
 

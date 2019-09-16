@@ -15,34 +15,32 @@
  */
 package org.commonjava.indy.bind.jaxrs.util;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.dto.CreationDTO;
 import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -50,64 +48,45 @@ import java.util.function.Consumer;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
 import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
 
-public final class ResponseUtils
+@ApplicationScoped
+public class ResponseHelper
 {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger( ResponseUtils.class );
+    private final static Logger LOGGER = LoggerFactory.getLogger( ResponseHelper.class );
 
-    private ResponseUtils()
-    {
-    }
+    @Inject
+    private ObjectMapper mapper;
 
-    public static Response formatRedirect( final URI uri )
-            throws URISyntaxException
-    {
-        return formatRedirect( uri, null );
-    }
+    @Inject
+    private IndyMetricsManager metricsManager;
 
-    public static Response formatRedirect( final URI uri, final Consumer<ResponseBuilder> builderModifier )
-            throws URISyntaxException
+    @Inject
+    private IndyMetricsConfig metricsConfig;
+
+    public Response formatRedirect( final URI uri )
     {
         ResponseBuilder builder = Response.status( Status.MOVED_PERMANENTLY ).location( uri );
-        if ( builderModifier != null )
-        {
-            builderModifier.accept( builder );
-        }
 
         return builder.build();
     }
 
-    public static Response formatCreatedResponse( final String baseUri, final UriFormatter uriFormatter,
-                                                  final String... params )
-            throws URISyntaxException
+//    public Response formatCreatedResponse( final String baseUri, final UriFormatter uriFormatter,
+//                                                  final String... params )
+//            throws URISyntaxException
+//    {
+//        final URI location = new URI( uriFormatter.formatAbsolutePathTo( baseUri, params ) );
+//        ResponseBuilder builder = Response.created( location );
+//
+//        return builder.build();
+//    }
+
+    public Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto )
     {
-        return formatCreatedResponse( baseUri, uriFormatter, null, params );
+        return formatCreatedResponseWithJsonEntity( location, dto, null );
     }
 
-    public static Response formatCreatedResponse( final String baseUri, final UriFormatter uriFormatter,
-                                                  final Consumer<ResponseBuilder> builderModifier,
-                                                  final String... params )
-            throws URISyntaxException
-    {
-        final URI location = new URI( uriFormatter.formatAbsolutePathTo( baseUri, params ) );
-        ResponseBuilder builder = Response.created( location );
-        if ( builderModifier != null )
-        {
-            builderModifier.accept( builder );
-        }
-
-        return builder.build();
-    }
-
-    public static Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto,
-                                                                final ObjectMapper objectMapper )
-    {
-        return formatCreatedResponseWithJsonEntity( location, dto, objectMapper, null );
-    }
-
-    public static Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto,
-                                                                final ObjectMapper objectMapper,
-                                                                final Consumer<ResponseBuilder> builderModifier )
+    public Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto,
+                                                         final Consumer<ResponseBuilder> builderModifier )
     {
         ResponseBuilder builder = null;
         if ( dto == null )
@@ -116,16 +95,9 @@ public final class ResponseUtils
         }
         else
         {
-            try
-            {
-                builder = Response.created( location )
-                                   .entity( objectMapper.writeValueAsString( dto ) )
-                                   .type( ApplicationContent.application_json );
-            }
-            catch ( final JsonProcessingException e )
-            {
-                return formatResponse( e, "Failed to serialize DTO to JSON: " + dto, builderModifier );
-            }
+            builder = Response.created( location )
+                              .entity( new DTOStreamingOutput( mapper, dto, metricsManager, metricsConfig ) )
+                              .type( ApplicationContent.application_json );
         }
 
         if ( builderModifier != null )
@@ -136,45 +108,44 @@ public final class ResponseUtils
         return builder.build();
     }
 
-    public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto )
-    {
-        return formatCreatedResponse( baseUri, dto, null );
-    }
+//    public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto )
+//    {
+//        return formatCreatedResponse( baseUri, dto, null );
+//    }
+//
+//    public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto,
+//                                                  final Consumer<ResponseBuilder> builderModifer )
+//    {
+//        ResponseBuilder builder = Response.created( dto.getUri() ).entity( dto.getJsonResponse() );
+//        if ( builderModifer != null )
+//        {
+//            builderModifer.accept( builder );
+//        }
+//
+//        return builder.build();
+//    }
 
-    public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto,
-                                                  final Consumer<ResponseBuilder> builderModifer )
-    {
-        ResponseBuilder builder = Response.created( dto.getUri() ).entity( dto.getJsonResponse() );
-        if ( builderModifer != null )
-        {
-            builderModifer.accept( builder );
-        }
-
-        return builder.build();
-    }
-
-    public static Response formatOkResponseWithJsonEntity( final String json )
+    public Response formatOkResponseWithJsonEntity( final String json )
     {
         return formatOkResponseWithEntity( json, ApplicationContent.application_json, null );
     }
 
-    public static Response formatOkResponseWithJsonEntity( final Object dto, final ObjectMapper objectMapper )
+    public Response formatOkResponseWithJsonEntity( final Object dto )
     {
-        return formatOkResponseWithJsonEntity( dto, objectMapper, null );
+        return formatOkResponseWithJsonEntity( dto, null );
     }
 
-    public static Response formatOkResponseWithJsonEntity( final Object dto, final ObjectMapper objectMapper,
-                                                           final Consumer<ResponseBuilder> builderModifier )
+    public Response formatOkResponseWithJsonEntity( final Object dto, final Consumer<ResponseBuilder> builderModifier )
     {
         if ( dto == null )
         {
             return Response.noContent().build();
         }
 
-        try
-        {
+//        try
+//        {
             ResponseBuilder builder =
-                    Response.ok( objectMapper.writeValueAsString( dto ), ApplicationContent.application_json );
+                    Response.ok( new DTOStreamingOutput( mapper, dto, metricsManager, metricsConfig ), ApplicationContent.application_json );
 
             if ( builderModifier != null )
             {
@@ -182,20 +153,20 @@ public final class ResponseUtils
             }
 
             return builder.build();
-        }
-        catch ( final JsonProcessingException e )
-        {
-            return formatResponse( e, "Failed to serialize DTO to JSON: " + dto, builderModifier );
-        }
+//        }
+//        catch ( final JsonProcessingException e )
+//        {
+//            return formatResponse( e, "Failed to serialize DTO to JSON: " + dto, builderModifier );
+//        }
     }
 
-    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final Transfer item, final StoreKey sk,
+    public ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final Transfer item, final StoreKey sk,
                                                   final String path, final boolean includeContentLength,
                                                   final String contentType,
                                                   final HttpExchangeMetadata exchangeMetadata )
             throws IndyWorkflowException
     {
-        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+        Logger logger = LoggerFactory.getLogger( ResponseHelper.class );
 
         boolean lastModSet = false;
         boolean lenSet = false;
@@ -275,34 +246,34 @@ public final class ResponseUtils
         return builder;
     }
 
-    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final File item,
-                                                  final boolean includeContentLength, final String contentType )
-            throws IndyWorkflowException
-    {
-        // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
-        builder.header( ApplicationHeader.content_type.key(), contentType );
+//    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final File item,
+//                                                  final boolean includeContentLength, final String contentType )
+//            throws IndyWorkflowException
+//    {
+//        // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
+//        builder.header( ApplicationHeader.content_type.key(), contentType );
+//
+//        builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
+//
+//        if ( includeContentLength )
+//        {
+//            builder.header( ApplicationHeader.content_length.key(), item.length() );
+//        }
+//
+//        return builder;
+//    }
 
-        builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
-
-        if ( includeContentLength )
-        {
-            builder.header( ApplicationHeader.content_length.key(), item.length() );
-        }
-
-        return builder;
-    }
-
-    public static Response formatResponseFromMetadata( final HttpExchangeMetadata metadata )
+    public Response formatResponseFromMetadata( final HttpExchangeMetadata metadata )
     {
         return formatResponseFromMetadata( metadata, null );
     }
 
-    public static Response formatResponseFromMetadata( final HttpExchangeMetadata metadata,
+    public Response formatResponseFromMetadata( final HttpExchangeMetadata metadata,
                                                        final Consumer<ResponseBuilder> builderModifier )
     {
         int code = metadata.getResponseStatusCode();
         // 500-level error; use 502 response.
-        Logger logger = LoggerFactory.getLogger( ResponseUtils.class );
+        Logger logger = LoggerFactory.getLogger( ResponseHelper.class );
         logger.info( "Formatting response with code: {}", code );
         ResponseBuilder builder = null;
         if ( code / 100 == 5 )
@@ -321,7 +292,7 @@ public final class ResponseUtils
         return builder.build();
     }
 
-    public static Response formatOkResponseWithEntity( final Object output, final String contentType,
+    public Response formatOkResponseWithEntity( final Object output, final String contentType,
                                                        final Consumer<ResponseBuilder> builderModifier )
     {
         ResponseBuilder builder = Response.ok( output ).type( contentType );
@@ -333,12 +304,12 @@ public final class ResponseUtils
         return builder.build();
     }
 
-    public static Response formatOkResponseWithEntity( final Object output, final String contentType )
+    public Response formatOkResponseWithEntity( final Object output, final String contentType )
     {
         return formatOkResponseWithEntity( output, contentType, null );
     }
 
-    public static Response formatBadRequestResponse( final String error,
+    public Response formatBadRequestResponse( final String error,
                                                      final Consumer<ResponseBuilder> builderModifier )
     {
         final String msg = "{\"error\": \"" + error + "\"}\n";
@@ -352,105 +323,105 @@ public final class ResponseUtils
         return builder.build();
     }
 
-    public static Response formatBadRequestResponse( final String error )
+    public Response formatBadRequestResponse( final String error )
     {
         return formatBadRequestResponse( error, null );
     }
 
-    public static Response formatResponse( final Throwable error, final Consumer<ResponseBuilder> builderModifier )
+    public Response formatResponse( final Throwable error, final Consumer<ResponseBuilder> builderModifier )
     {
         return formulateResponse( null, error, null, false, builderModifier );
     }
 
-    public static Response formatResponse( final Throwable error )
+    public Response formatResponse( final Throwable error )
     {
         return formulateResponse( null, error, null, false, null );
     }
 
-    public static void throwError( final Throwable error, final Consumer<ResponseBuilder> builderModifier )
+    public void throwError( final Throwable error, final Consumer<ResponseBuilder> builderModifier )
     {
         formulateResponse( null, error, null, true, builderModifier );
     }
 
-    public static void throwError( final Throwable error )
+    public void throwError( final Throwable error )
     {
         formulateResponse( null, error, null, true, null );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final Throwable error,
+    public Response formatResponse( final ApplicationStatus status, final Throwable error,
                                            final Consumer<ResponseBuilder> builderModifier )
     {
         return formulateResponse( status, error, null, false, builderModifier );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final Throwable error )
+    public Response formatResponse( final ApplicationStatus status, final Throwable error )
     {
         return formulateResponse( status, error, null, false, null );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final String message )
+    public Response formatResponse( final ApplicationStatus status, final String message )
     {
         return formulateResponse( status, null, message, false, null );
     }
 
-    public static void throwError( final ApplicationStatus status, final Throwable error,
+    public void throwError( final ApplicationStatus status, final Throwable error,
                                    final Consumer<ResponseBuilder> builderModifier )
     {
         formulateResponse( status, error, null, true, builderModifier );
     }
 
-    public static void throwError( final ApplicationStatus status, final Throwable error )
+    public void throwError( final ApplicationStatus status, final Throwable error )
     {
         formulateResponse( status, error, null, true, null );
     }
 
-    public static Response formatResponse( final Throwable error, final String message,
+    public Response formatResponse( final Throwable error, final String message,
                                            final Consumer<ResponseBuilder> builderModifier )
     {
         return formulateResponse( null, error, message, false, builderModifier );
     }
 
-    public static Response formatResponse( final Throwable error, final String message )
+    public Response formatResponse( final Throwable error, final String message )
     {
         return formulateResponse( null, error, message, false, null );
     }
 
-    public static void throwError( final Throwable error, final String message,
+    public void throwError( final Throwable error, final String message,
                                    final Consumer<ResponseBuilder> builderModifier )
     {
 
         formulateResponse( null, error, message, true, builderModifier );
     }
 
-    public static void throwError( final Throwable error, final String message )
+    public void throwError( final Throwable error, final String message )
     {
         formulateResponse( null, error, message, true, null );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final Throwable error, final String message,
+    public Response formatResponse( final ApplicationStatus status, final Throwable error, final String message,
                                            final Consumer<ResponseBuilder> builderModifier )
     {
 
         return formulateResponse( status, error, message, false, builderModifier );
     }
 
-    public static Response formatResponse( final ApplicationStatus status, final Throwable error, final String message )
+    public Response formatResponse( final ApplicationStatus status, final Throwable error, final String message )
     {
         return formulateResponse( status, error, message, false, null );
     }
 
-    public static void throwError( final ApplicationStatus status, final Throwable error, final String message,
+    public void throwError( final ApplicationStatus status, final Throwable error, final String message,
                                    final Consumer<ResponseBuilder> builderModifier )
     {
         formulateResponse( status, error, message, true, builderModifier );
     }
 
-    public static void throwError( final ApplicationStatus status, final Throwable error, final String message )
+    public void throwError( final ApplicationStatus status, final Throwable error, final String message )
     {
         formulateResponse( status, error, message, true, null );
     }
 
-    private static Response formulateResponse( final ApplicationStatus status, final Throwable error,
+    private Response formulateResponse( final ApplicationStatus status, final Throwable error,
                                                final String message, final boolean throwIt,
                                                Consumer<ResponseBuilder> builderModifier )
     {
@@ -499,29 +470,29 @@ public final class ResponseUtils
         return response;
     }
 
-    public static String generateErrorId()
+    public String generateErrorId()
     {
         return DigestUtils.sha256Hex( Thread.currentThread().getName() );
 
         //+ "@" + new SimpleDateFormat( "yyyy-MM-ddThhmmss.nnnZ" ).format( new Date() );
     }
 
-    public static CharSequence formatEntity( final Throwable error )
+    public CharSequence formatEntity( final Throwable error )
     {
         return formatEntity( generateErrorId(), error, null );
     }
 
-    public static CharSequence formatEntity( final String id, final Throwable error )
+    public CharSequence formatEntity( final String id, final Throwable error )
     {
         return formatEntity( id, error, null );
     }
 
-    public static CharSequence formatEntity( final Throwable error, final String message )
+    public CharSequence formatEntity( final Throwable error, final String message )
     {
         return formatEntity( generateErrorId(), error, message );
     }
 
-    public static CharSequence formatEntity( final String id, final Throwable error, final String message )
+    public CharSequence formatEntity( final String id, final Throwable error, final String message )
     {
         final StringWriter sw = new StringWriter();
         sw.append( "Id: " ).append( id ).append( "\n" );
@@ -547,7 +518,7 @@ public final class ResponseUtils
         return sw.toString();
     }
 
-    public static ResponseBuilder markDeprecated( final ResponseBuilder rb, final String alt )
+    public ResponseBuilder markDeprecated( final ResponseBuilder rb, final String alt )
     {
         return rb.header( ApplicationHeader.deprecated.key(), alt );
     }

@@ -52,10 +52,19 @@ public class GoldenSignalsMetricSet
 
     public static final String FN_REPO_MGMT = "repo.mgmt";
 
+    public static final String FN_MAVEN_UPLOAD = "maven.upload";
+
+    public static final String FN_MAVEN_DOWNLOAD = "maven.download";
+
+    public static final String FN_NPM_UPLOAD = "npm.upload";
+
+    public static final String FN_NPM_DOWNLOAD = "npm.download";
+
     private static final String[] FUNCTIONS = {
             FN_CONTENT, FN_CONTENT_MAVEN, FN_CONTENT_NPM, FN_CONTENT_GENERIC,
             FN_METADATA, FN_METADATA_MAVEN, FN_METADATA_NPM,
-            FN_PROMOTION, FN_TRACKING_RECORD, FN_CONTENT_LISTING, FN_REPO_MGMT
+            FN_PROMOTION, FN_TRACKING_RECORD, FN_CONTENT_LISTING, FN_REPO_MGMT,
+            FN_MAVEN_UPLOAD, FN_MAVEN_DOWNLOAD, FN_NPM_UPLOAD, FN_NPM_DOWNLOAD
     };
 
     private Map<String, GoldenSignalsFunctionMetrics> functionMetrics = new HashMap<>();

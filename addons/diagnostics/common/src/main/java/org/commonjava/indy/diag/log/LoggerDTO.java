@@ -1,0 +1,81 @@
+/**
+ * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.commonjava.indy.diag.log;
+
+import java.util.List;
+
+public class LoggerDTO
+{
+    private String name;
+
+    private String level;
+
+    private List<String> appenders;
+
+    private Boolean additive;
+
+    private String originalLevel;
+
+    public String getName()
+    {
+        return name;
+    }
+
+    public void setName( String name )
+    {
+        this.name = name;
+    }
+
+    public String getLevel()
+    {
+        return level;
+    }
+
+    public void setLevel( String level )
+    {
+        this.level = level;
+    }
+
+    public List<String> getAppenders()
+    {
+        return appenders;
+    }
+
+    public void setAppenders( List<String> appenders )
+    {
+        this.appenders = appenders;
+    }
+
+    public Boolean getAdditive()
+    {
+        return additive;
+    }
+
+    public void setAdditive( Boolean additive )
+    {
+        this.additive = additive;
+    }
+
+    public String getOriginalLevel()
+    {
+        return originalLevel;
+    }
+
+    public void setOriginalLevel( String originalLevel )
+    {
+        this.originalLevel = originalLevel;
+    }
+}

@@ -144,11 +144,10 @@ public class PromotionValidator
 
         if ( set != null )
         {
-
-            logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
-
             result.setRuleSet( set.getName() );
             MDC.put( PROMOTION_VALIDATION_RULE_SET, set.getName() );
+
+            logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
 
             List<String> ruleNames = set.getRuleNames();
             if ( ruleNames != null && !ruleNames.isEmpty() )
@@ -296,7 +295,7 @@ public class PromotionValidator
 
             if ( StringUtils.isNotEmpty( error ) )
             {
-                logger.debug( "{} failed", rule.getName() );
+                logger.debug( "{} failed with error: {}", rule.getName(), error );
                 result.addValidatorError( rule.getName(), error );
             }
             else
