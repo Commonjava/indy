@@ -40,7 +40,7 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
 
     @Test
-    public void testRemoteRepositoryValidation() throws Exception {
+    public void run() throws Exception {
 
         assertNotNull(validator);
 
@@ -75,7 +75,7 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
 
         assertNotNull( validateData );
-        assertTrue(validateData.isValid());
+        assertFalse(validateData.isValid());
 //        assertEquals(Integer.toString(200), validateData.getErrors().get("HTTP_GET_STATUS"));
 //        assertEquals(Integer.toString(200), validateData.getErrors().get("HTTP_HEAD_STATUS"));
     }
