@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-implied-repos</artifactId>
-    <version>1.9.3</version>
+    <version>1.9.4-SNAPSHOT</version>
   </parent>
   
   <artifactId>indy-ftests-implied-repos</artifactId>
