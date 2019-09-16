@@ -53,6 +53,7 @@ public class DefaultStoreValidator implements StoreValidator {
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
+                    LOGGER.error("=> Remote Repository is disabled: ", remoteRepository);
                     return disabledRemoteRepositoryData(remoteRepository);
                 }
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
@@ -60,6 +61,7 @@ public class DefaultStoreValidator implements StoreValidator {
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
                 if(configuration.isSSLRequired()
                     && !remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
+                    LOGGER.error("=> Check if Allowed: ", remoteRepository.getUrl());
                     ArtifactStoreValidateData allowedByRule = compareRemoteHostToAllowedHostnames(remoteUrl,remoteRepository);
                     // If this Non-SSL remote repository is not allowed by provided rules from configuration
                     // then return valid=false data object
@@ -81,7 +83,7 @@ public class DefaultStoreValidator implements StoreValidator {
         }
         catch (Exception e) {
             LOGGER.error(" => Not Valid Remote Repository, \n => Exception: " + e);
-            errors.put(StoreValidationConstants.GENERAL, e.getMessage());
+            errors.put(StoreValidationConstants.GENERAL, e.getStackTrace().toString());
             return new ArtifactStoreValidateData
                 .Builder(artifactStore.getKey())
                 .setRepositoryUrl( remoteUrl.get().toExternalForm() )
@@ -104,35 +106,24 @@ public class DefaultStoreValidator implements StoreValidator {
         }
     }
 
-    private boolean allowedNonSSLHostname(String remoteHost, String host) {
+    private boolean allowedNonSSLHostname(String allowedHost, String remoteHost) {
+        // Get Allowed Host name like string parts separated on "." from repo hostname.
+        String[] allowedHostPartsTrimed = getHostnamesTrimed(allowedHost);
+        int allowedHostPartsLength = allowedHostPartsTrimed.length;
         // Get Remote Host name like string parts separated on "." from repo hostname.
-        String[] remoteHostPartsTrimed =
-                                        Arrays.asList(remoteHost.split("\\."))
-                                            .stream()
-                                            .map(val -> val.trim())
-                                            .collect(Collectors.toList())
-                                            .toArray(new String[0]);
-        int remoteHostPartsLength = remoteHostPartsTrimed.length;
-        String[] hostParts = host.split("\\.");
-        int hostPartsLength = hostParts.length;
+        String[] remoteHostPartsTrimed = getHostnamesTrimed(remoteHost);
+        int hostPartsLength = remoteHostPartsTrimed.length;
+        // Create Cursor
         int i = 1;
-        int iter = remoteHostPartsLength;
+        int iter = allowedHostPartsLength;
         // Iterate through separated allowed hostnames and remote repo hostname and check their equality
+        // if "*" is on last position then allow that subdomain
         while (iter > 0) {
-            String partRemoteHost = remoteHostPartsTrimed[remoteHostPartsLength - i];
-
-            if(i > (hostPartsLength-1)) {
-                return true;
-            }
-            String partHost = hostParts[hostPartsLength - i];
-            // Case if there is "*" character for allowed repos then all variants are accepted from remote repo.
-            if(partRemoteHost.equalsIgnoreCase(partHost)
-                || (partRemoteHost.equalsIgnoreCase("*") || partRemoteHost.equals("") )) {
-                iter--;
-            } else {
-                return false;
-            }
-            i++;
+            String partAlowed = allowedHostPartsTrimed[allowedHostPartsLength - i];
+            String partRemote = remoteHostPartsTrimed[hostPartsLength - i];
+            if(partAlowed.equals("*")) { return true; }
+            if(partAlowed.equalsIgnoreCase(partRemote)) { i++;iter--;}
+            else { return false; }
         }
         return true;
     }
@@ -197,6 +188,7 @@ public class DefaultStoreValidator implements StoreValidator {
                 );
                 return new ArtifactStoreValidateData
                     .Builder(remoteRepository.getKey())
+                    .setRepositoryUrl(remoteUrl.get().toExternalForm())
                     .setErrors(errors)
                     .setValid(true)
                     .build();
@@ -206,6 +198,7 @@ public class DefaultStoreValidator implements StoreValidator {
         }
         return new ArtifactStoreValidateData
             .Builder(remoteRepository.getKey())
+            .setRepositoryUrl(remoteUrl.get().toExternalForm())
             .setErrors(errors)
             .setValid(false)
             .build();
@@ -242,5 +235,14 @@ public class DefaultStoreValidator implements StoreValidator {
                 .setErrors(errors)
                 .build();
         }
+    }
+
+    private String[] getHostnamesTrimed(String hostnames) {
+        return
+            Arrays.asList(hostnames.split("\\."))
+            .stream()
+            .map(val -> val.trim())
+            .collect(Collectors.toList())
+            .toArray(new String[0]);
     }
 }
