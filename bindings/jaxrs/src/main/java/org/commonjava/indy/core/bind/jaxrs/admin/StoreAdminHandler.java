@@ -135,6 +135,7 @@ public class StoreAdminHandler
     @Inject
     private SecurityManager securityManager;
 
+<<<<<<< HEAD
     @Inject
 <<<<<<< HEAD
     StoreValidator storeValidator;
@@ -143,6 +144,8 @@ public class StoreAdminHandler
 =======
     private ResponseHelper responseHelper;
 >>>>>>> upstream/master
+=======
+>>>>>>> Change based on comments from PR NOS-1889.1891.1892_Comment_Changes
 
     public StoreAdminHandler()
     {
@@ -548,7 +551,8 @@ public class StoreAdminHandler
             List<ArtifactStore> allArtifactStores = adminController.getAllOfType(packageType, storeType);
 
             for(ArtifactStore artifactStore: allArtifactStores) {
-                result = storeValidator.validate(artifactStore);
+                // Validate this Store
+                result = adminController.validateStore(artifactStore);
                 results.put(artifactStore.getKey().toString(), result.getErrors().toString());
 
             }
@@ -589,8 +593,8 @@ public class StoreAdminHandler
             StoreType storeType = StoreType.get(type);
             StoreKey storeKey = new StoreKey(packageType, storeType, name);
             ArtifactStore artifactStore = adminController.get(storeKey);
-
-            result = storeValidator.validate(artifactStore);
+            // Validate this Store
+            result = adminController.validateStore(artifactStore);
             response = formatOkResponseWithJsonEntity(result, objectMapper);
 
         } catch (IndyDataException ide) {

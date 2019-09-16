@@ -50,17 +50,16 @@ public class DefaultStoreValidator implements StoreValidator {
             if(StoreType.remote == artifactStore.getType()) {
                 // Cast to Remote Repository
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
-                boolean disabled = remoteRepository.isDisabled();
-                if(disabled) {
+                // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
+                if(remoteRepository.isDisabled()) {
                     errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Remote Repository is disabled");
                     return new ArtifactStoreValidateData
                         .Builder(remoteRepository.getKey())
                         .setValid(true)
                         .setErrors(errors)
                         .build();
-                    //throw new InvalidArtifactStoreException("Disabled Store", null, null);
                 }
-                //Validate URL from remote Repository URL
+                //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
                 if(configuration.isSSLRequired()
@@ -72,7 +71,7 @@ public class DefaultStoreValidator implements StoreValidator {
                     boolean allowedByRule = false;
 
                     for(String remoteHost : remoteNoSSLHosts) {
-                        LOGGER.warn("\n=> Validating RemoteHost: " + remoteHost + " For Host: " + host + "\n");
+                        LOGGER.warn("=> Validating RemoteHost: " + remoteHost + " For Host: " + host + "\n");
                         // .apache.org , 10.192. , .maven.redhat.com
                         if(allowedNonSSLHostname(remoteHost,host)) {
                             errors.put(StoreValidationConstants.ALLOWED_SSL,remoteUrl.get().toString());
@@ -156,6 +155,7 @@ public class DefaultStoreValidator implements StoreValidator {
     }
 
     private boolean allowedNonSSLHostname(String remoteHost, String host) {
+        // Get Remote Host name like string parts separated on "." from repo hostname.
         String[] remoteHostPartsTrimed =
                                         Arrays.asList(remoteHost.split("\\."))
                                             .stream()
@@ -167,6 +167,7 @@ public class DefaultStoreValidator implements StoreValidator {
         int hostPartsLength = hostParts.length;
         int i = 1;
         int iter = remoteHostPartsLength;
+        // Iterate through separated allowed hostnames and remote repo hostname and check their equality
         while (iter > 0) {
             String partRemoteHost = remoteHostPartsTrimed[remoteHostPartsLength - i];
 
@@ -174,7 +175,7 @@ public class DefaultStoreValidator implements StoreValidator {
                 return true;
             }
             String partHost = hostParts[hostPartsLength - i];
-
+            // Case if there is "*" character for allowed repos then all variants are accepted from remote repo.
             if(partRemoteHost.equalsIgnoreCase(partHost)
                 || (partRemoteHost.equalsIgnoreCase("*") || partRemoteHost.equals("") )) {
                 iter--;

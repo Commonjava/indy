@@ -67,6 +67,8 @@ public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
             throws IOException
     {
         writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
+        writeConfigFile( "conf.d/internal_validation.conf", "[internal]\n_internal.store.validation.enabled=false" );
+
     }
 
     @Override

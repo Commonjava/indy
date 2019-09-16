@@ -14,9 +14,9 @@ import java.io.InputStream;
 @SectionName( InternalFeatureConfig.SECTION_NAME )
 public class InternalFeatureConfig implements IndyConfigInfo {
 
-    public final static String SECTION_NAME = "ssl_validation";
+    public final static String SECTION_NAME = "internal";
 
-    private Boolean sslValidation;
+    private Boolean storeValidation;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -24,13 +24,13 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     }
 
     public Boolean getSslValidation() {
-        return sslValidation == null ? Boolean.TRUE : sslValidation;
+        return storeValidation == null ? Boolean.TRUE : storeValidation;
     }
 
     @ConfigName("_internal.store.validation.enabled")
     public void setSslValidation(Boolean sslValidation) {
         logger.warn("=> SSl Validation value set to : " + sslValidation);
-        this.sslValidation = sslValidation;
+        this.storeValidation = sslValidation;
     }
 
     @Override
