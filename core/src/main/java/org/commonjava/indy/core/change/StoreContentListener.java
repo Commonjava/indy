@@ -160,7 +160,7 @@ public class StoreContentListener
         clearPaths( removed, allPath(), groups, deleteOriginPath );
     }
 
-    public int clearPath( String path, ArtifactStore store )
+    private int clearPath( String path, ArtifactStore store )
     {
         logger.info( "Clear path: {}, store: {}", path, store.getKey() );
         try
@@ -178,7 +178,7 @@ public class StoreContentListener
         return 1;
     }
 
-    public int clearPath( String path, ArtifactStore origin, Set<Group> affectedGroups, boolean deleteOriginPath )
+    private int clearPath( String path, ArtifactStore origin, Set<Group> affectedGroups, boolean deleteOriginPath )
     {
         logger.info( "Clear path: {}, origin: {}, affectedGroups: {}", path, origin.getKey(), affectedGroups );
 
@@ -221,7 +221,7 @@ public class StoreContentListener
         return cleared.get();
     }
 
-    public void clearPaths( Set<StoreKey> keys, Predicate<? super String> pathFilter, boolean deleteOriginPath )
+    private void clearPaths( Set<StoreKey> keys, Predicate<? super String> pathFilter, boolean deleteOriginPath )
     {
         clearPaths( keys, pathFilter, null, deleteOriginPath );
     }
@@ -232,7 +232,7 @@ public class StoreContentListener
      * If groups are given, use them (for group update since all members share same group hierarchy). Otherwise,
      * query the affected groups (for store deletion and dis/enable event).
      */
-    public void clearPaths( final Set<StoreKey> keys, Predicate<? super String> pathFilter, final Set<Group> groups,
+    private void clearPaths( final Set<StoreKey> keys, Predicate<? super String> pathFilter, final Set<Group> groups,
                             final boolean deleteOriginPath )
     {
         //NOSSUP-76 we still need to use synchronized/drain way to clean the paths now, because sometimes the new used metadata
@@ -275,7 +275,7 @@ public class StoreContentListener
         drainAndCount( clearService, "stores: " + keys );
     }
 
-    public int drainAndCount( final DrainingExecutorCompletionService<Integer> clearService, final String description )
+    private int drainAndCount( final DrainingExecutorCompletionService<Integer> clearService, final String description )
     {
         AtomicInteger count = new AtomicInteger( 0 );
         try
@@ -313,7 +313,7 @@ public class StoreContentListener
         }
     }
 
-    public Predicate<? super String> mergablePath()
+    private Predicate<? super String> mergablePath()
     {
         return ( path ) -> {
             SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( path );
@@ -324,7 +324,7 @@ public class StoreContentListener
     /**
      * Clean all paths including http-metadata, checksum, etc, for complete data integrity.
      */
-    public Predicate<? super String> allPath()
+    private Predicate<? super String> allPath()
     {
         return ( path ) -> true;
     }
