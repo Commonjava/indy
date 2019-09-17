@@ -42,11 +42,11 @@
         <module>docker</module>
       </modules>
     </profile>
-    <profile>
+<!--     <profile>
       <id>release</id>
       <modules>
         <module>docker</module>
       </modules>
-    </profile>
+    </profile> -->
   </profiles>
 </project>
