@@ -143,7 +143,6 @@ public class ScheduleManager
 
     @PostConstruct
     public void init()
-            throws IndyLifecycleException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -153,7 +152,6 @@ public class ScheduleManager
 
         // register this producer as schedule cache listener
         registerCacheListener( scheduleCache );
-//        registerCacheListener( scheduleEventLockCache );
     }
 
     private <K,V> void registerCacheListener(CacheHandle<K, V> cache){
