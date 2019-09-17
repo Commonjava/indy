@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-sli</artifactId>
-    <version>1.9.4</version>
+    <version>1.9.5-SNAPSHOT</version>
   </parent>
   <artifactId>indy-sli-jaxrs</artifactId>
   <name>Indy :: Add-Ons :: Service Level Indicators Reporting :: JAX-RS</name>
