@@ -293,13 +293,13 @@ public abstract class AbstractStoreDataManager
             ArtifactStoreValidateData validateData = null ;
             try {
 
-                logger.warn("=> [AbstractStoreDataManager] Check Config: " + configuration );
-
                 if(internalFeatureConfig.getSslValidation() ) {
                     validateData = storeValidator.validate(store);
 //                    logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
                     // if it is not valid then disable that repository
-                    if(!validateData.isValid()) {
+                    if(!validateData.isValid() && configuration.isSSLRequired()) {
+                        logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
+                            "with name: " + store.getName());
                         disableNotValidStore(store,validateData);
                     }
                 }

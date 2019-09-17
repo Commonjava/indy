@@ -309,7 +309,7 @@ public class DefaultIndyConfiguration
     @Override
     public boolean isSSLRequired()
     {
-        return this.sslRequired == null ? false : this.sslRequired;
+        return this.sslRequired == null ? true : this.sslRequired;
     }
     
     @ConfigName(value = "remote.nossl.hosts")

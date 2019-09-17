@@ -53,15 +53,17 @@ public class DefaultStoreValidator implements StoreValidator {
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
-                    LOGGER.error("=> Remote Repository is disabled: ", remoteRepository);
+                    LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository);
                     return disabledRemoteRepositoryData(remoteRepository);
                 }
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
+                LOGGER.info("=> Remote Repository Protocol: " + remoteUrl.get().getProtocol());
+                LOGGER.info("=> SSL Required: " + configuration.isSSLRequired());
                 if(configuration.isSSLRequired()
                     && !remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
-                    LOGGER.error("=> Check if Allowed: ", remoteRepository.getUrl());
+                    LOGGER.info("=> Check if Allowed: ", remoteRepository.getUrl());
                     ArtifactStoreValidateData allowedByRule = compareRemoteHostToAllowedHostnames(remoteUrl,remoteRepository);
                     // If this Non-SSL remote repository is not allowed by provided rules from configuration
                     // then return valid=false data object
@@ -164,10 +166,11 @@ public class DefaultStoreValidator implements StoreValidator {
 
     private ArtifactStoreValidateData disabledRemoteRepositoryData(RemoteRepository remoteRepository) {
         HashMap<String, String> errors = new HashMap<>();
-        errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Remote Repository is disabled");
+        errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Not Allowed NoSSL Remote Repository");
         return new ArtifactStoreValidateData
             .Builder(remoteRepository.getKey())
-            .setValid(true)
+            .setRepositoryUrl(remoteRepository.getUrl())
+            .setValid(false)
             .setErrors(errors)
             .build();
     }
