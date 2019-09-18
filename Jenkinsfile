@@ -7,6 +7,7 @@ pipeline {
         stage('Prepare') {
             steps {
                 sh 'printenv'
+                sh "ls -la $HOME"
             }
         }
         stage('Build') {
