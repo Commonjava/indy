@@ -83,6 +83,11 @@ public class KojijiProvider
     @Override
     public void start() throws IndyLifecycleException
     {
+    }
+
+    @PostConstruct
+    public void setUp() throws KojiClientException
+    {
         if ( !config.isEnabled() )
         {
             return;
@@ -99,20 +104,13 @@ public class KojijiProvider
             kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
         }
 
-        try
+        if ( indyMetricsConfig.isKojiMetricEnabled() )
         {
-            if ( indyMetricsConfig.isKojiMetricEnabled() )
-            {
-                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
-            }
-            else
-            {
-                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
-            }
+            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
         }
-        catch ( KojiClientException e )
+        else
         {
-            throw new IndyLifecycleException( "Failed to initialize Koji client.", e );
+            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
         }
 
         versionMetadataLocks = new Locker<>();
