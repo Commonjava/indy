@@ -17,6 +17,7 @@ package org.commonjava.indy.pkg.maven.content;
 
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.MergedContentAction;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.slf4j.Logger;
@@ -49,6 +50,7 @@ public class MetadataMergeListener
      * if that path of file changed in the member of #originatingStore
      */
     @Override
+    @Measure
     public void clearMergedPath( ArtifactStore originatingStore, Set<Group> affectedGroups, String path )
     {
         logger.debug( "Clear merged path {}, origin: {}, affected: {}", path, originatingStore, affectedGroups );

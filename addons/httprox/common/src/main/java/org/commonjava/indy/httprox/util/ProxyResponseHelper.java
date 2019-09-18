@@ -56,12 +56,12 @@ import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static java.lang.Integer.parseInt;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CONTENT_ENTRY_POINT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.METADATA_CONTENT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_ENTRY_POINT;
+import static org.commonjava.indy.metrics.RequestContextHelper.METADATA_CONTENT;
+import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;

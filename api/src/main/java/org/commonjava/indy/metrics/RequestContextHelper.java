@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.bind.jaxrs;
+package org.commonjava.indy.metrics;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.slf4j.MDC;
@@ -70,6 +70,11 @@ public class RequestContextHelper
         return getContext( END_NANOS, System.nanoTime() );
     }
 
+    public static long getRawNanos()
+    {
+        return getContext( RAW_NANOS, 0L );
+    }
+
     // Scope annotations
 
     @Target( { FIELD } )
@@ -85,6 +90,9 @@ public class RequestContextHelper
     private @interface Thread{}
 
     //
+
+    @Thread
+    public static final String RAW_NANOS = "raw-nanos";
 
     @Thread
     public static final String END_NANOS = "latency-end-nanos";

@@ -40,13 +40,13 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CLIENT_ADDR;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.EXTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.INTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PREFERRED_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_START;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.X_FORWARDED_FOR;
+import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 
 @ApplicationScoped
 public class ResourceManagementFilter

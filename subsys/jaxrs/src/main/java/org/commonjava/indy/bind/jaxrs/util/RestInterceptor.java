@@ -23,12 +23,12 @@ import javax.interceptor.InvocationContext;
 import javax.ws.rs.Path;
 import java.nio.file.Paths;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_CLASS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_CLASS_PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_ENDPOINT_PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REST_METHOD_PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.REST_CLASS;
+import static org.commonjava.indy.metrics.RequestContextHelper.REST_CLASS_PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.REST_ENDPOINT_PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.REST_METHOD_PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 
 @Interceptor
 @REST

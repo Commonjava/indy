@@ -159,6 +159,7 @@ public class DefaultGalleyStorageProvider
     private void setupTransferDecoratorPipeline()
     {
         List<TransferDecorator> decorators = new ArrayList<>();
+        decorators.add( new UploadLatencyDecorator());
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
         decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, metricRegistry ) );
         for ( TransferDecorator decorator : transferDecorators )

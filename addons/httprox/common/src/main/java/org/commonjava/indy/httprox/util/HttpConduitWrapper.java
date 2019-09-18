@@ -39,8 +39,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.ChannelUtils.DEFAULT_READ_BUF_SIZE;
 import static org.commonjava.indy.httprox.util.ChannelUtils.flush;
 import static org.commonjava.indy.httprox.util.ChannelUtils.write;

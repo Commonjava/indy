@@ -45,8 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class ResponseHelper

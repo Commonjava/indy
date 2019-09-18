@@ -17,7 +17,7 @@ package org.commonjava.indy.httprox.handler;
 
 import com.codahale.metrics.MetricRegistry;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.bind.jaxrs.RequestContextHelper;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
@@ -41,10 +41,10 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 import javax.inject.Inject;
 import java.io.IOException;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_START;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 
