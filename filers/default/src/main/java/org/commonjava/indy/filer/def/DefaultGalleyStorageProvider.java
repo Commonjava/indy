@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.filer.def;
 
+import com.codahale.metrics.MetricRegistry;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftScheduledExecutor;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -97,6 +98,9 @@ public class DefaultGalleyStorageProvider
     @Inject
     private Instance<TransferDecorator> transferDecorators;
 
+    @Inject
+    private MetricRegistry metricRegistry;
+
     private TransportManagerConfig transportManagerConfig;
 
     private TransferDecoratorManager transferDecorator;
@@ -156,7 +160,7 @@ public class DefaultGalleyStorageProvider
     {
         List<TransferDecorator> decorators = new ArrayList<>();
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
-        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager ) );
+        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, metricRegistry ) );
         for ( TransferDecorator decorator : transferDecorators )
         {
             decorators.add( decorator );
@@ -228,7 +232,7 @@ public class DefaultGalleyStorageProvider
             return result;
         };
 
-        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager,
+        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager, metricRegistry,
                                                   contentMetadataConsumer, new Md5GeneratorFactory(),
                                                   new Sha1GeneratorFactory(), new Sha256GeneratorFactory() );
     }
