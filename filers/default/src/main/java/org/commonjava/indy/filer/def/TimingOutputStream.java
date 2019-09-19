@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class TimingOutputStream
         extends FilterOutputStream
 {
-    private long nanos = -1L;
+    private Long nanos;
 
     public TimingOutputStream( final OutputStream stream )
     {
@@ -22,7 +22,7 @@ public class TimingOutputStream
     public void write( final int b )
             throws IOException
     {
-        if ( nanos < 0 )
+        if ( nanos == null )
         {
             nanos = System.nanoTime();
         }
@@ -34,7 +34,7 @@ public class TimingOutputStream
     public void write( final byte[] b )
             throws IOException
     {
-        if ( nanos < 0 )
+        if ( nanos == null )
         {
             nanos = System.nanoTime();
         }
@@ -46,7 +46,7 @@ public class TimingOutputStream
     public void write( final byte[] b, final int off, final int len )
             throws IOException
     {
-        if ( nanos < 0 )
+        if ( nanos == null )
         {
             nanos = System.nanoTime();
         }
@@ -60,6 +60,9 @@ public class TimingOutputStream
     {
         super.close();
 
-        RequestContextHelper.setContext( RequestContextHelper.RAW_NANOS, System.nanoTime() - nanos );
+        if ( nanos != null )
+        {
+            RequestContextHelper.setContext( RequestContextHelper.RAW_NANOS, System.nanoTime() - nanos );
+        }
     }
 }
