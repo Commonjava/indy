@@ -21,13 +21,13 @@ import java.net.MalformedURLException;
 import static org.junit.Assert.*;
 import static org.hamcrest.core.Is.*;
 
-//@RunWith( WeldJUnit4Runner.class)
+
 public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
-//    @Inject
+
     StoreValidator validator;
 
-//    @Inject
+
     SslValidationConfig configuration;
 
 
@@ -54,63 +54,72 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
         RemoteRepository validRepoSsl =
             new RemoteRepository( "maven", "validation", "https://repo.maven.apache.org/maven2/" );
 
-        LOGGER.warn("=> Start Validating RemoteRepository: " + validRepoSsl.getUrl());
+        LOGGER.warn("=> Start Validating RemoteRepository: [" + validRepoSsl.getUrl()+"]");
         RemoteRepository remoteRepository = client.stores().create(validRepoSsl, changelog, RemoteRepository.class);
 
 
-//        ArtifactStoreValidateData validateDataSsl = validator.validate(remoteRepository);
-//        LOGGER.warn("=> Valid SSL ArtifactStoreValidateData: " + validateDataSsl.toString());
+        ArtifactStoreValidateData validateDataSsl = validator.validate(remoteRepository);
+        LOGGER.warn("=> Returned [Valid SSL] ArtifactStoreValidateData: " + validateDataSsl.toString());
 
 
-//        assertNotNull( validateDataSsl );
-//        assertTrue(validateDataSsl.isValid());
-//        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_GET_STATUS")));
-//        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_HEAD_STATUS")));
+        assertNotNull( validateDataSsl );
+        assertTrue(validateDataSsl.isValid());
+        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_GET_STATUS")));
+        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_HEAD_STATUS")));
 
         RemoteRepository validRepo =
             new RemoteRepository( "maven", "validation-test-nossl", "http://repo.maven.apache.org/maven2/" );
 
-        LOGGER.warn("=> Start Validating RemoteRepository: " + validRepo.getUrl());
+        LOGGER.warn("=> Start Validating RemoteRepository: [" + validRepo.getUrl()+"]");
         RemoteRepository remoteRepository1 = client.stores().create(validRepo, changelog, RemoteRepository.class);
 
 
-//        ArtifactStoreValidateData validateData = validator.validate(remoteRepository1);
-//        LOGGER.warn("=> Not Valid SSL ArtifactStoreValidateData: " + validateData.toString());
+        ArtifactStoreValidateData validateData = validator.validate(remoteRepository1);
+        LOGGER.warn("=> Returned [Not Valid SSL] ArtifactStoreValidateData: " + validateData.toString());
 
 
-//        assertNotNull( validateData );
-//        assertFalse(validateData.isValid());
-//        assertNull(validateData.getErrors().get("HTTP_GET_STATUS"));
-//        assertNull(validateData.getErrors().get("HTTP_HEAD_STATUS"));
-//        assertNotNull( validateData.getErrors().get("disabled") );
+        assertNotNull( validateData );
+        assertFalse(validateData.isValid());
+        assertNull(validateData.getErrors().get("HTTP_GET_STATUS"));
+        assertNull(validateData.getErrors().get("HTTP_HEAD_STATUS"));
+        assertNotNull( validateData.getErrors().get("disabled") );
 
         RemoteRepository notValidUrlRepo =
             new RemoteRepository( "maven", "validation-test-url", "not.valid.url" );
 
-        LOGGER.warn("=> Start Validating RemoteRepository: " + notValidUrlRepo.getUrl());
+        LOGGER.warn("=> Start Validating RemoteRepository: [" + notValidUrlRepo.getUrl()+"]");
         RemoteRepository remoteRepository2 = client.stores().create(notValidUrlRepo, changelog, RemoteRepository.class);
 
-//        ArtifactStoreValidateData validateUrl = null;
-//        try {
-//            LOGGER.warn("=> Start Validating RemoteRepository: " + remoteRepository2.getUrl());
-//            validateUrl = validator.validate(remoteRepository2);
-//            LOGGER.warn("=> Not Valid URL ArtifactStoreValidateData: " + validateUrl.toString());
-//        } catch (MalformedURLException mue) {
-//            if(validateUrl != null ) {
-//                LOGGER.warn("=> Not Valid URL Exception in ArtifactStoreValidateData: " + validateUrl.toString());
-//            }
-//        }
+        ArtifactStoreValidateData validateUrl = null;
+        try {
+            LOGGER.warn("=> Start Validating RemoteRepository: [" + remoteRepository2.getUrl()+"]");
+            validateUrl = validator.validate(remoteRepository2);
+            LOGGER.warn("=> Returned [Not Valid URL] ArtifactStoreValidateData: " + validateUrl.toString());
+        } catch (MalformedURLException mue) {
+            if(validateUrl != null ) {
+                LOGGER.warn("=> Returned [Not Valid URL Exception] in ArtifactStoreValidateData: " + validateUrl.toString());
+            }
+        }
 
 
         RemoteRepository allowedRemoteRepo =
             new RemoteRepository( "maven", "validation-indy-allowed", "http://127.0.0.1" );
-        LOGGER.warn("=> Start Validating RemoteRepository: " + allowedRemoteRepo.getUrl());
+
+        LOGGER.warn("=> Start Validating RemoteRepository: [" + allowedRemoteRepo.getUrl()+"]");
         RemoteRepository remoteRepository3 = client.stores().create(allowedRemoteRepo, changelog,
             RemoteRepository.class);
 
 
-//        ArtifactStoreValidateData validateAllowedRepo = validator.validate(remoteRepository3);
-//        LOGGER.warn("=> Allowed Not Valid SSL ArtifactStoreValidateData: " + validateAllowedRepo.toString());
+        ArtifactStoreValidateData validateAllowedRepo = validator.validate(remoteRepository3);
+        LOGGER.warn("=> Returned [Allowed Not Valid ( !GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateAllowedRepo.toString());
+
+        assertNotNull( validateAllowedRepo );
+        assertFalse(validateAllowedRepo.isValid());
+        assertNull(validateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
+        assertNull(validateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
+        assertNotNull( validateAllowedRepo.getErrors().get("disabled") );
+
+
 
     }
 
