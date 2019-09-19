@@ -139,7 +139,7 @@ public class GoldenSignalsFilter
             // In some cases, we cannot calculate latency without capturing actual data transfer time. When this happens,
             // we can capture the actual data transfer time and subtract it from the total execution time to get
             // latency.
-            long end = RequestContextHelper.getRequestEndNanos() - RequestContextHelper.getRawNanos();
+            long end = RequestContextHelper.getRequestEndNanos() - RequestContextHelper.getRawIoWriteNanos();
 
             MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
 

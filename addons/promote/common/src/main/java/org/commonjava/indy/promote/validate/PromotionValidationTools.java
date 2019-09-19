@@ -25,6 +25,7 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.ArtifactStoreQuery;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.conf.PromoteConfig;
@@ -292,6 +293,7 @@ public class PromotionValidationTools
         }
     }
 
+    @Measure
     public MavenPomView readPom( final String path, final ValidationRequest request, final StoreKey... extraLocations )
             throws IndyWorkflowException, GalleyMavenException, IndyDataException
     {
@@ -310,6 +312,7 @@ public class PromotionValidationTools
         return pomReader.read( artifactRef.asProjectVersionRef(), transfer, locations, MavenPomView.ALL_PROFILES );
     }
 
+    @Measure
     public MavenPomView readLocalPom( final String path, final ValidationRequest request )
             throws IndyWorkflowException, GalleyMavenException
     {
@@ -357,6 +360,7 @@ public class PromotionValidationTools
         return metadataReader.readMetadata( ref, transfers, eventMetadata );
     }
 
+    @Measure
     public MavenPomView read( final ProjectVersionRef ref, final Transfer pom, final List<? extends Location> locations,
                               final String... activeProfileLocations )
             throws GalleyMavenException
@@ -364,6 +368,7 @@ public class PromotionValidationTools
         return pomReader.read( ref, pom, locations, activeProfileLocations );
     }
 
+    @Measure
     public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
                               final boolean cache, final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
@@ -371,6 +376,7 @@ public class PromotionValidationTools
         return pomReader.read( ref, locations, cache, eventMetadata, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
                               final boolean cache, final String... activeProfileIds )
             throws GalleyMavenException
@@ -378,6 +384,7 @@ public class PromotionValidationTools
         return pomReader.read( ref, locations, cache, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer,
                                       final String... activeProfileIds )
             throws GalleyMavenException
@@ -385,6 +392,7 @@ public class PromotionValidationTools
         return pomReader.readLocalPom( ref, transfer, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
                               final String... activeProfileIds )
             throws GalleyMavenException
@@ -392,6 +400,7 @@ public class PromotionValidationTools
         return pomReader.read( ref, locations, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final boolean cache,
                                       final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
@@ -399,6 +408,7 @@ public class PromotionValidationTools
         return pomReader.readLocalPom( ref, transfer, cache, eventMetadata, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer,
                                       final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
@@ -406,6 +416,7 @@ public class PromotionValidationTools
         return pomReader.readLocalPom( ref, transfer, eventMetadata, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView read( final ProjectVersionRef ref, final List<? extends Location> locations,
                               final EventMetadata eventMetadata, final String... activeProfileIds )
             throws GalleyMavenException
@@ -413,6 +424,7 @@ public class PromotionValidationTools
         return pomReader.read( ref, locations, eventMetadata, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView readLocalPom( final ProjectVersionRef ref, final Transfer transfer, final boolean cache,
                                       final String... activeProfileIds )
             throws GalleyMavenException
@@ -420,6 +432,7 @@ public class PromotionValidationTools
         return pomReader.readLocalPom( ref, transfer, cache, activeProfileIds );
     }
 
+    @Measure
     public MavenPomView read( final ProjectVersionRef ref, final Transfer pom, final List<? extends Location> locations,
                               final EventMetadata eventMetadata, final String... activeProfileLocations )
             throws GalleyMavenException

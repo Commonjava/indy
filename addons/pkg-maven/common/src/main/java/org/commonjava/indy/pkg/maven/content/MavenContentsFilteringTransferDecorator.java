@@ -31,6 +31,7 @@ import com.codahale.metrics.Timer;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.atlas.maven.ident.util.SnapshotUtils;
 import org.commonjava.atlas.maven.ident.version.part.SnapshotPart;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Location;
@@ -56,7 +57,7 @@ public class MavenContentsFilteringTransferDecorator
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private MetricRegistry metricRegistry;
+    private IndyMetricsManager metricsManager;
 
     @Override
     public OverriddenBooleanValue decorateExists( final Transfer transfer, final EventMetadata metadata )
@@ -81,7 +82,7 @@ public class MavenContentsFilteringTransferDecorator
         if ( loc instanceof HttpLocation && ( !allowsSnapshots || !allowsReleases ) && transfer.getFullPath()
                                                                                                .endsWith( "maven-metadata.xml" ) )
         {
-            return new MetadataFilteringOutputStream( stream, allowsSnapshots, allowsReleases, transfer, metricRegistry );
+            return new MetadataFilteringOutputStream( stream, allowsSnapshots, allowsReleases, transfer, metricsManager );
         }
         else
         {
@@ -192,17 +193,17 @@ public class MavenContentsFilteringTransferDecorator
 
         private Transfer transfer;
 
-        private final MetricRegistry metricRegistry;
+        private IndyMetricsManager metricsManager;
 
         private MetadataFilteringOutputStream( final OutputStream stream, final boolean allowsSnapshots,
                                                final boolean allowsReleases, Transfer transfer,
-                                               final MetricRegistry metricRegistry )
+                                               final IndyMetricsManager metricsManager )
         {
             super( stream );
             this.allowsSnapshots = allowsSnapshots;
             this.allowsReleases = allowsReleases;
             this.transfer = transfer;
-            this.metricRegistry = metricRegistry;
+            this.metricsManager = metricsManager;
         }
 
         private String filterMetadata()
@@ -213,7 +214,7 @@ public class MavenContentsFilteringTransferDecorator
                 return "";
             }
 
-            Timer.Context timer = metricRegistry == null ? null : metricRegistry.timer( TIMER ).time();
+            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
             try
             {
                 // filter versions from GA metadata

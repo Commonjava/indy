@@ -16,7 +16,6 @@
 package org.commonjava.indy.metrics;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
-import org.slf4j.MDC;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -70,9 +69,9 @@ public class RequestContextHelper
         return getContext( END_NANOS, System.nanoTime() );
     }
 
-    public static long getRawNanos()
+    public static long getRawIoWriteNanos()
     {
-        return getContext( RAW_NANOS, 0L );
+        return getContext( RAW_IO_WRITE_NANOS, 0L );
     }
 
     // Scope annotations
@@ -92,7 +91,10 @@ public class RequestContextHelper
     //
 
     @Thread
-    public static final String RAW_NANOS = "raw-nanos";
+    public static final String RAW_IO_WRITE_NANOS = "raw-io-write-nanos";
+
+    @Thread
+    public static final String RAW_IO_READ_NANOS = "raw-io-read-nanos";
 
     @Thread
     public static final String END_NANOS = "latency-end-nanos";

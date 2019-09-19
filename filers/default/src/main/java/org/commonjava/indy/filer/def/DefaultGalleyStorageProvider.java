@@ -15,13 +15,14 @@
  */
 package org.commonjava.indy.filer.def;
 
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftScheduledExecutor;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
 import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
@@ -57,6 +58,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
 
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
@@ -99,7 +101,7 @@ public class DefaultGalleyStorageProvider
     private Instance<TransferDecorator> transferDecorators;
 
     @Inject
-    private MetricRegistry metricRegistry;
+    private IndyMetricsManager metricsManager;
 
     private TransportManagerConfig transportManagerConfig;
 
@@ -159,15 +161,20 @@ public class DefaultGalleyStorageProvider
     private void setupTransferDecoratorPipeline()
     {
         List<TransferDecorator> decorators = new ArrayList<>();
-        decorators.add( new UploadLatencyDecorator());
+        decorators.add( new IOLatencyDecorator( timerProvider() ));
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
-        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, metricRegistry ) );
+        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, timerProvider() ) );
         for ( TransferDecorator decorator : transferDecorators )
         {
             decorators.add( decorator );
         }
         decorators.add( getChecksummingTransferDecorator() );
         transferDecorator = new TransferDecoratorManager( decorators );
+    }
+
+    private Function<String, Timer.Context> timerProvider()
+    {
+        return (name)->metricsManager.getTimer( name ).time();
     }
 
     private ChecksummingTransferDecorator getChecksummingTransferDecorator()
@@ -233,7 +240,7 @@ public class DefaultGalleyStorageProvider
             return result;
         };
 
-        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager, metricRegistry,
+        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager, timerProvider(),
                                                   contentMetadataConsumer, new Md5GeneratorFactory(),
                                                   new Sha1GeneratorFactory(), new Sha256GeneratorFactory() );
     }

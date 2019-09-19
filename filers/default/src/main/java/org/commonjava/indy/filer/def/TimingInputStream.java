@@ -3,15 +3,15 @@ package org.commonjava.indy.filer.def;
 import com.codahale.metrics.Timer;
 import org.commonjava.indy.metrics.RequestContextHelper;
 
-import java.io.FilterOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.InputStream;
 import java.util.function.Function;
 
-public class TimingOutputStream
-        extends FilterOutputStream
+public class TimingInputStream
+        extends FilterInputStream
 {
-    private static final String RAW_IO_WRITE = "io.raw.write";
+    private static final String RAW_IO_WRITE = "io.raw.read";
 
     private Long nanos;
 
@@ -19,14 +19,14 @@ public class TimingOutputStream
 
     private Timer.Context timer;
 
-    public TimingOutputStream( final OutputStream stream, Function<String, Timer.Context> timerProvider )
+    public TimingInputStream( final InputStream stream, final Function<String, Timer.Context> timerProvider )
     {
         super( stream );
         this.timerProvider = timerProvider == null ? (s)->null : timerProvider;
     }
 
     @Override
-    public void write( final int b )
+    public int read()
             throws IOException
     {
         if ( nanos == null )
@@ -35,11 +35,11 @@ public class TimingOutputStream
             timer = timerProvider.apply( RAW_IO_WRITE );
         }
 
-        super.write( b );
+        return super.read();
     }
 
     @Override
-    public void write( final byte[] b )
+    public int read( final byte[] b )
             throws IOException
     {
         if ( nanos == null )
@@ -48,11 +48,11 @@ public class TimingOutputStream
             timer = timerProvider.apply( RAW_IO_WRITE );
         }
 
-        super.write( b );
+        return super.read( b );
     }
 
     @Override
-    public void write( final byte[] b, final int off, final int len )
+    public int read( final byte[] b, final int off, final int len )
             throws IOException
     {
         if ( nanos == null )
@@ -61,7 +61,7 @@ public class TimingOutputStream
             timer = timerProvider.apply( RAW_IO_WRITE );
         }
 
-        super.write( b, off, len );
+        return super.read( b, off, len );
     }
 
     @Override

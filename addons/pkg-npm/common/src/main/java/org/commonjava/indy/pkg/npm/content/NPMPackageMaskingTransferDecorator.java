@@ -17,6 +17,7 @@ package org.commonjava.indy.pkg.npm.content;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -47,7 +48,7 @@ public class NPMPackageMaskingTransferDecorator
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private MetricRegistry metricRegistry;
+    private IndyMetricsManager metricsManager;
 
     public NPMPackageMaskingTransferDecorator()
     {
@@ -86,7 +87,7 @@ public class NPMPackageMaskingTransferDecorator
         StoreKey key = keyedLocation.getKey();
         String contextURL = UrlUtils.buildUrl( baseURI, key.getType().name(), key.getName() );
         logger.debug( "Use contextURL: {}", contextURL );
-        return new PackageMaskingInputStream( stream, contextURL, metricRegistry );
+        return new PackageMaskingInputStream( stream, contextURL, metricsManager );
     }
 
     private static class PackageMaskingInputStream
@@ -100,18 +101,18 @@ public class NPMPackageMaskingTransferDecorator
 
         private String contextURL;
 
-        private MetricRegistry metricRegistry;
+        private IndyMetricsManager metricsManager;
 
         private byte[] bytes;
 
         boolean masked;
 
         private PackageMaskingInputStream( final InputStream stream, final String contextURL,
-                                           final MetricRegistry metricRegistry )
+                                           final IndyMetricsManager metricsManager )
         {
             super( stream );
             this.contextURL = contextURL;
-            this.metricRegistry = metricRegistry;
+            this.metricsManager = metricsManager;
         }
 
         @Override
@@ -157,7 +158,7 @@ public class NPMPackageMaskingTransferDecorator
 
         private void mask( String contextURL ) throws IOException
         {
-            Timer.Context timer = metricRegistry == null ? null : metricRegistry.timer( TIMER ).time();
+            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
             try
             {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
