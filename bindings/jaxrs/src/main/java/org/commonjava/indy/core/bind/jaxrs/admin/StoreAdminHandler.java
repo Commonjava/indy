@@ -48,6 +48,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
@@ -161,6 +162,9 @@ public class StoreAdminHandler
         String json = null;
         try {
             json = IOUtils.toString(request.getInputStream());
+
+//            logger.warn("=> JSON: " + json);
+
             json = objectMapper.patchLegacyStoreJson(json);
         } catch (final IOException e) {
             final String message = "Failed to read " + st.getStoreClass()
@@ -435,11 +439,11 @@ public class StoreAdminHandler
     @Path("/revalidate/all")
     @POST
     public Response revalidateArtifactStores(
-        @PathParam("package") String packageType,
+        @PathParam("packageType") String packageType,
         @PathParam("type") String type) {
 
         ArtifactStoreValidateData result = null;
-        Map<String, String> results = new HashMap<>();
+        Map<String, ArtifactStoreValidateData> results = new HashMap<>();
         Response response;
 
         try {
@@ -450,7 +454,7 @@ public class StoreAdminHandler
             for (ArtifactStore artifactStore : allArtifactStores) {
                 // Validate this Store
                 result = adminController.validateStore(artifactStore);
-                results.put(artifactStore.getKey().toString(), result.getErrors().toString());
+                results.put(artifactStore.getKey().toString(), result);
 
             }
             response = responseHelper.formatOkResponseWithJsonEntity(results);
@@ -477,22 +481,30 @@ public class StoreAdminHandler
     @Path("/{name}/revalidate")
     @POST
     public Response revalidateArtifactStore(
-        final @ApiParam(required = true) @PathParam("package") String packageType,
-        final @ApiParam(required = true) @PathParam("type") String type,
+        final @PathParam("packageType") String packageType,
+        final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
         final @ApiParam(required = true) @PathParam("name") String name) {
 
 
         ArtifactStoreValidateData result = null;
-        Map<String, String> data = new HashMap<>();
+
         Response response;
 
         try {
-            StoreType storeType = StoreType.get(type);
-            StoreKey storeKey = new StoreKey(packageType, storeType, name);
-            ArtifactStore artifactStore = adminController.get(storeKey);
+            final StoreType st = StoreType.get(type);
+            final StoreKey key = new StoreKey(packageType, st, name);
+            final ArtifactStore store = adminController.get(key);
+            logger.info("=> Returning repository: {}", store);
+
             // Validate this Store
-            result = adminController.validateStore(artifactStore);
-            response = responseHelper.formatOkResponseWithJsonEntity(result);
+            result = adminController.validateStore(store);
+
+            logger.warn("=> Result from Validating Store: " + result);
+            if(result == null) {
+                response = Response.status(Status.NOT_FOUND).build();
+            } else {
+                response = responseHelper.formatOkResponseWithJsonEntity(result);
+            }
 
         } catch (IndyDataException ide) {
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
@@ -506,6 +518,7 @@ public class StoreAdminHandler
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
             response = responseHelper.formatResponse(iwe);
         }
+
         return response;
     }
 

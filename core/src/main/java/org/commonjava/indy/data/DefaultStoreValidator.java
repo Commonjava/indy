@@ -55,7 +55,7 @@ public class DefaultStoreValidator implements StoreValidator {
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
-//                    LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository.getUrl());
+                    LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository.getUrl());
                     return disabledRemoteRepositoryData(remoteRepository);
                 }
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
@@ -71,6 +71,7 @@ public class DefaultStoreValidator implements StoreValidator {
                     // then return valid=false data object
                     if(!allowedByRule.isValid()) {
                         LOGGER.info("=> Non-SSL Repository is not allowed!");
+                        allowedByRule.getErrors().put(StoreValidationConstants.NOT_ALLOWED_SSL,allowedByRule.getRepositoryUrl());
                         return allowedByRule;
                     }
                 }
@@ -88,7 +89,11 @@ public class DefaultStoreValidator implements StoreValidator {
         }
         catch (Exception e) {
             LOGGER.error(" => Not Valid Remote Repository, \n => Exception: " + e);
-            errors.put(StoreValidationConstants.GENERAL, e.getStackTrace().toString());
+            if(e.getMessage() != null) {
+                errors.put(StoreValidationConstants.GENERAL, e.getMessage());
+            } else {
+                errors.put(StoreValidationConstants.GENERAL,"General Exception");
+            }
             return new ArtifactStoreValidateData
                 .Builder(artifactStore.getKey())
                 .setRepositoryUrl( remoteUrl.get().toExternalForm() )
@@ -196,17 +201,13 @@ public class DefaultStoreValidator implements StoreValidator {
             // .apache.org , 10.192. , .maven.redhat.com
             if(allowedNonSSLHostname(remoteHost,host)) {
                 errors.put(StoreValidationConstants.ALLOWED_SSL,remoteUrl.get().toString());
-                LOGGER.warn(
-                    "=> NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost
-                );
+                LOGGER.warn("=> NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost);
                 return new ArtifactStoreValidateData
                     .Builder(remoteRepository.getKey())
                     .setRepositoryUrl(remoteUrl.get().toExternalForm())
                     .setErrors(errors)
                     .setValid(true)
                     .build();
-            } else {
-                errors.put(StoreValidationConstants.NON_SSL,remoteUrl.get().toString());
             }
         }
         return new ArtifactStoreValidateData
