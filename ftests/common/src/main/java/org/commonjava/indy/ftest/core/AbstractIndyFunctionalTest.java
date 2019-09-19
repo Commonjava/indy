@@ -38,6 +38,7 @@ import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -201,6 +202,11 @@ public abstract class AbstractIndyFunctionalTest
         initTestData( fixture );
 
         return fixture;
+    }
+
+
+    protected <T> T lookup( Class<T> component )    {
+        return CDI.current().select( component ).get();
     }
 
     protected void initTestConfig( CoreServerFixture fixture )

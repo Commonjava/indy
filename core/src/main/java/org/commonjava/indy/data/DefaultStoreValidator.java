@@ -9,6 +9,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.model.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,10 +40,11 @@ public class DefaultStoreValidator implements StoreValidator {
     private ExecutorService executorService;
 
     @Inject
-    IndyConfiguration configuration;
+    SslValidationConfig configuration;
 
     @Override
-    public ArtifactStoreValidateData validate(ArtifactStore artifactStore) throws InvalidArtifactStoreException, MalformedURLException {
+    public ArtifactStoreValidateData validate(ArtifactStore artifactStore) {
+//        LOGGER.warn("\n=> Allowed Remote Repositories by Config File: [ "+configuration.getRemoteNoSSLHosts()+" ]\n");
         final CountDownLatch httpRequestsLatch = new CountDownLatch(2);
         final HashMap<String, String> errors = new HashMap<>();
         Optional<URL> remoteUrl = Optional.empty();
@@ -53,21 +55,22 @@ public class DefaultStoreValidator implements StoreValidator {
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
-                    LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository);
+//                    LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository.getUrl());
                     return disabledRemoteRepositoryData(remoteRepository);
                 }
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
-                LOGGER.info("=> Remote Repository Protocol: " + remoteUrl.get().getProtocol());
-                LOGGER.info("=> SSL Required: " + configuration.isSSLRequired());
+//                LOGGER.info("=> Remote Repository Protocol: " + remoteUrl.get().getProtocol());
+//                LOGGER.info("=> SSL Required: " + configuration.isSSLRequired());
                 if(configuration.isSSLRequired()
                     && !remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
-                    LOGGER.info("=> Check if Allowed: ", remoteRepository.getUrl());
+                    LOGGER.warn("\n\t\t\t=> Allowed Remote Repositories by Config File: "+configuration.getRemoteNoSSLHosts()+"\n");
                     ArtifactStoreValidateData allowedByRule = compareRemoteHostToAllowedHostnames(remoteUrl,remoteRepository);
                     // If this Non-SSL remote repository is not allowed by provided rules from configuration
                     // then return valid=false data object
                     if(!allowedByRule.isValid()) {
+                        LOGGER.info("=> Non-SSL Repository is not allowed!");
                         return allowedByRule;
                     }
                 }
@@ -75,11 +78,11 @@ public class DefaultStoreValidator implements StoreValidator {
             }
         }
         catch (MalformedURLException mue) {
-            LOGGER.error("=> Mailformed URL: ", mue);
+//            LOGGER.error("=> Mailformed URL: ", mue);
             errors.put(StoreValidationConstants.MAILFORMED_URL,mue.getMessage());
             return new ArtifactStoreValidateData
                 .Builder(artifactStore.getKey())
-                .setRepositoryUrl( remoteUrl.get().toExternalForm() )
+                .setRepositoryUrl( ((RemoteRepository) artifactStore).getUrl() )
                 .setErrors(errors)
                 .build();
         }
@@ -166,7 +169,14 @@ public class DefaultStoreValidator implements StoreValidator {
 
     private ArtifactStoreValidateData disabledRemoteRepositoryData(RemoteRepository remoteRepository) {
         HashMap<String, String> errors = new HashMap<>();
-        errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Not Allowed NoSSL Remote Repository");
+        errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Disabled Remote Repository");
+
+        try {
+            new URL(remoteRepository.getUrl());
+        } catch (MalformedURLException mue) {
+            errors.put(StoreValidationConstants.MAILFORMED_URL,mue.getMessage());
+        }
+
         return new ArtifactStoreValidateData
             .Builder(remoteRepository.getKey())
             .setRepositoryUrl(remoteRepository.getUrl())
@@ -187,7 +197,7 @@ public class DefaultStoreValidator implements StoreValidator {
             if(allowedNonSSLHostname(remoteHost,host)) {
                 errors.put(StoreValidationConstants.ALLOWED_SSL,remoteUrl.get().toString());
                 LOGGER.warn(
-                    "NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost
+                    "=> NON-SSL RemoteRepository with URL: "+ host +" is ALLOWED under RULE: " + remoteHost
                 );
                 return new ArtifactStoreValidateData
                     .Builder(remoteRepository.getKey())

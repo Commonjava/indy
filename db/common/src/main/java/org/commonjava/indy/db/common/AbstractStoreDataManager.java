@@ -20,6 +20,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.InternalFeatureConfig;
+import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.*;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -58,7 +59,7 @@ public abstract class AbstractStoreDataManager
     StoreValidator storeValidator;
 
     @Inject
-    private IndyConfiguration configuration;
+    private SslValidationConfig configuration;
 
     @Inject StoreDataManager storeDataManager;
 
@@ -289,7 +290,7 @@ public abstract class AbstractStoreDataManager
 
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
-        if(configuration != null) {
+//        if(configuration != null) {
             ArtifactStoreValidateData validateData = null ;
             try {
 
@@ -297,9 +298,9 @@ public abstract class AbstractStoreDataManager
                     validateData = storeValidator.validate(store);
 //                    logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
                     // if it is not valid then disable that repository
-                    if(!validateData.isValid() && configuration.isSSLRequired()) {
+                    if(!validateData.isValid() ) {
                         logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
-                            "with name: " + store.getName());
+                            " with name: " + store.getName());
                         disableNotValidStore(store,validateData);
                     }
                 }
@@ -318,7 +319,7 @@ public abstract class AbstractStoreDataManager
 //                disableNotValidStore(store,validateData);
             }
 
-        }
+//        }
 
 
         Function<StoreKey, Boolean> lockHandler = k -> doStore( k, store, summary, error, skipIfExists, fireEvents, eventMetadata );

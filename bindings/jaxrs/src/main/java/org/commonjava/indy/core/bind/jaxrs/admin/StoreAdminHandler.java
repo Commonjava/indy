@@ -432,7 +432,7 @@ public class StoreAdminHandler
     @ApiOperation("Revalidation of Artifacts Stored on demand")
     @ApiResponses({@ApiResponse(code = 200, response = ArtifactStore.class, message = "Revalidation for Remote Repositories was successfull"),
         @ApiResponse(code = 404, message = "Revalidation is not successfull"),})
-    @Path("/revalidate")
+    @Path("/revalidate/all")
     @POST
     public Response revalidateArtifactStores(
         @PathParam("package") String packageType,
