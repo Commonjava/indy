@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,21 +69,21 @@ public class StoreContentListener
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private Instance<StoreContentAction> storeContentActions;
+    private DirectContentAccess directContentAccess;
 
     @Inject
-    private StoreDataManager storeDataManager;
+    private Instance<StoreContentAction> storeContentActions;
 
     @Inject
     private SpecialPathManager specialPathManager;
 
     @Inject
-    private DirectContentAccess directContentAccess;
-
-    @Inject
     @WeftManaged
     @ExecutorConfig( threads=20, priority=7, named="content-cleanup" )
     private WeftExecutorService cleanupExecutor;
+
+    @Inject
+    private StoreDataManager storeDataManager;
 
     /**
      * Handles store disable/enablement.
@@ -233,13 +233,13 @@ public class StoreContentListener
      * query the affected groups (for store deletion and dis/enable event).
      */
     private void clearPaths( final Set<StoreKey> keys, Predicate<? super String> pathFilter, final Set<Group> groups,
-                             final boolean deleteOriginPath )
+                            final boolean deleteOriginPath )
     {
         //NOSSUP-76 we still need to use synchronized/drain way to clean the paths now, because sometimes the new used metadata
         //          not updated in time when some builds want to consume them as the obsolete metadata not cleared under
         //          async way.
         DrainingExecutorCompletionService<Integer> clearService =
-                        new DrainingExecutorCompletionService<>( cleanupExecutor );
+                new DrainingExecutorCompletionService<>( cleanupExecutor );
 
         keys.forEach( key -> {
             ArtifactStore origin;
@@ -298,7 +298,7 @@ public class StoreContentListener
      * origin is a group, we list it (cached files) and clean the paths from affected groups.
      */
     private Callable<Integer> clearPathsProcessor( ArtifactStore origin, Predicate<? super String> pathFilter,
-                                          Set<Group> affectedGroups, boolean deleteOriginPath )
+                                                   Set<Group> affectedGroups, boolean deleteOriginPath )
     {
         if ( origin.getType() == StoreType.remote )
         {

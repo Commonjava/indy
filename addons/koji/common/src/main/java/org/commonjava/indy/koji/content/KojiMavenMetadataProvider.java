@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,25 +36,44 @@ import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.core.content.group.GroupMergeHelper;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.maven.content.MetadataCacheManager;
+import org.commonjava.indy.pkg.maven.content.MetadataInfo;
+import org.commonjava.indy.pkg.maven.content.MetadataKey;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
+import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataKeyCache;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
-import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.infinispan.commons.util.concurrent.ConcurrentHashSet;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
+import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,13 +92,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
 
 /**
  * Created by jdcasey on 11/1/16.
  */
 @ApplicationScoped
+@Listener( clustered = true )
 public class KojiMavenMetadataProvider
         implements MavenMetadataProvider
 {
@@ -87,8 +107,23 @@ public class KojiMavenMetadataProvider
     private static final java.lang.String LAST_UPDATED_FORMAT = "yyyyMMddHHmmss";
 
     @Inject
+    private MetadataCacheManager mavenMetadataCaches;
+
+    @Inject
+    private StoreDataManager storeDataManager;
+
+    @Inject
+    private GroupMergeHelper helper;
+
+    @Inject
+    private DirectContentAccess fileManager;
+
+    @Inject
+    private NotFoundCache nfc;
+
+    @Inject
     @KojiMavenVersionMetadataCache
-    private BasicCacheHandle<ProjectRef, Metadata> versionMetadata;
+    private CacheHandle<ProjectRef, Metadata> versionMetadata;
 
     @Inject
     private IndyKojiContentProvider kojiContentProvider;
@@ -120,8 +155,95 @@ public class KojiMavenMetadataProvider
         this.kojiMDService = kojiMDService;
     }
 
+    @PostConstruct
+    public void start()
+    {
+        versionMetadata.executeCache( c -> {
+            c.addListener( KojiMavenMetadataProvider.this );
+            return null;
+        } );
+    }
+
+    @CacheEntryExpired
+    public void expired( CacheEntryExpiredEvent<ProjectRef, Metadata> e )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        if ( !kojiConfig.isEnabled() )
+        {
+            logger.debug( "Koji add-on is disabled." );
+            return;
+        }
+
+        logger.info( "Koji metadata expired for GA: {}", e.getKey() );
+        try
+        {
+            List<Group> affected = storeDataManager.query()
+                                                           .getAll(
+                                                                   s -> group == s.getType() && kojiConfig.isEnabledFor(
+                                                                           s.getName() ) )
+                                                           .stream()
+                                                           .map( s -> (Group) s )
+                                                           .collect( Collectors.toList() );
+
+            if ( !affected.isEmpty() )
+            {
+                logger.info( "Triggering metadata cleanup from Koji metadata expiration, for GA: {} in groups: {}", e.getKey(), affected );
+                String path = ArtifactPathUtils.formatMetadataPath( e.getKey(), METADATA_NAME );
+                clearPaths( affected, path );
+            }
+
+        }
+        catch ( IndyDataException ex )
+        {
+            logger.error( "Failed to clear group metadata for expired Koji metadata: " + e.getKey(), ex );
+        }
+        catch ( TransferException ex )
+        {
+            logger.error( "Failed to format metadata path for: " + e.getKey(), ex );
+        }
+    }
+
+    private void clearPaths( final List<Group> affected, final String path )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+
+        affected.forEach( group->{
+            try
+            {
+                // delete so it'll be recomputed.
+                final Transfer target = fileManager.getTransfer( group, path );
+
+                if ( target.exists() )
+                {
+                    logger.debug( "Deleting merged file: {}", target );
+                    target.delete( false );
+                    if ( target.exists() )
+                    {
+                        logger.error( "\n\n\n\nDID NOT DELETE merged metadata file at: {} in group: {}\n\n\n\n", path,
+                                      group.getName() );
+                    }
+                    helper.deleteChecksumsAndMergeInfo( group, path );
+                }
+                else
+                {
+                    ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( group ), path );
+                    nfc.clearMissing( resource );
+                }
+
+                // make sure we delete these, even if they're left over.
+                helper.deleteChecksumsAndMergeInfo( group, path );
+            }
+            catch ( final IndyWorkflowException | IOException e )
+            {
+                logger.error( "Failed to delete generated file (to allow re-generation on demand: {}/{}. Error: {}", e,
+                              group.getKey(), path, e.getMessage() );
+            }
+        } );
+    }
+
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public Metadata getMetadata( StoreKey targetKey, String path )
             throws IndyWorkflowException
     {

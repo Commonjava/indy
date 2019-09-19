@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 
-    Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>1.9.4-SNAPSHOT</version>
+    <version>1.9.5-SNAPSHOT</version>
   </parent>
   <artifactId>indy-hosted-by-archive</artifactId>
   <name>Indy :: Add-Ons :: Hosted By Archive :: Parent</name>

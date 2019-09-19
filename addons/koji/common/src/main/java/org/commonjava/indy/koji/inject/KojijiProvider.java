@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,11 +83,6 @@ public class KojijiProvider
     @Override
     public void start() throws IndyLifecycleException
     {
-    }
-
-    @PostConstruct
-    private void setUp() throws KojiClientException
-    {
         if ( !config.isEnabled() )
         {
             return;
@@ -104,13 +99,20 @@ public class KojijiProvider
             kojiPasswordManager.bind( config.getKeyPassword(), config.getKojiSiteId(), PasswordType.KEY );
         }
 
-        if ( indyMetricsConfig.isKojiMetricEnabled() )
+        try
         {
-            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
+            if ( indyMetricsConfig.isKojiMetricEnabled() )
+            {
+                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
+            }
+            else
+            {
+                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+            }
         }
-        else
+        catch ( KojiClientException e )
         {
-            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
+            throw new IndyLifecycleException( "Failed to initialize Koji client.", e );
         }
 
         versionMetadataLocks = new Locker<>();

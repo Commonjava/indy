@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,8 +38,8 @@ public class KojiCacheProducer
     @KojiMavenVersionMetadataCache
     @Produces
     @ApplicationScoped
-    public BasicCacheHandle<ProjectRef, Metadata> versionMetadataCache()
+    public CacheHandle<ProjectRef, Metadata> versionMetadataCache()
     {
-        return cacheProducer.getBasicCache( "koji-maven-version-metadata" );
+        return cacheProducer.getCache( "koji-maven-version-metadata" );
     }
 }

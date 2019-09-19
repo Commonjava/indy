@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2018 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,28 @@
  */
 package org.commonjava.indy.pkg.maven.content.cache;
 
+import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKeyTransformer;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.maven.galley.model.Transfer;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
+import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
 import org.infinispan.query.Search;
 import org.infinispan.query.spi.SearchManagerImplementor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import java.io.IOException;
 
 @ApplicationScoped
 public class MetadataCacheProducer
@@ -34,6 +44,9 @@ public class MetadataCacheProducer
     private static final String METADATA_KEY_CACHE = "maven-metadata-key-cache";
 
     private static final String METADATA_CACHE = "maven-metadata-cache";
+
+    @Inject
+    private MavenMetadataCacheListener cacheListener;
 
     @Inject
     private CacheProducer cacheProducer;
@@ -66,7 +79,10 @@ public class MetadataCacheProducer
         handler.executeCache( cache -> {
             SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
             searchManager.registerKeyTransformer( MetadataKey.class, MetadataKeyTransformer.class );
+
+            cache.addListener( cacheListener );
             return null;
         } );
     }
+
 }
