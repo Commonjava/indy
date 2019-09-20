@@ -59,7 +59,6 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
             LOGGER.info("=> All Validated Remote Repositories Response: " +remoteRepositoriesValidated);
 
-
         } catch (IndyClientException e) {LOGGER.warn("=> Exception in revalidating all store API call");}
 
 
@@ -89,7 +88,6 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
         } catch (IndyClientException e) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestRepo.getUrl() +" API call");
-            LOGGER.warn("=> Exception :" + e);
         }
 
         // REPO TESTING URL - https://repo.maven.apache.org/maven2 - VALID SSL REPO
@@ -110,7 +108,6 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
             LOGGER.info("=> API Returned Result [Validate Remote Repo]: " +  remoteSslRepoAPIResult  );
         } catch (IndyClientException ice) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestSslRepo.getUrl() +" API call");
-            LOGGER.warn("=> Exception :" + ice);
         }
 
 
@@ -140,7 +137,6 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
             LOGGER.info("=> API Returned Result [Validate Remote Repo]: " +  remoteAllowedRepoAPIResult  );
         } catch (IndyClientException ice) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestAllowedRepo.getUrl() +" API call");
-            LOGGER.warn("=> Exception :" + ice);
         }
 
         // GET ALL VALIDATED REMOTE REPOSITORIES
@@ -153,6 +149,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
         } catch (IndyClientException ice) {
             LOGGER.warn("=> Exception in revalidating SECOND all store API call");
         }
+
 
     }
 

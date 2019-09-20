@@ -19,7 +19,7 @@ public class IndySslValidationClientModule extends IndyClientModule {
     // REST API paths
     private static String HTTP_POST_REVALIDATE_ALL = "admin/stores/maven/remote/revalidate/all";
     private static String HTTP_POST_REVALIDATE_STORE = "admin/stores/maven/remote/";
-
+    private static String HTTP_POST_REVALIDATE_ALL_DISABLED = "admin/stores/maven/remote/revalidate/all/disabled";
 
     // Http Call Methods
 
@@ -27,8 +27,7 @@ public class IndySslValidationClientModule extends IndyClientModule {
         LOGGER.info("=> Sending API Call  to: " + UrlUtils.buildUrl( "", HTTP_POST_REVALIDATE_ALL ));
         return
             http.postWithResponse(
-                UrlUtils.buildUrl( "", HTTP_POST_REVALIDATE_ALL
-            ), "", HashMap.class);
+                UrlUtils.buildUrl( "", HTTP_POST_REVALIDATE_ALL), "", HashMap.class);
     }
 
 
@@ -37,8 +36,7 @@ public class IndySslValidationClientModule extends IndyClientModule {
             HTTP_POST_REVALIDATE_STORE + store.getName() + "/revalidate" ));
         return
             http.postWithResponse(
-                UrlUtils.buildUrl( "", HTTP_POST_REVALIDATE_STORE + store.getName() + "/revalidate"
-            ), "",ArtifactStoreValidateData.class);
+                UrlUtils.buildUrl( "", HTTP_POST_REVALIDATE_STORE + store.getName() + "/revalidate"), "",ArtifactStoreValidateData.class);
     }
 
 }
