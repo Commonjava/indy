@@ -24,10 +24,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.atlas.maven.ident.util.SnapshotUtils;
 import org.commonjava.atlas.maven.ident.version.part.SnapshotPart;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Location;
@@ -52,6 +56,9 @@ public class MavenContentsFilteringTransferDecorator
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
+    @Inject
+    private IndyMetricsManager metricsManager;
+
     @Override
     public OverriddenBooleanValue decorateExists( final Transfer transfer, final EventMetadata metadata )
     {
@@ -75,7 +82,7 @@ public class MavenContentsFilteringTransferDecorator
         if ( loc instanceof HttpLocation && ( !allowsSnapshots || !allowsReleases ) && transfer.getFullPath()
                                                                                                .endsWith( "maven-metadata.xml" ) )
         {
-            return new MetadataFilteringOutputStream( stream, allowsSnapshots, allowsReleases, transfer );
+            return new MetadataFilteringOutputStream( stream, allowsSnapshots, allowsReleases, transfer, metricsManager );
         }
         else
         {
@@ -166,6 +173,8 @@ public class MavenContentsFilteringTransferDecorator
     private static class MetadataFilteringOutputStream
                     extends FilterOutputStream
     {
+        private static final String TIMER = "io.maven.metadata.out.filter";
+
         private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
         private static final String LATEST = "<latest>([^<]+)</latest>";
@@ -184,13 +193,17 @@ public class MavenContentsFilteringTransferDecorator
 
         private Transfer transfer;
 
+        private IndyMetricsManager metricsManager;
+
         private MetadataFilteringOutputStream( final OutputStream stream, final boolean allowsSnapshots,
-                                               final boolean allowsReleases, Transfer transfer )
+                                               final boolean allowsReleases, Transfer transfer,
+                                               final IndyMetricsManager metricsManager )
         {
             super( stream );
             this.allowsSnapshots = allowsSnapshots;
             this.allowsReleases = allowsReleases;
             this.transfer = transfer;
+            this.metricsManager = metricsManager;
         }
 
         private String filterMetadata()
@@ -201,104 +214,115 @@ public class MavenContentsFilteringTransferDecorator
                 return "";
             }
 
-            // filter versions from GA metadata
-            final Pattern versionsPattern = Pattern.compile( VERSIONS, Pattern.MULTILINE );
-            final Matcher m = versionsPattern.matcher( buffer );
-            final List<String> versions = new ArrayList<>();
-            if ( m.find() )
+            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
+            try
             {
-                final Pattern versionPattern = Pattern.compile( VERSION );
-                final Matcher versionMatcher = versionPattern.matcher( m.group() );
-                while ( versionMatcher.find() )
+                // filter versions from GA metadata
+                final Pattern versionsPattern = Pattern.compile( VERSIONS, Pattern.MULTILINE );
+                final Matcher m = versionsPattern.matcher( buffer );
+                final List<String> versions = new ArrayList<>();
+                if ( m.find() )
                 {
-                    versions.add( versionMatcher.group( 1 ) );
-                }
-            }
-
-            boolean changed = false;
-            for ( final String version : new ArrayList<>( versions ) )
-            {
-                final boolean isSnapshot = SnapshotUtils.isSnapshotVersion( version );
-                if ( !allowsSnapshots && isSnapshot || !allowsReleases && !isSnapshot )
-                {
-                    logger.debug( "FILTER: Removing prohibited version: {} from: {}", version, transfer );
-                    versions.remove( version );
-                    changed = true;
-                }
-            }
-
-            String filteredMetadata = buffer.toString();
-            if ( changed )
-            {
-                String filteredVersions;
-                if ( versions.size() == 0 )
-                {
-                    filteredVersions = "<versions></versions>";
-                }
-                else
-                {
-                    filteredVersions = "<versions>\n<version>" + StringUtils.join( versions, "</version>\n<version>" )
-                                    + "</version>\n</versions>";
-                }
-                filteredMetadata = filteredMetadata.replaceFirst( VERSIONS, filteredVersions );
-            }
-
-            final Pattern latestPattern = Pattern.compile( LATEST );
-            final Matcher latestMatcher = latestPattern.matcher( filteredMetadata );
-            if ( latestMatcher.find() )
-            {
-                final String latestVersion = latestMatcher.group( 1 );
-                final boolean isSnapshot = latestVersion.endsWith( "-SNAPSHOT" );
-                if ( !allowsSnapshots && isSnapshot || !allowsReleases && !isSnapshot )
-                {
-                    logger.debug( "FILTER: Recalculating LATEST version; supplied value is prohibited: {} from: {}",
-                                  latestVersion, transfer );
-
-                    String newLatest;
-                    if ( versions.size() > 0 )
+                    final Pattern versionPattern = Pattern.compile( VERSION );
+                    final Matcher versionMatcher = versionPattern.matcher( m.group() );
+                    while ( versionMatcher.find() )
                     {
-                        newLatest = "<latest>" + versions.get( versions.size() - 1 ) + "</latest>";
+                        versions.add( versionMatcher.group( 1 ) );
+                    }
+                }
+
+                boolean changed = false;
+                for ( final String version : new ArrayList<>( versions ) )
+                {
+                    final boolean isSnapshot = SnapshotUtils.isSnapshotVersion( version );
+                    if ( !allowsSnapshots && isSnapshot || !allowsReleases && !isSnapshot )
+                    {
+                        logger.debug( "FILTER: Removing prohibited version: {} from: {}", version, transfer );
+                        versions.remove( version );
+                        changed = true;
+                    }
+                }
+
+                String filteredMetadata = buffer.toString();
+                if ( changed )
+                {
+                    String filteredVersions;
+                    if ( versions.size() == 0 )
+                    {
+                        filteredVersions = "<versions></versions>";
                     }
                     else
                     {
-                        newLatest = "<latest></latest>";
+                        filteredVersions = "<versions>\n<version>" + StringUtils.join( versions, "</version>\n<version>" )
+                                + "</version>\n</versions>";
                     }
-                    filteredMetadata = filteredMetadata.replaceFirst( LATEST, newLatest );
+                    filteredMetadata = filteredMetadata.replaceFirst( VERSIONS, filteredVersions );
                 }
-            }
 
-            if ( !allowsReleases )
+                final Pattern latestPattern = Pattern.compile( LATEST );
+                final Matcher latestMatcher = latestPattern.matcher( filteredMetadata );
+                if ( latestMatcher.find() )
+                {
+                    final String latestVersion = latestMatcher.group( 1 );
+                    final boolean isSnapshot = latestVersion.endsWith( "-SNAPSHOT" );
+                    if ( !allowsSnapshots && isSnapshot || !allowsReleases && !isSnapshot )
+                    {
+                        logger.debug( "FILTER: Recalculating LATEST version; supplied value is prohibited: {} from: {}",
+                                      latestVersion, transfer );
+
+                        String newLatest;
+                        if ( versions.size() > 0 )
+                        {
+                            newLatest = "<latest>" + versions.get( versions.size() - 1 ) + "</latest>";
+                        }
+                        else
+                        {
+                            newLatest = "<latest></latest>";
+                        }
+                        filteredMetadata = filteredMetadata.replaceFirst( LATEST, newLatest );
+                    }
+                }
+
+                if ( !allowsReleases )
+                {
+                    final Pattern releasePattern = Pattern.compile( RELEASE );
+                    final Matcher releaseMatcher = releasePattern.matcher( filteredMetadata );
+                    if ( releaseMatcher.find() )
+                    {
+                        logger.debug( "FILTER: Suppressing prohibited release fields from: {}", transfer );
+
+                        filteredMetadata = filteredMetadata.replaceFirst( RELEASE, "<release></release>" );
+                    }
+                }
+
+                // filter snapshots from GAV metadata
+                if ( !allowsSnapshots )
+                {
+                    logger.debug( "FILTER: Suppressing prohibited snapshot fields from: {}", transfer );
+
+                    final String snapshots = StringUtils.substringBetween( filteredMetadata, "<snapshotVersions>",
+                                                                           "</snapshotVersions>" );
+                    if ( snapshots != null )
+                    {
+                        filteredMetadata = filteredMetadata.replace( snapshots, "" );
+                    }
+
+                    final String snapshot = StringUtils.substringBetween( filteredMetadata, "<snapshot>", "</snapshot>" );
+                    if ( snapshot != null )
+                    {
+                        filteredMetadata = filteredMetadata.replace( snapshot, "" );
+                    }
+                }
+
+                return filteredMetadata;
+            }
+            finally
             {
-                final Pattern releasePattern = Pattern.compile( RELEASE );
-                final Matcher releaseMatcher = releasePattern.matcher( filteredMetadata );
-                if ( releaseMatcher.find() )
+                if ( timer != null )
                 {
-                    logger.debug( "FILTER: Suppressing prohibited release fields from: {}", transfer );
-
-                    filteredMetadata = filteredMetadata.replaceFirst( RELEASE, "<release></release>" );
+                    timer.stop();
                 }
             }
-
-            // filter snapshots from GAV metadata
-            if ( !allowsSnapshots )
-            {
-                logger.debug( "FILTER: Suppressing prohibited snapshot fields from: {}", transfer );
-
-                final String snapshots = StringUtils.substringBetween( filteredMetadata, "<snapshotVersions>",
-                                                                       "</snapshotVersions>" );
-                if ( snapshots != null )
-                {
-                    filteredMetadata = filteredMetadata.replace( snapshots, "" );
-                }
-
-                final String snapshot = StringUtils.substringBetween( filteredMetadata, "<snapshot>", "</snapshot>" );
-                if ( snapshot != null )
-                {
-                    filteredMetadata = filteredMetadata.replace( snapshot, "" );
-                }
-            }
-
-            return filteredMetadata;
         }
 
         @Override

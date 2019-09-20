@@ -26,6 +26,7 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -115,6 +116,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure( timers = @MetricNamed( "retrieve.first" ) )
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -140,6 +142,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure( timers = @MetricNamed( "retrieve.all" ) )
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -397,6 +400,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure( timers = @MetricNamed( "store.all" ) )
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -616,6 +620,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure( timers = @MetricNamed( "list.all" ) )
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
@@ -709,6 +714,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure
     public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )
             throws IndyWorkflowException
     {
@@ -717,6 +723,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure
     public HttpExchangeMetadata getHttpMetadata( final StoreKey key, final String path )
             throws IndyWorkflowException
     {
@@ -734,6 +741,7 @@ public class DefaultContentManager
     }
 
     @Override
+    @Measure
     // TODO: to add content generation handling here, for things like merged metadata, checksum files, etc.
     public boolean exists(ArtifactStore store, String path)
         throws IndyWorkflowException

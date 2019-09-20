@@ -30,6 +30,8 @@ import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -78,6 +80,20 @@ public class KojijiProvider
     public Locker<ProjectRef> getVersionMetadataLocks()
     {
         return versionMetadataLocks;
+    }
+
+    @PostConstruct
+    public void setup()
+    {
+        try
+        {
+            start();
+        }
+        catch ( IndyLifecycleException e )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.error( "Failed to start Koji client", e );
+        }
     }
 
     @Override

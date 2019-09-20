@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -26,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -42,6 +46,9 @@ public class NPMPackageMaskingTransferDecorator
                 extends AbstractTransferDecorator
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
+    @Inject
+    private IndyMetricsManager metricsManager;
 
     public NPMPackageMaskingTransferDecorator()
     {
@@ -80,26 +87,32 @@ public class NPMPackageMaskingTransferDecorator
         StoreKey key = keyedLocation.getKey();
         String contextURL = UrlUtils.buildUrl( baseURI, key.getType().name(), key.getName() );
         logger.debug( "Use contextURL: {}", contextURL );
-        return new PackageMaskingInputStream( stream, contextURL );
+        return new PackageMaskingInputStream( stream, contextURL, metricsManager );
     }
 
     private static class PackageMaskingInputStream
                     extends FilterInputStream
     {
+        private static final String TIMER = "io.npm.metadata.in.filter";
+
         final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
         int position;
 
         private String contextURL;
 
+        private IndyMetricsManager metricsManager;
+
         private byte[] bytes;
 
         boolean masked;
 
-        private PackageMaskingInputStream( final InputStream stream, final String contextURL )
+        private PackageMaskingInputStream( final InputStream stream, final String contextURL,
+                                           final IndyMetricsManager metricsManager )
         {
             super( stream );
             this.contextURL = contextURL;
+            this.metricsManager = metricsManager;
         }
 
         @Override
@@ -145,22 +158,33 @@ public class NPMPackageMaskingTransferDecorator
 
         private void mask( String contextURL ) throws IOException
         {
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int read;
-            while ( ( read = super.read() ) >= 0 )
+            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
+            try
             {
-                bos.write( read );
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                int read;
+                while ( ( read = super.read() ) >= 0 )
+                {
+                    bos.write( read );
+                }
+                byte[] rawBytes = bos.toByteArray();
+                String raw = new String( rawBytes, UTF_8 );
+
+                logger.trace( "Mask for raw:\n{}", raw );
+
+                String s = updatePackageJson( raw, contextURL );
+
+                logger.trace( "Masked:\n{}", s );
+                bytes = s.getBytes();
+                masked = true;
             }
-            byte[] rawBytes = bos.toByteArray();
-            String raw = new String( rawBytes, UTF_8 );
-
-            logger.trace( "Mask for raw:\n{}", raw );
-
-            String s = updatePackageJson( raw, contextURL );
-
-            logger.trace( "Masked:\n{}", s );
-            bytes = s.getBytes();
-            masked = true;
+            finally
+            {
+                if ( timer != null )
+                {
+                    timer.stop();
+                }
+            }
         }
     }
 

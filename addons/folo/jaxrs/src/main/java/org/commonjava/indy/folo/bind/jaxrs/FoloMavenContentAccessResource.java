@@ -46,7 +46,7 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CONTENT_TRACKING_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
