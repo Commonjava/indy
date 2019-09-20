@@ -23,6 +23,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
+import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.*;
 import static org.commonjava.indy.model.core.StoreType.remote;
 
 public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
@@ -58,6 +60,9 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
                 client.module(IndySslValidationClientModule.class).revalidateAllStores();
 
             LOGGER.info("=> All Validated Remote Repositories Response: " +remoteRepositoriesValidated);
+            LOGGER.info("=> RESULT: " + remoteRepositoriesValidated.get(String.valueOf("maven:remote:central")));
+            assertNotNull(remoteRepositoriesValidated);
+            assertTrue(!remoteRepositoriesValidated.isEmpty());
 
         } catch (IndyClientException e) {LOGGER.warn("=> Exception in revalidating all store API call");}
 
@@ -84,7 +89,13 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
             ArtifactStoreValidateData remoteRepoAPIResult =
                 client.module(IndySslValidationClientModule.class).revalidateStore(storedTestRepo);
 
+
             LOGGER.info("=> API Returned Result [Validate Remote Repo]: " +  remoteRepoAPIResult  );
+
+
+            assertNotNull(remoteRepoAPIResult);
+            assertFalse(remoteRepoAPIResult.isValid());
+            assertThat(remoteRepoAPIResult.getRepositoryUrl(), is(remoteRepoAPIResult.getErrors().get("NOT_ALLOWED_SSL")));
 
         } catch (IndyClientException e) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestRepo.getUrl() +" API call");
@@ -106,6 +117,13 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
                 client.module(IndySslValidationClientModule.class).revalidateStore(storedTestSslRepo);
 
             LOGGER.info("=> API Returned Result [Validate Remote Repo]: " +  remoteSslRepoAPIResult  );
+
+            assertNotNull(remoteSslRepoAPIResult);
+            assertTrue(remoteSslRepoAPIResult.isValid());
+            assertThat(String.valueOf(200), is(remoteSslRepoAPIResult.getErrors().get("HTTP_HEAD_STATUS")));
+            assertThat(String.valueOf(200), is(remoteSslRepoAPIResult.getErrors().get("HTTP_GET_STATUS")));
+
+
         } catch (IndyClientException ice) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestSslRepo.getUrl() +" API call");
         }
@@ -135,6 +153,12 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
                 client.module(IndySslValidationClientModule.class).revalidateStore(storedTestSslRepo);
 
             LOGGER.info("=> API Returned Result [Validate Remote Repo]: " +  remoteAllowedRepoAPIResult  );
+
+            assertNotNull(remoteAllowedRepoAPIResult);
+            assertFalse(remoteAllowedRepoAPIResult.isValid());
+            assertTrue(remoteAllowedRepoAPIResult.getErrors().keySet().contains("Exception"));
+
+
         } catch (IndyClientException ice) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestAllowedRepo.getUrl() +" API call");
         }
@@ -146,6 +170,11 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
                 client.module(IndySslValidationClientModule.class).revalidateAllStores();
 
             LOGGER.info("=> All Validated Remote Repositories Response: " + remoteSslRepositoriesValidated);
+
+            assertNotNull(remoteSslRepositoriesValidated);
+            assertTrue(!remoteSslRepositoriesValidated.isEmpty());
+
+
         } catch (IndyClientException ice) {
             LOGGER.warn("=> Exception in revalidating SECOND all store API call");
         }
