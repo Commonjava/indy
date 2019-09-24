@@ -19,14 +19,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.revisions.RevisionsManager;
+import org.commonjava.indy.revisions.conf.RevisionsConfig;
 import org.commonjava.indy.revisions.jaxrs.dto.ChangeSummaryDTO;
 import org.commonjava.indy.subsys.git.GitSubsystemException;
 import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.ApplicationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +57,9 @@ public class RevisionsAdminResource
     private RevisionsManager revisionsManager;
 
     @Inject
+    private RevisionsConfig config;
+
+    @Inject
     private ObjectMapper objectMapper;
 
     @Inject
@@ -61,11 +67,17 @@ public class RevisionsAdminResource
 
     @ApiOperation(
             "Pull from the configured remote Git repository, updating the Indy data directory with files (merged according to configuration in the [revisions] section)" )
-    @ApiResponse( code = 200, message = "Pull complete" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "Pull complete" ),
+                     @ApiResponse( code=400, message="In case the revisions add-on is disabled" ) } )
     @Path( "/data/pull" )
     @GET
     public Response pullDataGitUpdates()
     {
+        if ( !config.isEnabled() )
+        {
+            return responseHelper.formatResponse( ApplicationStatus.BAD_REQUEST, "Revisions add-on is disabled" );
+        }
+
         Response response;
         try
         {
@@ -85,11 +97,17 @@ public class RevisionsAdminResource
 
     @ApiOperation(
             "Push Indy data directory content to the configured remote Git repository (if configured in the [revisions] section)" )
-    @ApiResponse( code = 200, message = "Push complete, or not configured" )
+    @ApiResponses( { @ApiResponse( code = 200, message = "Push complete, or not configured" ),
+                     @ApiResponse( code=400, message="In case the revisions add-on is disabled" ) } )
     @Path( "/data/push" )
     @GET
     public Response pushDataGitUpdates()
     {
+        if ( !config.isEnabled() )
+        {
+            return responseHelper.formatResponse( ApplicationStatus.BAD_REQUEST, "Revisions add-on is disabled" );
+        }
+
         Response response;
         try
         {
@@ -109,13 +127,19 @@ public class RevisionsAdminResource
 
     @ApiOperation(
             "Retrieve the changelog for the Indy data directory content with the specified path, start-index, and number of results" )
-    @ApiResponse( code = 200, message = "JSON containing changelog entries", response = ChangeSummaryDTO.class )
+    @ApiResponses( { @ApiResponse( code = 200, message = "JSON containing changelog entries", response = ChangeSummaryDTO.class ),
+                     @ApiResponse( code=400, message="In case the revisions add-on is disabled" ) } )
     @Path( "/data/changelog/{path: .+}" )
     @GET
     @Produces( ApplicationContent.application_json )
     public Response doGet( final @PathParam( "path" ) String path, final @QueryParam( "start" ) int start,
                            final @QueryParam( "count" ) int count )
     {
+        if ( !config.isEnabled() )
+        {
+            return responseHelper.formatResponse( ApplicationStatus.BAD_REQUEST, "Revisions add-on is disabled" );
+        }
+
         Response response;
         try
         {
