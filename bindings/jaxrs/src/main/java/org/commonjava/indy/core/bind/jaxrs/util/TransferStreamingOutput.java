@@ -15,30 +15,24 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.util;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
-
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 
 public class TransferStreamingOutput
     implements StreamingOutput
@@ -46,7 +40,7 @@ public class TransferStreamingOutput
 
     private static final String TRANSFER_METRIC_NAME = "indy.transferred.content";
 
-    private static final double NANOS_PER_SEC = 1000000000.0;
+    private static final double NANOS_PER_SEC = 1E9;
 
     private InputStream stream;
 
@@ -63,7 +57,7 @@ public class TransferStreamingOutput
     }
 
     @Override
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public void write( final OutputStream out )
         throws IOException, WebApplicationException
     {
