@@ -33,14 +33,14 @@ import java.util.UUID;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CLIENT_ADDR;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.COMPONENT_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.EXTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_REQUEST_URI;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.INTERNAL_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PREFERRED_ID;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.metrics.RequestContextHelper.COMPONENT_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_REQUEST_URI;
+import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class MDCManager

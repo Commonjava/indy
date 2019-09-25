@@ -16,7 +16,7 @@
 package org.commonjava.indy.sli.jaxrs;
 
 import org.commonjava.indy.IndyRequestConstants;
-import org.commonjava.indy.bind.jaxrs.RequestContextHelper;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -53,7 +53,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.join;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_NS;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet.FN_CONTENT;
@@ -136,7 +136,11 @@ public class GoldenSignalsFilter
         }
         finally
         {
-            long end = RequestContextHelper.getRequestEndNanos();
+            // In some cases, we cannot calculate latency without capturing actual data transfer time. When this happens,
+            // we can capture the actual data transfer time and subtract it from the total execution time to get
+            // latency.
+            long end = RequestContextHelper.getRequestEndNanos() - RequestContextHelper.getRawIoWriteNanos();
+
             MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
 
             Set<String> functions = new HashSet<>( getFunctions( req.getPathInfo(), req.getMethod() ) );

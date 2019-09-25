@@ -673,6 +673,7 @@ public abstract class IndexingContentManagerDecorator
     }
 
     @Override
+    @Measure
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException

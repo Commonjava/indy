@@ -95,6 +95,11 @@ public class RevisionsManager
     @PostConstruct
     public void setup()
     {
+        if ( !revisionsConfig.isEnabled() )
+        {
+            return;
+        }
+        
         try
         {
             final File dataDir = dataFileManager.getDetachedDataBasedir();

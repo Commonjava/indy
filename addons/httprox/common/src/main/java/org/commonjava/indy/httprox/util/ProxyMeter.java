@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.httprox.util;
 
-import org.apache.http.HttpRequest;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -23,13 +22,13 @@ import org.slf4j.MDC;
 import java.net.SocketAddress;
 
 import static java.lang.Integer.parseInt;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_LATENCY_NS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.REQUEST_PHASE_END;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.getContext;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_END;
+import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 
 public class ProxyMeter
 {

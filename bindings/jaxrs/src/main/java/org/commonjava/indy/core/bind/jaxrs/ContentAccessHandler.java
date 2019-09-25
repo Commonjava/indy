@@ -57,12 +57,12 @@ import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.CONTENT_ENTRY_POINT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.METADATA_CONTENT;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.PATH;
-import static org.commonjava.indy.bind.jaxrs.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_ENTRY_POINT;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.METADATA_CONTENT;
+import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
