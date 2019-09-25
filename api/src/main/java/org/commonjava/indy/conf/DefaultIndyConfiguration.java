@@ -80,9 +80,6 @@ public class DefaultIndyConfiguration
 
     private String nodeId;
 
-    private Boolean sslRequired;
-    
-    private List<String> remoteNoSSLHosts;
 
     public DefaultIndyConfiguration()
     {
@@ -298,29 +295,5 @@ public class DefaultIndyConfiguration
         return props;
     }
 
-    @ConfigName(value = "remote.ssl.required")
-    public void setSslRequired(Boolean sslEnabled)
-    {
-        this.sslRequired = sslEnabled;
-    }
 
-    @Override
-    public boolean isSSLRequired()
-    {
-        return this.sslRequired == null ? false : this.sslRequired;
-    }
-    
-    @ConfigName(value = "remote.nossl.hosts")
-    public void setRemoteNoSSLHosts(String hosts)
-    {
-        String[] arrayNSSLHosts = hosts.split(",");
-        this.remoteNoSSLHosts = new ArrayList<>();
-        this.remoteNoSSLHosts.addAll(Arrays.asList(arrayNSSLHosts));
-    }
-
-    @Override
-    public List<String> getRemoteNoSSLHosts()
-    {
-        return this.remoteNoSSLHosts;
-    }
 }

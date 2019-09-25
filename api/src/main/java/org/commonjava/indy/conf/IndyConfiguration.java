@@ -82,8 +82,5 @@ public interface IndyConfiguration
 
     boolean isClusterEnabled();
 
-    boolean isSSLRequired();
-    
-    List<String> getRemoteNoSSLHosts();
     
 }
