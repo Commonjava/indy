@@ -25,6 +25,7 @@ import io.undertow.util.HttpString;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +90,9 @@ public class HeaderDebugger
                               cookie.getExpires(), cookie.getMaxAge(), cookie.getComment(), cookie.getVersion() );
             }
         }
+
+        List<Runnable> workers = exchange.getConnection().getWorker().shutdownNow();
+        System.out.println("\n== Workers: ====\n" + workers + "\n===============");
 
         handler.handleRequest( exchange );
     }

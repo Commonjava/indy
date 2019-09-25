@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
-<<<<<<< HEAD
+
 import static javax.ws.rs.core.Response.Status.CONFLICT;
 import static javax.ws.rs.core.Response.noContent;
 import static javax.ws.rs.core.Response.notModified;
@@ -55,8 +55,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 
-=======
->>>>>>> upstream/master
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
@@ -136,13 +135,11 @@ public class StoreAdminHandler
     private SecurityManager securityManager;
 
     @Inject
-<<<<<<< HEAD
     StoreValidator storeValidator;
 
 
-=======
     private ResponseHelper responseHelper;
->>>>>>> upstream/master
+
 
     public StoreAdminHandler()
     {
