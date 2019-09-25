@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
@@ -39,8 +40,6 @@ public class TransferStreamingOutput
 {
 
     private static final String TRANSFER_METRIC_NAME = "indy.transferred.content";
-
-    private static final double NANOS_PER_SEC = 1E9;
 
     private InputStream stream;
 

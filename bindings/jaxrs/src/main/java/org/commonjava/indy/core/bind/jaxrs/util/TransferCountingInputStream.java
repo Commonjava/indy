@@ -26,6 +26,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
@@ -59,6 +60,7 @@ public class TransferCountingInputStream
     public void close()
             throws IOException
     {
+        long start = System.nanoTime();
         try
         {
             CountingInputStream stream = (CountingInputStream) this.in;
@@ -70,8 +72,12 @@ public class TransferCountingInputStream
             {
                 String name = getName( metricsConfig.getNodePrefix(), TRANSFER_UPLOAD_METRIC_NAME,
                                        getDefaultName( TransferCountingInputStream.class, "read" ), METER );
+
+                long end = System.nanoTime();
+                double elapsed = (end-start)/NANOS_PER_SEC;
+
                 Meter meter = metricsManager.getMeter( name );
-                meter.mark( size );
+                meter.mark( Math.round( stream.getByteCount() / elapsed ) );
             }
         }
         finally
