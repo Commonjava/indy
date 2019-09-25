@@ -91,9 +91,6 @@ public class HeaderDebugger
             }
         }
 
-        List<Runnable> workers = exchange.getConnection().getWorker().shutdownNow();
-        System.out.println("\n== Workers: ====\n" + workers + "\n===============");
-
         handler.handleRequest( exchange );
     }
 
