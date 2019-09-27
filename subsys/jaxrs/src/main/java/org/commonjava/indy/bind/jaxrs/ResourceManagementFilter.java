@@ -189,6 +189,10 @@ public class ResourceManagementFilter
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
+
+//            Thread.currentThread().getThreadGroup().list();
+//            System.out.println("\n Current Thread: " + Thread.currentThread().getName() + " ID: " + Thread.currentThread().getId());
+//            System.out.println("\n Thread State: " + Thread.currentThread().getState());
         }
     }
 

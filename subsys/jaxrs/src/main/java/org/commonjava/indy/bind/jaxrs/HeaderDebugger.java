@@ -36,14 +36,16 @@ public class HeaderDebugger
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private final HttpHandler handler;
+    private HttpHandler handler;
+
+    public HeaderDebugger() {}
 
     public HeaderDebugger( final HttpHandler handler )
     {
         this.handler = handler;
     }
 
-    public static final class Wrapper
+    public class Wrapper
         implements HandlerWrapper
     {
 

@@ -83,12 +83,15 @@ public class RestConfig
         Xnio xnio = Xnio.getInstance( Undertow.class.getClassLoader() );
         final OptionMap.Builder omBuilder = OptionMap.builder()
                                                      .set( Options.WORKER_IO_THREADS, ioThreads )
-                                                     .set( Options.CONNECTION_HIGH_WATER, 1000000 )
+                                                     .set( Options.CONNECTION_HIGH_WATER, 2000000 )
                                                      .set( Options.CONNECTION_LOW_WATER, 1000000 )
                                                      .set( Options.TCP_NODELAY, true )
                                                      .set( Options.CORK, true )
                                                      .set( Options.WORKER_TASK_CORE_THREADS, workerThreads )
-                                                     .set( Options.WORKER_TASK_MAX_THREADS, workerThreads );
+                                                     .set( Options.WORKER_TASK_MAX_THREADS, workerThreads )
+                                                    .set(Options.KEEP_ALIVE, false)
+                                                    .set(Options.WORKER_TASK_KEEPALIVE, 60000)
+            ;
 
         final OptionMap optionMap = omBuilder.getMap();
         builder.setWorker( xnio.createWorker( new ThreadGroup( "REST" ), optionMap ) );
