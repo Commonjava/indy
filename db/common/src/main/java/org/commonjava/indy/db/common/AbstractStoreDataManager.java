@@ -18,8 +18,9 @@ package org.commonjava.indy.db.common;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
-import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.InternalFeatureConfig;
+import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.*;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -30,9 +31,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import javax.inject.Named;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Map;
@@ -60,9 +59,12 @@ public abstract class AbstractStoreDataManager
     StoreValidator storeValidator;
 
     @Inject
-    private IndyConfiguration configuration;
+    private SslValidationConfig configuration;
 
     @Inject StoreDataManager storeDataManager;
+
+    @Inject
+    InternalFeatureConfig internalFeatureConfig;
 
 
     @Override
@@ -288,17 +290,17 @@ public abstract class AbstractStoreDataManager
 
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
-        if(configuration != null) {
+//        if(configuration != null) {
             ArtifactStoreValidateData validateData = null ;
             try {
 
-                logger.warn("=> [AbstractStoreDataManager] Check Config: " + configuration );
-
-                if(configuration.isSSLRequired() && configuration.isStoreValidationEnabled() ) {
+                if(internalFeatureConfig.getSslValidation() ) {
                     validateData = storeValidator.validate(store);
-                    logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
+//                    logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
                     // if it is not valid then disable that repository
-                    if(!validateData.isValid()) {
+                    if(!validateData.isValid() ) {
+                        logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
+                            " with name: " + store.getName());
                         disableNotValidStore(store,validateData);
                     }
                 }
@@ -317,7 +319,7 @@ public abstract class AbstractStoreDataManager
 //                disableNotValidStore(store,validateData);
             }
 
-        }
+//        }
 
 
         Function<StoreKey, Boolean> lockHandler = k -> doStore( k, store, summary, error, skipIfExists, fireEvents, eventMetadata );

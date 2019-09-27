@@ -38,6 +38,7 @@ import org.junit.rules.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -203,6 +204,11 @@ public abstract class AbstractIndyFunctionalTest
         return fixture;
     }
 
+
+    protected <T> T lookup( Class<T> component )    {
+        return CDI.current().select( component ).get();
+    }
+
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
@@ -221,6 +227,8 @@ public abstract class AbstractIndyFunctionalTest
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
+
+            writeConfigFile( "conf.d/internal_validation.conf", "[internal]\n_internal.store.validation.enabled=false" );
         }
         else
         {

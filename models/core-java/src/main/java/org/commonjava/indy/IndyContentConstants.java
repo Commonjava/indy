@@ -21,6 +21,9 @@ package org.commonjava.indy;
 public final class IndyContentConstants
 {
 
+    // for measuring transfer rates...
+    public static final double NANOS_PER_SEC = 1E9;
+
     public static final String CHECK_CACHE_ONLY = "cache-only";
 
     public static final String CASCADE = "cascade";

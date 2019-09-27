@@ -22,6 +22,7 @@ import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
+import org.commonjava.indy.core.bind.jaxrs.util.TransferCountingInputStream;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.metrics.IndyMetricsManager;
@@ -132,8 +133,9 @@ public class ContentAccessHandler
         final Transfer transfer;
         try
         {
-            transfer =
-                    contentController.store( sk, path, request.getInputStream(), eventMetadata );
+            TransferCountingInputStream streamingInputStream =
+                    new TransferCountingInputStream( request.getInputStream(), metricsManager, metricsConfig );
+            transfer = contentController.store( sk, path, streamingInputStream, eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );

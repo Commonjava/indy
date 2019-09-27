@@ -16,72 +16,79 @@
 package org.commonjava.indy.core.bind.jaxrs.util;
 
 import com.codahale.metrics.Meter;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.apache.commons.io.input.CountingInputStream;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.StreamingOutput;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 
-public class TransferStreamingOutput
-    implements StreamingOutput
+public class TransferCountingInputStream
+        extends FilterInputStream
 {
 
-    private static final String TRANSFER_METRIC_NAME = "indy.transferred.content";
-
-    private InputStream stream;
+    private static final String TRANSFER_UPLOAD_METRIC_NAME = "indy.transferred.content.upload";
 
     private IndyMetricsManager metricsManager;
 
     private IndyMetricsConfig metricsConfig;
 
-    public TransferStreamingOutput( final InputStream stream, final IndyMetricsManager metricsManager,
-                                    final IndyMetricsConfig metricsConfig )
+    private long size;
+
+    protected TransferCountingInputStream( final InputStream stream )
     {
-        this.stream = stream;
+        super( new CountingInputStream( stream ) );
+    }
+
+    public TransferCountingInputStream( final InputStream stream, final IndyMetricsManager metricsManager,
+                                        final IndyMetricsConfig metricsConfig )
+    {
+        this( stream );
         this.metricsManager = metricsManager;
         this.metricsConfig = metricsConfig;
     }
 
     @Override
-    @Measure
-    public void write( final OutputStream out )
-        throws IOException, WebApplicationException
+    public void close()
+            throws IOException
     {
         long start = System.nanoTime();
         try
         {
-            CountingOutputStream cout = new CountingOutputStream( out );
-            IOUtils.copy( stream, cout );
-
+            CountingInputStream stream = (CountingInputStream) this.in;
             Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.trace( "Wrote: {} bytes", cout.getByteCount() );
+            size = stream.getByteCount();
+            logger.trace( "Reads: {} bytes", size );
 
-            String name = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME,
-                                   getDefaultName( TransferStreamingOutput.class, "write" ), METER );
+            if ( metricsConfig != null && metricsManager != null )
+            {
+                String name = getName( metricsConfig.getNodePrefix(), TRANSFER_UPLOAD_METRIC_NAME,
+                                       getDefaultName( TransferCountingInputStream.class, "read" ), METER );
 
-            long end = System.nanoTime();
-            double elapsed = (end-start)/NANOS_PER_SEC;
+                long end = System.nanoTime();
+                double elapsed = (end-start)/NANOS_PER_SEC;
 
-            Meter meter = metricsManager.getMeter( name );
-            meter.mark( Math.round( cout.getByteCount() / elapsed ) );
+                Meter meter = metricsManager.getMeter( name );
+                meter.mark( Math.round( stream.getByteCount() / elapsed ) );
+            }
         }
         finally
         {
-            IOUtils.closeQuietly( stream );
+            super.close();
         }
+
     }
 
+    long getSize()
+    {
+        return size;
+    }
 }
