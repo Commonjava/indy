@@ -26,7 +26,7 @@ pipeline {
             when { branch 'master' }
             steps {
                 echo "Deploy"
-                sh 'mvn help:effective-settings -B -V deploy -e -s ~/sonatype/settings.xml'
+                sh 'mvn help:effective-settings -B -V deploy -e'
             }
         }
         stage('Archive') {
