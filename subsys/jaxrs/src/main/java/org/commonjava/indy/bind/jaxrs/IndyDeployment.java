@@ -174,8 +174,9 @@ public class IndyDeployment
                                                       .addFilterUrlMapping( apiVersioningFilter.getName(), "/*",
                                                                             DispatcherType.REQUEST )
                                                       .setDeploymentName( "Indy" )
-                                                      .setClassLoader( ClassLoader.getSystemClassLoader() )
-                                                      .addOuterHandlerChainWrapper( new HeaderDebugger().new Wrapper() );
+                                                      .setClassLoader( ClassLoader.getSystemClassLoader() );
+                                                      //.addOuterHandlerChainWrapper( new HeaderDebugger().new
+        // Wrapper() );
 
         if ( deploymentProviders != null )
         {
