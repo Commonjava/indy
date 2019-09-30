@@ -189,6 +189,7 @@ public class ResourceManagementFilter
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
+
         }
     }
 
