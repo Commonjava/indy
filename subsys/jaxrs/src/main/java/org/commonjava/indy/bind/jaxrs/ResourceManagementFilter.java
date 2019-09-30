@@ -190,6 +190,8 @@ public class ResourceManagementFilter
 
             mdcManager.clear();
 
+//            Thread.currentThread().getThreadGroup().list();
+
         }
     }
 
