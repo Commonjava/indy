@@ -102,7 +102,7 @@ public class StoreAdminHandler
     @Inject
     private SecurityManager securityManager;
 
-
+    @Inject
     StoreValidator storeValidator;
 
 

@@ -159,6 +159,7 @@ public class IndyDeployment
                         Servlets.filter( "ApiVersioning", ApiVersioningFilter.class,
                                          new ImmediateInstanceFactory<ApiVersioningFilter>(
                                                          this.apiVersioningFilter ) );
+        
 
         final DeploymentInfo di = new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
                                                       //.addInitParameter( "resteasy.scan", Boolean.toString( true ) )
@@ -173,8 +174,9 @@ public class IndyDeployment
                                                       .addFilterUrlMapping( apiVersioningFilter.getName(), "/*",
                                                                             DispatcherType.REQUEST )
                                                       .setDeploymentName( "Indy" )
-                                                      .setClassLoader( ClassLoader.getSystemClassLoader() )
-                                                      .addOuterHandlerChainWrapper( new HeaderDebugger.Wrapper() );
+                                                      .setClassLoader( ClassLoader.getSystemClassLoader() );
+                                                      //.addOuterHandlerChainWrapper( new HeaderDebugger().new
+        // Wrapper() );
 
         if ( deploymentProviders != null )
         {
