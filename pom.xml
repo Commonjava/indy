@@ -63,7 +63,7 @@
     <!--<luceneVersion>7.3.0</luceneVersion>-->
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
-    <undertowVersion>2.0.1.Final</undertowVersion>
+    <undertowVersion>2.0.26.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
     <keycloakVersion>6.0.0</keycloakVersion>
     <bouncycastleVersion>1.53</bouncycastleVersion>
@@ -72,7 +72,7 @@
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
-    <jacksonVersion>2.9.9</jacksonVersion>
+    <jacksonVersion>2.9.10</jacksonVersion>
     <metricsVersion>4.0.2</metricsVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
