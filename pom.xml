@@ -80,7 +80,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
-    <galleyVersion>0.17.1-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.17.1</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>

@@ -14,7 +14,7 @@ import java.io.InputStream;
 @SectionName( InternalFeatureConfig.SECTION_NAME )
 public class InternalFeatureConfig implements IndyConfigInfo {
 
-    public final static String SECTION_NAME = "internal";
+    public final static String SECTION_NAME = "_internal";
 
     private Boolean storeValidation;
 
@@ -23,25 +23,25 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     public InternalFeatureConfig() {
     }
 
-    public Boolean getSslValidation() {
-        return storeValidation == null ? Boolean.TRUE : storeValidation;
+    public Boolean getStoreValidation() {
+        return storeValidation == null ? Boolean.FALSE : storeValidation;
     }
 
-    @ConfigName("_internal.store.validation.enabled")
-    public void setSslValidation(Boolean sslValidation) {
-        logger.warn("=> SSl Validation value set to : " + sslValidation);
-        this.storeValidation = sslValidation;
+    @ConfigName("store.validation.enabled")
+    public void setStoreValidation( Boolean storeValidation) {
+        logger.warn("=> Store Validation value set to : " + storeValidation);
+        this.storeValidation = storeValidation;
     }
 
     @Override
     public String getDefaultConfigFileName()
     {
-        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "ssl_validation.conf" ).getPath();
+        return new File( IndyConfigInfo.CONF_INCLUDES_DIR, "internal-features.conf" ).getPath();
     }
 
     @Override
     public InputStream getDefaultConfig()
     {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-ssl_validation.conf" );
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-internal-features.conf" );
     }
 }

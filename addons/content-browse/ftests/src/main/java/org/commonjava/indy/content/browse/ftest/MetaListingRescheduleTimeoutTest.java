@@ -156,7 +156,7 @@ public class MetaListingRescheduleTimeoutTest
     {
         writeConfigFile( "main.conf", "remote.list.download.enabled=true\n"
             + "[storage-default]\nstorage.dir=${indy.home}/var/lib/indy/storage\n"
-            +   "[internal]\n_internal.store.validation.enabled=false"
+            +   "[_internal]\nstore.validation.enabled=false"
         );
     }
 

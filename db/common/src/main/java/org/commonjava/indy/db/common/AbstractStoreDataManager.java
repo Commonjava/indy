@@ -18,7 +18,6 @@ package org.commonjava.indy.db.common;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.*;
@@ -294,7 +293,7 @@ public abstract class AbstractStoreDataManager
             ArtifactStoreValidateData validateData = null ;
             try {
 
-                if(internalFeatureConfig.getSslValidation() ) {
+                if(internalFeatureConfig.getStoreValidation() ) {
                     validateData = storeValidator.validate(store);
 //                    logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
                     // if it is not valid then disable that repository
