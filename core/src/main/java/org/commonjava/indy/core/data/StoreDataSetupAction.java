@@ -67,7 +67,7 @@ public class StoreDataSetupAction
                               .containsByName( "central" ) )
             {
                 final RemoteRepository central =
-                        new RemoteRepository( MAVEN_PKG_KEY, "central", "http://repo.maven.apache.org/maven2/" );
+                        new RemoteRepository( MAVEN_PKG_KEY, "central", "https://repo.maven.apache.org/maven2/" );
                 central.setCacheTimeoutSeconds( 86400 );
                 storeManager.storeArtifactStore( central, summary, true, true,
                                                  new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,

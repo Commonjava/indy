@@ -24,7 +24,7 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     }
 
     public Boolean getStoreValidation() {
-        return storeValidation == null ? Boolean.FALSE : storeValidation;
+        return storeValidation == null ? Boolean.TRUE : storeValidation;
     }
 
     @ConfigName("store.validation.enabled")

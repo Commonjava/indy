@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.filer.def;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftScheduledExecutor;
@@ -161,7 +162,7 @@ public class DefaultGalleyStorageProvider
     private void setupTransferDecoratorPipeline()
     {
         List<TransferDecorator> decorators = new ArrayList<>();
-        decorators.add( new IOLatencyDecorator( timerProvider() ));
+        decorators.add( new IOLatencyDecorator( timerProvider(), meterProvider() ));
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
         decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, timerProvider() ) );
         for ( TransferDecorator decorator : transferDecorators )
@@ -170,6 +171,11 @@ public class DefaultGalleyStorageProvider
         }
         decorators.add( getChecksummingTransferDecorator() );
         transferDecorator = new TransferDecoratorManager( decorators );
+    }
+
+    private Function<String, Meter> meterProvider()
+    {
+        return (name)->metricsManager.getMeter( name );
     }
 
     private Function<String, Timer.Context> timerProvider()

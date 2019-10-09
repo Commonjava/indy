@@ -1,6 +1,9 @@
 package org.commonjava.indy.filer.def;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.commons.io.input.CountingInputStream;
+import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Transfer;
@@ -16,16 +19,19 @@ public class IOLatencyDecorator
 {
     private Function<String, Timer.Context> timerProvider;
 
-    public IOLatencyDecorator( Function<String, Timer.Context> timerProvider )
+    private Function<String, Meter> meterProvider;
+
+    public IOLatencyDecorator( Function<String, Timer.Context> timerProvider, Function<String, Meter> meterProvider )
     {
         this.timerProvider = timerProvider;
+        this.meterProvider = meterProvider;
     }
 
     @Override
     public InputStream decorateRead( final InputStream stream, final Transfer transfer, final EventMetadata metadata )
             throws IOException
     {
-        return new TimingInputStream( stream, timerProvider );
+        return new TimingInputStream( new CountingInputStream( stream ), timerProvider, meterProvider );
     }
 
     @Override
@@ -35,7 +41,7 @@ public class IOLatencyDecorator
     {
         if ( op == TransferOperation.UPLOAD )
         {
-            return new TimingOutputStream( stream, timerProvider );
+            return new TimingOutputStream( new CountingOutputStream( stream ), timerProvider, meterProvider );
         }
 
         return super.decorateWrite( stream, transfer, op, metadata );
