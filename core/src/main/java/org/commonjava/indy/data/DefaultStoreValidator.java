@@ -42,11 +42,13 @@ public class DefaultStoreValidator implements StoreValidator {
     @Inject
     SslValidationConfig configuration;
 
+    final HashMap<String, String> errors = new HashMap<>();
+
     @Override
     public ArtifactStoreValidateData validate(ArtifactStore artifactStore) {
 //        LOGGER.warn("\n=> Allowed Remote Repositories by Config File: [ "+configuration.getRemoteNoSSLHosts()+" ]\n");
         final CountDownLatch httpRequestsLatch = new CountDownLatch(2);
-        final HashMap<String, String> errors = new HashMap<>();
+
         Optional<URL> remoteUrl = Optional.empty();
 
         try {
@@ -173,7 +175,7 @@ public class DefaultStoreValidator implements StoreValidator {
     }
 
     private ArtifactStoreValidateData disabledRemoteRepositoryData(RemoteRepository remoteRepository) {
-        HashMap<String, String> errors = new HashMap<>();
+//        HashMap<String, String> errors = new HashMap<>();
         errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Disabled Remote Repository");
 
         try {
@@ -194,7 +196,7 @@ public class DefaultStoreValidator implements StoreValidator {
         //Check First if this remote repository is in allowed repositories from remote.nossl.hosts Config Variable
         List<String> remoteNoSSLHosts = configuration.getRemoteNoSSLHosts();
         String host = remoteUrl.get().getHost();
-        HashMap<String, String> errors = new HashMap<>();
+//        HashMap<String, String> errors = new HashMap<>();
 
         for(String remoteHost : remoteNoSSLHosts) {
             LOGGER.warn("=> Validating Allowed Remote Hostname: "+remoteHost+" For Host: "+host+"\n");
@@ -220,7 +222,7 @@ public class DefaultStoreValidator implements StoreValidator {
 
     private ArtifactStoreValidateData availableSslRemoteRepository(CountDownLatch httpRequestsLatch,
                                                                    Optional<URL> remoteUrl,RemoteRepository remoteRepository) throws InterruptedException, ExecutionException, URISyntaxException {
-        HashMap<String, String> errors = new HashMap<>();
+//        HashMap<String, String> errors = new HashMap<>();
         // Execute HTTP GET & HEAD requests in separate thread pool from executor service
         Future<Integer> httpGetStatus = executeGetHttp(new HttpGet(remoteUrl.get().toURI()), httpRequestsLatch);
         Future<Integer> httpHeadStatus = executeHeadHttp(new HttpHead(remoteUrl.get().toURI()), httpRequestsLatch);

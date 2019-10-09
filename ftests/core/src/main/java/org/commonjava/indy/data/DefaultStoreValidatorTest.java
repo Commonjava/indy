@@ -80,8 +80,8 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
         assertNotNull( validateData );
         assertFalse(validateData.isValid());
-        assertNull(validateData.getErrors().get("HTTP_GET_STATUS"));
-        assertNull(validateData.getErrors().get("HTTP_HEAD_STATUS"));
+        assertNotNull(validateData.getErrors().get("HTTP_GET_STATUS"));
+        assertNotNull(validateData.getErrors().get("HTTP_HEAD_STATUS"));
         assertNotNull( validateData.getErrors().get("disabled") );
 
         RemoteRepository notValidUrlRepo =
@@ -106,20 +106,52 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
             new RemoteRepository( "maven", "validation-indy-allowed", "http://127.0.0.1" );
 
         LOGGER.warn("=> Start Validating RemoteRepository: [" + allowedRemoteRepo.getUrl()+"]");
-        RemoteRepository remoteRepository3 = client.stores().create(allowedRemoteRepo, changelog,
-            RemoteRepository.class);
+        RemoteRepository remoteRepository3 = client.stores().create(allowedRemoteRepo, changelog, RemoteRepository.class);
 
 
         ArtifactStoreValidateData validateAllowedRepo = validator.validate(remoteRepository3);
-        LOGGER.warn("=> Returned [Allowed Not Valid ( !GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateAllowedRepo.toString());
+        LOGGER.warn("=> Returned [Allowed Not Valid ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateAllowedRepo.toString());
 
         assertNotNull( validateAllowedRepo );
         assertFalse(validateAllowedRepo.isValid());
-        assertNull(validateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
-        assertNull(validateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
+        assertNotNull(validateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
+        assertNotNull(validateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
         assertNotNull( validateAllowedRepo.getErrors().get("disabled") );
 
 
+
+        RemoteRepository npmRemoteRepo =
+          new RemoteRepository( "npm", "validation-indy-npm", "https://repository.engineering.redhat.com/nexus/" );
+
+        LOGGER.warn("=> Start Validating NPM RemoteRepository: [" + npmRemoteRepo.getUrl()+"]");
+        RemoteRepository npmRemoteRepository = client.stores().create(npmRemoteRepo, changelog, RemoteRepository.class);
+
+
+        ArtifactStoreValidateData validateNPMRepo = validator.validate(npmRemoteRepository);
+        LOGGER.warn("=> Returned [Allowed Not Valid ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateNPMRepo.toString());
+
+        assertNotNull( validateNPMRepo );
+        // Valid SSL remote repo but because there is authentication HTTP GET & HEAD are unsuccessfull 
+        assertFalse(validateNPMRepo.isValid());
+        assertNotNull(validateNPMRepo.getErrors().get("HTTP_GET_STATUS"));
+        assertNotNull(validateNPMRepo.getErrors().get("HTTP_HEAD_STATUS"));
+
+
+        RemoteRepository testAllowedRemoteRepo =
+          new RemoteRepository( "maven", "validation-indy-test-allowed", "http://maven.repository.redhat.com/techpreview/all" );
+
+        LOGGER.warn("=> Start Validating RemoteRepository: [" + testAllowedRemoteRepo.getUrl()+"]");
+        RemoteRepository testRemoteRepositoryAllowed = client.stores().create(testAllowedRemoteRepo, changelog, RemoteRepository.class);
+
+
+        ArtifactStoreValidateData testValidateAllowedRepo = validator.validate(testRemoteRepositoryAllowed);
+        LOGGER.warn("=> Returned [Allowed Not Valid? ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + testValidateAllowedRepo.toString());
+
+        assertNotNull( testValidateAllowedRepo );
+        assertFalse(testValidateAllowedRepo.isValid());
+        assertNotNull(testValidateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
+        assertNotNull(testValidateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
+        assertTrue(testRemoteRepositoryAllowed.isDisabled());
 
     }
 
@@ -139,8 +171,7 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
     @Override
     protected void initTestConfig(CoreServerFixture fixture) throws IOException {
         writeConfigFile( "conf.d/ssl.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
-        writeConfigFile( "conf.d/default-main.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl" +
-            ".required=true\n");
+        writeConfigFile( "conf.d/default-main.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
 
     }
 }
