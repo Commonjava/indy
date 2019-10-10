@@ -230,8 +230,8 @@ public class DefaultStoreValidator implements StoreValidator {
         if(!remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
             errors.put(StoreValidationConstants.HTTP_PROTOCOL, remoteUrl.get().getProtocol());
         }
-        // Check for Sucessfull Validation
-        if (httpGetStatus.get() < 400 && httpHeadStatus.get() < 400) {
+        // Check for Sucessfull Validation for only one http call to be successfull...
+        if (httpGetStatus.get() < 400 || httpHeadStatus.get() < 400) {
             LOGGER.warn("=> Success HTTP GET and HEAD Response from Remote Repository: " + remoteUrl.get());
             return new ArtifactStoreValidateData
                 .Builder(remoteRepository.getKey())
