@@ -193,7 +193,7 @@ public class DefaultStoreValidator implements StoreValidator {
         //Check First if this remote repository is in allowed repositories from remote.nossl.hosts Config Variable
         List<String> remoteNoSSLHosts = configuration.getRemoteNoSSLHosts();
         String host = remoteUrl.get().getHost();
-//        HashMap<String, String> errors = new HashMap<>();
+        HashMap<String, String> errors = new HashMap<>();
 
         for(String remoteHost : remoteNoSSLHosts) {
             LOGGER.warn("=> Validating Allowed Remote Hostname: "+remoteHost+" For Host: "+host+"\n");
