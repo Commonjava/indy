@@ -36,7 +36,7 @@ public class SslValidationConfig implements IndyConfigInfo{
 
     public boolean isSSLRequired()
     {
-        return this.sslRequired == null ? true : this.sslRequired;
+        return this.sslRequired == null ? Boolean.FALSE : this.sslRequired;
     }
 
     @ConfigName(value = "remote.nossl.hosts")
@@ -49,9 +49,6 @@ public class SslValidationConfig implements IndyConfigInfo{
 
     public List<String> getRemoteNoSSLHosts()
     {
-//        ArrayList<String> defaultSllAllowed = new ArrayList<>();
-//        defaultSllAllowed.add("localhost");defaultSllAllowed.add("127.0.0.1");
-//        return this.remoteNoSSLHosts == null ? defaultSllAllowed : this.remoteNoSSLHosts;
         return this.remoteNoSSLHosts == null ? new ArrayList<>() : this.remoteNoSSLHosts;
     }
 
