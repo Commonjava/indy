@@ -159,6 +159,7 @@
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-core</artifactId>
     </dependency>
+
   </dependencies>
   
   <build>

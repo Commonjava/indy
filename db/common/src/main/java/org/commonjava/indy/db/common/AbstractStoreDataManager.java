@@ -293,16 +293,17 @@ public abstract class AbstractStoreDataManager
             ArtifactStoreValidateData validateData = null ;
             try {
 
-                if(internalFeatureConfig.getStoreValidation() ) {
-                    validateData = storeValidator.validate(store);
-//                    logger.warn("=> [AbstractStoreDataManager] Validate ArtifactStoreValidateData: " + validateData);
-                    // if it is not valid then disable that repository
-                    if(!validateData.isValid() ) {
-                        logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
-                            " with name: " + store.getName());
-                        disableNotValidStore(store,validateData);
+//                if(configuration.isSSLRequired()) {
+                    if (internalFeatureConfig.getStoreValidation()) {
+                        validateData = storeValidator.validate(store);
+
+                        if (!validateData.isValid()) {
+                            logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
+                              " with name: " + store.getName());
+                            disableNotValidStore(store, validateData);
+                        }
                     }
-                }
+//                }
             }
             catch (MalformedURLException mue) {
                 logger.warn("=> [AbstractStoreDataManager] MalformedURLException:" + mue.getMessage());
