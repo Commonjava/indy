@@ -159,6 +159,13 @@
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-core</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>com.netflix.hystrix</groupId>
+      <artifactId>hystrix-core</artifactId>
+      <version>1.5.18</version>
+    </dependency>
+
   </dependencies>
   
   <build>

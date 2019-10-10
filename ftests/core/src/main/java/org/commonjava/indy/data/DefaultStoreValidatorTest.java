@@ -114,8 +114,6 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
         assertNotNull( validateAllowedRepo );
         assertFalse(validateAllowedRepo.isValid());
-        assertNotNull(validateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
-        assertNotNull(validateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
         assertNotNull( validateAllowedRepo.getErrors().get("disabled") );
 
 
