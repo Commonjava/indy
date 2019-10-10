@@ -2,18 +2,13 @@ package org.commonjava.indy.jaxrs;
 
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
-import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.ArtifactStoreValidateData;
-import org.commonjava.indy.data.DefaultStoreValidatorTest;
 import org.commonjava.indy.data.StoreValidator;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
-import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.h2.tools.Restore;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.LoggerFactory;
@@ -72,7 +67,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
             // first there is need for config variables to be set to false (remote.ssl.required , _internal.store.validation.enabled )
             if(configuration.isSSLRequired() == true) { configuration.setSslRequired(false); }
-            if(featureConfig.getSslValidation() == true) { featureConfig.setSslValidation(false); }
+            if(featureConfig.getStoreValidation() == true) { featureConfig.setStoreValidation( false); }
 
             RemoteRepository testRepo = new RemoteRepository("maven", "test", "http://repo.maven.apache.org/maven2");
 
@@ -83,7 +78,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
             // now there is need for config varables to be set to true (remote.ssl.required , _internal.store.validation.enabled )
             if(configuration.isSSLRequired() == false) { configuration.setSslRequired(true); }
-            if(featureConfig.getSslValidation() == false) { featureConfig.setSslValidation(true); }
+            if(featureConfig.getStoreValidation() == false) { featureConfig.setStoreValidation( true); }
 
             LOGGER.info("=> Validating Remote RemoteRepository: " + testRepo.getUrl());
             ArtifactStoreValidateData remoteRepoAPIResult =
@@ -136,7 +131,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
             // first there is need for config variables to be set to false (remote.ssl.required , _internal.store.validation.enabled )
             if(configuration.isSSLRequired() == true) { configuration.setSslRequired(false); }
-            if(featureConfig.getSslValidation() == true) { featureConfig.setSslValidation(false); }
+            if(featureConfig.getStoreValidation() == true) { featureConfig.setStoreValidation( false); }
 
             LOGGER.info("=> Storing Remote RemoteRepository: " + testRepoAllowed.getUrl());
             client.stores().create(testRepoAllowed, "Testing SSL Remote RemoteRepository", RemoteRepository.class);
@@ -146,7 +141,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
             // now there is need for config varables to be set to true (remote.ssl.required , _internal.store.validation.enabled )
             if(configuration.isSSLRequired() == false) { configuration.setSslRequired(true); }
-            if(featureConfig.getSslValidation() == false) { featureConfig.setSslValidation(true); }
+            if(featureConfig.getStoreValidation() == false) { featureConfig.setStoreValidation( true); }
 
             LOGGER.info("=> Validating Remote RemoteRepository: " + testRepoAllowed.getUrl());
             ArtifactStoreValidateData remoteAllowedRepoAPIResult =
@@ -192,7 +187,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
     @Override
     protected void initTestConfig( CoreServerFixture fixture ) throws IOException
     {
-        writeConfigFile( "conf.d/internal_validation.conf", "[internal]\n_internal.store.validation.enabled=true" );
+        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=true" );
         writeConfigFile( "conf.d/ssl.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
     }
 }

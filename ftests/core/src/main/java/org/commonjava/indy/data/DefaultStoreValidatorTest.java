@@ -131,7 +131,7 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
         writeConfigFile( "conf.d/ssl.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage" );
-        writeConfigFile( "conf.d/internal_validation.conf", "[internal]\n_internal.store.validation.enabled=true" );
+        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=true" );
 
 
     }

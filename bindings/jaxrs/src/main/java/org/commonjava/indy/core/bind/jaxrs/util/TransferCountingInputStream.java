@@ -19,6 +19,7 @@ import com.codahale.metrics.Meter;
 import org.apache.commons.io.input.CountingInputStream;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 
 public class TransferCountingInputStream
-        extends FilterInputStream
+        extends IdempotentCloseInputStream
 {
 
     private static final String TRANSFER_UPLOAD_METRIC_NAME = "indy.transferred.content.upload";

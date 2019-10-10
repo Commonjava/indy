@@ -72,7 +72,7 @@
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
-    <jacksonVersion>2.9.9</jacksonVersion>
+    <jacksonVersion>2.9.10</jacksonVersion>
     <metricsVersion>4.0.2</metricsVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
@@ -80,7 +80,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
-    <galleyVersion>0.17.1-SNAPSHOT</galleyVersion>
+    <galleyVersion>0.17.2</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>

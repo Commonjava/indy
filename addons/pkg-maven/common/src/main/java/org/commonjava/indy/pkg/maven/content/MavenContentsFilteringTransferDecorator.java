@@ -39,6 +39,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.io.OverriddenBooleanValue;
 import org.commonjava.maven.galley.transport.htcli.model.HttpLocation;
+import org.commonjava.maven.galley.util.IdempotentCloseOutputStream;
 import org.commonjava.maven.galley.util.TransferUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,7 +172,7 @@ public class MavenContentsFilteringTransferDecorator
     }
 
     private static class MetadataFilteringOutputStream
-                    extends FilterOutputStream
+            extends IdempotentCloseOutputStream
     {
         private static final String TIMER = "io.maven.metadata.out.filter";
 

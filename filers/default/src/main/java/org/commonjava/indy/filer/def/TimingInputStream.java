@@ -1,40 +1,47 @@
 package org.commonjava.indy.filer.def;
 
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.apache.commons.io.input.CountingInputStream;
 import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Function;
 
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
+
 public class TimingInputStream
-        extends FilterInputStream
+        extends IdempotentCloseInputStream
 {
-    private static final String RAW_IO_WRITE = "io.raw.read";
+    private static final String RAW_IO_READ = "io.raw.read.timer";
+
+    private static final String RAW_IO_READ_RATE = "io.raw.read.rate";
 
     private Long nanos;
 
     private Function<String, Timer.Context> timerProvider;
 
+    private final Function<String, Meter> meterProvider;
+
     private Timer.Context timer;
 
-    public TimingInputStream( final InputStream stream, final Function<String, Timer.Context> timerProvider )
+    private Meter meter;
+
+    public TimingInputStream( final CountingInputStream stream, final Function<String, Timer.Context> timerProvider,
+                              final Function<String, Meter> meterProvider )
     {
         super( stream );
-        this.timerProvider = timerProvider == null ? (s)->null : timerProvider;
+        this.timerProvider = timerProvider == null ? ( s ) -> null : timerProvider;
+        this.meterProvider = meterProvider;
     }
 
     @Override
     public int read()
             throws IOException
     {
-        if ( nanos == null )
-        {
-            nanos = System.nanoTime();
-            timer = timerProvider.apply( RAW_IO_WRITE );
-        }
-
+        initMetrics();
         return super.read();
     }
 
@@ -42,12 +49,7 @@ public class TimingInputStream
     public int read( final byte[] b )
             throws IOException
     {
-        if ( nanos == null )
-        {
-            nanos = System.nanoTime();
-            timer = timerProvider.apply( RAW_IO_WRITE );
-        }
-
+        initMetrics();
         return super.read( b );
     }
 
@@ -55,12 +57,7 @@ public class TimingInputStream
     public int read( final byte[] b, final int off, final int len )
             throws IOException
     {
-        if ( nanos == null )
-        {
-            nanos = System.nanoTime();
-            timer = timerProvider.apply( RAW_IO_WRITE );
-        }
-
+        initMetrics();
         return super.read( b, off, len );
     }
 
@@ -72,12 +69,28 @@ public class TimingInputStream
 
         if ( nanos != null )
         {
-            RequestContextHelper.setContext( RequestContextHelper.RAW_IO_WRITE_NANOS, System.nanoTime() - nanos );
-        }
+            long elapsed = System.nanoTime() - nanos;
+            RequestContextHelper.setContext( RequestContextHelper.RAW_IO_WRITE_NANOS, elapsed );
 
-        if ( timer != null )
+            if ( timer != null )
+            {
+                timer.stop();
+            }
+
+            if ( meter != null )
+            {
+                meter.mark( (long) ( ( (CountingInputStream) this.in ).getByteCount() / ( elapsed / NANOS_PER_SEC ) ) );
+            }
+        }
+    }
+
+    private void initMetrics()
+    {
+        if ( nanos == null )
         {
-            timer.stop();
+            nanos = System.nanoTime();
+            timer = timerProvider.apply( RAW_IO_READ );
+            meter = meterProvider.apply( RAW_IO_READ_RATE );
         }
     }
 }

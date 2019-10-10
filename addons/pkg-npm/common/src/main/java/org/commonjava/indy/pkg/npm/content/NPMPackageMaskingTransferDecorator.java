@@ -24,6 +24,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,7 +92,7 @@ public class NPMPackageMaskingTransferDecorator
     }
 
     private static class PackageMaskingInputStream
-                    extends FilterInputStream
+            extends IdempotentCloseInputStream
     {
         private static final String TIMER = "io.npm.metadata.in.filter";
 

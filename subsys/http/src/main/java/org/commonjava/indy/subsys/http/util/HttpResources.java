@@ -31,6 +31,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.subsys.http.IndyHttpProvider;
+import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 
 /**
  * Contains request, response, and client references, for passing raw data streams and the like back to the caller without losing track of the 
@@ -139,7 +140,7 @@ public class HttpResources
     }
 
     private static final class HttpResourcesManagingInputStream
-        extends FilterInputStream
+            extends IdempotentCloseInputStream
     {
 
         private final HttpResources resources;

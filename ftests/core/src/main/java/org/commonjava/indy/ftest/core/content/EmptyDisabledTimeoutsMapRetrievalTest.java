@@ -73,6 +73,7 @@ public class EmptyDisabledTimeoutsMapRetrievalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false\n[internal]\n_internal.store.validation.enabled=false" );
+        writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
+        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
     }
 }
