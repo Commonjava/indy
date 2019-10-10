@@ -593,22 +593,25 @@ public class DefaultDownloadManager
 
 //            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
             final ContentQuality quality = getQuality( path );
-            if ( quality == ContentQuality.SNAPSHOT )
+            if ( quality != ContentQuality.METADATA )
             {
-                if ( !deploy.isAllowSnapshots() )
+                if ( quality == ContentQuality.SNAPSHOT )
                 {
-                    logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
+                    if ( !deploy.isAllowSnapshots() )
+                    {
+                        logger.error( "Cannot store snapshot in non-snapshot deploy point: {}", deploy.getName() );
+                        throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
+                                                         "Cannot store snapshot in non-snapshot deploy point: {}",
+                                                         deploy.getName() );
+                    }
+                }
+                else if ( !deploy.isAllowReleases() )
+                {
+                    logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
                     throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                     "Cannot store snapshot in non-snapshot deploy point: {}",
+                                                     "Cannot store release in snapshot-only deploy point: {}",
                                                      deploy.getName() );
                 }
-            }
-            else if ( !deploy.isAllowReleases() )
-            {
-                logger.error( "Cannot store release in snapshot-only deploy point: {}", deploy.getName() );
-                throw new IndyWorkflowException( ApplicationStatus.BAD_REQUEST.code(),
-                                                 "Cannot store release in snapshot-only deploy point: {}",
-                                                 deploy.getName() );
             }
         }
 
