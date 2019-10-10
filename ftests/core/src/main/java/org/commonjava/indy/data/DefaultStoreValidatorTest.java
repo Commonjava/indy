@@ -51,38 +51,38 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
         final String changelog = "Create repo validation test structure";
 
-        RemoteRepository validRepoSsl =
-            new RemoteRepository( "maven", "validation", "https://repo.maven.apache.org/maven2/" );
+//        RemoteRepository validRepoSsl =
+//            new RemoteRepository( "maven", "validation", "https://repo.maven.apache.org/maven2/" );
+//
+//        LOGGER.warn("=> Start Validating RemoteRepository: [" + validRepoSsl.getUrl()+"]");
+//        RemoteRepository remoteRepository = client.stores().create(validRepoSsl, changelog, RemoteRepository.class);
+//
+//
+//        ArtifactStoreValidateData validateDataSsl = validator.validate(remoteRepository);
+//        LOGGER.warn("=> Returned [Valid SSL] ArtifactStoreValidateData: " + validateDataSsl.toString());
+//
+//
+//        assertNotNull( validateDataSsl );
+//        assertTrue(validateDataSsl.isValid());
+//        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_GET_STATUS")));
+//        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_HEAD_STATUS")));
 
-        LOGGER.warn("=> Start Validating RemoteRepository: [" + validRepoSsl.getUrl()+"]");
-        RemoteRepository remoteRepository = client.stores().create(validRepoSsl, changelog, RemoteRepository.class);
-
-
-        ArtifactStoreValidateData validateDataSsl = validator.validate(remoteRepository);
-        LOGGER.warn("=> Returned [Valid SSL] ArtifactStoreValidateData: " + validateDataSsl.toString());
-
-
-        assertNotNull( validateDataSsl );
-        assertTrue(validateDataSsl.isValid());
-        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_GET_STATUS")));
-        assertThat(Integer.toString(200), is(validateDataSsl.getErrors().get("HTTP_HEAD_STATUS")));
-
-        RemoteRepository validRepo =
-            new RemoteRepository( "maven", "validation-test-nossl", "http://repo.maven.apache.org/maven2/" );
-
-        LOGGER.warn("=> Start Validating RemoteRepository: [" + validRepo.getUrl()+"]");
-        RemoteRepository remoteRepository1 = client.stores().create(validRepo, changelog, RemoteRepository.class);
-
-
-        ArtifactStoreValidateData validateData = validator.validate(remoteRepository1);
-        LOGGER.warn("=> Returned [Not Valid SSL] ArtifactStoreValidateData: " + validateData.toString());
-
-
-        assertNotNull( validateData );
-        assertFalse(validateData.isValid());
-        assertNotNull(validateData.getErrors().get("HTTP_GET_STATUS"));
-        assertNotNull(validateData.getErrors().get("HTTP_HEAD_STATUS"));
-        assertNotNull( validateData.getErrors().get("disabled") );
+//        RemoteRepository validRepo =
+//            new RemoteRepository( "maven", "validation-test-nossl", "http://repo.maven.apache.org/maven2/" );
+//
+//        LOGGER.warn("=> Start Validating RemoteRepository: [" + validRepo.getUrl()+"]");
+//        RemoteRepository remoteRepository1 = client.stores().create(validRepo, changelog, RemoteRepository.class);
+//
+//
+//        ArtifactStoreValidateData validateData = validator.validate(remoteRepository1);
+//        LOGGER.warn("=> Returned [Not Valid SSL] ArtifactStoreValidateData: " + validateData.toString());
+//
+//
+//        assertNotNull( validateData );
+//        assertFalse(validateData.isValid());
+//        assertNotNull(validateData.getErrors().get("HTTP_GET_STATUS"));
+//        assertNotNull(validateData.getErrors().get("HTTP_HEAD_STATUS"));
+//        assertNotNull( validateData.getErrors().get("disabled") );
 
         RemoteRepository notValidUrlRepo =
             new RemoteRepository( "maven", "validation-test-url", "not.valid.url" );
@@ -120,38 +120,38 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
 
 
-        RemoteRepository npmRemoteRepo =
-          new RemoteRepository( "npm", "validation-indy-npm", "https://repository.engineering.redhat.com/nexus/" );
-
-        LOGGER.warn("=> Start Validating NPM RemoteRepository: [" + npmRemoteRepo.getUrl()+"]");
-        RemoteRepository npmRemoteRepository = client.stores().create(npmRemoteRepo, changelog, RemoteRepository.class);
-
-
-        ArtifactStoreValidateData validateNPMRepo = validator.validate(npmRemoteRepository);
-        LOGGER.warn("=> Returned [Allowed Not Valid ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateNPMRepo.toString());
-
-        assertNotNull( validateNPMRepo );
-        // Valid SSL remote repo but because there is authentication HTTP GET & HEAD are unsuccessfull 
-        assertFalse(validateNPMRepo.isValid());
-        assertNotNull(validateNPMRepo.getErrors().get("HTTP_GET_STATUS"));
-        assertNotNull(validateNPMRepo.getErrors().get("HTTP_HEAD_STATUS"));
-
-
-        RemoteRepository testAllowedRemoteRepo =
-          new RemoteRepository( "maven", "validation-indy-test-allowed", "http://maven.repository.redhat.com/techpreview/all" );
-
-        LOGGER.warn("=> Start Validating RemoteRepository: [" + testAllowedRemoteRepo.getUrl()+"]");
-        RemoteRepository testRemoteRepositoryAllowed = client.stores().create(testAllowedRemoteRepo, changelog, RemoteRepository.class);
+//        RemoteRepository npmRemoteRepo =
+//          new RemoteRepository( "npm", "validation-indy-npm", "https://repository.engineering.redhat.com/nexus/" );
+//
+//        LOGGER.warn("=> Start Validating NPM RemoteRepository: [" + npmRemoteRepo.getUrl()+"]");
+//        RemoteRepository npmRemoteRepository = client.stores().create(npmRemoteRepo, changelog, RemoteRepository.class);
+//
+//
+//        ArtifactStoreValidateData validateNPMRepo = validator.validate(npmRemoteRepository);
+//        LOGGER.warn("=> Returned [Allowed Not Valid ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateNPMRepo.toString());
+//
+//        assertNotNull( validateNPMRepo );
+//        // Valid SSL remote repo but because there is authentication HTTP GET & HEAD are unsuccessfull
+//        assertFalse(validateNPMRepo.isValid());
+//        assertNotNull(validateNPMRepo.getErrors().get("HTTP_GET_STATUS"));
+//        assertNotNull(validateNPMRepo.getErrors().get("HTTP_HEAD_STATUS"));
 
 
-        ArtifactStoreValidateData testValidateAllowedRepo = validator.validate(testRemoteRepositoryAllowed);
-        LOGGER.warn("=> Returned [Allowed Not Valid? ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + testValidateAllowedRepo.toString());
-
-        assertNotNull( testValidateAllowedRepo );
-        assertFalse(testValidateAllowedRepo.isValid());
-        assertNotNull(testValidateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
-        assertNotNull(testValidateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
-        assertTrue(testRemoteRepositoryAllowed.isDisabled());
+//        RemoteRepository testAllowedRemoteRepo =
+//          new RemoteRepository( "maven", "validation-indy-test-allowed", "http://maven.repository.redhat.com/techpreview/all" );
+//
+//        LOGGER.warn("=> Start Validating RemoteRepository: [" + testAllowedRemoteRepo.getUrl()+"]");
+//        RemoteRepository testRemoteRepositoryAllowed = client.stores().create(testAllowedRemoteRepo, changelog, RemoteRepository.class);
+//
+//
+//        ArtifactStoreValidateData testValidateAllowedRepo = validator.validate(testRemoteRepositoryAllowed);
+//        LOGGER.warn("=> Returned [Allowed Not Valid? ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + testValidateAllowedRepo.toString());
+//
+//        assertNotNull( testValidateAllowedRepo );
+//        assertFalse(testValidateAllowedRepo.isValid());
+//        assertNotNull(testValidateAllowedRepo.getErrors().get("HTTP_GET_STATUS"));
+//        assertNotNull(testValidateAllowedRepo.getErrors().get("HTTP_HEAD_STATUS"));
+//        assertTrue(testRemoteRepositoryAllowed.isDisabled());
 
     }
 

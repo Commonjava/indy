@@ -42,13 +42,12 @@ public class DefaultStoreValidator implements StoreValidator {
     @Inject
     SslValidationConfig configuration;
 
-    final HashMap<String, String> errors = new HashMap<>();
 
     @Override
     public ArtifactStoreValidateData validate(ArtifactStore artifactStore) {
 //        LOGGER.warn("\n=> Allowed Remote Repositories by Config File: [ "+configuration.getRemoteNoSSLHosts()+" ]\n");
         final CountDownLatch httpRequestsLatch = new CountDownLatch(2);
-
+        HashMap<String, String> errors = new HashMap<>();
         Optional<URL> remoteUrl = Optional.empty();
 
         try {
@@ -63,8 +62,6 @@ public class DefaultStoreValidator implements StoreValidator {
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
-//                LOGGER.info("=> Remote Repository Protocol: " + remoteUrl.get().getProtocol());
-//                LOGGER.info("=> SSL Required: " + configuration.isSSLRequired());
                 if(configuration.isSSLRequired()
                     && !remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
                     LOGGER.warn("\n\t\t\t=> Allowed Remote Repositories by Config File: "+configuration.getRemoteNoSSLHosts()+"\n");
@@ -175,7 +172,7 @@ public class DefaultStoreValidator implements StoreValidator {
     }
 
     private ArtifactStoreValidateData disabledRemoteRepositoryData(RemoteRepository remoteRepository) {
-//        HashMap<String, String> errors = new HashMap<>();
+        HashMap<String, String> errors = new HashMap<>();
         errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Disabled Remote Repository");
 
         try {
@@ -222,7 +219,7 @@ public class DefaultStoreValidator implements StoreValidator {
 
     private ArtifactStoreValidateData availableSslRemoteRepository(CountDownLatch httpRequestsLatch,
                                                                    Optional<URL> remoteUrl,RemoteRepository remoteRepository) throws InterruptedException, ExecutionException, URISyntaxException {
-//        HashMap<String, String> errors = new HashMap<>();
+        HashMap<String, String> errors = new HashMap<>();
         // Execute HTTP GET & HEAD requests in separate thread pool from executor service
         Future<Integer> httpGetStatus = executeGetHttp(new HttpGet(remoteUrl.get().toURI()), httpRequestsLatch);
         Future<Integer> httpHeadStatus = executeHeadHttp(new HttpHead(remoteUrl.get().toURI()), httpRequestsLatch);
