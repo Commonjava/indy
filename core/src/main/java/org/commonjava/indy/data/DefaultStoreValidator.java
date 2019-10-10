@@ -176,8 +176,9 @@ public class DefaultStoreValidator implements StoreValidator {
         errors.put(StoreValidationConstants.DISABLED_REMOTE_REPO, "Disabled Remote Repository");
 
         try {
-            new URL(remoteRepository.getUrl());
-        } catch (MalformedURLException mue) {
+            URL remoteUrlValidated = new URL(remoteRepository.getUrl());
+            remoteUrlValidated.toURI();
+        } catch (MalformedURLException | URISyntaxException mue) {
             errors.put(StoreValidationConstants.MAILFORMED_URL,mue.getMessage());
         }
 
@@ -225,14 +226,15 @@ public class DefaultStoreValidator implements StoreValidator {
         Future<Integer> httpHeadStatus = executeHeadHttp(new HttpHead(remoteUrl.get().toURI()), httpRequestsLatch);
         // Waiting for Http GET & HEAD Request Executor tasks to finish
         httpRequestsLatch.await();
-        errors.put(StoreValidationConstants.HTTP_GET_STATUS, httpGetStatus.get().toString());
-        errors.put(StoreValidationConstants.HTTP_HEAD_STATUS, httpHeadStatus.get().toString());
+
         if(!remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
             errors.put(StoreValidationConstants.HTTP_PROTOCOL, remoteUrl.get().getProtocol());
         }
         // Check for Sucessfull Validation for only one http call to be successfull...
         if (httpGetStatus.get() < 400 || httpHeadStatus.get() < 400) {
             LOGGER.warn("=> Success HTTP GET and HEAD Response from Remote Repository: " + remoteUrl.get());
+            errors.put(StoreValidationConstants.HTTP_GET_STATUS, httpGetStatus.get().toString());
+            errors.put(StoreValidationConstants.HTTP_HEAD_STATUS, httpHeadStatus.get().toString());
             return new ArtifactStoreValidateData
                 .Builder(remoteRepository.getKey())
                 .setRepositoryUrl(remoteUrl.get().toExternalForm())
@@ -241,6 +243,8 @@ public class DefaultStoreValidator implements StoreValidator {
                 .build();
         } else {
             LOGGER.warn("=> Failure @ HTTP GET and HEAD Response from Remote Repository: " + remoteUrl.get());
+            errors.put(StoreValidationConstants.HTTP_GET_STATUS, httpGetStatus.get().toString());
+            errors.put(StoreValidationConstants.HTTP_HEAD_STATUS, httpHeadStatus.get().toString());
             return new ArtifactStoreValidateData
                 .Builder(remoteRepository.getKey())
                 .setRepositoryUrl(remoteUrl.get().toExternalForm())
