@@ -1039,6 +1039,12 @@
         <artifactId>commons-codec</artifactId>
         <version>1.10</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-compress</artifactId>
+        <version>1.19</version>
+      </dependency>
+
       <!-- START: JAX-RS support -->
       <dependency>
           <groupId>io.undertow</groupId>

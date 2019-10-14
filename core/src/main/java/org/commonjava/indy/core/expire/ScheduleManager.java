@@ -780,7 +780,7 @@ public class ScheduleManager
             logger.error( "[FATAL]The infinispan cache removed event for indy schedule manager is null.", new NullPointerException( "CacheEntryRemovedEvent is null" ) );
             return;
         }
-        logger.info( "Cache removed to cancel scheduling, Key is {}, Value is {}", e.getKey(), e.getValue() );
+        logger.trace( "Cache removed to cancel scheduling, Key is {}, Value is {}", e.getKey(), e.getValue() );
     }
 
     // This method is only used to check clustered schedule expire cache nodes topology changing
