@@ -1763,6 +1763,9 @@
               <exclude>**/*.groovy</exclude>
               <exclude>**/.gitkeep</exclude>
               <exclude>**/node_modules/**</exclude>
+              <exclude>**/.pydevproject</exclude>
+              <exclude>**/Jenkinsfile</exclude>
+              <exclude>**/MAVEN_ENV</exclude>
             </excludes>
           </configuration>
         </plugin>
