@@ -17,10 +17,12 @@ package org.commonjava.indy.pkg.npm.content.group;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.IndyPathGenerator;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.npm.content.NPMStoragePathCalculator;
 import org.commonjava.indy.pkg.npm.model.Bugs;
 import org.commonjava.indy.pkg.npm.model.DistTag;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
@@ -30,13 +32,13 @@ import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
-import org.commonjava.maven.galley.io.HashedLocationPathGenerator;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
 import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -68,10 +70,12 @@ public class PackageMetadataMergerTest
     private CacheProvider cacheProvider;
 
     @Before
-    public void setup() throws Exception
+    public void setup()
+            throws Exception
     {
-        cacheProvider = new FileCacheProvider( temp.newFolder( "cache" ), new HashedLocationPathGenerator(),
-                                               new NoOpFileEventManager(), new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
+        cacheProvider = new FileCacheProvider( temp.newFolder( "cache" ), new IndyPathGenerator(
+                Collections.singleton( new NPMStoragePathCalculator() ) ), new NoOpFileEventManager(),
+                                               new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
     }
 
     @Test

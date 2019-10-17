@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.pkg.maven.content.group;
 
+import org.commonjava.indy.content.IndyPathGenerator;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
-import org.commonjava.maven.galley.io.HashedLocationPathGenerator;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
 import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
@@ -26,9 +26,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import java.util.Collections;
 
 /**
  * Created by jdcasey on 11/2/16.
@@ -36,8 +34,6 @@ import static org.junit.Assert.fail;
 @Ignore("Obsolete methods; providers are handled in MavenMetadataGenerator now, and we don't merge directly to file now")
 public class MavenMetadataMergerTest
 {
-    private static final String VERSION_META = "metadata/version/";
-
     @Rule
     public TemporaryFolder temp = new TemporaryFolder();
 
@@ -47,8 +43,9 @@ public class MavenMetadataMergerTest
     public void setup()
             throws Exception
     {
-        cacheProvider = new FileCacheProvider( temp.newFolder( "cache" ), new HashedLocationPathGenerator(),
-                                               new NoOpFileEventManager(), new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
+        cacheProvider =
+                new FileCacheProvider( temp.newFolder( "cache" ), new IndyPathGenerator(), new NoOpFileEventManager(),
+                                       new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
     }
 
 //    @Test
