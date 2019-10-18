@@ -31,7 +31,11 @@ public class IndyException
 
     private transient String formattedMessage;
 
-    public IndyException( final String message, final Object... params )
+    public IndyException() {
+        super();
+    }
+
+    public IndyException(final String message, final Object... params )
     {
         super( message );
         this.params = params;

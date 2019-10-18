@@ -206,6 +206,7 @@ public class IndyDeployment
         deploymentProviders.forEach( di -> classes.addAll( di.getAdditionalClasses() ) );
         classes.add( CDIJacksonProvider.class );
         classes.add( UnhandledIOExceptionHandler.class );
+        classes.add(IndyRestMapperExceptionHandler.class);
         return classes;
     }
 
