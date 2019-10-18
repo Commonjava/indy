@@ -291,35 +291,14 @@ public abstract class AbstractStoreDataManager
 
 //        if(configuration != null) {
             ArtifactStoreValidateData validateData = null ;
-            try {
+            if (internalFeatureConfig.getStoreValidation()) {
+                validateData = storeValidator.validate(store);
 
-//                if(configuration.isSSLRequired()) {
-                    if (internalFeatureConfig.getStoreValidation()) {
-                        validateData = storeValidator.validate(store);
-
-                        if (!validateData.isValid()) {
-                            logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
-                              " with name: " + store.getName());
-                            disableNotValidStore(store, validateData);
-                        }
-                    }
-//                }
+                if (!validateData.isValid()) {
+                    logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
+                    store.getMetadata().putAll(validateData.getErrors());
+                }
             }
-            catch (MalformedURLException mue) {
-                logger.warn("=> [AbstractStoreDataManager] MalformedURLException:" + mue.getMessage());
-                // Disable Store
-                disableNotValidStore(store,validateData);
-            } catch (IndyDataException ide) {
-                logger.warn("=> [AbstractStoreDataManager] IndyDataException: " + ide.getMessage());
-                // Disable Store
-                disableNotValidStore(store,validateData);
-            } catch (Exception e) {
-                logger.warn("=> [AbstractStoreDataManager] Exception:" + e);
-                // Disable Store
-//                disableNotValidStore(store,validateData);
-            }
-
-//        }
 
 
         Function<StoreKey, Boolean> lockHandler = k -> doStore( k, store, summary, error, skipIfExists, fireEvents, eventMetadata );
