@@ -28,6 +28,7 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.browse.ContentBrowseController;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.model.core.PackageTypes;
@@ -39,6 +40,7 @@ import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,43 +80,71 @@ public class ContentBrowseResource
     @Inject
     private UriFormatter uriFormatter;
 
+
     @Inject
     protected JaxRsRequestHelper jaxRsRequestHelper;
 
     @Inject
     private ResponseHelper responseHelper;
 
+    @Inject
+    ContentDigester contentDigester;
+
+    @Context UriInfo uriInfo;
+
+    @Context HttpServletRequest request;
+
     @ApiOperation( "Retrieve directory content under the given artifact store (type/name) and directory path." )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
-                           @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ) } )
+    @ApiResponses({@ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ),@ApiResponse( code = 404, message = "Content is not available" )})
     @HEAD
-    @Path( "/{path: (.*)}" )
+    @Path( "/{path}" )
     public Response headForDirectory(
-            final @ApiParam( allowableValues = "maven,npm", required = true ) @PathParam( "packageType" )
-                    String packageType,
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
-            @Context final HttpServletRequest request )
-    {
+      final @ApiParam( allowableValues = "maven,npm", required = true ) @PathParam( "packageType" ) String packageType,
+      final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+      final @ApiParam( required = true ) @PathParam( "name" ) String name,
+      final @PathParam( "path" ) String path
+    ) throws IndyWorkflowException {
+//        StoreKey key = StoreKey.fromString(packageType.join(":", type,name));
+//        String md5 = contentDigester.digest(key, path, new EventMetadata()).getDigests().get(ContentDigest.MD5).toUpperCase();
+//        String sha1 = contentDigester.digest(key, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1).toUpperCase();
+//        System.out.println("StoreKey: " + key + " md5: " + md5 + " sha1: " + sha1);
         return processHead( packageType, type, name, path, uriInfo, request );
     }
 
-    @ApiOperation( "Retrieve directory content under the given artifact store (type/name) and directory path." )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
-                           @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ) } )
-    @HEAD
-    @Path( "/" )
-    public Response headForRoot(
-            final @ApiParam( allowableValues = "maven,npm", required = true ) @PathParam( "packageType" )
-                    String packageType,
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
-            @Context final HttpServletRequest request )
-    {
-        return processHead( packageType, type, name, "", uriInfo, request );
-    }
+
+
+
+//    @ApiOperation( "Retrieve directory content under the given artifact store (type/name) and directory path." )
+//    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
+//                           @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ) } )
+//    @HEAD
+//    @Path( "/{path: (.*)}" )
+//    public Response headForDirectory(
+//            final @ApiParam( allowableValues = "maven,npm", required = true ) @PathParam( "packageType" )
+//                    String packageType,
+//            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
+//                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+//            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
+//            @Context final HttpServletRequest request )
+//    {
+//        return processHead( packageType, type, name, path, uriInfo, request );
+//    }
+//
+//    @ApiOperation( "Retrieve directory content under the given artifact store (type/name) and directory path." )
+//    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
+//                           @ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ) } )
+//    @HEAD
+//    @Path( "/" )
+//    public Response headForRoot(
+//            final @ApiParam( allowableValues = "maven,npm", required = true ) @PathParam( "packageType" )
+//                    String packageType,
+//            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
+//                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+//            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
+//            @Context final HttpServletRequest request )
+//    {
+//        return processHead( packageType, type, name, "", uriInfo, request );
+//    }
 
     private Response processHead( final String packageType, final String type, final String name, final String path,
                                   final UriInfo uriInfo, final HttpServletRequest request )
@@ -138,7 +168,13 @@ public class ContentBrowseResource
                                                        .header( ApplicationHeader.content_length.key(),
                                                                 Long.toString( content.length() ) )
                                                        .header( ApplicationHeader.last_modified.key(),
-                                                                HttpUtils.formatDateHeader( new Date() ) );
+                                                                HttpUtils.formatDateHeader( new Date() ) )
+                                                      .header(ApplicationHeader.md5.key(),
+                                                        contentDigester.digest(result.getStoreKey(), path, new EventMetadata()).getDigests().get(ContentDigest.MD5).toUpperCase() )
+                                                      .header(ApplicationHeader.sha1.key(),
+                                                        contentDigester.digest(result.getStoreKey(), path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1).toUpperCase() )
+                                                      ;
+              ;
             response = builder.build();
 
         }
