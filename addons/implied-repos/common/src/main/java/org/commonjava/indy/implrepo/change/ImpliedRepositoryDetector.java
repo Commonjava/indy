@@ -459,6 +459,42 @@ public class ImpliedRepositoryDetector
                 else
                 {
                     logger.debug( "Found existing RemoteRepositories: {}", rrs );
+
+                    for ( final RemoteRepository rr : rrs )
+                    {
+                        rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
+                        try
+                        {
+                            rr.setMetadata( IMPLIED_BY_STORES, mapper.writeValueAsString(
+                                            new ImpliedRepoMetadataManager.ImpliedRemotesWrapper(
+                                                            Collections.singletonList( job.store.getKey() ) ) ) );
+                        }
+                        catch ( JsonProcessingException e )
+                        {
+                            logger.error( "Failed to set {}", IMPLIED_BY_STORES );
+                            continue;
+                        }
+
+                        final String changelog = String.format(
+                                        "Updating the existing remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",
+                                        repo.getId(), repo.getUrl(), repo.getName(), gav, job.transfer.getLocation().getUri(),
+                                        job.transfer.getPath() );
+                        final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, changelog );
+                        try
+                        {
+                            final boolean result = storeManager.storeArtifactStore( rr, summary, false, false,
+                                                                                    null );
+
+                            logger.debug( "Updated the RemoteRepository: {}. (successful? {})", rr, result );
+                            job.implied.add( rr );
+                        }
+                        catch ( final IndyDataException e )
+                        {
+                            logger.error( String.format(
+                                            "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to update the remote repository.",
+                                            repo.getUrl(), gav, job.transfer ), e );
+                        }
+                    }
                 }
             }
         }
