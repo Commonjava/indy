@@ -17,6 +17,7 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
+import org.commonjava.indy.content.index.conf.ContentIndexConfig;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -77,6 +78,9 @@ public class DefaultContentIndexManager
     @Inject
     private Instance<PackageIndexingStrategy> indexingStrategyComponents;
 
+    @Inject
+    private ContentIndexConfig config;
+
     private Map<String, PackageIndexingStrategy> indexingStrategies;
 
     private QueryFactory queryFactory;
@@ -98,6 +102,12 @@ public class DefaultContentIndexManager
     @PostConstruct
     public void constructed()
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         if ( indexingStrategyComponents != null )
         {
             Map<String, PackageIndexingStrategy> strats = new HashMap<>();
@@ -126,6 +136,12 @@ public class DefaultContentIndexManager
     public void stop()
             throws IndyLifecycleException
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         logger.debug( "Shutdown index cache" );
         contentIndex.stop();
     }
@@ -140,6 +156,12 @@ public class DefaultContentIndexManager
     @Measure
     public boolean removeIndexedStorePath( String rawPath, StoreKey key, Consumer<IndexedStorePath> pathConsumer )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return false;
+        }
+
         String path = getStrategyPath( key, rawPath );
         IndexedStorePath topPath = new IndexedStorePath( key, path );
         logger.trace( "Attempting to remove indexed path: {}", topPath );
@@ -158,6 +180,12 @@ public class DefaultContentIndexManager
 
     public String getStrategyPath( final StoreKey key, final String rawPath )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return rawPath;
+        }
+
         PackageIndexingStrategy strategy = indexingStrategies.get( key.getPackageType() );
         if ( strategy == null )
         {
@@ -174,6 +202,12 @@ public class DefaultContentIndexManager
     @Measure
     public void deIndexStorePath( final StoreKey key, final String rawPath )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         String path = getStrategyPath( key, rawPath );
         IndexedStorePath toRemove = new IndexedStorePath( key, path );
         IndexedStorePath val = contentIndex.remove( toRemove );
@@ -184,6 +218,12 @@ public class DefaultContentIndexManager
     @Measure
     public StoreKey getIndexedStoreKey( final StoreKey key, final String rawPath )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return null;
+        }
+
         String path = getStrategyPath( key, rawPath );
         IndexedStorePath ispKey = new IndexedStorePath( key, path );
         IndexedStorePath val = contentIndex.get( ispKey );
@@ -204,6 +244,12 @@ public class DefaultContentIndexManager
     @Measure
     public void indexTransferIn( Transfer transfer, StoreKey...topKeys )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         if ( transfer != null && transfer.exists() )
         {
             StoreKey key = LocationUtils.getKey( transfer );
@@ -219,6 +265,12 @@ public class DefaultContentIndexManager
     @Measure
     public void indexPathInStores( String rawPath, StoreKey originKey, StoreKey... topKeys )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         String path = getStrategyPath( originKey, rawPath );
 
         IndexedStorePath origin = new IndexedStorePath( originKey, path );
@@ -237,6 +289,12 @@ public class DefaultContentIndexManager
     @Measure
     public void clearAllIndexedPathInStore( ArtifactStore store )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         StoreKey sk = store.getKey();
 
         long total = iterateRemove( () -> queryFactory.from( IndexedStorePath.class )
@@ -259,6 +317,12 @@ public class DefaultContentIndexManager
     @Measure
     public void clearAllIndexedPathWithOriginalStore( ArtifactStore originalStore )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         StoreKey osk = originalStore.getKey();
 
         long total = iterateRemove( () -> queryFactory.from( IndexedStorePath.class )
@@ -303,6 +367,12 @@ public class DefaultContentIndexManager
     @Measure
     public void clearAllIndexedPathInStoreWithOriginal( ArtifactStore store, ArtifactStore originalStore )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         StoreKey sk = store.getKey();
         StoreKey osk = originalStore.getKey();
 
@@ -337,6 +407,12 @@ public class DefaultContentIndexManager
     @Measure
     public void clearIndexedPathFrom( String rawPath, Set<Group> groups, Consumer<IndexedStorePath> pathConsumer )
     {
+        if ( !config.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled." );
+            return;
+        }
+
         if ( groups == null || groups.isEmpty() )
         {
             return;

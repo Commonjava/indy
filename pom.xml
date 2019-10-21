@@ -1024,6 +1024,17 @@
       </dependency>
 
       <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient_servlet</artifactId>
+        <version>0.7.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient_dropwizard</artifactId>
+        <version>0.7.0</version>
+      </dependency>
+
+      <dependency>
         <groupId>io.github.hengyunabc</groupId>
         <artifactId>zabbix-api</artifactId>
         <version>0.0.2</version>

@@ -31,15 +31,21 @@ public class ContentIndexConfig
 
     public static final String AUTH_INDEX_PARAM = "support.authoritative.indexes";
 
-    public static final String ENABLE_INDEX_WARMER = "index.warmer.enable";
+    public static final String ENABLE_INDEX_WARMER = "index.warmer.enabled";
+
+    private static final String ENABLE = "enabled";
 
     private static final Boolean DEFAULT_AUTHORITATIVE_INDEXES = Boolean.FALSE;
 
     private static final Boolean DEFAULT_WARMER_ENABLED = Boolean.FALSE;
 
+    private static final Boolean DEFAULT_ENABLED = Boolean.FALSE;
+
     private Boolean authoritativeIndex;
 
     private Boolean warmerEnabled;
+
+    private Boolean enabled;
 
     public ContentIndexConfig()
     {
@@ -82,5 +88,16 @@ public class ContentIndexConfig
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-content-index.conf" );
+    }
+
+    public boolean isEnabled()
+    {
+        return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    @ConfigName( ContentIndexConfig.ENABLE )
+    public void setEnabled( Boolean enabled )
+    {
+        this.enabled = enabled;
     }
 }
