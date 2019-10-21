@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager.IMPLIED_BY_STORES;
 import static org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager.IMPLIED_STORES;
@@ -399,19 +400,29 @@ public class ImpliedRepositoryDetector
                             e );
                 }
 
+                final RemoteRepository ref = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
+                if ( ref == null )
+                {
+                    logger.warn(
+                            "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
+                            repo.getId(), gav );
+                    continue;
+                }
+
+                if ( rrs != null && !rrs.isEmpty() )
+                {
+                    rrs = rrs.stream()
+                             .filter( rr -> rr.isAllowReleases() == repo.isReleasesEnabled() )
+                             .filter( rr -> rr.isAllowSnapshots() == repo.isSnapshotsEnabled() )
+                             .filter( rr -> rr.getPathMaskPatterns() == null || rr.getPathMaskPatterns().isEmpty() )
+                             .collect( Collectors.toList() );
+                }
+
                 if ( rrs == null || rrs.isEmpty() )
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
 
-                    final RemoteRepository rr = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
-                    if ( rr == null )
-                    {
-                        logger.warn(
-                                "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
-                                repo.getId(), gav );
-                        continue;
-                    }
-
+                    final RemoteRepository rr = ref.copyOf();
                     rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
                     try
                     {
@@ -474,6 +485,7 @@ public class ImpliedRepositoryDetector
                             logger.error( "Failed to set {}", IMPLIED_BY_STORES );
                             continue;
                         }
+                        rr.setPathMaskPatterns( ref.getPathMaskPatterns() );
 
                         final String changelog = String.format(
                                         "Updating the existing remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",

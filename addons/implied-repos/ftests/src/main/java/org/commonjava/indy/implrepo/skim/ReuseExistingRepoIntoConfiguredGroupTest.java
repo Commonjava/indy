@@ -49,6 +49,8 @@ public class ReuseExistingRepoIntoConfiguredGroupTest
     public void skimPomForExistingRepoAndAddItInGroup() throws Exception
     {
         RemoteRepository repo = new RemoteRepository( REPO, server.formatUrl( REPO ) );
+        repo.setAllowReleases( Boolean.TRUE );
+        repo.setAllowSnapshots( Boolean.FALSE );
         repo = client.stores().create( repo, "Pre stored remote repo", RemoteRepository.class );
 
         final StoreKey remoteRepoKey = repo.getKey();
