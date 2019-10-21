@@ -43,23 +43,21 @@ public class MavenContentAdvisor
     @Override
     public ContentQuality getContentQuality( String path )
     {
+        final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+        if ( info != null && info.isMetadata() )
+        {
+            return ContentQuality.METADATA;
+        }
+
         final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         if ( pathInfo != null )
         {
-            final SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
-            if ( info != null && info.isMetadata() )
-            {
-                return ContentQuality.METADATA;
-            }
-
             if ( pathInfo.isSnapshot() )
             {
                 return ContentQuality.SNAPSHOT;
             }
-
             return ContentQuality.RELEASE;
         }
-        //FIXME: needs further think here if null and RELEASE have the same meaning?
         return null;
     }
 }
