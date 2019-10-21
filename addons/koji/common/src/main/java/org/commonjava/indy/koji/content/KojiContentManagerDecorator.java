@@ -97,7 +97,7 @@ import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMet
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
-    private Logger logger = LoggerFactory.getLogger( getClass() );
+    private Logger logger = LoggerFactory.getLogger( KojiContentManagerDecorator.class.getName() );
 
     public static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 

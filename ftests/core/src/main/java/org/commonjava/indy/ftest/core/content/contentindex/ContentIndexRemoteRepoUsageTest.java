@@ -23,12 +23,14 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import javax.enterprise.inject.spi.CDI;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -123,5 +125,13 @@ public class ContentIndexRemoteRepoUsageTest
 
         // object equality should work since we haven't persisted this anywhere yet.
         assertThat( indexedStoreKey == indexedStoreKey2, equalTo( true ) );
+    }
+
+    @Override
+    protected void initTestConfig( final CoreServerFixture fixture )
+            throws IOException
+    {
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/content-index.conf", "[content-index]\nenabled=true" );
     }
 }

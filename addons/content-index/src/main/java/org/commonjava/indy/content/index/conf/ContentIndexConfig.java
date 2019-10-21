@@ -18,6 +18,8 @@ package org.commonjava.indy.content.index.conf;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
@@ -31,15 +33,21 @@ public class ContentIndexConfig
 
     public static final String AUTH_INDEX_PARAM = "support.authoritative.indexes";
 
-    public static final String ENABLE_INDEX_WARMER = "index.warmer.enable";
+    public static final String ENABLE_INDEX_WARMER = "index.warmer.enabled";
+
+    private static final String ENABLE = "enabled";
 
     private static final Boolean DEFAULT_AUTHORITATIVE_INDEXES = Boolean.FALSE;
 
     private static final Boolean DEFAULT_WARMER_ENABLED = Boolean.FALSE;
 
+    private static final Boolean DEFAULT_ENABLED = Boolean.FALSE;
+
     private Boolean authoritativeIndex;
 
     private Boolean warmerEnabled;
+
+    private Boolean enabled;
 
     public ContentIndexConfig()
     {
@@ -82,5 +90,21 @@ public class ContentIndexConfig
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-content-index.conf" );
+    }
+
+    public boolean isEnabled()
+    {
+        Boolean result = enabled == null ? DEFAULT_ENABLED : enabled;
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Is content indexer enabled? {}", result );
+
+        return result;
+    }
+
+    @ConfigName( ContentIndexConfig.ENABLE )
+    public void setEnabled( Boolean enabled )
+    {
+        this.enabled = enabled;
     }
 }

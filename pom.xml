@@ -724,6 +724,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-metrics-prometheus</artifactId>
+        <version>1.9.6-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics-reporter</artifactId>
         <version>1.9.6-SNAPSHOT</version>
         <classifier>confset</classifier>
@@ -1021,6 +1026,17 @@
         <groupId>org.codehaus.janino</groupId>
         <artifactId>janino</artifactId>
         <version>3.0.6</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient_servlet</artifactId>
+        <version>0.7.0</version>
+      </dependency>
+      <dependency>
+        <groupId>io.prometheus</groupId>
+        <artifactId>simpleclient_dropwizard</artifactId>
+        <version>0.7.0</version>
       </dependency>
 
       <dependency>

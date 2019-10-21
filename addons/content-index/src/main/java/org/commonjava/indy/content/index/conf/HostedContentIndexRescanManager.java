@@ -59,6 +59,9 @@ public class HostedContentIndexRescanManager implements ContentIndexRescanManage
     private ContentIndexManager contentIndexManager;
 
     @Inject
+    private ContentIndexConfig indexConfig;
+
+    @Inject
     private DownloadManager downloadManager;
 
     protected HostedContentIndexRescanManager()
@@ -68,6 +71,12 @@ public class HostedContentIndexRescanManager implements ContentIndexRescanManage
     public void indexPreRescan( @Observes final ArtifactStorePreRescanEvent e )
             throws IndyWorkflowException
     {
+        if ( !indexConfig.isEnabled() )
+        {
+            LOGGER.debug( "Content index is disabled." );
+            return;
+        }
+
         Collection<ArtifactStore> affectedRepos = e.getStores();
         for ( ArtifactStore repo : affectedRepos )
         {
@@ -89,6 +98,12 @@ public class HostedContentIndexRescanManager implements ContentIndexRescanManage
     public void indexPostRescan( @Observes final ArtifactStorePostRescanEvent e )
             throws IndyWorkflowException
     {
+        if ( !indexConfig.isEnabled() )
+        {
+            LOGGER.debug( "Content index is disabled." );
+            return;
+        }
+
         Collection<ArtifactStore> hostedStores = e.getStores();
         for ( ArtifactStore repo : hostedStores )
         {

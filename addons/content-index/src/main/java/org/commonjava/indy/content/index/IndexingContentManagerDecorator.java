@@ -66,7 +66,7 @@ import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 public abstract class IndexingContentManagerDecorator
         implements ContentManager
 {
-    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+    private final Logger logger = LoggerFactory.getLogger( IndexingContentManagerDecorator.class.getName() );
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -296,9 +296,10 @@ public abstract class IndexingContentManagerDecorator
             }
         }
 
+        logger.trace( "Delegating retrieve call for concrete repository: {}/{}", store, path );
         transfer = delegate.retrieve( store, path, eventMetadata );
 
-        if ( exists( transfer ) )
+        if ( exists( transfer ) && indexCfg.isEnabled() )
         {
             logger.debug( "Got transfer from delegate: {} (will index)", transfer );
             indexManager.indexTransferIn( transfer, store.getKey() );
@@ -338,8 +339,13 @@ public abstract class IndexingContentManagerDecorator
             if ( exists( transfer ) )
             {
                 nfc.clearMissing( resource );
-                logger.debug( "Got transfer from constituent: {} (will index)", transfer );
-                indexManager.indexTransferIn( transfer, parentStore.getKey() );
+
+                if ( indexCfg.isEnabled() )
+                {
+                    logger.debug( "Got transfer from constituent: {} (will index)", transfer );
+                    indexManager.indexTransferIn( transfer, parentStore.getKey() );
+                }
+
                 return transfer;
             }
         }
@@ -358,11 +364,17 @@ public abstract class IndexingContentManagerDecorator
         return transfer != null && transfer.exists();
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public Transfer getIndexedTransfer( final StoreKey storeKey, final StoreKey topKey, final String path,
                                         final TransferOperation op, final EventMetadata metadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            logger.debug( "Content indexing is disabled. Returning null for indexedTransfer of: {}/{}", storeKey, path );
+            return null;
+        }
+
         logger.debug( "Looking for indexed path: {} in: {} (entry point: {})", path, storeKey, topKey );
 
         try
@@ -489,7 +501,7 @@ public abstract class IndexingContentManagerDecorator
 
         transfer = delegate.getTransfer( store, path, op );
         // index the transfer only if it exists, it cannot be null at this point
-        if ( exists( transfer ) )
+        if ( exists( transfer ) && indexCfg.isEnabled() )
         {
             indexManager.indexTransferIn( transfer, store.getKey() );
         }
@@ -541,7 +553,11 @@ public abstract class IndexingContentManagerDecorator
 
             if ( transfer != null )
             {
-                indexManager.indexTransferIn( transfer, key, topKey );
+                if ( indexCfg.isEnabled() )
+                {
+                    indexManager.indexTransferIn( transfer, key, topKey );
+                }
+
                 return transfer;
             }
             else if ( StoreType.group == key.getType() )
@@ -618,7 +634,7 @@ public abstract class IndexingContentManagerDecorator
         }
 
         transfer = delegate.getTransfer( storeKey, path, op );
-        if ( exists( transfer ) )
+        if ( exists( transfer ) && indexCfg.isEnabled() )
         {
             logger.debug( "Indexing transfer: {}", transfer );
             indexManager.indexTransferIn( transfer, storeKey );
@@ -683,8 +699,11 @@ public abstract class IndexingContentManagerDecorator
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
-            logger.trace( "Indexing: {} in: {}", transfer, store.getKey() );
-            indexManager.indexTransferIn( transfer, store.getKey() );
+            if ( indexCfg.isEnabled() )
+            {
+                logger.trace( "Indexing: {} in: {}", transfer, store.getKey() );
+                indexManager.indexTransferIn( transfer, store.getKey() );
+            }
 
             if ( store instanceof Group )
             {
@@ -697,7 +716,7 @@ public abstract class IndexingContentManagerDecorator
                 try
                 {
                     Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
-                    if ( groups != null && !groups.isEmpty() )
+                    if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
                     {
                         groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
                     }
@@ -731,15 +750,22 @@ public abstract class IndexingContentManagerDecorator
         Transfer transfer = delegate.store( stores, topKey, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
-            indexManager.indexTransferIn( transfer, topKey );
+            if ( indexCfg.isEnabled() )
+            {
+                indexManager.indexTransferIn( transfer, topKey );
+            }
 
             try
             {
                 ArtifactStore topStore = storeDataManager.getArtifactStore( topKey );
                 nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( topStore ), path ) );
-                // We should deIndex the path for all parent groups because the new content of the path
-                // may change the content index sequence based on the constituents sequence in parent groups
-                indexManager.deIndexStorePath( topKey, path );
+
+                if ( indexCfg.isEnabled() )
+                {
+                    // We should deIndex the path for all parent groups because the new content of the path
+                    // may change the content index sequence based on the constituents sequence in parent groups
+                    indexManager.deIndexStorePath( topKey, path );
+                }
             }
             catch ( IndyDataException e )
             {
@@ -764,7 +790,7 @@ public abstract class IndexingContentManagerDecorator
             throws IndyWorkflowException
     {
         boolean result = delegate.delete( store, path, eventMetadata );
-        if ( result )
+        if ( result && indexCfg.isEnabled() )
         {
             indexManager.deIndexStorePath( store.getKey(), path );
         }

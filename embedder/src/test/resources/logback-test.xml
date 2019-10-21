@@ -48,7 +48,7 @@
   <logger name="org.commonjava.indy.pkg.npm.content.NPMStoragePathCalculator" level="INFO" />
   <logger name="org.commonjava.indy.metrics" level="INFO" />
 
-  <root level="INFO">
+  <root level="DEBUG">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />
   </root>
