@@ -724,6 +724,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-metrics-prometheus</artifactId>
+        <version>1.9.6-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics-reporter</artifactId>
         <version>1.9.6-SNAPSHOT</version>
         <classifier>confset</classifier>
