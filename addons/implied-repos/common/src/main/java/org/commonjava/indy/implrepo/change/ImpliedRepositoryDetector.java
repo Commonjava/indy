@@ -412,9 +412,11 @@ public class ImpliedRepositoryDetector
                 if ( rrs != null && !rrs.isEmpty() )
                 {
                     rrs = rrs.stream()
-                             .filter( rr -> rr.isAllowReleases() == repo.isReleasesEnabled() )
-                             .filter( rr -> rr.isAllowSnapshots() == repo.isSnapshotsEnabled() )
-                             .filter( rr -> rr.getPathMaskPatterns() == null || rr.getPathMaskPatterns().isEmpty() )
+                             .filter( rr -> rr.isAllowReleases() == ref.isAllowReleases() )
+                             .filter( rr -> rr.isAllowSnapshots() == ref.isAllowSnapshots() )
+                             .filter( rr -> rr.getPathMaskPatterns() == null || rr.getPathMaskPatterns().isEmpty() || rr
+                                             .getPathMaskPatterns()
+                                             .equals( ref.getPathMaskPatterns() ) )
                              .collect( Collectors.toList() );
                 }
 
