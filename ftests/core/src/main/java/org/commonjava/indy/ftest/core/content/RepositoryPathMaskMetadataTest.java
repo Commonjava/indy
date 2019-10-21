@@ -103,7 +103,7 @@ public class RepositoryPathMaskMetadataTest
 
         HostedRepository hostedRepo1 = new HostedRepository( hosted1 );
         pathMaskPatterns = new HashSet<>();
-        pathMaskPatterns.add("org/bar.*");
+        pathMaskPatterns.add("r|org/bar.*|");
         hostedRepo1.setPathMaskPatterns(pathMaskPatterns);
         hostedRepo1 = client.stores().create( hostedRepo1, "adding hosted 1", HostedRepository.class );
         client.content().store( hosted, hosted1, path_metadata, new ByteArrayInputStream( meta2.getBytes() ) );

@@ -66,7 +66,7 @@ import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 public abstract class IndexingContentManagerDecorator
         implements ContentManager
 {
-    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+    private final Logger logger = LoggerFactory.getLogger( IndexingContentManagerDecorator.class.getName() );
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -296,6 +296,7 @@ public abstract class IndexingContentManagerDecorator
             }
         }
 
+        logger.trace( "Delegating retrieve call for concrete repository: {}/{}", store, path );
         transfer = delegate.retrieve( store, path, eventMetadata );
 
         if ( exists( transfer ) && indexCfg.isEnabled() )
@@ -370,7 +371,7 @@ public abstract class IndexingContentManagerDecorator
     {
         if ( !indexCfg.isEnabled() )
         {
-            logger.debug( "Content indexing is disabled." );
+            logger.debug( "Content indexing is disabled. Returning null for indexedTransfer of: {}/{}", storeKey, path );
             return null;
         }
 

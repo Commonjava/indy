@@ -18,6 +18,8 @@ package org.commonjava.indy.content.index.conf;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
@@ -92,7 +94,12 @@ public class ContentIndexConfig
 
     public boolean isEnabled()
     {
-        return enabled == null ? DEFAULT_ENABLED : enabled;
+        Boolean result = enabled == null ? DEFAULT_ENABLED : enabled;
+
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Is content indexer enabled? {}", result );
+
+        return result;
     }
 
     @ConfigName( ContentIndexConfig.ENABLE )

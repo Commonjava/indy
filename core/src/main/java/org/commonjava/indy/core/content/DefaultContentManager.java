@@ -64,7 +64,7 @@ public class DefaultContentManager
         implements ContentManager
 {
 
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
+    private final Logger logger = LoggerFactory.getLogger( DefaultContentManager.class.getName() );
 
     @Inject
     private ContentGeneratorManager contentGeneratorManager;

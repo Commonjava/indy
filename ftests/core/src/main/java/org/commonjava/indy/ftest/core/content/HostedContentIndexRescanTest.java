@@ -80,6 +80,6 @@ public class HostedContentIndexRescanTest
             throws IOException
     {
         super.initTestConfig( fixture );
-        writeConfigFile( "conf.d/content-index.conf", "[content-index]\nsupport.authoritative.indexes=true" );
+        writeConfigFile( "conf.d/content-index.conf", "[content-index]\nenabled=true\nsupport.authoritative.indexes=true" );
     }
 }

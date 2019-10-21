@@ -22,6 +22,7 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.infinispan.AdvancedCache;
 import org.junit.Before;
@@ -29,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import javax.enterprise.inject.spi.CDI;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
@@ -168,4 +170,11 @@ public class ContentIndexDirLvWithArtifactsTest
 
     }
 
+    @Override
+    protected void initTestConfig( final CoreServerFixture fixture )
+            throws IOException
+    {
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/content-index.conf", "[content-index]\nenabled=true" );
+    }
 }
