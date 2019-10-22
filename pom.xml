@@ -77,10 +77,11 @@
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
+    <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
-    <galleyVersion>0.17.2</galleyVersion>
+    <galleyVersion>0.17.3-SNAPSHOT</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
@@ -1118,6 +1119,16 @@
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-cache-partyline</artifactId>
         <version>${galleyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-cache-path-mapped</artifactId>
+        <version>${galleyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.cassandraunit</groupId>
+        <artifactId>cassandra-unit</artifactId>
+        <version>${cassandraUnitVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>

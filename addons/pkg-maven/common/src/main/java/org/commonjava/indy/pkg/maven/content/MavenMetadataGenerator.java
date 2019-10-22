@@ -509,7 +509,7 @@ public class MavenMetadataGenerator
                       path, metaMergeInfo );
         helper.writeMergeInfo( metaMergeInfo, group, path );
         logger.trace( ".info file regenerated for group {} of members {} in path. Full path: {}", group.getKey(), contributingMembers,
-                      path, mergeInfoTarget.getDetachedFile() );
+                      path, mergeInfoTarget.getFullPath() );
 
         return metaMergeInfo;
     }

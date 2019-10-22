@@ -41,6 +41,10 @@
       <artifactId>galley-cache-partyline</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-cache-path-mapped</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
     </dependency>

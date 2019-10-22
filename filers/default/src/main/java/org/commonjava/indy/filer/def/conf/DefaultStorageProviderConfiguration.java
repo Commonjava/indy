@@ -19,16 +19,25 @@ import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
+import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+
+import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
+import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_KEYSPACE;
+import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_PORT;
 
 @SectionName( "storage-default" )
 @ApplicationScoped
 public class DefaultStorageProviderConfiguration
-    implements IndyConfigInfo, SystemPropertyProvider
+    implements IndyConfigInfo, SystemPropertyProvider, PathMappedStorageConfig
 {
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
@@ -50,13 +59,24 @@ public class DefaultStorageProviderConfiguration
 
     public DefaultStorageProviderConfiguration( final File storageBasedir )
     {
-        this.storageBasedir = storageBasedir;
+        this( storageBasedir, null );
     }
 
     public DefaultStorageProviderConfiguration( final File storageBasedir, final File nfsStoreBasedir )
     {
         this.storageBasedir = storageBasedir;
         this.nfsStoreBasedir = nfsStoreBasedir;
+        this.setUpPathMappedStorage();
+    }
+
+    @PostConstruct
+    public void setUpPathMappedStorage()
+    {
+        Map<String, Object> props = new HashMap<>();
+        props.put( PROP_CASSANDRA_HOST, cassandraHost );
+        props.put( PROP_CASSANDRA_PORT, cassandraPort );
+        props.put( PROP_CASSANDRA_KEYSPACE, cassandraKeyspace );
+        this.pathMappedStorageConfig = new DefaultPathMappedStorageConfig( props );
     }
 
     public File getStorageRootDirectory()
@@ -67,7 +87,6 @@ public class DefaultStorageProviderConfiguration
     @Deprecated
     public File getNFSStorageRootDirectory()
     {
-//        return nfsStoreBasedir == null ? DEFAULT_NFS_BASEDIR : nfsStoreBasedir;
         return nfsStoreBasedir;
     }
 
@@ -104,5 +123,57 @@ public class DefaultStorageProviderConfiguration
         p.setProperty( STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
         p.setProperty( NFS_STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
         return p;
+    }
+
+
+    // Path mapped storage config
+    private String cassandraHost = "localhost";
+
+    @ConfigName( "storage.cassandra.host" )
+    public void setCassandraHost( String host )
+    {
+        cassandraHost = host;
+    }
+
+    private int cassandraPort = 9042;
+
+    @ConfigName( "storage.cassandra.port" )
+    public void setCassandraPort( int port )
+    {
+        cassandraPort = port;
+    }
+
+    private String cassandraKeyspace = "indy";
+
+    @ConfigName( "storage.cassandra.keyspace" )
+    public void setCassandraKeyspace( String keyspace )
+    {
+        cassandraKeyspace = keyspace;
+    }
+
+    private PathMappedStorageConfig pathMappedStorageConfig;
+
+    @Override
+    public int getGCIntervalInMinutes()
+    {
+        return pathMappedStorageConfig.getGCIntervalInMinutes();
+    }
+
+    @Override
+    public int getGCGracePeriodInHours()
+    {
+        return pathMappedStorageConfig.getGCGracePeriodInHours();
+    }
+
+    @Override
+    public boolean isSubsystemEnabled( String fileSystem )
+    {
+        return pathMappedStorageConfig.isSubsystemEnabled( fileSystem );
+    }
+
+    @Override
+    public Object getProperty( String key )
+    {
+        return pathMappedStorageConfig.getProperty( key );
     }
 }
