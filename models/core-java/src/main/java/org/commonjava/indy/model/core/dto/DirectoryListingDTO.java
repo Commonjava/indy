@@ -17,6 +17,10 @@ package org.commonjava.indy.model.core.dto;
 
 import java.util.List;
 
+/**
+ * @deprecated New content browse service is json based now, so this DTO is not used anymore. Will be removed in recent release
+ */
+@Deprecated
 public class DirectoryListingDTO
 {
 

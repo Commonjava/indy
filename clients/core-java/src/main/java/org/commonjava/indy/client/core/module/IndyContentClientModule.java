@@ -65,6 +65,12 @@ public class IndyContentClientModule
         return buildUrl( null, aggregatePathParts( key, path ) );
     }
 
+    /**
+     * Please do not use this method to get list content, because new content browse is not using html but using json now,
+     * so this method will return wrong result now. Please use {@link org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule} instead.
+     * This method will be removed in recent release.
+     */
+    @Deprecated
     public DirectoryListingDTO listContents( final StoreKey key, final String path )
             throws IndyClientException
     {
@@ -77,6 +83,11 @@ public class IndyContentClientModule
         return http.get( contentPath( key, p ), DirectoryListingDTO.class );
     }
 
+    /**
+     * Please do not use this method to get list content, because new content browse is not using html but using json now,
+     * so this method will return wrong result now. Please use {@link org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule} instead.
+     * This method will be removed in recent release.
+     */
     @Deprecated
     public DirectoryListingDTO listContents( final StoreType type, final String name, final String path )
             throws IndyClientException
