@@ -54,6 +54,7 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -414,9 +415,8 @@ public class ImpliedRepositoryDetector
                     rrs = rrs.stream()
                              .filter( rr -> rr.isAllowReleases() == ref.isAllowReleases() )
                              .filter( rr -> rr.isAllowSnapshots() == ref.isAllowSnapshots() )
-                             .filter( rr -> rr.getPathMaskPatterns() == null || rr.getPathMaskPatterns().isEmpty() || rr
-                                             .getPathMaskPatterns()
-                                             .equals( ref.getPathMaskPatterns() ) )
+                             .filter( rr -> ( isEmpty(rr.getPathMaskPatterns()) && isEmpty( ref.getPathMaskPatterns() ) )
+                                             || rr.getPathMaskPatterns().equals( ref.getPathMaskPatterns() ) )
                              .collect( Collectors.toList() );
                 }
 
@@ -478,16 +478,13 @@ public class ImpliedRepositoryDetector
                         rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
                         try
                         {
-                            rr.setMetadata( IMPLIED_BY_STORES, mapper.writeValueAsString(
-                                            new ImpliedRepoMetadataManager.ImpliedRemotesWrapper(
-                                                            Collections.singletonList( job.store.getKey() ) ) ) );
+                            metadataManager.updateImpliedBy( rr, job.store );
                         }
-                        catch ( JsonProcessingException e )
+                        catch ( ImpliedReposException e )
                         {
                             logger.error( "Failed to set {}", IMPLIED_BY_STORES );
                             continue;
                         }
-                        rr.setPathMaskPatterns( ref.getPathMaskPatterns() );
 
                         final String changelog = String.format(
                                         "Updating the existing remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",
@@ -512,6 +509,10 @@ public class ImpliedRepositoryDetector
                 }
             }
         }
+    }
+
+    private boolean isEmpty(final Collection<?> coll) {
+        return coll == null || coll.isEmpty();
     }
 
     public class ImplicationsJob
