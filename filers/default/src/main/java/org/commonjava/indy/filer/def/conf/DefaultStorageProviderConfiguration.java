@@ -69,14 +69,15 @@ public class DefaultStorageProviderConfiguration
         this.setUpPathMappedStorage();
     }
 
+    private final Map<String, Object> cassandraProps = new HashMap<>();
+
     @PostConstruct
     public void setUpPathMappedStorage()
     {
-        Map<String, Object> props = new HashMap<>();
-        props.put( PROP_CASSANDRA_HOST, cassandraHost );
-        props.put( PROP_CASSANDRA_PORT, cassandraPort );
-        props.put( PROP_CASSANDRA_KEYSPACE, cassandraKeyspace );
-        this.pathMappedStorageConfig = new DefaultPathMappedStorageConfig( props );
+        cassandraProps.put( PROP_CASSANDRA_HOST, cassandraHost );
+        cassandraProps.put( PROP_CASSANDRA_PORT, cassandraPort );
+        cassandraProps.put( PROP_CASSANDRA_KEYSPACE, cassandraKeyspace );
+        this.pathMappedStorageConfig = new DefaultPathMappedStorageConfig( cassandraProps );
     }
 
     public File getStorageRootDirectory()
@@ -133,6 +134,7 @@ public class DefaultStorageProviderConfiguration
     public void setCassandraHost( String host )
     {
         cassandraHost = host;
+        cassandraProps.put( PROP_CASSANDRA_HOST, cassandraHost );
     }
 
     private int cassandraPort = 9042;
@@ -141,6 +143,7 @@ public class DefaultStorageProviderConfiguration
     public void setCassandraPort( int port )
     {
         cassandraPort = port;
+        cassandraProps.put( PROP_CASSANDRA_PORT, cassandraPort );
     }
 
     private String cassandraKeyspace = "indy";
@@ -149,6 +152,7 @@ public class DefaultStorageProviderConfiguration
     public void setCassandraKeyspace( String keyspace )
     {
         cassandraKeyspace = keyspace;
+        cassandraProps.put( PROP_CASSANDRA_KEYSPACE, cassandraKeyspace );
     }
 
     private PathMappedStorageConfig pathMappedStorageConfig;
