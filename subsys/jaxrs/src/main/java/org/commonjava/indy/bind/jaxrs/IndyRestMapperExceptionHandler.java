@@ -29,6 +29,6 @@ public class IndyRestMapperExceptionHandler implements ExceptionMapper<Exception
         Optional
           .ofNullable(exception.getCause())
           .ifPresent((exc) -> { irmpr.setCause(exc.getCause()); } );
-        return Response.serverError().entity(irmpr).type(MediaType.APPLICATION_JSON).build();
+        return Response.status(Response.Status.BAD_REQUEST).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
     }
 }
