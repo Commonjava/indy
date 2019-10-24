@@ -289,16 +289,14 @@ public abstract class AbstractStoreDataManager
 
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
-//        if(configuration != null) {
-            ArtifactStoreValidateData validateData = null ;
-            if (internalFeatureConfig.getStoreValidation()) {
-                validateData = storeValidator.validate(store);
 
-                if (!validateData.isValid()) {
-                    logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
-                    store.getMetadata().putAll(validateData.getErrors());
-                }
+        if (internalFeatureConfig.getStoreValidation()) {
+            ArtifactStoreValidateData validateData = storeValidator.validate(store);
+            if (!validateData.isValid()) {
+                logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
+                store.getMetadata().putAll(validateData.getErrors());
             }
+        }
 
 
         Function<StoreKey, Boolean> lockHandler = k -> doStore( k, store, summary, error, skipIfExists, fireEvents, eventMetadata );
