@@ -60,7 +60,7 @@ import java.util.Date;
 
 @Api( value = "Indy Directory Content Browse", description = "Browse directory content in indy repository" )
 @Path( "/api/browse/{packageType}/{type: (hosted|group|remote)}/{name}" )
-@ApplicationScoped
+//@ApplicationScoped
 @REST
 public class ContentBrowseResource
         implements IndyResources
@@ -120,7 +120,7 @@ public class ContentBrowseResource
 //                    String packageType,
 //            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
 //                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-//            final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
+//            final @PathParam( "path" ) String path, final UriInfo uriInfo,
 //            @Context final HttpServletRequest request )
 //    {
 //        return processHead( packageType, type, name, path, uriInfo, request );
