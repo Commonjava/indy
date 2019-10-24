@@ -111,6 +111,9 @@ public abstract class AbstractIndyFunctionalTest
 
             Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
 
+            EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+            logger.debug( "Embedded Cassandra server started" );
+
             fixture = newServerFixture();
             fixture.start();
 
@@ -119,9 +122,6 @@ public abstract class AbstractIndyFunctionalTest
                 final BootStatus status = fixture.getBootStatus();
                 throw new IllegalStateException( "server fixture failed to boot.", status.getError() );
             }
-
-            EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-            logger.debug( "Embedded Cassandra server started" );
 
             client = createIndyClient();
         }

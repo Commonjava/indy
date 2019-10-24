@@ -30,8 +30,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.jgroups.util.Util.assertTrue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -63,32 +61,40 @@ import static org.junit.Assert.assertThat;
 public class GroupMembershipAddMayDisruptMetadataTest
         extends GroupMembershipChangeUpdateMetadataTest
 {
+
+    public static class BMHelper {}
+
+    /* @formatter:off */
     @BMRules( rules = {
         @BMRule(
-            name = "Create Rendezvous",
-            targetClass = "MavenMetadataGenerator",
+            name = "Prepare",
+            targetClass = "GroupMembershipAddMayDisruptMetadataTest$BMHelper",
             targetMethod = "<init>",
-            targetLocation = "ENTRY",
-            action = "createRendezvous(\"myRendezvous\", 2)" ),
+            targetLocation = "EXIT",
+            action = "debug(\"createRendezvous...\"); createRendezvous(\"myRendezvous\", 2); flag(\"prepared\")" ),
         @BMRule(
             name = "Wait after generateGroupFileContent",
             targetClass = "MavenMetadataGenerator",
             targetMethod = "generateGroupFileContent",
             targetLocation = "EXIT",
+            condition = "flagged(\"prepared\")",
             action = "debug(\"generateGroupFileContent waiting...\"); rendezvous(\"myRendezvous\"); debug(\"generateGroupFileContent go.\")" ),
         @BMRule(
             name = "Wait after storeArtifactStore",
             targetClass = "AbstractStoreDataManager",
             targetMethod = "storeArtifactStore",
             targetLocation = "EXIT",
+            condition = "flagged(\"prepared\")",
             action = "debug(\"storeArtifactStore waiting...\"); rendezvous(\"myRendezvous\"); debug(\"storeArtifactStore go.\")" ),
     } )
+    /* @formatter:on */
     @Test
     @Category( BytemanTest.class )
     public void run()
             throws Exception
     {
         prepare();
+        BMHelper bmHelper = new BMHelper();
 
         ExecutorService fixedPool = Executors.newFixedThreadPool( 2 );
 
@@ -100,7 +106,7 @@ public class GroupMembershipAddMayDisruptMetadataTest
         Callable<String> groupAddTask = new GroupAddCallable( remoteRepositoryC.getKey() );
         Future<String> user2 = fixedPool.submit( groupAddTask );
 
-        Thread.sleep( 2000 );
+        //Thread.sleep( 2000 );
 
         String metadata = user1.get();
         String retCode = user2.get();
