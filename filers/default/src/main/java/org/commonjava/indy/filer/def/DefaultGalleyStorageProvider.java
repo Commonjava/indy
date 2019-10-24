@@ -26,7 +26,7 @@ import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
-import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
+import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
 import org.commonjava.maven.galley.io.NoCacheTransferDecorator;
@@ -148,9 +148,7 @@ public class DefaultGalleyStorageProvider
         setupTransferDecoratorPipeline();
 
         final File storeRoot = config.getStorageRootDirectory();
-
-        // Apply partyline gloable lock manager if in cluster Env
-        cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, deleteExecutor );
+        cacheProviderFactory = new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, config );
 
         // TODO: Tie this into a config file!
         transportManagerConfig = new TransportManagerConfig();

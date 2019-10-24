@@ -328,6 +328,13 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-changelog</artifactId>
     </dependency>
+
+<!--
+    <dependency>
+      <groupId>org.cassandraunit</groupId>
+      <artifactId>cassandra-unit</artifactId>
+    </dependency>
+-->
   </dependencies>
   
   <build>
