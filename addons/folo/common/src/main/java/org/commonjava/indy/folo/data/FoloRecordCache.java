@@ -107,8 +107,20 @@ public class FoloRecordCache
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Adding tracking entry: {}", entry );
-        inProgressRecordCache.put( entry, entry );
-        return true;
+        return inProgressRecordCache.executeCache( (cache)->{
+            TrackedContentEntry existing = cache.get( entry );
+            if ( existing != null )
+            {
+                existing.merge( entry );
+                cache.put( existing, existing );
+            }
+            else
+            {
+                cache.put( entry, entry );
+            }
+
+            return true;
+        } );
     }
 
     @Measure( timers = @MetricNamed( DEFAULT ) )

@@ -23,6 +23,9 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.commonjava.indy.model.core.AccessChannel.GENERIC_PROXY;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
@@ -31,7 +34,7 @@ import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 public class TrackedContentEntry
         implements Comparable<TrackedContentEntry>,Externalizable
 {
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
 
     private TrackingKey trackingKey;
 
@@ -55,6 +58,8 @@ public class TrackedContentEntry
 
     private long index = System.currentTimeMillis();
 
+    private Set<Long> timestamps;
+
     public TrackedContentEntry()
     {
     }
@@ -74,6 +79,7 @@ public class TrackedContentEntry
         this.sha1=sha1;
         this.sha256=sha256;
         this.size = size;
+        this.timestamps = new HashSet<>( Collections.singleton( System.currentTimeMillis() ) );
     }
 
     public String getOriginUrl()
@@ -278,6 +284,7 @@ public class TrackedContentEntry
         out.writeObject( sha256 == null ? "" : sha256 );
         out.writeObject( size );
         out.writeLong( index );
+        out.writeObject( timestamps );
     }
 
     @Override
@@ -357,6 +364,25 @@ public class TrackedContentEntry
 
         index = in.readLong();
 
+        if ( version > 2 )
+        {
+            final Set<Long> tstamps = (Set<Long>) in.readObject();
+            timestamps = tstamps;
+        }
     }
 
+    public Set<Long> getTimestamps()
+    {
+        return timestamps;
+    }
+
+    public void setTimestamps( final Set<Long> timestamps )
+    {
+        this.timestamps = timestamps;
+    }
+
+    public void merge( TrackedContentEntry from )
+    {
+        this.timestamps.addAll( from.timestamps );
+    }
 }
