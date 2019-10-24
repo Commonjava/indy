@@ -18,6 +18,7 @@ package org.commonjava.indy.ftest.core;
 import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.propulsor.boot.BootStatus;
 import org.commonjava.propulsor.boot.BootException;
@@ -118,6 +119,9 @@ public abstract class AbstractIndyFunctionalTest
                 final BootStatus status = fixture.getBootStatus();
                 throw new IllegalStateException( "server fixture failed to boot.", status.getError() );
             }
+
+            EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+            logger.debug( "Embedded Cassandra server started" );
 
             client = createIndyClient();
         }
@@ -222,7 +226,10 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage" );
+        writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
+                        + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
+                        + "storage.cassandra.port=9142\n"
+                        + "storage.cassandra.keyspace=" + getClass().getSimpleName() );
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
