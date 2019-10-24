@@ -97,17 +97,13 @@ public class ContentBrowseResource
     @ApiOperation( "Retrieve directory content under the given artifact store (type/name) and directory path." )
     @ApiResponses({@ApiResponse( code = 200, response = String.class, message = "Rendered content listing" ),@ApiResponse( code = 404, message = "Content is not available" )})
     @HEAD
-    @Path( "/{path}" )
+    @Path( "/{path (.*)}" )
     public Response headForDirectory(
       final @ApiParam( allowableValues = "maven,npm", required = true ) @PathParam( "packageType" ) String packageType,
       final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
       final @ApiParam( required = true ) @PathParam( "name" ) String name,
       final @PathParam( "path" ) String path
     ) throws IndyWorkflowException {
-//        StoreKey key = StoreKey.fromString(packageType.join(":", type,name));
-//        String md5 = contentDigester.digest(key, path, new EventMetadata()).getDigests().get(ContentDigest.MD5).toUpperCase();
-//        String sha1 = contentDigester.digest(key, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1).toUpperCase();
-//        System.out.println("StoreKey: " + key + " md5: " + md5 + " sha1: " + sha1);
         return processHead( packageType, type, name, path, uriInfo, request );
     }
 
