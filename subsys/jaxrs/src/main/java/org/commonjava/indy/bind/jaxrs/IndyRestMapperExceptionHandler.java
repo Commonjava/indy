@@ -6,6 +6,7 @@ import org.commonjava.indy.IndyException;
 import org.commonjava.indy.model.rest.IndyRestMapperResponse;
 import org.jboss.resteasy.client.exception.ResteasyHttpException;
 
+import javax.print.attribute.standard.Media;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -28,6 +29,6 @@ public class IndyRestMapperExceptionHandler implements ExceptionMapper<Exception
         Optional
           .ofNullable(exception.getCause())
           .ifPresent((exc) -> { irmpr.setCause(exc.getCause()); } );
-        return Response.ok(irmpr, MediaType.APPLICATION_JSON).build();
+        return Response.serverError().entity(irmpr).type(MediaType.APPLICATION_JSON).build();
     }
 }
