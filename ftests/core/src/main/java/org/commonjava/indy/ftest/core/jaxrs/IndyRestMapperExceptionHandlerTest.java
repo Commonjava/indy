@@ -5,7 +5,9 @@ import io.netty.handler.codec.json.JsonObjectDecoder;
 import io.swagger.util.Json;
 import io.undertow.util.StatusCodes;
 import org.apache.http.HttpStatus;
+import org.apache.http.protocol.HttpService;
 import org.commonjava.indy.IndyException;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientHttp;
 import org.commonjava.indy.client.core.module.IndyRawHttpModule;
@@ -16,10 +18,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.internal.Throwables;
 
+import javax.validation.constraints.AssertTrue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+
+import java.io.IOException;
 
 import static org.hamcrest.core.Is.is;
 
@@ -35,37 +40,32 @@ public class IndyRestMapperExceptionHandlerTest extends AbstractIndyFunctionalTe
             Response response1 = indyClient1.get("/test/exc1", Response.class);
             Assert.assertNotNull(response1);
             Assert.assertThat("Test Exception Message", is(response1.readEntity(IndyRestMapperResponse.class).getMessage()));
+            Assert.assertEquals(HttpStatus.SC_INTERNAL_SERVER_ERROR, is(response1.getStatus()));
+
 
             IndyClientHttp indyClient2 = client.module(IndyRawHttpModule.class).getHttp();
             Response response2 = indyClient2.get("/test/exc2", Response.class);
             Assert.assertNotNull(response2);
-            Assert.assertNull(response2.readEntity(IndyRestMapperResponse.class).getMessage());
+            Assert.assertThat(HttpStatus.SC_BAD_REQUEST,is(response2.getStatus()));
 
             IndyClientHttp indyClient3 = client.module(IndyRawHttpModule.class).getHttp();
             Response response3 = indyClient3.get("/test/exc3", Response.class);
             Assert.assertNotNull(response3);
-            Assert.assertThat("WebApplicationException Message", is(response1.readEntity(IndyRestMapperResponse.class).getMessage()));
-            Assert.assertThat(HttpStatus.SC_OK, is(response3.getStatusInfo().getStatusCode()));
+            Assert.assertThat("WebApplicationException Message", is(response3.readEntity(IndyRestMapperResponse.class).getMessage()));
+            Assert.assertThat(HttpStatus.SC_INTERNAL_SERVER_ERROR, is(response3.getStatusInfo().getStatusCode()));
 
             IndyClientHttp indyClient4 = client.module(IndyRawHttpModule.class).getHttp();
             Response response4 = indyClient4.get("/test/exc4", Response.class);
             Assert.assertNotNull(response4);
-            Assert.assertThat("ResteasyHttpException Message", is(response1.readEntity(IndyRestMapperResponse.class).getMessage()));
-            Assert.assertThat(HttpStatus.SC_OK, is(response4.getStatusInfo().getStatusCode()));
+            Assert.assertThat("ResteasyHttpException Message", is(response4.readEntity(IndyRestMapperResponse.class).getMessage()));
+            Assert.assertThat(HttpStatus.SC_INTERNAL_SERVER_ERROR, is(response4.getStatusInfo().getStatusCode()));
 
-            IndyClientHttp indyClient5 = client.module(IndyRawHttpModule.class).getHttp();
-            Response response5 = indyClient5.get("/test/exc5", Response.class);
-            Assert.assertNotNull(response5);
-            Assert.assertThat("Exception Message", is(response1.readEntity(IndyRestMapperResponse.class).getMessage()));
-            Assert.assertThat("Throwable Cause", is(response1.readEntity(IndyRestMapperResponse.class).getCause()));
-            Assert.assertThat(HttpStatus.SC_OK, is(response5.getStatusInfo().getStatusCode()));
 
-            IndyClientHttp indyClient6 = client.module(IndyRawHttpModule.class).getHttp();
-            Response response6 = indyClient6.get("/test/exc6", Response.class);
-            Assert.assertNotNull(response6);
-            Assert.assertThat("Test Throwable", is(response1.readEntity(IndyRestMapperResponse.class).getCause()));
-            Assert.assertThat("Throwable Cause", is(response1.readEntity(IndyRestMapperResponse.class).getCause()));
-            Assert.assertThat(HttpStatus.SC_OK, is(response6.getStatusInfo().getStatusCode()));
+            IndyClientHttp indyClient7 = client.module(IndyRawHttpModule.class).getHttp();
+            Response response7 = indyClient7.get("/test/exc7", Response.class);
+            Assert.assertNotNull(response7);
+            Assert.assertThat("Test IOException", is(response7.readEntity(IndyRestMapperResponse.class).getCause()));
+            Assert.assertThat(HttpStatus.SC_SERVICE_UNAVAILABLE, is(response7.getStatusInfo().getStatusCode()));
 
 
         } catch (IndyClientException e) {
@@ -86,8 +86,8 @@ public class IndyRestMapperExceptionHandlerTest extends AbstractIndyFunctionalTe
 
         @GET
         @Path("/exc2")
-        public Response exc2() throws IndyException {
-            throw new IndyException();
+        public Response exc2() throws IndyWorkflowException {
+            throw new IndyWorkflowException("Test Exception Message",null);
         }
 
         @GET
@@ -102,16 +102,11 @@ public class IndyRestMapperExceptionHandlerTest extends AbstractIndyFunctionalTe
             throw new ResteasyHttpException("ResteasyHttpException Message");
         }
 
-        @GET
-        @Path("/exc5")
-        public Response exc5() throws Exception {
-            throw new Exception("Exception Message", new Throwable("Throwable Cause"));
-        }
 
         @GET
-        @Path("/exc6")
-        public Response exc6() throws Throwable {
-            throw new Throwable("Test Throwable", new Throwable("Throwable Cause"));
+        @Path("/exc7")
+        public Response exc7() throws IOException {
+            throw new IOException("Test IOException");
         }
 
     }
