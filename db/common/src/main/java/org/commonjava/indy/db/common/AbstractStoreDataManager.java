@@ -25,6 +25,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -290,7 +291,7 @@ public abstract class AbstractStoreDataManager
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
 
-        if (internalFeatureConfig.getStoreValidation()) {
+        if (internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
             ArtifactStoreValidateData validateData = storeValidator.validate(store);
             if (!validateData.isValid()) {
                 logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
