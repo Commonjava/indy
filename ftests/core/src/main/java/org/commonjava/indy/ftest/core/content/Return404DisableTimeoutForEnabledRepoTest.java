@@ -74,5 +74,6 @@ public class Return404DisableTimeoutForEnabledRepoTest
             throws IOException
     {
         writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
+        writeConfigFile( "conf.d/internal-feature.conf", "[_internal]\nstore.validation.enabled=false" );
     }
 }
