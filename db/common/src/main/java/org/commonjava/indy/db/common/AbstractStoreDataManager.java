@@ -291,7 +291,7 @@ public abstract class AbstractStoreDataManager
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
 
-        if (internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
+        if (internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
             ArtifactStoreValidateData validateData = storeValidator.validate(store);
             if (!validateData.isValid()) {
                 logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
