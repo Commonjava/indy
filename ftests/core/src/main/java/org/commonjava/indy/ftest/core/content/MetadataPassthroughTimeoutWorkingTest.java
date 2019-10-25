@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
@@ -61,19 +60,19 @@ public class MetadataPassthroughTimeoutWorkingTest
     public void timeout()
             throws Exception
     {
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Verifying content timeouts at: {} (timeout: {}s)", new Date(), CACHE_TIMEOUT_SECONDS );
         assertThat( "artifact should not be removed because of passthrough", pomFile.exists(), equalTo( true ) );
         assertThat( "metadata should not be removed because of passthrough", metadataFile.exists(), equalTo( true ) );
         assertThat( "archetype should not be removed because of passthrough", archetypeFile.exists(), equalTo( true ) );
 
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Verifying metadata timeouts at: {} (timeout: {}s)", new Date(), METADATA_TIMEOUT_SECONDS );
         assertThat( "artifact should not be removed because of passthrough", pomFile.exists(), equalTo( true ) );
         assertThat( "metadata should not be removed because of passthrough", metadataFile.exists(), equalTo( true ) );
         assertThat( "archetype should not be removed because of passthrough", archetypeFile.exists(), equalTo( true ) );
 
-        Thread.sleep( PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( PASSTHROUGH_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Verifying passthrough timeouts at: {} (timeout: {}s)", new Date(), PASSTHROUGH_TIMEOUT_SECONDS );
         assertThat( "artifact should be removed because of passthrough timeout", pomFile.exists(), equalTo( false ) );
         assertThat( "metadata should be removed because of passthrough timeout", metadataFile.exists(),

@@ -18,6 +18,8 @@ package org.commonjava.indy.ftest.core.content;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -43,6 +45,8 @@ public abstract class AbstractMetadataTimeoutWorkingTest
 
     @Rule
     public ExpectationServer server = new ExpectationServer( "repos" );
+
+    protected KeyedLocation location;
 
     protected File pomFile;
 
@@ -83,6 +87,8 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         final String changelog = "Timeout Testing: " + name.getMethodName();
         final RemoteRepository repository = createRemoteRepository();
 
+        location = LocationUtils.toLocation( repository );
+
         client.stores().create( repository, changelog, RemoteRepository.class );
 
         // ensure the pom exist before the timeout checking
@@ -91,8 +97,11 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
 
+        pomFile = getPhysicalStorageFile( location, pomPath );
+/*
         pomFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                              remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
+*/
 
         assertThat( "pom doesn't exist: " + pomFile, pomFile.exists(), equalTo( true ) );
 
@@ -102,8 +111,11 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
 
+        metadataFile = getPhysicalStorageFile( location, metadataPath );
+/*
         metadataFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repoId, metadataPath ).toFile();
+*/
 
         assertThat( "metadata doesn't exist", metadataFile.exists(), equalTo( true ) );
 
@@ -113,8 +125,11 @@ public abstract class AbstractMetadataTimeoutWorkingTest
         assertThat( "no archetype result", archetypeResult, notNullValue() );
         assertThat( "archetype doesn't exist", archetypeResult.exists(), equalTo( true ) );
 
+        archetypeFile = getPhysicalStorageFile( location, archetypePath );
+/*
         archetypeFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
                                   remote.singularEndpointName() + "-" + repoId, archetypePath ).toFile();
+*/
 
         assertThat( "archetype doesn't exist: " + archetypeFile, archetypeFile.exists(), equalTo( true ) );
 
