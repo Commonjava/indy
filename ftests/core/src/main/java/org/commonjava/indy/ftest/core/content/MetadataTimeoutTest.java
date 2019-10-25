@@ -21,7 +21,6 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import static java.lang.Thread.sleep;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -42,13 +41,13 @@ public class MetadataTimeoutTest
     public void timeout() throws Exception
     {
         // make the metadata.xml timeout
-        sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS );
         assertThat( "Metadata not removed when timeout", metadataFile.exists(), equalTo( false ) );
 
         // retrieve it again
         client.content().get( new StoreKey( MAVEN_PKG_KEY, remote, repoId ), metadataPath ).close();
 
-        sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS );
         assertThat( "(Second) Metadata not removed when timeout", metadataFile.exists(), equalTo( false ) );
     }
 

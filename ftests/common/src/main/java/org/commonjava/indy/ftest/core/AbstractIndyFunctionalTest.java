@@ -68,6 +68,8 @@ public abstract class AbstractIndyFunctionalTest
 
     protected Indy client;
 
+    protected boolean pathMappedStorage = true;
+
     protected CoreServerFixture fixture;
 
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -111,8 +113,11 @@ public abstract class AbstractIndyFunctionalTest
 
             Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
 
-            EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-            logger.debug( "Embedded Cassandra server started" );
+            if ( pathMappedStorage )
+            {
+                EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+                logger.debug( "Embedded Cassandra server started" );
+            }
 
             fixture = newServerFixture();
             fixture.start();
@@ -186,7 +191,6 @@ public abstract class AbstractIndyFunctionalTest
     public void stop()
             throws IndyLifecycleException
     {
-//        waitForEventPropagation();
         closeQuietly( fixture );
         closeQuietly( client );
     }
@@ -228,6 +232,7 @@ public abstract class AbstractIndyFunctionalTest
     {
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
+                        + "storage.gc.graceperiodinhours=0\n"
                         + "storage.cassandra.port=9142\n"
                         + "storage.cassandra.keyspace=" + getClass().getSimpleName() );
         if ( isSchedulerEnabled() )
