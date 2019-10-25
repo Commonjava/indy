@@ -18,6 +18,8 @@ package org.commonjava.indy.ftest.core;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.storage.pathmapped.util.PathMapUtils.getFileId;
+import static org.commonjava.storage.pathmapped.util.PathMapUtils.getStoragePathByFileId;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -25,24 +27,29 @@ import static org.junit.Assert.assertThat;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
+
+import javax.enterprise.inject.spi.CDI;
 
 public class AbstractContentManagementTest
     extends AbstractIndyFunctionalTest
@@ -114,6 +121,33 @@ public class AbstractContentManagementTest
     protected boolean createStandardTestStructures()
     {
         return true;
+    }
+
+    protected File getPhysicalStorageFile( Location location, String path )
+    {
+        String root = fixture.getBootOptions().getHomeDir();
+        String storage = "var/lib/indy/storage";
+        String fileSystem = location.getName();
+        String id = getFileId( fileSystem, path );
+        String hashedPath = getStoragePathByFileId( id );
+
+        File ret = Paths.get( root, storage, hashedPath ).toFile();
+        logger.debug( "Get physical storage file: {}", ret );
+        return ret;
+    }
+
+    protected void sleepAndRunFileGC( long milliseconds )
+    {
+        try
+        {
+            Thread.sleep( milliseconds );
+        }
+        catch ( InterruptedException e )
+        {
+            e.printStackTrace();
+        }
+        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
+        cacheProvider.asAdminView().gc();
     }
 
     protected void assertExistence( ArtifactStore store, String path, boolean expected )
