@@ -39,14 +39,17 @@ public class IndyRestMapperExceptionHandler implements ExceptionMapper<Exception
 
         if(exception instanceof IndyWorkflowException || exception instanceof IOException) {
             return Response.status(Response.Status.BAD_REQUEST).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
-        } else if(exception instanceof ServiceUnavailableException || exception instanceof IOException ) {
+        } else if(exception instanceof ServiceUnavailableException ) {
             return Response.status(Response.Status.SERVICE_UNAVAILABLE).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
         } else if(exception instanceof NotFoundException) {
+//            return null;
             return Response.status(Response.Status.NOT_FOUND).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
-        } else if(exception instanceof RuntimeException) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
-        } else {
-            return Response.status(Response.Status.NOT_FOUND).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
+        }
+//        else if(exception instanceof RuntimeException) {
+//            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(irmpr).type(MediaType.APPLICATION_JSON).build();
+//        }
+        else {
+            return Response.status(Response.Status.NOT_FOUND).entity(null).build();
         }
 
     }
