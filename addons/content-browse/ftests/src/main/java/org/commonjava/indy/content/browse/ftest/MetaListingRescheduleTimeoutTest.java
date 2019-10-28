@@ -133,7 +133,7 @@ public class MetaListingRescheduleTimeoutTest
 
         // will wait second time for a longer period
         sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS * getTestTimeoutMultiplier() );
-        
+
         //        logger.info( "Checking whether metadata file {} has been deleted...", listingMetaFile );
         // as rescheduled, the artifact should not be deleted
         assertThat( "artifact should be removed as the rescheduled of metadata should not succeed",

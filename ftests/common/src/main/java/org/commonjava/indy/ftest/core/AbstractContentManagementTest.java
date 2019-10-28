@@ -18,8 +18,7 @@ package org.commonjava.indy.ftest.core;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.commonjava.storage.pathmapped.util.PathMapUtils.getFileId;
-import static org.commonjava.storage.pathmapped.util.PathMapUtils.getStoragePathByFileId;
+import static org.commonjava.storage.pathmapped.util.PathMapUtils.getStorageDir;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -138,10 +137,25 @@ public class AbstractContentManagementTest
         }
         else
         {
+            // For something like repo-1:/foo/bar.jar, the physical file should be always in same folder (via getStorageDir),
+            // and the latest file under this folder should be (not theoretically but practically) what we want.
             String fileSystem = location.getName();
-            String id = getFileId( fileSystem, path );
-            String hashedPath = getStoragePathByFileId( id );
-            ret = Paths.get( homeDir, storageDir, hashedPath ).toFile();
+            String d = getStorageDir( fileSystem, path );
+            File dir = Paths.get( homeDir, storageDir, d ).toFile();
+            File[] files = dir.listFiles();
+            File target = null;
+            for ( File file : files )
+            {
+                if ( target == null )
+                {
+                    target = file;
+                }
+                else if ( target.lastModified() < file.lastModified() )
+                {
+                    target = file;
+                }
+            }
+            ret = target.getAbsoluteFile();
         }
         logger.debug( "Get physical storage file: {}", ret );
         return ret;
