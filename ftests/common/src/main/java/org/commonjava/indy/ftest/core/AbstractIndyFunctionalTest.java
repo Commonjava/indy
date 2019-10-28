@@ -233,6 +233,8 @@ public abstract class AbstractIndyFunctionalTest
         else
         {
             writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
+            writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
+
         }
     }
 
