@@ -118,8 +118,9 @@ public abstract class AbstractIndyFunctionalTest
             {
                 String tempDir = "target/embeddedCassandra_" + getClass().getSimpleName();
                 EmbeddedCassandraServerHelper.startEmbeddedCassandra( CASSANDRA_RNDPORT_YML_FILE, tempDir );
+                //EmbeddedCassandraServerHelper.startEmbeddedCassandra();
                 cassandraPort = EmbeddedCassandraServerHelper.getNativeTransportPort();
-                logger.debug( "Embedded Cassandra server started" );
+                logger.debug( "Embedded Cassandra server started, port: {}", cassandraPort );
             }
 
             fixture = newServerFixture();
@@ -254,7 +255,6 @@ public abstract class AbstractIndyFunctionalTest
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
-
             writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
         }
         else

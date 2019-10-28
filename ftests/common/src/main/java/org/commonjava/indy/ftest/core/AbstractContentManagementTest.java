@@ -43,6 +43,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -125,13 +126,23 @@ public class AbstractContentManagementTest
 
     protected File getPhysicalStorageFile( Location location, String path )
     {
-        String root = fixture.getBootOptions().getHomeDir();
-        String storage = "var/lib/indy/storage";
-        String fileSystem = location.getName();
-        String id = getFileId( fileSystem, path );
-        String hashedPath = getStoragePathByFileId( id );
+        String homeDir = fixture.getBootOptions().getHomeDir();
+        String storageDir = "var/lib/indy/storage";
+        StoreKey storeKey = ( (KeyedLocation) location ).getKey();
 
-        File ret = Paths.get( root, storage, hashedPath ).toFile();
+        File ret;
+        if ( !isPathMappedStorageEnabled() )
+        {
+            ret = Paths.get( homeDir, storageDir, storeKey.getPackageType(),
+                             storeKey.getType().singularEndpointName() + "-" + storeKey.getName(), path ).toFile();
+        }
+        else
+        {
+            String fileSystem = location.getName();
+            String id = getFileId( fileSystem, path );
+            String hashedPath = getStoragePathByFileId( id );
+            ret = Paths.get( homeDir, storageDir, hashedPath ).toFile();
+        }
         logger.debug( "Get physical storage file: {}", ret );
         return ret;
     }
