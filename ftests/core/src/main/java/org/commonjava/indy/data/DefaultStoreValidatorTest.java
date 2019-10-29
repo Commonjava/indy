@@ -162,23 +162,10 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
     }
 
-
-    @Override
-    protected void initBaseTestConfig( CoreServerFixture fixture )
-        throws IOException
-    {
-
-        writeConfigFile( "conf.d/ssl.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
-        writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage" );
-        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=true" );
-
-
-    }
-
     @Override
     protected void initTestConfig(CoreServerFixture fixture) throws IOException {
         writeConfigFile( "conf.d/ssl.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
         writeConfigFile( "conf.d/default-main.conf", "[ssl]\nremote.nossl.hosts=localhost,127.0.0.1\nremote.ssl.required=true\n");
-
+        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=true" );
     }
 }

@@ -42,20 +42,12 @@ public class RemoteRepoTimeoutDisablesThenReEnabledTest
     public ExpectationServer server = new ExpectationServer();
 
     @Override
-    protected void initBaseTestConfig( CoreServerFixture fixture )
-            throws IOException
-    {
-    }
-
-    @Override
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "main.conf", "store.disable.timeout=2\n\nInclude conf.d/*.conf\n" );
         writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-scheduler.conf" ) );
-
         writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
-
     }
 
     @Test
