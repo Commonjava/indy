@@ -34,6 +34,8 @@ import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 public class TrackedContentEntry
         implements Comparable<TrackedContentEntry>,Externalizable
 {
+    private static final long serialVersionUID = 6469004486206600578L;
+
     private static final int VERSION = 3;
 
     private TrackingKey trackingKey;
@@ -383,6 +385,10 @@ public class TrackedContentEntry
 
     public void merge( TrackedContentEntry from )
     {
+        this.md5 = from.md5;
+        this.sha1 = from.sha1;
+        this.sha256 = from.sha256;
+        this.size = from.size;
         this.timestamps.addAll( from.timestamps );
     }
 }
