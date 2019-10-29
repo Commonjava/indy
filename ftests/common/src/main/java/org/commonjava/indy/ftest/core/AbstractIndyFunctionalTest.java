@@ -54,6 +54,7 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.cassandraunit.utils.EmbeddedCassandraServerHelper.CASSANDRA_RNDPORT_YML_FILE;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractIndyFunctionalTest
@@ -67,8 +68,6 @@ public abstract class AbstractIndyFunctionalTest
     public static final String TIMEOUT_ENV_FACTOR_SYSPROP = "testEnvTimeoutMultiplier";
 
     protected Indy client;
-
-    protected boolean pathMappedStorage = true;
 
     protected CoreServerFixture fixture;
 
@@ -88,6 +87,8 @@ public abstract class AbstractIndyFunctionalTest
     protected File dataDir;
 
     protected File storageDir;
+
+    private int cassandraPort;
 
     @SuppressWarnings( "resource" )
     @Before
@@ -113,10 +114,13 @@ public abstract class AbstractIndyFunctionalTest
 
             Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
 
-            if ( pathMappedStorage )
+            if ( isPathMappedStorageEnabled() )
             {
-                EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-                logger.debug( "Embedded Cassandra server started" );
+                String tempDir = "target/embeddedCassandra_" + getClass().getSimpleName();
+                EmbeddedCassandraServerHelper.startEmbeddedCassandra( CASSANDRA_RNDPORT_YML_FILE, tempDir );
+                //EmbeddedCassandraServerHelper.startEmbeddedCassandra();
+                cassandraPort = EmbeddedCassandraServerHelper.getNativeTransportPort();
+                logger.debug( "Embedded Cassandra server started, port: {}", cassandraPort );
             }
 
             fixture = newServerFixture();
@@ -135,6 +139,12 @@ public abstract class AbstractIndyFunctionalTest
             logger.error( "Error initializing test", t );
             throw t;
         }
+    }
+
+    // Override this if your test do not access storage
+    protected boolean isPathMappedStorageEnabled()
+    {
+        return true;
     }
 
     protected Indy createIndyClient()
@@ -230,16 +240,21 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
+        String keyspace = getClass().getSimpleName();
+        if ( keyspace.length() > 48 )
+        {
+            keyspace = keyspace.substring( 0, 48 ); // keyspace has to be less than 48 characters
+        }
+
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
-                        + "storage.cassandra.port=9142\n"
-                        + "storage.cassandra.keyspace=" + getClass().getSimpleName() );
+                        + "storage.cassandra.port=" + cassandraPort + "\n"
+                        + "storage.cassandra.keyspace=" + keyspace );
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
-
             writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
         }
         else

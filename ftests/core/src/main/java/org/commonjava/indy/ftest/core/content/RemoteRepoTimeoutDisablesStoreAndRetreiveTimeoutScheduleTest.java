@@ -51,7 +51,7 @@ public class RemoteRepoTimeoutDisablesStoreAndRetreiveTimeoutScheduleTest
 {
 
     @Override
-    protected void initBaseTestConfig( CoreServerFixture fixture )
+    protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
