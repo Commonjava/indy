@@ -1193,7 +1193,7 @@ public class DefaultDownloadManager
         final List<Transfer> result = new ArrayList<>();
         final Transfer transfer = getStorageReference( src, startPath );
         recurseListing( transfer, result );
-
+        logger.debug( "listRecursively result: {}", result );
         return result;
     }
 
