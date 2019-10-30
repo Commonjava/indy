@@ -203,6 +203,20 @@ public abstract class AbstractIndyFunctionalTest
         }
     }
 
+    protected void sleepAndRunFileGC( long milliseconds )
+    {
+        try
+        {
+            Thread.sleep( milliseconds );
+        }
+        catch ( InterruptedException e )
+        {
+            e.printStackTrace();
+        }
+        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
+        cacheProvider.asAdminView().gc();
+    }
+
     protected final CoreServerFixture newServerFixture()
             throws BootException, IOException
     {
