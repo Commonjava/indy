@@ -66,7 +66,7 @@ public class DuplicateStoreAndVerifyTrackedRecordTest
         Set<TrackedContentEntryDTO> uploads = report.getUploads();
         uploads.forEach( et -> {
              System.out.println( ">>> md5: " + et.getMd5() + ", size=" + et.getSize() );
-             assertThat( et.getSize(), equalTo( (long) b2.length ) );
+             assertThat( "Mismatched size for: " + et.getPath(), et.getSize(), equalTo( (long) b2.length ) );
         } );
     }
 

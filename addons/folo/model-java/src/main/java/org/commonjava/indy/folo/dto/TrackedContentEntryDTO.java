@@ -20,6 +20,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 
+import java.util.Set;
+
 public class TrackedContentEntryDTO
     implements Comparable<TrackedContentEntryDTO>
 {
@@ -47,6 +49,8 @@ public class TrackedContentEntryDTO
     private String sha1;
 
     private Long size;
+
+    private Set<Long> timestamps;
 
     public TrackedContentEntryDTO()
     {
@@ -238,4 +242,13 @@ public class TrackedContentEntryDTO
                               storeKey, accessChannel, path, originUrl, localUrl, size, md5, sha256 );
     }
 
+    public Set<Long> getTimestamps()
+    {
+        return timestamps;
+    }
+
+    public void setTimestamps( final Set<Long> timestamps )
+    {
+        this.timestamps = timestamps;
+    }
 }
