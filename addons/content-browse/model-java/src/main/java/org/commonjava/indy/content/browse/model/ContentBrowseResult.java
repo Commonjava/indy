@@ -151,6 +151,8 @@ public class ContentBrowseResult
 
         private Set<String> sources;
 
+        private Boolean sslValidated;
+
         public ListingURLResult(){}
 
         public ListingURLResult( String path, String listingUrl, Set<String> sources )
@@ -158,6 +160,7 @@ public class ContentBrowseResult
             this.path = path;
             this.listingUrl = listingUrl;
             this.sources = sources;
+            this.sslValidated = this.sslValidated == null ? Boolean.FALSE : this.sslValidated ;
         }
 
         public String getPath()
@@ -188,6 +191,14 @@ public class ContentBrowseResult
         public void setSources( Set<String> sources )
         {
             this.sources = sources;
+        }
+
+        public Boolean getSslValidated() {
+            return sslValidated;
+        }
+
+        public void setSslValidated(Boolean sslValidated) {
+            this.sslValidated = sslValidated;
         }
     }
 }
