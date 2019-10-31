@@ -404,6 +404,25 @@
             </execution>
           </executions>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cassandra-maven-plugin</artifactId>
+          <version>3.6</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>start</goal>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <startNativeTransport>true</startNativeTransport>
+            <cqlVersion>3.4.4</cqlVersion>
+            <maxMemory>1024</maxMemory>
+          </configuration>
+        </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
@@ -457,6 +476,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cassandra-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

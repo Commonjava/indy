@@ -18,8 +18,8 @@ package org.commonjava.indy.ftest.core;
 import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.propulsor.boot.BootStatus;
 import org.commonjava.propulsor.boot.BootException;
 import org.commonjava.indy.client.core.Indy;
@@ -42,7 +42,6 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -54,7 +53,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.cassandraunit.utils.EmbeddedCassandraServerHelper.CASSANDRA_RNDPORT_YML_FILE;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractIndyFunctionalTest
@@ -88,8 +86,6 @@ public abstract class AbstractIndyFunctionalTest
 
     protected File storageDir;
 
-    private int cassandraPort;
-
     @SuppressWarnings( "resource" )
     @Before
     public void start()
@@ -113,15 +109,6 @@ public abstract class AbstractIndyFunctionalTest
             new Timer().scheduleAtFixedRate( task, 0, 5000 );
 
             Thread.currentThread().setName( getClass().getSimpleName() + "." + name.getMethodName() );
-
-            if ( isPathMappedStorageEnabled() )
-            {
-                String tempDir = "target/embeddedCassandra_" + getClass().getSimpleName();
-                EmbeddedCassandraServerHelper.startEmbeddedCassandra( CASSANDRA_RNDPORT_YML_FILE, tempDir );
-                //EmbeddedCassandraServerHelper.startEmbeddedCassandra();
-                cassandraPort = EmbeddedCassandraServerHelper.getNativeTransportPort();
-                logger.debug( "Embedded Cassandra server started, port: {}", cassandraPort );
-            }
 
             fixture = newServerFixture();
             fixture.start();
@@ -201,8 +188,33 @@ public abstract class AbstractIndyFunctionalTest
     public void stop()
             throws IndyLifecycleException
     {
+        closeCacheProvider();
         closeQuietly( fixture );
         closeQuietly( client );
+    }
+
+    // TODO: this is a hack due to the "shutdown action not executed" issue. Once propulsor lifecycle shutdown is applied, this can be replaced.
+    private void closeCacheProvider()
+    {
+        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class ).get();
+        if ( cacheProvider != null )
+        {
+            cacheProvider.asAdminView().close();
+        }
+    }
+
+    protected void sleepAndRunFileGC( long milliseconds )
+    {
+        try
+        {
+            Thread.sleep( milliseconds );
+        }
+        catch ( InterruptedException e )
+        {
+            e.printStackTrace();
+        }
+        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
+        cacheProvider.asAdminView().gc();
     }
 
     protected final CoreServerFixture newServerFixture()
@@ -249,7 +261,7 @@ public abstract class AbstractIndyFunctionalTest
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
-                        + "storage.cassandra.port=" + cassandraPort + "\n"
+                        + "storage.cassandra.port=9042\n"
                         + "storage.cassandra.keyspace=" + keyspace );
         if ( isSchedulerEnabled() )
         {
