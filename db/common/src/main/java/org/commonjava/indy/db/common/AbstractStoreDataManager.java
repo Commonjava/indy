@@ -25,6 +25,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -289,37 +290,14 @@ public abstract class AbstractStoreDataManager
 
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
-//        if(configuration != null) {
-            ArtifactStoreValidateData validateData = null ;
-            try {
 
-//                if(configuration.isSSLRequired()) {
-                    if (internalFeatureConfig.getStoreValidation()) {
-                        validateData = storeValidator.validate(store);
-
-                        if (!validateData.isValid()) {
-                            logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() +
-                              " with name: " + store.getName());
-                            disableNotValidStore(store, validateData);
-                        }
-                    }
-//                }
+        if (internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
+            ArtifactStoreValidateData validateData = storeValidator.validate(store);
+            if (!validateData.isValid()) {
+                logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
+                store.getMetadata().putAll(validateData.getErrors());
             }
-            catch (MalformedURLException mue) {
-                logger.warn("=> [AbstractStoreDataManager] MalformedURLException:" + mue.getMessage());
-                // Disable Store
-                disableNotValidStore(store,validateData);
-            } catch (IndyDataException ide) {
-                logger.warn("=> [AbstractStoreDataManager] IndyDataException: " + ide.getMessage());
-                // Disable Store
-                disableNotValidStore(store,validateData);
-            } catch (Exception e) {
-                logger.warn("=> [AbstractStoreDataManager] Exception:" + e);
-                // Disable Store
-//                disableNotValidStore(store,validateData);
-            }
-
-//        }
+        }
 
 
         Function<StoreKey, Boolean> lockHandler = k -> doStore( k, store, summary, error, skipIfExists, fireEvents, eventMetadata );
