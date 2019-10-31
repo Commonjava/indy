@@ -161,20 +161,6 @@ public class AbstractContentManagementTest
         return ret;
     }
 
-    protected void sleepAndRunFileGC( long milliseconds )
-    {
-        try
-        {
-            Thread.sleep( milliseconds );
-        }
-        catch ( InterruptedException e )
-        {
-            e.printStackTrace();
-        }
-        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
-        cacheProvider.asAdminView().gc();
-    }
-
     protected void assertExistence( ArtifactStore store, String path, boolean expected )
             throws IndyClientException
     {
