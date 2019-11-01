@@ -86,6 +86,8 @@ public abstract class AbstractIndyFunctionalTest
 
     protected File storageDir;
 
+    protected CacheProvider cacheProvider;
+
     @SuppressWarnings( "resource" )
     @Before
     public void start()
@@ -120,6 +122,7 @@ public abstract class AbstractIndyFunctionalTest
             }
 
             client = createIndyClient();
+            cacheProvider = CDI.current().select( CacheProvider.class ).get();
         }
         catch ( Throwable t )
         {
@@ -196,7 +199,6 @@ public abstract class AbstractIndyFunctionalTest
     // TODO: this is a hack due to the "shutdown action not executed" issue. Once propulsor lifecycle shutdown is applied, this can be replaced.
     private void closeCacheProvider()
     {
-        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class ).get();
         if ( cacheProvider != null )
         {
             cacheProvider.asAdminView().close();
