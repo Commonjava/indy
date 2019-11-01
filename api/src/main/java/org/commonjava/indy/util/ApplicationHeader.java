@@ -33,8 +33,8 @@ public enum ApplicationHeader
     content_disposition( "Content-Disposition" ),
     indy_origin( "Indy-Origin" ),
     transfer_encoding( "Transfer-Encoding" ),
-    md5("MD5"),
-    sha1("SHA1")
+    md5("INDY-MD5"),
+    sha1("INDY-SHA1")
     ;
 
     private final String key;

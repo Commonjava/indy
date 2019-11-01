@@ -1,0 +1,24 @@
+{
+  "responseHeaders" : {
+    "X-TIMER" : [ "S1572612495.191242,VS0,VE0" ],
+    "X-CACHE-HITS" : [ "0, 0" ],
+    "X-SERVED-BY" : [ "cache-iad2123-IAD, cache-hhn4031-HHN" ],
+    "X-CHECKSUM-MD5" : [ "297593585ae27e50f68a84237af4a0c7" ],
+    "VIA" : [ "1.1 varnish" ],
+    "CONNECTION" : [ "keep-alive" ],
+    "X-CACHE" : [ "HIT, HIT" ],
+    "DATE" : [ "Fri, 01 Nov 2019 12:48:15 GMT" ],
+    "ETAG" : [ "\"297593585ae27e50f68a84237af4a0c7\"" ],
+    "X-CHECKSUM-SHA1" : [ "73864ff304ad7cc8ed052b63e66901a73a91afd1" ],
+    "ACCEPT-RANGES" : [ "bytes" ],
+    "CONTENT-TYPE" : [ "text/xml" ],
+    "LAST-MODIFIED" : [ "Sun, 27 Oct 2019 18:18:26 GMT" ],
+    "CONTENT-LENGTH" : [ "8797303" ],
+    "AGE" : [ "411813" ]
+  },
+  "responseStatusMessage" : "OK",
+  "responseStatusCode" : 200,
+  "contentLength" : 8797303,
+  "lastModified" : "Sun, 27 Oct 2019 18:18:26 GMT",
+  "contentType" : "text/xml"
+}
