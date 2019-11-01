@@ -20,6 +20,8 @@ import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -27,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,13 +94,8 @@ public class AuthoritativeIndexedContentInHostedTest
         client.content()
               .store( repo.getKey(), CACHED_AFACT_PATH, new ByteArrayInputStream( CACHED_CONTENT.getBytes() ) );
 
-        final Path nonCachedFile =
-                Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                           hosted.singularEndpointName() + "-" + repoName, NON_CACHED_AFACT_PATH );
-        Files.createDirectories( nonCachedFile.getParent() );
-        Files.createFile( nonCachedFile );
-
-        try (FileOutputStream stream = new FileOutputStream( nonCachedFile.toFile() ))
+        ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( repo ), NON_CACHED_AFACT_PATH );
+        try (OutputStream stream = cacheProvider.openOutputStream( res ))
         {
             stream.write( NON_CACHED_CONTENT.getBytes() );
         }
