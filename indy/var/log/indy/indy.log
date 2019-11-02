@@ -1,0 +1,252 @@
+ 15:06:06.550 [main] INFO  o.i.c.e.InfinispanExtensionEmbedded - ISPN017003: Overriding default embedded configuration not found - adding default implementation
+ 15:06:06.585 [main] INFO  o.i.c.e.InfinispanExtensionEmbedded - ISPN017004: Overriding default embedded cache manager not found - adding default implementation
+ 15:06:07.159 [main] WARN  o.c.i.conf.DefaultIndyConfiguration - No nodeId found! Using 'localhost'.
+ 15:06:07.214 [main] INFO  o.c.indy.action.IndyLifecycleManager - 
+
+
+
+
+ STARTING Indy
+    Version: 1.9.6-SNAPSHOT
+    Built-By: gorgigeorgievski
+    Commit-ID: a497b08
+    Built-On: 2019-11-01 13:45 +0100
+
+
+
+
+
+ 15:06:07.245 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running bootup actions...
+ 15:06:07.246 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running bootup action: 'JNDI Connection Pools'
+ 15:06:07.256 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running bootup action: 'parallel streams common pool'
+ 15:06:07.257 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running bootup action: 'Schedule Manager'
+ 15:06:07.425 [main] INFO  o.c.i.s.infinispan.CacheProducer - Infinispan remote configuration not enabled. Skip.
+ 15:06:07.430 [main] INFO  o.c.i.s.infinispan.CacheProducer - Using CLASSPATH resource Infinispan configuration:
+
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:infinispan:config:9.4 http://www.infinispan.org/schemas/infinispan-config-9.4.xsd
+                                urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
+            xmlns="urn:infinispan:config:9.4"
+            xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
+
+  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
+    <local-cache-configuration name="local-template" statistics="true">
+      <memory>
+        <!--
+          Limits the cache to this by the amount of entries in the cache.
+          If choose memory or off-heap, make sure the key/value objects implements Serializable
+        -->
+        <object size="200000"/>
+      </memory>
+    </local-cache-configuration>
+
+    <local-cache name="local" configuration="local-template"/>
+
+    <local-cache name="koji-maven-version-metadata" configuration="local-template" />
+
+    <local-cache name="folo-in-progress" configuration="local-template">
+      <indexing index="LOCAL">
+        <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
+        <property name="default.directory_provider">ram</property>
+        <!-- <property name="hibernate.search.default.indexBase">/Users/gorgigeorgievski/_Work/_2019/11_Novembar/01.11.2019/NOS-2048/indy/indy/data/folo/search</property> -->
+      </indexing>
+    </local-cache>
+
+    <local-cache name="folo-sealed" configuration="local-template">
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="false" path="/Users/gorgigeorgievski/_Work/_2019/11_Novembar/01.11.2019/NOS-2048/indy/indy/data/folo"/>
+      </persistence>
+      <memory>
+        <object size="1000" strategy="REMOVE" />
+      </memory>
+    </local-cache>
+
+    <local-cache name="content-index" configuration="local-template" />
+
+    <local-cache name="content-metadata" configuration="local-template"/>
+
+    <local-cache name="maven-metadata-cache" configuration="local-template"/>
+
+    <local-cache name="maven-metadata-key-cache" configuration="local-template">
+      <indexing index="LOCAL">
+        <property name="default.directory_provider">ram</property>
+      </indexing>
+    </local-cache>
+
+    <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000" configuration="local-template">
+      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
+                   locking="PESSIMISTIC"/>
+    </local-cache>
+
+    <!--
+        This cache works for delete the fast local cache of the NFS supported repo cache on local. With the expiration,
+        it will make all cache entries expired after 1 day, and trigger the purge of the expired cache every 30 mins
+    -->
+    <local-cache name="indy-fastlocal-file-delete-cache" configuration="local-template">
+      <expiration lifespan="86400000" max-idle="86400000" interval="1800000"/>
+    </local-cache>
+
+    <local-cache name="schedule-expire-cache" configuration="local-template">
+      <expiration interval="300" />
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="false" path="/Users/gorgigeorgievski/_Work/_2019/11_Novembar/01.11.2019/NOS-2048/indy/indy/data/scheduler"/>
+      </persistence>
+    </local-cache>
+
+    <local-cache name="nfc" configuration="local-template">
+      <!--
+        Expires in 72 hours and run expiration every 15 minutes.
+      -->
+      <expiration lifespan="259200000" max-idle="259200000" interval="900000" />
+      <memory>
+        <object size="10000000" strategy="REMOVE" />
+      </memory>
+      <indexing index="LOCAL">
+        <property name="default.directory_provider">ram</property>
+      </indexing>
+    </local-cache>
+
+    <local-cache name="prefetch-cache">
+      <persistence passivation="true">
+        <file-store shared="false" preload="true" fetch-state="false" path="/Users/gorgigeorgievski/_Work/_2019/11_Novembar/01.11.2019/NOS-2048/indy/indy/data/prefetch"/>
+      </persistence>
+      <memory>
+        <object size="20000" strategy="REMOVE" />
+      </memory>
+    </local-cache>
+
+    <!-- TODO: this should be a distributed cache when enable cluster -->
+    <local-cache name="partyline-cluster-locks">
+      <locking
+              isolation="READ_COMMITTED"
+              write-skew="true"/>
+      <transaction
+              locking="OPTIMISTIC"
+              auto-commit="true"
+              complete-timeout="60000"
+              mode="FULL_XA"
+              notifications="true"
+              protocol="DEFAULT"
+              reaper-interval="30000"
+              recovery-cache="__recoveryInfoCacheName__"
+              stop-timeout="30000"
+              transaction-manager-lookup="org.infinispan.transaction.lookup.GenericTransactionManagerLookup"/>
+      <versioning
+              scheme="SIMPLE"/>
+    </local-cache>
+
+    <!-- TODO: these should be a distributed persist cache when enable cluster -->
+    <local-cache name="store-data" configuration="local-template">
+      <persistence passivation="true">
+        <file-store shared="false" preload="true" fetch-state="false" path="/Users/gorgigeorgievski/_Work/_2019/11_Novembar/01.11.2019/NOS-2048/indy/indy/data/store"/>
+      </persistence>
+    </local-cache>
+
+    <!--
+    A clustered lock is a lock which is distributed and shared among all nodes in the Infinispan cluster and
+    provides a way to execute code that will be synchronized between the nodes. Since 9.x.
+    -->
+<!--
+    <clustered-locks:clustered-locks>
+      <clustered-locks:clustered-lock name="store-data-manager" />
+    </clustered-locks:clustered-locks>
+-->
+
+  </cache-container>
+</infinispan>
+
+
+
+ 15:06:07.544 [main] INFO  o.i.configuration.parsing.Parser - ISPN000293: Ignoring XML attribute deadlock-detection-spin, please remove from configuration file
+ 15:06:07.551 [main] WARN  o.i.configuration.parsing.Parser - ISPN000415: The write skew attribute is no longer supported since version 9.0. Attribute write-skew on line 98 will be ignored.
+ 15:06:07.552 [main] WARN  o.i.configuration.parsing.Parser - ISPN000415: The versioning is no longer supported since version 9.0. Attribute scheme on line 111 will be ignored.
+ 15:06:07.588 [main] WARN  o.i.c.c.IndexingConfigurationBuilder - ISPN000403: No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).
+ 15:06:07.593 [main] WARN  o.i.c.c.IndexingConfigurationBuilder - ISPN000403: No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).
+ 15:06:07.594 [main] WARN  o.i.c.c.IndexingConfigurationBuilder - ISPN000403: No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).
+ 15:06:08.038 [main] INFO  o.i.f.GlobalComponentRegistry - ISPN000128: Infinispan version: Infinispan 'Infinity Minus ONE +2' 9.4.15.Final
+ 15:06:08.429 [main] INFO  o.c.i.s.infinispan.CacheProducer - Infinispan cluster configuration not enabled. Skip.
+ 15:06:08.517 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration actions...
+ 15:06:08.517 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'Legacy store-definition data migrator'
+ 15:06:08.517 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'Flat db to ISPN store-definition data migrator'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'package-typed-storage'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'folo-sealed-records'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'Legacy quartz db data remove'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'aprox-promotion-rules'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'Koji origin metadata migration'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'HttProx origin metadata migration'
+ 15:06:08.636 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running migration action: 'Implied-Repositories metadata origin migration'
+ 15:06:08.652 [main] WARN  o.c.m.g.io.SpecialPathManagerImpl - [Galley] The package types already contains the path set for this package type npm, will override it
+ 15:06:08.672 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup actions...
+ 15:06:08.672 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'koji-client'
+ 15:06:08.672 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'folo-backup-sealed-records'
+ 15:06:08.739 [main] INFO  org.hibernate.search.engine.Version - HSEARCH000034: Hibernate Search 5.10.3.Final
+ 15:06:08.763 [main] INFO  o.h.a.c.r.java.JavaReflectionManager - HCANN000001: Hibernate Commons Annotations {5.0.4.Final}
+ 15:06:08.846 [main] WARN  o.h.s.s.s.BaseDirectoryProviderService - HSEARCH000346: The 'ram' directory provider is deprecated and will be removed in a future version. You should use 'local-heap' instead. Also, this should not be used in a production environment. Please refer to the official documentation for more information.
+ 15:06:08.964 [main] WARN  o.h.s.i.i.LuceneEmbeddedIndexFamilyImpl - HSEARCH000075: Configuration setting hibernate.search.lucene_version was not specified: using LUCENE_CURRENT.
+ 15:06:09.036 [main] WARN  o.h.s.s.s.BaseDirectoryProviderService - HSEARCH000346: The 'ram' directory provider is deprecated and will be removed in a future version. You should use 'local-heap' instead. Also, this should not be used in a production environment. Please refer to the official documentation for more information.
+ 15:06:09.130 [main] INFO  o.i.query.impl.LifecycleManager - ISPN014003: Registering Query interceptor for cache folo-in-progress
+ 15:06:09.140 [main] WARN  o.i.c.c.IndexingConfigurationBuilder - ISPN000403: No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).
+ 15:06:09.149 [main] INFO  o.i.f.TransactionManagerFactory - ISPN000161: Using a batchMode transaction manager
+ 15:06:09.203 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'folo'
+ 15:06:09.209 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'zabbix'
+ 15:06:09.210 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'metric'
+ 15:06:09.210 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'Content index warmer'
+ 15:06:09.211 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'httproxy-listener'
+ 15:06:09.212 [main] INFO  o.c.indy.action.IndyLifecycleManager - Running startup action: 'Default artifact store initialization'
+ 15:06:09.229 [main] WARN  o.c.i.d.c.AbstractStoreDataManager - Storing RemoteRepository [central, https://repo.maven.apache.org/maven2/] using operation lock: org.commonjava.cdi.util.weft.Locker@57b3d869
+ 15:06:09.692 [store-validation-1] WARN  o.c.indy.data.DefaultStoreValidator - => Check HTTP HEAD Response code: 200
+ 15:06:09.692 [store-validation-0] WARN  o.c.indy.data.DefaultStoreValidator - => Check HTTP GET Response code: 200
+ 15:06:09.693 [main] WARN  o.c.indy.data.DefaultStoreValidator - => Success HTTP GET and HEAD Response from Remote Repository: https://repo.maven.apache.org/maven2/
+ 15:06:09.837 [main] WARN  o.c.i.d.c.AbstractStoreDataManager - Storing HostedRepository [local-deployments] using operation lock: org.commonjava.cdi.util.weft.Locker@57b3d869
+ 15:06:09.843 [main] WARN  o.c.i.d.c.AbstractStoreDataManager - Storing Group[public] using operation lock: org.commonjava.cdi.util.weft.Locker@57b3d869
+ 15:06:09.851 [main] INFO  o.c.indy.action.IndyLifecycleManager - ...done. Indy is ready to run.
+ 15:06:10.096 [main] WARN  i.u.s.h.b.PredicatedHandlersParser - UT005060: Predicate max-content-size[5120] uses old style square braces to define predicates, which will be removed in a future release. predicate[value] should be changed to predicate(value)
+ 15:06:10.575 [main] INFO  org.xnio.Xnio - XNIO version 3.3.8.Final
+ 15:06:10.587 [main] INFO  org.xnio.nio.NioXnio - XNIO NIO Implementation Version 3.3.0.Final
+ 15:06:30.821 [GET /content/maven/group/public (1572617190820.38146666579752)] INFO  o.c.i.b.j.ResourceManagementFilter - START http://localhost:8080/api/content/maven/group/public (from: 127.0.0.1)
+ 15:06:30.872 [GET /content/maven/group/public (1572617190820.38146666579752)] INFO  o.c.i.b.j.ResourceManagementFilter - END http://localhost:8080/api/content/maven/group/public (from: 127.0.0.1)
+ 15:06:31.078 [GET /browse/maven/group/public (1572617191078.38146924249985)] INFO  o.c.i.b.j.ResourceManagementFilter - START http://localhost:8080/api/browse/maven/group/public (from: 127.0.0.1)
+ 15:06:31.139 [GET /browse/maven/group/public (1572617191078.38146924249985)] INFO  o.c.i.b.j.ResourceManagementFilter - END http://localhost:8080/api/browse/maven/group/public (from: 127.0.0.1)
+ 15:06:48.595 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617208595.38164441198853)] INFO  o.c.i.b.j.ResourceManagementFilter - START http://localhost:8080/api/content/maven/group/public/archetype-catalog.xml (from: 127.0.0.1)
+ 15:06:48.647 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617208595.38164441198853)] WARN  o.h.s.i.i.LuceneEmbeddedIndexFamilyImpl - HSEARCH000075: Configuration setting hibernate.search.lucene_version was not specified: using LUCENE_CURRENT.
+ 15:06:48.668 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617208595.38164441198853)] INFO  o.i.query.impl.LifecycleManager - ISPN014003: Registering Query interceptor for cache nfc
+ 15:06:48.672 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617208595.38164441198853)] WARN  o.i.c.c.IndexingConfigurationBuilder - ISPN000403: No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).
+ 15:06:50.853 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617208595.38164441198853)] INFO  o.c.i.b.j.ResourceManagementFilter - END http://localhost:8080/api/content/maven/group/public/archetype-catalog.xml (from: 127.0.0.1)
+ 15:06:56.728 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617216727.38172573619361)] INFO  o.c.i.b.j.ResourceManagementFilter - START http://localhost:8080/api/content/maven/group/public/archetype-catalog.xml (from: 127.0.0.1)
+ 15:06:56.736 [HEAD /content/maven/group/public/archetype-catalog.xml (1572617216727.38172573619361)] INFO  o.c.i.b.j.ResourceManagementFilter - END http://localhost:8080/api/content/maven/group/public/archetype-catalog.xml (from: 127.0.0.1)
+ 15:06:49.671 [expiration-thread--p3-t1] INFO  o.c.m.g.internal.TransferManagerImpl - BEGIN: Delete Resource [location=RepositoryLocation [maven:remote:central], path=archetype-catalog.xml] (EventMetadata [metadata={}])
+ 15:06:49.709 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=RepositoryLocation [maven:remote:central], path=archetype-catalog.xml] (EventMetadata [metadata={}])
+ 15:06:49.715 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=RepositoryLocation [maven:remote:central], path=archetype-catalog.xml]
+ 15:06:49.735 [expiration-thread--p3-t1] INFO  o.c.m.g.internal.TransferManagerImpl - FINISH: Delete: Resource [location=RepositoryLocation [maven:remote:central], path=archetype-catalog.xml]
+ 15:06:49.740 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=RepositoryLocation [maven:remote:central], path=archetype-catalog.xml.http-metadata.json] (EventMetadata [metadata={}])
+ 15:06:49.741 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=RepositoryLocation [maven:remote:central], path=archetype-catalog.xml.http-metadata.json]
+ 15:06:49.752 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5] (EventMetadata [metadata={}])
+ 15:06:49.754 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5]
+ 15:06:49.756 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha256] (EventMetadata [metadata={}])
+ 15:06:49.756 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha256]
+ 15:06:49.759 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha1] (EventMetadata [metadata={}])
+ 15:06:49.760 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha1]
+ 15:06:49.767 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml] (EventMetadata [metadata={}])
+ 15:06:49.769 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml]
+ 15:06:49.771 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha] (EventMetadata [metadata={}])
+ 15:06:49.771 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha]
+ 15:06:49.773 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5] (EventMetadata [metadata={}])
+ 15:06:49.773 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5]
+ 15:06:49.774 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.info] (EventMetadata [metadata={}])
+ 15:06:49.775 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.info]
+ 15:06:49.776 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha] (EventMetadata [metadata={}])
+ 15:06:49.776 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha]
+ 15:06:49.780 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5] (EventMetadata [metadata={}])
+ 15:06:49.780 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5]
+ 15:06:49.781 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.info] (EventMetadata [metadata={}])
+ 15:06:49.781 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.info]
+ 15:06:49.838 [expiration-thread--p3-t1] WARN  o.h.s.i.i.LuceneEmbeddedIndexFamilyImpl - HSEARCH000075: Configuration setting hibernate.search.lucene_version was not specified: using LUCENE_CURRENT.
+ 15:06:49.847 [expiration-thread--p3-t1] INFO  o.i.query.impl.LifecycleManager - ISPN014003: Registering Query interceptor for cache maven-metadata-key-cache
+ 15:06:49.852 [expiration-thread--p3-t1] WARN  o.i.c.c.IndexingConfigurationBuilder - ISPN000403: No indexable classes were defined for this indexed cache; switching to autodetection (support for autodetection will be removed in Infinispan 10.0).
+ 15:06:49.891 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha] (EventMetadata [metadata={}])
+ 15:06:49.892 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.sha]
+ 15:06:49.894 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5] (EventMetadata [metadata={}])
+ 15:06:49.894 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.md5]
+ 15:06:49.895 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Starting delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.info] (EventMetadata [metadata={}])
+ 15:06:49.896 [expiration-thread--p3-t1] INFO  o.c.maven.galley.model.Transfer - Finished delete of: Resource [location=GroupLocation [maven:group:public], path=archetype-catalog.xml.info]

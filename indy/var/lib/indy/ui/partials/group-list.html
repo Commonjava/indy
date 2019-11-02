@@ -1,0 +1,89 @@
+<!--
+
+    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+            http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<div class="container-fluid" ng-controller="GroupListCtl">
+    <div class="control-panel">
+        <div class="cp-row">
+            <button ng-click="createNew()">New...</button>
+            <button ng-click="hideAll()">Hide All</button>
+        </div>
+      <div class="cp-row">
+        Search: <input ng-model="query" />
+      </div>
+      <!--
+      <div class="sidebyside">
+        Sort by:
+        <select ng-model="orderProp">
+          <option value="key">Name</option>
+        </select>
+      </div>
+      -->
+      <div class="cp-row cp-debug">
+        <input type="checkbox" ng-model="enableDebug" ng-init="checked=false" /> Debug Data
+      </div>
+    </div>
+    <div class="content-panel">
+      <div class="store-listing">
+        <div ng-repeat="store in listing.items | filter:query | orderBy:orderProp" class="list-item store-listing-item listing-item-start">
+					<div class="fieldset-caption">
+					    <a href="#/group/{{store.packageType}}/view/{{store.name}}">
+                            <span class="enabled-store" ng-if="!isDisabled(store.key)">{{store.packageType}}-{{store.name}}</span>
+                            <span class="disabled-store" ng-if="isDisabled(store.key)">{{store.packageType}}-{{store.name}}</span>
+                        </a>
+					</div>
+					<div class="fieldset">
+					  <div class="two-col">
+					    <div class="field left-half">
+					      <label>Local URL:</label>
+					      <a href="{{store.storeHref}}" target="_new">{{store.storeHref}}</a>
+					    </div>
+					    <div class="options-field field right-half">
+                <div class="inline-label">
+                  {{store.constituents.length}} Constituent(s) [
+                  <!-- span class="option">
+                    <a href="" ng-if="!store.display" ng-click="displayConstituents(store)">View</a>
+                    <a href="" ng-if="store.display" ng-click="hideConstituents(store)">Hide</a>
+                  </span -->
+                  <span class="option">
+                    <a href="" ng-if="!store.display" ng-click="displayConstituents(store)">+</a>
+                    <a href="" ng-if="store.display" ng-click="hideConstituents(store)">-</a>
+                  </span>
+                  ]
+                </div>
+					      <ol ng-if="store.display" class="content-panel item-expanded subsection">
+					        <li ng-repeat="item in store.constituents">
+					          <a href="#/{{item.type}}/{{item.packageType}}/view/{{item.name}}">
+                                  <span class="enabled-store" ng-if="!isDisabled(item.key)">{{item.key}}</span>
+                                  <span class="disabled-store" ng-if="isDisabled(item.key)">{{item.key}}</span>
+                              </a>
+					          <div ng-if="item.type == 'remote'" class="subfields">
+					           <span class="description field">(Remote URL: <a target="_new" href="{{item.storeHref}}">{{item.storeHref}}</a>)</span>
+					          </div>
+					        </li>
+					      </ol>
+					    </div>
+					  </div>
+					  <div class="description field"><ap-listing-description></ap-listing-description></div>
+					</div>
+        </div>
+      </div>
+    </div>
+    <div ng-if="enableDebug" class="debug">
+      JSON:
+      <pre>{{listing | json}}</pre>
+    </div>
+</div>

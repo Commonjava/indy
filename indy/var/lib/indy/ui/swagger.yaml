@@ -1,0 +1,3812 @@
+---
+swagger: "2.0"
+info:
+  license:
+    name: "ASLv2"
+    url: "http://www.apache.org/licenses/LICENSE-2.0"
+basePath: "/"
+tags:
+- name: "Maven Content Access and Storage"
+- name: "NPM Content Access and Storage"
+- name: "Security Infrastructure"
+- name: "Indy Directory Content Browse"
+- name: "Not-Found Cache"
+- name: "Data-Directory Revisions"
+- name: "Content Promotion"
+- name: "Koji repairVolume operation"
+- name: "Diagnostics"
+- name: "DEPRECATED: Content Access and Storage"
+- name: "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+    \ retrieval and management of fileartifact content."
+- name: "Indy Repository change logs searching.n *Warning*: This rest endpoint is\
+    \ only used for testing, and will not return all results. It should not be used\
+    \ for any real operations"
+- name: "FOLO Tracked Content Access and Storage. Tracks retrieval and management\
+    \ of fileartifact content."
+- name: "FOLO Tracking Record Access"
+- name: "FOLO Tracked Content Access and Storage"
+- name: "Store Administration"
+- name: "Schedules and Expirations"
+- name: "Hosted by archive"
+- name: "Generic Infrastructure Queries (UI Support)"
+- name: "Indy Repository Replication"
+- name: "Maintenance"
+paths:
+  /api/admin/maint/content/all{path}:
+    delete:
+      tags:
+      - "Maintenance"
+      summary: "Delete the specified path globally (from any repository that contains\
+        \ it)."
+      description: ""
+      operationId: "deleteAll"
+      parameters:
+      - name: "path"
+        in: "path"
+        description: "The path to delete globally"
+        required: true
+        type: "string"
+        pattern: "(/.+)?"
+      responses:
+        default:
+          description: "successful operation"
+  /api/admin/maint/delete/all{path}:
+    get:
+      tags:
+      - "Maintenance"
+      summary: "Delete the specified path globally (from any repository that contains\
+        \ it)."
+      description: ""
+      operationId: "deleteAllViaGet"
+      parameters:
+      - name: "path"
+        in: "path"
+        description: "The path to delete globally"
+        required: true
+        type: "string"
+        pattern: "(/.+)?"
+      responses:
+        default:
+          description: "successful operation"
+  /api/admin/maint/infinispan/cache/{name}:
+    delete:
+      tags:
+      - "Maintenance"
+      summary: "Clean the specified Infinispan cache."
+      description: ""
+      operationId: "cleanInfinispanCache"
+      parameters:
+      - name: "name"
+        in: "path"
+        description: "The name of cache to clean, 'all' for all caches"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /api/admin/maint/rescan/all:
+    get:
+      tags:
+      - "Maintenance"
+      summary: "Rescan all content in all repositories to re-initialize metadata,\
+        \ capture missing index keys, etc."
+      description: ""
+      operationId: "rescanAll"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/admin/maint/rescan/{packageType}/{type}/{name}:
+    get:
+      tags:
+      - "Maintenance"
+      summary: "Rescan all content in the specified repository to re-initialize metadata,\
+        \ capture missing index keys, etc."
+      description: ""
+      operationId: "rescan"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        description: "The package type (eg. maven, npm, generic-http)"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        description: "The type of store / repository"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "The name of the store / repository"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /api/admin/maint/rescan/{type}/{name}:
+    get:
+      tags:
+      - "Maintenance"
+      summary: "[Deprecated] Rescan all content in the specified repository to re-initialize\
+        \ metadata, capture missing index keys, etc."
+      description: ""
+      operationId: "deprecatedRescan"
+      parameters:
+      - name: "type"
+        in: "path"
+        description: "The type of store / repository"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "The name of the store / repository"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+      deprecated: true
+  /api/admin/replicate:
+    post:
+      tags:
+      - "Indy Repository Replication"
+      summary: "Replicate the stores of a remote Indy"
+      description: ""
+      operationId: "replicate"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "The configuration determining how replication should be handled,\
+          \ and what remote site to replicate."
+        required: true
+        schema:
+          $ref: "#/definitions/ReplicationDTO"
+      responses:
+        default:
+          description: "successful operation"
+  /api/admin/revisions/data/changelog/{path}:
+    get:
+      tags:
+      - "Data-Directory Revisions"
+      summary: "Retrieve the changelog for the Indy data directory content with the\
+        \ specified path, start-index, and number of results"
+      description: ""
+      operationId: "doGet"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: ".+"
+      - name: "start"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "count"
+        in: "query"
+        required: false
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "JSON containing changelog entries"
+          schema:
+            $ref: "#/definitions/ChangeSummaryDTO"
+        400:
+          description: "In case the revisions add-on is disabled"
+  /api/admin/revisions/data/pull:
+    get:
+      tags:
+      - "Data-Directory Revisions"
+      summary: "Pull from the configured remote Git repository, updating the Indy\
+        \ data directory with files (merged according to configuration in the [revisions]\
+        \ section)"
+      description: ""
+      operationId: "pullDataGitUpdates"
+      parameters: []
+      responses:
+        200:
+          description: "Pull complete"
+        400:
+          description: "In case the revisions add-on is disabled"
+  /api/admin/revisions/data/push:
+    get:
+      tags:
+      - "Data-Directory Revisions"
+      summary: "Push Indy data directory content to the configured remote Git repository\
+        \ (if configured in the [revisions] section)"
+      description: ""
+      operationId: "pushDataGitUpdates"
+      parameters: []
+      responses:
+        200:
+          description: "Push complete, or not configured"
+        400:
+          description: "In case the revisions add-on is disabled"
+  /api/admin/schedule/store/all/disable-timeout:
+    get:
+      tags:
+      - "Schedules and Expirations"
+      summary: "Retrieve the expiration information related to re-enablement of any\
+        \ currently disabled repositories"
+      description: ""
+      operationId: "getDisabledStores"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/ExpirationSet"
+  /api/admin/schedule/store/{packageType}/{type}/{name}/disable-timeout:
+    get:
+      tags:
+      - "Schedules and Expirations"
+      summary: "Retrieve the expiration information related to re-enablement of a\
+        \ repository"
+      description: ""
+      operationId: "getStoreDisableTimeout"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        description: "Package type (maven, generic-http, npm, etc)"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Expiration information retrieved successfully."
+          schema:
+            $ref: "#/definitions/Expiration"
+        400:
+          description: "Store is manually disabled (doesn't automatically re-enable),\
+            \ or isn't disabled."
+  /api/admin/schedule/store/{type}/{name}/disable-timeout:
+    get:
+      tags:
+      - "Schedules and Expirations"
+      summary: "[Deprecated] Retrieve the expiration information related to re-enablement\
+        \ of a repository"
+      description: ""
+      operationId: "deprecatedGetStoreDisableTimeout"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Expiration information retrieved successfully."
+          schema:
+            $ref: "#/definitions/Expiration"
+        400:
+          description: "Store is manually disabled (doesn't automatically re-enable),\
+            \ or isn't disabled."
+      deprecated: true
+  /api/admin/stores/maven/hosted/{name}/compressed-content:
+    post:
+      tags:
+      - "Hosted by archive"
+      summary: "Create a new maven hosted store by a zip file"
+      description: ""
+      operationId: "postCreateHostedByZip"
+      consumes:
+      - "application/zip"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "pathPrefixToIgnore"
+        in: "query"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/InputStream"
+      - in: "body"
+        name: "body"
+        description: "The artifact store definition JSON"
+        required: true
+        schema:
+          $ref: "#/definitions/ArtifactStore"
+      responses:
+        201:
+          description: "The store was created"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        409:
+          description: "A store with the specified type and name already exists"
+    put:
+      tags:
+      - "Hosted by archive"
+      summary: "Create a new maven hosted store by a zip file"
+      description: ""
+      operationId: "putCreateHostedByZip"
+      consumes:
+      - "application/zip"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "pathPrefixToIgnore"
+        in: "query"
+        required: false
+        type: "string"
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/InputStream"
+      - in: "body"
+        name: "body"
+        description: "The artifact store definition JSON"
+        required: true
+        schema:
+          $ref: "#/definitions/ArtifactStore"
+      responses:
+        201:
+          description: "The store was created"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        409:
+          description: "A store with the specified type and name already exists"
+  /api/admin/stores/{packageType}/{type}:
+    get:
+      tags:
+      - "Store Administration"
+      summary: "Retrieve the definitions of all artifact stores of a given type on\
+        \ the system"
+      description: ""
+      operationId: "getAll"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        description: "Filter only stores that support the package type (eg. maven,\
+          \ npm). NOTE: '_all' returns all."
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      responses:
+        200:
+          description: "The store definitions"
+          schema:
+            $ref: "#/definitions/List of artifact store definitions"
+    post:
+      tags:
+      - "Store Administration"
+      summary: "Create a new store"
+      description: ""
+      operationId: "create"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - in: "body"
+        name: "body"
+        description: "The artifact store definition JSON"
+        required: true
+        schema:
+          $ref: "#/definitions/ArtifactStore"
+      responses:
+        201:
+          description: "The store was created"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        409:
+          description: "A store with the specified type and name already exists"
+  /api/admin/stores/{packageType}/{type}/query/byUrl:
+    get:
+      tags:
+      - "Store Administration"
+      summary: "Retrieve the definition of a remote by specific url"
+      description: ""
+      operationId: "getRemoteByUrl"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "remote"
+      - name: "url"
+        in: "query"
+        required: false
+        type: "string"
+      responses:
+        200:
+          description: "The store definition"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        404:
+          description: "The remote repository doesn't exist"
+  /api/admin/stores/{packageType}/{type}/revalidate/all:
+    post:
+      tags:
+      - "Store Administration"
+      summary: "Revalidation of Artifacts Stored on demand"
+      description: ""
+      operationId: "revalidateArtifactStores"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+      responses:
+        200:
+          description: "Revalidation for Remote Repositories was successfull"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        404:
+          description: "Revalidation is not successfull"
+  /api/admin/stores/{packageType}/{type}/{name}:
+    get:
+      tags:
+      - "Store Administration"
+      summary: "Retrieve the definition of a specific artifact store"
+      description: ""
+      operationId: "get"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "The store definition"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        404:
+          description: "The store doesn't exist"
+    head:
+      tags:
+      - "Store Administration"
+      summary: "Check if a given store exists"
+      description: ""
+      operationId: "exists"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "The store exists"
+        404:
+          description: "The store doesn't exist"
+    put:
+      tags:
+      - "Store Administration"
+      summary: "Update an existing store"
+      description: ""
+      operationId: "store"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "The artifact store definition JSON"
+        required: true
+        schema:
+          $ref: "#/definitions/ArtifactStore"
+      responses:
+        200:
+          description: "The store was updated"
+        400:
+          description: "The store specified in the body JSON didn't match the URL\
+            \ parameters"
+    delete:
+      tags:
+      - "Store Administration"
+      summary: "Delete an artifact store"
+      description: ""
+      operationId: "delete"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        204:
+          description: "The store was deleted (or didn't exist in the first place)"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+  /api/admin/stores/{packageType}/{type}/{name}/revalidate:
+    post:
+      tags:
+      - "Store Administration"
+      summary: "Revalidation of Artifact Stored on demand based on package, type and\
+        \ name"
+      description: ""
+      operationId: "revalidateArtifactStore"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Revalidation for Remote Repository was successfull"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        404:
+          description: "Revalidation is not successfull"
+  /api/admin/{type}:
+    get:
+      tags:
+      - "Store Administration"
+      summary: "Retrieve the definitions of all artifact stores of a given type on\
+        \ the system"
+      description: ""
+      operationId: "getAll"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      responses:
+        200:
+          description: "The store definitions"
+          schema:
+            $ref: "#/definitions/List of artifact store definitions"
+    post:
+      tags:
+      - "Store Administration"
+      summary: "Create a new store"
+      description: ""
+      operationId: "create"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - in: "body"
+        name: "body"
+        description: "The artifact store definition JSON"
+        required: true
+        schema:
+          $ref: "#/definitions/ArtifactStore"
+      responses:
+        201:
+          description: "The store was created"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        409:
+          description: "A store with the specified type and name already exists"
+  /api/admin/{type}/{name}:
+    get:
+      tags:
+      - "Store Administration"
+      summary: "Retrieve the definition of a specific artifact store"
+      description: ""
+      operationId: "get"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "The store definition"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+        404:
+          description: "The store doesn't exist"
+    head:
+      tags:
+      - "Store Administration"
+      summary: "Check if a given store exists"
+      description: ""
+      operationId: "exists"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "The store exists"
+        404:
+          description: "The store doesn't exist"
+    put:
+      tags:
+      - "Store Administration"
+      summary: "Update an existing store"
+      description: ""
+      operationId: "store"
+      consumes:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "The artifact store definition JSON"
+        required: true
+        schema:
+          $ref: "#/definitions/ArtifactStore"
+      responses:
+        200:
+          description: "The store was updated"
+        400:
+          description: "The store specified in the body JSON didn't match the URL\
+            \ parameters"
+    delete:
+      tags:
+      - "Store Administration"
+      summary: "Delete an artifact store"
+      description: ""
+      operationId: "delete"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        204:
+          description: "The store was deleted (or didn't exist in the first place)"
+          schema:
+            $ref: "#/definitions/ArtifactStore"
+  /api/browse/{packageType}/{type}/{name}:
+    get:
+      tags:
+      - "Indy Directory Content Browse"
+      summary: "Retrieve root listing under the given artifact store (type/name)."
+      description: ""
+      operationId: "browseRoot"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+        enum:
+        - "maven"
+        - "npm"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Rendered root content listing"
+          schema:
+            type: "string"
+  /api/browse/{packageType}/{type}/{name}/{path (.*)}:
+    head:
+      tags:
+      - "Indy Directory Content Browse"
+      summary: "Retrieve directory content under the given artifact store (type/name)\
+        \ and directory path."
+      description: ""
+      operationId: "headForDirectory"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+        enum:
+        - "maven"
+        - "npm"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Rendered content listing"
+          schema:
+            type: "string"
+        404:
+          description: "Content is not available"
+  /api/browse/{packageType}/{type}/{name}/{path}:
+    get:
+      tags:
+      - "Indy Directory Content Browse"
+      summary: "Retrieve directory content under the given artifact store (type/name)\
+        \ and directory path."
+      description: ""
+      operationId: "browseDirectory"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+        enum:
+        - "maven"
+        - "npm"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Rendered content listing"
+          schema:
+            type: "string"
+        404:
+          description: "Content is not available"
+  /api/content/generic-http/{type}/{name}:
+    get:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Retrieve root listing under the given artifact store (type/name)."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+  /api/content/generic-http/{type}/{name}/{path}:
+    get:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Retrieve Maven artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Store content under the given store (type/name) and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Store content under the given artifact store (type/name) and path."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.+)?"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+    delete:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Delete content under the given store (type/name) and path."
+      description: ""
+      operationId: "doDelete"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        description: "true or false"
+        required: false
+        type: "boolean"
+      responses:
+        204:
+          description: "Content was deleted successfully"
+        404:
+          description: "Content is not available"
+  /api/content/maven/{type}/{name}:
+    get:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Retrieve root listing under the given artifact store (type/name)."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+  /api/content/maven/{type}/{name}/{path}:
+    get:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Retrieve Maven artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Store Maven artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Store Maven artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.+)?"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+    delete:
+      tags:
+      - "Maven Content Access and Storage"
+      summary: "Delete Maven artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doDelete"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        description: "true or false"
+        required: false
+        type: "boolean"
+      responses:
+        204:
+          description: "Content was deleted successfully"
+        404:
+          description: "Content is not available"
+  /api/content/npm/{type}/{name}:
+    get:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Retrieve root listing under the given artifact store (type/name)."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+  /api/content/npm/{type}/{name}/{packageName}:
+    get:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Retrieve NPM package metadata content under the given artifact store\
+        \ (type/name) and packageName."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Metadata content is not available"
+    head:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Retrieve NPM package header metadata content under the given artifact\
+        \ store (type/name) and packageName."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for package metadata content"
+        404:
+          description: "Metadata Content is not available"
+    put:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Store NPM artifact content under the given artifact store (type/name)\
+        \ and packageName."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+    delete:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Delete NPM package and metadata content under the given artifact store\
+        \ (type/name) and packageName."
+      description: ""
+      operationId: "doDelete"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "cache-only"
+        in: "query"
+        description: "true or false"
+        required: false
+        type: "boolean"
+      responses:
+        204:
+          description: "Content was deleted successfully"
+        404:
+          description: "Content is not available"
+  /api/content/npm/{type}/{name}/{packageName}/{versionTarball}:
+    get:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Retrieve NPM package tarball content under the given artifact store\
+        \ (type/name), packageName and versionTarball (/version or /-/tarball)."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Retrieve NPM package tarball header metadata content under the given\
+        \ artifact store (type/name), packageName and versionTarball (/version or\
+        \ /-/tarball)."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for tarball content"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Store NPM artifact content under the given artifact store (type/name),\
+        \ packageName and versionTarball (/version or /-/tarball)."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+    delete:
+      tags:
+      - "NPM Content Access and Storage"
+      summary: "Delete NPM package and metadata content under the given artifact store\
+        \ (type/name), packageName and versionTarball (/version or /-/tarball)."
+      description: ""
+      operationId: "doDelete"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        204:
+          description: "Content was deleted successfully"
+        404:
+          description: "Content is not available"
+  /api/diag/bundle:
+    get:
+      tags:
+      - "Diagnostics"
+      summary: "Retrieve a ZIP-compressed file containing log files and a thread dump\
+        \ for Indy."
+      description: ""
+      operationId: "getBundle"
+      produces:
+      - "application/zip"
+      parameters: []
+      responses:
+        200:
+          description: "ZIP bundle"
+          schema:
+            $ref: "#/definitions/File"
+        500:
+          description: "Log files could not be found / accessed"
+  /api/diag/logger/configured/all:
+    get:
+      tags:
+      - "Diagnostics"
+      summary: "Retrieve all configured logger status"
+      description: ""
+      operationId: "getAllLoggers"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Logger status"
+          schema:
+            type: "array"
+            items:
+              type: "object"
+        500:
+          description: "Logger status can not be fetched"
+  /api/diag/logger/configured/name/{name}:
+    get:
+      tags:
+      - "Diagnostics"
+      summary: "Retrieve configured logger status by name"
+      description: ""
+      operationId: "getConfiguredLogger"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Configured logger status by name"
+          schema:
+            $ref: "#/definitions/LoggerDTO"
+        500:
+          description: "Logger status can not be fetched"
+  /api/diag/logger/name/{name}:
+    get:
+      tags:
+      - "Diagnostics"
+      summary: "Retrieve logger status by name"
+      description: ""
+      operationId: "getNamedLogger"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Logger status by name"
+          schema:
+            $ref: "#/definitions/LoggerDTO"
+        500:
+          description: "Logger status can not be fetched"
+  /api/diag/logger/name/{name}/{level}:
+    put:
+      tags:
+      - "Diagnostics"
+      summary: "Change configured logger level by name"
+      description: ""
+      operationId: "changeConfiguredLoggerLevel"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "level"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Changed configured logger status by name"
+          schema:
+            $ref: "#/definitions/LoggerDTO"
+        500:
+          description: "Logger status can not be fetched"
+  /api/diag/repo:
+    get:
+      tags:
+      - "Diagnostics"
+      summary: "Retrieve a ZIP-compressed file containing all repository definitions."
+      description: ""
+      operationId: "getRepoBundle"
+      produces:
+      - "application/zip"
+      parameters: []
+      responses:
+        200:
+          description: "ZIP bundle"
+          schema:
+            $ref: "#/definitions/File"
+        500:
+          description: "Repository files could not be found / accessed"
+  /api/diag/threads:
+    get:
+      tags:
+      - "Diagnostics"
+      summary: "Retrieve a thread dump for Indy."
+      description: ""
+      operationId: "getThreadDump"
+      produces:
+      - "text/plain"
+      parameters: []
+      responses:
+        200:
+          description: "Thread dump content"
+          schema:
+            type: "string"
+  /api/folo/admin/report/export:
+    get:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Export the records as a ZIP file."
+      description: ""
+      operationId: "exportReport"
+      produces:
+      - "application/zip"
+      parameters: []
+      responses:
+        200:
+          description: "ZIP content"
+          schema:
+            $ref: "#/definitions/File"
+  /api/folo/admin/report/ids/{type}:
+    get:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Retrieve folo report tracking ids for folo records."
+      description: ""
+      operationId: "getRecordIds"
+      parameters:
+      - name: "type"
+        in: "path"
+        description: "Report type, should be in_progress|sealed|all"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "folo tracking ids with sealed or in_progress"
+          schema:
+            type: "array"
+            items:
+              type: "object"
+        404:
+          description: "No ids found for type"
+  /api/folo/admin/report/import:
+    put:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Import records from a ZIP file."
+      description: ""
+      operationId: "importReport"
+      parameters: []
+      responses:
+        201:
+          description: "Import ZIP content"
+  /api/folo/admin/{id}/record:
+    get:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Alias of /{id}/record, returns the tracking record for the specified\
+        \ key"
+      description: ""
+      operationId: "getRecord"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Tracking record"
+          schema:
+            $ref: "#/definitions/TrackedContentDTO"
+        404:
+          description: "No such tracking record exists."
+    post:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Seal the tracking record for the specified key, to prevent further\
+        \ content logging"
+      description: ""
+      operationId: "sealRecord"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Tracking record"
+          schema:
+            $ref: "#/definitions/TrackedContentDTO"
+        404:
+          description: "No such tracking record exists."
+    put:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Explicitly setup a new tracking record for the specified key, to prevent\
+        \ 404 if the record is never used."
+      description: ""
+      operationId: "initRecord"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "Tracking record was created"
+          schema:
+            $ref: "#/definitions/TrackedContentDTO"
+    delete:
+      tags:
+      - "FOLO Tracking Record Access"
+      operationId: "clearRecord"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        default:
+          description: "successful operation"
+  /api/folo/admin/{id}/record/recalculate:
+    get:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Recalculate sizes and checksums for every file listed in a tracking\
+        \ record."
+      description: ""
+      operationId: "recalculateRecord"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Recalculated tracking report"
+          schema:
+            $ref: "#/definitions/TrackedContentDTO"
+        404:
+          description: "No such tracking record can be found"
+  /api/folo/admin/{id}/repo/zip:
+    get:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Retrieve the content referenced in a tracking record as a ZIP-compressed\
+        \ Maven repository directory."
+      description: ""
+      operationId: "getZipRepository"
+      produces:
+      - "application/zip"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "ZIP repository content"
+          schema:
+            $ref: "#/definitions/File"
+        404:
+          description: "No such tracking record"
+  /api/folo/admin/{id}/report:
+    get:
+      tags:
+      - "FOLO Tracking Record Access"
+      summary: "Alias of /{id}/record, returns the tracking record for the specified\
+        \ key"
+      description: ""
+      operationId: "getReport"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Tracking record"
+          schema:
+            $ref: "#/definitions/TrackedContentDTO"
+        404:
+          description: "No such tracking record exists."
+  /api/folo/track/{id}/maven/{type}/{name}/{path}:
+    get:
+      tags:
+      - "FOLO Tracked Content Access and Storage. Tracks retrieval and management\
+        \ of fileartifact content."
+      summary: "Retrieve and track file/artifact content under the given artifact\
+        \ store (type/name) and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "FOLO Tracked Content Access and Storage. Tracks retrieval and management\
+        \ of fileartifact content."
+      summary: "Store and track file/artifact content under the given artifact store\
+        \ (type/name) and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "FOLO Tracked Content Access and Storage. Tracks retrieval and management\
+        \ of fileartifact content."
+      summary: "Store and track file/artifact content under the given artifact store\
+        \ (type/name) and path."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+  /api/folo/track/{id}/npm/{type}/{name}/{packageName}:
+    get:
+      tags:
+      - "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+        \ retrieval and management of fileartifact content."
+      summary: "Retrieve and track NPM file/artifact content under the given artifact\
+        \ store (type/name) and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+        \ retrieval and management of fileartifact content."
+      summary: "Store and track file/artifact content under the given artifact store\
+        \ (type/name) and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+        \ retrieval and management of fileartifact content."
+      summary: "Store and track NPM file/artifact content under the given artifact\
+        \ store (type/name) and path."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+  /api/folo/track/{id}/npm/{type}/{name}/{packageName}/{versionTarball}:
+    get:
+      tags:
+      - "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+        \ retrieval and management of fileartifact content."
+      summary: "Retrieve and track NPM file/artifact content under the given artifact\
+        \ store (type/name) and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+        \ retrieval and management of fileartifact content."
+      summary: "Store and track file/artifact content under the given artifact store\
+        \ (type/name) and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "FOLO Tracked Content Access and Storage For NPM related artifacts. Tracks\
+        \ retrieval and management of fileartifact content."
+      summary: "Store NPM artifact content under the given artifact store (type/name),\
+        \ packageName and versionTarball (/version or /-/tarball)."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "packageName"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "versionTarball"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+  /api/folo/track/{id}/{type}/{name}/{path}:
+    get:
+      tags:
+      - "FOLO Tracked Content Access and Storage"
+      summary: "Retrieve and track file/artifact content under the given artifact\
+        \ store (type/name) and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "FOLO Tracked Content Access and Storage"
+      summary: "Store and track file/artifact content under the given artifact store\
+        \ (type/name) and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "FOLO Tracked Content Access and Storage"
+      summary: "Store and track file/artifact content under the given artifact store\
+        \ (type/name) and path."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "id"
+        in: "path"
+        description: "User-assigned tracking session key"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+  /api/nfc:
+    get:
+      tags:
+      - "Not-Found Cache"
+      summary: "Retrieve all not-found cache entries currently tracked"
+      description: ""
+      operationId: "getAll"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "pageIndex"
+        in: "query"
+        description: "page index"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "pageSize"
+        in: "query"
+        description: "page size"
+        required: false
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "The full not-found cache"
+          schema:
+            $ref: "#/definitions/not-found cache"
+    delete:
+      tags:
+      - "Not-Found Cache"
+      summary: "Clear all not-found cache entries"
+      description: ""
+      operationId: "clearAll"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/nfc/info:
+    get:
+      tags:
+      - "Not-Found Cache"
+      summary: "Get not-found cache information, e.g., size, etc"
+      description: ""
+      operationId: "getInfo"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "The info of not-found cache"
+          schema:
+            $ref: "#/definitions/not-found cache info"
+  /api/nfc/{packageType}/{type}/{name}:
+    get:
+      tags:
+      - "Not-Found Cache"
+      summary: "Retrieve all not-found cache entries currently tracked for a given\
+        \ store"
+      description: ""
+      operationId: "getStore"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        description: "type of package (eg. maven, npm, generic-http)"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        description: "type of store"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "name of the store"
+        required: true
+        type: "string"
+      - name: "pageIndex"
+        in: "query"
+        description: "page index"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "pageSize"
+        in: "query"
+        description: "page size"
+        required: false
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "The not-found cache for the specified artifact store"
+          schema:
+            $ref: "#/definitions/not-found cache"
+  /api/nfc/{packageType}/{type}/{name}/info:
+    get:
+      tags:
+      - "Not-Found Cache"
+      summary: "Get not-found cache information, e.g., size, etc"
+      description: ""
+      operationId: "getStoreInfo"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        description: "type of package (eg. maven, npm, generic-http)"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        description: "type of store"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "name of the store"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "The info of not-found cache"
+          schema:
+            $ref: "#/definitions/not-found cache info"
+  /api/nfc/{packageType}/{type}/{name}{path}:
+    delete:
+      tags:
+      - "Not-Found Cache"
+      summary: "Clear all not-found cache entries for a particular store (or optionally,\
+        \ a subpath within a store)"
+      description: ""
+      operationId: "clearStore"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        description: "The type of package (eg. maven, npm, generic-http)"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        description: "The type of store"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "The name of the store"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        description: "The sub-path to clear"
+        required: true
+        type: "string"
+        pattern: "(/.+)?"
+      responses:
+        default:
+          description: "successful operation"
+  /api/nfc/{type}/{name}:
+    get:
+      tags:
+      - "Not-Found Cache"
+      summary: "[Deprecated] Retrieve all not-found cache entries currently tracked\
+        \ for a given store"
+      description: ""
+      operationId: "deprecatedGetStore"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "type"
+        in: "path"
+        description: "The type of store"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "The name of the store"
+        required: true
+        type: "string"
+      - name: "pageIndex"
+        in: "query"
+        description: "page index"
+        required: false
+        type: "integer"
+        format: "int32"
+      - name: "pageSize"
+        in: "query"
+        description: "page size"
+        required: false
+        type: "integer"
+        format: "int32"
+      responses:
+        200:
+          description: "The not-found cache for the specified artifact store"
+          schema:
+            $ref: "#/definitions/not-found cache"
+  /api/nfc/{type}/{name}{path}:
+    delete:
+      tags:
+      - "Not-Found Cache"
+      summary: "[Deprecated] Clear all not-found cache entries for a particular store\
+        \ (or optionally, a subpath within a store)"
+      description: ""
+      operationId: "deprecatedClearStore"
+      parameters:
+      - name: "type"
+        in: "path"
+        description: "The type of store"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        description: "The name of the store"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        description: "The sub-path to clear"
+        required: true
+        type: "string"
+        pattern: "(/.+)?"
+      responses:
+        default:
+          description: "successful operation"
+      deprecated: true
+  /api/promotion/groups/promote:
+    post:
+      tags:
+      - "Content Promotion"
+      summary: "Promote a source repository into the membership of a target group\
+        \ (subject to validation)."
+      description: ""
+      operationId: "promoteToGroup"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/GroupPromoteRequest"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/GroupPromoteResult"
+  /api/promotion/groups/rollback:
+    post:
+      tags:
+      - "Content Promotion"
+      summary: "Rollback (remove) a previously promoted source repository from the\
+        \ membership of a target group."
+      description: ""
+      operationId: "rollbackGroupPromote"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/GroupPromoteResult"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/GroupPromoteResult"
+  /api/promotion/paths/promote:
+    post:
+      tags:
+      - "Content Promotion"
+      summary: "Promote paths from a source repository into a target repository/group\
+        \ (subject to validation)."
+      description: ""
+      operationId: "promotePaths"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/promotion/paths/rollback:
+    post:
+      tags:
+      - "Content Promotion"
+      summary: "Rollback promotion of any completed paths to a source repository from\
+        \ a target repository/group."
+      description: ""
+      operationId: "rollbackPaths"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/repair/koji/mask:
+    post:
+      tags:
+      - "Koji repairVolume operation"
+      summary: "Repair koji repository path masks."
+      description: ""
+      operationId: "repairPathMasks"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/KojiRepairRequest"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/KojiRepairResult"
+  /api/repair/koji/mask/all:
+    post:
+      tags:
+      - "Koji repairVolume operation"
+      summary: "Repair koji repository path masks for ALL koji remote repositories."
+      description: ""
+      operationId: "repairAllPathMasks"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/KojiMultiRepairResult"
+  /api/repair/koji/metadata/timeout:
+    post:
+      tags:
+      - "Koji repairVolume operation"
+      summary: "Repair koji repository metadata timeout to \"never timeout(-1)\"."
+      description: ""
+      operationId: "repairMetadataTimeout"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/KojiRepairRequest"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/KojiRepairResult"
+  /api/repair/koji/metadata/timeout/all:
+    post:
+      tags:
+      - "Koji repairVolume operation"
+      summary: "Repair koji repository metadata timeout to \"never timeout(-1)\" for\
+        \ all koji remote repositories."
+      description: ""
+      operationId: "repairAllMetadataTimeout"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "isDryRun"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/KojiMultiRepairResult"
+  /api/repair/koji/vol:
+    post:
+      tags:
+      - "Koji repairVolume operation"
+      summary: "Repair koji repository remote url /vol."
+      description: ""
+      operationId: "repairVolumes"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        required: false
+        schema:
+          $ref: "#/definitions/KojiRepairRequest"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/KojiRepairResult"
+  /api/repo/changelog/all:
+    get:
+      tags:
+      - "Indy Repository change logs searching.n *Warning*: This rest endpoint is\
+        \ only used for testing, and will not return all results. It should not be\
+        \ used for any real operations"
+      summary: "Retrieve all change logs./n *Warning*: This rest endpoint is only\
+        \ used for testing, and will not return all results. It should not be used\
+        \ for any real operations"
+      description: ""
+      operationId: "getAllChangelogs"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "change logs for store key"
+          schema:
+            type: "string"
+        404:
+          description: "Change logs are not available"
+  /api/repo/changelog/{packageType}/{type}/{name}:
+    get:
+      tags:
+      - "Indy Repository change logs searching.n *Warning*: This rest endpoint is\
+        \ only used for testing, and will not return all results. It should not be\
+        \ used for any real operations"
+      summary: "Retrieve change logs by specified store key"
+      description: ""
+      operationId: "getChangelogByStoreKey"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "packageType"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Change logs for store key"
+          schema:
+            type: "string"
+        404:
+          description: "Change logs are not available"
+  /api/security/keycloak-init.js:
+    get:
+      tags:
+      - "Security Infrastructure"
+      summary: "Retrieve the keycloak init Javascript (for use by the UI)"
+      description: ""
+      operationId: "getKeycloakInit"
+      produces:
+      - "text/javascript"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/security/keycloak.js:
+    get:
+      tags:
+      - "Security Infrastructure"
+      summary: "Retrieve the keycloak Javascript adapter (for use by the UI)"
+      description: ""
+      operationId: "getKeycloakJs"
+      produces:
+      - "text/javascript"
+      parameters: []
+      responses:
+        200:
+          description: "Keycloak is disabled, return a Javascript comment to this\
+            \ effect."
+        307:
+          description: "Redirect to keycloak server to load Javascript adapter."
+  /api/security/keycloak.json:
+    get:
+      tags:
+      - "Security Infrastructure"
+      summary: "Retrieve the keycloak JSON configuration (for use by the UI)"
+      description: ""
+      operationId: "getKeycloakUiJson"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "File retrieval successful"
+        400:
+          description: "Keycloak is disabled"
+  /api/stats/addons/active:
+    get:
+      tags:
+      - "Generic Infrastructure Queries (UI Support)"
+      summary: "Retrieve JSON describing the add-ons that are available on the system"
+      description: ""
+      operationId: "getAddonList"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/stats/addons/active.js:
+    get:
+      tags:
+      - "Generic Infrastructure Queries (UI Support)"
+      summary: "Aggregate javascript content for all add-ons and format as a single\
+        \ Javascript stream (this gives the UI a static URL to load add-on logic)"
+      description: ""
+      operationId: "getAddonInjectionJavascript"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/stats/all-endpoints:
+    get:
+      tags:
+      - "Generic Infrastructure Queries (UI Support)"
+      summary: "Retrieve a listing of the artifact stores available on the system.\
+        \ This is especially useful for setting up a network of Indy instances that\
+        \ reference one another"
+      description: ""
+      operationId: "getAllEndpoints"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/stats/package-type/keys:
+    get:
+      tags:
+      - "Generic Infrastructure Queries (UI Support)"
+      summary: "Retrieve a list of the package type names (eg. maven, npm, generic-http,\
+        \ etc) available on the system."
+      description: ""
+      operationId: "getPackageTypeNames"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/stats/package-type/map:
+    get:
+      tags:
+      - "Generic Infrastructure Queries (UI Support)"
+      summary: "Retrieve a mapping of the package type names to descriptors (eg. maven,\
+        \ npm, generic-http, etc) available on the system."
+      description: ""
+      operationId: "getPackageTypeMap"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/stats/version-info:
+    get:
+      tags:
+      - "Generic Infrastructure Queries (UI Support)"
+      summary: "Retrieve versioning information about this Indy instance"
+      description: ""
+      operationId: "getIndyVersion"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "successful operation"
+  /api/{type}/{name}:
+    get:
+      tags:
+      - "DEPRECATED: Content Access and Storage"
+      summary: "Retrieve root listing under the given artifact store (type/name)."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+  /api/{type}/{name}/{path}:
+    get:
+      tags:
+      - "DEPRECATED: Content Access and Storage"
+      summary: "Retrieve file/artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doGet"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        200:
+          description: "Content stream"
+          schema:
+            $ref: "#/definitions/StreamingOutput"
+        404:
+          description: "Content is not available"
+    head:
+      tags:
+      - "DEPRECATED: Content Access and Storage"
+      summary: "Store file/artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doHead"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      - name: "cache-only"
+        in: "query"
+        required: false
+        type: "boolean"
+      responses:
+        200:
+          description: "Header metadata for content (or rendered listing when path\
+            \ ends with '/index.html' or '/'"
+        404:
+          description: "Content is not available"
+    put:
+      tags:
+      - "DEPRECATED: Content Access and Storage"
+      summary: "Store file/artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doCreate"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.+)?"
+      responses:
+        201:
+          description: "Content was stored successfully"
+        400:
+          description: "No appropriate storage location was found in the specified\
+            \ store (this store, or a member if a group is specified)."
+    delete:
+      tags:
+      - "DEPRECATED: Content Access and Storage"
+      summary: "Delete file/artifact content under the given artifact store (type/name)\
+        \ and path."
+      description: ""
+      operationId: "doDelete"
+      parameters:
+      - name: "type"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(hosted|group|remote)"
+        enum:
+        - "hosted"
+        - "group"
+        - "remote"
+      - name: "name"
+        in: "path"
+        required: true
+        type: "string"
+      - name: "path"
+        in: "path"
+        required: true
+        type: "string"
+        pattern: "(.*)"
+      responses:
+        204:
+          description: "Content was deleted successfully"
+        404:
+          description: "Content is not available"
+definitions:
+  Group:
+    allOf:
+    - $ref: "#/definitions/ArtifactStore"
+    - type: "object"
+      properties:
+        constituents:
+          type: "array"
+          items:
+            $ref: "#/definitions/StoreKey"
+        prepend_constituent:
+          type: "boolean"
+          default: false
+      description: "Grouping of other artifact stores, with a defined order to the\
+        \ membership that determines content preference"
+  PropertyChange:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      originalValue:
+        type: "object"
+      value:
+        type: "object"
+      changed:
+        type: "boolean"
+        default: false
+  StackTraceElement:
+    type: "object"
+    properties:
+      methodName:
+        type: "string"
+      fileName:
+        type: "string"
+      lineNumber:
+        type: "integer"
+        format: "int32"
+      className:
+        type: "string"
+      nativeMethod:
+        type: "boolean"
+        default: false
+  List of artifact store definitions:
+    type: "object"
+    required:
+    - "items"
+    properties:
+      items:
+        description: "The store definition list"
+        $ref: "#/definitions/ArtifactStore"
+  StreamingOutput:
+    type: "object"
+  CallbackTarget:
+    type: "object"
+    properties:
+      url:
+        type: "string"
+      method:
+        type: "string"
+        enum:
+        - "POST"
+        - "PUT"
+      headers:
+        type: "object"
+        additionalProperties:
+          type: "string"
+  RemoteRepository:
+    allOf:
+    - $ref: "#/definitions/ArtifactStore"
+    - type: "object"
+      required:
+      - "url"
+      properties:
+        host:
+          type: "string"
+        port:
+          type: "integer"
+          format: "int32"
+        user:
+          type: "string"
+        password:
+          type: "string"
+        allow_snapshots:
+          type: "boolean"
+          default: false
+        allow_releases:
+          type: "boolean"
+          default: false
+        url:
+          type: "string"
+          description: "The remote URL to proxy"
+        timeout_seconds:
+          type: "integer"
+          format: "int32"
+        max_connections:
+          type: "integer"
+          format: "int32"
+        ignore_hostname_verification:
+          type: "boolean"
+          default: false
+        nfc_timeout_seconds:
+          type: "integer"
+          format: "int32"
+        is_passthrough:
+          type: "boolean"
+          default: false
+        cache_timeout_seconds:
+          type: "integer"
+          format: "int32"
+        metadata_timeout_seconds:
+          type: "integer"
+          format: "int32"
+        key_password:
+          type: "string"
+        key_certificate_pem:
+          type: "string"
+        server_certificate_pem:
+          type: "string"
+        proxy_host:
+          type: "string"
+        proxy_port:
+          type: "integer"
+          format: "int32"
+        proxy_user:
+          type: "string"
+        proxy_password:
+          type: "string"
+        server_trust_policy:
+          type: "string"
+        prefetch_priority:
+          type: "integer"
+          format: "int32"
+          description: "Integer to indicate the pre-fetching priority of the remote,\
+            \ higher means more eager to do the pre-fetching of the content in the\
+            \ repo, 0 or below means disable the pre-fecthing."
+        prefetch_rescan:
+          type: "boolean"
+          description: "Indicates if the remote needs to do rescan after prefetch"
+          default: false
+        prefetch_listing_type:
+          type: "string"
+          description: "The prefetch listing type, should be html or koji"
+        prefetch_rescan_time:
+          type: "string"
+      description: "Proxy to a remote server's artifact content, with local cache\
+        \ storage."
+  ValidationResult:
+    type: "object"
+    required:
+    - "valid"
+    properties:
+      valid:
+        type: "boolean"
+        description: "Whether validation succeeded"
+        default: false
+      validatorErrors:
+        type: "object"
+        description: "Mapping of rule name to error message for any failing validations"
+        additionalProperties:
+          type: "string"
+      ruleSet:
+        type: "string"
+        description: "Name of validation rule-set applied"
+  ExpirationSet:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/Expiration"
+  TrackedContentDTO:
+    type: "object"
+    properties:
+      key:
+        description: "Session key (specified by the user) to track this record."
+        $ref: "#/definitions/TrackingKey"
+      uploads:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/TrackedContentEntryDTO"
+      downloads:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/TrackedContentEntryDTO"
+  KojiMultiRepairResult:
+    type: "object"
+    properties:
+      results:
+        type: "array"
+        description: "Results for all stores where repair was attempted, including\
+          \ failures"
+        items:
+          $ref: "#/definitions/KojiRepairResult"
+  LoggerDTO:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      level:
+        type: "string"
+      appenders:
+        type: "array"
+        items:
+          type: "string"
+      additive:
+        type: "boolean"
+        default: false
+      originalLevel:
+        type: "string"
+  ChangeSummaryDTO:
+    type: "object"
+    properties:
+      items:
+        type: "array"
+        items:
+          $ref: "#/definitions/ChangeSummary"
+  TrackedContentEntryDTO:
+    type: "object"
+    properties:
+      storeKey:
+        description: "The Indy key for the repository/group this where content was\
+          \ stored."
+        $ref: "#/definitions/StoreKey"
+      accessChannel:
+        type: "string"
+        description: "Type of content access, whether \"normal\" content API or generic\
+          \ HTTP proxy."
+        enum:
+        - "GENERIC_PROXY"
+        - "MAVEN"
+      path:
+        type: "string"
+      originUrl:
+        type: "string"
+        description: "If resolved from a remote repository, this is the origin URL,\
+          \ otherwise empty/null."
+      localUrl:
+        type: "string"
+        description: "URL to this path on the local Indy instance."
+      md5:
+        type: "string"
+      sha256:
+        type: "string"
+      sha1:
+        type: "string"
+      size:
+        type: "integer"
+        format: "int64"
+      timestamps:
+        type: "array"
+        uniqueItems: true
+        items:
+          type: "integer"
+          format: "int64"
+  ReplicationAction:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        enum:
+        - "PROXY"
+        - "MIRROR"
+      include:
+        type: "string"
+      exclude:
+        type: "string"
+      proxyHost:
+        type: "string"
+      proxyPort:
+        type: "integer"
+        format: "int32"
+      proxyUser:
+        type: "string"
+      proxyPass:
+        type: "string"
+  KojiRepairResult:
+    type: "object"
+    properties:
+      request:
+        description: "Original request"
+        $ref: "#/definitions/KojiRepairRequest"
+      error:
+        type: "string"
+        description: "Error message if failed"
+      exception:
+        description: "Exception object if failed because of exception"
+        $ref: "#/definitions/Exception"
+      results:
+        type: "array"
+        description: "Result entries if succeeded"
+        items:
+          $ref: "#/definitions/RepairResult"
+  KojiRepairRequest:
+    type: "object"
+    required:
+    - "source"
+    properties:
+      source:
+        description: "Koji repository key to repair (formatted as: '{maven}:{remote,group}:name')"
+        $ref: "#/definitions/StoreKey"
+      args:
+        type: "string"
+        description: "Repair arguments"
+      dryRun:
+        type: "boolean"
+        description: "Get repair report ONLY, not modify anything."
+        default: false
+  not-found cache:
+    type: "object"
+    required:
+    - "sections"
+    properties:
+      sections:
+        type: "array"
+        description: "Set of sections each corresponding an artifact store"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/not-found cache section"
+    description: "Listing of artifact store paths that could not be retrieved."
+  GroupPromoteRequest:
+    type: "object"
+    required:
+    - "source"
+    - "targetGroup"
+    properties:
+      async:
+        type: "boolean"
+        description: "Asynchronous call. A callback url is needed when it is true."
+        default: false
+      promotionId:
+        type: "string"
+        description: "Optional promotion Id"
+      callback:
+        description: "Callback which is used to send the promotion result."
+        $ref: "#/definitions/CallbackTarget"
+      source:
+        description: "Indy store/repository key to promote FROM (formatted as: '{remote,hosted,group}:name')"
+        $ref: "#/definitions/StoreKey"
+      targetGroup:
+        type: "string"
+        description: "Name of the Indy target group to promote TO (MUST be pre-existing)"
+      dryRun:
+        type: "boolean"
+        description: "Run validations, verify source and target locations ONLY, do\
+          \ not modify anything!"
+        default: false
+      fireEvents:
+        type: "boolean"
+        default: false
+  not-found cache info:
+    type: "object"
+    required:
+    - "size"
+    properties:
+      size:
+        type: "integer"
+        format: "int64"
+        description: "Cache size"
+    description: "Get NFC cache information, e.g., size, etc."
+  InputStream:
+    type: "object"
+  not-found cache section:
+    type: "object"
+    required:
+    - "key"
+    - "paths"
+    properties:
+      key:
+        type: "string"
+        description: "Serialized store key, of the form: '[hosted|group|remote]:name'"
+      paths:
+        type: "array"
+        description: "paths that failed retrieval within this store (may be empty)"
+        uniqueItems: true
+        items:
+          type: "string"
+    description: "Listing of paths that could not be retrieved for a given artifact\
+      \ store"
+  Expiration:
+    type: "object"
+    properties:
+      name:
+        type: "string"
+      group:
+        type: "string"
+      expiration:
+        type: "string"
+        format: "date-time"
+  StoreKey:
+    type: "object"
+    properties:
+      packageType:
+        type: "string"
+      type:
+        type: "string"
+        enum:
+        - "group"
+        - "remote"
+        - "hosted"
+      name:
+        type: "string"
+  Exception:
+    type: "object"
+    properties:
+      cause:
+        $ref: "#/definitions/Throwable"
+      stackTrace:
+        type: "array"
+        items:
+          $ref: "#/definitions/StackTraceElement"
+      message:
+        type: "string"
+      localizedMessage:
+        type: "string"
+      suppressed:
+        type: "array"
+        items:
+          $ref: "#/definitions/Throwable"
+  RepairResult:
+    type: "object"
+    properties:
+      storeKey:
+        $ref: "#/definitions/StoreKey"
+      changes:
+        type: "array"
+        items:
+          $ref: "#/definitions/PropertyChange"
+      ignored:
+        type: "boolean"
+        default: false
+      exception:
+        $ref: "#/definitions/Exception"
+      changed:
+        type: "boolean"
+        default: false
+  TrackingKey:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+  ReplicationDTO:
+    type: "object"
+    required:
+    - "actions"
+    - "apiUrl"
+    properties:
+      overwrite:
+        type: "boolean"
+        description: "Whether to overwrite pre-existing artifact stores on the local\
+          \ Indy instance with definitions from the remote system"
+        default: false
+      apiUrl:
+        type: "string"
+        description: "The URL to the remote Indy instance"
+      proxyHost:
+        type: "string"
+      proxyPort:
+        type: "integer"
+        format: "int32"
+      actions:
+        type: "array"
+        description: "The list of replication actions to be performed"
+        items:
+          $ref: "#/definitions/ReplicationAction"
+    description: "Configuration for replicating the content stores on a remote Indy\
+      \ system"
+  ArtifactStore:
+    type: "object"
+    required:
+    - "key"
+    discriminator: "type"
+    properties:
+      key:
+        type: "string"
+        description: "Serialized store key, of the form: '[hosted|group|remote]:name'"
+      description:
+        type: "string"
+      metadata:
+        type: "object"
+        additionalProperties:
+          type: "string"
+      disabled:
+        type: "boolean"
+        default: false
+      name:
+        type: "string"
+      type:
+        type: "string"
+        enum:
+        - "group"
+        - "remote"
+        - "hosted"
+      packageType:
+        type: "string"
+      disable_timeout:
+        type: "integer"
+        format: "int32"
+        description: "Integer time in seconds which is used for repo automatically\
+          \ re-enable when set disable by errors, positive value means time in seconds,\
+          \ -1 means never disable, empty or 0 means use default timeout."
+      path_style:
+        type: "string"
+        enum:
+        - "plain"
+        - "hashed"
+      path_mask_patterns:
+        type: "array"
+        uniqueItems: true
+        items:
+          type: "string"
+      authoritative_index:
+        type: "boolean"
+        default: false
+    description: "Definition of a content store on Indy, whether it proxies content\
+      \ from a remote server, hosts artifacts on this system, or groups other content\
+      \ stores."
+  Throwable:
+    type: "object"
+    properties:
+      cause:
+        $ref: "#/definitions/Throwable"
+      stackTrace:
+        type: "array"
+        items:
+          $ref: "#/definitions/StackTraceElement"
+      message:
+        type: "string"
+      localizedMessage:
+        type: "string"
+      suppressed:
+        type: "array"
+        items:
+          $ref: "#/definitions/Throwable"
+  ChangeSummary:
+    type: "object"
+    properties:
+      user:
+        type: "string"
+      timestamp:
+        type: "string"
+        format: "date-time"
+      summary:
+        type: "string"
+      revisionId:
+        type: "string"
+  GroupPromoteResult:
+    type: "object"
+    properties:
+      resultCode:
+        type: "string"
+        description: "Result code"
+      validations:
+        description: "Result of validation rule executions, if applicable"
+        $ref: "#/definitions/ValidationResult"
+      error:
+        type: "string"
+        description: "Error message, if promotion failed"
+      request:
+        description: "Original request"
+        $ref: "#/definitions/GroupPromoteRequest"
+  File:
+    type: "object"
+    properties:
+      path:
+        type: "string"
+      name:
+        type: "string"
+      parent:
+        type: "string"
+      absolute:
+        type: "boolean"
+        default: false
+      canonicalPath:
+        type: "string"
+      parentFile:
+        $ref: "#/definitions/File"
+      absolutePath:
+        type: "string"
+      absoluteFile:
+        $ref: "#/definitions/File"
+      canonicalFile:
+        $ref: "#/definitions/File"
+      directory:
+        type: "boolean"
+        default: false
+      file:
+        type: "boolean"
+        default: false
+      hidden:
+        type: "boolean"
+        default: false
+      totalSpace:
+        type: "integer"
+        format: "int64"
+      freeSpace:
+        type: "integer"
+        format: "int64"
+      usableSpace:
+        type: "integer"
+        format: "int64"
+  HostedRepository:
+    allOf:
+    - $ref: "#/definitions/ArtifactStore"
+    - type: "object"
+      properties:
+        storage:
+          type: "string"
+        snapshotTimeoutSeconds:
+          type: "integer"
+          format: "int32"
+        readonly:
+          type: "boolean"
+          description: "identify if the hoste repo is readonly"
+          default: false
+        allow_snapshots:
+          type: "boolean"
+          default: false
+        allow_releases:
+          type: "boolean"
+          default: false
+      description: "Hosts artifact content on the local system"

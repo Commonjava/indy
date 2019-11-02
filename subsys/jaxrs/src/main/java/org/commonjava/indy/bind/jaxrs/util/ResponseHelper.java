@@ -210,6 +210,8 @@ public class ResponseHelper
                 }
             }
         }
+        
+        
 
         if ( item != null && item.exists() )
         {
@@ -236,9 +238,11 @@ public class ResponseHelper
             // Indy origin contains the storeKey of the repository where the content came from
             builder.header( ApplicationHeader.indy_origin.key(), LocationUtils.getKey( item ).toString() );
             
-            // Content hashing headers
-            builder.header(ApplicationHeader.md5.key(), contentDigester.digest(sk,path,new EventMetadata()).getDigests().get(ContentDigest.MD5));
-            builder.header(ApplicationHeader.sha1.key(), contentDigester.digest(sk,path,new EventMetadata()).getDigests().get(ContentDigest.SHA_1));
+            if(!path.endsWith("/")) {
+                // Content hashing headers
+                builder.header(ApplicationHeader.md5.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.MD5));
+                builder.header(ApplicationHeader.sha1.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1));
+            }
         }
         else
         {
