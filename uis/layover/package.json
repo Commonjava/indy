@@ -16,7 +16,7 @@
     "components-font-awesome": "4.2.0",
     "bootstrap": "^3.4.1",
     "keycloak-js": "^1.9.8",
-    "swagger-ui": "2.2.x",
+    "swagger-ui": "3.23.x",
     "jquery": "^3.0.0"
   },
   "devDependencies": {
