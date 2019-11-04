@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,13 +36,12 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
-
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicReference;
 
 @ApplicationScoped
 public class IndyDeployer
-                implements Deployer
+        implements Deployer
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -69,7 +68,8 @@ public class IndyDeployer
     }
 
     @Override
-    public void deploy( BootOptions bootOptions ) throws DeployException
+    public void deploy( BootOptions bootOptions )
+            throws DeployException
     {
         final DeploymentInfo di = indyDeployment.getDeployment( bootOptions.getContextPath() ).setContextPath( "/" );
 
@@ -126,26 +126,27 @@ public class IndyDeployer
     }
 
     private Undertow buildAndStartUndertow( DeploymentManager dm, Integer port, String bind, RestConfig restConfig )
-                    throws Exception
+            throws Exception
     {
         Undertow.Builder builder =
-                        Undertow.builder().setHandler( getGzipEncodeHandler( dm ) ).addHttpListener( port, bind );
+                Undertow.builder().setHandler( getGzipEncodeHandler( dm ) ).addHttpListener( port, bind );
         restConfig.configureBuilder( builder );
         Undertow t = builder.build();
         t.start();
         return t;
     }
 
-    private EncodingHandler getGzipEncodeHandler( final DeploymentManager dm ) throws ServletException
+    private EncodingHandler getGzipEncodeHandler( final DeploymentManager dm )
+            throws ServletException
     {
         // FROM: https://stackoverflow.com/questions/28295752/compressing-undertow-server-responses#28329810
         final Predicate sizePredicate = Predicates.parse( "max-content-size[" + Long.toString( 5 * 1024 ) + "]" );
 
         EncodingHandler eh = new EncodingHandler(
-                        new ContentEncodingRepository().addEncodingHandler( "gzip", new GzipEncodingProvider(), 50,
-                                                                            sizePredicate )
-                                                       .addEncodingHandler( "deflate", new DeflateEncodingProvider(),
-                                                                            51, sizePredicate ) ).setNext( dm.start() );
+                new ContentEncodingRepository().addEncodingHandler( "gzip", new GzipEncodingProvider(), 50,
+                                                                    sizePredicate ) ).setNext( dm.start() );
+//                                               .addEncodingHandler( "deflate", new DeflateEncodingProvider(), 51,
+//                                                                    sizePredicate ) ).setNext( dm.start() );
         return eh;
     }
 
