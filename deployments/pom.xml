@@ -33,6 +33,7 @@
     <module>launcher</module>
     <module>cache-migrator</module>
     <module>record-extractor</module>
+    <module>pathmap-migrator</module>
   </modules>
 
   <profiles>
