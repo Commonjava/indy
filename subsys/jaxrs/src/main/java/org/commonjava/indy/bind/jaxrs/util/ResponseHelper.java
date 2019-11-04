@@ -18,6 +18,7 @@ package org.commonjava.indy.bind.jaxrs.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.StoreKey;
@@ -26,6 +27,8 @@ import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
@@ -62,6 +65,9 @@ public class ResponseHelper
 
     @Inject
     private IndyMetricsConfig metricsConfig;
+    
+    @Inject
+    ContentDigester contentDigester;
 
     public Response formatRedirect( final URI uri )
     {
@@ -171,6 +177,8 @@ public class ResponseHelper
         boolean lastModSet = false;
         boolean lenSet = false;
         boolean conTypeSet = false;
+    
+        
 
         if ( exchangeMetadata != null )
         {
@@ -204,6 +212,8 @@ public class ResponseHelper
                 }
             }
         }
+        
+        
 
         if ( item != null && item.exists() )
         {
@@ -229,6 +239,8 @@ public class ResponseHelper
 
             // Indy origin contains the storeKey of the repository where the content came from
             builder.header( ApplicationHeader.indy_origin.key(), LocationUtils.getKey( item ).toString() );
+            
+            
         }
         else
         {

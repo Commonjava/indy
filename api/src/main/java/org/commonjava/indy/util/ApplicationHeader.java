@@ -32,7 +32,10 @@ public enum ApplicationHeader
     cache_control( "Cache-Control" ),
     content_disposition( "Content-Disposition" ),
     indy_origin( "Indy-Origin" ),
-    transfer_encoding( "Transfer-Encoding" );
+    transfer_encoding( "Transfer-Encoding" ),
+    md5("INDY-MD5"),
+    sha1("INDY-SHA1")
+    ;
 
     private final String key;
 
