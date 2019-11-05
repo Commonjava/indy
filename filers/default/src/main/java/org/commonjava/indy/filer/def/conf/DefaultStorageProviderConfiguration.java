@@ -19,29 +19,21 @@ import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
-import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
-import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_KEYSPACE;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_PORT;
 
 @SectionName( "storage-default" )
 @ApplicationScoped
 public class DefaultStorageProviderConfiguration
-    implements IndyConfigInfo, SystemPropertyProvider, PathMappedStorageConfig
+                implements IndyConfigInfo, SystemPropertyProvider
 {
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
@@ -70,17 +62,6 @@ public class DefaultStorageProviderConfiguration
     {
         this.storageBasedir = storageBasedir;
         this.nfsStoreBasedir = nfsStoreBasedir;
-        this.setUpPathMappedStorage();
-    }
-
-    private final Map<String, Object> cassandraProps = new HashMap<>(); // for path mapped storage
-
-    @PostConstruct
-    public void setUpPathMappedStorage()
-    {
-        cassandraProps.put( PROP_CASSANDRA_HOST, DEFAULT_CASSANDRA_HOST );
-        cassandraProps.put( PROP_CASSANDRA_PORT, DEFAULT_CASSANDRA_PORT );
-        cassandraProps.put( PROP_CASSANDRA_KEYSPACE, DEFAULT_CASSANDRA_KEYSPACE );
     }
 
     public File getStorageRootDirectory()
@@ -130,66 +111,76 @@ public class DefaultStorageProviderConfiguration
         return p;
     }
 
-
     // Path mapped storage config
 
-    private static final String DEFAULT_CASSANDRA_HOST = "localhost";
+    private static final String DEFAULT_STORAGE_KEYSPACE = "indy";
 
-    private static final int DEFAULT_CASSANDRA_PORT = 9042;
+    private String cassandraKeyspace = DEFAULT_STORAGE_KEYSPACE;
 
-    private static final String DEFAULT_CASSANDRA_KEYSPACE = "indy";
+    private int gcBatchSize = 100;
 
-    @ConfigName( "storage.cassandra.host" )
-    public void setCassandraHost( String host )
-    {
-        cassandraProps.put( PROP_CASSANDRA_HOST, host );
-    }
+    private int gcGracePeriodInHours = 24;
 
-    @ConfigName( "storage.cassandra.port" )
-    public void setCassandraPort( int port )
-    {
-        cassandraProps.put( PROP_CASSANDRA_PORT, port );
-    }
+    private int gcIntervalInMinutes = 30;
+
+    private String fileChecksumAlgorithm = "SHA-256";
 
     @ConfigName( "storage.cassandra.keyspace" )
     public void setCassandraKeyspace( String keyspace )
     {
-        cassandraProps.put( PROP_CASSANDRA_KEYSPACE, keyspace );
+        cassandraKeyspace = keyspace;
     }
 
-    private final DefaultPathMappedStorageConfig pathMappedStorageConfig = new DefaultPathMappedStorageConfig();
-
-    @Override
-    public int getGCIntervalInMinutes()
+    public String getCassandraKeyspace()
     {
-        return pathMappedStorageConfig.getGCIntervalInMinutes();
+        return cassandraKeyspace;
     }
 
-    @ConfigName( "storage.gc.intervalinminutes" )
-    public void setGCIntervalInMinutes( int gcIntervalInMinutes )
+    @ConfigName( "storage.gc.batchsize" )
+    public void setGcBatchSize( int gcBatchSize )
     {
-        pathMappedStorageConfig.setGcIntervalInMinutes( gcIntervalInMinutes );
+        this.gcBatchSize = gcBatchSize;
     }
 
-    @Override
-    public int getGCGracePeriodInHours()
+    public int getGcBatchSize()
     {
-        return pathMappedStorageConfig.getGCGracePeriodInHours();
+        return gcBatchSize;
     }
 
     @ConfigName( "storage.gc.graceperiodinhours" )
-    public void setGCGracePeriodInHours( int gcGracePeriodInHours )
+    public void setGcGracePeriodInHours( int gcGracePeriodInHours )
     {
-        pathMappedStorageConfig.setGcGracePeriodInHours( gcGracePeriodInHours );
+        this.gcGracePeriodInHours = gcGracePeriodInHours;
+    }
+
+    public int getGcGracePeriodInHours()
+    {
+        return gcGracePeriodInHours;
+    }
+
+    @ConfigName( "storage.gc.intervalinminutes" )
+    public void setGcIntervalInMinutes( int gcIntervalInMinutes )
+    {
+        this.gcIntervalInMinutes = gcIntervalInMinutes;
+    }
+
+    public int getGcIntervalInMinutes()
+    {
+        return gcIntervalInMinutes;
+    }
+
+    @ConfigName( "storage.file.checksum.algorithm" )
+    public void setFileChecksumAlgorithm( String fileChecksumAlgorithm )
+    {
+        this.fileChecksumAlgorithm = fileChecksumAlgorithm;
+    }
+
+    public String getFileChecksumAlgorithm()
+    {
+        return fileChecksumAlgorithm;
     }
 
     private List<String> subsystemEnabledFileSystems = new ArrayList<>();
-
-    @Override
-    public boolean isSubsystemEnabled( String fileSystem )
-    {
-        return subsystemEnabledFileSystems.contains( fileSystem );
-    }
 
     // comma separated file system names
     @ConfigName( "storage.subsystem.enabled.filesystems" )
@@ -201,9 +192,8 @@ public class DefaultStorageProviderConfiguration
         }
     }
 
-    @Override
-    public Object getProperty( String key )
+    public List<String> getSubsystemEnabledFileSystems()
     {
-        return cassandraProps.get( key );
+        return subsystemEnabledFileSystems;
     }
 }

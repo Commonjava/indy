@@ -263,8 +263,11 @@ public abstract class AbstractIndyFunctionalTest
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
-                        + "storage.cassandra.port=9042\n"
+                        + "storage.gc.batchsize=0\n"
                         + "storage.cassandra.keyspace=" + keyspace );
+
+        writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
