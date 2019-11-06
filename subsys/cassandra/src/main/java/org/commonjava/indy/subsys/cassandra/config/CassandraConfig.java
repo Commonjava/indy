@@ -27,6 +27,8 @@ import java.io.InputStream;
 public class CassandraConfig
                 implements IndyConfigInfo
 {
+    private Boolean enabled = Boolean.FALSE;
+
     private String cassandraHost;
 
     private Integer cassandraPort;
@@ -37,6 +39,17 @@ public class CassandraConfig
 
     public CassandraConfig()
     {
+    }
+
+    public Boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( Boolean enabled )
+    {
+        this.enabled = enabled;
     }
 
     private static final String DEFAULT_CASSANDRA_HOST = "localhost";
