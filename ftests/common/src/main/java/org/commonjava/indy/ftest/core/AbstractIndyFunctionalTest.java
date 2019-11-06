@@ -211,7 +211,14 @@ public abstract class AbstractIndyFunctionalTest
         Session session = cassandraClient.getSession();
         if ( session != null )
         {
-            session.execute( "DROP KEYSPACE IF EXISTS " + keyspace );
+            try
+            {
+                session.execute( "DROP KEYSPACE IF EXISTS " + keyspace );
+            }
+            catch ( Exception ex )
+            {
+                logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
+            }
             session.close();
         }
     }
