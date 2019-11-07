@@ -201,10 +201,15 @@ public abstract class AbstractIndyFunctionalTest
     // TODO: this is a hack due to the "shutdown action not executed" issue. Once propulsor lifecycle shutdown is applied, this can be replaced.
     private void closeCacheProvider()
     {
+        dropKeyspace();
         if ( cacheProvider != null )
         {
             cacheProvider.asAdminView().close();
         }
+    }
+
+    private void dropKeyspace()
+    {
         String keyspace = getKeyspace();
         logger.debug( "Drop cassandra keyspace: {}", keyspace );
         CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
@@ -219,7 +224,6 @@ public abstract class AbstractIndyFunctionalTest
             {
                 logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
             }
-            session.close();
         }
     }
 
