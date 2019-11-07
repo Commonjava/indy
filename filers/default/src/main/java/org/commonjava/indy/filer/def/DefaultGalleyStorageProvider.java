@@ -17,6 +17,7 @@ package org.commonjava.indy.filer.def;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import com.datastax.driver.core.Session;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -24,6 +25,7 @@ import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
@@ -48,6 +50,9 @@ import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
+import org.commonjava.storage.pathmapped.datastax.CassandraPathDB;
+import org.commonjava.storage.pathmapped.spi.PathDB;
+import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +122,9 @@ public class DefaultGalleyStorageProvider
     @Inject
     private CassandraConfig cassandraConfig;
 
+    @Inject
+    private CassandraClient cassandraClient;
+
     private TransportManagerConfig transportManagerConfig;
 
     private TransferDecoratorManager transferDecorator;
@@ -159,13 +167,29 @@ public class DefaultGalleyStorageProvider
         }
 
         setupTransferDecoratorPipeline();
-
-        final File storeRoot = config.getStorageRootDirectory();
-
-        cacheProviderFactory = new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, getPathMappedStorageConfig() );
+        setupCacheProviderFactory();
 
         // TODO: Tie this into a config file!
         transportManagerConfig = new TransportManagerConfig();
+    }
+
+    private void setupCacheProviderFactory()
+    {
+        final File storeRoot = config.getStorageRootDirectory();
+        PathDB pathDB = null;
+        PathMappedStorageConfig pathMappedStorageConfig = getPathMappedStorageConfig();
+        if ( cassandraClient != null )
+        {
+            Session session = cassandraClient.getSession();
+            if ( session != null )
+            {
+                pathDB = new CassandraPathDB( pathMappedStorageConfig, session, config.getCassandraKeyspace() );
+            }
+        }
+
+        cacheProviderFactory =
+                        new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, pathMappedStorageConfig, pathDB,
+                                                            null );
     }
 
     private PathMappedStorageConfig getPathMappedStorageConfig()
