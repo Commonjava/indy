@@ -15,10 +15,12 @@
  */
 package org.commonjava.indy.ftest.core;
 
+import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.Module;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.propulsor.boot.BootStatus;
 import org.commonjava.propulsor.boot.BootException;
@@ -199,9 +201,29 @@ public abstract class AbstractIndyFunctionalTest
     // TODO: this is a hack due to the "shutdown action not executed" issue. Once propulsor lifecycle shutdown is applied, this can be replaced.
     private void closeCacheProvider()
     {
+        dropKeyspace();
         if ( cacheProvider != null )
         {
             cacheProvider.asAdminView().close();
+        }
+    }
+
+    private void dropKeyspace()
+    {
+        String keyspace = getKeyspace();
+        logger.debug( "Drop cassandra keyspace: {}", keyspace );
+        CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
+        Session session = cassandraClient.getSession();
+        if ( session != null )
+        {
+            try
+            {
+                session.execute( "DROP KEYSPACE IF EXISTS " + keyspace );
+            }
+            catch ( Exception ex )
+            {
+                logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
+            }
         }
     }
 
@@ -254,17 +276,15 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        String keyspace = getClass().getSimpleName();
-        if ( keyspace.length() > 48 )
-        {
-            keyspace = keyspace.substring( 0, 48 ); // keyspace has to be less than 48 characters
-        }
 
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
-                        + "storage.cassandra.port=9042\n"
-                        + "storage.cassandra.keyspace=" + keyspace );
+                        + "storage.gc.batchsize=0\n"
+                        + "storage.cassandra.keyspace=" + getKeyspace() );
+
+        writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
@@ -275,6 +295,16 @@ public abstract class AbstractIndyFunctionalTest
         {
             writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
         }
+    }
+
+    private String getKeyspace()
+    {
+        String keyspace = getClass().getSimpleName();
+        if ( keyspace.length() > 48 )
+        {
+            keyspace = keyspace.substring( 0, 48 ); // keyspace has to be less than 48 characters
+        }
+        return keyspace;
     }
 
     protected boolean isSchedulerEnabled()

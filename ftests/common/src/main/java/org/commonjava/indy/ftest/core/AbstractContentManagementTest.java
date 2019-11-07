@@ -43,6 +43,8 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProvider;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -137,25 +139,7 @@ public class AbstractContentManagementTest
         }
         else
         {
-            // For something like repo-1:/foo/bar.jar, the physical file should be always in same folder (via getStorageDir),
-            // and the latest file under this folder should be (not theoretically but practically) what we want.
-            String fileSystem = location.getName();
-            String d = getStorageDir( fileSystem, path );
-            File dir = Paths.get( homeDir, storageDir, d ).toFile();
-            File[] files = dir.listFiles();
-            File target = null;
-            for ( File file : files )
-            {
-                if ( target == null )
-                {
-                    target = file;
-                }
-                else if ( target.lastModified() < file.lastModified() )
-                {
-                    target = file;
-                }
-            }
-            ret = target.getAbsoluteFile();
+            ret = ( (PathMappedCacheProvider) cacheProvider ).getDetachedFile( new ConcreteResource( location, path ) );
         }
         logger.debug( "Get physical storage file: {}", ret );
         return ret;

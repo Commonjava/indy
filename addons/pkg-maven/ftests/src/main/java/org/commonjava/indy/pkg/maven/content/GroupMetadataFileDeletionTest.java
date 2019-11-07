@@ -20,6 +20,7 @@ import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -110,8 +111,10 @@ public class GroupMetadataFileDeletionTest
         sleepAndRunFileGC( 1000 );
 
         // Verify files were deleted
-        assertFalse( f1.exists() );
-        assertFalse( f2.exists() );
+        ConcreteResource r1 = new ConcreteResource( LocationUtils.toLocation( g1 ), METADATA_PATH );
+        ConcreteResource r2 = new ConcreteResource( LocationUtils.toLocation( g2 ), METADATA_PATH );
+        assertFalse( cacheProvider.exists( r1 ) );
+        assertFalse( cacheProvider.exists( r2 ) );
 
         // Re-generate
         assertContent( g1, METADATA_PATH, METADATA_CONTENT );
