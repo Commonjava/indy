@@ -288,4 +288,14 @@ public class IndyMetricsManager
             metricRegistry.gauge( name, () -> v );
         } );
     }
+
+    public MetricRegistry getMetricRegistry()
+    {
+        return metricRegistry;
+    }
+
+    public IndyMetricsConfig getConfig()
+    {
+        return config;
+    }
 }
