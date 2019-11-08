@@ -16,6 +16,7 @@
 package org.commonjava.indy.filer.def;
 
 import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.datastax.driver.core.Session;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
@@ -51,6 +52,7 @@ import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDeco
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.datastax.CassandraPathDB;
+import org.commonjava.storage.pathmapped.metrics.MeasuredPathDB;
 import org.commonjava.storage.pathmapped.spi.PathDB;
 import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
@@ -71,6 +73,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
@@ -187,6 +190,12 @@ public class DefaultGalleyStorageProvider
             }
         }
 
+        if ( pathDB != null )
+        {
+            String prefix = metricsManager.getConfig().getNodePrefix();
+            pathDB = new MeasuredPathDB( pathDB, metricsManager.getMetricRegistry(), getSupername( prefix, "pathDB" ) );
+        }
+
         cacheProviderFactory =
                         new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, pathMappedStorageConfig, pathDB,
                                                             null );
@@ -201,13 +210,7 @@ public class DefaultGalleyStorageProvider
         cassandraProps.put( PROP_CASSANDRA_PASS, cassandraConfig.getCassandraPass() );
         cassandraProps.put( PROP_CASSANDRA_KEYSPACE, config.getCassandraKeyspace() );
 
-        DefaultPathMappedStorageConfig ret = new DefaultPathMappedStorageConfig( cassandraProps )
-        {
-            public boolean isSubsystemEnabled( String fileSystem )
-            {
-                return config.getSubsystemEnabledFileSystems().contains( fileSystem );
-            }
-        };
+        DefaultPathMappedStorageConfig ret = new DefaultPathMappedStorageConfig( cassandraProps );
         ret.setFileChecksumAlgorithm( config.getFileChecksumAlgorithm() );
         ret.setGcBatchSize( config.getGcBatchSize() );
         ret.setGcGracePeriodInHours( config.getGcGracePeriodInHours() );
