@@ -69,18 +69,25 @@ public class DefaultStoreValidator implements StoreValidator {
             if(StoreType.remote == artifactStore.getType()) {
                 // Cast to Remote Repository
                 RemoteRepository remoteRepository = (RemoteRepository) artifactStore;
+
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
                     LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository.getUrl());
                     return disabledRemoteRepositoryData(remoteRepository);
                 }
+
                 //Validate URL from remote Repository URL , throw Mailformed URL Exception if URL is not valid
                 remoteUrl = Optional.of(new URL(remoteRepository.getUrl()));
+
                 // Check if remote.ssl.required is set to true and that remote repository protocol is https = throw IndyArtifactStoreException
+                LOGGER.debug( "Is SSL required for remote repository URLs? {}", configuration.isSSLRequired() );
+
                 if(configuration.isSSLRequired()
                     && !remoteUrl.get().getProtocol().equalsIgnoreCase(StoreValidationConstants.HTTPS)) {
+
                     LOGGER.warn("\n\t\t\t=> Allowed Remote Repositories by Config File: "+configuration.getRemoteNoSSLHosts()+"\n");
                     ArtifactStoreValidateData allowedByRule = compareRemoteHostToAllowedHostnames(remoteUrl,remoteRepository);
+
                     // If this Non-SSL remote repository is not allowed by provided rules from configuration
                     // then return valid=false data object
                     if(!allowedByRule.isValid()) {

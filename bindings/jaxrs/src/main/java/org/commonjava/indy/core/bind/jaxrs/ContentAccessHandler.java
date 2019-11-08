@@ -20,6 +20,7 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.JaxRsRequestHelper;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
+import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferCountingInputStream;
@@ -30,12 +31,9 @@ import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.util.AcceptInfo;
-import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.indy.util.ApplicationStatus;
-import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.indy.util.UriFormatter;
+import org.commonjava.indy.util.*;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
@@ -95,6 +93,9 @@ public class ContentAccessHandler
 
     @Inject
     private ResponseHelper responseHelper;
+    
+    @Inject
+    ContentDigester contentDigester;
 
 
     protected ContentAccessHandler()
@@ -307,6 +308,13 @@ public class ContentAccessHandler
 
                     responseHelper.setInfoHeaders( builder, item, sk, path, true, contentType,
                                     httpMetadata );
+    
+                    if(!path.endsWith("/")) {
+                        // Content hashing headers
+                        builder.header(ApplicationHeader.md5.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.MD5));
+                        builder.header(ApplicationHeader.sha1.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1));
+                    }
+                    
                     if ( builderModifier != null )
                     {
                         builderModifier.accept( builder );

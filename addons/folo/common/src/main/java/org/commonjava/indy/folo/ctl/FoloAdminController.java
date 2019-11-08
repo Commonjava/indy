@@ -334,6 +334,7 @@ public class FoloAdminController
         entryDTO.setSha1( entry.getSha1() );
         entryDTO.setSha256( entry.getSha256() );
         entryDTO.setSize( entry.getSize() );
+        entryDTO.setTimestamps( entry.getTimestamps() );
         return entryDTO;
     }
 

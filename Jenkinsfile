@@ -22,19 +22,6 @@ pipeline {
                 sh 'mvn -B -V verify -Prun-its -Pci'
             }
         }
-        stage('Deploy') {
-            when { branch 'master' }
-            steps {
-                echo "Deploy"
-                sh 'mvn help:effective-settings -B -V deploy -e'
-            }
-        }
-        stage('Archive') {
-            steps {
-                echo "Archive"
-                archiveArtifacts artifacts: "$artifact", fingerprint: true
-            }
-        }
         stage('Check Image Build Hook') {
             when {
                 expression { env.IMG_BUILD_HOOKS != null }
@@ -52,6 +39,25 @@ pipeline {
                         }
                     }
                 }
+            }
+        }
+        stage('Deploy') {
+            when {
+                allOf {
+                    expression { img_build_hook != null }
+                    expression { env.CHANGE_ID == null } // Not pull request
+                    branch 'master'
+                }
+            }
+            steps {
+                echo "Deploy"
+                sh 'mvn help:effective-settings -B -V deploy -e'
+            }
+        }
+        stage('Archive') {
+            steps {
+                echo "Archive"
+                archiveArtifacts artifacts: "$artifact", fingerprint: true
             }
         }
         stage('Build & Push Image') {

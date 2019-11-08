@@ -39,7 +39,7 @@ public class PrometheusDeployment
             return null;
         }
 
-        CollectorRegistry.defaultRegistry.register( new DropwizardExports( metricRegistry ) );
+        CollectorRegistry.defaultRegistry.register( new DropwizardExports( metricRegistry, new IndySampleBuilder( config.getNodePrefix() ) ) );
 
         final ServletInfo servlet =
                 Servlets.servlet( "prometheus-metrics", MetricsServlet.class ).addMapping( "/metrics" );
