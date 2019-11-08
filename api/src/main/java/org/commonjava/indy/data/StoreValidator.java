@@ -33,6 +33,5 @@ public interface StoreValidator {
     /*
             Validate ArtifactStore instances
          */
-    public ArtifactStoreValidateData validate(ArtifactStore artifactStore)
-        throws InvalidArtifactStoreException, MalformedURLException;
+    public ArtifactStoreValidateData validate(ArtifactStore artifactStore);
 }

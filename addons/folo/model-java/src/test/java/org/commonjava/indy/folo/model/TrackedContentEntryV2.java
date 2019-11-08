@@ -31,12 +31,10 @@ import static org.commonjava.indy.model.core.AccessChannel.GENERIC_PROXY;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
-public class TrackedContentEntry
-        implements Comparable<TrackedContentEntry>,Externalizable
+public class TrackedContentEntryV2
+        implements Comparable<TrackedContentEntryV2>, Externalizable
 {
-    private static final long serialVersionUID = 6469004486206600578L;
-
-    private static final int VERSION = 3;
+    private static final int VERSION = 2;
 
     private TrackingKey trackingKey;
 
@@ -60,16 +58,14 @@ public class TrackedContentEntry
 
     private long index = System.currentTimeMillis();
 
-    private Set<Long> timestamps;
-
-    public TrackedContentEntry()
+    public TrackedContentEntryV2()
     {
     }
 
-    public TrackedContentEntry( final TrackingKey trackingKey, final StoreKey storeKey,
-                                final AccessChannel accessChannel, final String originUrl, final String path,
-                                final StoreEffect effect, final Long size,
-                                final String md5, final String sha1, final String sha256 )
+    public TrackedContentEntryV2( final TrackingKey trackingKey, final StoreKey storeKey,
+                                  final AccessChannel accessChannel, final String originUrl, final String path,
+                                  final StoreEffect effect, final Long size,
+                                  final String md5, final String sha1, final String sha256 )
     {
         this.trackingKey = trackingKey;
         this.storeKey = storeKey;
@@ -81,7 +77,6 @@ public class TrackedContentEntry
         this.sha1=sha1;
         this.sha256=sha256;
         this.size = size;
-        this.timestamps = new HashSet<>( Collections.singleton( System.currentTimeMillis() ) );
     }
 
     public String getOriginUrl()
@@ -150,7 +145,7 @@ public class TrackedContentEntry
     }
 
     @Override
-    public int compareTo( final TrackedContentEntry other )
+    public int compareTo( final TrackedContentEntryV2 other )
     {
         int comp = trackingKey.getId().compareTo( other.getTrackingKey().getId() );
         if ( comp == 0 )
@@ -201,7 +196,7 @@ public class TrackedContentEntry
         {
             return false;
         }
-        final TrackedContentEntry other = (TrackedContentEntry) obj;
+        final TrackedContentEntryV2 other = (TrackedContentEntryV2) obj;
         if ( trackingKey == null )
         {
             if ( other.trackingKey != null )
@@ -286,7 +281,6 @@ public class TrackedContentEntry
         out.writeObject( sha256 == null ? "" : sha256 );
         out.writeObject( size );
         out.writeLong( index );
-        out.writeObject( timestamps );
     }
 
     @Override
@@ -365,30 +359,5 @@ public class TrackedContentEntry
         size = (Long) in.readObject();
 
         index = in.readLong();
-
-        if ( version > 2 )
-        {
-            final Set<Long> tstamps = (Set<Long>) in.readObject();
-            timestamps = tstamps;
-        }
-    }
-
-    public Set<Long> getTimestamps()
-    {
-        return timestamps;
-    }
-
-    public void setTimestamps( final Set<Long> timestamps )
-    {
-        this.timestamps = timestamps;
-    }
-
-    public void merge( TrackedContentEntry from )
-    {
-        this.md5 = from.md5;
-        this.sha1 = from.sha1;
-        this.sha256 = from.sha256;
-        this.size = from.size;
-        this.timestamps.addAll( from.timestamps );
     }
 }

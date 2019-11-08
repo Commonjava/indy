@@ -54,11 +54,13 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager.IMPLIED_BY_STORES;
 import static org.commonjava.indy.implrepo.data.ImpliedRepoMetadataManager.IMPLIED_STORES;
@@ -399,19 +401,30 @@ public class ImpliedRepositoryDetector
                             e );
                 }
 
+                final RemoteRepository ref = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
+                if ( ref == null )
+                {
+                    logger.warn(
+                            "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
+                            repo.getId(), gav );
+                    continue;
+                }
+
+                if ( rrs != null && !rrs.isEmpty() )
+                {
+                    rrs = rrs.stream()
+                             .filter( rr -> rr.isAllowReleases() == ref.isAllowReleases() )
+                             .filter( rr -> rr.isAllowSnapshots() == ref.isAllowSnapshots() )
+                             .filter( rr -> ( isEmpty(rr.getPathMaskPatterns()) && isEmpty( ref.getPathMaskPatterns() ) )
+                                             || rr.getPathMaskPatterns().equals( ref.getPathMaskPatterns() ) )
+                             .collect( Collectors.toList() );
+                }
+
                 if ( rrs == null || rrs.isEmpty() )
                 {
                     logger.debug( "Creating new RemoteRepository for: {}", repo );
 
-                    final RemoteRepository rr = creator.createFrom( gav, repo, LoggerFactory.getLogger( creator.getClass() ) );
-                    if ( rr == null )
-                    {
-                        logger.warn(
-                                "ImpliedRepositoryCreator didn't create anything for repo: {}, specified in: {}. Skipping.",
-                                repo.getId(), gav );
-                        continue;
-                    }
-
+                    final RemoteRepository rr = ref.copyOf();
                     rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
                     try
                     {
@@ -459,9 +472,47 @@ public class ImpliedRepositoryDetector
                 else
                 {
                     logger.debug( "Found existing RemoteRepositories: {}", rrs );
+
+                    for ( final RemoteRepository rr : rrs )
+                    {
+                        rr.setMetadata( METADATA_ORIGIN, IMPLIED_REPO_ORIGIN );
+                        try
+                        {
+                            metadataManager.updateImpliedBy( rr, job.store );
+                        }
+                        catch ( ImpliedReposException e )
+                        {
+                            logger.error( "Failed to set {}", IMPLIED_BY_STORES );
+                            continue;
+                        }
+
+                        final String changelog = String.format(
+                                        "Updating the existing remote repository: %s (url: %s, name: %s), which is implied by the POM: %s (at: %s/%s)",
+                                        repo.getId(), repo.getUrl(), repo.getName(), gav, job.transfer.getLocation().getUri(),
+                                        job.transfer.getPath() );
+                        final ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, changelog );
+                        try
+                        {
+                            final boolean result = storeManager.storeArtifactStore( rr, summary, false, false,
+                                                                                    null );
+
+                            logger.debug( "Updated the RemoteRepository: {}. (successful? {})", rr, result );
+                            job.implied.add( rr );
+                        }
+                        catch ( final IndyDataException e )
+                        {
+                            logger.error( String.format(
+                                            "Cannot add implied remote repo: %s from: %s (transfer: %s). Failed to update the remote repository.",
+                                            repo.getUrl(), gav, job.transfer ), e );
+                        }
+                    }
                 }
             }
         }
+    }
+
+    private boolean isEmpty(final Collection<?> coll) {
+        return coll == null || coll.isEmpty();
     }
 
     public class ImplicationsJob
