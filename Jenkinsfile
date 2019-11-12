@@ -37,9 +37,9 @@ pipeline {
                             if (env.GIT_URL in jsonObj[bc_section]) {
                                 echo "Found BC for Git repo: ${env.GIT_URL}"
                                 if (env.BRANCH_NAME in jsonObj[bc_section][env.GIT_URL]) {
-                                    img_build_hook = jsonObj[bc_section][env.GIT_URL][env.BRANCH_NAME]
+                                    my_bc = jsonObj[bc_section][env.GIT_URL][env.BRANCH_NAME]
                                 } else {
-                                    img_build_hook = jsonObj[bc_section][env.GIT_URL]['default']
+                                    my_bc = jsonObj[bc_section][env.GIT_URL]['default']
                                 }
                             }
                         }
