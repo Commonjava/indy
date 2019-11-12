@@ -27,6 +27,11 @@ pipeline {
             }
         }
         stage('Load OCP Mappings') {
+            when {
+                allOf {
+                    expression { env.CHANGE_ID == null } // Not pull request
+                }
+            }
             steps {
                 echo "Load OCP Mapping document"
                 script {
@@ -41,11 +46,27 @@ pipeline {
                                 } else {
                                     my_bc = jsonObj[bc_section][env.GIT_URL]['default']
                                 }
+
+                                echo "Using BuildConfig: ${my_bc}"
+                            }
+                            else {
+                                echo "Git URL: ${env.GIT_URL} not found in BC mapping."
                             }
                         }
+                        else {
+                            "BC mapping is invalid! No ${bc_section} sub-object found!"
+                        }
                     }
+                    else {
+                        echo "JSON configuration file not found: ${ocp_map}"
+                    }
+
+                    // if ( my_bc == null ) {
+                    //     error("No valid BuildConfig reference found for Git URL: ${env.GIT_URL} with branch: ${env.BRANCH_NAME}")
+                    // }
                 }
             }
+        }
         }
         stage('Deploy') {
             when {
