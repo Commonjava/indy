@@ -70,7 +70,6 @@ pipeline {
                 }
             }
         }
-        }
         stage('Deploy') {
             when {
                 allOf {
