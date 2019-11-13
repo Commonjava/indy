@@ -31,14 +31,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static org.commonjava.indy.pathmap.migrate.Util.TODO_FILES_DIR;
+import static org.commonjava.indy.pathmap.migrate.Util.prepareWorkingDir;
 
 public class ScanCmd
         implements Command
 {
 
+    private void init( MigrateOptions options )
+            throws MigrateException
+    {
+        try
+        {
+            prepareWorkingDir( options.getWorkDir() );
+        }
+        catch ( IOException e )
+        {
+            throw new MigrateException( "Error: can not prepare work dir.", e );
+        }
+    }
+
     public void run( MigrateOptions options )
             throws MigrateException
     {
+        init( options );
+
         final long start = System.currentTimeMillis();
         final List<String> pkgFolderPaths;
         try

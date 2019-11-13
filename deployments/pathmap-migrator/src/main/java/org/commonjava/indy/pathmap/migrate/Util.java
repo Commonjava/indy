@@ -15,7 +15,8 @@
  */
 package org.commonjava.indy.pathmap.migrate;
 
-import java.io.File;
+import org.apache.commons.io.FileUtils;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +36,7 @@ public class Util
 
     static final String PROCESSED_FILES_DIR = "processed";
 
-    static final String FAILED_PATHS_FILE = "faile_paths";
+    static final String FAILED_PATHS_FILE = "failed_paths";
 
     static final String STATUS_FILE = "status";
 
@@ -47,26 +48,19 @@ public class Util
             throws IOException
     {
         Path todoDir = Paths.get( workDir, TODO_FILES_DIR );
-        if ( !todoDir.toFile().exists() || !Files.isDirectory( todoDir ) )
+        if ( todoDir.toFile().exists() )
         {
-            Files.createDirectories( todoDir );
+            System.out.println( "todo folder is not empty, will clean it first." );
+            FileUtils.forceDelete( todoDir.toFile() );
         }
+        Files.createDirectories( todoDir );
         Path processedDir = Paths.get( workDir, PROCESSED_FILES_DIR );
-        if ( !processedDir.toFile().exists() || !Files.isDirectory( processedDir ) )
+        if ( processedDir.toFile().exists() )
         {
-            Files.createDirectories( processedDir );
+            System.out.println( "processed folder is not empty, will clean it first." );
+            FileUtils.forceDelete( processedDir.toFile() );
         }
-    }
-
-    static File getStatusFile( final String workDir )
-            throws IOException
-    {
-        File statusFile = Paths.get( workDir, STATUS_FILE ).toFile();
-        if ( statusFile.exists() )
-        {
-            statusFile.createNewFile();
-        }
-        return statusFile;
+        Files.createDirectories( processedDir );
     }
 
 }

@@ -67,7 +67,8 @@ public class MigrateCmd
                 try (InputStream is = new FileInputStream( p.toFile() ))
                 {
                     paths = IOUtils.readLines( is );
-                    Files.delete( p );
+                    Path processedPath = Paths.get( options.getProcessedDir(), p.getFileName().toString() );
+                    Files.move( p, processedPath );
                 }
                 catch ( IOException e )
                 {
