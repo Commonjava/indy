@@ -16,7 +16,6 @@
 package org.commonjava.indy.filer.def;
 
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.datastax.driver.core.Session;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
@@ -51,10 +50,9 @@ import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
-import org.commonjava.storage.pathmapped.datastax.CassandraPathDB;
+import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
 import org.commonjava.storage.pathmapped.metrics.MeasuredPathDB;
 import org.commonjava.storage.pathmapped.spi.PathDB;
-import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,11 +74,7 @@ import java.util.function.Function;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_KEYSPACE;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_PASS;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_PORT;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_USER;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.*;
 
 @ApplicationScoped
 public class DefaultGalleyStorageProvider
