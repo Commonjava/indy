@@ -37,6 +37,8 @@ public class CassandraClient
 
     private Session session;
 
+    private Cluster cluster;
+
     public CassandraClient()
     {
     }
@@ -67,7 +69,7 @@ public class CassandraClient
                 logger.debug( "Build with credentials, user: {}, pass: ****", username );
                 builder.withCredentials( username, password );
             }
-            Cluster cluster = builder.build();
+            cluster = builder.build();
 
             logger.debug( "Connecting to Cassandra, host:{}, port:{}", host, port );
             session = cluster.connect();
@@ -81,5 +83,14 @@ public class CassandraClient
     public Session getSession()
     {
         return session;
+    }
+
+    public void close()
+    {
+        if ( cluster != null && session != null )
+        {
+            session.close();
+            cluster.close();
+        }
     }
 }

@@ -194,6 +194,7 @@ public abstract class AbstractIndyFunctionalTest
             throws IndyLifecycleException
     {
         closeCacheProvider();
+        dropKeyspaceAndCloseCassandraClient();
         closeQuietly( fixture );
         closeQuietly( client );
     }
@@ -201,14 +202,13 @@ public abstract class AbstractIndyFunctionalTest
     // TODO: this is a hack due to the "shutdown action not executed" issue. Once propulsor lifecycle shutdown is applied, this can be replaced.
     private void closeCacheProvider()
     {
-        dropKeyspace();
         if ( cacheProvider != null )
         {
             cacheProvider.asAdminView().close();
         }
     }
 
-    private void dropKeyspace()
+    private void dropKeyspaceAndCloseCassandraClient()
     {
         String keyspace = getKeyspace();
         logger.debug( "Drop cassandra keyspace: {}", keyspace );
@@ -225,6 +225,7 @@ public abstract class AbstractIndyFunctionalTest
                 logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
             }
         }
+        cassandraClient.close();
     }
 
     protected void sleepAndRunFileGC( long milliseconds )
