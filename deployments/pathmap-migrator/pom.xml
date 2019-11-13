@@ -11,6 +11,9 @@
 
   <artifactId>indy-pathmap-migrator</artifactId>
 
+  <properties>
+    <pathmap.version>0.1-SNAPSHOT</pathmap.version>
+  </properties>
 
   <dependencies>
     <dependency>
@@ -27,8 +30,18 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
+      <artifactId>path-mapped-common</artifactId>
+      <version>${pathmap.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
       <artifactId>path-mapped-storage</artifactId>
-      <version>0.1-SNAPSHOT</version>
+      <version>${pathmap.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>path-mapped-pathdb-datastax</artifactId>
+      <version>${pathmap.version}</version>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

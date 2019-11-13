@@ -32,7 +32,7 @@ public class IndyStoreBasedPathGenerator
         final String storePath = generateStorePath( physicalPath );
         final String[] parts = storePath.split( "/" );
         String path = "";
-        for ( int i = 3; i < parts.length; i++ )
+        for ( int i = 2; i < parts.length; i++ )
         {
             path = PathMapUtils.normalize( path, parts[i] );
         }
@@ -43,8 +43,8 @@ public class IndyStoreBasedPathGenerator
     {
         final String storePath = generateStorePath( physicalPath );
         final String[] parts = storePath.split( "/" );
-        final String pkg = parts[1];
-        final String repo = parts[2];
+        final String pkg = parts[0];
+        final String repo = parts[1];
         final String[] keyAName = repo.split( "-" );
         final String type = keyAName[0];
         StringBuilder name = new StringBuilder();
@@ -76,6 +76,6 @@ public class IndyStoreBasedPathGenerator
 
         final int storePathStart = physicalPath.indexOf( baseDir ) + baseDir.length();
         final String storePath = physicalPath.substring( storePathStart );
-        return storePath.startsWith( "/" ) ? storePath : "/" + storePath;
+        return storePath.startsWith( "/" ) ? storePath.substring( 1 ) : storePath;
     }
 }

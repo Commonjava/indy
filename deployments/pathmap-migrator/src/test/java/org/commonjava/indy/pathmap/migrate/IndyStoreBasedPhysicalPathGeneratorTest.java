@@ -51,8 +51,8 @@ public class IndyStoreBasedPhysicalPathGeneratorTest
     @Test
     public void getStorePath()
     {
-        assertThat( generator.generateStorePath( PHYSICAL_PATH1 ), equalTo( "/maven/hosted-public/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
-        assertThat( generator.generateStorePath( PHYSICAL_PATH2 ), equalTo( "/maven/hosted-shared-imports-redhat/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
-        assertThat( generator.generateStorePath( PHYSICAL_PATH3 ), equalTo( "/maven/remote-koji-org.jboss.classfilewriter-jboss-classfilewriter-1.2.3.Final_redhat_00001-1/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
+        assertThat( generator.generateStorePath( PHYSICAL_PATH1 ), equalTo( "maven/hosted-public/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
+        assertThat( generator.generateStorePath( PHYSICAL_PATH2 ), equalTo( "maven/hosted-shared-imports-redhat/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
+        assertThat( generator.generateStorePath( PHYSICAL_PATH3 ), equalTo( "maven/remote-koji-org.jboss.classfilewriter-jboss-classfilewriter-1.2.3.Final_redhat_00001-1/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
     }
 }

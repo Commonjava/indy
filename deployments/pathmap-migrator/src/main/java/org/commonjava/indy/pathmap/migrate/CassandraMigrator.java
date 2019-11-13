@@ -19,8 +19,8 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.core.FileBasedPhysicalStore;
-import org.commonjava.storage.pathmapped.core.FileInfo;
-import org.commonjava.storage.pathmapped.datastax.CassandraPathDB;
+import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
+import org.commonjava.storage.pathmapped.spi.FileInfo;
 import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.commonjava.storage.pathmapped.util.ChecksumCalculator;
 

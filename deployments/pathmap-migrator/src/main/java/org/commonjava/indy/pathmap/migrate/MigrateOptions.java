@@ -41,11 +41,11 @@ import static org.commonjava.indy.pathmap.migrate.Util.DEFAULT_WORK_DIR;
 import static org.commonjava.indy.pathmap.migrate.Util.PROCESSED_FILES_DIR;
 import static org.commonjava.indy.pathmap.migrate.Util.STATUS_FILE;
 import static org.commonjava.indy.pathmap.migrate.Util.TODO_FILES_DIR;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_KEYSPACE;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_PASS;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_PORT;
-import static org.commonjava.storage.pathmapped.util.CassandraPathDBUtils.PROP_CASSANDRA_USER;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_KEYSPACE;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_PASS;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_PORT;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_USER;
 
 public class MigrateOptions
 {
