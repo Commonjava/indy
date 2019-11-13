@@ -16,6 +16,7 @@
 package org.commonjava.indy.pathmap.migrate;
 
 import org.apache.commons.lang3.StringUtils;
+import org.commonjava.storage.pathmapped.util.ChecksumCalculator;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,6 +69,9 @@ public class MigrateOptions
     @Option( name = "-d", aliases = "--dedupe", usage = "If to use checksum to dedupe all files in file storage" )
     private boolean dedupe;
 
+    @Option( name = "-A", aliases = "--dedupeAlgorithm", usage = "Algorithm to do dedupe check, default is MD5" )
+    private String dedupeAlgorithm;
+
     @Option( name = "-H", aliases = "--host", usage = "Cassandra server hostname" )
     private String cassandraHost;
 
@@ -82,8 +87,7 @@ public class MigrateOptions
     @Option( name = "-k", aliases = "--keyspace", usage = "Cassandra server keyspace" )
     private String cassandraKeyspace;
 
-    @Argument( index = 0, metaVar = "command", required = false,
-               usage = "Name of command to run, use scan | migrate | resume" )
+    @Argument( index = 0, metaVar = "command", usage = "Name of command to run, use scan | migrate | resume" )
     private String command;
 
     public boolean isHelp()
@@ -144,6 +148,21 @@ public class MigrateOptions
     public void setDedupe( boolean dedupe )
     {
         this.dedupe = dedupe;
+    }
+
+    public String getDedupeAlgorithm()
+    {
+        return StringUtils.isBlank( dedupeAlgorithm ) ? "MD5" : dedupeAlgorithm;
+    }
+
+    public void setDedupeAlgorithm( String dedupeAlgorithm )
+    {
+        this.dedupeAlgorithm = dedupeAlgorithm;
+    }
+
+    public void setMigrator( CassandraMigrator migrator )
+    {
+        this.migrator = migrator;
     }
 
     public String getCommand()
@@ -365,6 +384,7 @@ public class MigrateOptions
     }
 
     public CassandraMigrator getMigrator()
+            throws MigrateException
     {
         if ( migrator == null )
         {
@@ -374,6 +394,7 @@ public class MigrateOptions
     }
 
     private void initMigrator()
+            throws MigrateException
     {
         if ( migrator == null )
         {
@@ -389,8 +410,21 @@ public class MigrateOptions
             {
                 cassandraProps.put( PROP_CASSANDRA_PASS, getCassandraPass() );
             }
-            //TODO set checksum calculator based on dedupe option
-            migrator = CassandraMigrator.getMigrator( cassandraProps, getBaseDir(), null );
+            
+            ChecksumCalculator calculator = null;
+            if ( isDedupe() )
+            {
+                try
+                {
+                    calculator = new ChecksumCalculator( getDedupeAlgorithm() );
+                }
+                catch ( NoSuchAlgorithmException e )
+                {
+                    throw new MigrateException(
+                            String.format( "Error: checksum algorithm not supported: %s", getDedupeAlgorithm() ), e );
+                }
+            }
+            migrator = CassandraMigrator.getMigrator( cassandraProps, getBaseDir(), calculator );
         }
     }
 

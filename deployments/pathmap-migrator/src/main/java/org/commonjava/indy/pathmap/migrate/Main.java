@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.commonjava.indy.pathmap.migrate.Util.CMD_MIGRATE;
 import static org.commonjava.indy.pathmap.migrate.Util.CMD_SCAN;
-import static org.commonjava.indy.pathmap.migrate.Util.prepareWorkingDir;
 
 public class Main
 {
@@ -49,7 +48,6 @@ public class Main
         {
             if ( options.parseArgs( args ) )
             {
-                prepareWorkingDir( options.getWorkDir() );
                 Command cmd = decideCommand( options );
                 if ( cmd != null )
                 {
@@ -57,7 +55,7 @@ public class Main
                 }
             }
         }
-        catch ( final IllegalArgumentException | IOException | MigrateException e )
+        catch ( final IllegalArgumentException | MigrateException e )
         {
             System.err.printf( "ERROR: %s", e.getMessage() );
             System.exit( 1 );
