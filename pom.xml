@@ -391,6 +391,14 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-cassandra</artifactId>
+        <version>1.9.6-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
         <version>1.9.6-SNAPSHOT</version>
       </dependency>
