@@ -18,7 +18,6 @@ package org.commonjava.indy.ftest.core;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.commonjava.storage.pathmapped.util.PathMapUtils.getStorageDir;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -46,12 +45,9 @@ import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProvider;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
-
-import javax.enterprise.inject.spi.CDI;
 
 public class AbstractContentManagementTest
     extends AbstractIndyFunctionalTest
