@@ -411,12 +411,11 @@ public class MigrateOptions
                 cassandraProps.put( PROP_CASSANDRA_PASS, getCassandraPass() );
             }
             
-            ChecksumCalculator calculator = null;
             if ( isDedupe() )
             {
                 try
                 {
-                    calculator = new ChecksumCalculator( getDedupeAlgorithm() );
+                    new ChecksumCalculator( getDedupeAlgorithm() ); // verify algo
                 }
                 catch ( NoSuchAlgorithmException e )
                 {
@@ -424,7 +423,7 @@ public class MigrateOptions
                             String.format( "Error: checksum algorithm not supported: %s", getDedupeAlgorithm() ), e );
                 }
             }
-            migrator = CassandraMigrator.getMigrator( cassandraProps, getBaseDir(), calculator );
+            migrator = CassandraMigrator.getMigrator( cassandraProps, getBaseDir(), isDedupe(), getDedupeAlgorithm() );
         }
     }
 

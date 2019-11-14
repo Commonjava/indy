@@ -111,7 +111,10 @@ public class MigrateCmd
             }
         }
 
+        stop( options );
     }
+
+    private Timer progressTimer = new Timer();
 
     private void init( MigrateOptions options )
     {
@@ -142,7 +145,13 @@ public class MigrateCmd
 
         final long period = 15000L;
         // Trigger progress update task.
-        new Timer().schedule( new UpdateProgressTask( options ), period, period );
+        progressTimer.schedule( new UpdateProgressTask( options ), period, period );
+    }
+
+    private void stop( MigrateOptions options )
+    {
+        new UpdateProgressTask( options ).run(); // last run
+        progressTimer.cancel();
     }
 
     private void storeFailedPaths( MigrateOptions options, List<String> failedPaths )
