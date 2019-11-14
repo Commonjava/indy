@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 import static org.commonjava.indy.pathmap.migrate.Util.FAILED_PATHS_FILE;
+import static org.commonjava.indy.pathmap.migrate.Util.STATUS_FILE;
 import static org.commonjava.indy.pathmap.migrate.Util.TODO_FILES_DIR;
 
 public class MigrateCmd
@@ -114,7 +115,34 @@ public class MigrateCmd
 
     private void init( MigrateOptions options )
     {
-        new Timer().schedule( new UpdateProgressTask( options ), 30000L, 30000L );
+        // Reload last processed paths count
+        Path statusFilePath = Paths.get( options.getWorkDir(), STATUS_FILE );
+        File statusFile = statusFilePath.toFile();
+        if ( statusFile.exists() )
+        {
+            try (BufferedReader reader = new BufferedReader( new FileReader( statusFile ) ))
+            {
+                String line = reader.readLine();
+                while ( line != null )
+                {
+                    if ( line.trim().startsWith( "Processed" ) )
+                    {
+                        this.processedCount.set( Integer.parseInt( line.split( ":" )[1].trim() ) );
+                        break;
+                    }
+                    line = reader.readLine();
+                }
+                Files.delete( statusFilePath );
+            }
+            catch ( IOException | NumberFormatException e )
+            {
+                e.printStackTrace();
+            }
+        }
+
+        final long period = 15000L;
+        // Trigger progress update task.
+        new Timer().schedule( new UpdateProgressTask( options ), period, period );
     }
 
     private void storeFailedPaths( MigrateOptions options, List<String> failedPaths )
@@ -152,7 +180,7 @@ public class MigrateCmd
         public void run()
         {
             int currentProcessedCnt = MigrateCmd.this.processedCount.get();
-            Path statusFilePath = Paths.get( options.getWorkDir(), Util.STATUS_FILE );
+            Path statusFilePath = Paths.get( options.getWorkDir(), STATUS_FILE );
             File statusFile = statusFilePath.toFile();
             int totalCnt = 0;
             if ( statusFile.exists() )
@@ -164,8 +192,10 @@ public class MigrateCmd
                     {
                         if ( line.trim().startsWith( "Total" ) )
                         {
-                            totalCnt = Integer.parseInt( line.split( ":" )[1] );
+                            totalCnt = Integer.parseInt( line.split( ":" )[1].trim() );
+                            break;
                         }
+                        line = reader.readLine();
                     }
                     Files.delete( statusFilePath );
                 }
@@ -175,7 +205,7 @@ public class MigrateCmd
                 }
             }
 
-            double progress = currentProcessedCnt / totalCnt;
+            double progress = (double) currentProcessedCnt / (double) totalCnt;
             String progressString = new DecimalFormat( "##.##" ).format( progress );
 
             try
