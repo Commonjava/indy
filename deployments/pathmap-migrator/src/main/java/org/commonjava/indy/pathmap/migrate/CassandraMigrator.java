@@ -28,6 +28,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Map;
 
@@ -41,29 +42,32 @@ public class CassandraMigrator
 
     private final IndyStoreBasedPathGenerator storePathGen;
 
-    private final ChecksumCalculator checksumCalculator;
-
     private final String baseDir;
 
+    private final boolean dedup;
+
+    private final String dedupAlgo;
+
     private CassandraMigrator( final PathMappedStorageConfig config, final String baseDir,
-                               final ChecksumCalculator checksumCalculator )
+                               final boolean dedup, final String dedupAlgo )
     {
         this.pathDB = new CassandraPathDB( config );
         this.storePathGen = new IndyStoreBasedPathGenerator( baseDir );
         this.physicalStore = new FileBasedPhysicalStore( new File( baseDir ) );
-        this.checksumCalculator = checksumCalculator;
+        this.dedup = dedup;
+        this.dedupAlgo = dedupAlgo;
         this.baseDir = baseDir;
     }
 
     public static CassandraMigrator getMigrator( final Map<String, Object> cassandraConfig, final String baseDir,
-                                          final ChecksumCalculator checksumCalculator )
+                                                 final boolean dedup, final String dedupAlgo )
     {
         synchronized ( CassandraMigrator.class )
         {
             if ( migrator == null )
             {
                 final PathMappedStorageConfig config = new DefaultPathMappedStorageConfig( cassandraConfig );
-                migrator = new CassandraMigrator( config, baseDir, checksumCalculator );
+                migrator = new CassandraMigrator( config, baseDir, dedup, dedupAlgo );
             }
         }
         return migrator;
@@ -86,17 +90,19 @@ public class CassandraMigrator
                                         physicalFilePath );
         }
 
-        final String checksum;
-        try
+        String checksum = null;
+        if ( dedup )
         {
-            checksum = calculateChecksum( file );
+            try
+            {
+                checksum = calculateChecksum( file );
+            }
+            catch ( IOException e )
+            {
+                throw new MigrateException(
+                                String.format( "Error: Can not get file checksum for file of %s", physicalFilePath ), e );
+            }
         }
-        catch ( IOException e )
-        {
-            throw new MigrateException(
-                    String.format( "Error: Can not get file checksum for file of %s", physicalFilePath ), e );
-        }
-
         final String fileSystem = storePathGen.generateFileSystem( physicalFilePath );
         final String path = storePathGen.generatePath( physicalFilePath );
         final String storePath = storePathGen.generateStorePath( physicalFilePath );
@@ -115,16 +121,24 @@ public class CassandraMigrator
     private String calculateChecksum( File file )
             throws IOException
     {
-        if ( checksumCalculator == null )
-        {
-            return null;
-        }
-
         if ( !file.exists() || !file.isFile() )
         {
             throw new IOException(
                     String.format( "Digest error: file not exists or not a regular file for file %s", file ) );
         }
+
+        ChecksumCalculator checksumCalculator = null;
+        {
+            try
+            {
+                checksumCalculator = new ChecksumCalculator( dedupAlgo );
+            }
+            catch ( NoSuchAlgorithmException e )
+            {
+                // verified, ex never happen
+            }
+        }
+
         try (FileInputStream is = new FileInputStream( file ))
         {
             checksumCalculator.update( IOUtils.toByteArray( is ) );
