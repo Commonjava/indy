@@ -89,6 +89,7 @@ public class CassandraClient
     {
         if ( cluster != null && session != null )
         {
+            logger.debug( "Close cassandra client" );
             session.close();
             cluster.close();
         }
