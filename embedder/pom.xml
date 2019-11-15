@@ -412,15 +412,15 @@
           <executions>
             <execution>
               <goals>
-                <goal>start</goal>
-                <goal>stop</goal>
+                <goal>start-cluster</goal>
+                <goal>stop-cluster</goal>
               </goals>
             </execution>
           </executions>
           <configuration>
             <startNativeTransport>true</startNativeTransport>
             <cqlVersion>3.4.4</cqlVersion>
-            <maxMemory>1024</maxMemory>
+            <maxMemory>2048</maxMemory>
           </configuration>
         </plugin>
         <plugin>
