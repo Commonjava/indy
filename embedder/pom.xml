@@ -412,8 +412,8 @@
           <executions>
             <execution>
               <goals>
-                <goal>start-cluster</goal>
-                <goal>stop-cluster</goal>
+                <goal>start</goal>
+                <goal>stop</goal>
               </goals>
             </execution>
           </executions>
