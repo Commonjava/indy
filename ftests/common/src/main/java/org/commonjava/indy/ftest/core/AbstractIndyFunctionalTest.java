@@ -193,8 +193,8 @@ public abstract class AbstractIndyFunctionalTest
     public void stop()
             throws IndyLifecycleException
     {
+        dropKeyspace();
         closeCacheProvider();
-        dropKeyspaceAndCloseCassandraClient();
         closeQuietly( fixture );
         closeQuietly( client );
     }
@@ -208,7 +208,7 @@ public abstract class AbstractIndyFunctionalTest
         }
     }
 
-    private void dropKeyspaceAndCloseCassandraClient()
+    private void dropKeyspace()
     {
         String keyspace = getKeyspace();
         logger.debug( "Drop cassandra keyspace: {}", keyspace );
@@ -225,7 +225,7 @@ public abstract class AbstractIndyFunctionalTest
                 logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
             }
         }
-        cassandraClient.close();
+        //cassandraClient.close();
     }
 
     protected void sleepAndRunFileGC( long milliseconds )

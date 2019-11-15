@@ -85,13 +85,18 @@ public class CassandraClient
         return session;
     }
 
+    private volatile boolean closed;
+
     public void close()
     {
-        if ( cluster != null && session != null )
+        if ( !closed && cluster != null && session != null )
         {
             logger.debug( "Close cassandra client" );
             session.close();
             cluster.close();
+            session = null;
+            cluster = null;
+            closed = true;
         }
     }
 }
