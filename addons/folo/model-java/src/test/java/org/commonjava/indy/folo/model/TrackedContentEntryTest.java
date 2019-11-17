@@ -157,6 +157,8 @@ public class TrackedContentEntryTest
                                          entry.getOriginUrl(), entry.getPath(), entry.getEffect(), entry.getSize(),
                                          entry.getMd5(), entry.getSha1(), entry.getSha256() );
 
+        test.setTimestamps( entry.getTimestamps() );
+
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream( baos );
         oos.writeObject( entry );
