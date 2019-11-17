@@ -69,6 +69,8 @@ public class CassandraClient
                 logger.debug( "Build with credentials, user: {}, pass: ****", username );
                 builder.withCredentials( username, password );
             }
+
+            cluster.getConfiguration().getSocketOptions().setConnectTimeoutMillis( 30000 );
             cluster = builder.build();
 
             logger.debug( "Connecting to Cassandra, host:{}, port:{}", host, port );
