@@ -225,7 +225,7 @@ public abstract class AbstractIndyFunctionalTest
                 logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
             }
         }
-        session.close();
+        cassandraClient.close();
     }
 
     protected void sleepAndRunFileGC( long milliseconds )
