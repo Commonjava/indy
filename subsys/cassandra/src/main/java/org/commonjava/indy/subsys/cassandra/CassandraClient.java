@@ -37,6 +37,8 @@ public class CassandraClient
 
     private Session session;
 
+    private Cluster cluster;
+
     public CassandraClient()
     {
     }
@@ -67,7 +69,9 @@ public class CassandraClient
                 logger.debug( "Build with credentials, user: {}, pass: ****", username );
                 builder.withCredentials( username, password );
             }
-            Cluster cluster = builder.build();
+
+            cluster.getConfiguration().getSocketOptions().setConnectTimeoutMillis( 30000 );
+            cluster = builder.build();
 
             logger.debug( "Connecting to Cassandra, host:{}, port:{}", host, port );
             session = cluster.connect();
@@ -81,5 +85,20 @@ public class CassandraClient
     public Session getSession()
     {
         return session;
+    }
+
+    private volatile boolean closed;
+
+    public void close()
+    {
+        if ( !closed && cluster != null && session != null )
+        {
+            logger.debug( "Close cassandra client" );
+            session.close();
+            cluster.close();
+            session = null;
+            cluster = null;
+            closed = true;
+        }
     }
 }

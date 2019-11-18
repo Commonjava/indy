@@ -420,7 +420,7 @@
           <configuration>
             <startNativeTransport>true</startNativeTransport>
             <cqlVersion>3.4.4</cqlVersion>
-            <maxMemory>1024</maxMemory>
+            <maxMemory>2048</maxMemory>
           </configuration>
         </plugin>
         <plugin>
