@@ -95,6 +95,8 @@ pipeline {
             }
             steps {
                 script {
+                    def artifact_file = sh(script: "ls $artifact", returnStdout: true)?.trim()
+                    def tarball_url = "${BUILD_URL}artifact/$artifact_file"
                     openshift.withCluster() {
                         openshift.withProject() {
                             echo "Starting image build: ${openshift.project()}:${my_bc}"
