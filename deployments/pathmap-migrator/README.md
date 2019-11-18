@@ -13,7 +13,8 @@ Usage: java -jar ${package}.jar scan [options]
 Options:  
 -B (--batch) N      : Batch of paths to process each time  
 -b (--base) VAL     : Base dir of storage for all indy artifacts  
--w (--workdir) VAL  : Work dir to store all generated working files  
+-w (--workdir) VAL  : Work dir to store all generated working files
+-f (--filter) VAL   : Regex style filter string to filter some files which are unwanted
 
 #### migrate: read all files for paths and migrate them to cassandra db
 ##### Note: Before this command, please use "scan" to generate all paths files first

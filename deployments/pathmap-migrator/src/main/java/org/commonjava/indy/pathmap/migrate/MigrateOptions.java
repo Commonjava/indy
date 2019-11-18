@@ -60,6 +60,10 @@ public class MigrateOptions
     @Option( name = "-w", aliases = "--workdir", usage = "Work dir to store all generated working files" )
     private String workDir;
 
+    @Option( name = "-f", aliases = "--filter",
+             usage = "Regex style filter string to filter some files which are unwanted" )
+    private String filterPattern;
+
     //    @Option( name = "-t", aliases = "--threads", usage = "Number of threads to execute the migrating process" )
     //    private int threads;
 
@@ -118,6 +122,16 @@ public class MigrateOptions
     public void setWorkDir( String workDir )
     {
         this.workDir = workDir;
+    }
+
+    public String getFilterPattern()
+    {
+        return filterPattern;
+    }
+
+    public void setFilterPattern( String filterPattern )
+    {
+        this.filterPattern = filterPattern;
     }
 
     //    public int getThreads()
@@ -268,6 +282,7 @@ public class MigrateOptions
         {
             System.out.println( String.format( "Base storage dir for artifacts: %s", getBaseDir() ) );
             System.out.println( String.format( "Batch of paths to process each time: %s", getBatchSize() ) );
+            System.out.println( String.format( "Filter pattern for unwanted files: %s", getFilterPattern() ) );
         }
 
         if ( getCommand().equals( CMD_MIGRATE ) )
@@ -410,7 +425,7 @@ public class MigrateOptions
             {
                 cassandraProps.put( PROP_CASSANDRA_PASS, getCassandraPass() );
             }
-            
+
             if ( isDedupe() )
             {
                 try

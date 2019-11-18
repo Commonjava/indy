@@ -16,6 +16,7 @@
 package org.commonjava.indy.pathmap.migrate;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -32,6 +33,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import static org.commonjava.indy.pathmap.migrate.Util.TODO_FILES_DIR;
 import static org.commonjava.indy.pathmap.migrate.Util.prepareWorkingDir;
@@ -132,7 +135,20 @@ public class ScanCmd
         final List<String> filePaths = new ArrayList<>( options.getBatchSize() );
         final AtomicInteger batchNum = new AtomicInteger( 0 );
         final AtomicInteger totalFileNum = new AtomicInteger( 0 );
-        Files.walk( repoPath, Integer.MAX_VALUE ).filter( Files::isRegularFile ).forEach( p -> {
+        final Predicate<Path> fileFilter;
+        if ( StringUtils.isNotBlank( options.getFilterPattern() ) )
+        {
+            final Pattern pattern = Pattern.compile( options.getFilterPattern() );
+            fileFilter = p -> {
+                boolean notNeed = pattern.matcher( p.getFileName().toString() ).matches();
+                return Files.isRegularFile( p ) && !notNeed;
+            };
+        }
+        else
+        {
+            fileFilter = Files::isRegularFile;
+        }
+        Files.walk( repoPath, Integer.MAX_VALUE ).filter( fileFilter ).forEach( p -> {
             filePaths.add( p.toString() );
             if ( filePaths.size() >= options.getBatchSize() )
             {
