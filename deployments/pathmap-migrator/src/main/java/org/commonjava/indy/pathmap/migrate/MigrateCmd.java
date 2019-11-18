@@ -152,6 +152,7 @@ public class MigrateCmd
     {
         new UpdateProgressTask( options ).run(); // last run
         progressTimer.cancel();
+        migrator.shutdown();
     }
 
     private void storeFailedPaths( MigrateOptions options, List<String> failedPaths )
