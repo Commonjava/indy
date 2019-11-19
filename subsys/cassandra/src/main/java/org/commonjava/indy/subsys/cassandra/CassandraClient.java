@@ -17,6 +17,7 @@ package org.commonjava.indy.subsys.cassandra;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.SocketOptions;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,14 @@ public class CassandraClient
         {
             String host = config.getCassandraHost();
             int port = config.getCassandraPort();
-            Cluster.Builder builder = Cluster.builder().withoutJMXReporting().addContactPoint( host ).withPort( port );
+            SocketOptions socketOptions = new SocketOptions();
+            socketOptions.setConnectTimeoutMillis( 30000 );
+            socketOptions.setReadTimeoutMillis( 30000 );
+            Cluster.Builder builder = Cluster.builder()
+                                             .withoutJMXReporting()
+                                             .addContactPoint( host )
+                                             .withPort( port )
+                                             .withSocketOptions( socketOptions );
             String username = config.getCassandraUser();
             String password = config.getCassandraPass();
             if ( isNotBlank( username ) && isNotBlank( password ) )
@@ -70,15 +78,14 @@ public class CassandraClient
                 builder.withCredentials( username, password );
             }
 
-            cluster.getConfiguration().getSocketOptions().setConnectTimeoutMillis( 30000 );
             cluster = builder.build();
 
-            logger.debug( "Connecting to Cassandra, host:{}, port:{}", host, port );
+            logger.debug( "Connecting to Cassandra, host:{}, port:{}, user:{}", host, port, username );
             session = cluster.connect();
         }
         catch ( Exception e )
         {
-            logger.warn( "Connecting to Cassandra failed, reason: {}", e.toString() );
+            logger.error( "Connecting to Cassandra failed", e );
         }
     }
 
