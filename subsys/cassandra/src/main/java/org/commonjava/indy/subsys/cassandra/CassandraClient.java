@@ -70,15 +70,15 @@ public class CassandraClient
                 builder.withCredentials( username, password );
             }
 
-            cluster.getConfiguration().getSocketOptions().setConnectTimeoutMillis( 30000 );
             cluster = builder.build();
+            cluster.getConfiguration().getSocketOptions().setConnectTimeoutMillis( 30000 );
 
-            logger.debug( "Connecting to Cassandra, host:{}, port:{}", host, port );
+            logger.debug( "Connecting to Cassandra, host:{}, port:{}, user:{}", host, port, username );
             session = cluster.connect();
         }
         catch ( Exception e )
         {
-            logger.warn( "Connecting to Cassandra failed, reason: {}", e.toString() );
+            logger.error( "Connecting to Cassandra failed", e );
         }
     }
 
