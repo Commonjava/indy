@@ -36,7 +36,7 @@ const IMG=[
   {"from":"app/img/", "to":"img/"}
 ];
 const SWAGGER=[
-  'node_modules/swagger-ui/dist/'
+  'node_modules/swagger-ui-dist/'
 ];
 const OTHER=[
   {"from":"app/index.html", "to":"index.html"},
