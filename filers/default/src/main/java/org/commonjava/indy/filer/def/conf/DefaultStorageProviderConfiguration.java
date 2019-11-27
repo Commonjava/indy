@@ -23,12 +23,7 @@ import org.commonjava.propulsor.config.annotation.SectionName;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @SectionName( "storage-default" )
 @ApplicationScoped
@@ -113,7 +108,7 @@ public class DefaultStorageProviderConfiguration
 
     // Path mapped storage config
 
-    private static final String DEFAULT_STORAGE_KEYSPACE = "indy";
+    private static final String DEFAULT_STORAGE_KEYSPACE = "indystorage";
 
     private String cassandraKeyspace = DEFAULT_STORAGE_KEYSPACE;
 
@@ -180,20 +175,4 @@ public class DefaultStorageProviderConfiguration
         return fileChecksumAlgorithm;
     }
 
-    private List<String> subsystemEnabledFileSystems = new ArrayList<>();
-
-    // comma separated file system names
-    @ConfigName( "storage.subsystem.enabled.filesystems" )
-    public void setSubsystemEnabledFileSystems( String fileSystems )
-    {
-        if ( fileSystems != null && isNotBlank( fileSystems.trim() ) )
-        {
-            this.subsystemEnabledFileSystems = Arrays.asList( fileSystems.split( "," ) );
-        }
-    }
-
-    public List<String> getSubsystemEnabledFileSystems()
-    {
-        return subsystemEnabledFileSystems;
-    }
 }
