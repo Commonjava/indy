@@ -26,6 +26,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.model.core.*;
+import org.infinispan.util.concurrent.ReclosableLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -163,6 +164,7 @@ public class DefaultStoreValidator implements StoreValidator {
         countDownLatch.countDown();
         return executorService.submit(() -> {
             CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
+
             try (CloseableHttpResponse response = closeableHttpClient.execute(httpGetTask)) {
                 LOGGER.warn("=> Check HTTP GET Response code: " + response.getStatusLine().getStatusCode());
                 return response.getStatusLine().getStatusCode();

@@ -294,8 +294,11 @@ public abstract class AbstractStoreDataManager
         if (internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
             ArtifactStoreValidateData validateData = storeValidator.validate(store);
             if (!validateData.isValid()) {
-                logger.warn("=> [AbstractStoreDataManager] Disabling Remote Store: " + store.getKey() + " with name: " + store.getName());
-                store.getMetadata().putAll(validateData.getErrors());
+                logger.warn("=> [AbstractStoreDataManager] Adding Validation Metadata to Remote Store: " + store.getKey() + " - not Valid! ");
+                if(store.getMetadata() != null)
+                    store.getMetadata().putAll(validateData.getErrors());
+                else
+                    store.setMetadata(validateData.getErrors());
             }
         }
 

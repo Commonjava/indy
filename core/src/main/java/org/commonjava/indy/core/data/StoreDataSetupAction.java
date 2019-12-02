@@ -71,7 +71,9 @@ public class StoreDataSetupAction
                 central.setCacheTimeoutSeconds( 86400 );
                 storeManager.storeArtifactStore( central, summary, true, true,
                                                  new EventMetadata().set( StoreDataManager.EVENT_ORIGIN,
+                    
                                                                           DEFAULT_SETUP ) );
+                
             }
 
             if ( !storeManager.query()
