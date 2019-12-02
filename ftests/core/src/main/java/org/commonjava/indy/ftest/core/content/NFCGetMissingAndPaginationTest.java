@@ -41,6 +41,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.Thread.sleep;
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -65,6 +67,7 @@ import static org.junit.Assert.assertThat;
  * <ul>
  *     <li>API getAllMissing and getMissing work properly with or without pageIndex/pageSize</li>
  *     <li>API getInfo work properly for A, B and G.</li>
+ *     <li>NFC entries expire properly.</li>
  * </ul>
  */
 public class NFCGetMissingAndPaginationTest
@@ -145,12 +148,14 @@ public class NFCGetMissingAndPaginationTest
 
     private void assertThat_DtoContainsNoneForRepository( NotFoundCacheDTO dto, AbstractRepository repository )
     {
+        dto.getSections().forEach( d -> System.out.println(">>> " + d.getKey() + ", " + d.getPaths() ) );
+
         NotFoundCacheSectionDTO nfcSectionDto = dto.getSections()
                                                    .stream()
                                                    .filter( d -> d.getKey().equals( repository.getKey() ) )
                                                    .findFirst()
                                                    .orElse( null );
-        assertThat( nfcSectionDto, nullValue() );
+        assertThat( nfcSectionDto.getPaths(), nullValue() );
     }
 
     @Test
@@ -178,10 +183,10 @@ public class NFCGetMissingAndPaginationTest
         assertThat_DtoContainsPathsForRepository( dto, paths, remote );
 
         // Get NFC for all
-        dto = client.module( IndyNfcClientModule.class ).getAllNfcContent( );
-        assertThat( dto, notNullValue() );
+//        dto = client.module( IndyNfcClientModule.class ).getAllNfcContent( );
+//        assertThat( dto, notNullValue() );
 //        assertThat_DtoContainsPathsForRepository( dto, paths, hosted );
-        assertThat_DtoContainsPathsForRepository( dto, paths, remote );
+//        assertThat_DtoContainsPathsForRepository( dto, paths, remote );
 
         // Pagination - pageIndex starts from 0!
         int pageSize = 10;
@@ -204,9 +209,9 @@ public class NFCGetMissingAndPaginationTest
 //        assertThat( dto, notNullValue() );
 //        assertThat_DtoContainsPathsForRepository( dto, paths, hosted );
 
-        dto = client.module( IndyNfcClientModule.class ).getAllNfcContent( 1, pageSize );
-        assertThat( dto, notNullValue() );
-        assertThat_DtoContainsPathsForRepository( dto, pageTwo, remote );
+//        dto = client.module( IndyNfcClientModule.class ).getAllNfcContent( 1, pageSize );
+//        assertThat( dto, notNullValue() );
+//        assertThat_DtoContainsPathsForRepository( dto, pageTwo, remote );
 
         // Clear NFC for hosted
 //        client.module( IndyNfcClientModule.class ).clearInStore( StoreType.hosted, hosted.getName(), null );
@@ -217,10 +222,10 @@ public class NFCGetMissingAndPaginationTest
 
         // Clear NFC for remote
         client.module( IndyNfcClientModule.class ).clearInStore( StoreType.remote, remote.getName(), null );
-        dto = client.module( IndyNfcClientModule.class ).getAllNfcContent( );
+        dto = client.module( IndyNfcClientModule.class ).getAllNfcContentInStore( StoreType.remote, remote.getName() );
         assertThat( dto, notNullValue() );
         assertThat_DtoContainsNoneForRepository( dto, remote );
-        assertThat_DtoContainsNoneForRepository( dto, hosted );
+//        assertThat_DtoContainsNoneForRepository( dto, hosted );
 
         // Get NFC cache size and should be 0
 //        info = client.module( IndyNfcClientModule.class ).getInfo( hosted.getKey() );
@@ -230,6 +235,29 @@ public class NFCGetMissingAndPaginationTest
         assertEquals( info.getSize(), 0 );
 
         info = client.module( IndyNfcClientModule.class ).getInfo( group.getKey() );
+        assertEquals( info.getSize(), 0 );
+
+        testExpiration();
+
+        client.module( IndyNfcClientModule.class ).clearAll();
+    }
+
+    private void testExpiration() throws Exception
+    {
+        RemoteRepository r = new RemoteRepository( MAVEN_PKG_KEY, "remote_exp", server.formatUrl( "remote_exp" ) );
+        r.setNfcTimeoutSeconds( 3 );
+        r = client.stores().create( r, "create", RemoteRepository.class );
+        // Populate NFC data
+        for ( String path : paths )
+        {
+            try (InputStream inputStream = client.content().get( r.getKey(), path ))
+            {
+            }
+        }
+        NotFoundCacheInfoDTO info = client.module( IndyNfcClientModule.class ).getInfo( r.getKey() );
+        assertEquals( info.getSize(), 15 );
+        sleep( 3000 );
+        info = client.module( IndyNfcClientModule.class ).getInfo( r.getKey() );
         assertEquals( info.getSize(), 0 );
     }
 }

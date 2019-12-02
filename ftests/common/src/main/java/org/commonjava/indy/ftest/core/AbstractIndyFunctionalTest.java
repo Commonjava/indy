@@ -17,6 +17,7 @@ package org.commonjava.indy.ftest.core;
 
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.Module;
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -44,6 +45,8 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -277,7 +280,7 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-
+        writeConfigFile( "conf.d/cache.conf", "[default]\ncache.keyspace=" + getKeyspace() );
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
