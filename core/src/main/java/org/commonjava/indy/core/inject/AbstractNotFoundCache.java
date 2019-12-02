@@ -15,7 +15,10 @@
  */
 package org.commonjava.indy.core.inject;
 
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.galley.RepositoryLocation;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 
@@ -42,4 +45,19 @@ public abstract class AbstractNotFoundCache implements NotFoundCache
     abstract public long getSize( StoreKey storeKey );
 
     abstract public long getSize();
+
+    protected int getTimeoutInSeconds( ConcreteResource resource )
+    {
+        int timeoutInSeconds = getIndyConfiguration().getNotFoundCacheTimeoutSeconds();
+        Location loc = resource.getLocation();
+        Integer to = loc.getAttribute( RepositoryLocation.ATTR_NFC_TIMEOUT_SECONDS, Integer.class );
+        if ( to != null && to > 0 )
+        {
+            timeoutInSeconds = to;
+        }
+        return timeoutInSeconds;
+    }
+
+    protected abstract IndyConfiguration getIndyConfiguration();
+
 }

@@ -228,4 +228,10 @@ public class ExpiringMemoryNotFoundCache
     {
         return missingWithTimeout.size();
     }
+
+    @Override
+    protected IndyConfiguration getIndyConfiguration()
+    {
+        return config;
+    }
 }

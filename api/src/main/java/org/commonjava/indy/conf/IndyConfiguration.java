@@ -82,5 +82,5 @@ public interface IndyConfiguration
 
     boolean isClusterEnabled();
 
-    
+    String getCacheKeyspace();
 }
