@@ -53,13 +53,18 @@ public class PathMappedController
         return new PathMappedDeleteResult( packageType, type, name, path, result );
     }
 
-    public PathMappedListResult list( String packageType, String type, String name, String path, boolean recursive )
+    public PathMappedListResult list( String packageType, String type, String name, String path, boolean recursive, int limit )
     {
         String[] list;
         StoreKey storeKey = new StoreKey( packageType, StoreType.get( type ), name );
         if ( recursive )
         {
-            list = fileManager.list( storeKey.toString(), path, true, DEFAULT_RECURSIVE_LIST_LIMIT );
+            int lmt = DEFAULT_RECURSIVE_LIST_LIMIT;
+            if ( limit > 0 )
+            {
+                lmt = limit;
+            }
+            list = fileManager.list( storeKey.toString(), path, true, lmt );
         }
         else
         {

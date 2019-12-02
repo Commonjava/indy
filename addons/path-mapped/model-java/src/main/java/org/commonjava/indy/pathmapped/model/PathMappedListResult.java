@@ -10,6 +10,8 @@ public class PathMappedListResult
 
     private String path;
 
+    private int size;
+
     private String[] list;
 
     public PathMappedListResult( String packageType, String type, String name, String path, String[] list )
@@ -19,6 +21,7 @@ public class PathMappedListResult
         this.name = name;
         this.path = path;
         this.list = list;
+        this.size = list != null ? list.length : 0;
     }
 
     public String getPackageType()
@@ -69,5 +72,15 @@ public class PathMappedListResult
     public void setList( String[] list )
     {
         this.list = list;
+    }
+
+    public int getSize()
+    {
+        return size;
+    }
+
+    public void setSize( int size )
+    {
+        this.size = size;
     }
 }
