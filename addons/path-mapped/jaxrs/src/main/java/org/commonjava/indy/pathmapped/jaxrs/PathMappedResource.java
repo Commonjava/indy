@@ -81,11 +81,12 @@ public class PathMappedResource
                                       final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
                                       final @ApiParam( required = true ) @PathParam( "name" ) String name,
                                       final @QueryParam( "recursive" ) boolean recursive,
+                                      final @QueryParam( "limit" ) int limit,
                                       final @Context HttpServletRequest request,
                                       final @Context SecurityContext securityContext )
     {
         logger.debug( "List, packageType:{}, type:{}, name:{}, recursive:{}", packageType, type, name, recursive );
-        return controller.list( packageType, type, name, ROOT_DIR, recursive );
+        return controller.list( packageType, type, name, ROOT_DIR, recursive, limit );
     }
 
     @ApiOperation( "List specified path." )
@@ -98,12 +99,13 @@ public class PathMappedResource
                                       final @ApiParam( required = true ) @PathParam( "name" ) String name,
                                       final @PathParam( "path" ) String path,
                                       final @QueryParam( "recursive" ) boolean recursive,
+                                      final @QueryParam( "limit" ) int limit,
                                       final @Context HttpServletRequest request,
                                       final @Context SecurityContext securityContext )
     {
         logger.debug( "List, packageType:{}, type:{}, name:{}, path:{}, recursive:{}", packageType, type, name, path,
                       recursive );
-        return controller.list( packageType, type, name, path, recursive );
+        return controller.list( packageType, type, name, path, recursive, limit );
     }
 
     @ApiOperation( "Get specified path." )
