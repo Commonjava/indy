@@ -18,8 +18,6 @@ import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 @ApplicationScoped
 public class PathMappedController
 {
