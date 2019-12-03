@@ -118,6 +118,7 @@ public class RemoteRepository
 
     RemoteRepository()
     {
+        super();
     }
 
     @Deprecated

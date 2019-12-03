@@ -32,6 +32,7 @@ public abstract class AbstractRepository
 
     AbstractRepository()
     {
+        super();
     }
 
     protected AbstractRepository( final String packageType, final StoreType type, final String name )

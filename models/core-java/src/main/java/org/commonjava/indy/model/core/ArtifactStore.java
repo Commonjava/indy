@@ -16,6 +16,7 @@
 package org.commonjava.indy.model.core;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -78,16 +79,21 @@ public abstract class ArtifactStore
     @JsonProperty("authoritative_index")
     private Boolean authoritativeIndex;
 
+    @JsonProperty("create_time")
+    private Date createTime;
+
     @JsonIgnore
     private Boolean rescanInProgress = false;
 
     protected ArtifactStore()
     {
+        initRepoTime();
     }
 
     protected ArtifactStore( final String packageType, final StoreType type, final String name )
     {
         this.key = StoreKey.dedupe( new StoreKey( packageType, type, name ) );
+        initRepoTime();
     }
 
     public String getName()
@@ -306,5 +312,14 @@ public abstract class ArtifactStore
     public void setRescanInProgress( Boolean rescanInProgress )
     {
         this.rescanInProgress = rescanInProgress;
+    }
+
+    public Date getCreateTime()
+    {
+        return createTime;
+    }
+
+    private void initRepoTime(){
+        this.createTime = new Date( System.currentTimeMillis() );
     }
 }
