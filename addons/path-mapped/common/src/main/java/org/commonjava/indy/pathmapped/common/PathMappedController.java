@@ -77,17 +77,10 @@ public class PathMappedController
         // filter by fileType
         if ( fileType != null && list != null )
         {
-            Arrays.stream( list ).map( s -> {
-                if ( "all".equals( fileType ) || ( "dir".equals( fileType ) && s.endsWith( "/" ) ) || (
-                                "file".equals( fileType ) && !s.endsWith( "/" ) ) )
-                {
-                    return s;
-                }
-                else
-                {
-                    return "";
-                }
-            } ).filter( s -> isNotBlank( s ) ).toArray( String[]::new );
+            Arrays.stream( list )
+                  .filter( s -> "all".equals( fileType ) || ( "dir".equals( fileType ) && s.endsWith( "/" ) ) || (
+                                  "file".equals( fileType ) && !s.endsWith( "/" ) ) )
+                  .toArray( String[]::new );
         }
         return new PathMappedListResult( packageType, type, name, path, list );
     }
