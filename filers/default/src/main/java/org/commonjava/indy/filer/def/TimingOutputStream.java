@@ -21,6 +21,8 @@ import org.apache.commons.compress.utils.CountingInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.maven.galley.util.IdempotentCloseOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FilterOutputStream;
 import java.io.IOException;
@@ -35,6 +37,8 @@ public class TimingOutputStream
     private static final String RAW_IO_WRITE = "io.raw.write.timer";
 
     private static final String RAW_IO_WRITE_RATE = "io.raw.write.rate";
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private Long nanos;
 
@@ -86,16 +90,19 @@ public class TimingOutputStream
         if ( nanos != null )
         {
             long elapsed = System.nanoTime() - nanos;
+            logger.trace( "Measured elapsed time (in nanos) for write: {}", elapsed );
 
             RequestContextHelper.setContext( RequestContextHelper.RAW_IO_WRITE_NANOS, elapsed );
 
             if ( timer != null )
             {
+                logger.trace( "Stopping timer: {}", timer );
                 timer.stop();
             }
 
             if ( meter != null )
             {
+                logger.trace( "Marking meter: {}", meter );
                 meter.mark( (long) ( ( (CountingOutputStream) this.out ).getByteCount() / ( elapsed / NANOS_PER_SEC ) ) );
             }
         }
@@ -109,6 +116,7 @@ public class TimingOutputStream
             nanos = System.nanoTime();
             timer = timerProvider.apply( RAW_IO_WRITE );
             meter = meterProvider.apply( RAW_IO_WRITE_RATE );
+            logger.trace( "At nanos: {}, initialized timer: {} and meter: {}", nanos, timer, meter );
         }
     }
 
