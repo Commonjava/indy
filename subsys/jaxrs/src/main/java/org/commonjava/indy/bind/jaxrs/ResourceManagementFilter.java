@@ -36,11 +36,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
 import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
 import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
 import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
@@ -179,6 +182,13 @@ public class ResourceManagementFilter
             catch ( Exception e )
             {
                 logger.error( "Failed to cleanup resources", e );
+            }
+
+            ThreadContext ctx = ThreadContext.getContext( false );
+            if ( ctx != null )
+            {
+                ( (Map<String, Double>) ctx.getOrDefault( CUMULATIVE_TIMINGS, new HashMap<String, Double>() ) ).forEach(
+                        ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.2f", v ) ) );
             }
 
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );

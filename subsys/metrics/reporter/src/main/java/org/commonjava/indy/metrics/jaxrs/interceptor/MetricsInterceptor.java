@@ -17,9 +17,11 @@ package org.commonjava.indy.metrics.jaxrs.interceptor;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,10 +40,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
@@ -51,6 +55,7 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
 import static org.commonjava.indy.metrics.MetricsConstants.FINAL_METRICS;
 import static org.commonjava.indy.metrics.MetricsConstants.METRICS_PHASE;
 import static org.commonjava.indy.metrics.MetricsConstants.PRELIMINARY_METRICS;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
 
 @Interceptor
 @Measure
@@ -95,10 +100,7 @@ public class MetricsInterceptor
 
         List<String> startMeters = meters.stream().map( name -> name( name, "starts" ) ).collect( Collectors.toList() );
 
-        Set<String> toClean = new HashSet<>();
-        toClean.addAll( meters );
-        toClean.addAll( startMeters );
-        toClean.addAll( timers.keySet() );
+        long start = System.nanoTime();
 
         try
         {
@@ -115,8 +117,6 @@ public class MetricsInterceptor
                                                        .filter( name -> !exceptionMeters.contains( name ) )
                                                        .collect( Collectors.toList() );
 
-            toClean.addAll( eClassMeters );
-
             metricsManager.mark( eClassMeters );
 
             throw e;
@@ -125,6 +125,17 @@ public class MetricsInterceptor
         {
             metricsManager.stopTimers( timers );
             metricsManager.mark( meters );
+
+            double elapsed = (System.nanoTime() - start) / NANOS_PER_SEC;
+
+            ThreadContext ctx = ThreadContext.getContext( false );
+            if ( ctx != null )
+            {
+                Map<String, Double> metricMap =
+                        (Map<String, Double>) ctx.putIfAbsent( CUMULATIVE_TIMINGS, new HashMap<String, Double>() );
+
+                metricMap.merge( defaultName, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
+            }
         }
     }
 
