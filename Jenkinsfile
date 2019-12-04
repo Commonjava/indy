@@ -104,9 +104,6 @@ pipeline {
                             echo "Starting image build: ${openshift.project()}:${my_bc}"
                             def bc = openshift.selector("bc", my_bc)
 
-                            def artifact_file = sh(script: "ls $artifact", returnStdout: true)?.trim()
-                            def tarball_url = "${BUILD_URL}artifact/$artifact_file"
-                            
                             def data_artifact_file = sh(script: "ls $data_artifact", returnStdout: true)?.trim()
                             def data_tarball_url = "${BUILD_URL}artifact/$data_artifact_file"
                             
