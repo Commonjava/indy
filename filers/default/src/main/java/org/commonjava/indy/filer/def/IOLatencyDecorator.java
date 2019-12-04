@@ -27,6 +27,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class IOLatencyDecorator
@@ -36,17 +37,22 @@ public class IOLatencyDecorator
 
     private Function<String, Meter> meterProvider;
 
-    public IOLatencyDecorator( Function<String, Timer.Context> timerProvider, Function<String, Meter> meterProvider )
+    private BiConsumer<String, Double> cumulativeTimer;
+
+    public IOLatencyDecorator( final Function<String, Timer.Context> timerProvider,
+                               final Function<String, Meter> meterProvider,
+                               final BiConsumer<String, Double> cumulativeTimer )
     {
         this.timerProvider = timerProvider;
         this.meterProvider = meterProvider;
+        this.cumulativeTimer = cumulativeTimer;
     }
 
     @Override
     public InputStream decorateRead( final InputStream stream, final Transfer transfer, final EventMetadata metadata )
             throws IOException
     {
-        return new TimingInputStream( new CountingInputStream( stream ), timerProvider, meterProvider );
+        return new TimingInputStream( new CountingInputStream( stream ), timerProvider, meterProvider, cumulativeTimer );
     }
 
     @Override
@@ -56,7 +62,7 @@ public class IOLatencyDecorator
     {
         if ( op == TransferOperation.UPLOAD )
         {
-            return new TimingOutputStream( new CountingOutputStream( stream ), timerProvider, meterProvider );
+            return new TimingOutputStream( new CountingOutputStream( stream ), timerProvider, meterProvider, cumulativeTimer );
         }
 
         return super.decorateWrite( stream, transfer, op, metadata );

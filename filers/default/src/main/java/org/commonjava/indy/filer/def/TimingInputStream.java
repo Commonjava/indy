@@ -22,7 +22,7 @@ import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
@@ -30,9 +30,10 @@ import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 public class TimingInputStream
         extends IdempotentCloseInputStream
 {
-    private static final String RAW_IO_READ = "io.raw.read.timer";
+    private static final String RAW_IO_READ = "io.raw.read";
+    private static final String RAW_IO_READ_TIMER = RAW_IO_READ + ".timer";
 
-    private static final String RAW_IO_READ_RATE = "io.raw.read.rate";
+    private static final String RAW_IO_READ_RATE = RAW_IO_READ + ".rate";
 
     private Long nanos;
 
@@ -40,16 +41,20 @@ public class TimingInputStream
 
     private final Function<String, Meter> meterProvider;
 
+    private BiConsumer<String, Double> cumulativeTimer;
+
     private Timer.Context timer;
 
     private Meter meter;
 
     public TimingInputStream( final CountingInputStream stream, final Function<String, Timer.Context> timerProvider,
-                              final Function<String, Meter> meterProvider )
+                              final Function<String, Meter> meterProvider,
+                              final BiConsumer<String, Double> cumulativeTimer )
     {
         super( stream );
         this.timerProvider = timerProvider == null ? ( s ) -> null : timerProvider;
         this.meterProvider = meterProvider;
+        this.cumulativeTimer = cumulativeTimer;
     }
 
     @Override
@@ -96,6 +101,8 @@ public class TimingInputStream
             {
                 meter.mark( (long) ( ( (CountingInputStream) this.in ).getByteCount() / ( elapsed / NANOS_PER_SEC ) ) );
             }
+
+            cumulativeTimer.accept( RAW_IO_READ, elapsed / NANOS_PER_SEC );
         }
     }
 
@@ -104,7 +111,7 @@ public class TimingInputStream
         if ( nanos == null )
         {
             nanos = System.nanoTime();
-            timer = timerProvider.apply( RAW_IO_READ );
+            timer = timerProvider.apply( RAW_IO_READ_TIMER );
             meter = meterProvider.apply( RAW_IO_READ_RATE );
         }
     }
