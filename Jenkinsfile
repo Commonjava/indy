@@ -58,9 +58,6 @@ pipeline {
                         else {
                             "BC mapping is invalid! No ${bc_section} sub-object found!"
                         }
-                        else {
-                            "BC mapping is invalid! No ${bc_section} sub-object found!"
-                        }
                     }
                     else {
                         echo "JSON configuration file not found: ${ocp_map}"
