@@ -79,7 +79,7 @@ pipeline {
             }
             steps {
                 echo "Deploy"
-                sh 'mvn help:effective-settings -B -V deploy -e'
+                sh 'mvn help:effective-settings -B -V -DskipTests=true deploy -e'
             }
         }
         stage('Archive') {
