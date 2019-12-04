@@ -187,8 +187,12 @@ public class ResourceManagementFilter
             ThreadContext ctx = ThreadContext.getContext( false );
             if ( ctx != null )
             {
-                ( (Map<String, Double>) ctx.getOrDefault( CUMULATIVE_TIMINGS, new HashMap<String, Double>() ) ).forEach(
-                        ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.2f", v ) ) );
+                Map<String, Double> cumulativeTimings = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
+                if ( cumulativeTimings != null )
+                {
+                    cumulativeTimings.forEach(
+                            ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.2f", v ) ) );
+                }
             }
 
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );

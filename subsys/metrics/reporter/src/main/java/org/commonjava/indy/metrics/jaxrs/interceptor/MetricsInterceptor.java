@@ -128,14 +128,7 @@ public class MetricsInterceptor
 
             double elapsed = (System.nanoTime() - start) / NANOS_PER_SEC;
 
-            ThreadContext ctx = ThreadContext.getContext( false );
-            if ( ctx != null )
-            {
-                Map<String, Double> metricMap =
-                        (Map<String, Double>) ctx.putIfAbsent( CUMULATIVE_TIMINGS, new HashMap<String, Double>() );
-
-                metricMap.merge( defaultName, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
-            }
+            metricsManager.accumulate( defaultName, elapsed );
         }
     }
 

@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
@@ -39,12 +40,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
@@ -53,6 +56,7 @@ import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.MetricsConstants.FINAL_METRICS;
 import static org.commonjava.indy.metrics.MetricsConstants.METRICS_PHASE;
 import static org.commonjava.indy.metrics.MetricsConstants.PRELIMINARY_METRICS;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -220,6 +224,28 @@ public class IndyMetricsManager
         return metricRegistry.meter( name );
     }
 
+    public void accumulate( String name, final double elapsed )
+    {
+        ThreadContext ctx = ThreadContext.getContext( true );
+        if ( ctx != null )
+        {
+            synchronized ( ctx )
+            {
+                Map<String, Double> metricMap =
+                        (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
+
+                if ( metricMap == null )
+                {
+                    metricMap = new HashMap<>();
+                    ctx.put( CUMULATIVE_TIMINGS, metricMap );
+                }
+
+                logger.info( "Contextual cumulative metric map: {}", metricMap );
+                metricMap.merge( name, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
+            }
+        }
+    }
+
     public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
     {
         String name = classifier.get();
@@ -240,6 +266,7 @@ public class IndyMetricsManager
         Timer.Context timer = getTimer( timerName ).time();
         logger.trace( "START: {} ({})", metricName, timer );
 
+        long start = System.nanoTime();
         try
         {
             mark( Arrays.asList( startName ) );
@@ -257,6 +284,9 @@ public class IndyMetricsManager
         {
             stopTimers( Collections.singletonMap( timerName, timer ) );
             mark( Arrays.asList( metricName ) );
+
+            double elapsed = (System.nanoTime() - start) / NANOS_PER_SEC;
+            accumulate( metricName, elapsed );
         }
     }
 
