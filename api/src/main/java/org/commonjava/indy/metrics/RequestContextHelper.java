@@ -162,6 +162,9 @@ public class RequestContextHelper
     @Thread @MDC
     public static final String PREFERRED_ID = "preferred-id";
 
+    @Thread
+    public static final String CUMULATIVE_TIMINGS = "cumulative-timings";
+
 
     // these are well-known values we'll be using in our log aggregation filters
     public static final String REQUEST_PHASE_START = "start";
