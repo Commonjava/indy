@@ -15,11 +15,6 @@
  */
 package org.commonjava.indy.model.core;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -27,6 +22,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 
 import static org.commonjava.indy.model.core.PathStyle.plain;
 
@@ -78,16 +81,21 @@ public abstract class ArtifactStore
     @JsonProperty("authoritative_index")
     private Boolean authoritativeIndex;
 
+    @JsonProperty("create_time")
+    private String createTime;
+
     @JsonIgnore
     private Boolean rescanInProgress = false;
 
     protected ArtifactStore()
     {
+        initRepoTime();
     }
 
     protected ArtifactStore( final String packageType, final StoreType type, final String name )
     {
         this.key = StoreKey.dedupe( new StoreKey( packageType, type, name ) );
+        initRepoTime();
     }
 
     public String getName()
@@ -306,5 +314,17 @@ public abstract class ArtifactStore
     public void setRescanInProgress( Boolean rescanInProgress )
     {
         this.rescanInProgress = rescanInProgress;
+    }
+
+    public String getCreateTime()
+    {
+        return createTime;
+    }
+
+    private void initRepoTime()
+    {
+        final SimpleDateFormat format = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss ZZZ" );
+        format.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
+        this.createTime = format.format( new Date( System.currentTimeMillis() ) );
     }
 }

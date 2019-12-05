@@ -38,6 +38,7 @@ public class Group
 
     Group()
     {
+        super();
         this.constituents = new ArrayList<>();
     }
 
