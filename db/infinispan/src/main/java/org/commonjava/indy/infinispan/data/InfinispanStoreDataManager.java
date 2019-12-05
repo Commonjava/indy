@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.infinispan.data;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
@@ -35,7 +34,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +50,7 @@ public class InfinispanStoreDataManager
 
     @Inject
     @StoreDataCache
-    private CacheHandle<StoreKey, String> stores;
+    private CacheHandle<StoreKey, ArtifactStore> stores;
 
     @Inject
     private CacheProducer cacheProducer;
@@ -88,8 +87,7 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore getArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.get( key );
-        return readValueByJson( json, key );
+        return stores.get( key );
     }
 
     private ArtifactStore readValueByJson( String json, StoreKey key )
@@ -112,8 +110,7 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.executeCache( ( c ) -> c.remove( key ) );
-        return readValueByJson( json, key );
+        return stores.executeCache( ( c ) -> c.remove( key ) );
     }
 
     @Override
@@ -129,15 +126,17 @@ public class InfinispanStoreDataManager
     public Set<ArtifactStore> getAllArtifactStores() throws IndyDataException
     {
         return stores.executeCache( c -> {
-            Set<ArtifactStore> ret = new HashSet<>();
-            c.forEach( ( k, v ) -> {
-                ArtifactStore store = readValueByJson( v, k );
-                if ( store != null )
-                {
-                    ret.add( store );
-                }
-            } );
-            return ret;
+            return Collections.unmodifiableSet( new HashSet<>( c.values() ) );
+
+//            c.forEach( ( k, v ) -> {
+//                ArtifactStore store = readValueByJson( v, k );
+//                if ( store != null )
+//                {
+//                    ret.add( store );
+//                }
+//                ret.add( v );
+//            } );
+//            return ret;
         } );
     }
 
@@ -145,15 +144,16 @@ public class InfinispanStoreDataManager
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         return stores.executeCache( c -> {
-            Map<StoreKey, ArtifactStore> ret = new HashMap<>();
-            c.forEach( ( k, v ) -> {
-                ArtifactStore store = readValueByJson( v, k );
-                if ( store != null )
-                {
-                    ret.put( store.getKey(), store );
-                }
-            } );
-            return ret;
+            return Collections.unmodifiableMap( c );
+//            Map<StoreKey, ArtifactStore> ret = new HashMap<>();
+//            c.forEach( ( k, v ) -> {
+//                ArtifactStore store = readValueByJson( v, k );
+//                if ( store != null )
+//                {
+//                    ret.put( store.getKey(), store );
+//                }
+//            } );
+//            return ret;
         } );
     }
 
@@ -178,19 +178,18 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore putArtifactStoreInternal( StoreKey storeKey, ArtifactStore store )
     {
-        final String json;
-        try
-        {
-            json = serializer.writeValueAsString( store );
-        }
-        catch ( JsonProcessingException e )
-        {
-            logger.error( "Failed to put", e );
-            return null;
-        }
+//        final String json;
+//        try
+//        {
+//            json = serializer.writeValueAsString( store );
+//        }
+//        catch ( JsonProcessingException e )
+//        {
+//            logger.error( "Failed to put", e );
+//            return null;
+//        }
 
-        String org = stores.put( storeKey, json );
-        return readValueByJson( org, storeKey );
+        return stores.put( storeKey, store );
     }
 
 }

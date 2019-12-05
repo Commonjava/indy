@@ -21,7 +21,9 @@ import java.net.URL;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.commonjava.indy.model.core.externalize.RemoteRepositoryExternalizer;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.infinispan.commons.marshall.SerializeWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,7 @@ import static org.commonjava.indy.model.core.StoreType.remote;
 
 @ApiModel( description = "Proxy to a remote server's artifact content, with local cache storage.",
            parent = ArtifactStore.class )
+@SerializeWith( RemoteRepositoryExternalizer.class )
 public class RemoteRepository
         extends AbstractRepository
 {

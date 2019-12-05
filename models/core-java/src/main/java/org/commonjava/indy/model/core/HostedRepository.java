@@ -17,11 +17,14 @@ package org.commonjava.indy.model.core;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.commonjava.indy.model.core.externalize.HostedRepositoryExternalizer;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.infinispan.commons.marshall.SerializeWith;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApiModel( description = "Hosts artifact content on the local system", parent = ArtifactStore.class )
+@SerializeWith( HostedRepositoryExternalizer.class )
 public class HostedRepository
     extends AbstractRepository
 {
