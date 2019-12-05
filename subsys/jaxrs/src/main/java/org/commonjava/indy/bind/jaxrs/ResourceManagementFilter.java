@@ -191,7 +191,7 @@ public class ResourceManagementFilter
                 if ( cumulativeTimings != null )
                 {
                     cumulativeTimings.forEach(
-                            ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.2f", v ) ) );
+                            ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.3f", v ) ) );
                 }
             }
 

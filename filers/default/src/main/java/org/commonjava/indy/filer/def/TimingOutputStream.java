@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 
 public class TimingOutputStream
@@ -113,7 +114,7 @@ public class TimingOutputStream
                 meter.mark( (long) ( ( (CountingOutputStream) this.out ).getByteCount() / ( elapsed / NANOS_PER_SEC ) ) );
             }
 
-            cumulativeConsumer.accept( RAW_IO_WRITE, elapsed / NANOS_PER_SEC );
+            cumulativeConsumer.accept( RAW_IO_WRITE, elapsed / NANOS_PER_MILLISECOND );
         }
 
     }

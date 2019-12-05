@@ -47,15 +47,12 @@ import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.MetricsConstants.FINAL_METRICS;
-import static org.commonjava.indy.metrics.MetricsConstants.METRICS_PHASE;
-import static org.commonjava.indy.metrics.MetricsConstants.PRELIMINARY_METRICS;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
@@ -285,7 +282,7 @@ public class IndyMetricsManager
             stopTimers( Collections.singletonMap( timerName, timer ) );
             mark( Arrays.asList( metricName ) );
 
-            double elapsed = (System.nanoTime() - start) / NANOS_PER_SEC;
+            double elapsed = (System.nanoTime() - start) / NANOS_PER_MILLISECOND;
             accumulate( metricName, elapsed );
         }
     }
