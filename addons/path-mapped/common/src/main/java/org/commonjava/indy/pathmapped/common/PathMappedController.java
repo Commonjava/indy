@@ -18,6 +18,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.InputStream;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 @ApplicationScoped
 public class PathMappedController
 {
@@ -57,7 +59,11 @@ public class PathMappedController
     public PathMappedListResult list( String packageType, String type, String name, String path, boolean recursive,
                                       String fileType, int limit )
     {
-        PathDB.FileType fType = PathDB.FileType.valueOf( fileType );
+        PathDB.FileType fType = PathDB.FileType.all;
+        if ( isNotBlank( fileType ) )
+        {
+            fType = PathDB.FileType.valueOf( fileType );
+        }
         String[] list;
         StoreKey storeKey = new StoreKey( packageType, StoreType.get( type ), name );
         if ( recursive )
