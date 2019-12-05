@@ -240,7 +240,7 @@ public class IndyMetricsManager
                     ctx.put( CUMULATIVE_TIMINGS, metricMap );
                 }
 
-                logger.info( "Contextual cumulative metric map: {}", metricMap );
+                logger.trace( "Contextual cumulative metric map: {}", metricMap );
                 metricMap.merge( name, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
             }
         }
