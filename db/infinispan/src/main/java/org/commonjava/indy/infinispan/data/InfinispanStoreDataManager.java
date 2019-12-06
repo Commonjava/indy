@@ -35,10 +35,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
@@ -52,6 +53,8 @@ public class InfinispanStoreDataManager
     @Inject
     @StoreDataCache
     private CacheHandle<StoreKey, String> stores;
+
+    private final Map<StoreKey, ArtifactStore> inMemoryStores = new ConcurrentHashMap<>();
 
     @Inject
     private CacheProducer cacheProducer;
@@ -88,8 +91,7 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore getArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.get( key );
-        return readValueByJson( json, key );
+        return inMemoryStores.computeIfAbsent( key, k -> readValueByJson( stores.get( k ), k ) );
     }
 
     private ArtifactStore readValueByJson( String json, StoreKey key )
@@ -112,13 +114,24 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        String json = stores.executeCache( ( c ) -> c.remove( key ) );
-        return readValueByJson( json, key );
+        ArtifactStore removed;
+        String json;
+        synchronized ( inMemoryStores )
+        {
+            removed = inMemoryStores.remove( key );
+            json = stores.executeCache( ( c ) -> c.remove( key ) );
+        }
+        if ( removed == null )
+        {
+            removed = readValueByJson( json, key );
+        }
+        return removed;
     }
 
     @Override
     public void clear( final ChangeSummary summary ) throws IndyDataException
     {
+        inMemoryStores.clear();
         stores.executeCache( c -> {
             c.clear();
             return null;
@@ -126,35 +139,44 @@ public class InfinispanStoreDataManager
     }
 
     @Override
-    public Set<ArtifactStore> getAllArtifactStores() throws IndyDataException
+    public Set<ArtifactStore> getAllArtifactStores()
+            throws IndyDataException
     {
-        return stores.executeCache( c -> {
-            Set<ArtifactStore> ret = new HashSet<>();
-            c.forEach( ( k, v ) -> {
-                ArtifactStore store = readValueByJson( v, k );
-                if ( store != null )
-                {
-                    ret.add( store );
-                }
+        fillInMemoryStores();
+        return new HashSet<>( inMemoryStores.values() );
+    }
+
+    private void fillInMemoryStores()
+    {
+        if ( inMemoryStores.size() != stores.executeCache( Cache::size ) )
+        {
+            logger.info( "In memory stores mismatch with ispn stores, will re-fill it now.." );
+            stores.executeCache( c -> {
+                c.forEach( ( k, v ) -> {
+                    if ( !inMemoryStores.containsKey( k ) )
+                    {
+                        ArtifactStore store = readValueByJson( v, k );
+                        if ( store == null )
+                        {
+                            // I think a null store is not valid, so remove it here.
+                            c.remove( k );
+                        }
+                        else
+                        {
+                            putInMemoryStores( store );
+                        }
+                    }
+                } );
+                return null;
             } );
-            return ret;
-        } );
+        }
     }
 
     @Override
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
-        return stores.executeCache( c -> {
-            Map<StoreKey, ArtifactStore> ret = new HashMap<>();
-            c.forEach( ( k, v ) -> {
-                ArtifactStore store = readValueByJson( v, k );
-                if ( store != null )
-                {
-                    ret.put( store.getKey(), store );
-                }
-            } );
-            return ret;
-        } );
+        fillInMemoryStores();
+        return Collections.unmodifiableMap( inMemoryStores );
     }
 
     @Override
@@ -189,8 +211,20 @@ public class InfinispanStoreDataManager
             return null;
         }
 
-        String org = stores.put( storeKey, json );
-        return readValueByJson( org, storeKey );
+        synchronized ( inMemoryStores )
+        {
+            String org = stores.put( storeKey, json );
+            putInMemoryStores( readValueByJson( org, storeKey ) );
+        }
+        return inMemoryStores.get( storeKey );
     }
 
+    private void putInMemoryStores( final ArtifactStore store )
+    {
+        // ConcurrentHashMap does not null key and null value
+        if ( store != null )
+        {
+            inMemoryStores.put( store.getKey(), store );
+        }
+    }
 }
