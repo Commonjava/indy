@@ -131,14 +131,11 @@ public class RemoteRepositorySerializationTest
         ObjectOutputStream oos = new ObjectOutputStream( baos );
 
         oos.writeObject( in );
-//        in.writeExternal( oos );
 
         oos.flush();
         ObjectInputStream ois = new ObjectInputStream( new ByteArrayInputStream( baos.toByteArray() ) );
 
-//        RemoteRepository out = new RemoteRepository();
-        RemoteRepository out = (RemoteRepository) ois.readObject();
-//        out.readExternal( ois );
-        return out;
+        ArtifactStore store = (ArtifactStore) ois.readObject();
+        return (RemoteRepository) store;
     }
 }

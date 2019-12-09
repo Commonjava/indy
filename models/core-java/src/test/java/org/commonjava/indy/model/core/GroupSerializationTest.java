@@ -101,15 +101,12 @@ public class GroupSerializationTest
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream( baos );
         oos.writeObject( in );
-//        in.writeExternal( oos );
 
         oos.flush();
         ObjectInputStream ois = new ObjectInputStream( new ByteArrayInputStream( baos.toByteArray() ) );
 
-//        Group out = new Group();
-//        out.readExternal( ois );
-//        return out;
+        ArtifactStore store = (ArtifactStore) ois.readObject();
 
-        return (Group) ois.readObject();
+        return (Group) store;
     }
 }
