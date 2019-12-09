@@ -54,6 +54,7 @@ public class InfinispanStoreDataManager
     @StoreDataCache
     private CacheHandle<StoreKey, String> stores;
 
+    //TODO: Warning: this in mem facade store cache may bring mem issue if the repo grows to very big number in future!
     private final Map<StoreKey, ArtifactStore> inMemoryStores = new ConcurrentHashMap<>();
 
     @Inject
@@ -214,14 +215,14 @@ public class InfinispanStoreDataManager
         synchronized ( inMemoryStores )
         {
             String org = stores.put( storeKey, json );
-            putInMemoryStores( readValueByJson( org, storeKey ) );
+            putInMemoryStores( readValueByJson( json, storeKey ) );
         }
         return inMemoryStores.get( storeKey );
     }
 
     private void putInMemoryStores( final ArtifactStore store )
     {
-        // ConcurrentHashMap does not null key and null value
+        // ConcurrentHashMap does not allow null key and null value
         if ( store != null )
         {
             inMemoryStores.put( store.getKey(), store );
