@@ -19,6 +19,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,11 +31,12 @@ import java.util.List;
 @ApiModel( description = "Grouping of other artifact stores, with a defined order to the membership that determines content preference", parent = ArtifactStore.class )
 public class Group
     extends ArtifactStore
+        implements Externalizable
 {
 
-    private static final long serialVersionUID = 1L;
+    private static final int STORE_VERSION = 1;
 
-    private final List<StoreKey> constituents;
+    private List<StoreKey> constituents;
 
     @JsonProperty( "prepend_constituent" )
     private boolean prependConstituent = false;
@@ -164,6 +169,69 @@ public class Group
         copyBase( g );
 
         return g;
+    }
+
+    @Override
+    public void writeExternal( final ObjectOutput out )
+            throws IOException
+    {
+        super.writeExternal( out );
+
+        out.writeInt( STORE_VERSION );
+
+        if ( constituents == null )
+        {
+            out.writeObject( null );
+        }
+        else
+        {
+            int count = (int) constituents.stream().filter( c -> c != null ).count();
+            out.writeObject( count );
+        }
+
+        for ( StoreKey key : constituents )
+        {
+            if ( key == null )
+            {
+                continue;
+            }
+
+            key.writeExternal( out );
+        }
+
+        out.writeBoolean( prependConstituent );
+    }
+
+    @Override
+    public void readExternal( final ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        super.readExternal( in );
+
+        int storeVersion = in.readInt();
+        if ( storeVersion > STORE_VERSION )
+        {
+            throw new IOException( "Cannot deserialize. Group version in data stream is: " + storeVersion
+                                           + " but this class can only deserialize up to version: " + STORE_VERSION );
+        }
+
+        Object constituentCountRaw = in.readObject();
+        if ( constituentCountRaw == null )
+        {
+            this.constituents = null;
+        }
+        else
+        {
+            this.constituents = new ArrayList<>( (Integer) constituentCountRaw );
+            for(int i=0; i<((Integer) constituentCountRaw); i++)
+            {
+                StoreKey key = new StoreKey();
+                key.readExternal( in );
+                this.constituents.add( key );
+            }
+        }
+
+        this.prependConstituent = in.readBoolean();
     }
 
 }
