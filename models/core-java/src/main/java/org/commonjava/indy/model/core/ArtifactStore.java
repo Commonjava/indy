@@ -90,7 +90,7 @@ public abstract class ArtifactStore
     @JsonIgnore
     private Boolean rescanInProgress = false;
 
-    protected ArtifactStore()
+    public ArtifactStore()
     {
         initRepoTime();
     }
@@ -336,7 +336,8 @@ public abstract class ArtifactStore
             throws IOException
     {
         out.writeInt( ARTIFACT_STORE_VERSION );
-        key.writeExternal( out );
+        out.writeObject( key );
+//        key.writeExternal( out );
 
         out.writeObject( description );
         out.writeObject( metadata );
@@ -369,8 +370,9 @@ public abstract class ArtifactStore
                                            + " but this class can only deserialize up to version: " + ARTIFACT_STORE_VERSION );
         }
 
-        this.key = new StoreKey();
-        key.readExternal( in );
+//        this.key = new StoreKey();
+//        key.readExternal( in );
+        this.key = (StoreKey) in.readObject();
 
         this.description = (String) in.readObject();
         this.metadata = (Map<String, String>) in.readObject();

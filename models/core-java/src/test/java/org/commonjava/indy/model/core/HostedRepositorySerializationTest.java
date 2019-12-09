@@ -83,13 +83,15 @@ public class HostedRepositorySerializationTest
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream( baos );
-        in.writeExternal( oos );
+        oos.writeObject( in );
+//        in.writeExternal( oos );
 
         oos.flush();
         ObjectInputStream ois = new ObjectInputStream( new ByteArrayInputStream( baos.toByteArray() ) );
 
-        HostedRepository out = new HostedRepository();
-        out.readExternal( ois );
-        return out;
+//        HostedRepository out = new HostedRepository();
+//        out.readExternal( ois );
+//        return out;
+        return (HostedRepository) ois.readObject();
     }
 }

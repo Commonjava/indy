@@ -37,7 +37,7 @@ public abstract class AbstractRepository
     private boolean allowReleases = true;
 
 
-    AbstractRepository()
+    public AbstractRepository()
     {
         super();
     }

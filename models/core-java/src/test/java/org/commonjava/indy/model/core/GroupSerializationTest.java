@@ -62,19 +62,20 @@ public class GroupSerializationTest
 
     private void compareRepos( final Group in, final Group out )
     {
-        long inCount = in.getConstituents().stream().filter( Objects::nonNull ).count();
-        List<StoreKey> inNonNull =
-                in.getConstituents().stream().filter( Objects::nonNull ).collect( Collectors.toList() );
+//        long inCount = in.getConstituents().stream().filter( Objects::nonNull ).count();
+//        List<StoreKey> inNonNull =
+//                in.getConstituents().stream().filter( Objects::nonNull ).collect( Collectors.toList() );
+//
+//        long outCount = out.getConstituents().stream().filter( Objects::nonNull ).count();
+//        assertThat( "Groups do not contain the same number of non-null constituent references", outCount, equalTo( inCount ) );
+//
+//        for(int i=0; i<inCount; i++)
+//        {
+//            assertThat( "Group constituents at index: " + i + " do not match.", out.getConstituents().get( i ),
+//                        equalTo( inNonNull.get( i ) ) );
+//        }
 
-        long outCount = out.getConstituents().stream().filter( Objects::nonNull ).count();
-        assertThat( "Groups do not contain the same number of non-null constituent references", outCount, equalTo( inCount ) );
-
-        for(int i=0; i<inCount; i++)
-        {
-            assertThat( "Group constituents at index: " + i + " do not match.", out.getConstituents().get( i ),
-                        equalTo( inNonNull.get( i ) ) );
-        }
-
+        assertThat( out.getConstituents(), equalTo( in.getConstituents() ) );
         assertThat( out.isPrependConstituent(), equalTo( in.isPrependConstituent() ) );
 
         assertThat( out.getKey(), equalTo( in.getKey() ) );
@@ -99,13 +100,16 @@ public class GroupSerializationTest
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream( baos );
-        in.writeExternal( oos );
+        oos.writeObject( in );
+//        in.writeExternal( oos );
 
         oos.flush();
         ObjectInputStream ois = new ObjectInputStream( new ByteArrayInputStream( baos.toByteArray() ) );
 
-        Group out = new Group();
-        out.readExternal( ois );
-        return out;
+//        Group out = new Group();
+//        out.readExternal( ois );
+//        return out;
+
+        return (Group) ois.readObject();
     }
 }

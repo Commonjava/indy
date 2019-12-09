@@ -40,7 +40,7 @@ public final class StoreKey
 
     private String name;
 
-    StoreKey(){}
+    public StoreKey(){}
 
     public StoreKey( final String packageType, final StoreType type, final String name )
     {

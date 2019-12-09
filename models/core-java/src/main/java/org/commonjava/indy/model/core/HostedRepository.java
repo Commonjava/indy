@@ -42,7 +42,7 @@ public class HostedRepository
     @ApiModelProperty( required = false, dataType = "boolean", value = "identify if the hoste repo is readonly" )
     private boolean readonly = false;
 
-    HostedRepository()
+    public HostedRepository()
     {
         super();
     }

@@ -129,13 +129,16 @@ public class RemoteRepositorySerializationTest
     {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream( baos );
-        in.writeExternal( oos );
+
+        oos.writeObject( in );
+//        in.writeExternal( oos );
 
         oos.flush();
         ObjectInputStream ois = new ObjectInputStream( new ByteArrayInputStream( baos.toByteArray() ) );
 
-        RemoteRepository out = new RemoteRepository();
-        out.readExternal( ois );
+//        RemoteRepository out = new RemoteRepository();
+        RemoteRepository out = (RemoteRepository) ois.readObject();
+//        out.readExternal( ois );
         return out;
     }
 }

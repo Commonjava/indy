@@ -121,7 +121,7 @@ public class RemoteRepository
     @JsonProperty( "prefetch_rescan_time" )
     private String prefetchRescanTimestamp;
 
-    RemoteRepository()
+    public RemoteRepository()
     {
         super();
     }
