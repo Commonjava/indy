@@ -11,11 +11,14 @@ import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProvider;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.storage.pathmapped.core.PathMappedFileManager;
+import org.commonjava.storage.pathmapped.spi.PathDB;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.InputStream;
+
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ApplicationScoped
 public class PathMappedController
@@ -53,8 +56,14 @@ public class PathMappedController
         return new PathMappedDeleteResult( packageType, type, name, path, result );
     }
 
-    public PathMappedListResult list( String packageType, String type, String name, String path, boolean recursive, int limit )
+    public PathMappedListResult list( String packageType, String type, String name, String path, boolean recursive,
+                                      String fileType, int limit )
     {
+        PathDB.FileType fType = PathDB.FileType.all;
+        if ( isNotBlank( fileType ) )
+        {
+            fType = PathDB.FileType.valueOf( fileType );
+        }
         String[] list;
         StoreKey storeKey = new StoreKey( packageType, StoreType.get( type ), name );
         if ( recursive )
@@ -64,11 +73,11 @@ public class PathMappedController
             {
                 lmt = limit;
             }
-            list = fileManager.list( storeKey.toString(), path, true, lmt );
+            list = fileManager.list( storeKey.toString(), path, true, lmt, fType );
         }
         else
         {
-            list = fileManager.list( storeKey.toString(), path );
+            list = fileManager.list( storeKey.toString(), path, fType );
         }
         return new PathMappedListResult( packageType, type, name, path, list );
     }
