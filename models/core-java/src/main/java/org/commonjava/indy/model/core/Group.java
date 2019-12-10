@@ -181,26 +181,6 @@ public class Group
 
         out.writeObject( constituents );
 
-//        if ( constituents == null )
-//        {
-//            out.writeObject( null );
-//        }
-//        else
-//        {
-//            int count = (int) constituents.stream().filter( c -> c != null ).count();
-//            out.writeObject( count );
-//        }
-//
-//        for ( StoreKey key : constituents )
-//        {
-//            if ( key == null )
-//            {
-//                continue;
-//            }
-//
-//            key.writeExternal( out );
-//        }
-
         out.writeBoolean( prependConstituent );
     }
 
@@ -218,21 +198,6 @@ public class Group
         }
 
         this.constituents = (List<StoreKey>) in.readObject();
-//        Object constituentCountRaw = in.readObject();
-//        if ( constituentCountRaw == null )
-//        {
-//            this.constituents = null;
-//        }
-//        else
-//        {
-//            this.constituents = new ArrayList<>( (Integer) constituentCountRaw );
-//            for(int i=0; i<((Integer) constituentCountRaw); i++)
-//            {
-//                StoreKey key = new StoreKey();
-//                key.readExternal( in );
-//                this.constituents.add( key );
-//            }
-//        }
 
         this.prependConstituent = in.readBoolean();
     }

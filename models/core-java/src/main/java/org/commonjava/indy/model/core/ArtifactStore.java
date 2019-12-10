@@ -337,7 +337,6 @@ public abstract class ArtifactStore
     {
         out.writeInt( ARTIFACT_STORE_VERSION );
         out.writeObject( key );
-//        key.writeExternal( out );
 
         out.writeObject( description );
         out.writeObject( metadata );
@@ -370,8 +369,6 @@ public abstract class ArtifactStore
                                            + " but this class can only deserialize up to version: " + ARTIFACT_STORE_VERSION );
         }
 
-//        this.key = new StoreKey();
-//        key.readExternal( in );
         this.key = (StoreKey) in.readObject();
 
         this.description = (String) in.readObject();
