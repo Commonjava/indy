@@ -15,15 +15,20 @@
  */
 package org.commonjava.indy.infinispan.data;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.MigrationAction;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,15 +41,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@Named( "flat-store-data-migration" )
+@Named( "infinispan-store-data-migration" )
 public class InfinispanStoreDataMigrationAction
                 implements MigrationAction
 {
+
+    private static final String STORE_DATA_V1_CACHE = "store-data-v1";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private DataFileManager dataFileManager;
+
+    @Inject
+    private CacheProducer cacheProducer;
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -58,11 +68,12 @@ public class InfinispanStoreDataMigrationAction
 
     public InfinispanStoreDataMigrationAction( final DataFileManager dataFileManager,
                                                final InfinispanStoreDataManager infinispanStoreDataManager,
-                                               final IndyObjectMapper mapper )
+                                               final IndyObjectMapper mapper, final CacheProducer cacheProducer )
     {
         this.dataFileManager = dataFileManager;
         storeDataManager = infinispanStoreDataManager;
         objectMapper = mapper;
+        this.cacheProducer = cacheProducer;
     }
 
     @Override
@@ -92,23 +103,66 @@ public class InfinispanStoreDataMigrationAction
         return doMigrate();
     }
 
-    private boolean doMigrate() throws IndyLifecycleException
+    private boolean doMigrate()
     {
         ChangeSummary summary = new ChangeSummary( ChangeSummary.SYSTEM_USER, "Migrate definitions from disk." );
 
         final Set<String> result = Collections.synchronizedSet( new HashSet<>() );
 
-        loadFromDiskAnd( dataFileManager, objectMapper, summary, ( store ) -> {
+        loadFromLegacyCacheAnd( store -> {
+            logger.info( "Migrating from legacy cache: {}", store.getKey() );
+
             ( (InfinispanStoreDataManager) storeDataManager ).putArtifactStoreInternal( store.getKey(), store );
+
             result.add( store.getKey().toString() );
-        } );
+        });
+
+        if ( result.isEmpty() )
+        {
+            loadFromDiskAnd( dataFileManager, objectMapper, summary, ( store ) -> {
+                logger.info( "Migrating from disk: {}", store.getKey() );
+
+                ( (InfinispanStoreDataManager) storeDataManager ).putArtifactStoreInternal( store.getKey(), store );
+
+                result.add( store.getKey().toString() );
+            } );
+        }
 
         logger.info( "Store manager migration done. Result: {}", result.size() );
         if ( logger.isDebugEnabled() )
         {
             result.forEach( ( s ) -> logger.debug( s ) );
         }
-        return true;
+
+        return !result.isEmpty();
+    }
+
+    private void loadFromLegacyCacheAnd( final Consumer<ArtifactStore> storeConsumer )
+    {
+        if ( cacheProducer != null )
+        {
+            EmbeddedCacheManager cacheManager = cacheProducer.getCacheManager();
+            if ( cacheManager.cacheExists( STORE_DATA_V1_CACHE ) )
+            {
+                logger.info( "Migrating from legacy store-data cache: {}", STORE_DATA_V1_CACHE );
+
+                cacheProducer.getCache( STORE_DATA_V1_CACHE ).executeCache( c->{
+                    c.entrySet().forEach( entry-> {
+                        StoreKey key = (StoreKey) entry.getKey();
+                        try
+                        {
+                            ArtifactStore store = objectMapper.readValue( (String) entry.getValue(), key.getType().getStoreClass() );
+                            storeConsumer.accept( store );
+                        }
+                        catch ( JsonProcessingException e )
+                        {
+                            logger.error( "Failed to read store definition from legacy cache: " + key, e );
+                        }
+                    } );
+                    return null;
+                } );
+            }
+        }
     }
 
     @Override

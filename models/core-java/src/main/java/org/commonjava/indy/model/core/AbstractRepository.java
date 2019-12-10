@@ -17,11 +17,18 @@ package org.commonjava.indy.model.core;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.util.Map;
+import java.util.Set;
+
 public abstract class AbstractRepository
     extends ArtifactStore
+        implements Externalizable
 {
-
-    private static final long serialVersionUID = 1L;
+    private static final int ABSTRACT_REPOSITORY_VERSION = 1;
 
     @JsonProperty( "allow_snapshots" )
     private boolean allowSnapshots = false;
@@ -30,7 +37,7 @@ public abstract class AbstractRepository
     private boolean allowReleases = true;
 
 
-    AbstractRepository()
+    public AbstractRepository()
     {
         super();
     }
@@ -64,6 +71,34 @@ public abstract class AbstractRepository
     {
         repo.setAllowReleases( isAllowReleases() );
         repo.setAllowSnapshots( isAllowSnapshots() );
+    }
+
+    @Override
+    public void writeExternal( final ObjectOutput out )
+            throws IOException
+    {
+        super.writeExternal( out );
+
+        out.writeInt( ABSTRACT_REPOSITORY_VERSION );
+        out.writeBoolean( allowReleases );
+        out.writeBoolean( allowSnapshots );
+    }
+
+    @Override
+    public void readExternal( final ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        super.readExternal( in );
+
+        int abstractRepositoryVersion = in.readInt();
+        if ( abstractRepositoryVersion > ABSTRACT_REPOSITORY_VERSION )
+        {
+            throw new IOException( "Cannot deserialize. AbstractRepository version in data stream is: " + abstractRepositoryVersion
+                                           + " but this class can only deserialize up to version: " + ABSTRACT_REPOSITORY_VERSION );
+        }
+
+        this.allowReleases = in.readBoolean();
+        this.allowSnapshots = in.readBoolean();
     }
 
 }
