@@ -46,7 +46,7 @@ public class InfinispanStoreDataMigrationAction
                 implements MigrationAction
 {
 
-    private static final String STORE_DATA_V1_CACHE = "store-data-v1";
+    private static final String STORE_DATA_V1_CACHE = "store-data";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
