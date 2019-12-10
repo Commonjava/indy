@@ -62,19 +62,6 @@ public class GroupSerializationTest
 
     private void compareRepos( final Group in, final Group out )
     {
-//        long inCount = in.getConstituents().stream().filter( Objects::nonNull ).count();
-//        List<StoreKey> inNonNull =
-//                in.getConstituents().stream().filter( Objects::nonNull ).collect( Collectors.toList() );
-//
-//        long outCount = out.getConstituents().stream().filter( Objects::nonNull ).count();
-//        assertThat( "Groups do not contain the same number of non-null constituent references", outCount, equalTo( inCount ) );
-//
-//        for(int i=0; i<inCount; i++)
-//        {
-//            assertThat( "Group constituents at index: " + i + " do not match.", out.getConstituents().get( i ),
-//                        equalTo( inNonNull.get( i ) ) );
-//        }
-
         assertThat( out.getConstituents(), equalTo( in.getConstituents() ) );
         assertThat( out.isPrependConstituent(), equalTo( in.isPrependConstituent() ) );
 
