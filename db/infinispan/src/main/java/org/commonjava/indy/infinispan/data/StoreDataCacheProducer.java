@@ -26,7 +26,7 @@ import javax.inject.Inject;
 
 public class StoreDataCacheProducer
 {
-    public static final String STORE_DATA_CACHE = "store-data";
+    public static final String STORE_DATA_CACHE = "store-data-v1";
 
     @Inject
     private CacheProducer cacheProducer;
