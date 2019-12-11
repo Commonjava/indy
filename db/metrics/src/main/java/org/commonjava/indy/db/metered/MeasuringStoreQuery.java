@@ -1,4 +1,4 @@
-package org.commonjava.indy.db.common;
+package org.commonjava.indy.db.metered;
 
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;

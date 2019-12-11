@@ -18,9 +18,7 @@ package org.commonjava.indy.db.common;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.inject.IndyData;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -38,11 +36,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
@@ -517,7 +513,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         for ( StoreKey key : keys )
         {
             T store = (T) dataManager.getArtifactStore( key );
-            if ( store != null && store.isDisabled() == !enabled )
+            if ( store != null && ( enabled == null || store.isDisabled() == !enabled ) )
             {
                 stores.add( store );
             }

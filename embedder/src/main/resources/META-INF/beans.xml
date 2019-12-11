@@ -42,7 +42,7 @@
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
 
     <!-- StoreDataManager decorators -->
-    <class>org.commonjava.indy.db.common.MeasuringArtifactStoreQueryInterceptor</class>
+    <class>org.commonjava.indy.db.metered.MeasuringArtifactStoreQueryInterceptor</class>
     <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
     <!--<class>org.commonjava.indy.implrepo.data.ValidRemoteStoreDataManagerDecorator</class>-->
     

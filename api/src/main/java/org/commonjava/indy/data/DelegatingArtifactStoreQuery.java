@@ -121,6 +121,20 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
+    public Stream<StoreKey> keyStream()
+            throws IndyDataException
+    {
+        return delegate.keyStream();
+    }
+
+    @Override
+    public Stream<StoreKey> keyStream( final Predicate<StoreKey> filterPredicate )
+            throws IndyDataException
+    {
+        return null;
+    }
+
+    @Override
     public List<T> getAll( final Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
