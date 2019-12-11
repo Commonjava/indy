@@ -129,4 +129,9 @@ public interface StoreDataManager
     boolean isReadonly( ArtifactStore store );
 
     boolean isEmpty();
+
+    /**
+     * Stream of StoreKey instances present in the system.
+     */
+    Stream<StoreKey> streamArtifactStoreKeys();
 }

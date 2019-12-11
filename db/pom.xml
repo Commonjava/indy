@@ -34,6 +34,7 @@
     <module>memory</module>
     <module>flat</module>
     <module>infinispan</module>
+    <module>metrics</module>
   </modules>
   
 </project>

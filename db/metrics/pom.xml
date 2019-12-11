@@ -20,45 +20,59 @@
   
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-ftests-parent</artifactId>
+    <artifactId>indy-db</artifactId>
     <version>1.9.7-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-ftests-common</artifactId>
-  <name>Indy :: Functional Tests :: Common Components</name>
+  <artifactId>indy-db-metrics</artifactId>
+  <name>Indy :: DB :: Metrics Decorator</name>
   
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy.boot</groupId>
-      <artifactId>indy-booter-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-filer-default</artifactId>
+      <artifactId>indy-subsys-metrics-core</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-metrics-reporter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>indy-client-core-java</artifactId>
+      <artifactId>indy-test-db</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+<!--     <dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-test-fixtures-core</artifactId>
-      <scope>compile</scope>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman-submit</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>http-testserver</artifactId>
-      <scope>provided</scope>
-    </dependency>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman-install</artifactId>
+    </dependency> -->
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-bindings-jaxrs</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jsoup</groupId>
-      <artifactId>jsoup</artifactId>
+      <groupId>org.jboss.byteman</groupId>
+      <artifactId>byteman-bmunit</artifactId>
     </dependency>
   </dependencies>
 </project>
