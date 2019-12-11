@@ -123,6 +123,20 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
         assertNotNull( validateAllowedRepo );
         assertFalse(validateAllowedRepo.isValid());
+
+    
+        RemoteRepository withoutTrailingSlash =
+          new RemoteRepository( "maven", "validation-without-trailingslash", "https://oss.sonatype.org/content/repositories/snapshots" );
+    
+        LOGGER.warn("=> Start Validating RemoteRepository: [" + withoutTrailingSlash.getUrl()+"]");
+        RemoteRepository remoteRepository4 = client.stores().create(withoutTrailingSlash, changelog, RemoteRepository.class);
+    
+    
+        ArtifactStoreValidateData validateWithoutTrailingSlash = validator.validate(remoteRepository4);
+        LOGGER.warn("=> Returned [Allowed Not Valid ( GET | HTTP ) SSL] ArtifactStoreValidateData: " + validateAllowedRepo.toString());
+    
+        assertNotNull( validateWithoutTrailingSlash );
+        assertFalse(validateWithoutTrailingSlash.isValid());
 //        assertNotNull( validateAllowedRepo.getErrors().get("disabled") );
 
 

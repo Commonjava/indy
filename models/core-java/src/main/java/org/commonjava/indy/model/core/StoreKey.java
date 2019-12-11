@@ -18,6 +18,10 @@ package org.commonjava.indy.model.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,15 +30,17 @@ import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 public final class StoreKey
-    implements Serializable, Comparable<StoreKey>
+    implements Comparable<StoreKey>, Externalizable
 {
-    private static final long serialVersionUID = 1L;
+    private static final int VERSION = 1;
 
     private String packageType;
 
-    private final StoreType type;
+    private StoreType type;
 
-    private final String name;
+    private String name;
+
+    public StoreKey(){}
 
     public StoreKey( final String packageType, final StoreType type, final String name )
     {
@@ -204,4 +210,44 @@ public final class StoreKey
         return result;
     }
 
+    @Override
+    public void writeExternal( final ObjectOutput out )
+            throws IOException
+    {
+        out.writeInt( VERSION );
+
+        out.writeObject( packageType );
+
+        if ( type == null )
+        {
+            out.writeObject( null );
+        }
+        else
+        {
+            out.writeObject( type.name() );
+        }
+
+        out.writeObject( name );
+    }
+
+    @Override
+    public void readExternal( final ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        int keyVersion = in.readInt();
+
+        this.packageType = (String) in.readObject();
+
+        Object rawType = in.readObject();
+        if ( rawType == null )
+        {
+            this.type = null;
+        }
+        else
+        {
+            this.type = StoreType.valueOf( (String) rawType );
+        }
+
+        this.name = (String) in.readObject();
+    }
 }

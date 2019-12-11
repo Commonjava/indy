@@ -55,6 +55,8 @@ public class IndyMetricsConfig
 
     private final static String INDY_METRICS_ISENABLED = "enabled";
 
+    private static final String INDY_METRICS_METER_RATIO = "meter.ratio";
+
     private final static String INDY_METRICS_ISPN_ENABLED = "ispn.enabled";
 
     private final static String INDY_METRICS_ISPN_GAUGES = "ispn.gauges";
@@ -99,6 +101,8 @@ public class IndyMetricsConfig
     private static final String INDY_METRICS_MEASURE_TRANSPORT_REPOS = "measure.transport.repos";
 
     private final static String INDY_METRICS_KOJI_ENABLED = "koji.enabled";
+
+    private static final int DEFAULT_METER_RATIO = 1;
 
     private boolean ispnMetricsEnabled;
 
@@ -163,6 +167,8 @@ public class IndyMetricsConfig
     private boolean kojiMetricEnabled;
 
     private String nodePrefix;
+
+    private Integer meterRatio;
 
     public boolean isMeasureTransport()
     {
@@ -403,6 +409,17 @@ public class IndyMetricsConfig
     public void setMetricsEnabled( boolean metricsEnabled )
     {
         this.metricsEnabled = metricsEnabled;
+    }
+
+    @ConfigName( INDY_METRICS_METER_RATIO )
+    public void setMeterRatio( int meterRatio )
+    {
+        this.meterRatio = meterRatio;
+    }
+
+    public int getMeterRatio()
+    {
+        return meterRatio == null ? DEFAULT_METER_RATIO : meterRatio;
     }
 
     public String getReporter()

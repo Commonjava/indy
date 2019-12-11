@@ -24,6 +24,9 @@ public final class IndyContentConstants
     // for measuring transfer rates...
     public static final double NANOS_PER_SEC = 1E9;
 
+    // for measuring timing in ms...
+    public static final double NANOS_PER_MILLISECOND = 1E6;
+
     public static final String CHECK_CACHE_ONLY = "cache-only";
 
     public static final String CASCADE = "cascade";
