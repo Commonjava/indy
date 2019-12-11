@@ -32,9 +32,9 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
@@ -107,17 +107,14 @@ public class InfinispanStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        return stores.executeCache( ( c ) -> c.remove( key ) );
+        return stores.remove( key );
 //        return readValueByJson( json, key );
     }
 
     @Override
     public void clear( final ChangeSummary summary ) throws IndyDataException
     {
-        stores.executeCache( c -> {
-            c.clear();
-            return null;
-        } );
+        stores.clear();
     }
 
     @Override
@@ -133,8 +130,8 @@ public class InfinispanStoreDataManager
 //                }
 //            } );
 //            return ret;
-            return c.values().stream().collect( Collectors.toSet() );
-        } );
+            return new HashSet<>( c.values() );
+        }, "getAllStores" );
     }
 
     @Override
@@ -150,10 +147,10 @@ public class InfinispanStoreDataManager
 //                }
 //            } );
 
-            c.values().stream().forEach( v -> ret.put( v.getKey(), v ) );
+            c.values().forEach( v -> ret.put( v.getKey(), v ) );
             return ret;
 
-        } );
+        }, "getAllStoresByKey" );
     }
 
     @Override
