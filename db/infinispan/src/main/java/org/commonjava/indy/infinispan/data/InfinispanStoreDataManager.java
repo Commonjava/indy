@@ -20,6 +20,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -35,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
@@ -118,6 +120,7 @@ public class InfinispanStoreDataManager
     }
 
     @Override
+    @Measure
     public Set<ArtifactStore> getAllArtifactStores() throws IndyDataException
     {
         return stores.executeCache( c -> {
@@ -135,6 +138,7 @@ public class InfinispanStoreDataManager
     }
 
     @Override
+    @Measure
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         return stores.executeCache( c -> {
@@ -169,6 +173,13 @@ public class InfinispanStoreDataManager
     public boolean isEmpty()
     {
         return stores.isEmpty();
+    }
+
+    @Override
+    @Measure
+    public Stream<StoreKey> streamArtifactStoreKeys()
+    {
+        return stores.executeCache( c->c.keySet().stream() );
     }
 
     @Override
