@@ -1,4 +1,6 @@
+def artifact_glob="deployments/launcher/target/*.tar.gz"
 def artifact="deployments/launcher/target/*-skinny.tar.gz"
+def data_artifact="deployments/launcher/target/*-data.tar.gz"
 
 def ocp_map = '/mnt/ocp/jenkins-openshift-mappings.json'
 def bc_section = 'build-configs'
@@ -77,13 +79,13 @@ pipeline {
             }
             steps {
                 echo "Deploy"
-                sh 'mvn help:effective-settings -B -V deploy -e'
+                sh 'mvn help:effective-settings -B -V -DskipTests=true deploy -e'
             }
         }
         stage('Archive') {
             steps {
                 echo "Archive"
-                archiveArtifacts artifacts: "$artifact", fingerprint: true
+                archiveArtifacts artifacts: "$artifact_glob", fingerprint: true
             }
         }
         stage('Build & Push Image') {
@@ -101,7 +103,11 @@ pipeline {
                         openshift.withProject() {
                             echo "Starting image build: ${openshift.project()}:${my_bc}"
                             def bc = openshift.selector("bc", my_bc)
-                            def buildSel = bc.startBuild("-e tarball_url=${tarball_url}")
+
+                            def data_artifact_file = sh(script: "ls $data_artifact", returnStdout: true)?.trim()
+                            def data_tarball_url = "${BUILD_URL}artifact/$data_artifact_file"
+                            
+                            def buildSel = bc.startBuild("-e tarball_url=${tarball_url} -e data_tarball_url=${data_tarball_url}")
                             buildSel.logs("-f")
                         }
                     }

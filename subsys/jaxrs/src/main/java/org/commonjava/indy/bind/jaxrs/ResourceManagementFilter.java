@@ -36,13 +36,18 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
 import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
 import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.IS_METERED;
 import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
@@ -68,6 +73,8 @@ public class ResourceManagementFilter
     private static final String METADATA_CONTENT_METRIC = BASE_CONTENT_METRIC + "metadata";
 
     private static final String SPECIAL_CONTENT_METRIC = BASE_CONTENT_METRIC + "special";
+
+    private static final String FORCE_METERED = "force-metered";
 
     @Inject
     private CacheProvider cacheProvider;
@@ -117,6 +124,13 @@ public class ResourceManagementFilter
         {
             ThreadContext.clearContext();
             ThreadContext threadContext = ThreadContext.getContext( true );
+
+            boolean isMetered = metricsManager.isMetered( ()->{
+                String header = hsr.getHeader( FORCE_METERED );
+                return ( header == null || Boolean.parseBoolean( header ) );
+            } );
+
+            threadContext.put( IS_METERED, isMetered );
 
             threadContext.put( ORIGINAL_THREAD_NAME, name );
 
@@ -179,6 +193,24 @@ public class ResourceManagementFilter
             catch ( Exception e )
             {
                 logger.error( "Failed to cleanup resources", e );
+            }
+
+            ThreadContext ctx = ThreadContext.getContext( false );
+            if ( ctx != null )
+            {
+                Map<String, Double> cumulativeTimings = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
+                if ( cumulativeTimings != null )
+                {
+                    cumulativeTimings.forEach(
+                            ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.3f", v ) ) );
+                }
+
+                Map<String, Integer> cumulativeCounts = (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
+                if ( cumulativeCounts != null )
+                {
+                    cumulativeCounts.forEach(
+                            ( k, v ) -> MDC.put( CUMULATIVE_COUNTS + "." + k, String.format( "%d", v ) ) );
+                }
             }
 
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );

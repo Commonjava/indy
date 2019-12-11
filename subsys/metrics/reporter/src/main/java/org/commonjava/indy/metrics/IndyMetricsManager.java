@@ -21,6 +21,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
@@ -39,20 +40,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.DEFAULT;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.EXCEPTION;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.MetricsConstants.FINAL_METRICS;
-import static org.commonjava.indy.metrics.MetricsConstants.METRICS_PHASE;
-import static org.commonjava.indy.metrics.MetricsConstants.PRELIMINARY_METRICS;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
+import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
+import static org.commonjava.indy.metrics.RequestContextHelper.IS_METERED;
 import static org.commonjava.indy.metrics.jvm.IndyJVMInstrumentation.registerJvmMetric;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -65,8 +69,6 @@ public class IndyMetricsManager
 {
 
     public static final String METRIC_LOGGER_NAME = "org.commonjava.indy.metrics";
-
-    private static final Logger metricLogger = LoggerFactory.getLogger( METRIC_LOGGER_NAME );
 
     private static final Logger logger = LoggerFactory.getLogger( IndyMetricsManager.class );
 
@@ -92,6 +94,8 @@ public class IndyMetricsManager
     private IndyMetricsConfig config;
 
     private TransportMetricConfig transportMetricConfig;
+
+    private Random random = new Random();
 
     @Produces
     public TransportMetricConfig getTransportMetricConfig()
@@ -210,6 +214,21 @@ public class IndyMetricsManager
         return name.replaceAll( ":", "." );
     }
 
+    public boolean isMetered( Supplier<Boolean> meteringOverride )
+    {
+        int meterRatio = config.getMeterRatio();
+        if ( meterRatio <= 1 || random.nextInt() % meterRatio == 0 )
+        {
+            return true;
+        }
+        else if ( meteringOverride != null && Boolean.TRUE.equals( meteringOverride.get() ) )
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public Timer getTimer( String name )
     {
         return this.metricRegistry.timer( name );
@@ -220,10 +239,33 @@ public class IndyMetricsManager
         return metricRegistry.meter( name );
     }
 
+    public void accumulate( String name, final double elapsed )
+    {
+        ThreadContext ctx = ThreadContext.getContext( true );
+        if ( ctx != null )
+        {
+            if ( !checkMetered( ctx ) )
+            {
+                return;
+            }
+
+            ctx.putIfAbsent( CUMULATIVE_TIMINGS, new HashMap<String, Double>() );
+            Map<String, Double> timingMap = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
+
+            timingMap.merge( name, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
+
+            ctx.putIfAbsent( CUMULATIVE_COUNTS, new HashMap<String, Integer>() );
+            Map<String, Integer> countMap =
+                    (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
+
+            countMap.merge( name, 1, ( existingVal, newVal ) -> existingVal + 1 );
+        }
+    }
+
     public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
     {
         String name = classifier.get();
-        if ( SKIP_METRIC.equals( name ) )
+        if ( !checkMetered() || SKIP_METRIC.equals( name ) )
         {
             return method.get();
         }
@@ -240,6 +282,7 @@ public class IndyMetricsManager
         Timer.Context timer = getTimer( timerName ).time();
         logger.trace( "START: {} ({})", metricName, timer );
 
+        long start = System.nanoTime();
         try
         {
             mark( Arrays.asList( startName ) );
@@ -257,7 +300,25 @@ public class IndyMetricsManager
         {
             stopTimers( Collections.singletonMap( timerName, timer ) );
             mark( Arrays.asList( metricName ) );
+
+            double elapsed = (System.nanoTime() - start) / NANOS_PER_MILLISECOND;
+            accumulate( metricName, elapsed );
         }
+    }
+
+    public boolean checkMetered()
+    {
+        return checkMetered( null );
+    }
+
+    public boolean checkMetered( ThreadContext ctx )
+    {
+        if ( ctx == null )
+        {
+            ctx = ThreadContext.getContext( false );
+        }
+
+        return ( ctx == null || ((Boolean) ctx.getOrDefault( IS_METERED, Boolean.TRUE ) ) );
     }
 
     public void stopTimers( final Map<String, Timer.Context> timers )

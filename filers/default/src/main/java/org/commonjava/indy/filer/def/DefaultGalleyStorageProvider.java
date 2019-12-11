@@ -69,6 +69,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
@@ -219,7 +221,7 @@ public class DefaultGalleyStorageProvider
     private void setupTransferDecoratorPipeline()
     {
         List<TransferDecorator> decorators = new ArrayList<>();
-        decorators.add( new IOLatencyDecorator( timerProvider(), meterProvider() ));
+        decorators.add( new IOLatencyDecorator( timerProvider(), meterProvider(), cumulativeTimer() ));
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
         decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, timerProvider() ) );
         for ( TransferDecorator decorator : transferDecorators )
@@ -228,6 +230,11 @@ public class DefaultGalleyStorageProvider
         }
         decorators.add( getChecksummingTransferDecorator() );
         transferDecorator = new TransferDecoratorManager( decorators );
+    }
+
+    private BiConsumer<String, Double> cumulativeTimer()
+    {
+        return (name, elapsed) -> metricsManager.accumulate( name, elapsed );
     }
 
     private Function<String, Meter> meterProvider()

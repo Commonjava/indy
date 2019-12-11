@@ -15,6 +15,10 @@
  */
 package org.commonjava.indy.model.core;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -33,8 +37,9 @@ import static org.commonjava.indy.model.core.StoreType.remote;
            parent = ArtifactStore.class )
 public class RemoteRepository
         extends AbstractRepository
+        implements Externalizable
 {
-    private static final long serialVersionUID = 1L;
+    private static final int STORE_VERSION = 1;
 
     private static final Logger LOGGER = LoggerFactory.getLogger( RemoteRepository.class );
 
@@ -116,8 +121,9 @@ public class RemoteRepository
     @JsonProperty( "prefetch_rescan_time" )
     private String prefetchRescanTimestamp;
 
-    RemoteRepository()
+    public RemoteRepository()
     {
+        super();
     }
 
     @Deprecated
@@ -491,4 +497,78 @@ public class RemoteRepository
         copyBase( repo );
         return repo;
     }
+
+    @Override
+    public void writeExternal( final ObjectOutput out )
+            throws IOException
+    {
+        super.writeExternal( out );
+
+        out.writeInt( STORE_VERSION );
+
+        out.writeObject( url );
+        out.writeInt( timeoutSeconds );
+        out.writeInt( maxConnections );
+        out.writeBoolean( ignoreHostnameVerification );
+        out.writeInt( nfcTimeoutSeconds );
+        out.writeObject( host );
+        out.writeInt( port );
+        out.writeObject( user );
+        out.writeObject( password );
+        out.writeBoolean( passthrough );
+        out.writeInt( cacheTimeoutSeconds );
+        out.writeInt( metadataTimeoutSeconds );
+        out.writeObject( keyPassword );
+        out.writeObject( keyCertificatePem );
+        out.writeObject( serverCertificatePem );
+        out.writeObject( proxyHost );
+        out.writeInt( proxyPort );
+        out.writeObject( proxyUser );
+        out.writeObject( proxyPassword );
+        out.writeObject( serverTrustPolicy );
+        out.writeObject( prefetchPriority );
+        out.writeBoolean( prefetchRescan );
+        out.writeObject( prefetchListingType );
+        out.writeObject( prefetchRescanTimestamp );
+    }
+
+    @Override
+    public void readExternal( final ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        super.readExternal( in );
+
+        int storeVersion = in.readInt();
+        if ( storeVersion > STORE_VERSION )
+        {
+            throw new IOException( "Cannot deserialize. RemoteRepository version in data stream is: " + storeVersion
+                                           + " but this class can only deserialize up to version: " + STORE_VERSION );
+        }
+
+        this.url = (String) in.readObject();
+        this.timeoutSeconds = in.readInt();
+        this.maxConnections = in.readInt();
+        this.ignoreHostnameVerification = in.readBoolean();
+        this.nfcTimeoutSeconds = in.readInt();
+        this.host = (String) in.readObject();
+        this.port = in.readInt();
+        this.user = (String) in.readObject();
+        this.password = (String) in.readObject();
+        this.passthrough = in.readBoolean();
+        this.cacheTimeoutSeconds = in.readInt();
+        this.metadataTimeoutSeconds = in.readInt();
+        this.keyPassword = (String) in.readObject();
+        this.keyCertificatePem = (String) in.readObject();
+        this.serverCertificatePem = (String) in.readObject();
+        this.proxyHost = (String) in.readObject();
+        this.proxyPort = in.readInt();
+        this.proxyUser = (String) in.readObject();
+        this.proxyPassword = (String) in.readObject();
+        this.serverTrustPolicy = (String) in.readObject();
+        this.prefetchPriority = (Integer) in.readObject();
+        this.prefetchRescan = in.readBoolean();
+        this.prefetchListingType = (String) in.readObject();
+        this.prefetchRescanTimestamp = (String) in.readObject();
+    }
+
 }

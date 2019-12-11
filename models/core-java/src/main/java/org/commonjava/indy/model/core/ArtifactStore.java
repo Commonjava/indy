@@ -15,11 +15,6 @@
  */
 package org.commonjava.indy.model.core;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -27,6 +22,17 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
 
 import static org.commonjava.indy.model.core.PathStyle.plain;
 
@@ -36,8 +42,10 @@ import static org.commonjava.indy.model.core.PathStyle.plain;
 @ApiModel( description = "Definition of a content store on Indy, whether it proxies content from a remote server, hosts artifacts on this system, or groups other content stores.", discriminator = "type", subTypes = {
     HostedRepository.class, Group.class, RemoteRepository.class } )
 public abstract class ArtifactStore
-    implements Serializable
+        implements Externalizable
 {
+
+    private static final int ARTIFACT_STORE_VERSION = 1;
 
     public static final String PKG_TYPE_ATTR = "packageType";
 
@@ -50,8 +58,6 @@ public abstract class ArtifactStore
     public static final String METADATA_ORIGIN = "origin";
 
     public static final String TRACKING_ID = "trackingId";
-
-    private static final long serialVersionUID = 1L;
 
     @ApiModelProperty( required = true, dataType = "string", value = "Serialized store key, of the form: '[hosted|group|remote]:name'" )
     private StoreKey key;
@@ -78,16 +84,21 @@ public abstract class ArtifactStore
     @JsonProperty("authoritative_index")
     private Boolean authoritativeIndex;
 
+    @JsonProperty("create_time")
+    private String createTime;
+
     @JsonIgnore
     private Boolean rescanInProgress = false;
 
-    protected ArtifactStore()
+    public ArtifactStore()
     {
+        initRepoTime();
     }
 
     protected ArtifactStore( final String packageType, final StoreType type, final String name )
     {
         this.key = StoreKey.dedupe( new StoreKey( packageType, type, name ) );
+        initRepoTime();
     }
 
     public String getName()
@@ -306,5 +317,78 @@ public abstract class ArtifactStore
     public void setRescanInProgress( Boolean rescanInProgress )
     {
         this.rescanInProgress = rescanInProgress;
+    }
+
+    public String getCreateTime()
+    {
+        return createTime;
+    }
+
+    private void initRepoTime()
+    {
+        final SimpleDateFormat format = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss ZZZ" );
+        format.setTimeZone( TimeZone.getTimeZone( "UTC" ) );
+        this.createTime = format.format( new Date( System.currentTimeMillis() ) );
+    }
+
+    @Override
+    public void writeExternal( final ObjectOutput out )
+            throws IOException
+    {
+        out.writeInt( ARTIFACT_STORE_VERSION );
+        out.writeObject( key );
+
+        out.writeObject( description );
+        out.writeObject( metadata );
+        out.writeBoolean( disabled );
+        out.writeInt( disableTimeout );
+
+        if ( pathStyle == null )
+        {
+            out.writeObject( null );
+        }
+        else
+        {
+            out.writeObject( pathStyle.name() );
+        }
+
+        out.writeObject( pathMaskPatterns );
+        out.writeObject( authoritativeIndex );
+        out.writeObject( createTime );
+        out.writeObject( rescanInProgress );
+    }
+
+    @Override
+    public void readExternal( final ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        int artifactStoreVersion = in.readInt();
+        if ( artifactStoreVersion > ARTIFACT_STORE_VERSION )
+        {
+            throw new IOException( "Cannot deserialize. ArtifactStore version in data stream is: " + artifactStoreVersion
+                                           + " but this class can only deserialize up to version: " + ARTIFACT_STORE_VERSION );
+        }
+
+        this.key = (StoreKey) in.readObject();
+
+        this.description = (String) in.readObject();
+        this.metadata = (Map<String, String>) in.readObject();
+        this.disabled = in.readBoolean();
+        this.disableTimeout = in.readInt();
+
+        Object rawPathStyle = in.readObject();
+        if ( rawPathStyle == null )
+        {
+            this.pathStyle = null;
+        }
+        else
+        {
+            this.pathStyle = PathStyle.valueOf( (String) rawPathStyle );
+        }
+
+        this.pathMaskPatterns = (Set<String>) in.readObject();
+        this.authoritativeIndex = (Boolean) in.readObject();
+        this.createTime = (String) in.readObject();
+        this.rescanInProgress = (Boolean) in.readObject();
     }
 }

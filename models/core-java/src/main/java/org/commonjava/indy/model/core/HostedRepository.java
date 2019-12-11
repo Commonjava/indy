@@ -19,14 +19,20 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApiModel( description = "Hosts artifact content on the local system", parent = ArtifactStore.class )
 public class HostedRepository
     extends AbstractRepository
+        implements Externalizable
 {
 
-    private static final long serialVersionUID = 1L;
+    private static final int STORE_VERSION = 1;
 
     private String storage;
 
@@ -36,7 +42,7 @@ public class HostedRepository
     @ApiModelProperty( required = false, dataType = "boolean", value = "identify if the hoste repo is readonly" )
     private boolean readonly = false;
 
-    HostedRepository()
+    public HostedRepository()
     {
         super();
     }
@@ -118,4 +124,36 @@ public class HostedRepository
 
         return repo;
     }
+
+    @Override
+    public void writeExternal( final ObjectOutput out )
+            throws IOException
+    {
+        super.writeExternal( out );
+
+        out.writeInt( STORE_VERSION );
+
+        out.writeObject( storage );
+        out.writeInt( snapshotTimeoutSeconds );
+        out.writeBoolean( readonly );
+    }
+
+    @Override
+    public void readExternal( final ObjectInput in )
+            throws IOException, ClassNotFoundException
+    {
+        super.readExternal( in );
+
+        int storeVersion = in.readInt();
+        if ( storeVersion > STORE_VERSION )
+        {
+            throw new IOException( "Cannot deserialize. HostedRepository version in data stream is: " + storeVersion
+                                           + " but this class can only deserialize up to version: " + STORE_VERSION );
+        }
+
+        this.storage = (String) in.readObject();
+        this.snapshotTimeoutSeconds = in.readInt();
+        this.readonly = in.readBoolean();
+    }
+
 }
