@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 @ApplicationScoped
 @Alternative
@@ -126,6 +127,12 @@ public class MemoryStoreDataManager
     public boolean isEmpty()
     {
         return stores.isEmpty();
+    }
+
+    @Override
+    public Stream<StoreKey> streamArtifactStoreKeys()
+    {
+        return stores.keySet().stream();
     }
 
     @Override

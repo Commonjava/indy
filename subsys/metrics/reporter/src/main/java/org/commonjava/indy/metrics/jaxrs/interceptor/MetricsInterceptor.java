@@ -59,7 +59,7 @@ public class MetricsInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        if ( !config.isMetricsEnabled() )
+        if ( !config.isMetricsEnabled() || !metricsManager.checkMetered() )
         {
             return context.proceed();
         }

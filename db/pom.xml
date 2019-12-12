@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.9.6</version>
+    <version>1.9.7</version>
   </parent>
   
   <artifactId>indy-db</artifactId>
@@ -34,6 +34,7 @@
     <module>memory</module>
     <module>flat</module>
     <module>infinispan</module>
+    <module>metrics</module>
   </modules>
   
 </project>

@@ -246,10 +246,12 @@ public abstract class AbstractStoreDataManager
             throws IndyDataException;
 
     @Override
+    @Measure
     public abstract Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException;
 
     @Override
+    @Measure
     public Stream<ArtifactStore> streamArtifactStores()
             throws IndyDataException
     {
@@ -257,6 +259,7 @@ public abstract class AbstractStoreDataManager
     }
 
     @Override
+    @Measure
     public abstract Map<StoreKey, ArtifactStore> getArtifactStoresByKey();
 
     @Override

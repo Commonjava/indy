@@ -15,21 +15,16 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import com.codahale.metrics.Timer;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import static com.codahale.metrics.MetricRegistry.name;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.TIMER;
 
 public class BasicCacheHandle<K,V>
 {
@@ -156,6 +151,14 @@ public class BasicCacheHandle<K,V>
     public V get( K key )
     {
         return doExecute( "get", cache -> cache.get( key ) );
+    }
+
+    public void clear()
+    {
+        doExecute( "clear", cache -> {
+            cache.clear();
+            return null;
+        } );
     }
 
     protected String getMetricName( String opName )
