@@ -25,6 +25,8 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.slf4j.Logger;
@@ -40,6 +42,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.commonjava.indy.conf.DefaultIndyConfiguration.DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS;
 
@@ -86,6 +89,13 @@ public class CassandraNotFoundCache
     @Inject
     private CassandraClient cassandraClient;
 
+    @Inject
+    private CacheProducer cacheProducer;
+
+    private CacheHandle<ConcreteResource, Object> inMemoryCache;
+
+    private final static Object DUMB_CACHE_VALUE = new Object();
+
     private int maxResultSetSize; // limit the max size for REST endpoint getMissing to avoid OOM
 
     @Inject
@@ -107,6 +117,8 @@ public class CassandraNotFoundCache
     @PostConstruct
     public void start()
     {
+        inMemoryCache = cacheProducer.getCache( "nfc-in-memory-cache" );
+
         keyspace = config.getCacheKeyspace();
         maxResultSetSize = config.getNfcMaxResultSetSize();
 
@@ -116,7 +128,7 @@ public class CassandraNotFoundCache
         session.execute( getSchemaCreateTable( keyspace ) );
 
         preparedExistQuery =
-                        session.prepare( "SELECT count(*) FROM " + keyspace + ".nfc WHERE storekey=? and path=?;" );
+                        session.prepare( "SELECT expiration FROM " + keyspace + ".nfc WHERE storekey=? and path=?;" );
 
         preparedCountByStore = session.prepare( "SELECT count(*) FROM " + keyspace + ".nfc WHERE storekey=?;" );
 
@@ -157,18 +169,36 @@ public class CassandraNotFoundCache
         BoundStatement bound = preparedInsert.bind( key.toString(), resource.getPath(), curDate, timeoutDate,
                                                     timeoutInSeconds );
         session.execute( bound );
+        inMemoryCache.put( resource, DUMB_CACHE_VALUE, timeoutInSeconds, TimeUnit.SECONDS );
     }
 
     @Override
     @Measure
     public boolean isMissing( final ConcreteResource resource )
     {
+        if ( inMemoryCache.get( resource ) != null )
+        {
+            return true;
+        }
         StoreKey key = getResourceKey( resource );
         BoundStatement bound = preparedExistQuery.bind( key.toString(), resource.getPath() );
         ResultSet result = session.execute( bound );
-        long count = result.one().get( 0, Long.class );
-        boolean missing = count > 0;
+        Row row = result.one();
+        if ( row == null )
+        {
+            return false;
+        }
+        Date expiration = row.get( 0, Date.class );
+        boolean missing = true;
         logger.trace( "NFC check: {}, missing: {}", resource, missing );
+        if ( missing )
+        {
+            long timeout = expiration.getTime() - System.currentTimeMillis();
+            if ( timeout > 1000 )
+            {
+                inMemoryCache.put( resource, DUMB_CACHE_VALUE, new Long( timeout / 1000 ).intValue(), TimeUnit.SECONDS );
+            }
+        }
         return missing;
     }
 
@@ -179,6 +209,26 @@ public class CassandraNotFoundCache
         StoreKey key = ( (KeyedLocation) location ).getKey();
         BoundStatement bound = preparedDeleteByStore.bind( key.toString() );
         session.execute( bound );
+        clearInMemoryCache( location );
+    }
+
+    private void clearInMemoryCache( final Location location )
+    {
+        inMemoryCache.executeCache( c -> {
+            c.entrySet()
+             .stream()
+             .filter( e -> e.getKey().getLocation().equals( location ) )
+             .forEach( ( cache, e ) -> cache.remove( e.getKey() ) );
+            return c;
+        } );
+    }
+
+    private void clearInMemoryCache()
+    {
+        inMemoryCache.executeCache( c -> {
+            c.clear();
+            return c;
+        } );
     }
 
     @Override
@@ -188,6 +238,7 @@ public class CassandraNotFoundCache
         StoreKey key = getResourceKey( resource );
         BoundStatement bound = preparedDelete.bind( key.toString(), resource.getPath() );
         session.execute( bound );
+        inMemoryCache.remove( resource );
     }
 
     @Override
@@ -195,6 +246,7 @@ public class CassandraNotFoundCache
     public void clearAllMissing()
     {
         session.execute( "TRUNCATE " + keyspace + ".nfc;" );
+        clearInMemoryCache();
     }
 
     @Override
