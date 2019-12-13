@@ -433,7 +433,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             {
                 ArtifactStore store = dataManager.getArtifactStore( key );
 
-                if ( !processed.contains( store.getKey() ) && ( store instanceof Group ) )
+                if ( ( store instanceof Group ) && !processed.contains( store.getKey() ) )
                 {
                     Group g = (Group) store;
                     if ( g.getConstituents() != null && g.getConstituents().contains( next ) )
