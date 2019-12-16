@@ -406,7 +406,7 @@
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-pathmapped</artifactId>
         <version>1.9.8-SNAPSHOT</version>
-          IndyMetricsManager.java      </dependency>
+      </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
