@@ -159,6 +159,9 @@ public class InfinispanStoreDataMigrationAction
                             logger.error( "Failed to read store definition from legacy cache: " + key, e );
                         }
                     } );
+
+                    c.clearAsync();
+
                     return null;
                 } );
             }
