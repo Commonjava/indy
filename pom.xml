@@ -79,6 +79,7 @@
     <httpclientVersion>4.5.9</httpclientVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
+    <pathmappedStorageVersion>1.1-SNAPSHOT</pathmappedStorageVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
@@ -1582,6 +1583,23 @@
         <groupId>org.commonjava.propulsor.content-audit</groupId>
         <artifactId>propulsor-content-audit-api</artifactId>
         <version>${propulsorVersion}</version>
+      </dependency>
+
+      <!-- Path-mapped storage -->
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>path-mapped-storage</artifactId>
+        <version>${pathmappedStorageVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>path-mapped-pathdb-datastax</artifactId>
+        <version>${pathmappedStorageVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>path-mapped-common</artifactId>
+        <version>${pathmappedStorageVersion}</version>
       </dependency>
 
       <!--Datastax Java Driver-->
