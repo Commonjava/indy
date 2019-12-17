@@ -16,10 +16,10 @@
 package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -32,9 +32,10 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
@@ -49,14 +50,9 @@ public class InfinispanStoreDataManager
     @StoreDataCache
     private CacheHandle<StoreKey, ArtifactStore> stores;
 
-//    @Inject
-//    private CacheProducer cacheProducer;
-
     @Inject
     private StoreEventDispatcher dispatcher;
 
-//    @Inject
-//    private IndyObjectMapper serializer;
 
     @Override
     protected StoreEventDispatcher getStoreEventDispatcher()
@@ -73,87 +69,48 @@ public class InfinispanStoreDataManager
     {
     }
 
-    public InfinispanStoreDataManager( final Cache<String, ArtifactStore> cache )
+    public InfinispanStoreDataManager( final Cache<StoreKey, ArtifactStore> cache )
     {
         this.dispatcher = new NoOpStoreEventDispatcher();
         this.stores = new CacheHandle( STORE_DATA_CACHE, cache );
-//        this.serializer = serializer;
     }
 
     @Override
     protected ArtifactStore getArtifactStoreInternal( StoreKey key )
     {
         return stores.get( key );
-//        return readValueByJson( json, key );
     }
 
-//    private ArtifactStore readValueByJson( String json, StoreKey key )
-//    {
-//        if ( json == null )
-//        {
-//            return null;
-//        }
-//        try
-//        {
-//            return serializer.readValue( json, key.getType().getStoreClass() );
-//        }
-//        catch ( IOException e )
-//        {
-//            logger.error( "Failed to read value", e );
-//        }
-//        return null;
-//    }
 
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        return stores.executeCache( ( c ) -> c.remove( key ) );
-//        return readValueByJson( json, key );
+        return stores.remove( key );
     }
 
     @Override
-    public void clear( final ChangeSummary summary ) throws IndyDataException
+    public void clear( final ChangeSummary summary )
     {
-        stores.executeCache( c -> {
-            c.clear();
-            return null;
-        } );
+        stores.clear();
     }
 
     @Override
-    public Set<ArtifactStore> getAllArtifactStores() throws IndyDataException
+    @Measure
+    public Set<ArtifactStore> getAllArtifactStores()
     {
-        return stores.executeCache( c -> {
-//            Set<ArtifactStore> ret = new HashSet<>();
-//            c.forEach( ( k, v ) -> {
-//                ArtifactStore store = readValueByJson( v, k );
-//                if ( store != null )
-//                {
-//                    ret.add( store );
-//                }
-//            } );
-//            return ret;
-            return c.values().stream().collect( Collectors.toSet() );
-        } );
+        return stores.executeCache( c -> new HashSet<>( c.values() ), "getAllStores" );
     }
 
     @Override
+    @Measure
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         return stores.executeCache( c -> {
             Map<StoreKey, ArtifactStore> ret = new HashMap<>();
-//            c.forEach( ( k, v ) -> {
-//                ArtifactStore store = readValueByJson( v, k );
-//                if ( store != null )
-//                {
-//                    ret.put( store.getKey(), store );
-//                }
-//            } );
-
-            c.values().stream().forEach( v -> ret.put( v.getKey(), v ) );
+            c.values().forEach( v -> ret.put( v.getKey(), v ) );
             return ret;
 
-        } );
+        }, "getAllStoresByKey" );
     }
 
     @Override
@@ -175,21 +132,16 @@ public class InfinispanStoreDataManager
     }
 
     @Override
+    @Measure
+    public Stream<StoreKey> streamArtifactStoreKeys()
+    {
+        return stores.executeCache( c->c.keySet().stream() );
+    }
+
+    @Override
     protected ArtifactStore putArtifactStoreInternal( StoreKey storeKey, ArtifactStore store )
     {
-//        final String json;
-//        try
-//        {
-//            json = serializer.writeValueAsString( store );
-//        }
-//        catch ( JsonProcessingException e )
-//        {
-//            logger.error( "Failed to put", e );
-//            return null;
-//        }
-
         return stores.put( storeKey, store );
-//        return readValueByJson( org, storeKey );
     }
 
 }

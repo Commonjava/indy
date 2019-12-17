@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.Cache;
-import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +59,15 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
     public <R> R executeCache( Function<Cache<K, V>, R> operation )
     {
         return doExecuteCache( "execute", operation );
+    }
+
+    public <R> R executeCache( Function<Cache<K, V>, R> operation, String metric )
+    {
+        if ( StringUtils.isBlank( metric ) )
+        {
+            return executeCache( operation );
+        }
+        return doExecuteCache( metric, operation );
     }
 
     // TODO: Why is this separate from {@link BasicCacheHandle#execute(Function)}?

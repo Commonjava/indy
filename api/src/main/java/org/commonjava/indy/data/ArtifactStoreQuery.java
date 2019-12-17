@@ -67,6 +67,12 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
     Stream<T> stream( Predicate<ArtifactStore> filter )
             throws IndyDataException;
 
+    Stream<StoreKey> keyStream()
+            throws IndyDataException;
+
+    Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
+            throws IndyDataException;
+
     List<T> getAll( Predicate<ArtifactStore> filter )
             throws IndyDataException;
 
