@@ -304,6 +304,8 @@ public class IndyMetricsManager
             double elapsed = (System.nanoTime() - start) / NANOS_PER_MILLISECOND;
             accumulate( metricName, elapsed );
         }
+
+        return ( ctx == null || ((Boolean) ctx.getOrDefault( IS_METERED, Boolean.TRUE ) ) );
     }
 
     public boolean checkMetered()
