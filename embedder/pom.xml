@@ -430,6 +430,7 @@
             </execution>
           </executions>
           <configuration>
+            <skip>${skipITs}</skip>
             <startNativeTransport>true</startNativeTransport>
             <cqlVersion>3.4.4</cqlVersion>
             <maxMemory>2048</maxMemory>
