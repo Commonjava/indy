@@ -23,10 +23,13 @@ import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import java.util.Set;
 
 public class StoreDataCacheProducer
 {
     public static final String STORE_DATA_CACHE = "store-data-v2";
+
+    public static final String AFFECTED_BY_STORE_CACHE = "affected-by-stores";
 
     @Inject
     private CacheProducer cacheProducer;
@@ -39,13 +42,12 @@ public class StoreDataCacheProducer
         return cacheProducer.getCache( STORE_DATA_CACHE );
     }
 
-//    @StoreDataCache
-//    @Produces
-//    @ApplicationScoped
-//    public CacheHandle<StoreKey, String> getStoreDataCache()
-//    {
-//        return cacheProducer.getCache( STORE_DATA_CACHE );
-//    }
-
+    @AffectedByStoreCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<StoreKey, Set<StoreKey>> getAffectedByStores()
+    {
+        return cacheProducer.getCache( AFFECTED_BY_STORE_CACHE );
+    }
 
 }

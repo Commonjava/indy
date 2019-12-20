@@ -151,6 +151,11 @@ public abstract class AbstractStoreDataManager
                 }
             }
         }
+        // Hosted or Remote update does not change affectedBy relationships
+        if ( store instanceof Group )
+        {
+            refreshAffectedBy( store, original );
+        }
     }
 
     protected void preDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
@@ -174,6 +179,14 @@ public abstract class AbstractStoreDataManager
         {
             dispatcher.deleted( eventMetadata, store );
         }
+
+        refreshAffectedBy( store, null );
+    }
+
+    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original )
+            throws IndyDataException
+    {
+        //do nothing by default
     }
 
     protected abstract ArtifactStore removeArtifactStoreInternal( StoreKey key );

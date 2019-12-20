@@ -23,6 +23,9 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
+import java.util.Set;
+
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.AFFECTED_BY_STORE_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
 public class InfinispanTCKFixtureProvider
@@ -35,7 +38,8 @@ public class InfinispanTCKFixtureProvider
         DefaultCacheManager cacheManager =
                 new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
         Cache<StoreKey, ArtifactStore> storeCache = cacheManager.getCache( STORE_DATA_CACHE, true );
-        dataManager = new InfinispanStoreDataManager( storeCache );
+        Cache<StoreKey, Set<StoreKey>> affected = cacheManager.getCache( AFFECTED_BY_STORE_CACHE, true );
+        dataManager = new InfinispanStoreDataManager( storeCache, affected );
     }
 
     @Override
