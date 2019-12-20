@@ -401,66 +401,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Getting groups affected by: {}", keys );
-
-        List<StoreKey> toProcess = new ArrayList<>( new HashSet<>( keys ) );
-
-        Set<Group> groups = new HashSet<>();
-        if ( toProcess.isEmpty() )
-        {
-            return groups;
-        }
-
-        Set<StoreKey> processed = new HashSet<>();
-
-        Set<StoreKey> all = new DefaultArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
-                                                          Group.class ).keyStream().collect( Collectors.toSet() );
-
-        logger.debug( "There are {} groups need to loop checking for affected by", all.size() );
-
-        Set<ArtifactStore> allStores = all.stream().map( k-> {
-            try
-            {
-                return dataManager.getArtifactStore( k );
-            }
-            catch ( IndyDataException e )
-            {
-                logger.error( "Error to get store {}", k );
-                return null;
-            }
-        } ).filter( Objects::nonNull ).collect( Collectors.toSet());
-
-        while ( !toProcess.isEmpty() )
-        {
-            // as long as we have another key to process, pop it off the list (remove it) and process it.
-            StoreKey next = toProcess.remove( 0 );
-            if ( processed.contains( next ) )
-            {
-                // if we've already handled this group (via another branch in the group membership tree, etc. then don't bother.
-                continue;
-            }
-
-            // use this to avoid reprocessing groups we've already encountered.
-            processed.add( next );
-
-            for (  ArtifactStore store : allStores )
-            {
-                if ( ( store instanceof Group ) && !processed.contains( store.getKey() ) )
-                {
-                    Group g = (Group) store;
-                    if ( g.getConstituents() != null && g.getConstituents().contains( next ) )
-                    {
-                        groups.add( g );
-
-                        // add this group as another one to process for groups that contain it...and recurse upwards
-                        toProcess.add( g.getKey() );
-                    }
-                }
-            }
-        }
-
-        return groups;
+        return dataManager.affectedBy( keys );
     }
 
     public Stream<StoreKey> keyStream()
