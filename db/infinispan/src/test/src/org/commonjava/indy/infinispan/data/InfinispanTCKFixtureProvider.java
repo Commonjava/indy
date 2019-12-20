@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.AFFECTED_BY_STORE_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
 public class InfinispanTCKFixtureProvider
@@ -41,7 +42,8 @@ public class InfinispanTCKFixtureProvider
                 new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
         Cache<StoreKey, ArtifactStore> storeCache = cacheManager.getCache( STORE_DATA_CACHE, true );
         Cache<String, Map<StoreType, Set<StoreKey>>> storesByPkgCache = cacheManager.getCache( STORE_BY_PKG_CACHE, true );
-        dataManager = new InfinispanStoreDataManager( storeCache, storesByPkgCache );
+        Cache<StoreKey, Set<StoreKey>> affected = cacheManager.getCache( AFFECTED_BY_STORE_CACHE, true );
+        dataManager = new InfinispanStoreDataManager( storeCache, storesByPkgCache, affected );
         dataManager.init();
     }
 

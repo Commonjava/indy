@@ -134,6 +134,9 @@
       </indexing>
     </local-cache>
 
+    <local-cache name="affected-by-stores" configuration="local-template">
+    </local-cache>
+
     <!--
     A clustered lock is a lock which is distributed and shared among all nodes in the Infinispan cluster and
     provides a way to execute code that will be synchronized between the nodes. Since 9.x.
