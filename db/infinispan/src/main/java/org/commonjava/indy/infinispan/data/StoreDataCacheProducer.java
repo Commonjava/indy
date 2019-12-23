@@ -17,16 +17,21 @@ package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import java.util.Map;
+import java.util.Set;
 
 public class StoreDataCacheProducer
 {
     public static final String STORE_DATA_CACHE = "store-data-v2";
+
+    public static final String STORE_BY_PKG_CACHE = "store-by-package";
 
     @Inject
     private CacheProducer cacheProducer;
@@ -47,5 +52,12 @@ public class StoreDataCacheProducer
 //        return cacheProducer.getCache( STORE_DATA_CACHE );
 //    }
 
+    @StoreByPkgCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<String, Map<StoreType, Set<StoreKey>>> getStoreByPkgCache()
+    {
+        return cacheProducer.getCache( STORE_BY_PKG_CACHE );
+    }
 
 }

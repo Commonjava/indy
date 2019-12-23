@@ -20,7 +20,12 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
-import org.commonjava.indy.data.*;
+import org.commonjava.indy.data.ArtifactStoreQuery;
+import org.commonjava.indy.data.ArtifactStoreValidateData;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.data.StoreValidator;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -32,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
-import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -40,6 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
@@ -404,4 +409,17 @@ public abstract class AbstractStoreDataManager
 //        }
     }
 
+    @Override
+    public Set<StoreKey> getStoreKeysByPkg( String pkg )
+    {
+        return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) )
+                                        .collect( Collectors.toSet() );
+    }
+
+    @Override
+    public Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type )
+    {
+        return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) && key.getType() == type )
+                                        .collect( Collectors.toSet() );
+    }
 }

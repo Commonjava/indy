@@ -134,4 +134,8 @@ public interface StoreDataManager
      * Stream of StoreKey instances present in the system.
      */
     Stream<StoreKey> streamArtifactStoreKeys();
+
+    Set<StoreKey> getStoreKeysByPkg( String pkg );
+
+    Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type );
 }
