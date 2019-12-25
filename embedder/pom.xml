@@ -31,7 +31,6 @@
 
   <properties>
     <skipMainFTests>${skipITs}</skipMainFTests>
-    <!-- <skipTimingFTests>${skipITs}</skipTimingFTests> -->
   </properties>
   
   <dependencies>

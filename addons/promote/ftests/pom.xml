@@ -42,7 +42,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-promote-common</artifactId>
       <classifier>dataset</classifier>
-      <!-- <scope>provided</scope> -->
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

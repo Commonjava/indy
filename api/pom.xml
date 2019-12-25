@@ -41,14 +41,6 @@
       <artifactId>commons-lang</artifactId>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-transport-httpclient</artifactId>
     </dependency>
@@ -68,14 +60,6 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
     </dependency>
-      <dependency>
-        <groupId>ch.qos.logback.contrib</groupId>
-        <artifactId>logback-jackson</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>ch.qos.logback.contrib</groupId>
-        <artifactId>logback-json-classic</artifactId>
-      </dependency>
   </dependencies>
   
 </project>

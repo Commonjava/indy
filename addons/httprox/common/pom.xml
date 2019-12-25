@@ -56,19 +56,6 @@
       <groupId>org.jboss.xnio</groupId>
       <artifactId>xnio-nio</artifactId>
     </dependency>
-    <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-    </dependency>
-    
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
