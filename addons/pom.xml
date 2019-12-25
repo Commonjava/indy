@@ -38,7 +38,9 @@
     <module>implied-repos</module>
     <module>koji</module>
     <module>promote</module>
+    <!--
     <module>revisions</module>
+    -->
     <module>pkg-maven</module>
     <module>diagnostics</module>
     <module>pkg-npm</module>
