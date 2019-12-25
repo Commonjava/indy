@@ -18,17 +18,20 @@ package org.commonjava.indy.content.index;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
+import org.commonjava.indy.content.index.deindex.DeIndexHandlingCache;
+import org.commonjava.indy.content.index.deindex.DeIndexHandlingCacheListener;
+import org.commonjava.indy.content.index.deindex.DeIndexInfo;
 import org.commonjava.indy.core.content.PathMaskChecker;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -40,6 +43,7 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
 import javax.enterprise.inject.Any;
@@ -52,9 +56,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import static org.commonjava.indy.content.index.deindex.DeIndexInfo.TYPE_MULTI;
+import static org.commonjava.indy.content.index.deindex.DeIndexInfo.TYPE_SINGLE;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 /**
  * Decorator for ContentManager which uses Infinispan to index content to avoid having to iterate all members of large
@@ -88,6 +93,14 @@ public abstract class IndexingContentManagerDecorator
     @Inject
     private ContentIndexConfig indexCfg;
 
+    @Inject
+    @DeIndexHandlingCache
+    private CacheHandle<Long, DeIndexInfo> deIndexQueue;
+
+    @Inject
+    private DeIndexHandlingCacheListener deIndexHandler;
+
+
     protected IndexingContentManagerDecorator()
     {
     }
@@ -110,6 +123,27 @@ public abstract class IndexingContentManagerDecorator
     {
         this(delegate, storeDataManager, specialPathManager, indexManager, nfc);
         this.indexCfg = indexCfg;
+    }
+
+    protected IndexingContentManagerDecorator( final ContentManager delegate, final StoreDataManager storeDataManager,
+                                               final SpecialPathManager specialPathManager,
+                                               final ContentIndexManager indexManager, final NotFoundCache nfc,
+                                               final ContentIndexConfig indexCfg,
+                                               final CacheHandle<Long, DeIndexInfo> deIndexQueue,
+                                               final DeIndexHandlingCacheListener deIndexHandler )
+    {
+        this( delegate, storeDataManager, specialPathManager, indexManager, nfc, indexCfg );
+        this.deIndexQueue = deIndexQueue;
+        this.deIndexHandler = deIndexHandler;
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        deIndexQueue.executeCache( c -> {
+            c.addListener( deIndexHandler );
+            return null;
+        } );
     }
 
     @Override
@@ -200,7 +234,7 @@ public abstract class IndexingContentManagerDecorator
         else if ( isAuthoritativelyMissing( store ) )
         {
             logger.debug(
-                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null.", transfer );
             return null;
         }
 
@@ -458,7 +492,7 @@ public abstract class IndexingContentManagerDecorator
         else if ( isAuthoritativelyMissing( store ) )
         {
             logger.info(
-                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null.", transfer );
             return null;
         }
 
@@ -510,7 +544,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     @Deprecated
     public Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
                                                ContentManagementFunction func, final EventMetadata metadata )
@@ -602,7 +636,7 @@ public abstract class IndexingContentManagerDecorator
 
         if ( isAuthoritativelyMissing( store ) )
         {
-            logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null." );
+            logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null.", transfer );
             return null;
         }
 
@@ -696,41 +730,11 @@ public abstract class IndexingContentManagerDecorator
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Storing: {} in: {} from indexing level", path, store.getKey() );
-        Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
-        if ( transfer != null )
-        {
-            if ( indexCfg.isEnabled() )
-            {
-                logger.trace( "Indexing: {} in: {}", transfer, store.getKey() );
-                indexManager.indexTransferIn( transfer, store.getKey() );
-            }
-
-            if ( store instanceof Group )
-            {
-                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
-            }
-            // We should deIndex the path for all parent groups because the new content of the path
-            // may change the content index sequence based on the constituents sequence in parent groups
-            if ( store.getType() == StoreType.hosted )
-            {
-                try
-                {
-                    Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
-                    if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
-                    {
-                        groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
-                    }
-                }
-                catch ( IndyDataException e )
-                {
-                    throw new IndyWorkflowException(
-                            "Failed to get groups which contains: %s for NFC handling. Reason: %s", e, store.getKey(),
-                            e.getMessage() );
-                }
-
-            }
-        }
-//        nfcClearByContaining( store, path );
+        final Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
+        //NOSSUP-87 & NOS-2233: As the getGroupsAffectedBy is a time-consumed ops which is killing the
+        //upload performance, and seems the de-index ops for the uploaded path is not a big factor to
+        //affect following operations, we should think about to async it here.
+        deIndexQueue.put( System.currentTimeMillis(), new DeIndexInfo( transfer, store, TYPE_SINGLE ) );
 
         return transfer;
     }
@@ -747,34 +751,8 @@ public abstract class IndexingContentManagerDecorator
                            final InputStream stream, final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
-        Transfer transfer = delegate.store( stores, topKey, path, stream, op, eventMetadata );
-        if ( transfer != null )
-        {
-            if ( indexCfg.isEnabled() )
-            {
-                indexManager.indexTransferIn( transfer, topKey );
-            }
-
-            try
-            {
-                ArtifactStore topStore = storeDataManager.getArtifactStore( topKey );
-                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( topStore ), path ) );
-
-                if ( indexCfg.isEnabled() )
-                {
-                    // We should deIndex the path for all parent groups because the new content of the path
-                    // may change the content index sequence based on the constituents sequence in parent groups
-                    indexManager.deIndexStorePath( topKey, path );
-                }
-            }
-            catch ( IndyDataException e )
-            {
-                Logger logger = LoggerFactory.getLogger( getClass() );
-                logger.error( String.format( "Failed to retrieve top store: %s for NFC management. Reason: %s",
-                                             topKey, e.getMessage()), e );
-            }
-        }
-
+        final Transfer transfer = delegate.store( stores, topKey, path, stream, op, eventMetadata );
+        deIndexQueue.put( System.currentTimeMillis(), new DeIndexInfo( transfer, null, topKey, TYPE_MULTI ) );
         return transfer;
     }
 
