@@ -124,17 +124,6 @@
       </persistence>
     </local-cache>
 
-    <local-cache name="content-de-index" configuration="local-template">
-      <memory>
-        <object size="100000" strategy="REMOVE" />
-      </memory>
-
-      <indexing index="LOCAL">
-        <property name="default.indexmanager">near-real-time</property>
-        <property name="default.directory_provider">local-heap</property>
-      </indexing>
-    </local-cache>
-
     <!--
     A clustered lock is a lock which is distributed and shared among all nodes in the Infinispan cluster and
     provides a way to execute code that will be synchronized between the nodes. Since 9.x.
