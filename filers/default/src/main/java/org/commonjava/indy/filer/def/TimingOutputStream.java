@@ -17,17 +17,13 @@ package org.commonjava.indy.filer.def;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import org.apache.commons.compress.utils.CountingInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.maven.galley.util.IdempotentCloseOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 

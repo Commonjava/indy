@@ -38,11 +38,6 @@
       <artifactId>indy-hosted-by-archive-common</artifactId>
       <scope>provided</scope>
     </dependency>
-<!--     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-hosted-by-archive-common</artifactId>
-      <classifier>dataset</classifier>
-     <scope>provided</scope> -->
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-hosted-by-archive-client-java</artifactId>

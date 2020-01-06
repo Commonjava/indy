@@ -79,11 +79,6 @@
       <artifactId>indy-content-index</artifactId>
     </dependency>
     <dependency>
-    	<groupId>junit</groupId>
-    	<artifactId>junit</artifactId>
-    	<scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
     </dependency>
