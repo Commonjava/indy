@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -70,6 +71,8 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -159,6 +162,11 @@ public class PromotionManager
     @Inject
     private PromotionHelper promotionHelper;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "promote-nfc-cleaner", priority = 4, daemon = true, threads = 8)
+    private ExecutorService nfcCleanExecutor;
+
     protected PromotionManager()
     {
     }
@@ -181,6 +189,14 @@ public class PromotionManager
         this.promotionHelper = new PromotionHelper( storeManager, downloadManager, contentManager, nfc );
         this.conflictManager = new PathConflictManager();
         this.specialPathManager = specialPathManager;
+        // for testing
+        if ( nfcCleanExecutor == null )
+        {
+            nfcCleanExecutor = Executors.newFixedThreadPool( 8, new NamedThreadFactory( "promote-nfc-cleaner",
+                                                                                        new ThreadGroup(
+                                                                                                "promote-nfc-cleaner" ),
+                                                                                        true, 4 ) );
+        }
     }
 
     @Measure
@@ -269,7 +285,19 @@ public class PromotionManager
                                                                                                    + target.getKey() );
 
                             storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
-                            promotionHelper.clearStoreNFC( validationRequest.getSourcePaths(), target );
+                            final Group targetForNfcCleaning = target;
+                            nfcCleanExecutor.execute( () -> {
+                                try
+                                {
+                                    promotionHelper.clearStoreNFC( validationRequest.getSourcePaths(),
+                                                                   targetForNfcCleaning );
+                                }
+                                catch ( PromotionValidationException e )
+                                {
+                                    logger.warn( "Error happened for clear nfc during promote validation: {}",
+                                                 e.getMessage() );
+                                }
+                            } );
 
                             if ( hosted == request.getSource().getType() && config.isAutoLockHostedRepos() )
                             {
@@ -804,7 +832,7 @@ public class PromotionManager
         else
         {
             result = new PathsPromoteResult( request, emptySet(), completed, skipped, null, validation );
-            promotionHelper.clearStoreNFC( completed, targetStore );
+            nfcCleanExecutor.execute( () -> promotionHelper.clearStoreNFC( completed, targetStore ) );
             if ( request.isFireEvents() )
             {
                 fireEvent( promoteCompleteEvent, new PathsPromoteCompleteEvent( result ) );

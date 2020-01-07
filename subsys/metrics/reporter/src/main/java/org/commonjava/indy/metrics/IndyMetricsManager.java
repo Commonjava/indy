@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -249,12 +250,12 @@ public class IndyMetricsManager
                 return;
             }
 
-            ctx.putIfAbsent( CUMULATIVE_TIMINGS, new HashMap<String, Double>() );
+            ctx.putIfAbsent( CUMULATIVE_TIMINGS, new ConcurrentHashMap<>() );
             Map<String, Double> timingMap = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
 
             timingMap.merge( name, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
 
-            ctx.putIfAbsent( CUMULATIVE_COUNTS, new HashMap<String, Integer>() );
+            ctx.putIfAbsent( CUMULATIVE_COUNTS, new ConcurrentHashMap<>() );
             Map<String, Integer> countMap =
                     (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
 

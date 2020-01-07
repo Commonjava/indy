@@ -17,6 +17,9 @@ package org.commonjava.indy.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
@@ -51,6 +54,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CASCADE;
@@ -90,6 +95,11 @@ public class DefaultContentManager
     @Inject
     private IndyConfiguration indyConfig;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "nfc-content-cleaner", priority = 4, daemon = true, threads = 8 )
+    private ExecutorService nfcContentCleanExecutor;
+
     protected DefaultContentManager()
     {
     }
@@ -106,6 +116,14 @@ public class DefaultContentManager
         this.nfc = nfc;
         this.contentDigester = contentDigester;
         this.contentGeneratorManager = contentGeneratorManager;
+        // for testing
+        if ( nfcContentCleanExecutor == null )
+        {
+            nfcContentCleanExecutor = Executors.newFixedThreadPool( 8, new NamedThreadFactory( "nfc-content-cleaner",
+                                                                                               new ThreadGroup(
+                                                                                                       "nfc-content-cleaner" ),
+                                                                                               true, 4 ) );
+        }
     }
 
     @Override
@@ -373,7 +391,7 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            clearNFCEntries(kl, path);
+            nfcContentCleanExecutor.execute( () -> clearNFCEntries( kl, path ) );
         }
 
         return txfr;
@@ -423,7 +441,8 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            clearNFCEntries(kl, path);
+            nfcContentCleanExecutor.execute( () -> clearNFCEntries( kl, path ) );
+
         }
 
         return txfr;

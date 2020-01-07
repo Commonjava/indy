@@ -72,6 +72,7 @@ public class DefaultContentIndexManager
     @Inject
     private BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
+    //FIXME: Seems no cache register this listener?
     @Inject
     private NFCContentListener listener;
 

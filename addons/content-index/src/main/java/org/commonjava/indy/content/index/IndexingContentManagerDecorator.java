@@ -91,7 +91,7 @@ public abstract class IndexingContentManagerDecorator
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named="content-index-store-deindex", priority = 4, threads = 10)
+    @ExecutorConfig( named = "content-index-store-deindex", priority = 4, threads = 10 )
     private Executor deIndexExecutor;
 
     protected IndexingContentManagerDecorator()
