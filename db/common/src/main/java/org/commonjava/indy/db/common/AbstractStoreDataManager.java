@@ -511,17 +511,4 @@ public abstract class AbstractStoreDataManager
 
         return groups;
     }
-
-    public Set<StoreKey> getStoreKeysByPkg( String pkg )
-    {
-        return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) )
-                                        .collect( Collectors.toSet() );
-    }
-
-    @Override
-    public Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type )
-    {
-        return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) && key.getType() == type )
-                                        .collect( Collectors.toSet() );
-    }
 }
