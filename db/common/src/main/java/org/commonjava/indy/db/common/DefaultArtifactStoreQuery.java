@@ -527,18 +527,10 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         }
 
         final List<ArtifactStore> result = new ArrayList<>();
-        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups );
 
-        return result;
-    }
-
-    private void recurseGroup( final Group master,
-                               final List<ArtifactStore> result, final Set<StoreKey> seen, final boolean includeGroups,
-                               final boolean recurseGroups )
-            throws IndyDataException
-    {
         AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
         LinkedList<Group> toCheck = new LinkedList<>();
+        Set<StoreKey> seen = new HashSet<>();
         toCheck.add( master );
 
         while ( !toCheck.isEmpty() )
@@ -547,7 +539,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
             if ( next == null || next.isDisabled() && Boolean.TRUE.equals( enabled ) )
             {
-                return;
+                continue;
             }
 
             List<StoreKey> members = new ArrayList<>( next.getConstituents() );
@@ -556,7 +548,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 result.add( next );
             }
 
-            // TODO: Need to refactor away from actual recursion.
             members.forEach( ( key ) ->
                              {
                                  if ( !seen.contains( key ) )
@@ -593,6 +584,8 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 throw error;
             }
         }
+
+        return result;
     }
 
 }
