@@ -22,6 +22,7 @@ import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
@@ -31,12 +32,14 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
 @ApplicationScoped
@@ -49,6 +52,10 @@ public class InfinispanStoreDataManager
     @Inject
     @StoreDataCache
     private CacheHandle<StoreKey, ArtifactStore> stores;
+
+    @Inject
+    @StoreByPkgCache
+    private CacheHandle<String, Map<StoreType, Set<StoreKey>>> storesByPkg;
 
     @Inject
     private StoreEventDispatcher dispatcher;
@@ -65,14 +72,31 @@ public class InfinispanStoreDataManager
     }
 
     @PostConstruct
-    private void init()
+    synchronized void init()
     {
+        // re-fill the stores by package cache each time when reboot
+        if ( storesByPkg != null )
+        {
+            logger.info( "Clean the stores-by-pkg cache" );
+            storesByPkg.clear();
+        }
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+        logger.info( "There are {} stores need to fill in stores-by-pkg cache", allStores.size() );
+        for ( ArtifactStore store : allStores )
+        {
+            final Map<StoreType, Set<StoreKey>> typedKeys =
+                    storesByPkg.computeIfAbsent( store.getKey().getPackageType(), k -> new HashMap<>() );
+            final Set<StoreKey> keys = typedKeys.computeIfAbsent( store.getKey().getType(), k -> new HashSet<>() );
+            keys.add( store.getKey() );
+        }
     }
 
-    public InfinispanStoreDataManager( final Cache<StoreKey, ArtifactStore> cache )
+    public InfinispanStoreDataManager( final Cache<StoreKey, ArtifactStore> cache,
+                                       final Cache<String, Map<StoreType, Set<StoreKey>>> storesByPkg )
     {
         this.dispatcher = new NoOpStoreEventDispatcher();
         this.stores = new CacheHandle( STORE_DATA_CACHE, cache );
+        this.storesByPkg = new CacheHandle( STORE_BY_PKG_CACHE, storesByPkg );
     }
 
     @Override
@@ -81,17 +105,27 @@ public class InfinispanStoreDataManager
         return stores.get( key );
     }
 
-
     @Override
-    protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
+    protected synchronized ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        return stores.remove( key );
+        final ArtifactStore store = stores.remove( key );
+        final Map<StoreType, Set<StoreKey>> typedKeys = storesByPkg.get( key.getPackageType() );
+        if ( typedKeys != null )
+        {
+            final Set<StoreKey> keys = typedKeys.get( key.getType() );
+            if ( keys != null )
+            {
+                keys.remove( key );
+            }
+        }
+        return store;
     }
 
     @Override
     public void clear( final ChangeSummary summary )
     {
         stores.clear();
+        storesByPkg.clear();
     }
 
     @Override
@@ -139,9 +173,49 @@ public class InfinispanStoreDataManager
     }
 
     @Override
-    protected ArtifactStore putArtifactStoreInternal( StoreKey storeKey, ArtifactStore store )
+    protected synchronized ArtifactStore putArtifactStoreInternal( StoreKey storeKey, ArtifactStore store )
     {
-        return stores.put( storeKey, store );
+        final ArtifactStore added = stores.put( storeKey, store );
+        final Map<StoreType, Set<StoreKey>> typedKeys =
+                storesByPkg.computeIfAbsent( storeKey.getPackageType(), k -> new HashMap<>() );
+        final Set<StoreKey> keys = typedKeys.computeIfAbsent( storeKey.getType(), k -> new HashSet<>() );
+        keys.add( storeKey );
+        return added;
+    }
+
+    @Override
+    public Set<StoreKey> getStoreKeysByPkg( final String pkg )
+    {
+        final Map<StoreType, Set<StoreKey>> typedKeys = storesByPkg.get( pkg );
+        if ( typedKeys != null )
+        {
+            final Set<StoreKey> keys = new HashSet<>();
+            typedKeys.values().forEach( keys::addAll );
+            logger.trace( "There are {} stores for package type {}", keys.size(), pkg );
+            return keys;
+        }
+        else
+        {
+            logger.trace( "There is no store for package type {}", pkg );
+            return Collections.emptySet();
+        }
+    }
+
+    @Override
+    public Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type )
+    {
+        final Map<StoreType, Set<StoreKey>> typedKeys = storesByPkg.get( pkg );
+        if ( typedKeys != null )
+        {
+            final Set<StoreKey> keys = typedKeys.get( type );
+            if ( keys != null )
+            {
+                logger.trace( "There are {} stores for package type {} with type {}", keys.size(), pkg, type );
+                return new HashSet<>( keys );
+            }
+        }
+        logger.trace( "There is no store for package type {} with type {}", pkg, type );
+        return Collections.emptySet();
     }
 
 }

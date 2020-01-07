@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.db.common;
 
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -45,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
  * This query interface is intended to be reusable across any {@link StoreDataManager} implementation. It contains logic
@@ -122,7 +125,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         }
         else
         {
-            this.types = Collections.singleton( StoreType.group );
+            this.types = Collections.singleton( group );
         }
 
         return (DefaultArtifactStoreQuery<C>) this;
@@ -414,8 +417,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
         Set<StoreKey> processed = new HashSet<>();
 
-        Set<StoreKey> all = new DefaultArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
-                                                          Group.class ).keyStream().collect( Collectors.toSet() );
+        Set<StoreKey> all = dataManager.getStoreKeysByPkgAndType( toProcess.get( 0 ).getPackageType(), group );
 
         logger.debug( "There are {} groups need to loop checking for affected by", all.size() );
 
@@ -470,12 +472,16 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
     {
-        return dataManager.streamArtifactStoreKeys().filter(key -> {
-            if ( packageType != null && !key.getPackageType().equals( packageType ))
-            {
-                return false;
-            }
-
+        final Stream<StoreKey> storeKeys;
+        if ( StringUtils.isNotBlank( this.packageType ) )
+        {
+            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
+        }
+        else
+        {
+            storeKeys = dataManager.streamArtifactStoreKeys();
+        }
+        return storeKeys.filter(key -> {
             if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
             {
                 return false;
@@ -553,7 +559,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public Group getGroup( final String name )
             throws IndyDataException
     {
-        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.group, name ) );
+        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
     }
 
     @Override
@@ -572,7 +578,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             throw new IndyDataException( "packageType must be set on the query before calling this method!" );
         }
 
-        final Group master = (Group) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.group, groupName ) );
+        final Group master = (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, groupName ) );
         if ( master == null )
         {
             return Collections.emptyList();
@@ -617,7 +623,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                      final StoreType type = key.getType();
                                      try
                                      {
-                                         if ( recurseGroups && type == StoreType.group )
+                                         if ( recurseGroups && type == group )
                                          {
                                              // if we're here, we're definitely recursing groups...
                                              Group group = (Group) dataManager.getArtifactStore( key );
