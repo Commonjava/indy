@@ -20,6 +20,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.db.common.StoreUpdateAction;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -38,14 +39,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
+import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.AFFECTED_BY_STORE_CACHE;
-import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 import static org.commonjava.indy.model.core.StoreType.group;
 
@@ -67,10 +71,6 @@ public class InfinispanStoreDataManager
     @Inject
     @AffectedByStoreCache
     private CacheHandle<StoreKey, Set<StoreKey>> affectedByStores;
-
-    @Inject
-    @StoreByPkgCache
-    private CacheHandle<String, Map<StoreType, Set<StoreKey>>> storesByPkg;
 
     @Inject
     private StoreEventDispatcher dispatcher;
@@ -238,80 +238,99 @@ public class InfinispanStoreDataManager
         return Collections.emptySet();
     }
 
-    // FIXME: We need simple affected-by caching, not fully denormalized caching
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
         final Set<Group> groups = new HashSet<>();
-        for ( StoreKey key : keys )
+        final Set<StoreKey> processed = new HashSet<>();
+        final LinkedList<StoreKey> toProcess = new LinkedList<>();
+        toProcess.addAll( keys );
+
+        while ( !toProcess.isEmpty() )
         {
-            Set<StoreKey> affected = affectedByStores.get( key );
-            if ( affected != null )
+            StoreKey key = toProcess.removeFirst();
+            if ( processed.add( key ) )
             {
-                affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
-                for ( StoreKey gKey : affected )
+                Set<StoreKey> affected = affectedByStores.get( key );
+                if ( affected != null )
                 {
-                    ArtifactStore store = getArtifactStoreInternal( gKey );
-                    groups.add( (Group) store );
+                    affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
+                    for ( StoreKey gKey : affected )
+                    {
+                        ArtifactStore store = getArtifactStoreInternal( gKey );
+                        toProcess.addLast( gKey );
+                        groups.add( (Group) store );
+                    }
                 }
             }
         }
+
         return groups;
     }
 
-    // FIXME: We need simple affected-by caching, not fully denormalized caching
     @Override
-    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original )
-            throws IndyDataException
+    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
     {
         if ( store == null )
         {
             return;
         }
-        if ( store instanceof Group )
+
+        if ( action == DELETE )
         {
-            final Set<StoreKey> updatedConstituents = new HashSet<>( ((Group)store).getConstituents() );
-            final Set<StoreKey> originalConstituents;
-            if ( original != null )
+            if ( store instanceof Group )
             {
-                originalConstituents = new HashSet<>( ((Group)original).getConstituents() );
+                ((Group)store).getConstituents().stream().collect( Collectors.toSet() ).forEach( (key)->{
+                    affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).remove( store.getKey() );
+                } );
             }
             else
             {
-                originalConstituents = new HashSet<>();
-            }
-
-            final Set<StoreKey> added = new HashSet<>();
-            final Set<StoreKey> removed = new HashSet<>();
-            for ( StoreKey updKey : updatedConstituents )
-            {
-                if ( !originalConstituents.contains( updKey ) )
-                {
-                    added.add( updKey );
-                }
-            }
-
-            for ( StoreKey oriKey : originalConstituents )
-            {
-                if ( !updatedConstituents.contains( oriKey ) )
-                {
-                    removed.add( oriKey );
-                }
-            }
-
-            final Set<StoreKey> allChangedSubs = new HashSet<>( added );
-            allChangedSubs.addAll( removed );
-
-            for ( StoreKey key : allChangedSubs )
-            {
-                final ArtifactStore sub = getArtifactStoreInternal( key );
-                refreshAffectedBy( sub, null );
+                affectedByStores.remove( store.getKey() );
             }
         }
+        else if ( action == STORE )
+        {
+            // NOTE: Only group membership changes can affect our affectedBy cache, unless the update is a store deletion.
+            if ( store instanceof Group )
+            {
+                final Set<StoreKey> updatedConstituents = new HashSet<>( ((Group)store).getConstituents() );
+                final Set<StoreKey> originalConstituents;
+                if ( original != null )
+                {
+                    originalConstituents = new HashSet<>( ((Group)original).getConstituents() );
+                }
+                else
+                {
+                    originalConstituents = new HashSet<>();
+                }
 
-        final Set<Group> affectedBy = affectedByFromStores( Collections.singleton( store.getKey() ) );
-        affectedByStores.put( store.getKey(),
-                              affectedBy.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+                final Set<StoreKey> added = new HashSet<>();
+                final Set<StoreKey> removed = new HashSet<>();
+                for ( StoreKey updKey : updatedConstituents )
+                {
+                    if ( !originalConstituents.contains( updKey ) )
+                    {
+                        added.add( updKey );
+                    }
+                }
 
+                for ( StoreKey oriKey : originalConstituents )
+                {
+                    if ( !updatedConstituents.contains( oriKey ) )
+                    {
+                        removed.add( oriKey );
+                    }
+                }
+
+                removed.forEach( (key)->{
+                    affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).remove( store.getKey() );
+                } );
+
+                added.forEach( (key)->{
+                    affectedByStores.computeIfAbsent( key, k->new HashSet<>() ).add( store.getKey() );
+                } );
+            }
+        }
     }
 }

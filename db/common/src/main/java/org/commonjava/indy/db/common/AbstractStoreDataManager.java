@@ -52,6 +52,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
+import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 public abstract class AbstractStoreDataManager
@@ -154,7 +156,7 @@ public abstract class AbstractStoreDataManager
         // Hosted or Remote update does not change affectedBy relationships
         if ( store instanceof Group )
         {
-            refreshAffectedBy( store, original );
+            refreshAffectedBy( store, original, STORE );
         }
     }
 
@@ -180,10 +182,10 @@ public abstract class AbstractStoreDataManager
             dispatcher.deleted( eventMetadata, store );
         }
 
-        refreshAffectedBy( store, null );
+        refreshAffectedBy( store, null, DELETE );
     }
 
-    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original )
+    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
             throws IndyDataException
     {
         //do nothing by default
