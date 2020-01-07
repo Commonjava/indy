@@ -95,14 +95,26 @@ public class InfinispanStoreDataManager
             logger.info( "Clean the stores-by-pkg cache" );
             storesByPkg.clear();
         }
+
+        boolean affectedByIsEmpty = affectedByStores.isEmpty();
+
         final Set<ArtifactStore> allStores = getAllArtifactStores();
         logger.info( "There are {} stores need to fill in stores-by-pkg cache", allStores.size() );
         for ( ArtifactStore store : allStores )
         {
             final Map<StoreType, Set<StoreKey>> typedKeys =
                     storesByPkg.computeIfAbsent( store.getKey().getPackageType(), k -> new HashMap<>() );
+
             final Set<StoreKey> keys = typedKeys.computeIfAbsent( store.getKey().getType(), k -> new HashSet<>() );
             keys.add( store.getKey() );
+
+            // If the affected-by cache is empty AND this is a group, record the reverse-map of constituents.
+            if ( affectedByIsEmpty && store.getType() == group )
+            {
+                ((Group)store).getConstituents().stream().collect( Collectors.toSet() ).forEach( key->{
+                    affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).add( store.getKey() );
+                } );
+            }
         }
     }
 
