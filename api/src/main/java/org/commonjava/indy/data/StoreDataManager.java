@@ -143,4 +143,8 @@ public interface StoreDataManager
 
     Set<Group> affectedBy( Collection<StoreKey> keys )
             throws IndyDataException;
+
+    Set<StoreKey> getStoreKeysByPkg( String pkg );
+
+    Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type );
 }

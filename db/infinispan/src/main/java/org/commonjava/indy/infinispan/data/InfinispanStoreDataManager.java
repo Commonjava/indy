@@ -45,6 +45,7 @@ import java.util.stream.Stream;
 
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.AFFECTED_BY_STORE_CACHE;
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 import static org.commonjava.indy.model.core.StoreType.group;
 
@@ -66,6 +67,10 @@ public class InfinispanStoreDataManager
     @Inject
     @AffectedByStoreCache
     private CacheHandle<StoreKey, Set<StoreKey>> affectedByStores;
+
+    @Inject
+    @StoreByPkgCache
+    private CacheHandle<String, Map<StoreType, Set<StoreKey>>> storesByPkg;
 
     @Inject
     private StoreEventDispatcher dispatcher;
@@ -140,6 +145,7 @@ public class InfinispanStoreDataManager
         stores.clear();
         storesByPkg.clear();
         affectedByStores.clear();
+        storesByPkg.clear();
     }
 
     @Override
@@ -232,6 +238,7 @@ public class InfinispanStoreDataManager
         return Collections.emptySet();
     }
 
+    // FIXME: We need simple affected-by caching, not fully denormalized caching
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
@@ -252,6 +259,7 @@ public class InfinispanStoreDataManager
         return groups;
     }
 
+    // FIXME: We need simple affected-by caching, not fully denormalized caching
     @Override
     protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original )
             throws IndyDataException
