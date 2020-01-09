@@ -17,9 +17,6 @@ package org.commonjava.indy.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.NamedThreadFactory;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
@@ -54,8 +51,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CASCADE;
@@ -95,11 +90,6 @@ public class DefaultContentManager
     @Inject
     private IndyConfiguration indyConfig;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "nfc-content-cleaner", priority = 4, daemon = true, threads = 8 )
-    private ExecutorService nfcContentCleanExecutor;
-
     protected DefaultContentManager()
     {
     }
@@ -116,14 +106,6 @@ public class DefaultContentManager
         this.nfc = nfc;
         this.contentDigester = contentDigester;
         this.contentGeneratorManager = contentGeneratorManager;
-        // for testing
-        if ( nfcContentCleanExecutor == null )
-        {
-            nfcContentCleanExecutor = Executors.newFixedThreadPool( 8, new NamedThreadFactory( "nfc-content-cleaner",
-                                                                                               new ThreadGroup(
-                                                                                                       "nfc-content-cleaner" ),
-                                                                                               true, 4 ) );
-        }
     }
 
     @Override
@@ -185,7 +167,8 @@ public class DefaultContentManager
                 }
 
                 final List<Transfer> storeTransfers = new ArrayList<>();
-                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata, (txfr) -> storeTransfers.add( txfr ) );
+                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata,
+                                                                     storeTransfers::add );
 
                 // If the content was generated, don't try to retrieve it from a member store...this is the lone exception to retrieveAll
                 // ...if it's generated, it's merged in this case.
@@ -391,7 +374,11 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            nfcContentCleanExecutor.execute( () -> clearNFCEntries( kl, path ) );
+            final String context =
+                    String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
+                                   store.getKey(), path );
+            storeManager.asyncGroupAffectedBy(
+                    new StoreDataManager.ContextualTask( context, () -> clearNFCEntries( kl, path ) ) );
         }
 
         return txfr;
@@ -441,8 +428,11 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            nfcContentCleanExecutor.execute( () -> clearNFCEntries( kl, path ) );
-
+            final String context =
+                    String.format( "Class: %s, method: %s, location: %s, path: %s", this.getClass().getName(), "store-stores",
+                                   kl, path );
+            storeManager.asyncGroupAffectedBy(
+                    new StoreDataManager.ContextualTask( context, () -> clearNFCEntries( kl, path ) ) );
         }
 
         return txfr;
@@ -591,7 +581,8 @@ public class DefaultContentManager
             }
 
             listed = new ArrayList<>();
-            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata, (list) -> listed.addAll( list ) );
+            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata,
+                                                                      listed::addAll );
 
             for ( final ArtifactStore member : members )
             {
@@ -614,7 +605,7 @@ public class DefaultContentManager
         else
         {
             listed = downloadManager.list( store, path, metadata );
-            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, (produced) -> listed.addAll( produced ) );
+            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, listed::addAll );
         }
 
         return dedupeListing( listed );

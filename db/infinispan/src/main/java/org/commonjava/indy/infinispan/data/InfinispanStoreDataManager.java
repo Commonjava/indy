@@ -16,7 +16,6 @@
 package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
@@ -31,7 +30,6 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
