@@ -17,11 +17,13 @@ package org.commonjava.indy.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -138,4 +140,7 @@ public interface StoreDataManager
     Set<StoreKey> getStoreKeysByPkg( String pkg );
 
     Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type );
+
+    Set<Group> affectedBy( Collection<StoreKey> keys )
+            throws IndyDataException;
 }

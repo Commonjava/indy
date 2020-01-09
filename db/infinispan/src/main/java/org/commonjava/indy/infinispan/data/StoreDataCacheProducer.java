@@ -33,6 +33,8 @@ public class StoreDataCacheProducer
 
     public static final String STORE_BY_PKG_CACHE = "store-by-package";
 
+    public static final String AFFECTED_BY_STORE_CACHE = "affected-by-stores";
+
     @Inject
     private CacheProducer cacheProducer;
 
@@ -58,6 +60,14 @@ public class StoreDataCacheProducer
     public CacheHandle<String, Map<StoreType, Set<StoreKey>>> getStoreByPkgCache()
     {
         return cacheProducer.getCache( STORE_BY_PKG_CACHE );
+    }
+
+    @AffectedByStoreCache
+    @Produces
+    @ApplicationScoped
+    public CacheHandle<StoreKey, Set<StoreKey>> getAffectedByStores()
+    {
+        return cacheProducer.getCache( AFFECTED_BY_STORE_CACHE );
     }
 
 }
