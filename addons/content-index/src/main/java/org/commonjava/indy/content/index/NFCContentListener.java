@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.content.index;
 
+import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -35,6 +37,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.concurrent.ExecutorService;
 
 /**
  * This listener is used to bind the content index cache event to nfc content clearing/adding. The following cases:
@@ -60,6 +63,11 @@ class NFCContentListener
 
     @Inject
     private NotFoundCache nfc;
+
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "nfc-content-index-cleaning", daemon = true, priority = 4, threads = 8)
+    private ExecutorService nfcIndexCleanExecutor;
 
     @CacheEntryCreated
     public void newIndex( final CacheEntryCreatedEvent<IndexedStorePath, IndexedStorePath> e )
@@ -113,28 +121,31 @@ class NFCContentListener
 
     private void nfcClearByContaining( final ArtifactStore store, final String path )
     {
-        try
+        if ( store == null )
         {
-            if ( store == null )
-            {
-                return;
-            }
+            return;
+        }
+        nfcIndexCleanExecutor.execute( () -> {
             logger.debug( "Start to clear nfc for groups affected by {} of path {}", store, path );
-            storeDataManager.query()
-                            .packageType( store.getKey().getPackageType() )
-                            .getGroupsAffectedBy( store.getKey() )
-                            .forEach( g -> {
-                                final ConcreteResource r = new ConcreteResource( LocationUtils.toLocation( g ), path );
-                                logger.debug( "Clear NFC in terms of containing {} in {} for resource {}", store, g,
-                                              r );
-                                nfc.clearMissing( r );
-                            } );
-
-        }
-        catch ( IndyDataException e )
-        {
-            logger.error( String.format( "Failed to lookup parent stores which contain %s. Reason: %s", store.getKey(),
-                                         e.getMessage() ), e );
-        }
+            try
+            {
+                storeDataManager.query()
+                                .packageType( store.getKey().getPackageType() )
+                                .getGroupsAffectedBy( store.getKey() )
+                                .forEach( g -> {
+                                    final ConcreteResource r =
+                                            new ConcreteResource( LocationUtils.toLocation( g ), path );
+                                    logger.debug( "Clear NFC in terms of containing {} in {} for resource {}", store, g,
+                                                  r );
+                                    nfc.clearMissing( r );
+                                } );
+            }
+            catch ( IndyDataException e )
+            {
+                logger.error(
+                        String.format( "Failed to lookup parent stores which contain %s. Reason: %s", store.getKey(),
+                                       e.getMessage() ), e );
+            }
+        } );
     }
 }
