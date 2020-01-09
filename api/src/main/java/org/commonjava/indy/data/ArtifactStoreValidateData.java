@@ -15,11 +15,7 @@
  */
 package org.commonjava.indy.data;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.kafka.common.protocol.types.Field;
-import org.bouncycastle.util.Store;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
 
 import java.util.HashMap;
 import java.util.Map;

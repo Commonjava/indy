@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
@@ -416,6 +417,20 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         Set<StoreKey> all = new DefaultArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
                                                           Group.class ).keyStream().collect( Collectors.toSet() );
 
+        logger.debug( "There are {} groups need to loop checking for affected by", all.size() );
+
+        Set<ArtifactStore> allStores = all.stream().map( k-> {
+            try
+            {
+                return dataManager.getArtifactStore( k );
+            }
+            catch ( IndyDataException e )
+            {
+                logger.error( "Error to get store {}", k );
+                return null;
+            }
+        } ).filter( Objects::nonNull ).collect( Collectors.toSet());
+
         while ( !toProcess.isEmpty() )
         {
             // as long as we have another key to process, pop it off the list (remove it) and process it.
@@ -429,10 +444,8 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             // use this to avoid reprocessing groups we've already encountered.
             processed.add( next );
 
-            for ( StoreKey key : all )
+            for (  ArtifactStore store : allStores )
             {
-                ArtifactStore store = dataManager.getArtifactStore( key );
-
                 if ( ( store instanceof Group ) && !processed.contains( store.getKey() ) )
                 {
                     Group g = (Group) store;
