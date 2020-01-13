@@ -429,12 +429,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 return false;
             }
 
-            if ( filterPredicate != null && !filterPredicate.test( key ) )
-            {
-                return false;
-            }
-
-            return true;
+            return filterPredicate == null || filterPredicate.test(key);
         });
     }
 
