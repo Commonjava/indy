@@ -54,6 +54,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.maven.parse.GalleyMavenXMLException;
 import org.commonjava.maven.galley.maven.parse.XMLInfrastructure;
 import org.commonjava.maven.galley.maven.spi.type.TypeMapper;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
@@ -84,6 +85,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
@@ -308,7 +310,7 @@ public class MavenMetadataGenerator
             if ( samplePomInfo == null )
             {
                 List<String> firstLevelDirs = firstLevelFiles.stream()
-                                                             .map( (res) -> res.getPath() )
+                                                             .map( ConcreteResource::getPath )
                                                              .filter( (subpath) -> subpath.endsWith( "/" ) )
                                                              .collect( Collectors.toList() );
                 final Map<String, List<StoreResource>> secondLevelMap = fileManager.listRaw( store, firstLevelDirs, eventMetadata );
@@ -320,13 +322,8 @@ public class MavenMetadataGenerator
                         if ( fileResource.getPath()
                                          .endsWith( ".pom" ) )
                         {
-                            if ( samplePomInfo == null )
-                            {
-                                samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
-                                break nextTopResource;
-                            }
-
-                            continue nextTopResource;
+                            samplePomInfo = ArtifactPathInfo.parse( fileResource.getPath() );
+                            break nextTopResource;
                         }
                     }
                 }
@@ -406,31 +403,23 @@ public class MavenMetadataGenerator
                         new MetadataXpp3Writer().write( baos, md );
 
                         final byte[] merged = baos.toByteArray();
-                        if ( merged != null )
+                        try (final OutputStream fos = target.openOutputStream( TransferOperation.GENERATE, true,
+                                                                               eventMetadata ))
                         {
-                            OutputStream fos = null;
-                            try
-                            {
-                                fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-                                fos.write( merged );
-                            }
-                            catch ( final IOException e )
-                            {
-                                throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}",
-                                                                 e, target, e.getMessage() );
-                            }
-                            finally
-                            {
-                                closeQuietly( fos );
-                            }
-
-                            String mergeInfo = writeGroupMergeInfo( md, group, contributing, mergePath );
-                            eventMetadata.set( GROUP_METADATA_GENERATED, true );
-                            MetadataInfo info = new MetadataInfo( md );
-                            info.setMetadataMergeInfo( mergeInfo );
-
-                            putToMetadataCache( group.getKey(), mergePath, info );
+                            fos.write( merged );
                         }
+                        catch ( final IOException e )
+                        {
+                            throw new IndyWorkflowException( "Failed to write merged metadata to: {}.\nError: {}", e,
+                                                             target, e.getMessage() );
+                        }
+
+                        String mergeInfo = writeGroupMergeInfo( md, group, contributing, mergePath );
+                        eventMetadata.set( GROUP_METADATA_GENERATED, true );
+                        MetadataInfo info = new MetadataInfo( md );
+                        info.setMetadataMergeInfo( mergeInfo );
+
+                        putToMetadataCache( group.getKey(), mergePath, info );
                     }
                     catch ( final IOException e )
                     {
@@ -495,7 +484,7 @@ public class MavenMetadataGenerator
     private String writeGroupMergeInfo( final Metadata md, final Group group, final List<StoreKey> contributingMembers, final String path )
             throws IndyWorkflowException
     {
-        logger.trace( "Start write .info file based on if the cache exists for group {} of members {} in path. ",
+        logger.trace( "Start write .info file based on if the cache exists for group {} of members {} in path {}. ",
                       group.getKey(), contributingMembers, path );
         final Transfer mergeInfoTarget = fileManager.getTransfer( group, path + GroupMergeHelper.MERGEINFO_SUFFIX );
         logger.trace( ".info file not found for {} of members {} in path {}", group.getKey(), contributingMembers, path );
@@ -509,7 +498,7 @@ public class MavenMetadataGenerator
                       path, metaMergeInfo );
         helper.writeMergeInfo( metaMergeInfo, group, path );
         logger.trace( ".info file regenerated for group {} of members {} in path. Full path: {}", group.getKey(), contributingMembers,
-                      path, mergeInfoTarget.getDetachedFile() );
+                      path );
 
         return metaMergeInfo;
     }
@@ -598,9 +587,8 @@ public class MavenMetadataGenerator
         {
             if ( logger.isTraceEnabled() )
             {
-                snapshotVersions.forEach( snapshotVersion -> {
-                    logger.trace( "snapshotVersion: {}", snapshotVersion.getVersion() );
-                } );
+                snapshotVersions.forEach(
+                        snapshotVersion -> logger.trace( "snapshotVersion: {}", snapshotVersion.getVersion() ) );
             }
             return master;
         }
@@ -1007,7 +995,7 @@ public class MavenMetadataGenerator
             final String xmlStr = xml.toXML( doc, true );
             logger.debug( "writeVersionMetadata, xmlStr: {}", xmlStr );
             stream = metadataFile.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-            stream.write( xmlStr.getBytes( "UTF-8" ) );
+            stream.write( xmlStr.getBytes( UTF_8 ) );
         }
         catch ( final GalleyMavenXMLException e )
         {
@@ -1119,7 +1107,7 @@ public class MavenMetadataGenerator
 
             final String xmlStr = xml.toXML( doc, true );
             stream = metadataFile.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-            stream.write( xmlStr.getBytes( "UTF-8" ) );
+            stream.write( xmlStr.getBytes( UTF_8 ) );
         }
         catch ( final GalleyMavenXMLException e )
         {
