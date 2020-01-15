@@ -16,6 +16,7 @@
 package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
@@ -360,5 +361,11 @@ public class InfinispanStoreDataManager
                                                           .add( store.getKey() ) );
             }
         }
+    }
+
+    public void initAffectedBy()
+            throws IndyDataException
+    {
+        streamArtifactStores().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
     }
 }
