@@ -252,6 +252,8 @@ public class InfinispanStoreDataManager
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
+        checkAffectedByCacheHealth();
+
         final Set<Group> result = new HashSet<>();
 
         // use these to avoid recursion
@@ -311,9 +313,12 @@ public class InfinispanStoreDataManager
         {
             if ( store instanceof Group )
             {
-                new HashSet<>( ( (Group) store ).getConstituents() ).forEach(
+                Group grp = (Group) store;
+                new HashSet<>( grp.getConstituents() ).forEach(
                         ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
                                                    .remove( store.getKey() ) );
+
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), grp.getConstituents().size() );
             }
             else
             {
@@ -357,8 +362,12 @@ public class InfinispanStoreDataManager
                 removed.forEach( ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
                                                             .remove( store.getKey() ) );
 
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), removed.size() );
+
                 added.forEach( ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
                                                           .add( store.getKey() ) );
+
+                logger.info( "Added affected-by reverse mapping for: {} in {} member stores", store.getKey(), added.size() );
             }
         }
     }
@@ -367,5 +376,15 @@ public class InfinispanStoreDataManager
             throws IndyDataException
     {
         streamArtifactStores().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
+
+        checkAffectedByCacheHealth();
+    }
+
+    private void checkAffectedByCacheHealth()
+    {
+        if ( affectedByStores.isEmpty() )
+        {
+            logger.error( "Affected-by reverse mapping appears to have failed. The affected-by cache is empty!" );
+        }
     }
 }
