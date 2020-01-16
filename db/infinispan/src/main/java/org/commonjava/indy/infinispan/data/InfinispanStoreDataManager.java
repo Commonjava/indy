@@ -345,9 +345,9 @@ public class InfinispanStoreDataManager
     }
 
     public void initAffectedBy()
-            throws IndyDataException
     {
-        streamArtifactStores().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+        allStores.stream().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
 
         checkAffectedByCacheHealth();
     }

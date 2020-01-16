@@ -17,19 +17,10 @@ public class InfinispanStoreDataReverseMapStartupAction
 
     @Override
     public void start()
-            throws IndyLifecycleException
     {
         if ( storeDataManager instanceof InfinispanStoreDataManager )
         {
-            try
-            {
-                ( (InfinispanStoreDataManager) storeDataManager ).initAffectedBy();
-            }
-            catch ( IndyDataException e )
-            {
-                throw new IndyLifecycleException( "Failed to reverse-map stores and groups they affect: " + e.getMessage(),
-                                                  e );
-            }
+            ( (InfinispanStoreDataManager) storeDataManager ).initAffectedBy();
         }
     }
 
