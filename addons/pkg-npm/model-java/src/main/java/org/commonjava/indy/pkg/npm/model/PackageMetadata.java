@@ -313,7 +313,7 @@ public class PackageMetadata
         while ( maintainer.hasNext() )
         {
             UserInfo m = (UserInfo) maintainer.next();
-            if ( !maintainers.contains( m ) )
+            if ( m.getName() != null && !maintainers.contains( m ) )
             {
                 this.addMaintainers( new UserInfo( m.getName(), m.getEmail(), m.getUrl() ) );
                 changed = true;
