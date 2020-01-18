@@ -16,10 +16,23 @@
 package org.commonjava.indy.metrics.jaxrs.interceptor;
 
 import com.codahale.metrics.Timer;
+import io.honeycomb.beeline.tracing.Beeline;
+import io.honeycomb.beeline.tracing.Span;
+import io.honeycomb.beeline.tracing.SpanBuilderFactory;
+import io.honeycomb.beeline.tracing.SpanPostProcessor;
+import io.honeycomb.beeline.tracing.Tracer;
+import io.honeycomb.beeline.tracing.Tracing;
+import io.honeycomb.beeline.tracing.propagation.HttpHeaderV1PropagationCodec;
+import io.honeycomb.beeline.tracing.propagation.Propagation;
+import io.honeycomb.beeline.tracing.propagation.PropagationContext;
+import io.honeycomb.beeline.tracing.sampling.Sampling;
+import io.honeycomb.libhoney.HoneyClient;
+import io.honeycomb.libhoney.LibHoney;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +65,9 @@ public class MetricsInterceptor
 
     @Inject
     private IndyMetricsManager metricsManager;
+
+    @Inject
+    private HoneycombManager honeycombManager;
 
     @Inject
     private IndyMetricsConfig config;
@@ -89,9 +105,11 @@ public class MetricsInterceptor
 
         long start = System.nanoTime();
 
+        Span span = null;
         try
         {
             metricsManager.mark( startMeters );
+            span = honeycombManager.startChildSpan( defaultName );
 
             return context.proceed();
         }
@@ -110,12 +128,19 @@ public class MetricsInterceptor
         }
         finally
         {
+            //beeline.getTracer().endTrace();
+
             metricsManager.stopTimers( timers );
             metricsManager.mark( meters );
 
             double elapsed = (System.nanoTime() - start) / NANOS_PER_MILLISECOND;
 
             metricsManager.accumulate( defaultName, elapsed );
+
+            if ( span != null )
+            {
+                span.close();
+            }
         }
     }
 
