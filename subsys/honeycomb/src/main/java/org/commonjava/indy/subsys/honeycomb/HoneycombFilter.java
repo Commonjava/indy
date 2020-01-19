@@ -54,7 +54,8 @@ public class HoneycombFilter
         Span rootSpan = null;
         try
         {
-            rootSpan = honeycombManager.startRootTracer( getEndpointName( hsr.getMethod(), hsr.getPathInfo() ) );
+            rootSpan = honeycombManager.startRootTracer( getEndpointName( hsr.getMethod(), hsr.getPathInfo() ) )
+                                       .addField( "path_info", hsr.getPathInfo() );
             chain.doFilter( request, response );
         }
         finally
