@@ -48,6 +48,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
@@ -248,7 +249,7 @@ public class ResourceManagementFilter
         String[] toks = pathInfo.split( "/" );
         for ( String s : toks )
         {
-            if ( "api".equals( s ) )
+            if ( isBlank( s ) || "api".equals( s ) )
             {
                 continue;
             }
