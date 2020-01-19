@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb;
 
 import io.honeycomb.beeline.tracing.Span;
+import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +30,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 
 @ApplicationScoped
 public class HoneycombFilter
@@ -38,6 +41,9 @@ public class HoneycombFilter
 {
     @Inject
     private HoneycombManager honeycombManager;
+
+    @Inject
+    private HoneycombConfiguration config;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -54,14 +60,27 @@ public class HoneycombFilter
         Span rootSpan = null;
         try
         {
-            rootSpan = honeycombManager.startRootTracer( getEndpointName( hsr.getMethod(), hsr.getPathInfo() ) )
-                                       .addField( "path_info", hsr.getPathInfo() );
+            rootSpan = honeycombManager.startRootTracer( getEndpointName( hsr.getMethod(), hsr.getPathInfo() ) );
+            if ( rootSpan != null )
+            {
+                rootSpan.addField( "path_info", hsr.getPathInfo() );
+            }
+
             chain.doFilter( request, response );
         }
         finally
         {
             if ( rootSpan != null )
             {
+                Span theSpan = rootSpan;
+                Stream.of( config.getFields()).forEach( field->{
+                    Object value = getContext( field );
+                    if ( value != null )
+                    {
+                        theSpan.addField( field, value );
+                    }
+                });
+
                 rootSpan.close();
             }
         }

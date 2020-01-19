@@ -22,11 +22,24 @@ import org.commonjava.propulsor.config.annotation.SectionName;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 
+import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.REST_METHOD_PATH;
+import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
+
 @SectionName( "honeycomb" )
 @ApplicationScoped
 public class HoneycombConfiguration
                 implements IndyConfigInfo
 {
+    private static final String[] FIELDS =
+            { CONTENT_TRACKING_ID, HTTP_METHOD, HTTP_STATUS, PREFERRED_ID, CLIENT_ADDR, PATH, PACKAGE_TYPE, REST_METHOD_PATH };
+
     private boolean enabled;
 
     private String writeKey;
@@ -80,5 +93,10 @@ public class HoneycombConfiguration
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-honeycomb.conf" );
+    }
+
+    public String[] getFields()
+    {
+        return FIELDS;
     }
 }

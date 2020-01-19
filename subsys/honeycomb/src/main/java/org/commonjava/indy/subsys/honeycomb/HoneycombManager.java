@@ -73,6 +73,7 @@ public class HoneycombManager
             beeline.getTracer().startTrace( rootSpan );
             return rootSpan;
         }
+
         return null;
     }
 
@@ -82,6 +83,7 @@ public class HoneycombManager
         {
             return beeline.startChildSpan( spanName );
         }
+
         return null;
     }
 }

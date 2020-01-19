@@ -27,7 +27,15 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
+import java.util.stream.Stream;
+
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
+import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
+import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 
 @Interceptor
 @Measure
@@ -68,7 +76,12 @@ public class HoneycombInterceptor
         Span span = null;
         try
         {
-            span = honeycombManager.startChildSpan( defaultName ).markStart();
+            span = honeycombManager.startChildSpan( defaultName );
+            if ( span != null )
+            {
+                span.markStart();
+            }
+
             logger.trace( "startChildSpan, span: {}, defaultName: {}", span, defaultName );
             return context.proceed();
         }
@@ -76,6 +89,15 @@ public class HoneycombInterceptor
         {
             if ( span != null )
             {
+                Span theSpan = span;
+                Stream.of( config.getFields()).forEach( field->{
+                    Object value = getContext( field );
+                    if ( value != null )
+                    {
+                        theSpan.addField( field, value );
+                    }
+                });
+
                 logger.trace( "closeSpan, {}", span );
                 span.close();
             }
