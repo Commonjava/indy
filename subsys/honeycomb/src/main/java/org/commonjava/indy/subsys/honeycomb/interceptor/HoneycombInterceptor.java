@@ -61,20 +61,22 @@ public class HoneycombInterceptor
             return context.proceed();
         }
 
-        String defaultName = getDefaultName( context.getMethod().getDeclaringClass(), context.getMethod().getName() );
+        Class<?> cls = context.getMethod().getDeclaringClass();
+
+        String defaultName = getDefaultName( cls, context.getMethod().getName() );
 
         Span span = null;
         try
         {
             span = honeycombManager.startChildSpan( defaultName ).markStart();
-            logger.debug( "startChildSpan, span: {}, defaultName: {}", span, defaultName );
+            logger.trace( "startChildSpan, span: {}, defaultName: {}", span, defaultName );
             return context.proceed();
         }
         finally
         {
             if ( span != null )
             {
-                logger.debug( "closeSpan, {}", span );
+                logger.trace( "closeSpan, {}", span );
                 span.close();
             }
         }

@@ -15,16 +15,10 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import io.honeycomb.beeline.tracing.Beeline;
-import io.honeycomb.beeline.tracing.Span;
-import io.honeycomb.beeline.tracing.propagation.HttpHeaderV1PropagationCodec;
-import io.honeycomb.beeline.tracing.propagation.Propagation;
-import io.honeycomb.beeline.tracing.propagation.PropagationContext;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.metrics.IndyMetricsConstants;
 import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -42,13 +36,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
@@ -82,9 +74,6 @@ public class ResourceManagementFilter
     private static final String SPECIAL_CONTENT_METRIC = BASE_CONTENT_METRIC + "special";
 
     private static final String FORCE_METERED = "force-metered";
-
-    @Inject
-    private HoneycombManager honeycombManager;
 
     @Inject
     private CacheProvider cacheProvider;
@@ -130,8 +119,6 @@ public class ResourceManagementFilter
         String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         String qs = hsr.getQueryString();
 
-        Span rootSpan = null;
-
         try
         {
             ThreadContext.clearContext();
@@ -165,8 +152,6 @@ public class ResourceManagementFilter
             MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
             restLogger.info( "START {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
             MDC.remove( REQUEST_PHASE );
-
-            rootSpan = honeycombManager.startRootTracer( getEndpointName( hsr.getMethod(), hsr.getPathInfo() ) );
 
             AtomicReference<IOException> ioex = new AtomicReference<>();
             AtomicReference<ServletException> seex = new AtomicReference<>();
@@ -235,35 +220,7 @@ public class ResourceManagementFilter
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
-
-            if ( rootSpan != null )
-            {
-                rootSpan.close();
-            }
         }
-    }
-
-    private String getEndpointName( String method, String pathInfo )
-    {
-        StringBuilder sb = new StringBuilder( method + "_" );
-        String[] toks = pathInfo.split( "/" );
-        for ( String s : toks )
-        {
-            if ( isBlank( s ) || "api".equals( s ) )
-            {
-                continue;
-            }
-            sb.append( s );
-            if ( "admin".equals( s ))
-            {
-                sb.append( "_" );
-            }
-            else
-            {
-                break;
-            }
-        }
-        return sb.toString();
     }
 
     private Supplier<String> pathClassifier( final String pathInfo )
