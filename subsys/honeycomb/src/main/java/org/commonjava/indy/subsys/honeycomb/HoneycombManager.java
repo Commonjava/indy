@@ -38,14 +38,17 @@ public class HoneycombManager
     @PostConstruct
     public void init()
     {
-        String writeKey = configuration.getWriteKey();
-        if ( isNotBlank( writeKey ) )
+        if ( !configuration.isEnabled() )
         {
-            logger.info( "Start Honeycomb manager" );
-            client = LibHoney.create( LibHoney.options()
-                                              .setDataset( configuration.getDataset() )
-                                              .setWriteKey( writeKey )
-                                              .build() );
+            logger.info( "Honeycomb is not enabled" );
+            return;
+        }
+        String writeKey = configuration.getWriteKey();
+        String dataset = configuration.getDataset();
+        if ( isNotBlank( writeKey ) && isNotBlank( dataset ) )
+        {
+            logger.info( "Init Honeycomb manager, dataset: {}", dataset );
+            client = LibHoney.create( LibHoney.options().setDataset( dataset ).setWriteKey( writeKey ).build() );
             SpanPostProcessor postProcessor = Tracing.createSpanProcessor( client, Sampling.alwaysSampler() );
             SpanBuilderFactory factory = Tracing.createSpanBuilderFactory( postProcessor, Sampling.alwaysSampler() );
             Tracer tracer = Tracing.createTracer( factory );
@@ -56,11 +59,6 @@ public class HoneycombManager
     public HoneyClient getClient()
     {
         return client;
-    }
-
-    public Beeline getBeeline()
-    {
-        return beeline;
     }
 
     public Span startRootTracer( String spanName )

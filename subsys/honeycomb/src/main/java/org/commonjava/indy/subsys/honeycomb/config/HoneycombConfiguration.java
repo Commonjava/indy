@@ -25,14 +25,9 @@ import java.io.InputStream;
 @SectionName( "honeycomb" )
 @ApplicationScoped
 public class HoneycombConfiguration
-        implements IndyConfigInfo
+                implements IndyConfigInfo
 {
-
-    private final String WRITE_KEY = "write_key";
-
-    private final String DATASET = "dataset";
-
-    private final String DEFAULT_DATASET = "indy_dataset";
+    private boolean enabled;
 
     private String writeKey;
 
@@ -42,12 +37,23 @@ public class HoneycombConfiguration
     {
     }
 
+    public boolean isEnabled()
+    {
+        return enabled;
+    }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
     public String getWriteKey()
     {
         return writeKey;
     }
 
-    @ConfigName( WRITE_KEY )
+    @ConfigName( "write.key" )
     public void setWriteKey( String writeKey )
     {
         this.writeKey = writeKey;
@@ -55,10 +61,10 @@ public class HoneycombConfiguration
 
     public String getDataset()
     {
-        return dataset == null ? DEFAULT_DATASET : dataset;
+        return dataset;
     }
 
-    @ConfigName( DATASET )
+    @ConfigName( "dataset" )
     public void setDataset( String dataset )
     {
         this.dataset = dataset;
