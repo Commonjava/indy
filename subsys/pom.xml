@@ -41,7 +41,7 @@
     <module>prefetch</module>
     <module>kafka</module>
     <module>cpool</module>
-      <module>honeycomb</module>
+    <module>honeycomb</module>
   </modules>
   
 </project>

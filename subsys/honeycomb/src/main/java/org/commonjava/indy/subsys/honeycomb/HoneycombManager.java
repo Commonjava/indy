@@ -80,7 +80,7 @@ public class HoneycombManager
     {
         if ( beeline != null )
         {
-            beeline.startChildSpan( spanName );
+            return beeline.startChildSpan( spanName );
         }
         return null;
     }
