@@ -27,14 +27,16 @@ import javax.inject.Inject;
 import javax.servlet.DispatcherType;
 import javax.ws.rs.core.Application;
 
-@ApplicationScoped
+// NOTE: I've added this initialization logic directly to the IndyDeployment so I can control the filter ordering.
+
+//@ApplicationScoped
 public class GoldenSignalsFilterMapper
-        extends IndyDeploymentProvider
+//        extends IndyDeploymentProvider
 {
     @Inject
     private GoldenSignalsFilter goldenSignalsFilter;
 
-    @Override
+//    @Override
     public DeploymentInfo getDeploymentInfo( final String contextRoot, final Application application )
     {
         DeploymentInfo di = new DeploymentInfo();
