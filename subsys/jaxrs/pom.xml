@@ -103,7 +103,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-sli-jaxrs</artifactId>
+      <artifactId>indy-sli</artifactId>
     </dependency>
     <dependency>
       <groupId>io.swagger</groupId>

@@ -26,7 +26,6 @@ import org.commonjava.indy.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
-import org.commonjava.indy.sli.jaxrs.GoldenSignalsFilter;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.commonjava.indy.subsys.honeycomb.HoneycombFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;

@@ -755,7 +755,7 @@
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-sli-jaxrs</artifactId>
+        <artifactId>indy-sli</artifactId>
         <version>1.9.9-SNAPSHOT</version>
       </dependency>
 

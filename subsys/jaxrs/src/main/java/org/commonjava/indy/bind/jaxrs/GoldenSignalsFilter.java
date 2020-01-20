@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.sli.jaxrs;
+package org.commonjava.indy.bind.jaxrs;
 
 import org.commonjava.indy.IndyRequestConstants;
 import org.commonjava.indy.metrics.RequestContextHelper;
@@ -31,7 +31,6 @@ import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.commonjava.indy.metrics.RequestContextHelper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -94,7 +93,7 @@ public class GoldenSignalsFilter
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     // For Unit-testing
-    GoldenSignalsFilter(final GoldenSignalsMetricSet metricSet, final SpecialPathManager specialPathManager){
+    GoldenSignalsFilter( final GoldenSignalsMetricSet metricSet, final SpecialPathManager specialPathManager){
         this.metricSet = metricSet;
         this.specialPathManager = specialPathManager;
     }
