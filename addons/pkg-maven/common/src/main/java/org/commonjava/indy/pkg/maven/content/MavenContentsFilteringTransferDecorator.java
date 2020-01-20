@@ -215,7 +215,7 @@ public class MavenContentsFilteringTransferDecorator
                 return "";
             }
 
-            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
+            Timer.Context timer = metricsManager == null ? null : metricsManager.startTimer( TIMER );
             try
             {
                 // filter versions from GA metadata
@@ -321,7 +321,7 @@ public class MavenContentsFilteringTransferDecorator
             {
                 if ( timer != null )
                 {
-                    timer.stop();
+                    metricsManager.stopTimer( TIMER );
                 }
             }
         }

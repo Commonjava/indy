@@ -29,6 +29,8 @@ import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
 import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
 import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_MILLIS;
+import static org.commonjava.indy.metrics.RequestContextHelper.REST_ENDPOINT_PATH;
 import static org.commonjava.indy.metrics.RequestContextHelper.REST_METHOD_PATH;
 import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 
@@ -38,7 +40,7 @@ public class HoneycombConfiguration
                 implements IndyConfigInfo
 {
     private static final String[] FIELDS =
-            { CONTENT_TRACKING_ID, HTTP_METHOD, HTTP_STATUS, PREFERRED_ID, CLIENT_ADDR, PATH, PACKAGE_TYPE, REST_METHOD_PATH };
+            { CONTENT_TRACKING_ID, HTTP_METHOD, HTTP_STATUS, PREFERRED_ID, CLIENT_ADDR, PATH, PACKAGE_TYPE, REST_ENDPOINT_PATH, REQUEST_LATENCY_MILLIS };
 
     private boolean enabled;
 

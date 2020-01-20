@@ -31,7 +31,7 @@ import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -53,6 +53,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_MILLIS;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_NS;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
@@ -141,7 +143,8 @@ public class GoldenSignalsFilter
             // latency.
             long end = RequestContextHelper.getRequestEndNanos() - RequestContextHelper.getRawIoWriteNanos();
 
-            MDC.put( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
+            RequestContextHelper.setContext( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
+            RequestContextHelper.setContext( REQUEST_LATENCY_MILLIS, (end-start) / NANOS_PER_MILLISECOND  );
 
             Set<String> functions = new HashSet<>( getFunctions( req.getPathInfo(), req.getMethod() ) );
             boolean error = resp.getStatus() > 499;

@@ -61,6 +61,11 @@ public class HoneycombManager
         return client;
     }
 
+    public Beeline getBeeline()
+    {
+        return beeline;
+    }
+
     public Span startRootTracer( String spanName )
     {
         if ( beeline != null )

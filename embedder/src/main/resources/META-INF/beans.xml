@@ -30,7 +30,7 @@
   <interceptors>
     <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
     <class>org.commonjava.indy.metrics.jaxrs.interceptor.MetricsInterceptor</class>
-    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptor</class>
+    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombMeasureInterceptor</class>
   </interceptors>
 
   <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->
