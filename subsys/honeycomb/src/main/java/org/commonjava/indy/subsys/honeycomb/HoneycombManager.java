@@ -5,6 +5,7 @@ import io.honeycomb.beeline.tracing.Span;
 import io.honeycomb.beeline.tracing.SpanBuilderFactory;
 import io.honeycomb.beeline.tracing.SpanPostProcessor;
 import io.honeycomb.beeline.tracing.Tracer;
+import io.honeycomb.beeline.tracing.TracerSpan;
 import io.honeycomb.beeline.tracing.Tracing;
 import io.honeycomb.beeline.tracing.sampling.Sampling;
 import io.honeycomb.libhoney.HoneyClient;
@@ -75,8 +76,8 @@ public class HoneycombManager
                                    .setSpanName( spanName )
                                    .setServiceName( "indy" )
                                    .build();
-            beeline.getTracer().startTrace( rootSpan );
-            return rootSpan;
+            return beeline.getTracer().startTrace( rootSpan );
+//            return rootSpan;
         }
 
         return null;
