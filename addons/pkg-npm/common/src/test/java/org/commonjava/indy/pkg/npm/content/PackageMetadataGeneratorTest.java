@@ -127,6 +127,42 @@ public class PackageMetadataGeneratorTest
         assertNotNull(after);
     }
 
+    @Test
+    public void generateMetadataWhenMissingForScoped() throws Exception
+    {
+        ChangeSummary summary = new ChangeSummary( "test","Init NPM hosted repo." );
+        final HostedRepository hostedRepository = new HostedRepository( NPM_PKG_KEY, "npm-builds" );
+        initStore(hostedRepository, summary);
+
+        final KeyedLocation location = LocationUtils.toLocation( hostedRepository );
+
+        storeFile( location, "@babel/core/-/core-7.7.5.tgz", "tarball/version-1.tgz");
+        storeFile( location, "@babel/core/-/core-7.7.7.tgz", "tarball/version-2.tgz");
+        storeFile( location, "@babel/core/7.7.5", "metadata/scoped-version-1.json" );
+        storeFile( location, "@babel/core/7.7.7", "metadata/scoped-version-2.json" );
+
+        // Check the package metadata before generation.
+        Transfer before = fileManager.retrieve( hostedRepository, "@babel/core/package.json" );
+        assertNull(before);
+
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, "@babel/core/package.json", new EventMetadata(  ) );
+        assertNotNull(metadataFile);
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        try ( InputStream input = metadataFile.openInputStream() )
+        {
+            PackageMetadata packageMetadata = mapper.readValue( input, PackageMetadata.class );
+            System.out.println( mapper.writeValueAsString( packageMetadata ) );
+            assertNotNull( packageMetadata );
+            assertEquals( 2, packageMetadata.getVersions().size());
+            assertEquals("Unexpected package name.", "@babel/core", packageMetadata.getName());
+            assertEquals( "Unexpected latest version.","7.7.7", packageMetadata.getDistTags().getLatest() );
+        }
+
+        // Check the package metadata after generation.
+        Transfer after = fileManager.retrieve( hostedRepository, "@babel/core/package.json" );
+        assertNotNull(after);
+    }
+
     private void initStore( HostedRepository hostedRepository, ChangeSummary summary ) throws Exception
     {
         stores.storeArtifactStore( hostedRepository, summary, false, true, new EventMetadata(  ) );

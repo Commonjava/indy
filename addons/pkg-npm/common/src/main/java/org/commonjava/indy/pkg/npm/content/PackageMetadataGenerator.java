@@ -220,14 +220,27 @@ public class PackageMetadataGenerator
     {
         logger.debug( "writePackageMetadata, firstLevelFiles:{}, store:{}", firstLevelFiles, store.getKey() );
 
-        // Parse the path of the tar to get the version, then try to get the version metadata
-        // by the path package/version
+        // Parse the path of the tar (e.g.: jquery/-/jquery-7.6.1.tgz or @types/jquery/-/jquery-2.2.3.tgz)
+        // to get the version, then try to get the version metadata by the path (@scoped/)package/version
         List<String> versionPaths = firstLevelFiles.stream()
                        .map( (res) -> {
                            String tarPath = res.getPath();
-                           String[] ps = tarPath.split( "/" );
-                           return normalize( ps[0], ps[2].substring( ps[0].length() + 1, ps[2].length() - 4 ));
+                           String[] pathParts = tarPath.split( "/" );
+                           if ( tarPath.startsWith( "@" ) )
+                           {
+                               String scopedName = pathParts[0];
+                               String packageName = pathParts[1];
+                               String tarName = pathParts[3];
+                               return normalize( scopedName, packageName, tarName.substring( packageName.length() + 1, tarName.length() - 4 ) );
+                           }
+                           else
+                           {
+                               String packageName = pathParts[0];
+                               String tarName = pathParts[2];
+                               return normalize( packageName, tarName.substring( packageName.length() + 1, tarName.length() - 4 ) );
+                           }
                        } )
+                       .sorted()
                        .collect( Collectors.toList());
 
         if ( versionPaths.size() == 0 )
@@ -292,6 +305,7 @@ public class PackageMetadataGenerator
             }
             catch ( IOException e )
             {
+                logger.error( "Get the version metadata error from path {}", versionPath, e );
                 throw new IndyWorkflowException( "Get the version metadata error from path {}", versionPath );
             }
         }
