@@ -140,12 +140,12 @@ public class MetricsInterceptor
 
         String name = getName( config.getNodePrefix(), DEFAULT, defaultName, TIMER );
         timers.put(name,
-                metricsManager.getTimer( name ).time() );
+                metricsManager.startTimer( name ) );
 
         MetricNamed[] timerMetrics = measure.timers();
         Stream.of( timerMetrics ).forEach( named -> {
             String timerName = getName( config.getNodePrefix(), named.value(), defaultName, TIMER );
-            Timer.Context tc = metricsManager.getTimer( timerName ).time();
+            Timer.Context tc = metricsManager.startTimer( timerName );
             logger.trace( "START: {} ({})", timerName, tc );
             timers.put( timerName, tc );
         } );

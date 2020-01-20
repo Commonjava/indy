@@ -31,7 +31,7 @@ import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.xnio.ChannelListener;
 import org.xnio.StreamConnection;
 import org.xnio.channels.AcceptingChannel;
@@ -135,7 +135,7 @@ public class ProxyAcceptHandler
     public void handleEvent( AcceptingChannel<StreamConnection> channel )
     {
         long start = System.nanoTime();
-        MDC.put( RequestContextHelper.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY.toString() );
+        RequestContextHelper.setContext( RequestContextHelper.ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY.toString() );
         setContext( PACKAGE_TYPE, PKG_TYPE_GENERIC_HTTP );
 
         final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -157,10 +157,10 @@ public class ProxyAcceptHandler
             return;
         }
 
-        MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
+        RequestContextHelper.setContext( REQUEST_PHASE, REQUEST_PHASE_START );
         LoggerFactory.getLogger( PROXY_METRIC_LOGGER )
                      .info( "START HTTProx request (from: {})", accepted.getPeerAddress() );
-        MDC.remove( REQUEST_PHASE );
+        RequestContextHelper.clearContext( REQUEST_PHASE );
 
         logger.debug( "accepted {}", accepted.getPeerAddress() );
 

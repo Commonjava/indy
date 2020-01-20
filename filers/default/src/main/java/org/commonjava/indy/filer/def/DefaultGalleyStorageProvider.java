@@ -44,6 +44,7 @@ import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
+import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,15 +164,20 @@ public class DefaultGalleyStorageProvider
     private void setupTransferDecoratorPipeline()
     {
         List<TransferDecorator> decorators = new ArrayList<>();
-        decorators.add( new IOLatencyDecorator( timerProvider(), meterProvider(), cumulativeTimer() ));
+        decorators.add( new IOLatencyDecorator( timerProviderFunction(), meterProvider(), cumulativeTimer() ));
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
-        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, timerProvider() ) );
+        decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, timerProviderFunction() ) );
         for ( TransferDecorator decorator : transferDecorators )
         {
             decorators.add( decorator );
         }
         decorators.add( getChecksummingTransferDecorator() );
         transferDecorator = new TransferDecoratorManager( decorators );
+    }
+
+    private Function<String, TimingProvider> timerProviderFunction()
+    {
+        return name-> new IndyTimingProvider( name, metricsManager );
     }
 
     private BiConsumer<String, Double> cumulativeTimer()
@@ -186,7 +192,7 @@ public class DefaultGalleyStorageProvider
 
     private Function<String, Timer.Context> timerProvider()
     {
-        return (name)->metricsManager.getTimer( name ).time();
+        return (name)->metricsManager.startTimer( name );
     }
 
     private ChecksummingTransferDecorator getChecksummingTransferDecorator()
@@ -252,7 +258,7 @@ public class DefaultGalleyStorageProvider
             return result;
         };
 
-        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager, timerProvider(),
+        return new ChecksummingTransferDecorator( readAdvisor, writeAdvisor, specialPathManager, timerProviderFunction(),
                                                   contentMetadataConsumer, new Md5GeneratorFactory(),
                                                   new Sha1GeneratorFactory(), new Sha256GeneratorFactory() );
     }

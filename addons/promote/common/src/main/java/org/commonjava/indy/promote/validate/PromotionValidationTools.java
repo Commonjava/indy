@@ -55,6 +55,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
@@ -633,8 +634,8 @@ public class PromotionValidationTools
                 logger.trace( "The paralleled exe on batch {}", batch );
                 batch.forEach( e -> {
                     String depthStr = MDC.get( ITERATION_DEPTH );
-                    MDC.put( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
-                    MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+                    RequestContextHelper.setContext( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
+                    RequestContextHelper.setContext( ITERATION_ITEM, String.valueOf( e ) );
                     try
                     {
                         closure.call( e );
@@ -661,8 +662,8 @@ public class PromotionValidationTools
         final CountDownLatch latch = new CountDownLatch( todo.size() );
         todo.forEach( e -> ruleParallelExecutor.execute( () -> {
             String depthStr = MDC.get( ITERATION_DEPTH );
-            MDC.put( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
-            MDC.put( ITERATION_ITEM, String.valueOf( e ) );
+            RequestContextHelper.setContext( ITERATION_DEPTH, depthStr == null ? "0" : String.valueOf( Integer.parseInt( depthStr ) + 1 ) );
+            RequestContextHelper.setContext( ITERATION_ITEM, String.valueOf( e ) );
 
             try
             {

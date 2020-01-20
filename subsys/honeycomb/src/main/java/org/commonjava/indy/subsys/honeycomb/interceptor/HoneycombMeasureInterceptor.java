@@ -39,7 +39,7 @@ import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 
 @Interceptor
 @Measure
-public class HoneycombInterceptor
+public class HoneycombMeasureInterceptor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 

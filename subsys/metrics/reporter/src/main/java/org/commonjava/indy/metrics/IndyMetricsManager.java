@@ -22,6 +22,10 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.cdi.util.weft.ThreadContext;
+import org.commonjava.indy.measure.annotation.MetricWrapper;
+import org.commonjava.indy.measure.annotation.MetricWrapperEnd;
+import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
+import org.commonjava.indy.measure.annotation.MetricWrapperStart;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
@@ -40,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -230,9 +233,32 @@ public class IndyMetricsManager
         return false;
     }
 
-    public Timer getTimer( String name )
+    @MetricWrapperStart
+    public Timer.Context startTimer( @MetricWrapperNamed String name )
     {
-        return this.metricRegistry.timer( name );
+        Timer.Context tctx = this.metricRegistry.timer( name ).time();
+        ThreadContext ctx = ThreadContext.getContext( true );
+        ctx.put( TIMER + name, tctx );
+
+        return tctx;
+    }
+
+    @MetricWrapperEnd
+    public long stopTimer( @MetricWrapperNamed String name )
+    {
+        ThreadContext ctx = ThreadContext.getContext( false );
+        if ( ctx == null )
+        {
+            return 0;
+        }
+
+        Timer.Context tctx = (Timer.Context) ctx.get( TIMER + name );
+        if ( tctx != null )
+        {
+            return tctx.stop();
+        }
+
+        return 0;
     }
 
     public Meter getMeter( String name )
@@ -263,6 +289,7 @@ public class IndyMetricsManager
         }
     }
 
+    @MetricWrapper
     public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
     {
         String name = classifier.get();
@@ -280,7 +307,7 @@ public class IndyMetricsManager
         String errorName = name( name, EXCEPTION );
         String eClassName = null;
 
-        Timer.Context timer = getTimer( timerName ).time();
+        Timer.Context timer = startTimer( timerName );
         logger.trace( "START: {} ({})", metricName, timer );
 
         long start = System.nanoTime();
@@ -326,12 +353,7 @@ public class IndyMetricsManager
     {
         if ( timers != null )
         {
-            timers.forEach( (name, timer) ->{
-                if ( timer != null )
-                {
-                    timer.stop();
-                }
-            } );
+            timers.forEach( ( name, timer ) -> stopTimer( name ) );
         }
     }
 
@@ -350,4 +372,5 @@ public class IndyMetricsManager
             metricRegistry.gauge( name, () -> v );
         } );
     }
+
 }
