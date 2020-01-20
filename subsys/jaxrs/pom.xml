@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-subsystems</artifactId>
-    <version>1.9.8</version>
+    <version>1.9.9</version>
   </parent>
   
   <artifactId>indy-subsys-jaxrs</artifactId>
@@ -97,7 +97,14 @@
       <groupId>org.codehaus.plexus</groupId>
       <artifactId>plexus-interpolation</artifactId>
     </dependency>
-    
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-honeycomb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-sli</artifactId>
+    </dependency>
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>

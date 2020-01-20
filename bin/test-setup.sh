@@ -82,7 +82,6 @@ else
   <logger name="org.jboss.resteasy" level="DEBUG" />
   <logger name="org.jboss" level="ERROR"/>
   <logger name="org.commonjava" level="DEBUG" />
-  <logger name="org.apache.http.wire" level="DEBUG" />
   <root level="INFO">
     <appender-ref ref="STDOUT" />
     <appender-ref ref="FILE" />

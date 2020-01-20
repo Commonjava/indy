@@ -159,7 +159,7 @@ public class NPMPackageMaskingTransferDecorator
 
         private void mask( String contextURL ) throws IOException
         {
-            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
+            Timer.Context timer = metricsManager == null ? null : metricsManager.startTimer( TIMER );
             try
             {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -183,7 +183,7 @@ public class NPMPackageMaskingTransferDecorator
             {
                 if ( timer != null )
                 {
-                    timer.stop();
+                    metricsManager.stopTimer( TIMER );
                 }
             }
         }

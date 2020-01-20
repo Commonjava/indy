@@ -16,6 +16,7 @@
 package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
@@ -84,37 +85,6 @@ public class InfinispanStoreDataManager
     {
     }
 
-    @PostConstruct
-    synchronized void init()
-    {
-        // re-fill the stores by package cache each time when reboot
-        if ( storesByPkg != null )
-        {
-            logger.info( "Clean the stores-by-pkg cache" );
-            storesByPkg.clear();
-        }
-
-        boolean affectedByIsEmpty = affectedByStores.isEmpty();
-
-        final Set<ArtifactStore> allStores = getAllArtifactStores();
-        logger.info( "There are {} stores need to fill in stores-by-pkg cache", allStores.size() );
-        for ( ArtifactStore store : allStores )
-        {
-            final Map<StoreType, Set<StoreKey>> typedKeys =
-                    storesByPkg.computeIfAbsent( store.getKey().getPackageType(), k -> new HashMap<>() );
-
-            final Set<StoreKey> keys = typedKeys.computeIfAbsent( store.getKey().getType(), k -> new HashSet<>() );
-            keys.add( store.getKey() );
-
-            // If the affected-by cache is empty AND this is a group, record the reverse-map of constituents.
-            if ( affectedByIsEmpty && store.getType() == group )
-            {
-                new HashSet<>( ( (Group) store ).getConstituents() ).forEach(
-                        key -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).add( store.getKey() ) );
-            }
-        }
-    }
-
     public InfinispanStoreDataManager( final Cache<StoreKey, ArtifactStore> cache,
                                        final Cache<String, Map<StoreType, Set<StoreKey>>> storesByPkg,
                                        final Cache<StoreKey, Set<StoreKey>> affectedByStoresCache )
@@ -123,7 +93,7 @@ public class InfinispanStoreDataManager
         this.stores = new CacheHandle( STORE_DATA_CACHE, cache );
         this.storesByPkg = new CacheHandle( STORE_BY_PKG_CACHE, storesByPkg );
         this.affectedByStores = new CacheHandle( AFFECTED_BY_STORE_CACHE, affectedByStoresCache );
-        init();
+        logger.warn( "Constructor init: STARTUP ACTIONS MAY NOT RUN." );
     }
 
     @Override
@@ -251,6 +221,8 @@ public class InfinispanStoreDataManager
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
+        checkAffectedByCacheHealth();
+
         final Set<Group> result = new HashSet<>();
 
         // use these to avoid recursion
@@ -295,6 +267,9 @@ public class InfinispanStoreDataManager
             }
         }
 
+        logger.info( "Groups affected by {} are: {}", keys,
+                     result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+
         return result;
     }
 
@@ -310,9 +285,12 @@ public class InfinispanStoreDataManager
         {
             if ( store instanceof Group )
             {
-                new HashSet<>( ( (Group) store ).getConstituents() ).forEach(
+                Group grp = (Group) store;
+                new HashSet<>( grp.getConstituents() ).forEach(
                         ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
                                                    .remove( store.getKey() ) );
+
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), grp.getConstituents().size() );
             }
             else
             {
@@ -356,9 +334,50 @@ public class InfinispanStoreDataManager
                 removed.forEach( ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
                                                             .remove( store.getKey() ) );
 
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), removed.size() );
+
                 added.forEach( ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
                                                           .add( store.getKey() ) );
+
+                logger.info( "Added affected-by reverse mapping for: {} in {} member stores", store.getKey(), added.size() );
             }
+        }
+    }
+
+    public void initAffectedBy()
+    {
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+        allStores.stream().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
+
+        checkAffectedByCacheHealth();
+    }
+
+    private void checkAffectedByCacheHealth()
+    {
+        if ( affectedByStores.isEmpty() )
+        {
+            logger.error( "Affected-by reverse mapping appears to have failed. The affected-by cache is empty!" );
+        }
+    }
+
+    public void initByPkgMap()
+    {
+        // re-fill the stores by package cache each time when reboot
+        if ( storesByPkg != null )
+        {
+            logger.info( "Clean the stores-by-pkg cache" );
+            storesByPkg.clear();
+        }
+
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+        logger.info( "There are {} stores need to fill in stores-by-pkg cache", allStores.size() );
+        for ( ArtifactStore store : allStores )
+        {
+            final Map<StoreType, Set<StoreKey>> typedKeys =
+                    storesByPkg.computeIfAbsent( store.getKey().getPackageType(), k -> new HashMap<>() );
+
+            final Set<StoreKey> keys = typedKeys.computeIfAbsent( store.getKey().getType(), k -> new HashSet<>() );
+            keys.add( store.getKey() );
         }
     }
 }

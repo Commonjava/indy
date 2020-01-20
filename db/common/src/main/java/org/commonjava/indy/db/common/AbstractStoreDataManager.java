@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
@@ -54,6 +55,7 @@ import java.util.stream.Stream;
 
 import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 public abstract class AbstractStoreDataManager
@@ -318,15 +320,22 @@ public abstract class AbstractStoreDataManager
 
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
-
-        if (internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
-            ArtifactStoreValidateData validateData = storeValidator.validate(store);
-            if (!validateData.isValid()) {
-                logger.warn("=> [AbstractStoreDataManager] Adding Validation Metadata to Remote Store: " + store.getKey() + " - not Valid! ");
-                if(store.getMetadata() != null)
-                    store.getMetadata().putAll(validateData.getErrors());
+        if ( internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != group )
+        {
+            ArtifactStoreValidateData validateData = storeValidator.validate( store );
+            if ( !validateData.isValid() )
+            {
+                logger.warn(
+                        "=> [AbstractStoreDataManager] Adding Validation Metadata to Remote Store: " + store.getKey()
+                                + " - not Valid! " );
+                if ( store.getMetadata() != null )
+                {
+                    store.getMetadata().putAll( validateData.getErrors() );
+                }
                 else
-                    store.setMetadata(validateData.getErrors());
+                {
+                    store.setMetadata( validateData.getErrors() );
+                }
             }
         }
 
@@ -450,7 +459,6 @@ public abstract class AbstractStoreDataManager
     }
 
     protected Set<Group> affectedByFromStores( final Collection<StoreKey> keys )
-            throws IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Getting groups affected by: {}", keys );
@@ -466,19 +474,11 @@ public abstract class AbstractStoreDataManager
         Set<StoreKey> processed = new HashSet<>();
         final String packageType = toProcess.get( 0 ).getPackageType();
 
-        Set<ArtifactStore> all = this.getAllArtifactStores().stream().filter( st -> {
-            if ( packageType != null && !st.getPackageType().equals( packageType ) )
-            {
-                return false;
-            }
-
-            if ( st.getType() != StoreType.group )
-            {
-                return false;
-            }
-
-            return true;
-        } ).collect( Collectors.toSet() );
+        Set<ArtifactStore> all = this.getStoreKeysByPkgAndType( packageType, group )
+                                     .stream()
+                                     .map( this::getArtifactStoreInternal )
+                                     .filter( Objects::nonNull )
+                                     .collect( Collectors.toSet() );
 
         while ( !toProcess.isEmpty() )
         {
@@ -511,4 +511,5 @@ public abstract class AbstractStoreDataManager
 
         return groups;
     }
+
 }

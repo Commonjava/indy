@@ -55,7 +55,7 @@ import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
@@ -203,10 +203,10 @@ public class PromotionManager
     public GroupPromoteResult promoteToGroup( GroupPromoteRequest request, String user, String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
-        MDC.put( PROMOTION_ID, request.getPromotionId() );
-        MDC.put( PROMOTION_TYPE, GROUP_PROMOTION );
-        MDC.put( PROMOTION_SOURCE, request.getSource().toString() );
-        MDC.put( PROMOTION_TARGET, request.getTargetKey().toString() );
+        RequestContextHelper.setContext( PROMOTION_ID, request.getPromotionId() );
+        RequestContextHelper.setContext( PROMOTION_TYPE, GROUP_PROMOTION );
+        RequestContextHelper.setContext( PROMOTION_SOURCE, request.getSource().toString() );
+        RequestContextHelper.setContext( PROMOTION_TARGET, request.getTargetKey().toString() );
 
         if ( !storeManager.hasArtifactStore( request.getSource() ) )
         {
@@ -515,10 +515,10 @@ public class PromotionManager
     public PathsPromoteResult promotePaths( final PathsPromoteRequest request, final String baseUrl )
             throws PromotionException, IndyWorkflowException
     {
-        MDC.put( PROMOTION_ID, request.getPromotionId() );
-        MDC.put( PROMOTION_TYPE, PATH_PROMOTION );
-        MDC.put( PROMOTION_SOURCE, request.getSource().toString() );
-        MDC.put( PROMOTION_TARGET, request.getTargetKey().toString() );
+        RequestContextHelper.setContext( PROMOTION_ID, request.getPromotionId() );
+        RequestContextHelper.setContext( PROMOTION_TYPE, PATH_PROMOTION );
+        RequestContextHelper.setContext( PROMOTION_SOURCE, request.getSource().toString() );
+        RequestContextHelper.setContext( PROMOTION_TARGET, request.getTargetKey().toString() );
 
         Future<PathsPromoteResult> future = submitPathsPromoteRequest( request, baseUrl );
         if ( request.isAsync() )
@@ -671,7 +671,7 @@ public class PromotionManager
             contents = promotionHelper.getTransfersForPaths( source, paths );
         }
 
-        final Set<String> pending = contents.stream().map( transfer -> transfer.getPath() ).collect( Collectors.toSet() );
+        final Set<String> pending = contents.stream().map( Transfer::getPath ).collect( Collectors.toSet() );
 
         if ( pending.isEmpty() )
         {
@@ -685,9 +685,7 @@ public class PromotionManager
 
         if ( request.isFailWhenExists() )
         {
-            promoteResult = conflictManager.checkAnd( plk, pathsLockKey -> {
-                return runValidationAndPathPromotions( skipValidation, request, baseUrl, ex, pending, contents );
-            }, pathsLockKey -> {
+            promoteResult = conflictManager.checkAnd( plk, pathsLockKey -> runValidationAndPathPromotions( skipValidation, request, baseUrl, ex, pending, contents ), pathsLockKey -> {
                 String msg = String.format( "Conflict detected, store: %s, paths: %s", pathsLockKey.getTarget(), pending );
                 logger.warn( msg );
                 return new PathsPromoteResult( request, pending, emptySet(), emptySet(), msg, null );
@@ -704,7 +702,7 @@ public class PromotionManager
         }
 
         // purge only if all paths were promoted successfully
-        if ( promoteResult.succeeded() && request.isPurgeSource() )
+        if ( promoteResult != null && promoteResult.succeeded() && request.isPurgeSource() )
         {
             promotionHelper.purgeSourceQuietly( request.getSource(), pending );
         }
@@ -793,7 +791,7 @@ public class PromotionManager
 
         try
         {
-            svc.drain( ptr -> results.addAll( ptr ) );
+            svc.drain( results::addAll );
         }
         catch ( InterruptedException | ExecutionException e )
         {
@@ -860,7 +858,7 @@ public class PromotionManager
                 PathTransferResult ret = doPathTransfer( transfer, tgt, request );
                 results.add( ret );
             }
-            MDC.put( PROMOTION_CONTENT_PATH, pathsForMDC.toString() );
+            RequestContextHelper.setContext( PROMOTION_CONTENT_PATH, pathsForMDC.toString() );
             return results;
         };
     }
@@ -870,12 +868,23 @@ public class PromotionManager
     {
         logger.debug( "doPathTransfer, transfer: {}, target: {}", transfer, tgt );
 
+        if ( transfer == null )
+        {
+            final String error = String.format( "Warning: doPathTransfer cannot process null transfer to target: %s", tgt );
+            logger.error( error );
+            //FIXME: throw IndyWorkflowException is better?
+            PathTransferResult result = new PathTransferResult( "" );
+            result.error = error;
+            return result;
+        }
+
         long begin = System.currentTimeMillis();
+
 
         final String path = transfer.getPath();
         PathTransferResult result = new PathTransferResult( path );
 
-        if ( transfer == null || !transfer.exists() )
+        if ( !transfer.exists() )
         {
             SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( transfer, tgt.getPackageType() );
             // if we can't decorate it, that's because we don't want to automatically generate checksums, etc. for it

@@ -25,13 +25,14 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.pkg.npm.jaxrs.NPMContentAccessHandler;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -153,7 +154,7 @@ public class FoloNPMContentAccessResource
         EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
                                                     .set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
-        MDC.put( CONTENT_TRACKING_ID, id );
+        RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         return handler.doHead( NPM_PKG_KEY, type, name, packageName, cacheOnly, baseUri, request, metadata );
     }
@@ -176,7 +177,7 @@ public class FoloNPMContentAccessResource
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
-        MDC.put( CONTENT_TRACKING_ID, id );
+        RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         final String baseUri =  getBasePath( uriInfo, id );
         final String path = Paths.get( packageName, versionTarball ).toString();
@@ -203,7 +204,7 @@ public class FoloNPMContentAccessResource
         EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
                                                     .set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
-        MDC.put( CONTENT_TRACKING_ID, id );
+        RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         return handler.doGet( NPM_PKG_KEY, type, name, packageName, baseUri, request, metadata );
     }
@@ -225,7 +226,7 @@ public class FoloNPMContentAccessResource
         final TrackingKey tk = new TrackingKey( id );
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
-        MDC.put( CONTENT_TRACKING_ID, id );
+        RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         final String path = Paths.get( packageName, versionTarball ).toString();
         final String baseUri = getBasePath( uriInfo, id );

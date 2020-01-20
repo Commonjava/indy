@@ -19,6 +19,7 @@ import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.metrics.IndyMetricsConstants;
 import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
@@ -36,7 +37,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -150,7 +150,7 @@ public class ResourceManagementFilter
 
             Thread.currentThread().setName( tn );
 
-            MDC.put( REQUEST_PHASE, REQUEST_PHASE_START );
+            RequestContextHelper.setContext( REQUEST_PHASE, REQUEST_PHASE_START );
             restLogger.info( "START {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
             MDC.remove( REQUEST_PHASE );
 
@@ -202,14 +202,14 @@ public class ResourceManagementFilter
                 if ( cumulativeTimings != null )
                 {
                     cumulativeTimings.forEach(
-                            ( k, v ) -> MDC.put( CUMULATIVE_TIMINGS + "." + k, String.format( "%.3f", v ) ) );
+                            ( k, v ) -> RequestContextHelper.setContext( CUMULATIVE_TIMINGS + "." + k, String.format( "%.3f", v ) ) );
                 }
 
                 Map<String, Integer> cumulativeCounts = (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
                 if ( cumulativeCounts != null )
                 {
                     cumulativeCounts.forEach(
-                            ( k, v ) -> MDC.put( CUMULATIVE_COUNTS + "." + k, String.format( "%d", v ) ) );
+                            ( k, v ) -> RequestContextHelper.setContext( CUMULATIVE_COUNTS + "." + k, String.format( "%d", v ) ) );
                 }
             }
 
@@ -221,9 +221,6 @@ public class ResourceManagementFilter
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
-
-//            Thread.currentThread().getThreadGroup().list();
-
         }
     }
 

@@ -45,7 +45,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.xnio.ChannelListener;
 import org.xnio.StreamConnection;
 import org.xnio.conduits.ConduitStreamSinkChannel;
@@ -278,7 +278,7 @@ public final class ProxyResponseWriter
                             if ( trackingKey != null )
                             {
                                 trackingId = trackingKey.getId();
-                                MDC.put( RequestContextHelper.CONTENT_TRACKING_ID, trackingId );
+                                RequestContextHelper.setContext( RequestContextHelper.CONTENT_TRACKING_ID, trackingId );
                             }
 
                             String authCacheKey = generateAuthCacheKey( proxyUserPass );
