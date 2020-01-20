@@ -26,6 +26,7 @@ import org.commonjava.indy.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
+import org.commonjava.indy.sli.jaxrs.GoldenSignalsFilter;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.commonjava.indy.subsys.honeycomb.HoneycombFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
@@ -76,6 +77,9 @@ public class IndyDeployment
 
     @Inject
     private HoneycombFilter honeycombFilter;
+
+    @Inject
+    private GoldenSignalsFilter goldenSignalsFilter;
 
     @Inject
     private IndyVersioning versioning;
@@ -162,6 +166,10 @@ public class IndyDeployment
                                  new ImmediateInstanceFactory<HoneycombFilter>(
                                          this.honeycombFilter ) );
 
+        final FilterInfo goldenSignalsFilter = Servlets.filter( "Golden-Signals", GoldenSignalsFilter.class,
+                                                                new ImmediateInstanceFactory<>(
+                                                                        this.goldenSignalsFilter ) );
+
         final FilterInfo resourceManagementFilter =
                 Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
                                  new ImmediateInstanceFactory<ResourceManagementFilter>(
@@ -170,7 +178,6 @@ public class IndyDeployment
                         Servlets.filter( "ApiVersioning", ApiVersioningFilter.class,
                                          new ImmediateInstanceFactory<ApiVersioningFilter>(
                                                          this.apiVersioningFilter ) );
-        
 
         final DeploymentInfo di = new DeploymentInfo().addListener( Servlets.listener( RequestScopeListener.class ) )
                                                       //.addInitParameter( "resteasy.scan", Boolean.toString( true ) )
@@ -179,9 +186,28 @@ public class IndyDeployment
                                                                                    deployment )
                                                       .addServlet( resteasyServlet )
 
+                                                      .addFilter( goldenSignalsFilter )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/folo/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/content/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/promotion/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/admin/stores/*",
+                                                                            DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/browse/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/remote/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/hosted/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
+                                                                            "/api/group/*", DispatcherType.REQUEST )
+
                                                       .addFilter( honeycombFilter )
-                                                      .addFilterUrlMapping( honeycombFilter.getName(),
-                                                                            "/api/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( honeycombFilter.getName(), "/api/*",
+                                                                            DispatcherType.REQUEST )
 
                                                       .addFilter( resourceManagementFilter )
                                                       .addFilterUrlMapping( resourceManagementFilter.getName(),
