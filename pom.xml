@@ -384,6 +384,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.9-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-flatfile</artifactId>
         <version>1.9.9-SNAPSHOT</version>
       </dependency>
@@ -962,6 +967,11 @@
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging</artifactId>
         <version>3.3.0.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>io.honeycomb.beeline</groupId>
+        <artifactId>beeline-core</artifactId>
+        <version>1.0.7</version>
       </dependency>
 <!--       <dependency>
         <groupId>org.jboss.logging</groupId>

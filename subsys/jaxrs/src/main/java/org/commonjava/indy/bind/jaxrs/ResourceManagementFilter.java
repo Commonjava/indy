@@ -36,7 +36,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -221,9 +220,6 @@ public class ResourceManagementFilter
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
-
-//            Thread.currentThread().getThreadGroup().list();
-
         }
     }
 

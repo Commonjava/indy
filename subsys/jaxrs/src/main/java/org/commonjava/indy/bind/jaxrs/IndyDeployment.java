@@ -27,6 +27,7 @@ import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
+import org.commonjava.indy.subsys.honeycomb.HoneycombFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;
@@ -74,6 +75,9 @@ public class IndyDeployment
     private ApiVersioningFilter apiVersioningFilter;
 
     @Inject
+    private HoneycombFilter honeycombFilter;
+
+    @Inject
     private IndyVersioning versioning;
 
     private Set<Class<? extends IndyResources>> resourceClasses;
@@ -89,6 +93,7 @@ public class IndyDeployment
     public IndyDeployment( final Set<Class<? extends IndyResources>> resourceClasses,
                            final Set<Class<? extends RestProvider>> restProviders,
                            final Set<IndyDeploymentProvider> deploymentProviders, final UIServlet ui,
+                           final HoneycombFilter honeycombFilter,
                            final ResourceManagementFilter resourceManagementFilter, final IndyVersioning versioning )
     {
         this.resourceClasses = resourceClasses;
@@ -96,6 +101,7 @@ public class IndyDeployment
         this.ui = ui;
         this.resourceManagementFilter = resourceManagementFilter;
         this.versioning = versioning;
+        this.honeycombFilter = honeycombFilter;
         this.apiVersioningFilter = new ApiVersioningFilter( versioning );
         this.providerClasses = Collections.emptySet();
         this.classes = getClasses();
@@ -151,6 +157,11 @@ public class IndyDeployment
                                                     .addMapping( "/api-docs*" )
                                                     .addMapping( "/api-docs/*" );
 
+        final FilterInfo honeycombFilter =
+                        Servlets.filter( "Honeycomb", HoneycombFilter.class,
+                                 new ImmediateInstanceFactory<HoneycombFilter>(
+                                         this.honeycombFilter ) );
+
         final FilterInfo resourceManagementFilter =
                 Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
                                  new ImmediateInstanceFactory<ResourceManagementFilter>(
@@ -167,12 +178,19 @@ public class IndyDeployment
                                                       .addServletContextAttribute( ResteasyDeployment.class.getName(),
                                                                                    deployment )
                                                       .addServlet( resteasyServlet )
+
+                                                      .addFilter( honeycombFilter )
+                                                      .addFilterUrlMapping( honeycombFilter.getName(),
+                                                                            "/api/*", DispatcherType.REQUEST )
+
                                                       .addFilter( resourceManagementFilter )
                                                       .addFilterUrlMapping( resourceManagementFilter.getName(),
                                                                             "/api/*", DispatcherType.REQUEST )
+
                                                       .addFilter( apiVersioningFilter )
                                                       .addFilterUrlMapping( apiVersioningFilter.getName(), "/*",
                                                                             DispatcherType.REQUEST )
+
                                                       .setDeploymentName( "Indy" )
                                                       .setClassLoader( ClassLoader.getSystemClassLoader() );
                                                       //.addOuterHandlerChainWrapper( new HeaderDebugger().new
