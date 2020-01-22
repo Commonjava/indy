@@ -91,8 +91,8 @@ public class HoneycombManager
                                    .setSpanName( spanName )
                                    .setServiceName( "indy" )
                                    .build();
-            return beeline.getTracer().startTrace( rootSpan );
-//            return rootSpan;
+            beeline.getTracer().startTrace( rootSpan );
+            return rootSpan;
         }
 
         return null;
