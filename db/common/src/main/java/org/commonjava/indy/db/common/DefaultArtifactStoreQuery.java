@@ -79,12 +79,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     public DefaultArtifactStoreQuery( StoreDataManager dataManager )
     {
+        logger.info( "CREATE new default store query with data manager only" );
         this.dataManager = dataManager;
     }
 
     private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
                                        final Boolean enabled, final Class<T> storeCls )
     {
+        logger.info( "CREATE new default store query with params (internal?)" );
+
         this.dataManager = dataManager;
         this.packageType = packageType;
         this.enabled = enabled;
@@ -380,7 +383,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, false, true );
+        logger.trace( "START: default store-query ordered-concrete-stores-in-group" );
+        try
+        {
+            return getGroupOrdering( groupName, false, true );
+        }
+        finally
+        {
+            logger.trace( "END: default store-query ordered-concrete-stores-in-group" );
+        }
     }
 
     @Override

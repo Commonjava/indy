@@ -121,7 +121,7 @@ public class RequestContextHelper
     public static final String REQUEST_LATENCY_NS = "request-latency-ns";
 
     @Thread
-    public static final String REQUEST_LATENCY_MILLIS = "request-latency";
+    public static final String REQUEST_LATENCY_MILLIS = "latency_ms";
 
     @MDC
     public static final String REQUEST_PHASE = "request-phase";

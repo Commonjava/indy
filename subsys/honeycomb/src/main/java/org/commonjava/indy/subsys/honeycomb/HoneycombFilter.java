@@ -56,6 +56,8 @@ public class HoneycombFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
                     throws IOException, ServletException
     {
+        logger.trace( "START: {}", getClass().getSimpleName() );
+
         HttpServletRequest hsr = (HttpServletRequest) request;
         Span rootSpan = null;
         try
@@ -77,12 +79,15 @@ public class HoneycombFilter
                     Object value = getContext( field );
                     if ( value != null )
                     {
+                        logger.trace( "ROOT FIELD: {} = {}", field, value );
                         theSpan.addField( field, value );
                     }
                 });
 
                 rootSpan.close();
             }
+
+            logger.trace( "END: {}", getClass().getSimpleName() );
         }
     }
 

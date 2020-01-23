@@ -389,6 +389,14 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-flatfile</artifactId>
         <version>1.9.10-SNAPSHOT</version>
       </dependency>
