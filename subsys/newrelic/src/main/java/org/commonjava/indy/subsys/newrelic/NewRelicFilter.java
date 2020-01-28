@@ -76,22 +76,6 @@ public class NewRelicFilter
         {
             if ( rootSpan != null )
             {
-                Stream.of( config.getFields()).forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        logger.trace( "NEW RELIC FIELD: {} = {}", field, value );
-                        if ( value instanceof Number)
-                        {
-                            attrs.put( field, (Number) value );
-                        }
-                        else
-                        {
-                            attrs.put( field, String.valueOf( value ) );
-                        }
-                    }
-                });
-
                 manager.closeSpans( attrs );
             }
 
