@@ -30,11 +30,6 @@ import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 
 @Interceptor
@@ -52,8 +47,10 @@ public class HoneycombMeasureInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        logger.trace( "START: Honeycomb method wrapper" );
         if ( !config.isEnabled() )
         {
+            logger.trace( "SKIP: Honeycomb method wrapper" );
             return context.proceed();
         }
 
@@ -64,8 +61,9 @@ public class HoneycombMeasureInterceptor
             measure = method.getDeclaringClass().getAnnotation( Measure.class );
         }
 
-        if ( measure == null )
+        if ( measure == null || !config.isSpanIncluded( method ) )
         {
+            logger.trace( "SKIP: Honeycomb method wrapper (no annotation or span is not configured)" );
             return context.proceed();
         }
 
@@ -101,6 +99,8 @@ public class HoneycombMeasureInterceptor
                 logger.trace( "closeSpan, {}", span );
                 span.close();
             }
+
+            logger.trace( "END: Honeycomb method wrapper" );
         }
     }
 

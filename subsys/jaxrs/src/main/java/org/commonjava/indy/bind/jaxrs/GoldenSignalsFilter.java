@@ -110,6 +110,8 @@ public class GoldenSignalsFilter
                           final FilterChain filterChain )
             throws IOException, ServletException
     {
+        logger.trace( "START: {}", getClass().getSimpleName() );
+
         long start = System.nanoTime();
 
         HttpServletRequest req = (HttpServletRequest) servletRequest;
@@ -155,6 +157,8 @@ public class GoldenSignalsFilter
                     ms.error();
                 }
             } ) );
+
+            logger.trace( "END: {}", getClass().getSimpleName() );
         }
     }
 

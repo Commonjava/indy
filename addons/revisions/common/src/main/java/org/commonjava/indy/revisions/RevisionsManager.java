@@ -210,7 +210,7 @@ public class RevisionsManager
         }
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     private void addOrDeleteFiles( DataFileEvent event ) throws GitSubsystemException
     {
         if ( event.getType() == DataFileEventType.deleted )
@@ -236,7 +236,7 @@ public class RevisionsManager
         // FIXME: fire events to signal data owners to reload...
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public int commitDataUpdates()
                     throws GitSubsystemException
     {
@@ -248,7 +248,7 @@ public class RevisionsManager
         return dataFileGit.commit();
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public void pushDataUpdates()
         throws GitSubsystemException
     {

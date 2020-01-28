@@ -17,7 +17,6 @@ package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
-import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
@@ -27,8 +26,6 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
@@ -48,28 +45,43 @@ public class HoneycombWrapperEndInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        logger.trace( "START: Honeycomb metrics-end wrapper" );
         if ( !config.isEnabled() )
         {
+            logger.trace( "SKIP: Honeycomb metrics-end wrapper" );
+            return context.proceed();
+        }
+
+        if ( !config.isSpanIncluded( context.getMethod() ) )
+        {
+            logger.trace( "SKIP: Honeycomb metrics-end wrapper (span not configured)" );
             return context.proceed();
         }
 
         Span span = honeycombManager.getBeeline().getActiveSpan();
-        if ( span != null )
+        try
         {
-            Span theSpan = span;
-            Stream.of( config.getFields()).forEach( field->{
-                Object value = getContext( field );
-                if ( value != null )
-                {
-                    theSpan.addField( field, value );
-                }
-            });
+            if ( span != null )
+            {
+                Span theSpan = span;
+                Stream.of( config.getFields()).forEach( field->{
+                    Object value = getContext( field );
+                    if ( value != null )
+                    {
+                        theSpan.addField( field, value );
+                    }
+                });
 
-            logger.trace( "closeSpan, {}", span );
-            span.close();
+                logger.trace( "closeSpan, {}", span );
+                span.close();
+            }
+
+            return context.proceed();
         }
-
-        return context.proceed();
+        finally
+        {
+            logger.trace( "END: Honeycomb metrics-end wrapper" );
+        }
     }
 
 }

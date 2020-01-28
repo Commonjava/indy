@@ -134,7 +134,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "retrieve.first" ) )
+    @Measure
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -160,7 +160,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "retrieve.all" ) )
+    @Measure
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -418,7 +418,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "store.all" ) )
+    @Measure
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -639,7 +639,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "list.all" ) )
+    @Measure
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {

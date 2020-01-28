@@ -16,8 +16,6 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
-import org.commonjava.indy.measure.annotation.MetricWrapper;
-import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
 import org.commonjava.indy.measure.annotation.MetricWrapperStart;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
@@ -28,9 +26,6 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.stream.Stream;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 
@@ -49,14 +44,17 @@ public class HoneycombWrapperStartInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        logger.trace( "START: Honeycomb metrics-start wrapper" );
         if ( !config.isEnabled() )
         {
+            logger.trace( "SKIP: Honeycomb metrics-start wrapper" );
             return context.proceed();
         }
 
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null )
+        if ( name == null || !config.isSpanIncluded( context.getMethod() ) )
         {
+            logger.trace( "SKIP: Honeycomb metrics-start wrapper (no span name or span not configured)" );
             context.proceed();
         }
 
@@ -73,6 +71,10 @@ public class HoneycombWrapperStartInterceptor
         catch ( Exception e )
         {
             logger.error( "Error in honeycomb subsystem! " + e.getMessage(), e );
+        }
+        finally
+        {
+            logger.trace( "END: Honeycomb metrics-start wrapper" );
         }
 
         return context.proceed();

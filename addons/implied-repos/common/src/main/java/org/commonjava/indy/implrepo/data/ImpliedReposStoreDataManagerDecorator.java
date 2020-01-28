@@ -19,6 +19,8 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.implrepo.conf.ImpliedRepoConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -46,6 +48,8 @@ public abstract class ImpliedReposStoreDataManagerDecorator
 
     public ArtifactStoreQuery<ArtifactStore> query()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "WRAP in implied-repo ArtifactStoreQuery" );
         return new ImpliedReposQueryDelegate( delegate.query(), this, config );
     }
 

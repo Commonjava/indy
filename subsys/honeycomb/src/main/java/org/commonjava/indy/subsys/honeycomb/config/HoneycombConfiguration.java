@@ -21,6 +21,11 @@ import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
@@ -31,8 +36,6 @@ import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
 import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_MILLIS;
 import static org.commonjava.indy.metrics.RequestContextHelper.REST_ENDPOINT_PATH;
-import static org.commonjava.indy.metrics.RequestContextHelper.REST_METHOD_PATH;
-import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 
 @SectionName( "honeycomb" )
 @ApplicationScoped
@@ -47,6 +50,10 @@ public class HoneycombConfiguration
     private String writeKey;
 
     private String dataset;
+
+    private Set<String> spansIncluded = Collections.emptySet();
+
+    private Set<String> spansExcluded = Collections.emptySet();
 
     public HoneycombConfiguration()
     {
@@ -95,6 +102,55 @@ public class HoneycombConfiguration
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-honeycomb.conf" );
+    }
+
+    @ConfigName( "spans.include" )
+    public void setSpansIncluded( final String spans )
+    {
+        this.spansIncluded = new HashSet<>( Arrays.asList( spans.split( "\\s*,\\s*" ) ) );
+    }
+
+    public Set<String> getSpansIncluded()
+    {
+        return spansIncluded;
+    }
+
+    @ConfigName( "spans.exclude" )
+    public void setSpansExcluded( final String spans )
+    {
+        this.spansExcluded = new HashSet<>( Arrays.asList( spans.split( "\\s*,\\s*" ) ) );
+    }
+
+    public Set<String> getSpansExcluded()
+    {
+        return spansExcluded;
+    }
+
+    public boolean isSpanIncluded( Method method )
+    {
+        /* @formatter:off */
+        if ( !spansIncluded.isEmpty() )
+        {
+            boolean included = spansIncluded.contains( method.getName() ) ||
+                                spansIncluded.contains( method.getDeclaringClass().getSimpleName() + "." + method.getName() ) ||
+                                spansIncluded.contains( method.getDeclaringClass().getName() + "." + method.getName() ) ||
+                                spansIncluded.contains( method.getDeclaringClass().getSimpleName() ) ||
+                                spansIncluded.contains( method.getDeclaringClass().getName() );
+            return included;
+        }
+
+        if ( !spansExcluded.isEmpty() )
+        {
+            boolean excluded = spansExcluded.contains( method.getName() ) ||
+                                spansExcluded.contains( method.getDeclaringClass().getSimpleName() + "." + method.getName() ) ||
+                                spansExcluded.contains( method.getDeclaringClass().getName() + "." + method.getName() ) ||
+                                spansExcluded.contains( method.getDeclaringClass().getSimpleName() ) ||
+                                spansExcluded.contains( method.getDeclaringClass().getName() );
+            return !excluded;
+        }
+        /* @formatter:on */
+
+        return false;
     }
 
     public String[] getFields()

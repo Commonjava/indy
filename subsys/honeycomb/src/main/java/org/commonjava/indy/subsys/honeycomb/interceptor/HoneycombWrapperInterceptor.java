@@ -16,9 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
-import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
-import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
@@ -28,8 +26,6 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
@@ -50,14 +46,17 @@ public class HoneycombWrapperInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        logger.info( "START: Honeycomb lambda wrapper" );
         if ( !config.isEnabled() )
         {
+            logger.info( "SKIP Honeycomb lambda wrapper" );
             return context.proceed();
         }
 
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null )
+        if ( name == null || !config.isSpanIncluded( context.getMethod() ) )
         {
+            logger.info( "SKIP Honeycomb lambda wrapper (no span name or span not configured)" );
             context.proceed();
         }
 
@@ -89,6 +88,8 @@ public class HoneycombWrapperInterceptor
                 logger.trace( "closeSpan, {}", span );
                 span.close();
             }
+
+            logger.info( "END: Honeycomb lambda wrapper" );
         }
     }
 

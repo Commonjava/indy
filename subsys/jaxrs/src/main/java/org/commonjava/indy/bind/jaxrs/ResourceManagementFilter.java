@@ -107,6 +107,8 @@ public class ResourceManagementFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
+        logger.trace( "START: {}", getClass().getSimpleName() );
+
         String name = Thread.currentThread().getName();
         String clientAddr = request.getRemoteAddr();
 
@@ -122,7 +124,6 @@ public class ResourceManagementFilter
 
         try
         {
-            ThreadContext.clearContext();
             ThreadContext threadContext = ThreadContext.getContext( true );
 
             boolean isMetered = metricsManager.isMetered( ()->{
@@ -216,11 +217,12 @@ public class ResourceManagementFilter
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
 
             Thread.currentThread().setName( name );
-            ThreadContext.clearContext();
 
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
+
+            logger.trace( "END: {}", getClass().getSimpleName() );
         }
     }
 

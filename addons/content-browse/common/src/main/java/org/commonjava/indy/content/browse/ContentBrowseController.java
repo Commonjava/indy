@@ -69,7 +69,7 @@ public class ContentBrowseController
         this.contentManager = contentManager;
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     public ContentBrowseResult browseContent( final StoreKey storeKey, final String path, final String browseBaseUri,
                                               final String contentBaseUri, final UriFormatter uriFormatter,
                                               EventMetadata eventMetadata )
