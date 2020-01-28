@@ -34,15 +34,19 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayDeque;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 
 @ApplicationScoped
 public class NewRelicManager
@@ -99,7 +103,7 @@ public class NewRelicManager
             Span span = Span.builder( UUID.randomUUID().toString() ).name( spanName ).serviceName( "indy" ).build();
 
             ThreadContext ctx = ThreadContext.getContext( true );
-            ctx.put( OPEN_SPANS, new LinkedList<>( Collections.singleton( new SpanEntry( span ) ) ) );
+            ctx.put( OPEN_SPANS, new ArrayDeque<>( Collections.singleton( new SpanEntry( span ) ) ) );
 
             return span;
         }
@@ -112,7 +116,7 @@ public class NewRelicManager
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( telemetryClient != null && ctx != null && ctx.containsKey( OPEN_SPANS ) )
         {
-            LinkedList<SpanEntry> spans = (LinkedList<SpanEntry>) ctx.get( OPEN_SPANS );
+            Deque<SpanEntry> spans = (Deque<SpanEntry>) ctx.get( OPEN_SPANS );
             SpanEntry parent = spans.getLast();
 
             Span.SpanBuilder builder = Span.builder( UUID.randomUUID().toString() ).name( spanName );
@@ -137,13 +141,29 @@ public class NewRelicManager
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( telemetryClient != null && ctx != null )
         {
+            Stream.of( configuration.getFields()).forEach( field->{
+                Object value = getContext( field );
+                if ( value != null )
+                {
+                    logger.trace( "NEW RELIC FIELD: {} = {}", field, value );
+                    if ( value instanceof Number)
+                    {
+                        attrs.put( field, (Number) value );
+                    }
+                    else
+                    {
+                        attrs.put( field, String.valueOf( value ) );
+                    }
+                }
+            });
+
             Set<Span> closed = (Set<Span>) ctx.remove( CLOSED_SPANS );
             if ( closed == null )
             {
                 closed = new HashSet<>();
             }
 
-            LinkedList<SpanEntry> open = (LinkedList<SpanEntry>) ctx.remove( OPEN_SPANS );
+            Deque<SpanEntry> open = (Deque<SpanEntry>) ctx.remove( OPEN_SPANS );
             if ( open != null )
             {
                 Set<Span> c = closed;
@@ -155,13 +175,16 @@ public class NewRelicManager
                                             .parentId( se.span.getParentId() ).build() ) );
             }
 
-            String traceId = (String) ctx.get( PREFERRED_ID );
-            if ( traceId == null )
+            if ( !closed.isEmpty() )
             {
-                traceId = UUID.randomUUID().toString();
-            }
+                String traceId = (String) ctx.get( PREFERRED_ID );
+                if ( traceId == null )
+                {
+                    traceId = UUID.randomUUID().toString();
+                }
 
-            telemetryClient.sendBatch( new SpanBatch( closed, attrs, traceId ) );
+                telemetryClient.sendBatch( new SpanBatch( closed, attrs, traceId ) );
+            }
         }
     }
 
@@ -177,7 +200,7 @@ public class NewRelicManager
                 ctx.put( CLOSED_SPANS, closed );
             }
 
-            LinkedList<SpanEntry> open = (LinkedList<SpanEntry>) ctx.get( OPEN_SPANS );
+            Deque<SpanEntry> open = (Deque<SpanEntry>) ctx.get( OPEN_SPANS );
             if ( open != null )
             {
                 SpanEntry lookup = new SpanEntry( span );
