@@ -34,10 +34,6 @@
     <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperInterceptor</class>
     <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperStartInterceptor</class>
     <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperEndInterceptor</class>
-    <class>org.commonjava.indy.subsys.newrelic.interceptor.NewRelicMeasureInterceptor</class>
-    <class>org.commonjava.indy.subsys.newrelic.interceptor.NewRelicWrapperInterceptor</class>
-    <class>org.commonjava.indy.subsys.newrelic.interceptor.NewRelicWrapperStartInterceptor</class>
-    <class>org.commonjava.indy.subsys.newrelic.interceptor.NewRelicWrapperEndInterceptor</class>
   </interceptors>
 
   <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->
