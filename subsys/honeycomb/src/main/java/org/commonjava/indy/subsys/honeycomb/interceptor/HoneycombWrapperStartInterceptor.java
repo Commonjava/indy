@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapperStart;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
@@ -28,6 +29,7 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @MetricWrapperStart
@@ -52,12 +54,13 @@ public class HoneycombWrapperStartInterceptor
         }
 
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null || !config.isSpanIncluded( context.getMethod() ) )
+        if ( name == null || config.getSampleRate( context.getMethod() ) < 1 )
         {
             logger.trace( "SKIP: Honeycomb metrics-start wrapper (no span name or span not configured)" );
             context.proceed();
         }
 
+        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
         try
         {
             Span span = honeycombManager.startChildSpan( name );

@@ -30,7 +30,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
@@ -75,7 +74,7 @@ public class HoneycombFilter
             if ( rootSpan != null )
             {
                 Span theSpan = rootSpan;
-                Stream.of( config.getFields()).forEach( field->{
+                config.getFieldSet().forEach( field->{
                     Object value = getContext( field );
                     if ( value != null )
                     {

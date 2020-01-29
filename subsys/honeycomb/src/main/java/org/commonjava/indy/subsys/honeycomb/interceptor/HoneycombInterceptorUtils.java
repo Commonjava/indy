@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 public class HoneycombInterceptorUtils
 {
 
-    private static final String SPAN_STACK = "honeycomb-span-stack";
+    public static final String SAMPLE_OVERRIDE = "honeycomb.sample-override";
 
     public static String getMetricNameFromParam( InvocationContext context )
     {

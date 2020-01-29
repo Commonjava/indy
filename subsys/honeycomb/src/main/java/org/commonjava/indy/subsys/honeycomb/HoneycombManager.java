@@ -25,6 +25,7 @@ import io.honeycomb.beeline.tracing.Tracing;
 import io.honeycomb.beeline.tracing.sampling.Sampling;
 import io.honeycomb.libhoney.HoneyClient;
 import io.honeycomb.libhoney.LibHoney;
+import org.commonjava.indy.metrics.TrafficClassifier;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,9 @@ public class HoneycombManager
     @Inject
     private HoneycombConfiguration configuration;
 
+    @Inject
+    private IndyTraceSampler traceSampler;
+
     public HoneycombManager()
     {
     }
@@ -65,7 +69,7 @@ public class HoneycombManager
         {
             logger.info( "Init Honeycomb manager, dataset: {}", dataset );
             client = LibHoney.create( LibHoney.options().setDataset( dataset ).setWriteKey( writeKey ).build() );
-            SpanPostProcessor postProcessor = Tracing.createSpanProcessor( client, Sampling.alwaysSampler() );
+            SpanPostProcessor postProcessor = Tracing.createSpanProcessor( client, traceSampler );
             SpanBuilderFactory factory = Tracing.createSpanBuilderFactory( postProcessor, Sampling.alwaysSampler() );
             Tracer tracer = Tracing.createTracer( factory );
             beeline = Tracing.createBeeline( tracer, factory );

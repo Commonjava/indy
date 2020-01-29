@@ -16,15 +16,19 @@
 package org.commonjava.indy.subsys.honeycomb.config;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
+import org.commonjava.propulsor.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
@@ -40,10 +44,24 @@ import static org.commonjava.indy.metrics.RequestContextHelper.REST_ENDPOINT_PAT
 @SectionName( "honeycomb" )
 @ApplicationScoped
 public class HoneycombConfiguration
-                implements IndyConfigInfo
+        extends MapSectionListener
+        implements IndyConfigInfo
 {
-    private static final String[] FIELDS =
-            { CONTENT_TRACKING_ID, HTTP_METHOD, HTTP_STATUS, PREFERRED_ID, CLIENT_ADDR, PATH, PACKAGE_TYPE, REST_ENDPOINT_PATH, REQUEST_LATENCY_MILLIS };
+    private static final Set<String> DEFAULT_FIELDS = Collections.unmodifiableSet( new HashSet<>(
+            Arrays.asList( CONTENT_TRACKING_ID, HTTP_METHOD, HTTP_STATUS, PREFERRED_ID, CLIENT_ADDR, PATH, PACKAGE_TYPE,
+                           REST_ENDPOINT_PATH, REQUEST_LATENCY_MILLIS ) ) );
+
+    private static final String ENABLED = "enabled";
+
+    private static final String WRITE_KEY = "write.key";
+
+    private static final String DATASET = "dataset";
+
+    private static final String FIELDS = "fields";
+
+    private static final String SAMPLE_PREFIX = "sample.";
+
+    private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
 
     private boolean enabled;
 
@@ -51,9 +69,15 @@ public class HoneycombConfiguration
 
     private String dataset;
 
+    private Integer baseSampleRate;
+
+    private Map<String, Integer> spanRates = new HashMap<>();
+
     private Set<String> spansIncluded = Collections.emptySet();
 
     private Set<String> spansExcluded = Collections.emptySet();
+
+    private Set<String> fields;
 
     public HoneycombConfiguration()
     {
@@ -64,10 +88,38 @@ public class HoneycombConfiguration
         return enabled;
     }
 
-    @ConfigName( "enabled" )
-    public void setEnabled( boolean enabled )
+    @Override
+    public void sectionStarted( final String name )
+            throws ConfigurationException
     {
-        this.enabled = enabled;
+        // NOP; just block map init in the underlying implementation.
+    }
+
+    @Override
+    public void parameter( final String name, final String value )
+            throws ConfigurationException
+    {
+        switch(name)
+        {
+            case ENABLED:
+                this.enabled = Boolean.TRUE.equals( Boolean.parseBoolean( value.trim() ) );
+                break;
+            case WRITE_KEY:
+                this.writeKey = value.trim();
+                break;
+            case DATASET:
+                this.dataset = value.trim();
+                break;
+            case FIELDS:
+                this.fields = Collections.unmodifiableSet(
+                        new HashSet<>( Arrays.asList( value.trim().split( "\\s*,\\s*" ) ) ) );
+                break;
+            default:
+                if ( name.startsWith( SAMPLE_PREFIX ) && name.length() > SAMPLE_PREFIX.length() )
+                {
+                    spanRates.put( name.substring( SAMPLE_PREFIX.length() ).trim(), Integer.parseInt( value ) );
+                }
+        }
     }
 
     public String getWriteKey()
@@ -75,21 +127,9 @@ public class HoneycombConfiguration
         return writeKey;
     }
 
-    @ConfigName( "write.key" )
-    public void setWriteKey( String writeKey )
-    {
-        this.writeKey = writeKey;
-    }
-
     public String getDataset()
     {
         return dataset;
-    }
-
-    @ConfigName( "dataset" )
-    public void setDataset( String dataset )
-    {
-        this.dataset = dataset;
     }
 
     @Override
@@ -104,57 +144,51 @@ public class HoneycombConfiguration
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-honeycomb.conf" );
     }
 
-    @ConfigName( "spans.include" )
-    public void setSpansIncluded( final String spans )
+    public Integer getBaseSampleRate()
     {
-        this.spansIncluded = new HashSet<>( Arrays.asList( spans.split( "\\s*,\\s*" ) ) );
+        return baseSampleRate == null ? DEFAULT_BASE_SAMPLE_RATE : baseSampleRate;
     }
 
-    public Set<String> getSpansIncluded()
+    public int getSampleRate( Method method )
     {
-        return spansIncluded;
-    }
-
-    @ConfigName( "spans.exclude" )
-    public void setSpansExcluded( final String spans )
-    {
-        this.spansExcluded = new HashSet<>( Arrays.asList( spans.split( "\\s*,\\s*" ) ) );
-    }
-
-    public Set<String> getSpansExcluded()
-    {
-        return spansExcluded;
-    }
-
-    public boolean isSpanIncluded( Method method )
-    {
-        /* @formatter:off */
-        if ( !spansIncluded.isEmpty() )
+        if ( !spanRates.isEmpty() )
         {
-            boolean included = spansIncluded.contains( method.getName() ) ||
-                                spansIncluded.contains( method.getDeclaringClass().getSimpleName() + "." + method.getName() ) ||
-                                spansIncluded.contains( method.getDeclaringClass().getName() + "." + method.getName() ) ||
-                                spansIncluded.contains( method.getDeclaringClass().getSimpleName() ) ||
-                                spansIncluded.contains( method.getDeclaringClass().getName() );
-            return included;
+            Integer rate = spanRates.get( method.getName() );
+            if ( rate != null )
+                return rate;
+
+            rate = spanRates.get( method.getDeclaringClass().getSimpleName() + "." + method.getName() );
+            if ( rate != null )
+                return rate;
+
+            rate = spanRates.get( method.getDeclaringClass().getName() + "." + method.getName() );
+            if ( rate != null )
+                return rate;
+
+            rate = spanRates.get( method.getDeclaringClass().getSimpleName() );
+            if ( rate != null )
+                return rate;
+
+            rate = spanRates.get( method.getDeclaringClass().getName() );
+            if ( rate != null )
+                return rate;
         }
 
-        if ( !spansExcluded.isEmpty() )
-        {
-            boolean excluded = spansExcluded.contains( method.getName() ) ||
-                                spansExcluded.contains( method.getDeclaringClass().getSimpleName() + "." + method.getName() ) ||
-                                spansExcluded.contains( method.getDeclaringClass().getName() + "." + method.getName() ) ||
-                                spansExcluded.contains( method.getDeclaringClass().getSimpleName() ) ||
-                                spansExcluded.contains( method.getDeclaringClass().getName() );
-            return !excluded;
-        }
-        /* @formatter:on */
-
-        return true;
+        return 0;
     }
 
-    public String[] getFields()
+    public Set<String> getFieldSet()
     {
-        return FIELDS;
+        return fields == null ? DEFAULT_FIELDS : fields;
+    }
+
+    public Integer getSampleRate( final String classifier )
+    {
+        if ( spanRates.containsKey( classifier ) )
+        {
+            return spanRates.get( classifier );
+        }
+
+        return 0;
     }
 }

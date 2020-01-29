@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
@@ -26,10 +27,10 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.util.stream.Stream;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @MetricWrapper
@@ -54,12 +55,13 @@ public class HoneycombWrapperInterceptor
         }
 
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null || !config.isSpanIncluded( context.getMethod() ) )
+        if ( name == null || config.getSampleRate( context.getMethod() ) < 1 )
         {
             logger.info( "SKIP Honeycomb lambda wrapper (no span name or span not configured)" );
             context.proceed();
         }
 
+        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
         Span span = null;
         try
         {
@@ -77,7 +79,7 @@ public class HoneycombWrapperInterceptor
             if ( span != null )
             {
                 Span theSpan = span;
-                Stream.of( config.getFields()).forEach( field->{
+                config.getFieldSet().forEach( field->{
                     Object value = getContext( field );
                     if ( value != null )
                     {
