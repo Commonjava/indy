@@ -47,10 +47,11 @@ public class NewRelicMeasureInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        logger.trace( "START: New Relic method wrapper" );
+        String sig = context.getMethod().getDeclaringClass().getSimpleName() + "." + context.getMethod().getName();
+        logger.info( "START: New Relic methodwrapper for: {}", sig );
         if ( !config.isEnabled() )
         {
-            logger.trace( "SKIP: New Relic method wrapper" );
+            logger.trace( "SKIP: New Relic method wrapper disabled for: {}", sig );
             return context.proceed();
         }
 
@@ -63,7 +64,7 @@ public class NewRelicMeasureInterceptor
 
         if ( measure == null || !config.isSpanIncluded( method ) )
         {
-            logger.trace( "SKIP: New Relic method wrapper (no annotation or span is not configured)" );
+            logger.trace( "SKIP: New Relic method wrapper (no @Measure annotation or span is not configured for: {})", sig );
             return context.proceed();
         }
 
@@ -75,7 +76,7 @@ public class NewRelicMeasureInterceptor
         try
         {
             span = manager.startChildSpan( defaultName );
-            logger.trace( "New Relic startChildSpan, span: {}, defaultName: {}", span, defaultName );
+            logger.trace( "New Relic startChildSpan, span: {}, defaultName: {} for: {}", span, defaultName, sig );
             return context.proceed();
         }
         finally
@@ -84,11 +85,11 @@ public class NewRelicMeasureInterceptor
             {
                 Span theSpan = span;
 
-                logger.trace( "closeSpan, {}", span );
+                logger.trace( "closeSpan, {} for: {}", span, sig );
                 manager.close( span );
             }
 
-            logger.trace( "END: Honeycomb method wrapper" );
+            logger.trace( "END: Honeycomb method wrapper for: {}", sig );
         }
     }
 

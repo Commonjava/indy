@@ -20,6 +20,7 @@ import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.function.Supplier;
 
 public class NewRelicInterceptorUtils
 {
@@ -36,7 +37,16 @@ public class NewRelicInterceptorUtils
             MetricWrapperNamed annotation = param.getAnnotation( MetricWrapperNamed.class );
             if ( annotation != null )
             {
-                name = String.valueOf( context.getParameters()[i] );
+                Object pv = context.getParameters()[i];
+                if ( pv instanceof Supplier )
+                {
+                    name = String.valueOf( ( (Supplier) pv ).get() );
+                }
+                else
+                {
+                    name = String.valueOf( pv );
+                }
+
                 break;
             }
         }

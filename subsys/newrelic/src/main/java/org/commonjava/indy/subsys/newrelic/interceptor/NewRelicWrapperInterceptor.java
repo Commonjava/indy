@@ -45,17 +45,18 @@ public class NewRelicWrapperInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        logger.info( "START: New Relic lambda wrapper" );
+        String sig = context.getMethod().getDeclaringClass().getSimpleName() + "." + context.getMethod().getName();
+        logger.info( "START: New Relic lambda wrapper for: {}", sig );
         if ( !config.isEnabled() )
         {
-            logger.info( "SKIP New Relic lambda wrapper" );
+            logger.info( "SKIP New Relic lambda wrapper for: {}", sig );
             return context.proceed();
         }
 
         String name = NewRelicInterceptorUtils.getMetricNameFromParam( context );
         if ( name == null || !config.isSpanIncluded( context.getMethod() ) )
         {
-            logger.info( "SKIP New Relic lambda wrapper (no span name or span not configured)" );
+            logger.info( "SKIP New Relic lambda wrapper (no span name: '{}' or span not configured for: '{}')", name, sig );
             context.proceed();
         }
 
@@ -64,18 +65,18 @@ public class NewRelicWrapperInterceptor
         {
             span = manager.startChildSpan( name );
 
-            logger.trace( "startChildSpan, span: {}, defaultName: {}", span, name );
+            logger.trace( "startChildSpan, span: {}, defaultName: {} for: {}", span, name, sig );
             return context.proceed();
         }
         finally
         {
             if ( span != null )
             {
-                logger.trace( "closeSpan, {}", span );
+                logger.trace( "closeSpan, {} for: {}", span, sig );
                 manager.close( span );
             }
 
-            logger.info( "END: New Relic lambda wrapper" );
+            logger.info( "END: New Relic lambda wrapper for: {}", sig );
         }
     }
 

@@ -38,7 +38,6 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -98,37 +97,53 @@ public class NewRelicManager
 
     public Span startRootTracer( String spanName )
     {
-        if ( telemetryClient != null )
-        {
-            Span span = Span.builder( UUID.randomUUID().toString() ).name( spanName ).serviceName( "indy" ).build();
-
-            ThreadContext ctx = ThreadContext.getContext( true );
-            ctx.put( OPEN_SPANS, new ArrayDeque<>( Collections.singleton( new SpanEntry( span ) ) ) );
-
-            return span;
-        }
-
-        return null;
+        return startSpan( spanName );
     }
 
     public Span startChildSpan( String spanName )
     {
-        ThreadContext ctx = ThreadContext.getContext( false );
-        if ( telemetryClient != null && ctx != null && ctx.containsKey( OPEN_SPANS ) )
+        return startSpan( spanName );
+    }
+
+    private Span startSpan(String spanName)
+    {
+        if ( telemetryClient != null )
         {
-            Deque<SpanEntry> spans = (Deque<SpanEntry>) ctx.get( OPEN_SPANS );
-            SpanEntry parent = spans.getLast();
+            logger.info( "NEW SPAN: {}", spanName );
+            Span.SpanBuilder builder = Span.builder( UUID.randomUUID().toString() ).name( spanName ).serviceName( "indy" );
 
-            Span.SpanBuilder builder = Span.builder( UUID.randomUUID().toString() ).name( spanName );
-            if ( parent != null )
+            Span span = null;
+
+            ThreadContext ctx = ThreadContext.getContext( true );
+            Deque<SpanEntry> open = (Deque<SpanEntry>) ctx.get( OPEN_SPANS );
+            if ( open == null )
             {
-               builder.serviceName( parent.span.getServiceName() ).parentId( parent.span.getId() );
+                span = builder.build();
+
+                ctx.put( OPEN_SPANS, new ArrayDeque<>( Collections.singleton( new SpanEntry( span ) ) ) );
+                logger.info( "CREATE open-spans queue: {}", ctx.get( OPEN_SPANS ) );
             }
+            else
+            {
+                if ( open == null )
+                {
+                    open = new ArrayDeque<>();
+                    ctx.put( OPEN_SPANS, open );
+                }
 
-            Span span = builder.build();
+                SpanEntry parent = open.peekLast();
+                if ( parent != null )
+                {
+                    builder.serviceName( parent.span.getServiceName() ).parentId( parent.span.getId() );
+                }
 
-            spans.addLast( new SpanEntry( span ) );
-            ctx.put( OPEN_SPANS, spans );
+                span = builder.build();
+
+                logger.info( "Adding child span to {} open spans", open.size() );
+                open.addLast( new SpanEntry( span ) );
+                ctx.put( OPEN_SPANS, open );
+                logger.info( "After adding {} / {}, {} spans are open", span.getId(), span.getName(), open.size() );
+            }
 
             return span;
         }
@@ -136,8 +151,23 @@ public class NewRelicManager
         return null;
     }
 
-    public void closeSpans( final Attributes attrs )
+    public void closeSpans( final Attributes extraAttrs )
     {
+        Attributes attrs = new Attributes();
+        if ( extraAttrs != null )
+        {
+            extraAttrs.asMap().forEach( ( k, v ) -> {
+                if ( v instanceof Number )
+                {
+                    attrs.put( k, (Number) v );
+                }
+                else
+                {
+                    attrs.put( k, String.valueOf( v ) );
+                }
+            } );
+        }
+
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( telemetryClient != null && ctx != null )
         {
@@ -158,12 +188,14 @@ public class NewRelicManager
             });
 
             Set<Span> closed = (Set<Span>) ctx.remove( CLOSED_SPANS );
+            logger.info( "REMOVED closed-spans queue: {}", closed );
             if ( closed == null )
             {
                 closed = new HashSet<>();
             }
 
             Deque<SpanEntry> open = (Deque<SpanEntry>) ctx.remove( OPEN_SPANS );
+            logger.info( "REMOVED open-spans queue: {}", open );
             if ( open != null )
             {
                 Set<Span> c = closed;
@@ -183,13 +215,20 @@ public class NewRelicManager
                     traceId = UUID.randomUUID().toString();
                 }
 
+                logger.info( "SEND: New Relic {} spans", closed.size() );
                 telemetryClient.sendBatch( new SpanBatch( closed, attrs, traceId ) );
+            }
+            else
+            {
+                logger.info( "NOT SENT: 0 spans to send to New Relic!" );
             }
         }
     }
 
     public void close( final Span span )
     {
+        String spanId = span.getId() + " / " + span.getName();
+
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( telemetryClient != null && ctx != null )
         {
@@ -198,22 +237,36 @@ public class NewRelicManager
             {
                 closed = new HashSet<>();
                 ctx.put( CLOSED_SPANS, closed );
+                logger.info( "CREATE closed-span queue: {}", closed );
             }
+
+            logger.info( "Closing span: {}", spanId );
 
             Deque<SpanEntry> open = (Deque<SpanEntry>) ctx.get( OPEN_SPANS );
             if ( open != null )
             {
                 SpanEntry lookup = new SpanEntry( span );
-                if ( open.remove( lookup ))
-                {
-                    closed.add( Span.builder( span.getId() )
-                                    .name( span.getName() )
-                                    .serviceName( span.getServiceName() )
-                                    .durationMs( System.currentTimeMillis() - span.getTimestamp() )
-                                    .timestamp( span.getTimestamp() )
-                                    .parentId( span.getParentId() )
-                                    .build() );
-                }
+                open.remove( lookup );
+                logger.info( "REMOVE open span: {}", spanId );
+            }
+            else
+            {
+                logger.info( "Tried to remove open span: {} / {}, but no open spans are available in ThreadContext!", span.getId(), span.getName() );
+            }
+
+            closed.add( Span.builder( span.getId() )
+                            .name( span.getName() )
+                            .serviceName( span.getServiceName() )
+                            .durationMs( System.currentTimeMillis() - span.getTimestamp() )
+                            .timestamp( span.getTimestamp() )
+                            .parentId( span.getParentId() )
+                            .build() );
+
+            logger.info( "After add to closed-spans queue, size is: {}", closed.size() );
+
+            if ( open == null || open.isEmpty() )
+            {
+                closeSpans( null );
             }
         }
     }
@@ -223,7 +276,7 @@ public class NewRelicManager
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( telemetryClient != null && ctx != null )
         {
-            LinkedList<SpanEntry> open = (LinkedList<SpanEntry>) ctx.get( OPEN_SPANS );
+            Deque<SpanEntry> open = (Deque<SpanEntry>) ctx.get( OPEN_SPANS );
             if ( open != null && !open.isEmpty() )
             {
                 return open.getLast().span;
@@ -261,6 +314,12 @@ public class NewRelicManager
         public int hashCode()
         {
             return Objects.hash( span.getId() );
+        }
+
+        @Override
+        public String toString()
+        {
+            return "SpanEntry{" + "span=" + span + '}';
         }
     }
 

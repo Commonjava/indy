@@ -57,9 +57,10 @@ public class NewRelicFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
                     throws IOException, ServletException
     {
-        logger.trace( "START: {}", getClass().getSimpleName() );
 
         HttpServletRequest hsr = (HttpServletRequest) request;
+
+        logger.info( "FILTER START: {}, Path-Info: {}", getClass().getSimpleName(), hsr.getPathInfo() );
         Span rootSpan = null;
         Attributes attrs = new Attributes();
         try
@@ -79,7 +80,7 @@ public class NewRelicFilter
                 manager.closeSpans( attrs );
             }
 
-            logger.trace( "END: {}", getClass().getSimpleName() );
+            logger.trace( "FILTER END: {}, Path-Info: {}", getClass().getSimpleName(), hsr.getPathInfo() );
         }
     }
 

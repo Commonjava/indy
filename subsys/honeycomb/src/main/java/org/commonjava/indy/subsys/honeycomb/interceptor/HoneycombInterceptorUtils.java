@@ -23,6 +23,7 @@ import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedList;
+import java.util.function.Supplier;
 
 public class HoneycombInterceptorUtils
 {
@@ -41,7 +42,16 @@ public class HoneycombInterceptorUtils
             MetricWrapperNamed annotation = param.getAnnotation( MetricWrapperNamed.class );
             if ( annotation != null )
             {
-                name = String.valueOf( context.getParameters()[i] );
+                Object pv = context.getParameters()[i];
+                if ( pv instanceof Supplier )
+                {
+                    name = String.valueOf( ( (Supplier) pv ).get() );
+                }
+                else
+                {
+                    name = String.valueOf( pv );
+                }
+
                 break;
             }
         }

@@ -133,7 +133,7 @@ public class NewRelicConfiguration
         }
         /* @formatter:on */
 
-        return false;
+        return true;
     }
 
     public String[] getFields()
