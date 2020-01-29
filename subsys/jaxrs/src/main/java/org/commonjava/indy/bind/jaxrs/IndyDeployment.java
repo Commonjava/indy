@@ -28,6 +28,7 @@ import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
 import org.commonjava.indy.subsys.honeycomb.HoneycombFilter;
+import org.commonjava.indy.subsys.newrelic.NewRelicFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;
@@ -79,6 +80,9 @@ public class IndyDeployment
 
     @Inject
     private HoneycombFilter honeycombFilter;
+
+    @Inject
+    private NewRelicFilter newRelicFilter;
 
     @Inject
     private GoldenSignalsFilter goldenSignalsFilter;
@@ -165,8 +169,11 @@ public class IndyDeployment
 
         final FilterInfo honeycombFilter =
                         Servlets.filter( "Honeycomb", HoneycombFilter.class,
-                                 new ImmediateInstanceFactory<HoneycombFilter>(
+                                 new ImmediateInstanceFactory<>(
                                          this.honeycombFilter ) );
+
+        final FilterInfo newRelicFilter = Servlets.filter( "New Relic", NewRelicFilter.class,
+                                                           new ImmediateInstanceFactory<>( this.newRelicFilter ) );
 
         final FilterInfo threadContextFilter =
                 Servlets.filter( "ThreadContext Management", ThreadContextFilter.class,
@@ -199,6 +206,10 @@ public class IndyDeployment
 
                                                       .addFilter( honeycombFilter )
                                                       .addFilterUrlMapping( honeycombFilter.getName(), "/api/*",
+                                                                            DispatcherType.REQUEST )
+
+                                                      .addFilter( newRelicFilter )
+                                                      .addFilterUrlMapping( newRelicFilter.getName(), "/api/*",
                                                                             DispatcherType.REQUEST )
 
                                                       .addFilter( goldenSignalsFilter )

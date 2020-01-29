@@ -77,6 +77,7 @@
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
+    <newrelicVersion>0.3.4</newrelicVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
@@ -390,6 +391,19 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-newrelic</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-newrelic</artifactId>
         <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
@@ -981,6 +995,23 @@
         <artifactId>beeline-core</artifactId>
         <version>1.0.7</version>
       </dependency>
+
+      <dependency>
+        <groupId>com.newrelic.telemetry</groupId>
+        <artifactId>telemetry</artifactId>
+        <version>${newrelicVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.newrelic.telemetry</groupId>
+        <artifactId>telemetry-core</artifactId>
+        <version>${newrelicVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.newrelic.telemetry</groupId>
+        <artifactId>telemetry-http-okhttp</artifactId>
+        <version>${newrelicVersion}</version>
+      </dependency>
+
 <!--       <dependency>
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging</artifactId>
