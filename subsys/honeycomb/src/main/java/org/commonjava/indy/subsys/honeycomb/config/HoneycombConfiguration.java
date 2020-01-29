@@ -59,6 +59,8 @@ public class HoneycombConfiguration
 
     private static final String FIELDS = "fields";
 
+    private static final String BASE_SAMPLE_RATE = "base.sample.rate";
+
     private static final String SAMPLE_PREFIX = "sample.";
 
     private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
@@ -109,6 +111,9 @@ public class HoneycombConfiguration
                 break;
             case DATASET:
                 this.dataset = value.trim();
+                break;
+            case BASE_SAMPLE_RATE:
+                this.baseSampleRate = Integer.parseInt( value.trim() );
                 break;
             case FIELDS:
                 this.fields = Collections.unmodifiableSet(
