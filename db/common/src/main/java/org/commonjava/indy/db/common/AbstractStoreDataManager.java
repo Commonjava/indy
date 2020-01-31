@@ -15,7 +15,11 @@
  */
 package org.commonjava.indy.db.common;
 
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.InternalFeatureConfig;
@@ -36,6 +40,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -46,6 +51,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
@@ -75,11 +82,26 @@ public abstract class AbstractStoreDataManager
     @Inject
     private SslValidationConfig configuration;
 
-    @Inject StoreDataManager storeDataManager;
+    @Inject
+    StoreDataManager storeDataManager;
 
     @Inject
     InternalFeatureConfig internalFeatureConfig;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "store-affected-by-async-runner", priority = 4, threads = 32 )
+    private ExecutorService affectedByAsyncRunner;
+
+    protected AbstractStoreDataManager()
+    {
+        if ( affectedByAsyncRunner == null )
+        {
+            //for testing
+            affectedByAsyncRunner = Executors.newFixedThreadPool( 32, new NamedThreadFactory(
+                    "store-affected-by-async-runner", new ThreadGroup( "store-affected-by-async-runner" ), true, 4 ) );
+        }
+    }
 
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
@@ -456,6 +478,16 @@ public abstract class AbstractStoreDataManager
             throws IndyDataException
     {
         return affectedByFromStores( keys );
+    }
+
+    @Override
+    public void asyncGroupAffectedBy( ContextualTask contextualTask )
+    {
+        if ( StringUtils.isNotBlank( contextualTask.getTaskContext() ) )
+        {
+            MDC.put( "group-affected-runner-context", contextualTask.getTaskContext() );
+        }
+        affectedByAsyncRunner.execute( contextualTask.getTask() );
     }
 
     protected Set<Group> affectedByFromStores( final Collection<StoreKey> keys )

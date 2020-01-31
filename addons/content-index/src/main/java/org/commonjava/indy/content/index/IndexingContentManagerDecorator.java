@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
@@ -89,11 +87,6 @@ public abstract class IndexingContentManagerDecorator
     @Inject
     private ContentIndexConfig indexCfg;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "content-index-store-deindex", priority = 4, threads = 10 )
-    private Executor deIndexExecutor;
-
     protected IndexingContentManagerDecorator()
     {
     }
@@ -124,7 +117,6 @@ public abstract class IndexingContentManagerDecorator
                                                final ContentIndexConfig indexCfg, final Executor deIndexExecutor)
     {
         this(delegate, storeDataManager, specialPathManager, indexManager, nfc, indexCfg);
-        this.deIndexExecutor = deIndexExecutor;
     }
 
     @Override
@@ -726,7 +718,10 @@ public abstract class IndexingContentManagerDecorator
                 //FIXME: One potential problem here: The fixed thread pool is using a blocking queue to
                 // cache runnables, which could cause OOM if there are bunch of uploading happened in
                 // a short time period. We need to monitor if this could happen.
-                deIndexExecutor.execute( () -> {
+                final String context =
+                        String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
+                                       store.getKey(), path );
+                storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context, () -> {
                     try
                     {
                         Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
@@ -741,7 +736,7 @@ public abstract class IndexingContentManagerDecorator
                                 String.format( "Failed to get groups which contains: %s for NFC handling. Reason: %s",
                                                store.getKey(), e.getMessage() ), e );
                     }
-                } );
+                } ) );
             }
         }
 //        nfcClearByContaining( store, path );
