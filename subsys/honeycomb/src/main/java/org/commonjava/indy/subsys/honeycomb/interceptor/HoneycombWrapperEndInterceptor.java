@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
+import io.honeycomb.beeline.tracing.Beeline;
 import io.honeycomb.beeline.tracing.Span;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
@@ -28,6 +29,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
@@ -53,26 +55,21 @@ public class HoneycombWrapperEndInterceptor
             return context.proceed();
         }
 
-        if ( config.getSampleRate( context.getMethod() ) < 1 )
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( context.getMethod() ) < 1 )
         {
             logger.trace( "SKIP: Honeycomb metrics-end wrapper (span not configured)" );
             return context.proceed();
         }
 
-        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
-        Span span = honeycombManager.getBeeline().getActiveSpan();
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
+        Beeline beeline = honeycombManager.getBeeline();
+        Span span = beeline.getActiveSpan();
         try
         {
             if ( span != null )
             {
-                Span theSpan = span;
-                config.getFieldSet().forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        theSpan.addField( field, value );
-                    }
-                });
+                honeycombManager.addFields( span );
 
                 logger.trace( "closeSpan, {}", span );
                 span.close();

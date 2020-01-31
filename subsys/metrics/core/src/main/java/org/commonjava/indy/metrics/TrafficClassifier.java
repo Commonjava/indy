@@ -245,7 +245,7 @@ public class TrafficClassifier
         }
     }
 
-    public List<String> getFunctionClassifiers()
+    public List<String> getCachedFunctionClassifiers()
     {
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( ctx != null )

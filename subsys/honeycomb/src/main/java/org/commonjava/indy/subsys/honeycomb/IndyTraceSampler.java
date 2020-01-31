@@ -33,7 +33,7 @@ public class IndyTraceSampler
             return 0;
         }
 
-        List<String> functionClassifiers = classifier.getFunctionClassifiers();
+        List<String> functionClassifiers = classifier.getCachedFunctionClassifiers();
         if ( functionClassifiers != null )
         {
             Optional<Integer> mostAggressive = functionClassifiers.stream()
@@ -48,11 +48,6 @@ public class IndyTraceSampler
             }
         }
 
-        if ( Boolean.TRUE == ctx.get( SAMPLE_OVERRIDE ) )
-        {
-            return 1;
-        }
-
-        return configuration.getBaseSampleRate();
+        return (Integer) ctx.getOrDefault( SAMPLE_OVERRIDE, configuration.getBaseSampleRate() );
     }
 }

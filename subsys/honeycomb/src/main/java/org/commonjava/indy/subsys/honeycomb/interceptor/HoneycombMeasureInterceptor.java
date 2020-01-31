@@ -68,7 +68,9 @@ public class HoneycombMeasureInterceptor
             return context.proceed();
         }
 
-        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
+        // Seems like the sample rate is managed at the service-request level, not at this level...so let's just
+        // use sample-rate == 0 as a way to turn off child spans like this, and leave the sampling rates out of it
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
 
         Class<?> cls = context.getMethod().getDeclaringClass();
 
@@ -90,14 +92,7 @@ public class HoneycombMeasureInterceptor
         {
             if ( span != null )
             {
-                Span theSpan = span;
-                config.getFieldSet().forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        theSpan.addField( field, value );
-                    }
-                });
+                honeycombManager.addFields( span );
 
                 logger.trace( "closeSpan, {}", span );
                 span.close();

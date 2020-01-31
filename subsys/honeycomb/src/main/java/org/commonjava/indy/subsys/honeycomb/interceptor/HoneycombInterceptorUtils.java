@@ -18,6 +18,8 @@ package org.commonjava.indy.subsys.honeycomb.interceptor;
 import io.honeycomb.beeline.tracing.Span;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
@@ -55,6 +57,9 @@ public class HoneycombInterceptorUtils
                 break;
             }
         }
+
+        Logger logger = LoggerFactory.getLogger( HoneycombInterceptorUtils.class );
+        logger.debug( "Found metric name: {}", name );
 
         return name;
     }

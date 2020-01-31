@@ -73,16 +73,7 @@ public class HoneycombFilter
         {
             if ( rootSpan != null )
             {
-                Span theSpan = rootSpan;
-                config.getFieldSet().forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        logger.trace( "ROOT FIELD: {} = {}", field, value );
-                        theSpan.addField( field, value );
-                    }
-                });
-
+                honeycombManager.addFields( rootSpan );
                 rootSpan.close();
             }
 

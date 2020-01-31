@@ -17,15 +17,8 @@ package org.commonjava.indy.bind.jaxrs;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.metrics.IndyMetricsConstants;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.RequestContextHelper;
-import org.commonjava.maven.galley.model.SpecialPathInfo;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
-import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -37,20 +30,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
 
-import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
-import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
-import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
-import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.IS_METERED;
-import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
 import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 
 @ApplicationScoped
@@ -77,6 +57,22 @@ public class ThreadContextFilter
         {
             ThreadContext.clearContext();
             ThreadContext.getContext( true );
+
+            if ( request instanceof HttpServletRequest )
+            {
+                HttpServletRequest hsr = (HttpServletRequest) request;
+
+                String clientAddr = request.getRemoteAddr();
+                final String xForwardFor = hsr.getHeader( X_FORWARDED_FOR );
+                if ( xForwardFor != null )
+                {
+                    clientAddr = xForwardFor; // OSE proxy use HTTP header 'x-forwarded-for' to represent user IP
+                }
+
+                mdcManager.putUserIP( clientAddr );
+                mdcManager.putExtraHeaders( hsr );
+                mdcManager.putRequestIDs( hsr );
+            }
 
             chain.doFilter( request, response );
         }

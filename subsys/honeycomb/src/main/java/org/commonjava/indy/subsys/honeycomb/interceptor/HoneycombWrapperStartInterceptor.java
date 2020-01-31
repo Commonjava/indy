@@ -28,6 +28,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
@@ -54,13 +55,13 @@ public class HoneycombWrapperStartInterceptor
         }
 
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null || config.getSampleRate( context.getMethod() ) < 1 )
+        if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( context.getMethod() ) < 1 )
         {
             logger.trace( "SKIP: Honeycomb metrics-start wrapper (no span name or span not configured)" );
-            context.proceed();
+            return context.proceed();
         }
 
-        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
         try
         {
             Span span = honeycombManager.startChildSpan( name );
