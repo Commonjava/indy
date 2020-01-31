@@ -17,26 +17,19 @@ package org.commonjava.indy.subsys.honeycomb;
 
 import io.honeycomb.beeline.tracing.Beeline;
 import io.honeycomb.beeline.tracing.Span;
-import io.honeycomb.beeline.tracing.SpanBuilderFactory;
-import io.honeycomb.beeline.tracing.SpanPostProcessor;
-import io.honeycomb.beeline.tracing.Tracing;
 import io.honeycomb.beeline.tracing.propagation.PropagationContext;
-import io.honeycomb.beeline.tracing.sampling.Sampling;
 import io.honeycomb.libhoney.HoneyClient;
-import io.honeycomb.libhoney.LibHoney;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import java.util.Map;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PARENT_SPAN;
@@ -51,6 +44,9 @@ public class HoneycombManager
     private HoneyClient client;
 
     @Inject
+    private HoneycombContextualizer honeycombContextualizer;
+
+    @Inject
     private HoneycombConfiguration configuration;
 
     @Inject
@@ -60,36 +56,14 @@ public class HoneycombManager
     {
     }
 
-    @PostConstruct
-    public void init()
-    {
-        if ( !configuration.isEnabled() )
-        {
-            logger.debug( "Honeycomb is not enabled" );
-            return;
-        }
-        String writeKey = configuration.getWriteKey();
-        String dataset = configuration.getDataset();
-        if ( isNotBlank( writeKey ) && isNotBlank( dataset ) )
-        {
-            logger.debug( "Init Honeycomb manager, dataset: {}", dataset );
-            client = LibHoney.create( LibHoney.options().setDataset( dataset ).setWriteKey( writeKey ).build() );
-
-            SpanPostProcessor postProcessor = Tracing.createSpanProcessor( client, traceSampler );
-            SpanBuilderFactory factory = Tracing.createSpanBuilderFactory( postProcessor, Sampling.alwaysSampler() );
-
-            BeelineContextualizer.setBeeline( factory );
-        }
-    }
-
     public HoneyClient getClient()
     {
-        return client;
+        return honeycombContextualizer.getHoneyClient();
     }
 
     public Beeline getBeeline()
     {
-        Beeline bl = BeelineContextualizer.getBeeline();
+        Beeline bl = honeycombContextualizer.getBeeline();
 
         logger.info( "Returning Beeline: {}", bl );
 
