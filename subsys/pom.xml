@@ -42,7 +42,6 @@
     <module>kafka</module>
     <module>cpool</module>
     <module>honeycomb</module>
-    <module>newrelic</module>
   </modules>
   
 </project>

@@ -18,16 +18,19 @@ package org.commonjava.indy.subsys.honeycomb.interceptor;
 import io.honeycomb.beeline.tracing.Span;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.LinkedList;
+import java.util.function.Supplier;
 
 public class HoneycombInterceptorUtils
 {
 
-    private static final String SPAN_STACK = "honeycomb-span-stack";
+    public static final String SAMPLE_OVERRIDE = "honeycomb.sample-override";
 
     public static String getMetricNameFromParam( InvocationContext context )
     {
@@ -41,10 +44,22 @@ public class HoneycombInterceptorUtils
             MetricWrapperNamed annotation = param.getAnnotation( MetricWrapperNamed.class );
             if ( annotation != null )
             {
-                name = String.valueOf( context.getParameters()[i] );
+                Object pv = context.getParameters()[i];
+                if ( pv instanceof Supplier )
+                {
+                    name = String.valueOf( ( (Supplier) pv ).get() );
+                }
+                else
+                {
+                    name = String.valueOf( pv );
+                }
+
                 break;
             }
         }
+
+        Logger logger = LoggerFactory.getLogger( HoneycombInterceptorUtils.class );
+        logger.debug( "Found metric name: {}", name );
 
         return name;
     }

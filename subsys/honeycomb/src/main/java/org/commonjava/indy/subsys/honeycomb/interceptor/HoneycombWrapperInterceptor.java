@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
@@ -26,10 +27,11 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.util.stream.Stream;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @MetricWrapper
@@ -54,12 +56,15 @@ public class HoneycombWrapperInterceptor
         }
 
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null || !config.isSpanIncluded( context.getMethod() ) )
+        if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( name ) < 1 )
         {
             logger.info( "SKIP Honeycomb lambda wrapper (no span name or span not configured)" );
-            context.proceed();
+            return context.proceed();
         }
 
+        // Seems like the sample rate is managed at the service-request level, not at this level...so let's just
+        // use sample-rate == 0 as a way to turn off child spans like this, and leave the sampling rates out of it
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, sampleRate );
         Span span = null;
         try
         {
@@ -76,14 +81,7 @@ public class HoneycombWrapperInterceptor
         {
             if ( span != null )
             {
-                Span theSpan = span;
-                Stream.of( config.getFields()).forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        theSpan.addField( field, value );
-                    }
-                });
+                honeycombManager.addFields( span );
 
                 logger.trace( "closeSpan, {}", span );
                 span.close();
