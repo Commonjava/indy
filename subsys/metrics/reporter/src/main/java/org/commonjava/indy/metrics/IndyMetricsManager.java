@@ -283,7 +283,7 @@ public class IndyMetricsManager
 
             ctx.putIfAbsent( CUMULATIVE_COUNTS, new ConcurrentHashMap<>() );
             Map<String, Integer> countMap =
-                            (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
+                    (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
 
             countMap.merge( name, 1, ( existingVal, newVal ) -> existingVal + 1 );
         }
@@ -292,11 +292,11 @@ public class IndyMetricsManager
     @MetricWrapper
     public <T> T wrapWithStandardMetrics( final Supplier<T> method, @MetricWrapperNamed final Supplier<String> classifier )
     {
-        //        if ( logger.isDebugEnabled() )
-        //        {
-        //            Throwable t = new Throwable();
-        //            logger.info( "Wrapping with standard metrics at the following location:", t );
-        //        }
+//        if ( logger.isDebugEnabled() )
+//        {
+//            Throwable t = new Throwable();
+//            logger.info( "Wrapping with standard metrics at the following location:", t );
+//        }
 
         String name = classifier.get();
         if ( !checkMetered() || SKIP_METRIC.equals( name ) )
