@@ -118,10 +118,23 @@
       </persistence>
     </local-cache>
 
-    <local-cache name="store-data" configuration="local-template">
+    <local-cache name="store-data-v2" configuration="local-template">
       <persistence passivation="true">
         <file-store shared="false" preload="true" fetch-state="false" path="${indy.data}/store-v2"/>
       </persistence>
+    </local-cache>
+
+    <local-cache name="store-by-package" configuration="local-template">
+      <memory>
+        <object size="100" />
+      </memory>
+      <indexing index="LOCAL">
+        <property name="default.indexmanager">near-real-time</property>
+        <property name="default.directory_provider">local-heap</property>
+      </indexing>
+    </local-cache>
+
+    <local-cache name="affected-by-stores" configuration="local-template">
     </local-cache>
 
     <!--

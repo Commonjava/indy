@@ -116,7 +116,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "retrieve.first" ) )
+    @Measure
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -142,7 +142,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "retrieve.all" ) )
+    @Measure
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -167,7 +167,8 @@ public class DefaultContentManager
                 }
 
                 final List<Transfer> storeTransfers = new ArrayList<>();
-                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata, (txfr) -> storeTransfers.add( txfr ) );
+                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata,
+                                                                     storeTransfers::add );
 
                 // If the content was generated, don't try to retrieve it from a member store...this is the lone exception to retrieveAll
                 // ...if it's generated, it's merged in this case.
@@ -373,7 +374,11 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            clearNFCEntries(kl, path);
+            final String context =
+                    String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
+                                   store.getKey(), path );
+            storeManager.asyncGroupAffectedBy(
+                    new StoreDataManager.ContextualTask( context, () -> clearNFCEntries( kl, path ) ) );
         }
 
         return txfr;
@@ -400,7 +405,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "store.all" ) )
+    @Measure
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -423,7 +428,11 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            clearNFCEntries(kl, path);
+            final String context =
+                    String.format( "Class: %s, method: %s, location: %s, path: %s", this.getClass().getName(), "store-stores",
+                                   kl, path );
+            storeManager.asyncGroupAffectedBy(
+                    new StoreDataManager.ContextualTask( context, () -> clearNFCEntries( kl, path ) ) );
         }
 
         return txfr;
@@ -572,7 +581,8 @@ public class DefaultContentManager
             }
 
             listed = new ArrayList<>();
-            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata, (list) -> listed.addAll( list ) );
+            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata,
+                                                                      listed::addAll );
 
             for ( final ArtifactStore member : members )
             {
@@ -595,7 +605,7 @@ public class DefaultContentManager
         else
         {
             listed = downloadManager.list( store, path, metadata );
-            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, (produced) -> listed.addAll( produced ) );
+            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, listed::addAll );
         }
 
         return dedupeListing( listed );
@@ -620,7 +630,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "list.all" ) )
+    @Measure
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {

@@ -15,14 +15,24 @@
  */
 package org.commonjava.indy.db.common;
 
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
-import org.commonjava.indy.data.*;
+import org.commonjava.indy.data.ArtifactStoreQuery;
+import org.commonjava.indy.data.ArtifactStoreValidateData;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.data.StoreValidator;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -30,18 +40,29 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
-import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
+import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
+import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 public abstract class AbstractStoreDataManager
@@ -61,11 +82,26 @@ public abstract class AbstractStoreDataManager
     @Inject
     private SslValidationConfig configuration;
 
-    @Inject StoreDataManager storeDataManager;
+    @Inject
+    StoreDataManager storeDataManager;
 
     @Inject
     InternalFeatureConfig internalFeatureConfig;
 
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = "store-affected-by-async-runner", priority = 4, threads = 32 )
+    private ExecutorService affectedByAsyncRunner;
+
+    protected AbstractStoreDataManager()
+    {
+        if ( affectedByAsyncRunner == null )
+        {
+            //for testing
+            affectedByAsyncRunner = Executors.newFixedThreadPool( 32, new NamedThreadFactory(
+                    "store-affected-by-async-runner", new ThreadGroup( "store-affected-by-async-runner" ), true, 4 ) );
+        }
+    }
 
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
@@ -141,6 +177,11 @@ public abstract class AbstractStoreDataManager
                 }
             }
         }
+        // Hosted or Remote update does not change affectedBy relationships
+        if ( store instanceof Group )
+        {
+            refreshAffectedBy( store, original, STORE );
+        }
     }
 
     protected void preDelete( final ArtifactStore store, final ChangeSummary summary, final boolean fireEvents,
@@ -164,6 +205,14 @@ public abstract class AbstractStoreDataManager
         {
             dispatcher.deleted( eventMetadata, store );
         }
+
+        refreshAffectedBy( store, null, DELETE );
+    }
+
+    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
+            throws IndyDataException
+    {
+        //do nothing by default
     }
 
     protected abstract ArtifactStore removeArtifactStoreInternal( StoreKey key );
@@ -293,15 +342,22 @@ public abstract class AbstractStoreDataManager
 
         logger.warn("Storing {} using operation lock: {}", store, opLocks);
 
-
-        if (internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != StoreType.group) {
-            ArtifactStoreValidateData validateData = storeValidator.validate(store);
-            if (!validateData.isValid()) {
-                logger.warn("=> [AbstractStoreDataManager] Adding Validation Metadata to Remote Store: " + store.getKey() + " - not Valid! ");
-                if(store.getMetadata() != null)
-                    store.getMetadata().putAll(validateData.getErrors());
+        if ( internalFeatureConfig != null && internalFeatureConfig.getStoreValidation() && store.getType() != group )
+        {
+            ArtifactStoreValidateData validateData = storeValidator.validate( store );
+            if ( !validateData.isValid() )
+            {
+                logger.warn(
+                        "=> [AbstractStoreDataManager] Adding Validation Metadata to Remote Store: " + store.getKey()
+                                + " - not Valid! " );
+                if ( store.getMetadata() != null )
+                {
+                    store.getMetadata().putAll( validateData.getErrors() );
+                }
                 else
-                    store.setMetadata(validateData.getErrors());
+                {
+                    store.setMetadata( validateData.getErrors() );
+                }
             }
         }
 
@@ -402,6 +458,90 @@ public abstract class AbstractStoreDataManager
 //            logger.warn("=> Disabling this store has thrown IndyDataException: " + e.getMessage());
 //            throw new IndyDataException("=> Disabling store is not applicable!", null);
 //        }
+    }
+
+    @Override
+    public Set<StoreKey> getStoreKeysByPkg( String pkg )
+    {
+        return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) )
+                                        .collect( Collectors.toSet() );
+    }
+
+    @Override
+    public Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type )
+    {
+        return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) && key.getType() == type )
+                                        .collect( Collectors.toSet() );
+    }
+
+    public Set<Group> affectedBy( final Collection<StoreKey> keys )
+            throws IndyDataException
+    {
+        return affectedByFromStores( keys );
+    }
+
+    @Override
+    public void asyncGroupAffectedBy( ContextualTask contextualTask )
+    {
+        if ( StringUtils.isNotBlank( contextualTask.getTaskContext() ) )
+        {
+            MDC.put( "group-affected-runner-context", contextualTask.getTaskContext() );
+        }
+        affectedByAsyncRunner.execute( contextualTask.getTask() );
+    }
+
+    protected Set<Group> affectedByFromStores( final Collection<StoreKey> keys )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Getting groups affected by: {}", keys );
+
+        List<StoreKey> toProcess = new ArrayList<>( new HashSet<>( keys ) );
+
+        Set<Group> groups = new HashSet<>();
+        if ( toProcess.isEmpty() )
+        {
+            return groups;
+        }
+
+        Set<StoreKey> processed = new HashSet<>();
+        final String packageType = toProcess.get( 0 ).getPackageType();
+
+        Set<ArtifactStore> all = this.getStoreKeysByPkgAndType( packageType, group )
+                                     .stream()
+                                     .map( this::getArtifactStoreInternal )
+                                     .filter( Objects::nonNull )
+                                     .collect( Collectors.toSet() );
+
+        while ( !toProcess.isEmpty() )
+        {
+            // as long as we have another key to process, pop it off the list (remove it) and process it.
+            StoreKey next = toProcess.remove( 0 );
+            if ( processed.contains( next ) )
+            {
+                // if we've already handled this group (via another branch in the group membership tree, etc. then don't bother.
+                continue;
+            }
+
+            // use this to avoid reprocessing groups we've already encountered.
+            processed.add( next );
+
+            for ( ArtifactStore store : all )
+            {
+                if ( ( store instanceof Group ) && !processed.contains( store.getKey() )  )
+                {
+                    Group g = (Group) store;
+                    if ( g.getConstituents() != null && g.getConstituents().contains( next ) )
+                    {
+                        groups.add( g );
+
+                        // add this group as another one to process for groups that contain it...and recurse upwards
+                        toProcess.add( g.getKey() );
+                    }
+                }
+            }
+        }
+
+        return groups;
     }
 
 }

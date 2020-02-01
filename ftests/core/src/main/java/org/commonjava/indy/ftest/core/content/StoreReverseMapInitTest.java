@@ -1,0 +1,253 @@
+/**
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.commonjava.indy.ftest.core.content;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.fixture.StoreTestDataBootupAction;
+import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.StoreKey;
+import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.xml.sax.SAXException;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.commonjava.indy.ftest.core.fixture.StoreTestDataConstants.groupX;
+import static org.commonjava.indy.ftest.core.fixture.StoreTestDataConstants.groupY;
+import static org.commonjava.indy.ftest.core.fixture.StoreTestDataConstants.repoA;
+import static org.commonjava.indy.ftest.core.fixture.StoreTestDataConstants.repoB;
+import static org.commonjava.indy.ftest.core.fixture.StoreTestDataConstants.repoC;
+import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
+import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.fail;
+
+/**
+ * GIVEN:
+ * <ul>
+ *     <li>Hosted repos A,B and C exist</li>
+ *     <li>Hosted repos A, B and C already contain path org/foo/bar/maven-metadata.xml</li>
+ *     <li>Group X contains A, B </li>
+ *     <li>Group Y contains X</li>
+ * </ul>
+ *
+ * WHEN:
+ * <ul>
+ *     <li>Path org/foo/bar/maven-metadata.xml is accessed from Group Y, and has its aggregated metadata generated</li>
+ *     <li>Hosted repo C is appended to the membership of X</li>
+ * </ul>
+ *
+ * THEN:
+ * <ul>
+ *    <li>org/foo/bar/maven-metadata.xml should be removed and regenerated for Y</li>
+ * </ul>
+ *
+ */
+public class StoreReverseMapInitTest
+        extends AbstractContentManagementTest
+{
+    final String path = "org/foo/bar/maven-metadata.xml";
+
+    @BeforeClass
+    public static void beforeClass()
+    {
+        StoreTestDataBootupAction.enable();
+    }
+
+    @AfterClass
+    public static void afterClass()
+    {
+        StoreTestDataBootupAction.disable();
+    }
+
+    @Test
+    public void run()
+            throws Exception
+    {
+        /* @formatter:off */
+        final String repoAContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>1.0</latest>\n" +
+            "    <release>1.0</release>\n" +
+            "    <versions>\n" +
+            "      <version>1.0</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20150721164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+
+        /* @formatter:off */
+        final String repoBContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>2.0</latest>\n" +
+            "    <release>2.0</release>\n" +
+            "    <versions>\n" +
+            "      <version>2.0</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20160722164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+
+        /* @formatter:off */
+        final String repoCContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<metadata>\n" +
+            "  <groupId>org.foo</groupId>\n" +
+            "  <artifactId>bar</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>3.0</latest>\n" +
+            "    <release>3.0</release>\n" +
+            "    <versions>\n" +
+            "      <version>3.0</version>\n" +
+            "    </versions>\n" +
+            "    <lastUpdated>20160723164334</lastUpdated>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
+        /* @formatter:on */
+
+        HostedRepository hostedA = client.stores().load( new StoreKey( PKG_TYPE_MAVEN, hosted, repoA ), HostedRepository.class );
+        createHostedStorePath( hostedA, repoAContent );
+        try (final InputStream stream = client.content().get( hostedA.getKey(), path ))
+        {
+            assertContent( repoAContent, IOUtils.toString( stream ) );
+        }
+
+        HostedRepository hostedB = client.stores().load( new StoreKey( PKG_TYPE_MAVEN, hosted, repoB ), HostedRepository.class );
+        createHostedStorePath( hostedB, repoBContent );
+        try (final InputStream stream = client.content().get( hostedB.getKey(), path ))
+        {
+            assertContent( repoBContent, IOUtils.toString( stream ) );
+        }
+
+        HostedRepository hostedC = client.stores().load( new StoreKey( PKG_TYPE_MAVEN, hosted, repoC ), HostedRepository.class );
+        createHostedStorePath( hostedC, repoCContent );
+        try (final InputStream stream = client.content().get( hostedC.getKey(), path ))
+        {
+            assertContent( repoCContent, IOUtils.toString( stream ) );
+        }
+
+        /* @formatter:off */
+        final String mergedContent1 =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "  <metadata>\n" +
+                "    <groupId>org.foo</groupId>\n" +
+                "    <artifactId>bar</artifactId>\n" +
+                "    <versioning>\n" +
+                "      <latest>2.0</latest>\n" +
+                "      <release>2.0</release>\n" +
+                "      <versions>\n" +
+                "        <version>1.0</version>\n" +
+                "        <version>2.0</version>\n" +
+                "      </versions>\n"  +
+                "      <lastUpdated>20160722164334</lastUpdated>\n" +
+                "    </versioning>\n" +
+                "</metadata>\n";
+        /* @formatter:on */
+
+        Group gY = client.stores().load( new StoreKey( PKG_TYPE_MAVEN, group, groupY ), Group.class );
+        try (final InputStream stream = client.content().get( gY.getKey(), path ))
+        {
+            assertContent( mergedContent1, IOUtils.toString( stream ) );
+        }
+
+        Group gX = client.stores().load( new StoreKey( PKG_TYPE_MAVEN, group, groupX ), Group.class );
+        gX.addConstituent( hostedC );
+
+        client.stores().update( gX, "test update" );
+
+        gX = client.stores().load( gX.getKey(), Group.class  );
+        logger.debug( "\n\nGroup constituents are:\n  {}\n\n", StringUtils.join( gX.getConstituents(), "\n  " ) );
+
+        waitForEventPropagation();
+
+        /* @formatter:off */
+        final String mergedContent2 =
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "  <metadata>\n" +
+                "    <groupId>org.foo</groupId>\n" +
+                "    <artifactId>bar</artifactId>\n" +
+                "    <versioning>\n" +
+                "      <latest>3.0</latest>\n" +
+                "      <release>3.0</release>\n" +
+                "      <versions>\n" +
+                "        <version>1.0</version>\n" +
+                "        <version>2.0</version>\n" +
+                "        <version>3.0</version>\n" +
+                "      </versions>\n"  +
+                "      <lastUpdated>20160723164334</lastUpdated>\n" +
+                "    </versioning>\n" +
+                "</metadata>\n";
+        /* @formatter:on */
+
+        try (final InputStream stream = client.content().get( gY.getKey(), path ))
+        {
+            assertContent( mergedContent2, IOUtils.toString( stream )  );
+        }
+    }
+
+    @Override
+    protected boolean createStandardTestStructures()
+    {
+        return false;
+    }
+
+    private void createHostedStorePath( final HostedRepository hosted, final String content )
+            throws Exception
+    {
+        if(StringUtils.isNotBlank( content ))
+        {
+            client.content().store( hosted.getKey(), path, new ByteArrayInputStream( content.getBytes() ) );
+        }
+    }
+
+    private void assertContent( String expectedXml, String actual )
+            throws IOException
+    {
+
+        logger.debug( "Comparing downloaded XML:\n\n{}\n\nTo expected XML:\n\n{}\n\n", actual, expectedXml );
+
+        try
+        {
+            XMLUnit.setIgnoreWhitespace( true );
+            XMLUnit.setIgnoreDiffBetweenTextAndCDATA( true );
+            XMLUnit.setIgnoreAttributeOrder( true );
+            XMLUnit.setIgnoreComments( true );
+
+            assertXMLEqual( expectedXml, actual );
+        }
+        catch ( SAXException e )
+        {
+            e.printStackTrace();
+            fail( "Downloaded XML not equal to expected XML" );
+        }
+    }
+}

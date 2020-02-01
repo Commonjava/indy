@@ -34,7 +34,6 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
-import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,8 +89,8 @@ public class PromotionHelper
     public void clearStoreNFC( final Set<String> sourcePaths, ArtifactStore store )
     {
         Set<String> paths = sourcePaths.stream()
-                                       .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
-                                       .collect( Collectors.toSet() );
+                               .map( sp -> sp.startsWith( "/" ) && sp.length() > 1 ? sp.substring( 1 ) : sp )
+                               .collect( Collectors.toSet() );
 
         paths.forEach( path -> {
             ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -228,7 +227,7 @@ public class PromotionHelper
     }
 
     // util class to hold repos check results
-    class PromotionRepoRetrievalResult
+    static class PromotionRepoRetrievalResult
     {
         final List<String> errors;
         final ArtifactStore targetStore, sourceStore;

@@ -123,7 +123,8 @@ public class DefaultStoreValidatorTest extends AbstractIndyFunctionalTest {
 
         assertNotNull( validateAllowedRepo );
         assertFalse(validateAllowedRepo.isValid());
-
+    
+    
         RemoteRepository withoutTrailingSlash =
           new RemoteRepository( "maven", "validation-without-trailingslash", "https://oss.sonatype.org/content/repositories/snapshots" );
     

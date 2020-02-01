@@ -17,11 +17,13 @@ package org.commonjava.indy.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.maven.galley.event.EventMetadata;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -134,4 +136,44 @@ public interface StoreDataManager
      * Stream of StoreKey instances present in the system.
      */
     Stream<StoreKey> streamArtifactStoreKeys();
+
+    Set<StoreKey> getStoreKeysByPkg( String pkg );
+
+    Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type );
+
+    Set<Group> affectedBy( Collection<StoreKey> keys )
+            throws IndyDataException;
+
+    /**
+     * This api is used for some time-sensitive tasks which should use getGroupsAffectedBy service, as
+     * this service is a little time-consuming now.
+     *
+     * @param task
+     * @param <R>
+     */
+    void asyncGroupAffectedBy( ContextualTask contextualTask );
+
+    class ContextualTask
+    {
+        private String taskContext;
+
+        private Runnable task;
+
+        public ContextualTask( String taskContext, Runnable task )
+        {
+            this.taskContext = taskContext;
+            this.task = task;
+        }
+
+        public String getTaskContext()
+        {
+            return taskContext;
+        }
+
+        public Runnable getTask()
+        {
+            return task;
+        }
+
+    }
 }

@@ -20,8 +20,10 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.GroupLocation;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
@@ -102,50 +104,43 @@ class NFCContentListener
             // and hosted is handled by DownloadManager
             if ( key.getType() == StoreType.group )
             {
-                try
-                {
-                    final ArtifactStore store = storeDataManager.getArtifactStore( key );
-                    final ConcreteResource r = new ConcreteResource( LocationUtils.toLocation( store ), isp.getPath() );
-                    logger.debug( "Add NFC of resource {} in store {}", r, store );
-                    if ( StoreType.hosted != key.getType() )
-                    {
-                        nfc.addMissing( r );
-                    }
-                }
-                catch ( IndyDataException ex )
-                {
-                    logger.error( String.format(
-                            "When add nfc missing for indexed artifact of path %s in store %s, failed to lookup store. Reason: %s",
-                            isp.getPath(), key, ex.getMessage() ), ex );
-                }
+                Location location = new GroupLocation( isp.getPackageType(), isp.getStoreName() );
+                final ConcreteResource r = new ConcreteResource( location, isp.getPath() );
+                nfc.addMissing( r );
             }
         }
     }
 
     private void nfcClearByContaining( final ArtifactStore store, final String path )
     {
-        try
+        if ( store == null )
         {
-            if ( store == null )
-            {
-                return;
-            }
+            return;
+        }
+        final String context =
+                String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "nfcClearByContaining",
+                               store.getKey(), path );
+        storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context, () -> {
             logger.debug( "Start to clear nfc for groups affected by {} of path {}", store, path );
-            storeDataManager.query()
-                            .packageType( store.getKey().getPackageType() )
-                            .getGroupsAffectedBy( store.getKey() )
-                            .forEach( g -> {
-                                final ConcreteResource r = new ConcreteResource( LocationUtils.toLocation( g ), path );
-                                logger.debug( "Clear NFC in terms of containing {} in {} for resource {}", store, g,
-                                              r );
-                                nfc.clearMissing( r );
-                            } );
-
-        }
-        catch ( IndyDataException e )
-        {
-            logger.error( String.format( "Failed to lookup parent stores which contain %s. Reason: %s", store.getKey(),
-                                         e.getMessage() ), e );
-        }
+            try
+            {
+                storeDataManager.query()
+                                .packageType( store.getKey().getPackageType() )
+                                .getGroupsAffectedBy( store.getKey() )
+                                .forEach( g -> {
+                                    final ConcreteResource r =
+                                            new ConcreteResource( LocationUtils.toLocation( g ), path );
+                                    logger.debug( "Clear NFC in terms of containing {} in {} for resource {}", store, g,
+                                                  r );
+                                    nfc.clearMissing( r );
+                                } );
+            }
+            catch ( IndyDataException e )
+            {
+                logger.error(
+                        String.format( "Failed to lookup parent stores which contain %s. Reason: %s", store.getKey(),
+                                       e.getMessage() ), e );
+            }
+        } ) );
     }
 }

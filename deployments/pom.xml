@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,8 +31,8 @@
   
   <modules>
     <module>launcher</module>
-    <module>cache-migrator</module>
-    <module>record-extractor</module>
+<!--     <module>cache-migrator</module>
+    <module>record-extractor</module> -->
   </modules>
 
   <profiles>
@@ -42,11 +42,5 @@
         <module>docker</module>
       </modules>
     </profile>
-<!--     <profile>
-      <id>release</id>
-      <modules>
-        <module>docker</module>
-      </modules>
-    </profile> -->
   </profiles>
 </project>

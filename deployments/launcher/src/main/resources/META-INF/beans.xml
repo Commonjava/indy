@@ -23,6 +23,10 @@
   <interceptors>
     <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
     <class>org.commonjava.indy.metrics.jaxrs.interceptor.MetricsInterceptor</class>
+    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombMeasureInterceptor</class>
+    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperInterceptor</class>
+    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperStartInterceptor</class>
+    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperEndInterceptor</class>
   </interceptors>
 
   <decorators>
@@ -32,6 +36,11 @@
 
     <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
     <class>org.commonjava.indy.core.inject.NFCMetricsDecorator</class>
+    
+    <!-- StoreDataManager decorators -->
+    <class>org.commonjava.indy.db.metered.MeasuringArtifactStoreQueryInterceptor</class>
+    <class>org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator</class>
+    <!--<class>org.commonjava.indy.implrepo.data.ValidRemoteStoreDataManagerDecorator</class>-->
   </decorators>
       
 </beans>

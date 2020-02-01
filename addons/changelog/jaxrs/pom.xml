@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -48,11 +48,6 @@
       <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     
-    <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <scope>compile</scope>
-    </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>

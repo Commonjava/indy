@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
   
   <name>Indy :: Project Root</name>
-  <inceptionYear>2011-2019</inceptionYear>
+  <inceptionYear>2011-2020</inceptionYear>
   
   <scm>
     <connection>scm:git:https://github.com/Commonjava/indy.git</connection>
@@ -83,14 +83,14 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
-    <galleyVersion>1.0</galleyVersion>
+    <galleyVersion>1.1</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.12</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.11</jhttpcVersion>
-    <weftVersion>1.15</weftVersion>
+    <weftVersion>1.16-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
@@ -384,6 +384,19 @@
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-jaxrs</artifactId>
         <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -787,7 +800,7 @@
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-sli-jaxrs</artifactId>
+        <artifactId>indy-sli</artifactId>
         <version>1.9.10-SNAPSHOT</version>
       </dependency>
 
@@ -1000,6 +1013,12 @@
         <artifactId>jboss-logging</artifactId>
         <version>3.3.0.Final</version>
       </dependency>
+      <dependency>
+        <groupId>io.honeycomb.beeline</groupId>
+        <artifactId>beeline-core</artifactId>
+        <version>1.0.7</version>
+      </dependency>
+
 <!--       <dependency>
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging</artifactId>
@@ -1366,21 +1385,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.quartz-scheduler</groupId>
-        <artifactId>quartz</artifactId>
-        <version>2.2.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.derby</groupId>
-        <artifactId>derby</artifactId>
-        <version>10.10.2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>1.4.188</version>
-      </dependency>
-      <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>42.2.5</version>
@@ -1640,10 +1644,12 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -1891,27 +1897,10 @@
             </execution>
           </executions>
         </plugin> -->
-        <!-- <plugin>
-          <groupId>org.commonjava.maven</groupId>
-          <artifactId>restdoc-maven-plugin</artifactId>
-          <version>0.1</version>
-          <executions>
-            <execution>
-              <id>generate-html</id>
-              <goals>
-                <goal>generate</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin> -->
-        
+
       </plugins>
     </pluginManagement>
     <plugins>
-<!--       <plugin>
-        <groupId>org.jboss.jandex</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-      </plugin> -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>

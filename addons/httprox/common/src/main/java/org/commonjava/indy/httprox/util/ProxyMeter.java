@@ -17,7 +17,7 @@ package org.commonjava.indy.httprox.util;
 
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 
 import java.net.SocketAddress;
 
@@ -29,6 +29,7 @@ import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_END;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
+import static org.commonjava.indy.metrics.TrafficClassifierConstants.FN_CONTENT_GENERIC;
 
 public class ProxyMeter
 {
@@ -73,13 +74,13 @@ public class ProxyMeter
 
             long latency = System.nanoTime() - startNanos;
 
-            MDC.put( REQUEST_LATENCY_NS, String.valueOf( latency ) );
+            RequestContextHelper.setContext( REQUEST_LATENCY_NS, String.valueOf( latency ) );
             setContext( HTTP_METHOD, method );
 
             // log SLI metrics
             if ( sliMetricSet != null )
             {
-                sliMetricSet.function( GoldenSignalsMetricSet.FN_CONTENT_GENERIC ).ifPresent( ms ->{
+                sliMetricSet.function( FN_CONTENT_GENERIC ).ifPresent( ms ->{
                     ms.latency( latency ).call();
 
                     if ( getContext( HTTP_STATUS, 200 ) > 499 )
@@ -89,9 +90,9 @@ public class ProxyMeter
                 } );
             }
 
-            MDC.put( REQUEST_PHASE, REQUEST_PHASE_END );
+            RequestContextHelper.setContext( REQUEST_PHASE, REQUEST_PHASE_END );
             restLogger.info( "END {} (from: {})", requestLine, peerAddress );
-            MDC.remove( REQUEST_PHASE );
+            RequestContextHelper.clearContext( REQUEST_PHASE );
         }
     }
 

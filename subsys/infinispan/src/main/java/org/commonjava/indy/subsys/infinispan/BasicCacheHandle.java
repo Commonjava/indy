@@ -153,6 +153,10 @@ public class BasicCacheHandle<K,V>
         return doExecute( "get", cache -> cache.get( key ) );
     }
 
+    /**
+     * WARNING: Be careful to use this clear operation, because we don't know if it will swept out all persistent data
+     * of this cache if the persistence has been enabled for it!!!
+     */
     public void clear()
     {
         doExecute( "clear", cache -> {

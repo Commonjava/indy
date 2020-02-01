@@ -135,7 +135,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
 
         } catch (IndyClientException ice) {
-            LOGGER.warn("=> Exception in revalidating store " + storedTestSslRepo.getUrl() +" API call");
+            LOGGER.warn("=> Exception in revalidating store " + storedTestSslRepo +" API call");
         }
 
 

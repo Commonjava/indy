@@ -29,9 +29,4 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention( RUNTIME )
 public @interface Measure
 {
-    @Nonbinding MetricNamed[] meters() default {};
-
-    @Nonbinding MetricNamed[] timers() default {};
-
-    @Nonbinding MetricNamed[] exceptions() default {};
 }

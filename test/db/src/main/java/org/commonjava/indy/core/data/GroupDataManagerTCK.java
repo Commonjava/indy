@@ -41,8 +41,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -305,6 +303,14 @@ public abstract class GroupDataManagerTCK
     public void complexGroupsAffectedBy()
             throws Exception
     {
+        // The original tree is like below(r:c->remote:central, h:1->hosted:1, h:2->hosted:2)
+        //                          A
+        //              ---------------------------
+        //              B                         C
+        //          ----------                ---------
+        //          D        E                F      h:1
+        //       ------    ------        ----------
+        //     r:c   h:1  h:1  h:2      r:c      h:2
         final StoreDataManager manager = getFixtureProvider().getDataManager();
         final StoreKey central = new StoreKey( PKG_TYPE_MAVEN, remote, "central" );
         final HostedRepository hosted1 = new HostedRepository( PKG_TYPE_MAVEN, "hosted1" );
@@ -323,47 +329,55 @@ public abstract class GroupDataManagerTCK
         groupC.setConstituents( asList( hosted1.getKey(), groupF.getKey() ) );
 
         store( hosted1, hosted2, groupA, groupB, groupC, groupD, groupE, groupF );
-
-        assertAffectedBy( central, asList( groupF.getKey(), groupD.getKey(), groupC.getKey(), groupB.getKey(),
-                                           groupA.getKey() ) );
-        assertAffectedBy( hosted1.getKey(), asList( groupE.getKey(), groupD.getKey(), groupC.getKey(), groupB.getKey(),
-                                                    groupA.getKey() ) );
-        assertAffectedBy( hosted2.getKey(), asList( groupE.getKey(), groupF.getKey(), groupC.getKey(), groupB.getKey(),
-                                                    groupA.getKey() ) );
-        assertAffectedBy( groupD.getKey(), asList( groupB.getKey(), groupA.getKey() ) );
+        assertAffectedBy( groupB.getKey(), groupA );
+        assertAffectedBy( groupC.getKey(), groupA );
+        assertAffectedBy( groupD.getKey(), groupB, groupA );
+        assertAffectedBy( groupE.getKey(), groupB, groupA );
+        assertAffectedBy( groupF.getKey(), groupC, groupA );
+        assertAffectedBy( central, groupF, groupD, groupC, groupB, groupA );
+        assertAffectedBy( hosted1.getKey(), groupE, groupD, groupC, groupB, groupA );
+        assertAffectedBy( hosted2.getKey(), groupE, groupF, groupC, groupB, groupA );
+        assertAffectedBy( groupD.getKey(), groupB, groupA );
 
         removeStore( groupD );
-
-        assertAffectedBy( central, asList( groupF.getKey(), groupC.getKey(), groupA.getKey() ) );
-        assertAffectedBy( hosted1.getKey(), asList( groupE.getKey(), groupC.getKey(), groupB.getKey(),
-                                                    groupA.getKey() ) );
-        assertAffectedBy( hosted2.getKey(), asList( groupE.getKey(), groupF.getKey(), groupC.getKey(), groupB.getKey(),
-                                                    groupA.getKey() ) );
+        assertAffectedBy( groupB.getKey(), groupA );
+        assertAffectedBy( groupC.getKey(), groupA );
+        assertAffectedBy( groupE.getKey(), groupB, groupA );
+        assertAffectedBy( groupF.getKey(), groupC, groupA );
+        assertAffectedBy( central, groupF, groupC, groupA );
+        assertAffectedBy( hosted1.getKey(), groupE, groupC, groupB, groupA );
+        assertAffectedBy( hosted2.getKey(), groupE, groupF, groupC, groupB, groupA );
         //FIXME: From case level this should be correct, but unit-testing can not trigger post deletion for parent group constituents
         //       removal, so the parents' constituents are still containing the removed one, which will cause this failed
-//        assertAffectedBy( groupD.getKey(), Collections.emptyList() );
+        //assertAffectedBy( groupD.getKey(), new StoreKey[]{} );
 
-        groupE.addConstituent( central );
-        store(groupE);
+        // Need to use a copy here to avoid same object updating which impacts memory one
+        Group groupECopy = groupE.copyOf();
+        groupECopy.addConstituent( central );
+        store( groupECopy );
+        assertAffectedBy( groupB.getKey(), groupA );
+        assertAffectedBy( groupC.getKey(), groupA );
+        assertAffectedBy( groupE.getKey(), groupB, groupA );
+        assertAffectedBy( groupF.getKey(), groupC, groupA );
+        assertAffectedBy( central, groupE, groupF, groupC, groupB, groupA );
+        assertAffectedBy( hosted1.getKey(), groupE, groupC, groupB, groupA );
+        assertAffectedBy( hosted2.getKey(), groupE, groupF, groupC, groupB, groupA );
 
-        assertAffectedBy( central, asList( groupE.getKey(), groupF.getKey(), groupC.getKey(), groupB.getKey(),
-                                           groupA.getKey() ) );
-        assertAffectedBy( hosted1.getKey(),
-                          asList( groupE.getKey(), groupC.getKey(), groupB.getKey(), groupA.getKey() ) );
-        assertAffectedBy( hosted2.getKey(), asList( groupE.getKey(), groupF.getKey(), groupC.getKey(), groupB.getKey(),
-                                                    groupA.getKey() ) );
-
-        groupE.removeConstituent( hosted1 );
-        groupE.removeConstituent( hosted2 );
-        store(groupE);
-
-        assertAffectedBy( central, asList( groupE.getKey(), groupF.getKey(), groupC.getKey(), groupB.getKey(),
-                                           groupA.getKey() ) );
-        assertAffectedBy( hosted1.getKey(), asList( groupC.getKey(), groupA.getKey() ) );
-        assertAffectedBy( hosted2.getKey(), asList( groupF.getKey(), groupC.getKey(), groupA.getKey() ) );
+        // Copy & update again
+        groupECopy = groupECopy.copyOf();
+        groupECopy.removeConstituent( hosted1 );
+        groupECopy.removeConstituent( hosted2 );
+        store( groupECopy );
+        assertAffectedBy( groupB.getKey(), groupA );
+        assertAffectedBy( groupC.getKey(), groupA );
+        assertAffectedBy( groupE.getKey(), groupB, groupA );
+        assertAffectedBy( groupF.getKey(), groupC, groupA );
+        assertAffectedBy( central, groupE, groupF, groupC, groupB, groupA );
+        assertAffectedBy( hosted1.getKey(), groupC, groupA );
+        assertAffectedBy( hosted2.getKey(), groupF, groupC, groupA );
     }
 
-    private void assertAffectedBy( StoreKey affectedByKey, Collection<StoreKey> expectedKeys )
+    private void assertAffectedBy( StoreKey affectedByKey, ArtifactStore... expectedStores )
             throws Exception
     {
         final Set<StoreKey> gKeys = manager.query()
@@ -372,7 +386,7 @@ public abstract class GroupDataManagerTCK
                                            .map( Group::getKey )
                                            .collect( Collectors.toSet() );
 
-        assertThat( gKeys, equalTo( new HashSet<>( expectedKeys ) ) );
+        assertThat( gKeys, equalTo(
+                Arrays.stream( expectedStores ).map( ArtifactStore::getKey ).collect( Collectors.toSet() ) ) );
     }
-
 }
