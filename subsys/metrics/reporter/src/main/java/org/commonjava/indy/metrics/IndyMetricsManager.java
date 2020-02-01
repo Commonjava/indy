@@ -44,7 +44,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -284,7 +283,7 @@ public class IndyMetricsManager
 
             ctx.putIfAbsent( CUMULATIVE_COUNTS, new ConcurrentHashMap<>() );
             Map<String, Integer> countMap =
-                    (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
+                            (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
 
             countMap.merge( name, 1, ( existingVal, newVal ) -> existingVal + 1 );
         }
@@ -293,11 +292,11 @@ public class IndyMetricsManager
     @MetricWrapper
     public <T> T wrapWithStandardMetrics( final Supplier<T> method, @MetricWrapperNamed final Supplier<String> classifier )
     {
-//        if ( logger.isDebugEnabled() )
-//        {
-//            Throwable t = new Throwable();
-//            logger.info( "Wrapping with standard metrics at the following location:", t );
-//        }
+        //        if ( logger.isDebugEnabled() )
+        //        {
+        //            Throwable t = new Throwable();
+        //            logger.info( "Wrapping with standard metrics at the following location:", t );
+        //        }
 
         String name = classifier.get();
         if ( !checkMetered() || SKIP_METRIC.equals( name ) )
@@ -339,8 +338,6 @@ public class IndyMetricsManager
             double elapsed = (System.nanoTime() - start) / NANOS_PER_MILLISECOND;
             accumulate( metricName, elapsed );
         }
-
-        return ( ctx == null || ((Boolean) ctx.getOrDefault( IS_METERED, Boolean.TRUE ) ) );
     }
 
     public boolean checkMetered()
@@ -382,4 +379,13 @@ public class IndyMetricsManager
         } );
     }
 
+    public MetricRegistry getMetricRegistry()
+    {
+        return metricRegistry;
+    }
+
+    public IndyMetricsConfig getConfig()
+    {
+        return config;
+    }
 }

@@ -64,7 +64,7 @@ import static org.commonjava.indy.model.core.StoreType.group;
  */
 // TODO: Eventually, it should probably be an error if packageType isn't set explicitly
 public class DefaultArtifactStoreQuery<T extends ArtifactStore>
-        implements ArtifactStoreQuery<T>
+                implements ArtifactStoreQuery<T>
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -103,7 +103,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     public DefaultArtifactStoreQuery<T> packageType( String packageType )
-            throws IndyDataException
+                    throws IndyDataException
     {
         if ( !PackageTypes.contains( packageType ) )
         {
@@ -163,7 +163,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<T> getAll()
-            throws IndyDataException
+                    throws IndyDataException
     {
         return stream().collect( Collectors.toList() );
     }
@@ -171,7 +171,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Stream<T> stream()
-            throws IndyDataException
+                    throws IndyDataException
     {
         return stream( store -> true );
     }
@@ -179,50 +179,50 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Stream<T> stream( Predicate<ArtifactStore> filter )
-            throws IndyDataException
+                    throws IndyDataException
     {
         /* @formatter:off */
         return dataManager.streamArtifactStores().filter( ( store ) ->
-        {
-            logger.debug( "Checking whether {} is included in stream...", store.getKey() );
+                                                          {
+                                                              logger.debug( "Checking whether {} is included in stream...", store.getKey() );
 
-            // Tricky condition here: The flag in the store we're checking is true when DISABLED, while the
-            // condition we're checking against in this query is true when it's ENABLED. If the two flags equal on another
-            // that actually means they DISAGREE about the state vs. desired state of the store.
-            if ( enabled != null && enabled == store.isDisabled() )
-            {
-                logger.debug( "Rejected. Store is {}, and we're only looking for enabled state of: {}", store.isDisabled(), enabled );
-                return false;
-            }
+                                                              // Tricky condition here: The flag in the store we're checking is true when DISABLED, while the
+                                                              // condition we're checking against in this query is true when it's ENABLED. If the two flags equal on another
+                                                              // that actually means they DISAGREE about the state vs. desired state of the store.
+                                                              if ( enabled != null && enabled == store.isDisabled() )
+                                                              {
+                                                                  logger.debug( "Rejected. Store is {}, and we're only looking for enabled state of: {}", store.isDisabled(), enabled );
+                                                                  return false;
+                                                              }
 
-            if ( packageType != null && !packageType.equals( store.getPackageType() ) )
-            {
-                logger.debug( "Rejected. Store package type is: {}, and we're only looking for package type of: {}", store.getPackageType(), packageType );
-                return false;
-            }
+                                                              if ( packageType != null && !packageType.equals( store.getPackageType() ) )
+                                                              {
+                                                                  logger.debug( "Rejected. Store package type is: {}, and we're only looking for package type of: {}", store.getPackageType(), packageType );
+                                                                  return false;
+                                                              }
 
-            if ( types != null && !types.contains( store.getType() ) )
-            {
-                logger.debug( "Rejected. Store is of type: {}, and we're only looking for: {}", store.getType(), types );
-                return false;
-            }
+                                                              if ( types != null && !types.contains( store.getType() ) )
+                                                              {
+                                                                  logger.debug( "Rejected. Store is of type: {}, and we're only looking for: {}", store.getType(), types );
+                                                                  return false;
+                                                              }
 
-            if ( filter != null && !filter.test( store ))
-            {
-                logger.debug( "Rejected. Additional filtering failed for store: {}", store.getKey() );
-                return false;
-            }
+                                                              if ( filter != null && !filter.test( store ))
+                                                              {
+                                                                  logger.debug( "Rejected. Additional filtering failed for store: {}", store.getKey() );
+                                                                  return false;
+                                                              }
 
-            logger.debug( "Store accepted for stream: {}", store.getKey() );
-            return true;
-        } ).map( store -> (T) store );
+                                                              logger.debug( "Store accepted for stream: {}", store.getKey() );
+                                                              return true;
+                                                          } ).map( store -> (T) store );
         /* @formatter:on */
     }
 
     @Override
     @Measure
     public List<T> getAll( Predicate<ArtifactStore> filter )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return stream( filter ).collect( Collectors.toList() );
     }
@@ -230,7 +230,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<T> getAllByDefaultPackageTypes()
-            throws IndyDataException
+                    throws IndyDataException
     {
         List<T> result = new ArrayList<>();
         Set<String> defaults = PackageTypes.getPackageTypes();
@@ -245,14 +245,14 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public T getByName( String name )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return stream( store -> name.equals( store.getName() ) ).findFirst().orElse( null );
     }
 
     @Override
     public boolean containsByName( String name )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getByName( name ) != null;
     }
@@ -260,7 +260,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getAllGroups().stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
@@ -268,7 +268,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String url )
-            throws IndyDataException
+                    throws IndyDataException
     {
         /*
            This filter does these things:
@@ -292,35 +292,35 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         // first try to find the remote repo by urlWithNoSchemeAndLastSlash
         /* @formatter:off */
         result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
-                store -> {
-                    if ( ( StoreType.remote == store.getType() ) && urlInfo != null )
-                    {
-                        final String targetUrl = ( (RemoteRepository) store ).getUrl();
-                        UrlInfo targetUrlInfo = null;
-                        try
-                        {
-                            targetUrlInfo = new UrlInfo( targetUrl );
-                        }
-                        catch ( IllegalArgumentException error )
-                        {
-                            logger.error( "Failed to find repository for: '{}'. Reason: {}", error, targetUrl, error.getMessage() );
-                        }
-
-                        if (  targetUrlInfo != null )
-                        {
-                            if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
-                                        .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
-                                            && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ))
+                        store -> {
+                            if ( ( StoreType.remote == store.getType() ) && urlInfo != null )
                             {
-                                logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
-                                              store.getKey() );
-                                return true;
-                            }
-                        }
-                    }
+                                final String targetUrl = ( (RemoteRepository) store ).getUrl();
+                                UrlInfo targetUrlInfo = null;
+                                try
+                                {
+                                    targetUrlInfo = new UrlInfo( targetUrl );
+                                }
+                                catch ( IllegalArgumentException error )
+                                {
+                                    logger.error( "Failed to find repository for: '{}'. Reason: {}", error, targetUrl, error.getMessage() );
+                                }
 
-                    return false;
-                } ).collect( Collectors.toList() );
+                                if (  targetUrlInfo != null )
+                                {
+                                    if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
+                                                .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
+                                                    && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ))
+                                    {
+                                        logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                                                      store.getKey() );
+                                        return true;
+                                    }
+                                }
+                            }
+
+                            return false;
+                        } ).collect( Collectors.toList() );
         /* @formatter:on */
 
 
@@ -329,49 +329,49 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             // ...if not found by hostname try to search by IP
             /* @formatter:off */
             result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
-                    store -> {
-                        if ( ( StoreType.remote == store.getType() ) && urlInfo != null )
-                        {
-                            final String targetUrl = ( (RemoteRepository) store ).getUrl();
-                            UrlInfo targetUrlInfo = null;
-                            try
-                            {
-                                targetUrlInfo = new UrlInfo( targetUrl );
-                            }
-                            catch ( IllegalArgumentException error )
-                            {
-                                logger.error( "Failed to find repository for: '{}'. Reason: {}", error, targetUrl, error.getMessage() );
-                            }
-
-                            if (  targetUrlInfo != null )
-                            {
-                                String ipForUrl = null;
-                                String ipForTargetUrl = null;
-                                try
+                            store -> {
+                                if ( ( StoreType.remote == store.getType() ) && urlInfo != null )
                                 {
-                                    ipForUrl = urlInfo.getIpForUrl();
-                                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
-                                    if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
-                                            && urlInfo.getPort() == targetUrlInfo.getPort()
-                                            && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
+                                    final String targetUrl = ( (RemoteRepository) store ).getUrl();
+                                    UrlInfo targetUrlInfo = null;
+                                    try
                                     {
-                                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
-                                                      store.getKey() );
-                                        return true;
+                                        targetUrlInfo = new UrlInfo( targetUrl );
+                                    }
+                                    catch ( IllegalArgumentException error )
+                                    {
+                                        logger.error( "Failed to find repository for: '{}'. Reason: {}", error, targetUrl, error.getMessage() );
+                                    }
+
+                                    if (  targetUrlInfo != null )
+                                    {
+                                        String ipForUrl = null;
+                                        String ipForTargetUrl = null;
+                                        try
+                                        {
+                                            ipForUrl = urlInfo.getIpForUrl();
+                                            ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                                            if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
+                                                            && urlInfo.getPort() == targetUrlInfo.getPort()
+                                                            && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
+                                            {
+                                                logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                                              store.getKey() );
+                                                return true;
+                                            }
+                                        }
+                                        catch ( UnknownHostException ue )
+                                        {
+                                            logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                                        }
+
+                                        logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                                                      store.getKey(), ipForTargetUrl );
                                     }
                                 }
-                                catch ( UnknownHostException ue )
-                                {
-                                    logger.warn( "Failed to filter remote: ip fetch error.", ue );
-                                }
 
-                                logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
-                                              store.getKey(), ipForTargetUrl );
-                            }
-                        }
-
-                        return false;
-                    } ).collect(Collectors.toList());
+                                return false;
+                            } ).collect(Collectors.toList());
             /* @formatter:on */
         }
 
@@ -381,7 +381,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
-            throws IndyDataException
+                    throws IndyDataException
     {
         logger.trace( "START: default store-query ordered-concrete-stores-in-group" );
         try
@@ -397,7 +397,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getGroupOrdering( groupName, true, false );
     }
@@ -405,7 +405,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Set<Group> getGroupsAffectedBy( StoreKey... keys )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getGroupsAffectedBy( Arrays.asList( keys ) );
     }
@@ -413,7 +413,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return dataManager.affectedBy( keys );
     }
@@ -444,37 +444,10 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         });
     }
 
-    public Stream<StoreKey> keyStream()
-    {
-        return keyStream( null );
-    }
-
-    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-    {
-        return dataManager.streamArtifactStoreKeys().filter(key -> {
-            if ( packageType != null && !key.getPackageType().equals( packageType ))
-            {
-                return false;
-            }
-
-            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
-            {
-                return false;
-            }
-
-            if ( filterPredicate != null && !filterPredicate.test( key ) )
-            {
-                return false;
-            }
-
-            return true;
-        });
-    }
-
     @Override
     @Measure
     public List<RemoteRepository> getAllRemoteRepositories()
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getAllOfType( RemoteRepository.class );
     }
@@ -482,7 +455,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<HostedRepository> getAllHostedRepositories()
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getAllOfType( HostedRepository.class );
     }
@@ -490,18 +463,18 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<Group> getAllGroups()
-            throws IndyDataException
+                    throws IndyDataException
     {
         return getAllOfType( Group.class );
     }
 
     private <T extends ArtifactStore> List<T> getAllOfType(Class<T> type)
-            throws IndyDataException
+                    throws IndyDataException
     {
         List<StoreKey> keys = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, type ).keyStream()
                                                                                                         .collect(
-                                                                                                                Collectors
-                                                                                                                        .toList() );
+                                                                                                                        Collectors
+                                                                                                                                        .toList() );
 
         List<T> stores = new ArrayList<>();
         for ( StoreKey key : keys )
@@ -518,21 +491,21 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     public RemoteRepository getRemoteRepository( final String name )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return (RemoteRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.remote, name ) );
     }
 
     @Override
     public HostedRepository getHostedRepository( final String name )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return (HostedRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.hosted, name ) );
     }
 
     @Override
     public Group getGroup( final String name )
-            throws IndyDataException
+                    throws IndyDataException
     {
         return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
     }
@@ -546,7 +519,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     private List<ArtifactStore> getGroupOrdering( final String groupName,
                                                   final boolean includeGroups, final boolean recurseGroups )
-            throws IndyDataException
+                    throws IndyDataException
     {
         if ( packageType == null )
         {
