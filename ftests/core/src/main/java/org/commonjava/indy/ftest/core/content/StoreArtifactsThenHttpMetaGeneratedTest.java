@@ -52,8 +52,7 @@ public class StoreArtifactsThenHttpMetaGeneratedTest
             throws Exception
     {
         final String content = "This is a test: " + System.nanoTime();
-        final InputStream stream = new ByteArrayInputStream( content.getBytes() );
-
+        
         final String dirPath = "/org/foo/bar/1";
         final String pomPath = dirPath + "/bar-1.pom";
         final String jarPath = dirPath + "/bar-1.jar";
@@ -65,11 +64,11 @@ public class StoreArtifactsThenHttpMetaGeneratedTest
         assertThat( client.content().exists( store, pomPath ), equalTo( false ) );
         assertThat( client.content().exists( store, jarPath ), equalTo( false ) );
 
-        client.content().store( store, pomPath, stream );
+        client.content().store( store, pomPath, new ByteArrayInputStream( content.getBytes() ) );
         assertThat( client.content().exists( store, pomPath ), equalTo( true ) );
         assertThat( client.content().exists( store, pomHttpMetaPath ), equalTo( true ) );
 
-        client.content().store( store, jarPath, stream );
+        client.content().store( store, jarPath, new ByteArrayInputStream( content.getBytes() ) );
         assertThat( client.content().exists( store, jarPath ), equalTo( true ) );
         assertThat( client.content().exists( store, jarHttpMetaPath ), equalTo( true ) );
 
