@@ -22,6 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
+
 public class LegacyReadonlyPhysicalStore
                 extends FileBasedPhysicalStore
 {
@@ -47,7 +51,7 @@ public class LegacyReadonlyPhysicalStore
     //Legacy folders: generic-http, maven, npm
     private boolean isLegacyFile( String fileStorage )
     {
-        return fileStorage != null && ( fileStorage.startsWith( "maven" ) || fileStorage.startsWith( "generic-http" )
-                        || fileStorage.startsWith( "npm" ) );
+        return fileStorage != null && ( fileStorage.startsWith( PKG_TYPE_MAVEN ) || fileStorage.startsWith(
+                        PKG_TYPE_GENERIC_HTTP ) || fileStorage.startsWith( PKG_TYPE_NPM ) );
     }
 }
