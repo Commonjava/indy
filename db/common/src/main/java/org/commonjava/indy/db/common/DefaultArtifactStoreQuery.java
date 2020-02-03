@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.db.common;
 
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -39,11 +40,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.commonjava.indy.model.core.StoreType.group;
 
 /**
  * This query interface is intended to be reusable across any {@link StoreDataManager} implementation. It contains logic
@@ -75,12 +79,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     public DefaultArtifactStoreQuery( StoreDataManager dataManager )
     {
+        logger.info( "CREATE new default store query with data manager only" );
         this.dataManager = dataManager;
     }
 
     private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
                                        final Boolean enabled, final Class<T> storeCls )
     {
+        logger.info( "CREATE new default store query with params (internal?)" );
+
         this.dataManager = dataManager;
         this.packageType = packageType;
         this.enabled = enabled;
@@ -121,7 +128,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         }
         else
         {
-            this.types = Collections.singleton( StoreType.group );
+            this.types = Collections.singleton( group );
         }
 
         return (DefaultArtifactStoreQuery<C>) this;
@@ -376,7 +383,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, false, true );
+        logger.trace( "START: default store-query ordered-concrete-stores-in-group" );
+        try
+        {
+            return getGroupOrdering( groupName, false, true );
+        }
+        finally
+        {
+            logger.trace( "END: default store-query ordered-concrete-stores-in-group" );
+        }
     }
 
     @Override
@@ -400,54 +415,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Getting groups affected by: {}", keys );
-
-        List<StoreKey> toProcess = new ArrayList<>( new HashSet<>( keys ) );
-
-        Set<Group> groups = new HashSet<>();
-        if ( toProcess.isEmpty() )
-        {
-            return groups;
-        }
-
-        Set<StoreKey> processed = new HashSet<>();
-
-        Set<StoreKey> all = new DefaultArtifactStoreQuery<>( dataManager, toProcess.get( 0 ).getPackageType(), null,
-                                                          Group.class ).keyStream().collect( Collectors.toSet() );
-
-        while ( !toProcess.isEmpty() )
-        {
-            // as long as we have another key to process, pop it off the list (remove it) and process it.
-            StoreKey next = toProcess.remove( 0 );
-            if ( processed.contains( next ) )
-            {
-                // if we've already handled this group (via another branch in the group membership tree, etc. then don't bother.
-                continue;
-            }
-
-            // use this to avoid reprocessing groups we've already encountered.
-            processed.add( next );
-
-            for ( StoreKey key : all )
-            {
-                ArtifactStore store = dataManager.getArtifactStore( key );
-
-                if ( ( store instanceof Group ) && !processed.contains( store.getKey() ) )
-                {
-                    Group g = (Group) store;
-                    if ( g.getConstituents() != null && g.getConstituents().contains( next ) )
-                    {
-                        groups.add( g );
-
-                        // add this group as another one to process for groups that contain it...and recurse upwards
-                        toProcess.add( g.getKey() );
-                    }
-                }
-            }
-        }
-
-        return groups;
+        return dataManager.affectedBy( keys );
     }
 
     public Stream<StoreKey> keyStream()
@@ -457,23 +425,22 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
     {
-        return dataManager.streamArtifactStoreKeys().filter(key -> {
-            if ( packageType != null && !key.getPackageType().equals( packageType ))
-            {
-                return false;
-            }
-
+        final Stream<StoreKey> storeKeys;
+        if ( StringUtils.isNotBlank( this.packageType ) )
+        {
+            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
+        }
+        else
+        {
+            storeKeys = dataManager.streamArtifactStoreKeys();
+        }
+        return storeKeys.filter(key -> {
             if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
             {
                 return false;
             }
 
-            if ( filterPredicate != null && !filterPredicate.test( key ) )
-            {
-                return false;
-            }
-
-            return true;
+            return filterPredicate == null || filterPredicate.test(key);
         });
     }
 
@@ -540,7 +507,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public Group getGroup( final String name )
             throws IndyDataException
     {
-        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.group, name ) );
+        return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
     }
 
     @Override
@@ -559,25 +526,17 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             throw new IndyDataException( "packageType must be set on the query before calling this method!" );
         }
 
-        final Group master = (Group) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.group, groupName ) );
+        final Group master = (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, groupName ) );
         if ( master == null )
         {
             return Collections.emptyList();
         }
 
         final List<ArtifactStore> result = new ArrayList<>();
-        recurseGroup( master, result, new HashSet<>(), includeGroups, recurseGroups );
 
-        return result;
-    }
-
-    private void recurseGroup( final Group master,
-                               final List<ArtifactStore> result, final Set<StoreKey> seen, final boolean includeGroups,
-                               final boolean recurseGroups )
-            throws IndyDataException
-    {
         AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
         LinkedList<Group> toCheck = new LinkedList<>();
+        Set<StoreKey> seen = new HashSet<>();
         toCheck.add( master );
 
         while ( !toCheck.isEmpty() )
@@ -586,7 +545,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
             if ( next == null || next.isDisabled() && Boolean.TRUE.equals( enabled ) )
             {
-                return;
+                continue;
             }
 
             List<StoreKey> members = new ArrayList<>( next.getConstituents() );
@@ -595,7 +554,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 result.add( next );
             }
 
-            // TODO: Need to refactor away from actual recursion.
             members.forEach( ( key ) ->
                              {
                                  if ( !seen.contains( key ) )
@@ -604,7 +562,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                      final StoreType type = key.getType();
                                      try
                                      {
-                                         if ( recurseGroups && type == StoreType.group )
+                                         if ( recurseGroups && type == group )
                                          {
                                              // if we're here, we're definitely recursing groups...
                                              Group group = (Group) dataManager.getArtifactStore( key );
@@ -632,6 +590,8 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 throw error;
             }
         }
+
+        return result;
     }
 
 }

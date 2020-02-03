@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,12 @@ import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.util.*;
+import org.commonjava.indy.util.AcceptInfo;
+import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.ApplicationHeader;
+import org.commonjava.indy.util.ApplicationStatus;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.indy.util.UriFormatter;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -56,13 +61,13 @@ import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_ENTRY_POINT;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
 import static org.commonjava.indy.metrics.RequestContextHelper.METADATA_CONTENT;
 import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
 import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
-import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 @ApplicationScoped

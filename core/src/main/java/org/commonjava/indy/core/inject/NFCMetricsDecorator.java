@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,49 +37,49 @@ public abstract class NFCMetricsDecorator
     @Inject
     private NotFoundCache delegate;
 
-    @Measure( timers = @MetricNamed( "indy.nfc.addMissing" ) )
+    @Measure
     @Override
     public void addMissing( final ConcreteResource resource )
     {
         delegate.addMissing( resource );
     }
 
-    @Measure( timers = @MetricNamed( "indy.nfc.isMissing" ) )
+    @Measure
     @Override
     public boolean isMissing( final ConcreteResource resource )
     {
         return delegate.isMissing( resource );
     }
 
-    @Measure( timers = @MetricNamed( "indy.nfc.clearMissing.location" ) )
+    @Measure
     @Override
     public void clearMissing( final Location location )
     {
         delegate.clearMissing( location );
     }
 
-    @Measure( timers = @MetricNamed( "indy.nfc.clearMissing.resource" ) )
+    @Measure
     @Override
     public void clearMissing( final ConcreteResource resource )
     {
         delegate.clearMissing( resource );
     }
 
-    @Measure( timers = @MetricNamed( "indy.nfc.clearAllMissing" ) )
+    @Measure
     @Override
     public void clearAllMissing()
     {
         delegate.clearAllMissing();
     }
 
-    @Measure( timers = @MetricNamed( "indy.nfc.getAllMissing" ) )
+    @Measure
     @Override
     public Map<Location, Set<String>> getAllMissing()
     {
         return delegate.getAllMissing();
     }
 
-    @Measure( timers = @MetricNamed( "indy.nfc.getMissing.location" ) )
+    @Measure
     @Override
     public Set<String> getMissing( final Location location )
     {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,15 @@ package org.commonjava.indy.filer.def;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
-import org.apache.commons.compress.utils.CountingInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.util.IdempotentCloseOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -46,17 +44,17 @@ public class TimingOutputStream
 
     private Long nanos;
 
-    private Function<String, Timer.Context> timerProvider;
+    private Function<String, TimingProvider> timerProvider;
 
     private Function<String, Meter> meterProvider;
 
-    private Timer.Context timer;
+    private TimingProvider timer;
 
     private Meter meter;
 
     private BiConsumer<String, Double> cumulativeConsumer;
 
-    public TimingOutputStream( final CountingOutputStream stream, Function<String, Timer.Context> timerProvider,
+    public TimingOutputStream( final CountingOutputStream stream, Function<String, TimingProvider> timerProvider,
                                Function<String, Meter> meterProvider, BiConsumer<String, Double> cumulativeConsumer )
     {
         super( stream );

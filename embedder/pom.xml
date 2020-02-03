@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.9.8-SNAPSHOT</version>
+    <version>1.9.10-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.indy.embed</groupId>
@@ -31,7 +31,6 @@
 
   <properties>
     <skipMainFTests>${skipITs}</skipMainFTests>
-    <!-- <skipTimingFTests>${skipITs}</skipTimingFTests> -->
   </properties>
   
   <dependencies>
@@ -78,6 +77,10 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-prefetch</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-honeycomb</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -138,7 +141,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-sli-jaxrs</artifactId>
+      <artifactId>indy-sli</artifactId>
     </dependency>
 
     <dependency>

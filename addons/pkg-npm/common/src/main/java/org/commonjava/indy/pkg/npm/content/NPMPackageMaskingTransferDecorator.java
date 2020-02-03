@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -159,7 +159,7 @@ public class NPMPackageMaskingTransferDecorator
 
         private void mask( String contextURL ) throws IOException
         {
-            Timer.Context timer = metricsManager == null ? null : metricsManager.getTimer( TIMER ).time();
+            Timer.Context timer = metricsManager == null ? null : metricsManager.startTimer( TIMER );
             try
             {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -183,7 +183,7 @@ public class NPMPackageMaskingTransferDecorator
             {
                 if ( timer != null )
                 {
-                    timer.stop();
+                    metricsManager.stopTimer( TIMER );
                 }
             }
         }

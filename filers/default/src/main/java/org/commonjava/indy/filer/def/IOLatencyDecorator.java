@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,13 +34,13 @@ import java.util.function.Function;
 public class IOLatencyDecorator
         extends AbstractTransferDecorator
 {
-    private Function<String, Timer.Context> timerProvider;
+    private Function<String, TimingProvider> timerProvider;
 
     private Function<String, Meter> meterProvider;
 
     private BiConsumer<String, Double> cumulativeTimer;
 
-    public IOLatencyDecorator( final Function<String, Timer.Context> timerProvider,
+    public IOLatencyDecorator( final Function<String, TimingProvider> timerProvider,
                                final Function<String, Meter> meterProvider,
                                final BiConsumer<String, Double> cumulativeTimer )
     {

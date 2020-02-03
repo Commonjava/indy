@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.commonjava.indy.bind.jaxrs;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -26,20 +27,21 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.metrics.RequestContextHelper.COMPONENT_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_TRACE_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.FORCE_METERED;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_REQUEST_URI;
 import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.TRACE_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PARENT_SPAN;
+import static org.commonjava.indy.metrics.RequestContextHelper.SPAN_ID_HEADER;
 import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 
 @ApplicationScoped
@@ -82,31 +84,41 @@ public class MDCManager
     {
         String internalID = UUID.randomUUID().toString();
         String preferredID = externalID != null ? externalID : internalID;
-        putRequestIDs( internalID, externalID, preferredID );
+        putRequestIDs( internalID, externalID, preferredID, null );
     }
 
-    public void putRequestIDs( String internalID, String externalID, String preferredID )
+    public void putRequestIDs( String internalID, String externalID, String preferredID, final String spanID )
     {
-        MDC.put( PREFERRED_ID, preferredID );
-        MDC.put( INTERNAL_ID, internalID );
+        RequestContextHelper.setContext( TRACE_ID, preferredID );
+        RequestContextHelper.setContext( INTERNAL_ID, internalID );
 
         if ( externalID != null )
         {
-            MDC.put( EXTERNAL_ID, externalID );
+            RequestContextHelper.setContext( EXTERNAL_TRACE_ID, externalID );
+        }
+
+        if ( spanID != null )
+        {
+            RequestContextHelper.setContext( REQUEST_PARENT_SPAN, spanID );
         }
     }
 
     public void putUserIP( String userIp )
     {
-        MDC.put( CLIENT_ADDR, userIp );
+        RequestContextHelper.setContext( CLIENT_ADDR, userIp );
     }
 
     public void putExtraHeaders( HttpServletRequest request )
     {
         // use setContext here so we get this value in ThreadContext too, for decision-making in the workflow, SLI classification, etc.
         setContext( HTTP_METHOD, request.getMethod() );
-        MDC.put( HTTP_REQUEST_URI, request.getRequestURI() );
-        mdcHeadersList.forEach( ( header ) -> MDC.put( header, request.getHeader( header ) ) );
+
+        String forceMetered = request.getHeader( FORCE_METERED );
+        RequestContextHelper.setContext( FORCE_METERED,
+                                         forceMetered != null && Boolean.TRUE.equals( Boolean.parseBoolean( forceMetered ) ) );
+
+        RequestContextHelper.setContext( HTTP_REQUEST_URI, request.getRequestURI() );
+        mdcHeadersList.forEach( ( header ) -> RequestContextHelper.setContext( header, request.getHeader( header ) ) );
     }
 
     public void putExtraHeaders( HttpRequest httpRequest )
@@ -115,8 +127,28 @@ public class MDCManager
             Header h = httpRequest.getFirstHeader( header );
             if ( h != null )
             {
-                MDC.put( header, h.getValue() );
+                RequestContextHelper.setContext( header, h.getValue() );
             }
         } );
     }
+
+    public void putRequestIDs( final HttpServletRequest hsr )
+    {
+        /* We would always generate internalID and provide that in the MDC.
+         * If the calling service supplies an traceID, we'd map that under its own key.
+         * PreferredID should try to use traceID if it's available, and default over to using internalID if it's not.
+         * What this gives us is a single key we can use to reference an ID for the request,
+         * and whenever possible it'll reflect the externally supplied ID.
+         */
+        String internalID = UUID.randomUUID().toString();
+
+        String traceID = hsr.getHeader( EXTERNAL_TRACE_ID );
+        String spanID = hsr.getHeader( SPAN_ID_HEADER );
+
+        String preferredID = traceID != null ? traceID : internalID;
+
+
+        putRequestIDs( internalID, traceID, preferredID, spanID );
+    }
+
 }

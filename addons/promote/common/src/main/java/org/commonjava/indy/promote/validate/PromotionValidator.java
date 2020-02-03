@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
@@ -145,7 +146,7 @@ public class PromotionValidator
         if ( set != null )
         {
             result.setRuleSet( set.getName() );
-            MDC.put( PROMOTION_VALIDATION_RULE_SET, set.getName() );
+            RequestContextHelper.setContext( PROMOTION_VALIDATION_RULE_SET, set.getName() );
 
             logger.debug( "Running validation rule-set for promotion: {}", set.getName() );
 
@@ -163,7 +164,7 @@ public class PromotionValidator
                         for ( String ruleRef : ruleNames )
                         {
                             svc.submit( () -> {
-                                MDC.put( PROMOTION_VALIDATION_RULE, ruleRef );
+                                RequestContextHelper.setContext( PROMOTION_VALIDATION_RULE, ruleRef );
                                 Exception err = null;
                                 try
                                 {
@@ -175,7 +176,7 @@ public class PromotionValidator
                                 }
                                 finally
                                 {
-                                    MDC.remove( PROMOTION_VALIDATION_RULE );
+                                    RequestContextHelper.clearContext( PROMOTION_VALIDATION_RULE );
                                 }
 
                                 return err;

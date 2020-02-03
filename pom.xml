@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@
   
   <groupId>org.commonjava.indy</groupId>
   <artifactId>indy-parent</artifactId>
-  <version>1.9.8-SNAPSHOT</version>
+  <version>1.9.10-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   
   <name>Indy :: Project Root</name>
-  <inceptionYear>2011-2019</inceptionYear>
+  <inceptionYear>2011-2020</inceptionYear>
   
   <scm>
     <connection>scm:git:https://github.com/Commonjava/indy.git</connection>
@@ -83,14 +83,14 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
-    <galleyVersion>1.0</galleyVersion>
+    <galleyVersion>1.1</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.12</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.11</jhttpcVersion>
-    <weftVersion>1.15</weftVersion>
+    <weftVersion>1.16-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
@@ -180,7 +180,7 @@
       <dependency>
         <groupId>org.commonjava.indy.ui</groupId>
         <artifactId>indy-ui-layover</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
@@ -188,22 +188,22 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-model-core-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-api</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-core</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-core</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -211,32 +211,32 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-flat</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-metrics</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-infinispan</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-bindings-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>skinny</classifier>
         <scope>provided</scope>
@@ -244,7 +244,7 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>complete</classifier>
         <scope>provided</scope>
@@ -252,7 +252,7 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>data</classifier>
         <scope>provided</scope>
@@ -260,7 +260,7 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>etc</classifier>
         <scope>provided</scope>
@@ -269,17 +269,17 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-revisions-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-revisions-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-revisions-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -287,7 +287,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-revisions-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>uiset</classifier>
         <scope>provided</scope>
@@ -295,12 +295,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -308,22 +308,22 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-dot-maven</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-httprox-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-httprox-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -331,17 +331,17 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-httprox</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-index</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-index</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -349,56 +349,69 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-memory</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-db</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-fixtures-core</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-providers-core</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-utils</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-filer-default</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-honeycomb</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-flatfile</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-cassandra</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-cassandra</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -406,84 +419,84 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-pathmapped</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-http</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-git</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-groovy</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-prefetch</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-cpool</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-client-core-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-core</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-folo</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -491,7 +504,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -499,33 +512,33 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-promote</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -533,7 +546,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -541,19 +554,19 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>dataset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -561,37 +574,37 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-implied-repos</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.embed</groupId>
         <artifactId>indy-embedder</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.boot</groupId>
         <artifactId>indy-booter-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-keycloak</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-keycloak</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -599,7 +612,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -607,7 +620,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-prefetch</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -616,7 +629,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -624,103 +637,103 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-path-mapped-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-path-mapped-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-path-mapped-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-maven-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-maven-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-pkg-maven</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-pkg-npm</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-diagnostics</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -728,28 +741,28 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-hosted-by-archive</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
@@ -757,22 +770,22 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics-core</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics-reporter</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics-prometheus</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics-reporter</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -781,28 +794,28 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-metrics</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-sli-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <artifactId>indy-sli</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy.rest</groupId>
         <artifactId>indy-rest-api</artifactId>
         <type>yaml</type>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.rest</groupId>
         <artifactId>indy-rest-api</artifactId>
         <type>json</type>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>provided</scope>
       </dependency>
 
@@ -836,33 +849,33 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-content-browse</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-model-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -870,35 +883,35 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-ui</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>reactui</classifier>
         <type>tar.gz</type>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-client-java</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-changelog</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-jaxrs</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
@@ -916,12 +929,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-event-audit-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-event-audit-common</artifactId>
-        <version>1.9.8-SNAPSHOT</version>
+        <version>1.9.10-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -1000,6 +1013,12 @@
         <artifactId>jboss-logging</artifactId>
         <version>3.3.0.Final</version>
       </dependency>
+      <dependency>
+        <groupId>io.honeycomb.beeline</groupId>
+        <artifactId>beeline-core</artifactId>
+        <version>1.0.7</version>
+      </dependency>
+
 <!--       <dependency>
         <groupId>org.jboss.logging</groupId>
         <artifactId>jboss-logging</artifactId>
@@ -1366,21 +1385,6 @@
       </dependency>
 
       <dependency>
-        <groupId>org.quartz-scheduler</groupId>
-        <artifactId>quartz</artifactId>
-        <version>2.2.1</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.derby</groupId>
-        <artifactId>derby</artifactId>
-        <version>10.10.2.0</version>
-      </dependency>
-      <dependency>
-        <groupId>com.h2database</groupId>
-        <artifactId>h2</artifactId>
-        <version>1.4.188</version>
-      </dependency>
-      <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
         <version>42.2.5</version>
@@ -1640,10 +1644,12 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -1891,27 +1897,10 @@
             </execution>
           </executions>
         </plugin> -->
-        <!-- <plugin>
-          <groupId>org.commonjava.maven</groupId>
-          <artifactId>restdoc-maven-plugin</artifactId>
-          <version>0.1</version>
-          <executions>
-            <execution>
-              <id>generate-html</id>
-              <goals>
-                <goal>generate</goal>
-              </goals>
-            </execution>
-          </executions>
-        </plugin> -->
-        
+
       </plugins>
     </pluginManagement>
     <plugins>
-<!--       <plugin>
-        <groupId>org.jboss.jandex</groupId>
-        <artifactId>jandex-maven-plugin</artifactId>
-      </plugin> -->
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>

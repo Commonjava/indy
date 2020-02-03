@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.decorator.Decorator;
 import javax.decorator.Delegate;
@@ -38,6 +40,8 @@ public abstract class MeasuringArtifactStoreQueryInterceptor
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
     {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "WRAP in metered ArtifactStoreQuery" );
         ArtifactStoreQuery<ArtifactStore> query = dataManager.query();
         return new MeasuringStoreQuery( query, metricsManager );
     }

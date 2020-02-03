@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -92,8 +92,7 @@ public class MetricsTestResource
 
     @GET
     @Path( "/timer/{isException :[a-zA-Z]+}" )
-    @Measure( timers = @MetricNamed( "testTimerRequest" ),
-                  exceptions = @MetricNamed( "testTimerRequestWithException" ) )
+    @Measure
     public Response getTimer( @PathParam( "isException" ) String isException )
             throws Exception
     {
@@ -109,8 +108,7 @@ public class MetricsTestResource
 
     @GET
     @Path( "/meter/{isException :[a-zA-Z]+}" )
-    @Measure( meters = @MetricNamed( "testMeterRequest" ),
-                  exceptions = @MetricNamed( "testMeterRequestException" ) )
+    @Measure
     public Response getMeter( @PathParam( "isException" ) String isException )
             throws Exception
     {

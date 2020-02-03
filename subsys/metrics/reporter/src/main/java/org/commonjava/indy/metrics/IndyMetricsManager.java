@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,10 @@ import com.codahale.metrics.Timer;
 import com.codahale.metrics.health.HealthCheck;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import org.commonjava.cdi.util.weft.ThreadContext;
+import org.commonjava.indy.measure.annotation.MetricWrapper;
+import org.commonjava.indy.measure.annotation.MetricWrapperEnd;
+import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
+import org.commonjava.indy.measure.annotation.MetricWrapperStart;
 import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
 import org.commonjava.indy.metrics.healthcheck.IndyHealthCheck;
@@ -40,10 +44,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -229,9 +233,32 @@ public class IndyMetricsManager
         return false;
     }
 
-    public Timer getTimer( String name )
+    @MetricWrapperStart
+    public Timer.Context startTimer( @MetricWrapperNamed String name )
     {
-        return this.metricRegistry.timer( name );
+        Timer.Context tctx = this.metricRegistry.timer( name ).time();
+        ThreadContext ctx = ThreadContext.getContext( true );
+        ctx.put( TIMER + name, tctx );
+
+        return tctx;
+    }
+
+    @MetricWrapperEnd
+    public long stopTimer( @MetricWrapperNamed String name )
+    {
+        ThreadContext ctx = ThreadContext.getContext( false );
+        if ( ctx == null )
+        {
+            return 0;
+        }
+
+        Timer.Context tctx = (Timer.Context) ctx.get( TIMER + name );
+        if ( tctx != null )
+        {
+            return tctx.stop();
+        }
+
+        return 0;
     }
 
     public Meter getMeter( String name )
@@ -249,12 +276,12 @@ public class IndyMetricsManager
                 return;
             }
 
-            ctx.putIfAbsent( CUMULATIVE_TIMINGS, new HashMap<String, Double>() );
+            ctx.putIfAbsent( CUMULATIVE_TIMINGS, new ConcurrentHashMap<>() );
             Map<String, Double> timingMap = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
 
             timingMap.merge( name, elapsed, ( existingVal, newVal ) -> existingVal + newVal );
 
-            ctx.putIfAbsent( CUMULATIVE_COUNTS, new HashMap<String, Integer>() );
+            ctx.putIfAbsent( CUMULATIVE_COUNTS, new ConcurrentHashMap<>() );
             Map<String, Integer> countMap =
                     (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
 
@@ -262,8 +289,15 @@ public class IndyMetricsManager
         }
     }
 
-    public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
+    @MetricWrapper
+    public <T> T wrapWithStandardMetrics( final Supplier<T> method, @MetricWrapperNamed final Supplier<String> classifier )
     {
+//        if ( logger.isDebugEnabled() )
+//        {
+//            Throwable t = new Throwable();
+//            logger.info( "Wrapping with standard metrics at the following location:", t );
+//        }
+
         String name = classifier.get();
         if ( !checkMetered() || SKIP_METRIC.equals( name ) )
         {
@@ -279,7 +313,7 @@ public class IndyMetricsManager
         String errorName = name( name, EXCEPTION );
         String eClassName = null;
 
-        Timer.Context timer = getTimer( timerName ).time();
+        Timer.Context timer = startTimer( timerName );
         logger.trace( "START: {} ({})", metricName, timer );
 
         long start = System.nanoTime();
@@ -325,12 +359,7 @@ public class IndyMetricsManager
     {
         if ( timers != null )
         {
-            timers.forEach( (name, timer) ->{
-                if ( timer != null )
-                {
-                    timer.stop();
-                }
-            } );
+            timers.forEach( ( name, timer ) -> stopTimer( name ) );
         }
     }
 

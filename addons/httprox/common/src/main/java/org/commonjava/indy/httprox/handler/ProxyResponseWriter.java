@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.xnio.ChannelListener;
 import org.xnio.StreamConnection;
 import org.xnio.conduits.ConduitStreamSinkChannel;
@@ -250,6 +250,8 @@ public final class ProxyResponseWriter
                     logger.info( "Using proxy authentication: {}", proxyUserPass );
 
                     mdcManager.putExtraHeaders( httpRequest );
+
+                    // FIXME: We cannot trace through this interface currently!
                     mdcManager.putExternalID( proxyUserPass == null ? null : proxyUserPass.getUser() );
 
                     logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass,
@@ -278,7 +280,7 @@ public final class ProxyResponseWriter
                             if ( trackingKey != null )
                             {
                                 trackingId = trackingKey.getId();
-                                MDC.put( RequestContextHelper.CONTENT_TRACKING_ID, trackingId );
+                                RequestContextHelper.setContext( RequestContextHelper.CONTENT_TRACKING_ID, trackingId );
                             }
 
                             String authCacheKey = generateAuthCacheKey( proxyUserPass );

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.ftest.metrics.client.IndyMetricsFtestClientModule;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -34,6 +35,7 @@ public class IndyMetricsTest
                 extends AbstractIndyFunctionalTest
 {
     @Test
+    @Ignore
     public void MetricsTest() throws Exception
     {
         for ( int i = 0; i < 10; i++ )

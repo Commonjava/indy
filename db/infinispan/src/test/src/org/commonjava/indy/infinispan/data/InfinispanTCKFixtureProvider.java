@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,17 @@ import org.commonjava.indy.core.data.TCKFixtureProvider;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
+import java.util.Map;
+import java.util.Set;
+
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.AFFECTED_BY_STORE_CACHE;
+import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 
 public class InfinispanTCKFixtureProvider
@@ -35,7 +42,10 @@ public class InfinispanTCKFixtureProvider
         DefaultCacheManager cacheManager =
                 new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
         Cache<StoreKey, ArtifactStore> storeCache = cacheManager.getCache( STORE_DATA_CACHE, true );
-        dataManager = new InfinispanStoreDataManager( storeCache );
+        Cache<String, Map<StoreType, Set<StoreKey>>> storesByPkgCache = cacheManager.getCache( STORE_BY_PKG_CACHE, true );
+        Cache<StoreKey, Set<StoreKey>> affected = cacheManager.getCache( AFFECTED_BY_STORE_CACHE, true );
+        dataManager = new InfinispanStoreDataManager( storeCache, storesByPkgCache, affected );
+        dataManager.init();
     }
 
     @Override

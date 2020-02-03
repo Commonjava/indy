@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,9 @@ public class NPMContentAccessHandler
     @Inject
     private ResponseHelper responseHelper;
 
+    @Inject
+    private PackageMetadataMerger packageMetadataMerger;
+
     @Override
     public Response doCreate( String packageType, String type, String name, String path, HttpServletRequest request,
                               EventMetadata eventMetadata, Supplier<URI> uriBuilder )
@@ -127,7 +130,7 @@ public class NPMContentAccessHandler
             // then store the transfer, delete unuseful temp and meta transfers.
             if ( temp != null && temp.exists() )
             {
-                stream = new PackageMetadataMerger().merge( temp, tomerge );
+                stream = packageMetadataMerger.merge( temp, tomerge );
                 Transfer merged = contentController.store( sk, path, stream, eventMetadata );
 
                 // for npm group, will not replace with the new http meta when re-upload,

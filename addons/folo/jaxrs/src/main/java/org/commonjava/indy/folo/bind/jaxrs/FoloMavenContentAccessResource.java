@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,12 @@ import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.commonjava.indy.metrics.RequestContextHelper;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -124,7 +125,7 @@ public class FoloMavenContentAccessResource
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
-        MDC.put( CONTENT_TRACKING_ID, id );
+        RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         return handler.doHead( PKG_TYPE_MAVEN, type, name, path, cacheOnly, baseUri, request, metadata );
     }
@@ -147,7 +148,7 @@ public class FoloMavenContentAccessResource
         EventMetadata metadata =
                 new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
 
-        MDC.put( CONTENT_TRACKING_ID, id );
+        RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         return handler.doGet( PKG_TYPE_MAVEN, type, name, path, baseUri, request, metadata );
     }

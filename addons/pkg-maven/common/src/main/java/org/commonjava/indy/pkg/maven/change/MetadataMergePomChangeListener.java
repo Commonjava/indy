@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class MetadataMergePomChangeListener
      */
     public void onPomStorageEvent( @Observes final FileStorageEvent event )
     {
-        metaClear( event );
+        metaClear( event, "updated" );
     }
 
     /**
@@ -80,10 +80,10 @@ public class MetadataMergePomChangeListener
      */
     public void onPomDeletionEvent( @Observes final FileDeletionEvent event )
     {
-        metaClear( event );
+        metaClear( event, "deleted" );
     }
 
-    private void metaClear( final FileEvent event )
+    private void metaClear( final FileEvent event, final String eventOps )
     {
         final String path = event.getTransfer().getPath();
 
@@ -94,6 +94,7 @@ public class MetadataMergePomChangeListener
 
         final StoreKey key = getKey( event );
         final String clearPath = getMetadataPath( path );
+        logger.info( "Pom file {} {}, will clean its matched metadata file {}", path, eventOps, clearPath );
         try
         {
             if ( hosted == key.getType() )
@@ -104,6 +105,7 @@ public class MetadataMergePomChangeListener
                     if ( doClear( hosted, clearPath ) )
                     {
                         cacheManager.remove( hosted.getKey(), clearPath );
+                        logger.info( "Metadata file {} in store {} cleared.", path, key );
                     }
                 }
                 catch ( final IOException e )
@@ -116,6 +118,8 @@ public class MetadataMergePomChangeListener
                 final Set<Group> groups = dataManager.query().getGroupsAffectedBy( key );
                 if ( groups != null )
                 {
+                    logger.info( "Clearing metadata file {} for following groups which are affected by {}: {}", path,
+                                 key, groups );
                     for ( final Group group : groups )
                     {
                         try

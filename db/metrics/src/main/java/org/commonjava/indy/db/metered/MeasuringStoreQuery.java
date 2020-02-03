@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.rmi.Remote;
 import java.util.Collection;
@@ -40,6 +42,8 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
     private final ArtifactStoreQuery<ArtifactStore> query;
 
     private final IndyMetricsManager metricsManager;
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public MeasuringStoreQuery( final ArtifactStoreQuery<ArtifactStore> query, final IndyMetricsManager metricsManager )
     {
@@ -396,27 +400,35 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
             throws IndyDataException
     {
-        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
-        List<ArtifactStore> result = metricsManager.wrapWithStandardMetrics( ()->{
-            try
-            {
-                return query.getOrderedConcreteStoresInGroup( groupName );
-            }
-            catch ( IndyDataException e )
-            {
-                errorRef.set( e );
-            }
-
-            return null;
-        }, ()-> "getOrderedConcreteStoresInGroup" );
-
-        IndyDataException error = errorRef.get();
-        if ( error != null )
+        logger.trace( "START: metric store-query wrapper ordered-concrete-stores-in-group" );
+        try
         {
-            throw error;
-        }
+            AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+            List<ArtifactStore> result = metricsManager.wrapWithStandardMetrics( () -> {
+                try
+                {
+                    return query.getOrderedConcreteStoresInGroup( groupName );
+                }
+                catch ( IndyDataException e )
+                {
+                    errorRef.set( e );
+                }
 
-        return result;
+                return null;
+            }, () -> "getOrderedConcreteStoresInGroup" );
+
+            IndyDataException error = errorRef.get();
+            if ( error != null )
+            {
+                throw error;
+            }
+
+            return result;
+        }
+        finally
+        {
+            logger.trace( "END: metric store-query wrapper ordered-concrete-stores-in-group" );
+        }
     }
 
     @Override

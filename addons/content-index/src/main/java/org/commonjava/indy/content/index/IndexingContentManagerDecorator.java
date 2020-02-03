@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.commonjava.indy.core.content.PathMaskChecker;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -51,10 +50,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 /**
  * Decorator for ContentManager which uses Infinispan to index content to avoid having to iterate all members of large
@@ -112,6 +111,14 @@ public abstract class IndexingContentManagerDecorator
         this.indexCfg = indexCfg;
     }
 
+    protected IndexingContentManagerDecorator( final ContentManager delegate, final StoreDataManager storeDataManager,
+                                               final SpecialPathManager specialPathManager,
+                                               final ContentIndexManager indexManager, final NotFoundCache nfc,
+                                               final ContentIndexConfig indexCfg, final Executor deIndexExecutor)
+    {
+        this(delegate, storeDataManager, specialPathManager, indexManager, nfc, indexCfg);
+    }
+
     @Override
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
@@ -163,12 +170,7 @@ public abstract class IndexingContentManagerDecorator
             }
 
             return null;
-        } ).filter( Objects::nonNull ).forEachOrdered( ( transfer ) -> {
-            if ( transfer != null )
-            {
-                results.add( transfer );
-            }
-        } );
+        } ).filter( Objects::nonNull ).forEachOrdered( results::add );
 
         return results;
     }
@@ -200,7 +202,7 @@ public abstract class IndexingContentManagerDecorator
         else if ( isAuthoritativelyMissing( store ) )
         {
             logger.debug(
-                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null.", transfer );
             return null;
         }
 
@@ -286,7 +288,7 @@ public abstract class IndexingContentManagerDecorator
                     {
                         ; // metadata generated/exists but missing due to membership change, not add to nfc so next req can retry
                     }
-                    else if ( StoreType.hosted != type ) // don't track NFC for hosted repos
+                    else // don't track NFC for hosted repos
                     {
                         nfc.addMissing( resource );
                     }
@@ -458,7 +460,7 @@ public abstract class IndexingContentManagerDecorator
         else if ( isAuthoritativelyMissing( store ) )
         {
             logger.info(
-                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null." );
+                    "Not found indexed transfer: {} and authoritative index switched on. Considering not found and return null.", transfer );
             return null;
         }
 
@@ -510,7 +512,7 @@ public abstract class IndexingContentManagerDecorator
         return transfer;
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ), exceptions = @MetricNamed( DEFAULT ) )
+    @Measure
     @Deprecated
     public Transfer getIndexedMemberTransfer( final Group group, final String path, TransferOperation op,
                                                ContentManagementFunction func, final EventMetadata metadata )
@@ -602,7 +604,7 @@ public abstract class IndexingContentManagerDecorator
 
         if ( isAuthoritativelyMissing( store ) )
         {
-            logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null." );
+            logger.debug( "Not found indexed transfer: {} and authoritative index switched on. Return null.", transfer );
             return null;
         }
 
@@ -713,21 +715,28 @@ public abstract class IndexingContentManagerDecorator
             // may change the content index sequence based on the constituents sequence in parent groups
             if ( store.getType() == StoreType.hosted )
             {
-                try
-                {
-                    Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
-                    if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
+                //FIXME: One potential problem here: The fixed thread pool is using a blocking queue to
+                // cache runnables, which could cause OOM if there are bunch of uploading happened in
+                // a short time period. We need to monitor if this could happen.
+                final String context =
+                        String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
+                                       store.getKey(), path );
+                storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context, () -> {
+                    try
                     {
-                        groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
+                        Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
+                        if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
+                        {
+                            groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
+                        }
                     }
-                }
-                catch ( IndyDataException e )
-                {
-                    throw new IndyWorkflowException(
-                            "Failed to get groups which contains: %s for NFC handling. Reason: %s", e, store.getKey(),
-                            e.getMessage() );
-                }
-
+                    catch ( IndyDataException e )
+                    {
+                        logger.error(
+                                String.format( "Failed to get groups which contains: %s for NFC handling. Reason: %s",
+                                               store.getKey(), e.getMessage() ), e );
+                    }
+                } ) );
             }
         }
 //        nfcClearByContaining( store, path );

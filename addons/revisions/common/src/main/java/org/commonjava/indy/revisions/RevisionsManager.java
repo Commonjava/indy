@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -210,7 +210,7 @@ public class RevisionsManager
         }
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     private void addOrDeleteFiles( DataFileEvent event ) throws GitSubsystemException
     {
         if ( event.getType() == DataFileEventType.deleted )
@@ -236,7 +236,7 @@ public class RevisionsManager
         // FIXME: fire events to signal data owners to reload...
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public int commitDataUpdates()
                     throws GitSubsystemException
     {
@@ -248,7 +248,7 @@ public class RevisionsManager
         return dataFileGit.commit();
     }
 
-    @Measure( timers = @MetricNamed( DEFAULT ) )
+    @Measure
     public void pushDataUpdates()
         throws GitSubsystemException
     {

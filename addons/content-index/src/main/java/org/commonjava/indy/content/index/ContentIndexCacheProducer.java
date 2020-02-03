@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -77,8 +78,8 @@ public class ContentIndexCacheProducer
     @ContentIndexCache
     @Produces
     @ApplicationScoped
-    public BasicCacheHandle<IndexedStorePath, IndexedStorePath> contentIndexCacheCfg()
+    public CacheHandle<IndexedStorePath, IndexedStorePath> contentIndexCacheCfg()
     {
-        return cacheProducer.getBasicCache( "content-index" );
+        return cacheProducer.getCache( "content-index" );
     }
 }

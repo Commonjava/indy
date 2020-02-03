@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,11 +79,9 @@ public class MetricsInterceptor
         String defaultName = getDefaultName( context.getMethod().getDeclaringClass(), context.getMethod().getName() );
         logger.trace( "Gathering metrics for: {} using context: {}", defaultName, context.getContextData() );
 
-        boolean inject = measure.timers().length < 1 && measure.exceptions().length < 1 && measure.meters().length < 1;
-
         Map<String, Timer.Context> timers = initTimers( measure, defaultName );
-        List<String> exceptionMeters = initMeters( measure, measure.exceptions(), EXCEPTION, defaultName );
-        List<String> meters = initMeters( measure, measure.meters(), METER, defaultName );
+        List<String> exceptionMeters = initMeters( measure, EXCEPTION, defaultName );
+        List<String> meters = initMeters( measure, METER, defaultName );
 
         List<String> startMeters = meters.stream().map( name -> name( name, "starts" ) ).collect( Collectors.toList() );
 
@@ -119,17 +117,14 @@ public class MetricsInterceptor
         }
     }
 
-    private List<String> initMeters( final Measure measure, final MetricNamed[] metrics, String classifier,
+    private List<String> initMeters( final Measure measure, String classifier,
                                      final String defaultName )
     {
         List<String> meters = new ArrayList<>();
 
         meters.add( getName( config.getNodePrefix(), DEFAULT, defaultName, classifier ) );
-        Stream.of( metrics )
-              .map( metric -> getName( config.getNodePrefix(), metric.value(), defaultName, classifier ) )
-              .forEach( metric -> meters.add( metric ) );
 
-        logger.trace( "Got meters for {} with classifier: {}: {}", defaultName, classifier, meters );
+        logger.trace( "Got meter for {} with classifier: {}: {}", defaultName, classifier, meters );
 
         return meters;
     }
@@ -140,15 +135,7 @@ public class MetricsInterceptor
 
         String name = getName( config.getNodePrefix(), DEFAULT, defaultName, TIMER );
         timers.put(name,
-                metricsManager.getTimer( name ).time() );
-
-        MetricNamed[] timerMetrics = measure.timers();
-        Stream.of( timerMetrics ).forEach( named -> {
-            String timerName = getName( config.getNodePrefix(), named.value(), defaultName, TIMER );
-            Timer.Context tc = metricsManager.getTimer( timerName ).time();
-            logger.trace( "START: {} ({})", timerName, tc );
-            timers.put( timerName, tc );
-        } );
+                metricsManager.startTimer( name ) );
 
         return timers;
     }

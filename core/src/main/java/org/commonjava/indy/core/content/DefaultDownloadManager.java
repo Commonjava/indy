@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -169,7 +169,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -299,7 +299,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -355,7 +355,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -407,7 +407,7 @@ public class DefaultDownloadManager
      * @see org.commonjava.indy.core.rest.util.FileManager#downloadAll(java.util.List, java.lang.String)
      */
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -446,7 +446,7 @@ public class DefaultDownloadManager
      * java.lang.String)
      */
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -513,7 +513,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public boolean exists(final ArtifactStore store, String path)
             throws IndyWorkflowException
     {
@@ -915,7 +915,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -926,7 +926,7 @@ public class DefaultDownloadManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed() )
+    @Measure
     public Transfer getStorageReference( final StoreKey key, final String... path )
             throws IndyWorkflowException
     {
