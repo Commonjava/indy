@@ -51,6 +51,7 @@ public class StoreMetaThenHttpMetaNotGeneratedTest
             throws Exception
     {
         final String content = "This is a test: " + System.nanoTime();
+        final InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
         final String dirPath = "/org/foo/bar";
         final String metadataPath = dirPath + "/maven-metadata.xml";
@@ -63,11 +64,11 @@ public class StoreMetaThenHttpMetaNotGeneratedTest
         assertThat( client.content().exists( store, metadataPath ), equalTo( false ) );
         assertThat( client.content().exists( store, archetypePath ), equalTo( false ) );
 
-        client.content().store( store, metadataPath, new ByteArrayInputStream( content.getBytes() ) );
+        client.content().store( store, metadataPath, stream );
         assertThat( client.content().exists( store, metadataPath ), equalTo( true ) );
         assertThat( client.content().exists( store, metadataHttpMetaPath ), equalTo( false ) );
 
-        client.content().store( store, archetypePath, new ByteArrayInputStream( content.getBytes() ) );
+        client.content().store( store, archetypePath, stream );
         assertThat( client.content().exists( store, archetypePath ), equalTo( true ) );
         assertThat( client.content().exists( store, archetypeHttpMetaPath ), equalTo( false ) );
 
