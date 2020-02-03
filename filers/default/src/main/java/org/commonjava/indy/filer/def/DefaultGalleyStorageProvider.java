@@ -54,6 +54,7 @@ import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
 import org.commonjava.storage.pathmapped.metrics.MeasuredPathDB;
 import org.commonjava.storage.pathmapped.spi.PathDB;
+import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -193,9 +193,11 @@ public class DefaultGalleyStorageProvider
             pathDB = new MeasuredPathDB( pathDB, metricsManager.getMetricRegistry(), getSupername( prefix, "pathDB" ) );
         }
 
+        PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot );
+
         cacheProviderFactory =
                         new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, pathMappedStorageConfig, pathDB,
-                                                            null );
+                                                            physicalStore );
     }
 
     private PathMappedStorageConfig getPathMappedStorageConfig()
