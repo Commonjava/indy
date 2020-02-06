@@ -529,7 +529,7 @@ public class StoreAdminHandler
     @ApiResponses({@ApiResponse(code = 200, message = "Return All Invalidated Remote Repositories")})
     @Path("/all_invalid")
     @GET
-    public Response revalidateArtifactStore(
+    public Response returnDisabledStores(
             final @ApiParam(required = true) @PathParam("packageType") String packageType,
             final @ApiParam(allowableValues = "remote", required = true) @PathParam("type") String type) {
         if (!"remote".equals(type)) {
