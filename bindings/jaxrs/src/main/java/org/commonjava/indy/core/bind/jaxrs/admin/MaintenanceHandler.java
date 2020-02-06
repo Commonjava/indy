@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
+import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 import javax.inject.Inject;
@@ -22,6 +23,7 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
@@ -34,12 +36,17 @@ import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.core.ctl.IspnCacheController;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 @Api( value="Maintenance", description = "Basic repository maintenance functions" )
 @Path( "/api/admin/maint" )
@@ -52,6 +59,12 @@ public class MaintenanceHandler
 
     @Inject
     private ContentController contentController;
+
+    @Inject
+    private StoreDataManager storeDataManager;
+
+    @Inject
+    private IndyObjectMapper mapper;
 
     @Inject
     private ResponseHelper responseHelper;
@@ -184,7 +197,7 @@ public class MaintenanceHandler
     @Path( "/infinispan/cache/{name}" )
     @DELETE
     public Response cleanInfinispanCache(
-                    @ApiParam( "The name of cache to clean, 'all' for all caches" ) @PathParam( "name" ) final String name )
+                    @ApiParam( "The name of cache to clean" ) @PathParam( "name" ) final String name )
     {
         Response response;
         try
@@ -192,9 +205,56 @@ public class MaintenanceHandler
             ispnCacheController.clean( name );
             response = Response.ok().build();
         }
-        catch ( final IndyWorkflowException e )
+        catch ( IndyWorkflowException e )
         {
             logger.error( String.format( "Failed to clean: %s. Reason: %s", name, e.getMessage() ), e );
+            response = responseHelper.formatResponse( e );
+        }
+        return response;
+    }
+
+    @ApiOperation( "Export the specified Infinispan cache." )
+    @ApiResponse( code = 200, message = "Export complete." )
+    @Produces( "application/json" )
+    @Path( "/infinispan/cache/{name}{key: (/.+)?}" )
+    @GET
+    public Response exportInfinispanCache(
+                    @ApiParam( "The name of cache to export" ) @PathParam( "name" ) final String name,
+                    @ApiParam( "The cache key" ) @PathParam( "key" ) final String key
+    )
+    {
+        Response response;
+        try
+        {
+            String json = ispnCacheController.export( name, key );
+            response = Response.ok( json ).build();
+        }
+        catch ( final Exception e )
+        {
+            logger.error( String.format( "Failed to export: %s. Reason: %s", name, e.getMessage() ), e );
+            response = responseHelper.formatResponse( e );
+        }
+        return response;
+    }
+
+    @ApiOperation( "Get groups affected by specified repo." )
+    @ApiResponse( code = 200, message = "Complete." )
+    @Produces( "application/json" )
+    @Path( "/store/affected/{key}" )
+    @GET
+    public Response affectedBy( @ApiParam( "The store key" ) @PathParam( "key" ) final String key )
+    {
+        Response response;
+        try
+        {
+            Set<StoreKey> storeKeys = new HashSet<>();
+            storeKeys.add( StoreKey.fromString( key ) );
+            Set<Group> groups = storeDataManager.affectedBy( storeKeys );
+            response = Response.ok( mapper.writeValueAsString( groups ) ).build();
+        }
+        catch ( final Exception e )
+        {
+            logger.error( String.format( "Failed to export: %s. Reason: %s", key, e.getMessage() ), e );
             response = responseHelper.formatResponse( e );
         }
         return response;
