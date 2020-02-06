@@ -59,6 +59,21 @@ public class IspnCacheController
         string2keyMapper.put( "default", "org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper" );
     }
 
+    public void clean( String name ) throws IndyWorkflowException
+    {
+        if ( name.startsWith( "folo" ) || name.startsWith( "store" ) || name.startsWith( "schedule" ) )
+        {
+            throw new IndyWorkflowException( "Can not clean cache, name: " + name );
+        }
+
+        Cache<Object, Object> cache = cacheManager.getCache( name );
+        if ( cache == null )
+        {
+            throw new IndyWorkflowException( "Cache not found, name: " + name );
+        }
+        cache.clear();
+    }
+
     // only work for some caches for debugging
     public String export( String cacheName, String key ) throws Exception
     {

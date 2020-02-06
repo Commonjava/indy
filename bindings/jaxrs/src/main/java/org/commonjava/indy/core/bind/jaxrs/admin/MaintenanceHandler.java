@@ -199,7 +199,18 @@ public class MaintenanceHandler
     public Response cleanInfinispanCache(
                     @ApiParam( "The name of cache to clean" ) @PathParam( "name" ) final String name )
     {
-        return Response.status( FORBIDDEN ).build();
+        Response response;
+        try
+        {
+            ispnCacheController.clean( name );
+            response = Response.ok().build();
+        }
+        catch ( IndyWorkflowException e )
+        {
+            logger.error( String.format( "Failed to clean: %s. Reason: %s", name, e.getMessage() ), e );
+            response = responseHelper.formatResponse( e );
+        }
+        return response;
     }
 
     @ApiOperation( "Export the specified Infinispan cache." )
