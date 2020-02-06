@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.ctl;
 
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -177,6 +178,22 @@ public class AdminController
 
     public ArtifactStoreValidateData validateStore(ArtifactStore artifactStore) throws InvalidArtifactStoreException, MalformedURLException {
         return storeValidator.validate(artifactStore);
+    }
+
+    public List<ArtifactStore> getDisabledRemoteRepositories() {
+        ArrayList<ArtifactStore> disabledArtifactStores = new ArrayList<>();
+        try {
+            List<ArtifactStore> allRepositories = storeManager.query().getAll();
+            for(ArtifactStore as : allRepositories) {
+                if(as.getType() == StoreType.remote && as.isDisabled()) {
+                    disabledArtifactStores.add(as);
+                }
+            }
+            return disabledArtifactStores;
+        } catch (IndyDataException e) {
+            e.printStackTrace();
+        }
+        return disabledArtifactStores;
     }
 
 }
