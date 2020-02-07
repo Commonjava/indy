@@ -48,23 +48,26 @@ public class HoneycombMeasureInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        logger.trace( "START: Honeycomb method wrapper" );
+        Method method = context.getMethod();
+        String name = method.getDeclaringClass().getSimpleName() + "." + method.getName();
+
+        logger.trace( "START: Honeycomb method wrapper: {}", name );
         if ( !config.isEnabled() )
         {
-            logger.trace( "SKIP: Honeycomb method wrapper" );
+            logger.trace( "SKIP: Honeycomb method wrapper: {}", name );
             return context.proceed();
         }
 
-        Method method = context.getMethod();
         Measure measure = method.getAnnotation( Measure.class );
         if ( measure == null )
         {
             measure = method.getDeclaringClass().getAnnotation( Measure.class );
         }
 
-        if ( measure == null || config.getSampleRate( method ) < 1 )
+        int sampleRate = config.getSampleRate( name );
+        if ( measure == null || sampleRate < 1 )
         {
-            logger.trace( "SKIP: Honeycomb method wrapper (no annotation or span is not configured)" );
+            logger.trace( "SKIP: Honeycomb method wrapper (no annotation or span is not configured: {})", name );
             return context.proceed();
         }
 
@@ -72,20 +75,12 @@ public class HoneycombMeasureInterceptor
         // use sample-rate == 0 as a way to turn off child spans like this, and leave the sampling rates out of it
 //        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
 
-        Class<?> cls = context.getMethod().getDeclaringClass();
-
-        String defaultName = getDefaultName( cls, context.getMethod().getName() );
 
         Span span = null;
         try
         {
-            span = honeycombManager.startChildSpan( defaultName );
-            if ( span != null )
-            {
-                span.markStart();
-            }
-
-            logger.trace( "startChildSpan, span: {}, defaultName: {}", span, defaultName );
+            span = honeycombManager.startChildSpan( name );
+            logger.trace( "startChildSpan, span: {}, name: {}", span, name );
             return context.proceed();
         }
         finally
@@ -98,7 +93,7 @@ public class HoneycombMeasureInterceptor
                 span.close();
             }
 
-            logger.trace( "END: Honeycomb method wrapper" );
+            logger.trace( "END: Honeycomb method wrapper: {}", name );
         }
     }
 

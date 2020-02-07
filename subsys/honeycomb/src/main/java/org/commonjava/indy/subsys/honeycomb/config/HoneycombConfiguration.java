@@ -200,6 +200,16 @@ public class HoneycombConfiguration
         }
 
         String[] parts = classifier.split( "\\." );
+        for ( String part : parts )
+        {
+            rate = spanRates.get( part );
+            if ( rate != null )
+            {
+                logger.trace( "Found sampling rate for: {} = {}", part, rate );
+                return rate;
+            }
+        }
+
         StringBuilder sb = new StringBuilder();
         for ( int i = parts.length; i > 0; i-- )
         {

@@ -58,6 +58,8 @@ public class HoneycombFilter
         logger.trace( "START: {}", getClass().getSimpleName() );
 
         HttpServletRequest hsr = (HttpServletRequest) request;
+        logger.info( "START: {}", hsr.getPathInfo() );
+
         Span rootSpan = null;
         try
         {
@@ -71,10 +73,12 @@ public class HoneycombFilter
         }
         finally
         {
+            logger.info( "END: {}", hsr.getPathInfo() );
             if ( rootSpan != null )
             {
                 honeycombManager.addFields( rootSpan );
                 rootSpan.close();
+                honeycombManager.endTrace();
             }
 
             logger.trace( "END: {}", getClass().getSimpleName() );

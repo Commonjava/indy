@@ -47,17 +47,17 @@ public class HoneycombWrapperStartInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        logger.trace( "START: Honeycomb metrics-start wrapper" );
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        logger.trace( "START: Honeycomb metrics-start wrapper: {}", name );
         if ( !config.isEnabled() )
         {
-            logger.trace( "SKIP: Honeycomb metrics-start wrapper" );
+            logger.trace( "SKIP: Honeycomb metrics-start wrapper: {}", name );
             return context.proceed();
         }
 
-        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
         if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( context.getMethod() ) < 1 )
         {
-            logger.trace( "SKIP: Honeycomb metrics-start wrapper (no span name or span not configured)" );
+            logger.trace( "SKIP: Honeycomb metrics-start wrapper (no span name or span not configured: {})", name );
             return context.proceed();
         }
 
@@ -65,11 +65,6 @@ public class HoneycombWrapperStartInterceptor
         try
         {
             Span span = honeycombManager.startChildSpan( name );
-            if ( span != null )
-            {
-                span.markStart();
-            }
-
             logger.trace( "startChildSpan, span: {}, defaultName: {}", span, name );
         }
         catch ( Exception e )
@@ -78,7 +73,7 @@ public class HoneycombWrapperStartInterceptor
         }
         finally
         {
-            logger.trace( "END: Honeycomb metrics-start wrapper" );
+            logger.trace( "END: Honeycomb metrics-start wrapper: {}", name );
         }
 
         return context.proceed();

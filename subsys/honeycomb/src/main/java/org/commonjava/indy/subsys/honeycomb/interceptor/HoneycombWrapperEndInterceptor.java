@@ -48,17 +48,17 @@ public class HoneycombWrapperEndInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        logger.trace( "START: Honeycomb metrics-end wrapper" );
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        logger.trace( "START: Honeycomb metrics-end wrapper: {}", name );
         if ( !config.isEnabled() )
         {
-            logger.trace( "SKIP: Honeycomb metrics-end wrapper" );
+            logger.trace( "SKIP: Honeycomb metrics-end wrapper: {}", name );
             return context.proceed();
         }
 
-        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
         if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( context.getMethod() ) < 1 )
         {
-            logger.trace( "SKIP: Honeycomb metrics-end wrapper (span not configured)" );
+            logger.trace( "SKIP: Honeycomb metrics-end wrapper (span not configured: {})", name );
             return context.proceed();
         }
 
@@ -79,7 +79,7 @@ public class HoneycombWrapperEndInterceptor
         }
         finally
         {
-            logger.trace( "END: Honeycomb metrics-end wrapper" );
+            logger.trace( "END: Honeycomb metrics-end wrapper: {}", name );
         }
     }
 
