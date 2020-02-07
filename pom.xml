@@ -1803,6 +1803,7 @@
             <rules>
               <requireReleaseDeps>
                 <message>No Snapshots Allowed!</message>
+                <onlyWhenRelease>true</onlyWhenRelease>
                 <excludes>
                   <exclude>org.commonjava.indy.launch:indy-launcher</exclude>
                 </excludes>
