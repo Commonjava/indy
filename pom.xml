@@ -77,7 +77,7 @@
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
-    <honeycombVersion>1.0.9.commonjava-1-SNAPSHOT</honeycombVersion>
+    <honeycombVersion>1.0.9.commonjava-1-TEMP</honeycombVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
@@ -978,7 +978,7 @@
         <version>3.3.0.Final</version>
       </dependency>
       <dependency>
-        <groupId>io.honeycomb.beeline</groupId>
+        <groupId>org.commonjava.honeycomb.beeline</groupId>
         <artifactId>beeline-core</artifactId>
         <version>${honeycombVersion}</version>
       </dependency>
