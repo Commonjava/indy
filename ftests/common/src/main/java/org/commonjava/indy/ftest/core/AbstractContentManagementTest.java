@@ -25,21 +25,26 @@ import static org.junit.Assert.assertThat;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.io.xpp3.MetadataXpp3Reader;
 import org.commonjava.indy.client.core.IndyClientException;
-import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProvider;
+import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -114,6 +119,26 @@ public class AbstractContentManagementTest
     protected boolean createStandardTestStructures()
     {
         return true;
+    }
+
+    protected File getPhysicalStorageFile( Location location, String path )
+    {
+        String homeDir = fixture.getBootOptions().getHomeDir();
+        String storageDir = "var/lib/indy/storage";
+        StoreKey storeKey = ( (KeyedLocation) location ).getKey();
+
+        File ret;
+        if ( !isPathMappedStorageEnabled() )
+        {
+            ret = Paths.get( homeDir, storageDir, storeKey.getPackageType(),
+                             storeKey.getType().singularEndpointName() + "-" + storeKey.getName(), path ).toFile();
+        }
+        else
+        {
+            ret = ( (PathMappedCacheProvider) cacheProvider ).getDetachedFile( new ConcreteResource( location, path ) );
+        }
+        logger.debug( "Get physical storage file: {}", ret );
+        return ret;
     }
 
     protected void assertExistence( ArtifactStore store, String path, boolean expected )

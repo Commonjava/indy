@@ -203,6 +203,14 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-path-mapped-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-path-mapped-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-changelog-common</artifactId>
     </dependency>
     <dependency>
@@ -335,6 +343,13 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-changelog</artifactId>
     </dependency>
+
+<!--
+    <dependency>
+      <groupId>org.cassandraunit</groupId>
+      <artifactId>cassandra-unit</artifactId>
+    </dependency>
+-->
   </dependencies>
   
   <build>
@@ -404,6 +419,26 @@
             </execution>
           </executions>
         </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cassandra-maven-plugin</artifactId>
+          <version>3.6</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>start</goal>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <skip>${skipITs}</skip>
+            <startNativeTransport>true</startNativeTransport>
+            <cqlVersion>3.4.4</cqlVersion>
+            <maxMemory>2048</maxMemory>
+          </configuration>
+        </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
           <configuration>
@@ -457,6 +492,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cassandra-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

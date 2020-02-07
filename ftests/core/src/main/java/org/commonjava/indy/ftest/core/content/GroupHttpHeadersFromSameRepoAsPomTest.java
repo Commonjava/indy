@@ -25,6 +25,8 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.util.HttpUtils;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -83,7 +85,7 @@ public class GroupHttpHeadersFromSameRepoAsPomTest
 
     private static final String CONTENT_2 = "This is content #2. Some more content, here.";
 
-    private static final String PATH = "/path/to/test.txt";
+    private static final String PATH = "path/to/test.txt";
 
     private RemoteRepository repoX;
 
@@ -120,20 +122,9 @@ public class GroupHttpHeadersFromSameRepoAsPomTest
         assertContent( repoX, PATH, CONTENT_1 );
         assertContent( repoY, PATH, CONTENT_2 );
 
-//        repoX.setDisabled( true );
-//        client.stores().update( repoX, "disabling" );
-
-        File remoteXFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                      remote.singularEndpointName() + "-X", PATH ).toFile();
-
-        waitForEventPropagation();
-
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.debug( "Deleting main file: {} (leaving associated http-metadata.json file in place)", remoteXFile );
-
-        assertThat( "Failed to delete: " + remoteXFile, remoteXFile.delete(), equalTo( true ) );
-
-        waitForEventPropagation();
+        ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( repoX ), PATH );
+        cacheProvider.delete( res );
+        logger.debug( "Deleting main file: {} (leaving associated http-metadata.json file in place)", res );
 
         assertContentLength( groupA, PATH, content2.length );
         assertContentLength( repoX, PATH, CONTENT_1.getBytes().length );

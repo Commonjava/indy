@@ -20,6 +20,8 @@ import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,19 +78,19 @@ public class MetadataRescheduleTimeoutTest
         assertThat( "no metadata result", pomResult, notNullValue() );
         assertThat( "metadata doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        File metadataFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                       remote.singularEndpointName() + "-" + repoId, metadataPath ).toFile();
+        Location location = LocationUtils.toLocation( repository );
+        File metadataFile = getPhysicalStorageFile( location, metadataPath );
 
         assertThat( "metadata doesn't exist", metadataFile.exists(), equalTo( true ) );
 
         // wait for first 2.5s
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
         client.content().get( remote, repoId, metadataPath ).close();
 
         // will wait another 4s
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS + 1500 );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS + 1500 );
         // as rescheduled, the artifact should not be deleted
         assertThat( "artifact should be removed as the rescheduled of metadata should not succeed",
                     metadataFile.exists(), equalTo( false ) );

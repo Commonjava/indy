@@ -19,6 +19,8 @@ import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -77,25 +79,24 @@ public class ContentRescheduleTimeoutTest
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        File pomFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                  remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
-
+        Location location = LocationUtils.toLocation( repository );
+        File pomFile = getPhysicalStorageFile( location, pomPath );
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
 
         // wait for first 3s
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the normal content re-request, the timeout interval should be re-scheduled
         client.content().get( remote, repoId, pomPath );
 
         // will wait another 3.5s
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );
         // as rescheduled in 3s, the new timeout should be 3+6=9s, so the artifact should not be deleted
         assertThat( "artifact should not be removed as it is rescheduled with new request", pomFile.exists(),
                     equalTo( true ) );
 
         // another round wait for 4.5s
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 4500 );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS + 4500 );
         assertThat( "artifact should be removed when new scheduled cache timeout", pomFile.exists(), equalTo( false ) );
     }
 

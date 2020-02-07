@@ -63,12 +63,11 @@ public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
     }
 
     @Override
-    protected void initBaseTestConfig( CoreServerFixture fixture )
+    protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
         writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
         writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
-
     }
 
     @Override

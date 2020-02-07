@@ -47,6 +47,7 @@
     <module>changelog</module>
     <module>event-audit</module>
     <module>sli</module>
+    <module>path-mapped</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>

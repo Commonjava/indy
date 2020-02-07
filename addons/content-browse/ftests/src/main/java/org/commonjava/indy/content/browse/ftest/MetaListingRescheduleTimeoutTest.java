@@ -22,8 +22,10 @@ import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -118,19 +120,19 @@ public class MetaListingRescheduleTimeoutTest
 
         final String listingMetaPath = repoRootPath + ".listing.txt";
 
-        File listingMetaFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                          remote.singularEndpointName() + "-" + repoId, listingMetaPath ).toFile();
+        KeyedLocation location = LocationUtils.toLocation( repository );
+        File listingMetaFile = getPhysicalStorageFile( location, listingMetaPath );
 
         assertThat( ".listing doesn't exist: " + listingMetaFile, listingMetaFile.exists(), equalTo( true ) );
 
         // wait for first time
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata content re-request, the metadata timeout interval should NOT be re-scheduled
         browseClientModule.getContentList( repository.getKey(), repoRootPath );
 
         // will wait second time for a longer period
-        Thread.sleep( METADATA_TIMEOUT_WAITING_MILLISECONDS * getTestTimeoutMultiplier() );
+        sleepAndRunFileGC( METADATA_TIMEOUT_WAITING_MILLISECONDS * getTestTimeoutMultiplier() );
 
         //        logger.info( "Checking whether metadata file {} has been deleted...", listingMetaFile );
         // as rescheduled, the artifact should not be deleted
@@ -155,8 +157,10 @@ public class MetaListingRescheduleTimeoutTest
             throws IOException
     {
         writeConfigFile( "main.conf", "remote.list.download.enabled=true\n"
-            + "[storage-default]\nstorage.dir=${indy.home}/var/lib/indy/storage\n"
-            +   "[_internal]\nstore.validation.enabled=false"
+                        + "[storage-default]\n"
+                        + "storage.dir=${indy.home}/var/lib/indy/storage\n"
+                        + "[_internal]\nstore.validation.enabled=false\n"
+                        + "Include conf.d/*.conf"
         );
     }
 
