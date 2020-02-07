@@ -1796,6 +1796,21 @@
             </excludes>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <configuration>
+            <rules>
+              <requireReleaseDeps>
+                <message>No Snapshots Allowed!</message>
+                <excludes>
+                  <exclude>org.commonjava.indy.launch:indy-launcher</exclude>
+                </excludes>
+              </requireReleaseDeps>
+            </rules>
+            <skip>false</skip>
+          </configuration>
+        </plugin>
 
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
