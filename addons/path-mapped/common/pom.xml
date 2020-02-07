@@ -1,6 +1,7 @@
+<?xml version="1.0"?>
 <!--
 
-    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2019 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -17,21 +18,8 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
   <parent>
     <groupId>org.commonjava.indy</groupId>
-<<<<<<< HEAD:db/metrics/pom.xml
-    <artifactId>indy-db</artifactId>
-    <version>1.9.10-SNAPSHOT</version>
-  </parent>
-  
-  <artifactId>indy-db-metrics</artifactId>
-  <name>Indy :: DB :: Metrics Decorator</name>
-  
-  <dependencies>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-=======
     <artifactId>indy-path-mapped</artifactId>
     <version>1.9.10-SNAPSHOT</version>
   </parent>
@@ -46,22 +34,14 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
->>>>>>> master-integration-pathmap:addons/path-mapped/common/pom.xml
       <artifactId>indy-api</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-core</artifactId>
+      <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-<<<<<<< HEAD:db/metrics/pom.xml
-      <artifactId>indy-subsys-metrics-reporter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-common</artifactId>
-=======
       <artifactId>indy-subsys-cassandra</artifactId>
     </dependency>
     <dependency>
@@ -71,23 +51,17 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
->>>>>>> master-integration-pathmap:addons/path-mapped/common/pom.xml
     </dependency>
     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>indy-test-db</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
       <scope>test</scope>
     </dependency>
-<<<<<<< HEAD:db/metrics/pom.xml
     <dependency>
-      <groupId>org.jboss.byteman</groupId>
-      <artifactId>byteman-bmunit</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
+      <scope>test</scope>
     </dependency>
-=======
->>>>>>> master-integration-pathmap:addons/path-mapped/common/pom.xml
   </dependencies>
+
 </project>
