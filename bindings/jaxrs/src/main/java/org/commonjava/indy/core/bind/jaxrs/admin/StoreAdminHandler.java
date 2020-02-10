@@ -35,6 +35,7 @@ import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.mail.Store;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -520,6 +521,22 @@ public class StoreAdminHandler
         }
 
         return response;
+    }
+
+
+
+    @ApiOperation("Return All Invalidated Remote Repositories")
+    @ApiResponses({@ApiResponse(code = 200, message = "Return All Invalidated Remote Repositories")})
+    @Path("/all_invalid")
+    @GET
+    public Response returnDisabledStores(
+            final @ApiParam(required = true) @PathParam("packageType") String packageType,
+            final @ApiParam(allowableValues = "remote", required = true) @PathParam("type") String type) {
+        if (!"remote".equals(type)) {
+            return responseHelper.formatBadRequestResponse(
+                    String.format("Not supporte repository type of %s", type));
+        }
+        return responseHelper.formatOkResponseWithJsonEntity(adminController.getDisabledRemoteRepositories());
     }
 
 
