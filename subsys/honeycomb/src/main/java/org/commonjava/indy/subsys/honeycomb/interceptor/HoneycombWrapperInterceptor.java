@@ -48,33 +48,25 @@ public class HoneycombWrapperInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        logger.info( "START: Honeycomb lambda wrapper" );
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        logger.info( "START: Honeycomb lambda wrapper: {}", name );
         if ( !config.isEnabled() )
         {
-            logger.info( "SKIP Honeycomb lambda wrapper" );
+            logger.info( "SKIP Honeycomb lambda wrapper: {}", name );
             return context.proceed();
         }
 
-        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
         if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( name ) < 1 )
         {
-            logger.info( "SKIP Honeycomb lambda wrapper (no span name or span not configured)" );
+            logger.info( "SKIP Honeycomb lambda wrapper (no span name or span not configured: {})", name );
             return context.proceed();
         }
 
-        // Seems like the sample rate is managed at the service-request level, not at this level...so let's just
-        // use sample-rate == 0 as a way to turn off child spans like this, and leave the sampling rates out of it
-//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, sampleRate );
         Span span = null;
         try
         {
             span = honeycombManager.startChildSpan( name );
-            if ( span != null )
-            {
-                span.markStart();
-            }
-
-            logger.trace( "startChildSpan, span: {}, defaultName: {}", span, name );
+            logger.trace( "startChildSpan, span: {}, name: {}", span, name );
             return context.proceed();
         }
         finally
@@ -87,7 +79,7 @@ public class HoneycombWrapperInterceptor
                 span.close();
             }
 
-            logger.info( "END: Honeycomb lambda wrapper" );
+            logger.info( "END: Honeycomb lambda wrapper: {}", name );
         }
     }
 

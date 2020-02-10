@@ -29,4 +29,10 @@ public class SpanContext
     {
         return traceId;
     }
+
+    @Override
+    public String toString()
+    {
+        return "SpanContext{" + "traceId='" + traceId + '\'' + ", parentSpanId='" + parentSpanId + '\'' + '}';
+    }
 }
