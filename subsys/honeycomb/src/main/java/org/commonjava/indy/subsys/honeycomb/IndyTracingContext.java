@@ -2,10 +2,12 @@ package org.commonjava.indy.subsys.honeycomb;
 
 import io.honeycomb.beeline.tracing.TracerSpan;
 import io.honeycomb.beeline.tracing.context.TracingContext;
+import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
@@ -17,23 +19,33 @@ public class IndyTracingContext
 
     private Logger logger = LoggerFactory.getLogger( getClass() );
 
+    @Inject
+    private HoneycombConfiguration config;
+
     public void reinitThreadSpans()
     {
-        logger.info( "Clearing spans in current thread: {}", Thread.currentThread().getId()  );
-        SPANS.set( new ArrayDeque<>() );
+        if ( config.isEnabled() )
+        {
+            logger.info( "Clearing spans in current thread: {}", Thread.currentThread().getId() );
+            SPANS.set( new ArrayDeque<>() );
+        }
     }
 
     public void clearThreadSpans()
     {
-        logger.info( "Clearing context...SPANs in current thread: {} (thread: {})", SPANS.get().size(), Thread.currentThread().getId() );
-        TracerSpan tracerSpan = SPANS.get().peekLast();
-        if ( tracerSpan != null )
+        if ( config.isEnabled() )
         {
-            tracerSpan.close();
-        }
+            logger.info( "Clearing context...SPANs in current thread: {} (thread: {})", SPANS.get().size(),
+                         Thread.currentThread().getId() );
+            TracerSpan tracerSpan = SPANS.get().peekLast();
+            if ( tracerSpan != null )
+            {
+                tracerSpan.close();
+            }
 
-        logger.info( "Clearing spans deque in: {}", Thread.currentThread().getId()  );
-        SPANS.remove();
+            logger.info( "Clearing spans deque in: {}", Thread.currentThread().getId() );
+            SPANS.remove();
+        }
     }
 
     @Override

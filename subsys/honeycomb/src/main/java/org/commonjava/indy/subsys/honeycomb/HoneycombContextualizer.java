@@ -1,7 +1,9 @@
 package org.commonjava.indy.subsys.honeycomb;
 
+import io.honeycomb.beeline.tracing.Beeline;
 import io.honeycomb.beeline.tracing.Span;
 import org.commonjava.cdi.util.weft.ThreadContextualizer;
+import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +28,9 @@ public class HoneycombContextualizer
     private HoneycombManager honeycombManager;
 
     @Inject
+    private HoneycombConfiguration configuration;
+
+    @Inject
     private IndyTracingContext tracingContext;
 
     @Override
@@ -37,38 +42,49 @@ public class HoneycombContextualizer
     @Override
     public Object extractCurrentContext()
     {
-        SpanContext ctx = new SpanContext( honeycombManager.getBeeline().getActiveSpan() );
-        logger.trace( "Extracting parent-thread context: {}", ctx );
-        return ctx;
+        if ( configuration.isEnabled() )
+        {
+            Beeline beeline = honeycombManager.getBeeline();
+            SpanContext ctx = new SpanContext( beeline.getActiveSpan() );
+            logger.trace( "Extracting parent-thread context: {}", ctx );
+            return ctx;
+        }
+        return null;
     }
 
     @Override
     public void setChildContext( final Object parentContext )
     {
-        tracingContext.reinitThreadSpans();
+        if ( configuration.isEnabled() )
+        {
+            tracingContext.reinitThreadSpans();
 
-        logger.trace( "Creating thread-level root span using parent-thread context: {}", parentContext );
-        SPAN.set( honeycombManager.startRootTracer( "thread." + Thread.currentThread().getThreadGroup().getName(), (SpanContext) parentContext ) );
+            logger.trace( "Creating thread-level root span using parent-thread context: {}", parentContext );
+            SPAN.set( honeycombManager.startRootTracer( "thread." + Thread.currentThread().getThreadGroup().getName(), (SpanContext) parentContext ) );
+        }
     }
 
     @Override
     public void clearContext()
     {
-        Span span = SPAN.get();
-        if ( span != null )
+        if ( configuration.isEnabled() )
         {
-            logger.trace( "Closing thread-level root span: {}", span );
-            honeycombManager.addFields( span );
-            span.addField( THREAD_NAME, Thread.currentThread().getName() );
-            span.addField( THREAD_GROUP_NAME, Thread.currentThread().getThreadGroup().getName() );
+            Span span = SPAN.get();
+            if ( span != null )
+            {
+                logger.trace( "Closing thread-level root span: {}", span );
+                honeycombManager.addFields( span );
+                span.addField( THREAD_NAME, Thread.currentThread().getName() );
+                span.addField( THREAD_GROUP_NAME, Thread.currentThread().getThreadGroup().getName() );
 
-            span.close();
+                span.close();
 
-            honeycombManager.endTrace();
+                honeycombManager.endTrace();
+            }
+
+            SPAN.remove();
+
+            tracingContext.clearThreadSpans();
         }
-
-        SPAN.remove();
-
-        tracingContext.clearThreadSpans();
     }
 }
