@@ -73,18 +73,21 @@ public class HoneycombManager
     @PostConstruct
     public void init()
     {
-        String writeKey = configuration.getWriteKey();
-        String dataset = configuration.getDataset();
+        if ( configuration.isEnabled() )
+        {
+            String writeKey = configuration.getWriteKey();
+            String dataset = configuration.getDataset();
 
-        logger.debug( "Init Honeycomb manager, dataset: {}", dataset );
-        client = new HoneyClient( LibHoney.options().setDataset( dataset ).setWriteKey( writeKey ).build() ); //, new ConsoleTransport( new ResponseObservable() ) );
-        LibHoney.setDefault( client );
+            logger.debug( "Init Honeycomb manager, dataset: {}", dataset );
+            client = new HoneyClient( LibHoney.options().setDataset( dataset ).setWriteKey( writeKey ).build() ); //, new ConsoleTransport( new ResponseObservable() ) );
+            LibHoney.setDefault( client );
 
-        SpanPostProcessor postProcessor = Tracing.createSpanProcessor( client, Sampling.alwaysSampler() );
-        SpanBuilderFactory factory = Tracing.createSpanBuilderFactory( postProcessor, traceSampler );
+            SpanPostProcessor postProcessor = Tracing.createSpanProcessor( client, Sampling.alwaysSampler() );
+            SpanBuilderFactory factory = Tracing.createSpanBuilderFactory( postProcessor, traceSampler );
 
-        Tracer tracer = Tracing.createTracer( factory, tracingContext );
-        beeline = Tracing.createBeeline( tracer, factory );
+            Tracer tracer = Tracing.createTracer( factory, tracingContext );
+            beeline = Tracing.createBeeline( tracer, factory );
+        }
     }
 
     public HoneyClient getClient()
@@ -179,50 +182,41 @@ public class HoneycombManager
 
     public void addFields( Span span )
     {
-        ThreadContext ctx = ThreadContext.getContext( false );
-        if ( ctx != null )
+        if ( beeline != null )
         {
-            configuration.getFieldSet().forEach( field->{
-                Object value = getContext( field );
-                if ( value != null )
+            ThreadContext ctx = ThreadContext.getContext( false );
+            if ( ctx != null )
+            {
+                configuration.getFieldSet().forEach( field -> {
+                    Object value = getContext( field );
+                    if ( value != null )
+                    {
+                        span.addField( field, value );
+                    }
+                } );
+
+                Map<String, Double> cumulativeTimings = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
+                if ( cumulativeTimings != null )
                 {
-                    span.addField( field, value );
+                    cumulativeTimings.forEach( ( k, v ) -> span.addField( CUMULATIVE_TIMINGS + "." + k, v ) );
                 }
-            });
 
-            Map<String, Double> cumulativeTimings = (Map<String, Double>) ctx.get( CUMULATIVE_TIMINGS );
-            if ( cumulativeTimings != null )
-            {
-                cumulativeTimings.forEach(
-                        ( k, v ) -> span.addField( CUMULATIVE_TIMINGS + "." + k, v ) );
-            }
-
-            Map<String, Integer> cumulativeCounts = (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
-            if ( cumulativeCounts != null )
-            {
-                cumulativeCounts.forEach(
-                        ( k, v ) -> span.addField( CUMULATIVE_COUNTS + "." + k, v ) );
+                Map<String, Integer> cumulativeCounts = (Map<String, Integer>) ctx.get( CUMULATIVE_COUNTS );
+                if ( cumulativeCounts != null )
+                {
+                    cumulativeCounts.forEach( ( k, v ) -> span.addField( CUMULATIVE_COUNTS + "." + k, v ) );
+                }
             }
         }
-
     }
 
     public void endTrace()
     {
-        logger.info( "Ending trace: {}", Thread.currentThread().getId() );
-//        RequestContextHelper.clearContext( TRACE_ID );
-//        RequestContextHelper.clearContext( REQUEST_PARENT_SPAN );
-
-//        Span activeSpan = getBeeline().getActiveSpan();
-//        while ( activeSpan != null )
-//        {
-//            addFields( activeSpan );
-//            activeSpan.close();
-//
-//            activeSpan = getBeeline().getActiveSpan();
-//        }
-
-        getBeeline().getTracer().endTrace();
+        if ( beeline != null )
+        {
+            logger.info( "Ending trace: {}", Thread.currentThread().getId() );
+            getBeeline().getTracer().endTrace();
+        }
     }
 
 }
