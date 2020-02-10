@@ -29,7 +29,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.honeycomb.beeline</groupId>
+      <groupId>org.commonjava.honeycomb.beeline</groupId>
       <artifactId>beeline-core</artifactId>
     </dependency>
     <dependency>

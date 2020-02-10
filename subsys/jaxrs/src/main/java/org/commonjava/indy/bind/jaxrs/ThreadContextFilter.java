@@ -49,7 +49,6 @@ public class ThreadContextFilter
     }
 
     @Override
-    @Measure
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
