@@ -131,17 +131,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.commonjava.indy.rest</groupId>
-      <artifactId>indy-rest-api</artifactId>
-      <type>yaml</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy.rest</groupId>
-      <artifactId>indy-rest-api</artifactId>
-      <type>json</type>
-    </dependency>
-
-    <dependency>
       <groupId>com.internetitem</groupId>
       <artifactId>logback-elasticsearch-appender</artifactId>
     </dependency>
@@ -262,15 +251,6 @@
             </configuration>
           </execution>
         </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-enforcer-plugin</artifactId>
-        <configuration>
-          <rules>
-	  </rules>
-          <skip>true</skip>
-        </configuration>
       </plugin>
     </plugins>
   </build>
