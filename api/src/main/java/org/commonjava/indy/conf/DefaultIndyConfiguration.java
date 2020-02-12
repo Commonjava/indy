@@ -48,7 +48,7 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NFC_EXPIRATION_SWEEP_MINUTES = 30;
 
-    public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 10000; // 10,000
+    public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 5000;
 
     public static final Boolean DEFAULT_ALLOW_REMOTE_LIST_DOWNLOAD = false;
 
@@ -80,6 +80,7 @@ public class DefaultIndyConfiguration
 
     private String nodeId;
 
+    private String cacheKeyspace = "indycache"; // default
 
     public DefaultIndyConfiguration()
     {
@@ -254,6 +255,18 @@ public class DefaultIndyConfiguration
     public boolean isClusterEnabled()
     {
         return clusterEnabled == null ? false : clusterEnabled;
+    }
+
+    @ConfigName( "cache.keyspace" )
+    public void setCacheKeyspace( String cacheKeyspace )
+    {
+        this.cacheKeyspace = cacheKeyspace;
+    }
+
+    @Override
+    public String getCacheKeyspace()
+    {
+        return cacheKeyspace;
     }
 
     @ConfigName( "cluster.enabled" )

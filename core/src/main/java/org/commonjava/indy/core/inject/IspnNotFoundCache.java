@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import java.text.SimpleDateFormat;
@@ -49,7 +50,7 @@ import static org.commonjava.indy.model.core.StoreKey.fromString;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
-@Default
+@Alternative
 public class IspnNotFoundCache
                 extends AbstractNotFoundCache
 {
@@ -90,16 +91,10 @@ public class IspnNotFoundCache
         } );
     }
 
-    private int getTimeoutInSeconds( ConcreteResource resource )
+    @Override
+    protected IndyConfiguration getIndyConfiguration()
     {
-        int timeoutInSeconds = config.getNotFoundCacheTimeoutSeconds();
-        Location loc = resource.getLocation();
-        Integer to = loc.getAttribute( RepositoryLocation.ATTR_NFC_TIMEOUT_SECONDS, Integer.class );
-        if ( to != null && to > 0 )
-        {
-            timeoutInSeconds = to;
-        }
-        return timeoutInSeconds;
+        return config;
     }
 
     @Override
