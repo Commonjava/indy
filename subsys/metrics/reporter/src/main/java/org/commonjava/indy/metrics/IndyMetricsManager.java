@@ -379,4 +379,13 @@ public class IndyMetricsManager
         } );
     }
 
+    public MetricRegistry getMetricRegistry()
+    {
+        return metricRegistry;
+    }
+
+    public IndyMetricsConfig getConfig()
+    {
+        return config;
+    }
 }

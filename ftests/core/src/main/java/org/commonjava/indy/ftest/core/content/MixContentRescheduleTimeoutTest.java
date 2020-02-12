@@ -20,6 +20,8 @@ import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,9 +81,8 @@ public class MixContentRescheduleTimeoutTest
         assertThat( "no pom result", pomResult, notNullValue() );
         assertThat( "pom doesn't exist", pomResult.exists(), equalTo( true ) );
 
-        File pomFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                  remote.singularEndpointName() + "-" + repoId, pomPath ).toFile();
-
+        Location location = LocationUtils.toLocation( repository );
+        File pomFile = getPhysicalStorageFile( location, pomPath );
         assertThat( "pom doesn't exist", pomFile.exists(), equalTo( true ) );
 
         // first time trigger metadata storage with timeout, should be 4s
@@ -90,20 +91,17 @@ public class MixContentRescheduleTimeoutTest
         assertThat( "no metadata result", metadataResult, notNullValue() );
         assertThat( "metadata doesn't exist", metadataResult.exists(), equalTo( true ) );
 
-        File metadataFile =
-                Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
-                           metadataPath ).toFile();
-
+        File metadataFile = getPhysicalStorageFile( location, metadataPath );
         assertThat( "metadata doesn't exist: " + metadataFile, metadataFile.exists(), equalTo( true ) );
 
         // wait for first 4s
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS );
 
         // as the metadata re-request, the timeout interval should NOT be re-scheduled
         try(InputStream is = client.content().get( remote, repoId, metadataPath )){}
 
         // will wait another 4.5s
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS + 500 );
         // even meta file re-request @ 4s, normal content timeout should not be rescheduled, so the artifact should be deleted
         assertThat( "artifact should be removed even metadata rescheduled with new request", pomFile.exists(),
                     equalTo( false ) );

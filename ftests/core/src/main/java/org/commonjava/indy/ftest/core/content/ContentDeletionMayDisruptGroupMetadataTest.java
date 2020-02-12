@@ -100,6 +100,8 @@ public class ContentDeletionMayDisruptGroupMetadataTest
         String retCode = user2.get();
         assertThat( retCode, equalTo( "OK" ) );
 
+        sleepAndRunFileGC( 1000 );
+
         String metadata = user1.get();
         assertThat( metadata, equalTo( null ) );
 

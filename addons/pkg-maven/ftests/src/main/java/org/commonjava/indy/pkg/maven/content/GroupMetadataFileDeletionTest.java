@@ -19,6 +19,8 @@ import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,7 +57,7 @@ import static org.jgroups.util.Util.assertTrue;
 public class GroupMetadataFileDeletionTest
                 extends AbstractContentManagementTest
 {
-    private static final String METADATA_PATH = "/org/foo/bar/maven-metadata.xml";
+    private static final String METADATA_PATH = "org/foo/bar/maven-metadata.xml";
 
     /* @formatter:off */
     private static final String METADATA_CONTENT = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -96,8 +98,8 @@ public class GroupMetadataFileDeletionTest
     @Test
     public void run() throws Exception
     {
-        File f1 = new File( storageDir, "maven/group-" + g1.getName() + METADATA_PATH );
-        File f2 = new File( storageDir, "maven/group-" + g2.getName() + METADATA_PATH );
+        File f1 = getPhysicalStorageFile( LocationUtils.toLocation( g1 ), METADATA_PATH );
+        File f2 = getPhysicalStorageFile( LocationUtils.toLocation( g2 ), METADATA_PATH );
 
         // Files exist
         assertTrue( f1.exists() );
@@ -106,9 +108,13 @@ public class GroupMetadataFileDeletionTest
         // Delete cache file from G1, which will delete parent G2's cache too
         client.content().deleteCache( g1.getKey(), METADATA_PATH );
 
+        sleepAndRunFileGC( 1000 );
+
         // Verify files were deleted
-        assertFalse( f1.exists() );
-        assertFalse( f2.exists() );
+        ConcreteResource r1 = new ConcreteResource( LocationUtils.toLocation( g1 ), METADATA_PATH );
+        ConcreteResource r2 = new ConcreteResource( LocationUtils.toLocation( g2 ), METADATA_PATH );
+        assertFalse( cacheProvider.exists( r1 ) );
+        assertFalse( cacheProvider.exists( r2 ) );
 
         // Re-generate
         assertContent( g1, METADATA_PATH, METADATA_CONTENT );

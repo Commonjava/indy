@@ -18,6 +18,7 @@ package org.commonjava.indy.filer.def;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import org.apache.commons.io.output.CountingOutputStream;
+import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.util.IdempotentCloseOutputStream;

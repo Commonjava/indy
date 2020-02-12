@@ -70,6 +70,8 @@ public class ResourceManagementFilter
 
     private static final String SPECIAL_CONTENT_METRIC = BASE_CONTENT_METRIC + "special";
 
+    private static final String FORCE_METERED = "force-metered";
+
     @Inject
     private CacheProvider cacheProvider;
 

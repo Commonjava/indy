@@ -18,16 +18,16 @@ package org.commonjava.indy.ftest.core.content;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
-import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -42,6 +42,8 @@ public abstract class AbstractContentTimeoutWorkingTest
 {
     @Rule
     public ExpectationServer server = new ExpectationServer( "repos" );
+
+    protected KeyedLocation location;
 
     @Override
     protected boolean createStandardTestStructures()
@@ -71,6 +73,8 @@ public abstract class AbstractContentTimeoutWorkingTest
         final String changelog = "Timeout Testing: " + name.getMethodName();
         final RemoteRepository repository = createRemoteRepository( repoId );
 
+        location = LocationUtils.toLocation( repository );
+
         client.stores().create( repository, changelog, RemoteRepository.class );
 
         // ensure the pom exist before the timeout checking
@@ -80,9 +84,12 @@ public abstract class AbstractContentTimeoutWorkingTest
 
         client.content().get(remote, repoId, pomPath).close(); // force storage
 
+        pomFile = getPhysicalStorageFile( location, pomPath );
+/*
         pomFile =
                 Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY, remote.singularEndpointName() + "-" + repoId,
                            pomPath ).toFile();
+*/
 
         assertThat( "pom doesn't exist: " + pomFile, this.pomFile.exists(), equalTo( true ) );
 
@@ -91,8 +98,8 @@ public abstract class AbstractContentTimeoutWorkingTest
     protected void fileCheckingAfterTimeout()
             throws Exception
     {
-        // make sure the repo timout
-        Thread.sleep( getTestTimeoutMultiplier() * TIMEOUT_WAITING_MILLISECONDS );
+        // make sure the repo timeout
+        sleepAndRunFileGC( getTestTimeoutMultiplier() * TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Timeout time {}s passed!", TIMEOUT_SECONDS );
 
         assertThat( "artifact should be removed when timeout", pomFile.exists(), equalTo( false ) );

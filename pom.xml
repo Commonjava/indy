@@ -78,6 +78,9 @@
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
     <honeycombVersion>1.0.9.commonjava-1-TEMP</honeycombVersion>
+    <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
+    <datastaxVersion>3.7.2</datastaxVersion>
+    <pathmappedStorageVersion>1.1-SNAPSHOT</pathmappedStorageVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
@@ -403,6 +406,24 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-cassandra</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-cassandra</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-pathmapped</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
         <version>1.9.10-SNAPSHOT</version>
       </dependency>
@@ -632,6 +653,22 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-jaxrs</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-path-mapped-common</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-path-mapped-model-java</artifactId>
+        <version>1.9.10-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-path-mapped-jaxrs</artifactId>
         <version>1.9.10-SNAPSHOT</version>
       </dependency>
 
@@ -1146,6 +1183,16 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
+        <artifactId>galley-cache-path-mapped</artifactId>
+        <version>${galleyVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.cassandraunit</groupId>
+        <artifactId>cassandra-unit</artifactId>
+        <version>${cassandraUnitVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-transport-filearc</artifactId>
         <version>${galleyVersion}</version>
       </dependency>
@@ -1541,6 +1588,35 @@
         <groupId>org.commonjava.propulsor.content-audit</groupId>
         <artifactId>propulsor-content-audit-api</artifactId>
         <version>${propulsorVersion}</version>
+      </dependency>
+
+      <!-- Path-mapped storage -->
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>path-mapped-storage</artifactId>
+        <version>${pathmappedStorageVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>path-mapped-pathdb-datastax</artifactId>
+        <version>${pathmappedStorageVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>path-mapped-common</artifactId>
+        <version>${pathmappedStorageVersion}</version>
+      </dependency>
+
+      <!--Datastax Java Driver-->
+      <dependency>
+        <groupId>com.datastax.cassandra</groupId>
+        <artifactId>cassandra-driver-core</artifactId>
+        <version>${datastaxVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.datastax.cassandra</groupId>
+        <artifactId>cassandra-driver-mapping</artifactId>
+        <version>${datastaxVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
