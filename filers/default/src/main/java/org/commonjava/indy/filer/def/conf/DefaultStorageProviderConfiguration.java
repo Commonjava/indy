@@ -120,6 +120,8 @@ public class DefaultStorageProviderConfiguration
 
     private String fileChecksumAlgorithm = "SHA-256";
 
+    private String deduplicatePattern = "^(generic|npm).+";
+
     @ConfigName( "storage.cassandra.keyspace" )
     public void setCassandraKeyspace( String keyspace )
     {
@@ -175,4 +177,14 @@ public class DefaultStorageProviderConfiguration
         return fileChecksumAlgorithm;
     }
 
+    @ConfigName( "storage.deduplicate.pattern" )
+    public void setDeduplicatePattern( String deduplicatePattern )
+    {
+        this.deduplicatePattern = deduplicatePattern;
+    }
+
+    public String getDeduplicatePattern()
+    {
+        return deduplicatePattern;
+    }
 }

@@ -214,6 +214,7 @@ public class DefaultGalleyStorageProvider
         ret.setGcBatchSize( config.getGcBatchSize() );
         ret.setGcGracePeriodInHours( config.getGcGracePeriodInHours() );
         ret.setGcIntervalInMinutes( config.getGcIntervalInMinutes() );
+        ret.setDeduplicatePattern( config.getDeduplicatePattern() );
 
         return ret;
     }
