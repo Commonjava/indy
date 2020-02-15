@@ -55,7 +55,7 @@ public class CassandraClient
     {
         if ( !config.isEnabled() )
         {
-            logger.debug( "Cassandra client not enabled" );
+            logger.info( "Cassandra client not enabled" );
             return;
         }
         try
@@ -74,13 +74,13 @@ public class CassandraClient
             String password = config.getCassandraPass();
             if ( isNotBlank( username ) && isNotBlank( password ) )
             {
-                logger.debug( "Build with credentials, user: {}, pass: ****", username );
+                logger.info( "Build with credentials, user: {}, pass: ****", username );
                 builder.withCredentials( username, password );
             }
 
             cluster = builder.build();
 
-            logger.debug( "Connecting to Cassandra, host:{}, port:{}, user:{}", host, port, username );
+            logger.info( "Connecting to Cassandra, host:{}, port:{}, user:{}", host, port, username );
             session = cluster.connect();
         }
         catch ( Exception e )
@@ -100,7 +100,7 @@ public class CassandraClient
     {
         if ( !closed && cluster != null && session != null )
         {
-            logger.debug( "Close cassandra client" );
+            logger.info( "Close cassandra client" );
             session.close();
             cluster.close();
             session = null;
