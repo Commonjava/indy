@@ -117,7 +117,7 @@ public class HoneycombManager
                         new PropagationContext( parentContext.getTraceId(), parentContext.getParentSpanId(), null,
                                                 null );
 
-                logger.info( "Starting root span: {} based on parent context: {}, thread: {}", spanName, propContext, Thread.currentThread().getId() );
+                logger.debug( "Starting root span: {} based on parent context: {}, thread: {}", spanName, propContext, Thread.currentThread().getId() );
                 span = beeline.getSpanBuilderFactory()
                               .createBuilder()
                               .setParentContext( propContext )
@@ -130,10 +130,6 @@ public class HoneycombManager
             {
                 String traceId = RequestContextHelper.getContext( TRACE_ID );
                 String parentId = RequestContextHelper.getContext( REQUEST_PARENT_SPAN );
-                //
-                //
-                //            PropagationContext parentContext = new PropagationContext( traceId, parentId, null, null );
-                //            logger.info( "Starting span: {} based on parent context: {}", spanName, parentContext );
 
                 span = beeline.getSpanBuilderFactory().createBuilder()
                               //                                   .setParentContext( parentContext )
@@ -214,7 +210,7 @@ public class HoneycombManager
     {
         if ( beeline != null )
         {
-            logger.info( "Ending trace: {}", Thread.currentThread().getId() );
+            logger.debug( "Ending trace: {}", Thread.currentThread().getId() );
             getBeeline().getTracer().endTrace();
         }
     }

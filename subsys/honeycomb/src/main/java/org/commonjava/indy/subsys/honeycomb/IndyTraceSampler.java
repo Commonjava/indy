@@ -37,13 +37,13 @@ public class IndyTraceSampler
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( ctx == null )
         {
-            logger.info( "No ThreadContext for functional diagnosis; skipping span: {}", input );
+            logger.debug( "No ThreadContext for functional diagnosis; skipping span: {}", input );
             return 0;
         }
 
         if ( ctx.get( SAMPLE_OVERRIDE ) != null )
         {
-            logger.info( "Including span via override (span: {})", input );
+            logger.debug( "Including span via override (span: {})", input );
             return 1;
         }
 

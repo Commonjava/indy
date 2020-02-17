@@ -49,16 +49,16 @@ public class HoneycombWrapperInterceptor
     public Object operation( InvocationContext context ) throws Exception
     {
         String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        logger.info( "START: Honeycomb lambda wrapper: {}", name );
+        logger.debug( "START: Honeycomb lambda wrapper: {}", name );
         if ( !config.isEnabled() )
         {
-            logger.info( "SKIP Honeycomb lambda wrapper: {}", name );
+            logger.debug( "SKIP Honeycomb lambda wrapper: {}", name );
             return context.proceed();
         }
 
         if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( name ) < 1 )
         {
-            logger.info( "SKIP Honeycomb lambda wrapper (no span name or span not configured: {})", name );
+            logger.debug( "SKIP Honeycomb lambda wrapper (no span name or span not configured: {})", name );
             return context.proceed();
         }
 
@@ -79,7 +79,7 @@ public class HoneycombWrapperInterceptor
                 span.close();
             }
 
-            logger.info( "END: Honeycomb lambda wrapper: {}", name );
+            logger.debug( "END: Honeycomb lambda wrapper: {}", name );
         }
     }
 
