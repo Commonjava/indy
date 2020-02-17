@@ -105,21 +105,20 @@ public class MetadataMergePomChangeListener
                     if ( doClear( hosted, clearPath ) )
                     {
                         cacheManager.remove( hosted.getKey(), clearPath );
-                        logger.info( "Metadata file {} in store {} cleared.", path, key );
+                        logger.info( "Metadata file {} in store {} cleared.", clearPath, key );
                     }
                 }
                 catch ( final IOException e )
                 {
                     logger.error(
                             String.format( "Failed to delete: %s from hosted: %s when pom version changed. Error: %s",
-                                           path, hosted, e.getMessage() ), e );
+                                           clearPath, hosted, e.getMessage() ), e );
                 }
 
                 final Set<Group> groups = dataManager.query().getGroupsAffectedBy( key );
                 if ( groups != null )
                 {
-                    logger.info( "Clearing metadata file {} for following groups which are affected by {}: {}", path,
-                                 key, groups );
+                    logger.info( "Clearing metadata file {} for groups affected by {}: {}", clearPath, key, groups );
                     for ( final Group group : groups )
                     {
                         try
@@ -132,7 +131,7 @@ public class MetadataMergePomChangeListener
                         catch ( final IOException e )
                         {
                             logger.error( String.format(
-                                    "Failed to delete: %s from its group: %s when pom version changed. Error: %s", path,
+                                    "Failed to delete: %s from group: %s when pom version changed. Error: %s", clearPath,
                                     group, e.getMessage() ), e );
                         }
                     }
