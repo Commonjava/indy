@@ -18,13 +18,11 @@
 <div class="container-fluid" ng-controller="CacheCtl">
   <div class="control-panel">
     <div class="cp-row">
-      This form is to delete broken or invalid cache files for groups and remote repositories, e.g,
-      generated maven-metadata.xml for a group location, broken jar file from a remote repository, etc.
-      There are some unusual cases that could break those files and the easy fix is to delete and regenerate it (in the next request).
+      Delete broken maven-metadata.xml from groups or remote repositories.
     </div>
     <div class="cp-row">
-      <label>Input the the file url to delete:</label>
-      (can be a full url or a relative url like "/api/content/maven/group/central/org/foo/bar/1/bar-1.pom")
+      <label>Input the the metadata url:</label>
+      (Can be a full or a relative url like "/api/content/maven/group/central/org/foo/bar/maven-metadata.xml. Be noticed that this will trigger the deletions of the target path from all <b>affected groups</b>.")
       <input style="width: 100%;" ng-model="path">
     </div>
     <div class="cp-row">
