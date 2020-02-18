@@ -148,26 +148,32 @@ public interface StoreDataManager
      * This api is used for some time-sensitive tasks which should use getGroupsAffectedBy service, as
      * this service is a little time-consuming now.
      *
-     * @param task
-     * @param <R>
+     * @param contextualTask
      */
     void asyncGroupAffectedBy( ContextualTask contextualTask );
 
     class ContextualTask
     {
+        private String threadName;
+
         private String taskContext;
 
         private Runnable task;
 
-        public ContextualTask( String taskContext, Runnable task )
+        public ContextualTask( String threadName, String taskContext, Runnable task )
         {
+            this.threadName = threadName;
             this.taskContext = taskContext;
             this.task = task;
         }
 
         public String getTaskContext()
         {
-            return taskContext;
+            return this.taskContext;
+        }
+
+        public String getThreadName(){
+            return this.threadName;
         }
 
         public Runnable getTask()
