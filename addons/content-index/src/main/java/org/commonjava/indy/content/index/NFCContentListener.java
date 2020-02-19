@@ -117,10 +117,11 @@ class NFCContentListener
         {
             return;
         }
+        final String name = String.format("ContentIndexNFCClean-store(%s)-path(%s)", store.getKey(), path  );
         final String context =
                 String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "nfcClearByContaining",
                                store.getKey(), path );
-        storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context, () -> {
+        storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask(name, context, () -> {
             logger.debug( "Start to clear nfc for groups affected by {} of path {}", store, path );
             try
             {

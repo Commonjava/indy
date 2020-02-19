@@ -270,11 +270,14 @@ public class PromotionManager
 
                             storeManager.storeArtifactStore( target, changeSummary, false, true, new EventMetadata() );
                             final Group targetForNfcCleaning = target;
+                            final String name = String.format( "PromoteNFCClean-method(%s)-source(%s)-target(%s)",
+                                                               "doValidationAndPromote", validationRequest.getSource(),
+                                                               targetForNfcCleaning.getKey() );
                             final String context = String.format( "Class: %s, method: %s, source: %s, target: %s",
                                                                   this.getClass().getName(), "doValidationAndPromote",
                                                                   validationRequest.getSource(),
                                                                   targetForNfcCleaning.getKey() );
-                            storeManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context, () -> {
+                            storeManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( name, context, () -> {
                                 try
                                 {
                                     promotionHelper.clearStoreNFC( validationRequest.getSourcePaths(),
@@ -818,10 +821,12 @@ public class PromotionManager
         else
         {
             result = new PathsPromoteResult( request, emptySet(), completed, skipped, null, validation );
+            final String name = String.format( "PromoteNFCClean-method(%s)-source(%s)-target(%s)", "runPathPromotions",
+                                               request.getSource(), targetStore.getKey() );
             final String context =
                     String.format( "Class: %s, method: %s, source: %s, target: %s", this.getClass().getName(),
                                    "runPathPromotions", request.getSource(), targetStore.getKey() );
-            storeManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context,
+            storeManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( name, context,
                                                                                     () -> promotionHelper.clearStoreNFC(
                                                                                             completed,
                                                                                             targetStore ) ) );

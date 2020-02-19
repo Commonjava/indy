@@ -88,9 +88,11 @@ public abstract class AbstractStoreDataManager
     @Inject
     InternalFeatureConfig internalFeatureConfig;
 
+    private static final String AFFECTED_BY_ASYNC_RUNNER_NAME = "store-affected-by-async-runner";
+
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "store-affected-by-async-runner", priority = 4, threads = 32 )
+    @ExecutorConfig( named = AFFECTED_BY_ASYNC_RUNNER_NAME, priority = 4, threads = 32 )
     private ExecutorService affectedByAsyncRunner;
 
     protected AbstractStoreDataManager()
@@ -99,7 +101,7 @@ public abstract class AbstractStoreDataManager
         {
             //for testing
             affectedByAsyncRunner = Executors.newFixedThreadPool( 32, new NamedThreadFactory(
-                    "store-affected-by-async-runner", new ThreadGroup( "store-affected-by-async-runner" ), true, 4 ) );
+                    AFFECTED_BY_ASYNC_RUNNER_NAME, new ThreadGroup( AFFECTED_BY_ASYNC_RUNNER_NAME ), true, 4 ) );
         }
     }
 
@@ -487,7 +489,11 @@ public abstract class AbstractStoreDataManager
         {
             MDC.put( "group-affected-runner-context", contextualTask.getTaskContext() );
         }
-        affectedByAsyncRunner.execute( contextualTask.getTask() );
+        affectedByAsyncRunner.execute( () -> {
+            Thread.currentThread()
+                  .setName( String.format( "%s::%s", AFFECTED_BY_ASYNC_RUNNER_NAME, contextualTask.getThreadName() ) );
+            contextualTask.getTask().run();
+        } );
     }
 
     protected Set<Group> affectedByFromStores( final Collection<StoreKey> keys )

@@ -26,7 +26,6 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -374,11 +373,12 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
+            final String name = String.format("ContentNFCClean-StoreSingle-store(%s)-path(%s)", store.getKey(), path  );
             final String context =
                     String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
                                    store.getKey(), path );
             storeManager.asyncGroupAffectedBy(
-                    new StoreDataManager.ContextualTask( context, () -> clearNFCEntries( kl, path ) ) );
+                    new StoreDataManager.ContextualTask( name, context, () -> clearNFCEntries( kl, path ) ) );
         }
 
         return txfr;
@@ -428,11 +428,12 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
+            final String name = String.format("ContentNFCClean-StoreList-location(%s)-path(%s)", kl, path  );
             final String context =
                     String.format( "Class: %s, method: %s, location: %s, path: %s", this.getClass().getName(), "store-stores",
                                    kl, path );
             storeManager.asyncGroupAffectedBy(
-                    new StoreDataManager.ContextualTask( context, () -> clearNFCEntries( kl, path ) ) );
+                    new StoreDataManager.ContextualTask(name, context, () -> clearNFCEntries( kl, path ) ) );
         }
 
         return txfr;

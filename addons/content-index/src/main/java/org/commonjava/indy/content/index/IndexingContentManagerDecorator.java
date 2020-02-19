@@ -718,10 +718,11 @@ public abstract class IndexingContentManagerDecorator
                 //FIXME: One potential problem here: The fixed thread pool is using a blocking queue to
                 // cache runnables, which could cause OOM if there are bunch of uploading happened in
                 // a short time period. We need to monitor if this could happen.
+                final String name = String.format( "ContentIndexStoreDeIndex-store(%s)-path(%s)", store.getKey(), path );
                 final String context =
                         String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
                                        store.getKey(), path );
-                storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( context, () -> {
+                storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask(name, context, () -> {
                     try
                     {
                         Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
