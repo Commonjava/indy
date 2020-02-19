@@ -520,8 +520,8 @@ indyControllers.controller('CacheCtl', ['$scope', '$routeParams', 'CacheSvc', 'C
   $scope.raw = {
   };
   $scope.deleteCache = function(){
-    if ( !$scope.path || $scope.path.length < 1 || !$scope.path.endsWith('maven-metadata.xml') ){
-      alert( "You must provide a valid maven-metadata.xml path!" );
+    if ( !$scope.path || $scope.path.length < 1 ){
+      alert( "You must provide a valid metadata path!" );
       return;
     }
     CacheSvc.remove($scope, $scope.path, ControlSvc);
