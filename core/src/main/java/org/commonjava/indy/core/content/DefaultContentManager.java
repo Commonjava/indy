@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CASCADE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
@@ -454,14 +455,19 @@ public class DefaultContentManager
         if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
         {
             SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
-            if ( info == null || !info.isMetadata() )
+            if ( info != null && info.isMetadata() )
+            {
+                // Set ignore readonly for metadata so that we can delete stale metadata from readonly hosted repo
+                eventMetadata.set( IGNORE_READONLY, Boolean.TRUE );
+            }
+            else
             {
                 logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
                 return false;
             }
         }
 
-        logger.info( "Delete from {}, path: {}", store.getKey(), path );
+        logger.info( "Delete from {}, path: {}, eventMetadata: {}", store.getKey(), path, eventMetadata );
 
         boolean result = false;
         if ( group == store.getKey().getType() )
