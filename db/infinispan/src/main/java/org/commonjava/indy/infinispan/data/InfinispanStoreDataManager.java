@@ -219,7 +219,7 @@ public class InfinispanStoreDataManager
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
-        checkAffectedByCacheHealth();
+        checkAffectedByCacheHealth( true );
 
         final Set<Group> result = new HashSet<>();
 
@@ -347,14 +347,19 @@ public class InfinispanStoreDataManager
         final Set<ArtifactStore> allStores = getAllArtifactStores();
         allStores.stream().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
 
-        checkAffectedByCacheHealth();
+        checkAffectedByCacheHealth( false );
     }
 
-    private void checkAffectedByCacheHealth()
+    private void checkAffectedByCacheHealth( boolean rebuild )
     {
         if ( affectedByStores.isEmpty() )
         {
             logger.error( "Affected-by reverse mapping appears to have failed. The affected-by cache is empty!" );
+            if ( rebuild )
+            {
+                logger.error( "Rebuild affected-by cache!" );
+                initAffectedBy();
+            }
         }
     }
 
