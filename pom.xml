@@ -66,7 +66,7 @@
     <undertowVersion>2.0.1.Final</undertowVersion>
     <xnioVersion>3.3.0.Final</xnioVersion>
     <keycloakVersion>7.0.1</keycloakVersion>
-    <bouncycastleVersion>1.53</bouncycastleVersion>
+    <bouncycastleVersion>1.64</bouncycastleVersion>
     <bytemanVersion>3.0.6</bytemanVersion>
     <kafkaVersion>1.1.0</kafkaVersion>
     <logbackVersion>1.2.3</logbackVersion>
@@ -95,6 +95,7 @@
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
+    <annotationVersion>1.3.2</annotationVersion>
     
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
@@ -1350,7 +1351,11 @@
         <version>1.2</version>
         <scope>provided</scope>
       </dependency>
-      
+      <dependency>
+        <groupId>javax.annotation</groupId>
+        <artifactId>javax.annotation-api</artifactId>
+        <version>${annotationVersion}</version>
+      </dependency>
 
       <dependency>
         <groupId>args4j</groupId>
