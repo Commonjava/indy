@@ -147,10 +147,16 @@ public class MaintenanceHandler
         return response;
     }
 
+    /**
+     * @deprecated use /content/all{path} instead
+     * @param path
+     * @return
+     */
+    @Deprecated
     @ApiOperation( "Delete the specified path globally (from any repository that contains it)." )
     @ApiResponse( code = 200, message = "Global deletion complete for path." )
     @Path( "/delete/all{path: (/.+)?}" )
-    @GET
+    @DELETE
     public Response deleteAllViaGet( @ApiParam( "The path to delete globally" ) final @PathParam( "path" ) String path )
     {
         Response response;
