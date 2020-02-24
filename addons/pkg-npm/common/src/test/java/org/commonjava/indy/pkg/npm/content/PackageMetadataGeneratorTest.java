@@ -87,7 +87,7 @@ public class PackageMetadataGeneratorTest
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
         fileManager = new DefaultDownloadManager( stores, core.getTransferManager(), core.getLocationExpander(), rescanService );
-        generator = new PackageMetadataGenerator( contentAccess, stores, types, merger, helper, new MemoryNotFoundCache(), new IndyPathGenerator( Collections.singleton( new NPMStoragePathCalculator() ) ) );
+        generator = new PackageMetadataGenerator( contentAccess, stores, types, merger, helper, new MemoryNotFoundCache(), new IndyPathGenerator( Collections.singleton( new NPMStoragePathCalculator() ) ), new NPMStoragePathCalculator() );
 
     }
 

@@ -66,9 +66,6 @@ public class NPMVersionMetaGenerationWhenUploadTest
 
         client.content().store( storeKey, path, IOUtils.toInputStream( content ) );
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-        assertThat( client.content().exists( storeKey, versionPath ), equalTo( true ) );
-
         IndyObjectMapper mapper = new IndyObjectMapper( true );
 
         PackageMetadata packageMetadata = mapper.readValue( content, PackageMetadata.class );

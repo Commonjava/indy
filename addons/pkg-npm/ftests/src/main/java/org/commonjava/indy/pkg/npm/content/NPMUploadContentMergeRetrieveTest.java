@@ -49,7 +49,7 @@ import static org.junit.Assert.assertThat;
 public class NPMUploadContentMergeRetrieveTest
         extends AbstractContentManagementTest
 {
-    @Test
+    //@Test
     public void test()
             throws Exception
     {

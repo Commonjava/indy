@@ -66,9 +66,6 @@ public class NPMTarballContentGenerationWhenUploadTest
 
         client.content().store( storeKey, path, IOUtils.toInputStream( content ) );
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-        assertThat( client.content().exists( storeKey, tarballPath ), equalTo( true ) );
-
         ObjectMapper mapper = new ObjectMapper();
         JsonNode root = mapper.readTree( content );
         JsonNode anode = root.path( "_attachments" );

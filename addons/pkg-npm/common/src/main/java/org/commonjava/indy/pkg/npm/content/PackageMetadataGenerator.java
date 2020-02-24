@@ -67,6 +67,9 @@ public class PackageMetadataGenerator
     @Inject
     private PathGenerator pathGenerator;
 
+    @Inject
+    private NPMStoragePathCalculator storagePathCalculator;
+
     protected PackageMetadataGenerator()
     {
     }
@@ -75,12 +78,14 @@ public class PackageMetadataGenerator
                                      final TypeMapper typeMapper, final PackageMetadataMerger merger,
                                      final GroupMergeHelper mergeHelper, final NotFoundCache nfc,
                                      final PathGenerator pathGenerator,
+                                     final NPMStoragePathCalculator storagePathCalculator,
                                      final MergedContentAction... mergedContentActions )
     {
         super( fileManager, storeManager, mergeHelper, nfc, mergedContentActions );
         this.typeMapper = typeMapper;
         this.pathGenerator = pathGenerator;
         this.merger = merger;
+        this.storagePathCalculator = storagePathCalculator;
     }
 
     @Override
@@ -178,7 +183,8 @@ public class PackageMetadataGenerator
             return null;
         }
 
-        if ( !canProcess( path ) )
+        final String storagePath = storagePathCalculator.calculateStoragePath( store.getKey(), path );
+        if ( !canProcess( storagePath ) )
         {
             return null;
         }
@@ -186,7 +192,7 @@ public class PackageMetadataGenerator
         boolean generated;
 
         // regardless, we will need this first level of listings. What we do with it will depend on the logic below...
-        final String parentPath = Paths.get( path )
+        final String parentPath = Paths.get( storagePath )
                                        .getParent()
                                        .toString();
 
@@ -203,14 +209,8 @@ public class PackageMetadataGenerator
             return null;
         }
 
-        String toGenPath = path;
-        if ( !path.endsWith( PackageMetadataMerger.METADATA_NAME ) )
-        {
-            toGenPath = normalize( normalize( parentPath( toGenPath ) ), PackageMetadataMerger.METADATA_NAME );
-        }
-
         logger.info( "Generating package metadata package.json in store: {}", store.getKey() );
-        generated = writePackageMetadata( firstLevel, store, toGenPath, eventMetadata );
+        generated = writePackageMetadata( firstLevel, store, storagePath, eventMetadata );
 
         logger.debug( "[Result] Generating package.json for store: {}, result: {}", store.getKey(), generated );
         return generated ? fileManager.getTransfer( store, path ) : null;
@@ -261,7 +261,6 @@ public class PackageMetadataGenerator
             String versionPath = versionPaths.get( i );
             logger.debug( "Retrieving the version file {} from store {}", versionPath, store );
             Transfer metaFile = fileManager.retrieveRaw( store, versionPath, eventMetadata );
-
             if ( metaFile == null )
             {
                 //TODO Do we need to get the package.json from .tgz if there
