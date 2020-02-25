@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -80,6 +81,8 @@ public class ProxyMITMSSLServer implements Runnable
 
     private static final int GET_SOCKET_CHANNEL_WAIT_TIME_IN_MILLISECONDS = 500;
 
+    private static final int ACCEPT_SOCKET_WAIT_TIME_IN_MILLISECONDS = 20000;
+
     private final String host;
 
     private final int port;
@@ -99,6 +102,8 @@ public class ProxyMITMSSLServer implements Runnable
     private final CacheProvider cacheProvider;
 
     private final ProxyResponseHelper proxyResponseHelper;
+
+    private volatile boolean isCancelled = false;
 
     public ProxyMITMSSLServer( String host, int port, String trackingId, UserPass proxyUserPass,
                                ProxyResponseHelper proxyResponseHelper, ContentController contentController,
@@ -129,10 +134,6 @@ public class ProxyMITMSSLServer implements Runnable
     }
 
     private volatile boolean started;
-
-    private volatile ServerSocket sslServerSocket;
-
-    private volatile Socket socket;
 
     private char[] keystorePassword = "password".toCharArray(); // keystore password can not be null
 
@@ -189,78 +190,88 @@ public class ProxyMITMSSLServer implements Runnable
 
     private void execute() throws Exception
     {
+        ProxyMeter meter = null;
         SSLServerSocketFactory sslServerSocketFactory = getSSLServerSocketFactory( host );
 
         serverPort = findOpenPort( FIND_OPEN_PORT_MAX_RETRIES );
 
         // TODO: What is the performance implication of opening a new server socket each time? Should we try to cache these?
-        sslServerSocket = sslServerSocketFactory.createServerSocket( serverPort );
-
-        logger.debug( "MITM server started, {}", sslServerSocket );
-        started = true;
-
-        socket = sslServerSocket.accept();
-        long startNanos = System.nanoTime();
-        String method = null;
-        String requestLine = null;
-
-        ProxyMeter meter = meterTemplate.copy( startNanos, method, requestLine );
-        try
+        try ( ServerSocket sslServerSocket = sslServerSocketFactory.createServerSocket( serverPort ) )
         {
-            socket.setSoTimeout( (int) TimeUnit.MINUTES.toMillis( config.getMITMSoTimeoutMinutes() ) );
 
-            logger.debug( "MITM server accepted" );
-            BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) );
+            sslServerSocket.setSoTimeout( ACCEPT_SOCKET_WAIT_TIME_IN_MILLISECONDS ); //in case the response handler times out
+            started = true;
 
-            // TODO: Should we implement a while loop around this with some sort of read timeout, in case multiple requests are inlined?
-            // In principle, any sort of network communication is permitted over this port, but even if we restrict this to
-            // HTTPS only, couldn't there be multiple requests over the port at a time?
-            String path = null;
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ( ( line = in.readLine() ) != null )
+            if ( !isCancelled )
             {
-                sb.append( line + "\n" );
-                if ( line.startsWith( GET ) || line.startsWith( HEAD ) ) // only care about GET/HEAD
+                try ( Socket socket = sslServerSocket.accept() )
                 {
-                    String[] toks = line.split("\\s+");
-                    method = toks[0];
-                    path = toks[1];
-                    requestLine = line;
-                }
-                else if ( line.isEmpty() )
-                {
-                    logger.debug( "Get empty line and break" );
-                    break;
+                    logger.debug( "MITM server started, {}", sslServerSocket );
+                    long startNanos = System.nanoTime();
+                    String method = null;
+                    String requestLine = null;
+
+                    meter = meterTemplate.copy( startNanos, method, requestLine );
+
+                    socket.setSoTimeout( (int) TimeUnit.MINUTES.toMillis( config.getMITMSoTimeoutMinutes() ) );
+
+                    logger.debug( "MITM server accepted" );
+                    try ( BufferedReader in = new BufferedReader( new InputStreamReader( socket.getInputStream() ) ) )
+                    {
+
+                        // TODO: Should we implement a while loop around this with some sort of read timeout, in case multiple requests are inlined?
+                        // In principle, any sort of network communication is permitted over this port, but even if we restrict this to
+                        // HTTPS only, couldn't there be multiple requests over the port at a time?
+                        String path = null;
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ( ( line = in.readLine() ) != null )
+                        {
+                            sb.append( line + "\n" );
+                            if ( line.startsWith( GET ) || line.startsWith( HEAD ) ) // only care about GET/HEAD
+                            {
+                                String[] toks = line.split("\\s+");
+                                method = toks[0];
+                                path = toks[1];
+                                requestLine = line;
+                            }
+                            else if ( line.isEmpty() )
+                            {
+                                logger.debug( "Get empty line and break" );
+                                break;
+                            }
+                        }
+
+                        logger.debug( "Request:\n{}", sb.toString() );
+
+                        if ( path != null )
+                        {
+                            try
+                            {
+                                transferRemote( socket, host, port, method, path, meter );
+                            }
+                            catch ( Exception e )
+                            {
+                                logger.error( "Transfer remote failed", e );
+                            }
+                        }
+                        else
+                        {
+                            logger.debug( "MITM server failed to get request from client" );
+                        }
+                    }
                 }
             }
-
-            logger.debug( "Request:\n{}", sb.toString() );
-
-            if ( path != null )
-            {
-                try
-                {
-                    transferRemote( socket, host, port, method, path, meter );
-                }
-                catch ( Exception e )
-                {
-                    logger.error( "Transfer remote failed", e );
-                }
-            }
-            else
-            {
-                logger.debug( "MITM server failed to get request from client" );
-            }
-
-            in.close();
-            socket.close();
-            sslServerSocket.close();
             logger.debug( "MITM server closed" );
         }
         finally
         {
-            meter.reportResponseSummary();
+            if (meter != null)
+            {
+                meter.reportResponseSummary();
+            }
+            isCancelled = false;
+            started = false;
         }
     }
 
@@ -321,22 +332,12 @@ public class ProxyMITMSSLServer implements Runnable
         return SocketChannel.open( target );
     }
 
+    /**
+     * Signal the request and response should be cancelled.
+     */
     public void stop()
     {
-        try
-        {
-            if ( !sslServerSocket.isClosed() )
-            {
-                sslServerSocket.close();
-            }
-            if ( socket != null && !socket.isClosed() )
-            {
-                socket.close();
-            }
-        }
-        catch ( IOException e )
-        {
-            logger.debug( "Close MITM server, {}", e.toString() );
-        }
+        isCancelled = true;
+        logger.debug( "MITM server timed out waiting for response creation" );
     }
 }
