@@ -18,12 +18,10 @@ package org.commonjava.indy.data;
 public class StoreValidationConstants {
 
     public final static String MAILFORMED_URL = "MalformedURLException";
-    public final static String HTTP_GET_OR_HEAD = "IOException" ;
     public final static String GENERAL = "Exception" ;
     public final static String HTTP_GET_STATUS = "ERR_HTTP_GET_STATUS";
     public final static String HTTP_HEAD_STATUS = "ERR_HTTP_HEAD_STATUS";
     public final static String HTTP_PROTOCOL = "ERR_HTTP_PROTOCOL";
-    public final static String NOT_ALOWED_SSL = "ERR_NOT-ALOWED-SSL";
     public final static String ALLOWED_SSL = "ALLOWED_SSL";
     public final static String NOT_ALLOWED_SSL = "ERR_NOT_ALLOWED_SSL";
     public final static String HTTPS = "ERR_HTTPS";
