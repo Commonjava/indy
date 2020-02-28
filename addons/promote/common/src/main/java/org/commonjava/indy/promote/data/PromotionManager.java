@@ -223,7 +223,7 @@ public class PromotionManager
             }
             catch ( InterruptedException | ExecutionException e )
             {
-                logger.error( "Group prromotion failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
+                logger.error( "Group promotion failed: " + request.getSource() + " -> " + request.getTargetKey(), e );
                 throw new PromotionException( "Execution of group promotion failed.", e );
             }
         }
@@ -651,6 +651,8 @@ public class PromotionManager
     {
         final Set<String> paths = request.getPaths();
         final StoreKey source = request.getSource();
+        logger.info( "Do paths promotion, promotionId: {}, source: {}, target: {}, size: {}", request.getPromotionId(),
+                     source, request.getTarget(), paths != null ? paths.size() : -1 );
 
         List<Transfer> contents;
         if ( paths == null || paths.isEmpty() )
@@ -865,7 +867,7 @@ public class PromotionManager
     private PathTransferResult doPathTransfer( Transfer transfer, ArtifactStore tgt, PathsPromoteRequest request )
                     throws IndyWorkflowException
     {
-        logger.debug( "doPathTransfer, transfer: {}, target: {}", transfer, tgt );
+        logger.debug( "Do path transfer, transfer: {}, target: {}", transfer, tgt );
 
         if ( transfer == null )
         {
@@ -879,12 +881,12 @@ public class PromotionManager
 
         long begin = System.currentTimeMillis();
 
-
         final String path = transfer.getPath();
         PathTransferResult result = new PathTransferResult( path );
 
         if ( !transfer.exists() )
         {
+            logger.debug( "Transfer not exist, {}", transfer );
             SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( transfer, tgt.getPackageType() );
             // if we can't decorate it, that's because we don't want to automatically generate checksums, etc. for it
             // i.e. it's something we would generate on demand for another file.
@@ -958,6 +960,7 @@ public class PromotionManager
             return result;
         }
 
+        logger.debug( "Store target transfer: {}", target );
         try (InputStream stream = transfer.openInputStream( true ))
         {
             contentManager.store( tgt, path, stream, UPLOAD, new EventMetadata().set( IGNORE_READONLY, true ) );
