@@ -265,7 +265,7 @@ public class InfinispanStoreDataManager
             }
         }
 
-        logger.info( "Groups affected by {} are: {}", keys,
+        logger.trace( "Groups affected by {} are: {}", keys,
                      result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
 
         return result;
