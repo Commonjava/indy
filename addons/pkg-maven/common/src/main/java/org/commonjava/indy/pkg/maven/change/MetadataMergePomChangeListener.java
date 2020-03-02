@@ -39,6 +39,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
@@ -115,10 +116,12 @@ public class MetadataMergePomChangeListener
                                            clearPath, hosted, e.getMessage() ), e );
                 }
 
-                final Set<Group> groups = dataManager.query().getGroupsAffectedBy( key );
+                final Set<Group> groups = dataManager.affectedBy( Arrays.asList( key ), event.getEventMetadata() );
+
                 if ( groups != null )
                 {
-                    logger.info( "Clearing metadata file {} for groups affected by {}: {}", clearPath, key, groups );
+                    logger.info( "Clearing metadata file {} for {} groups affected by {}", clearPath, groups.size(), key );
+                    logger.trace( "Groups affected by {}: {}", key, groups );
                     for ( final Group group : groups )
                     {
                         try

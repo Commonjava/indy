@@ -37,6 +37,7 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
+import org.commonjava.indy.util.ValuePipe;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -474,6 +475,22 @@ public abstract class AbstractStoreDataManager
     {
         return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) && key.getType() == type )
                                         .collect( Collectors.toSet() );
+    }
+
+    @Override
+    public Set<Group> affectedBy( Collection<StoreKey> keys, EventMetadata eventMetadata ) throws IndyDataException
+    {
+        Set<Group> groups = null;
+        if ( eventMetadata != null )
+        {
+            ValuePipe<Set<Group>> valuePipe = (ValuePipe) eventMetadata.get( AFFECTED_GROUPS );
+            groups = valuePipe != null ? valuePipe.get() : null;
+        }
+        if ( groups == null )
+        {
+            groups = affectedBy( keys );
+        }
+        return groups;
     }
 
     public Set<Group> affectedBy( final Collection<StoreKey> keys )

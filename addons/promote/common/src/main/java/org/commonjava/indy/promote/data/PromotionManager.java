@@ -47,6 +47,7 @@ import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.promote.validate.PromotionValidator;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
+import org.commonjava.indy.util.ValuePipe;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.model.Transfer;
@@ -79,6 +80,7 @@ import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverload;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
+import static org.commonjava.indy.data.StoreDataManager.AFFECTED_GROUPS;
 import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.promote.data.PromotionHelper.throwProperException;
@@ -281,7 +283,7 @@ public class PromotionManager
                                 try
                                 {
                                     promotionHelper.clearStoreNFC( validationRequest.getSourcePaths(),
-                                                                   targetForNfcCleaning );
+                                                                   targetForNfcCleaning, null );
                                 }
                                 catch ( PromotionValidationException e )
                                 {
@@ -756,7 +758,20 @@ public class PromotionManager
 
         final ArtifactStore targetStore = checkResult.targetStore;
 
-        logger.info( "Run promotion from: {} to: {}, paths: {}", request.getSource(), targetStore.getKey(), pending );
+        StoreKey targetKey = targetStore.getKey();
+        logger.info( "Run promotion from: {} to: {}, paths: {}", request.getSource(), targetKey, pending );
+        Set<Group> affectedGroups;
+        try
+        {
+            affectedGroups = storeManager.query().getGroupsAffectedBy( targetKey );
+            logger.info( "Target {} affected groups: {}", targetKey, affectedGroups );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Get affected groups failed", e );
+            return new PathsPromoteResult( request, pending, emptySet(), emptySet(),
+                                           "Get affected groups failed, " + e.getMessage(), validation );
+        }
 
         DrainingExecutorCompletionService<Set<PathTransferResult>> svc =
                         new DrainingExecutorCompletionService<>( transferService );
@@ -770,7 +785,7 @@ public class PromotionManager
         try
         {
             detectOverloadVoid( () -> batches.forEach(
-                            batch -> svc.submit( newPathPromotionsJob( batch, targetStore, request ) ) ) );
+                            batch -> svc.submit( newPathPromotionsJob( batch, targetStore, request, affectedGroups ) ) ) );
         }
         catch ( IndyWorkflowException e )
         {
@@ -830,8 +845,9 @@ public class PromotionManager
                                    "runPathPromotions", request.getSource(), targetStore.getKey() );
             storeManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask( name, context,
                                                                                     () -> promotionHelper.clearStoreNFC(
-                                                                                            completed,
-                                                                                            targetStore ) ) );
+                                                                                                    completed,
+                                                                                                    targetStore,
+                                                                                                    affectedGroups ) ) );
             if ( request.isFireEvents() )
             {
                 fireEvent( promoteCompleteEvent, new PathsPromoteCompleteEvent( result ) );
@@ -847,7 +863,8 @@ public class PromotionManager
 
     private Callable<Set<PathTransferResult>> newPathPromotionsJob( final Collection<Transfer> transfers,
                                                                     final ArtifactStore tgt,
-                                                                    final PathsPromoteRequest request )
+                                                                    final PathsPromoteRequest request,
+                                                                    final Set<Group> affectedGroups )
     {
         return () -> {
             Set<String> pathsForMDC = new HashSet<>();
@@ -856,7 +873,7 @@ public class PromotionManager
             {
                 pathsForMDC.add( transfer.getPath() );
 
-                PathTransferResult ret = doPathTransfer( transfer, tgt, request );
+                PathTransferResult ret = doPathTransfer( transfer, tgt, request, affectedGroups );
                 results.add( ret );
             }
             RequestContextHelper.setContext( PROMOTION_CONTENT_PATH, pathsForMDC.toString() );
@@ -864,7 +881,8 @@ public class PromotionManager
         };
     }
 
-    private PathTransferResult doPathTransfer( Transfer transfer, ArtifactStore tgt, PathsPromoteRequest request )
+    private PathTransferResult doPathTransfer( Transfer transfer, final ArtifactStore tgt,
+                                               final PathsPromoteRequest request, final Set<Group> affectedGroups )
                     throws IndyWorkflowException
     {
         logger.debug( "Do path transfer, transfer: {}, target: {}", transfer, tgt );
@@ -961,9 +979,12 @@ public class PromotionManager
         }
 
         logger.debug( "Store target transfer: {}", target );
+        EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
+        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<Set>( affectedGroups ) );
+
         try (InputStream stream = transfer.openInputStream( true ))
         {
-            contentManager.store( tgt, path, stream, UPLOAD, new EventMetadata().set( IGNORE_READONLY, true ) );
+            contentManager.store( tgt, path, stream, UPLOAD, eventMetadata );
         }
         catch ( final IOException e )
         {

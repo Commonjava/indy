@@ -92,6 +92,10 @@ class NFCContentListener
     //
     //    }
 
+/*
+ * Not need to aggressively add missing. In case of path P promoted to pnc-builds, it triggers removal of P in
+ * affected groups, e.g, DA. This does not mean the DA/P is missing. We just let it rebuild next time when retrieved.
+ *
     @CacheEntryRemoved
     public void removeIndex( final CacheEntryRemovedEvent<IndexedStorePath, IndexedStorePath> e )
     {
@@ -110,6 +114,7 @@ class NFCContentListener
             }
         }
     }
+*/
 
     private void nfcClearByContaining( final ArtifactStore store, final String path )
     {

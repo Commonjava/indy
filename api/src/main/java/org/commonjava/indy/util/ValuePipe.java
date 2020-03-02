@@ -15,10 +15,24 @@
  */
 package org.commonjava.indy.util;
 
+/**
+ * ValuePipe can hold a single value object. We can use it to wrap a collection object to avoid unintentional
+ * toString that may produce huge strings.
+ * @param <T>
+ */
 public class ValuePipe<T>
 {
 
     private T value;
+
+    public ValuePipe()
+    {
+    }
+
+    public ValuePipe( T value )
+    {
+        this.value = value;
+    }
 
     public boolean isFilled()
     {
@@ -38,7 +52,6 @@ public class ValuePipe<T>
     public synchronized void set( final T value )
     {
         this.value = value;
-        this.notifyAll();
     }
 
 }

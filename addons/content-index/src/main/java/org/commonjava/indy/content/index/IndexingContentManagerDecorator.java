@@ -45,6 +45,7 @@ import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -725,7 +726,8 @@ public abstract class IndexingContentManagerDecorator
                 storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask(name, context, () -> {
                     try
                     {
-                        Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
+                        Set<Group> groups =
+                                        storeDataManager.affectedBy( Arrays.asList( store.getKey() ), eventMetadata );
                         if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
                         {
                             groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
@@ -740,17 +742,8 @@ public abstract class IndexingContentManagerDecorator
                 } ) );
             }
         }
-//        nfcClearByContaining( store, path );
-
         return transfer;
     }
-
-    //    @Override
-    //    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op )
-    //            throws IndyWorkflowException
-    //    {
-    //        return store( stores, path, stream, op, new EventMetadata() );
-    //    }
 
     @Override
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path,
