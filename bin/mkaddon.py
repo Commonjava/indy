@@ -28,10 +28,10 @@ args=parser.parse_args()
 
 addonPath=os.path.join(BASE, ADDONS_DIR, args.short_name)
 
-print "Creating new add-on '%s' in %s" % (args.long_name, addonPath)
+print("Creating new add-on '%s' in %s" % (args.long_name, addonPath))
 
 if os.path.isdir(addonPath):
-	print "%s: add-on already exists!" % args.short_name
+	print("%s: add-on already exists!" % args.short_name)
 	exit(1)
 
 templatePath=os.path.join(BASE, TEMPLATE_DIR)
@@ -39,12 +39,23 @@ templatePath=os.path.join(BASE, TEMPLATE_DIR)
 os.makedirs(addonPath)
 shutil.copy(os.path.join(templatePath, 'pom.xml'), addonPath)
 
+rootPom = os.path.join(BASE, 'pom.xml')
+with open(rootPom) as f:
+	rootPomLines = f.readlines()
+
+version = "1.1.1-SNAPSHOT"
+for line in rootPomLines:
+	match = re.match(r"  <version>([^<]+)</version>.*", line)
+	if match:
+		version = match.group(1)
+		break
+
 for module in args.modules:
-	print "Creating module %s" % module
+	print("Creating module %s" % module)
 
 	moduleSrc=os.path.join(templatePath, module)
 	if not os.path.isdir(moduleSrc):
-		print "Invalid module: %s. Skipping." % module
+		print("Invalid module: %s. Skipping." % module)
 		continue
 
 	moduleDest=os.path.join(addonPath, module)
@@ -54,9 +65,10 @@ for module in args.modules:
 	with open(modulePom) as f:
 		pomTemplate= f.read()
 
-	print "Setting up module POM"
+	print("Setting up module POM")
 	with open(modulePom, 'w') as f:
-		f.write(pomTemplate % {'long_name': args.long_name, 'short_name': args.short_name, 'module': module})
+		print(modulePom)
+		f.write(pomTemplate % {'long_name': args.long_name, 'short_name': args.short_name, 'module': module, 'version': version})
 
 addonPom = os.path.join(addonPath, 'pom.xml')
 with open(addonPom) as f:
@@ -64,19 +76,9 @@ with open(addonPom) as f:
 
 modulesSection="\n    ".join(["<module>%s</module>" % m for m in args.modules])
 
-print "Writing add-on POM"
+print("Writing add-on POM")
 with open(addonPom, 'w') as f:
-	f.write(pomTemplate % {'long_name': args.long_name, 'short_name': args.short_name, 'modules': modulesSection})
-
-rootPom = os.path.join(BASE, 'pom.xml')
-with open(rootPom) as f:
-	rootPomLines = f.readlines()
-
-for line in rootPomLines:
-	match = re.match(r"  <version>([^<]+)</version>.*", line)
-	if match:
-		version = match.group(1)
-		break
+	f.write(pomTemplate % {'long_name': args.long_name, 'short_name': args.short_name, 'modules': modulesSection, 'version': version})
 
 deps = [DEP % {
 			'dep_name': ("ftests-%s" % args.short_name if m == 'ftests' else "%s-%s" % (args.short_name, m)), 
@@ -91,7 +93,7 @@ if 'common' in args.modules:
 			'extra': "\n        ".join(["", "<classifier>confset</classifier>", "<type>tar.gz</type>"])
 		})
 
-print "Adding module dependencies to dependencyManagement in root POM"
+print("Adding module dependencies to dependencyManagement in root POM")
 with open(rootPom,'w') as f:
 	for line in rootPomLines:
 		if DEP_INSERTION in line:
@@ -104,7 +106,7 @@ allAddonsPom = os.path.join(BASE, ADDONS_DIR, 'pom.xml')
 with open(allAddonsPom) as f:
 	allAddonsLines= f.readlines()
 
-print "Adding new add-on to add-ons parent POM"
+print("Adding new add-on to add-ons parent POM")
 with open(allAddonsPom, 'w') as f:
 	for line in allAddonsLines:
 		if ADDON_INSERTION in line:
