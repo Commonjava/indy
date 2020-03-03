@@ -82,6 +82,7 @@ import static org.commonjava.indy.core.ctl.PoolUtils.detectOverload;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.data.StoreDataManager.AFFECTED_GROUPS;
 import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
+import static org.commonjava.indy.data.StoreDataManager.TARGET_STORE;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.promote.data.PromotionHelper.throwProperException;
 import static org.commonjava.indy.promote.data.PromotionHelper.timeInMillSeconds;
@@ -981,6 +982,7 @@ public class PromotionManager
         logger.debug( "Store target transfer: {}", target );
         EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
         eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<Set>( affectedGroups ) );
+        eventMetadata.set( TARGET_STORE, tgt );
 
         try (InputStream stream = transfer.openInputStream( true ))
         {

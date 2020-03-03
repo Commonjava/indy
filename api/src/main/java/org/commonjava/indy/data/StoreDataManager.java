@@ -50,6 +50,11 @@ public interface StoreDataManager
     String AFFECTED_GROUPS = "affected_groups";
 
     /**
+     * We pass the target store through different modules, e.g, in case of promotion.
+     */
+    String TARGET_STORE = "target_store";
+
+    /**
      * Need to store change summary for repository change processing
      */
     String CHANGE_SUMMARY = "change-summary";
