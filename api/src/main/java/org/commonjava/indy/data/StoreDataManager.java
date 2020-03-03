@@ -45,6 +45,11 @@ public interface StoreDataManager
     String IGNORE_READONLY = "ignore-readonly";
 
     /**
+     * We calculate and pass the affected groups through different modules, e.g, in case of promotion.
+     */
+    String AFFECTED_GROUPS = "affected_groups";
+
+    /**
      * Need to store change summary for repository change processing
      */
     String CHANGE_SUMMARY = "change-summary";
@@ -143,6 +148,13 @@ public interface StoreDataManager
 
     Set<Group> affectedBy( Collection<StoreKey> keys )
             throws IndyDataException;
+
+    /**
+     * Get affected-by groups from event metadata if provided.
+     * @param keys
+     * @param eventMetadata
+     */
+    Set<Group> affectedBy( Collection<StoreKey> keys, EventMetadata eventMetadata ) throws IndyDataException;
 
     /**
      * This api is used for some time-sensitive tasks which should use getGroupsAffectedBy service, as
