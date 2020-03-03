@@ -49,7 +49,9 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CASCADE;
@@ -379,22 +381,21 @@ public class DefaultContentManager
                     String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
                                    store.getKey(), path );
             storeManager.asyncGroupAffectedBy(
-                    new StoreDataManager.ContextualTask( name, context, () -> clearNFCEntries( kl, path ) ) );
+                    new StoreDataManager.ContextualTask( name, context, () -> clearNFCEntries( kl, path, eventMetadata ) ) );
         }
 
         return txfr;
     }
 
     @Measure
-    protected void clearNFCEntries( final KeyedLocation kl, final String path )
+    protected void clearNFCEntries( final KeyedLocation kl, final String path, EventMetadata eventMetadata )
     {
         try
         {
-            storeManager.query()
-                        .getGroupsAffectedBy( kl.getKey() )
-                        .stream()
-                        .map( ( g ) -> new ConcreteResource( LocationUtils.toLocation( g ), path ) )
-                        .forEach( ( cr ) -> nfc.clearMissing( cr ) );
+            Set<Group> groups = storeManager.affectedBy( Arrays.asList( kl.getKey() ), eventMetadata );
+            groups.stream()
+                  .map( ( g ) -> new ConcreteResource( LocationUtils.toLocation( g ), path ) )
+                  .forEach( ( cr ) -> nfc.clearMissing( cr ) );
 
             nfc.clearMissing( new ConcreteResource( kl, path ) );
         }
@@ -434,7 +435,7 @@ public class DefaultContentManager
                     String.format( "Class: %s, method: %s, location: %s, path: %s", this.getClass().getName(), "store-stores",
                                    kl, path );
             storeManager.asyncGroupAffectedBy(
-                    new StoreDataManager.ContextualTask(name, context, () -> clearNFCEntries( kl, path ) ) );
+                    new StoreDataManager.ContextualTask(name, context, () -> clearNFCEntries( kl, path, eventMetadata ) ) );
         }
 
         return txfr;
