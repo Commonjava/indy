@@ -17,6 +17,8 @@ package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
+import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
@@ -69,12 +71,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.commonjava.indy.promote.util.Batcher.batch;
+import static org.commonjava.indy.promote.util.Batcher.getParalleledBatchSize;
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrapper;
 import static org.commonjava.indy.promote.validate.util.ReadOnlyTransfer.readOnlyWrappers;
 import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
@@ -127,7 +130,7 @@ public class PromotionValidationTools
     @Inject
     @WeftManaged
     @ExecutorConfig( named = "promote-validation-rules-executor", threads = 8 )
-    private Executor ruleParallelExecutor;
+    private WeftExecutorService ruleParallelExecutor;
 
     protected PromotionValidationTools()
     {
@@ -137,7 +140,7 @@ public class PromotionValidationTools
                                      final MavenPomReader pomReader, final MavenMetadataReader metadataReader,
                                      final MavenModelProcessor modelProcessor, final TypeMapper typeMapper,
                                      final TransferManager transferManager, final ContentDigester contentDigester,
-                                     final Executor ruleParallelExecutor, final PromoteConfig config )
+                                     final ThreadPoolExecutor ruleParallelExecutor, final PromoteConfig config )
     {
         contentManager = manager;
         this.storeDataManager = storeDataManager;
@@ -147,7 +150,7 @@ public class PromotionValidationTools
         this.typeMapper = typeMapper;
         this.transferManager = transferManager;
         this.contentDigester = contentDigester;
-        this.ruleParallelExecutor = ruleParallelExecutor;
+        this.ruleParallelExecutor = new PoolWeftExecutorService( "promote-validation-rules-executor", ruleParallelExecutor );
         this.promoteConfig = config;
     }
 
@@ -602,7 +605,7 @@ public class PromotionValidationTools
 
     public <T> void paralleledInBatch( Collection<T> collection, Closure closure )
     {
-        int batchSize = promoteConfig.getParalleledBatchSize();
+        int batchSize = getParalleledBatchSize( collection.size(), ruleParallelExecutor.getCorePoolSize() );
         logger.trace( "Exe parallel on collection {} with closure {} in batch {}", collection, closure, batchSize );
         Collection<Collection<T>> batches = batch( collection, batchSize );
         runParallelInBatchAndWait( batches, closure, logger );
@@ -610,7 +613,7 @@ public class PromotionValidationTools
 
     public <T> void paralleledInBatch( T[] array, Closure closure )
     {
-        int batchSize = promoteConfig.getParalleledBatchSize();
+        int batchSize = getParalleledBatchSize( array.length, ruleParallelExecutor.getCorePoolSize() );
         logger.trace( "Exe parallel on array {} with closure {} in batch {}", array, closure, batchSize );
         Collection<Collection<T>> batches = batch( Arrays.asList( array ), batchSize );
         runParallelInBatchAndWait( batches, closure, logger );
@@ -618,7 +621,7 @@ public class PromotionValidationTools
 
     public <K, V> void paralleledInBatch( Map<K, V> map, Closure closure )
     {
-        int batchSize = promoteConfig.getParalleledBatchSize();
+        int batchSize = getParalleledBatchSize( map.size(), ruleParallelExecutor.getCorePoolSize() );
         Set<Map.Entry<K, V>> entries = map.entrySet();
         logger.trace( "Exe parallel on map {} with closure {} in batch {}", entries, closure, batchSize );
         Collection<Collection<Map.Entry<K, V>>> batches = batch( entries, batchSize );

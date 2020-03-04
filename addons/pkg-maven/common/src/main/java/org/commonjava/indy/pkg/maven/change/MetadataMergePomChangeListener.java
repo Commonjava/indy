@@ -40,6 +40,7 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.commonjava.indy.data.StoreDataManager.AFFECTED_GROUPS;
 import static org.commonjava.indy.data.StoreDataManager.TARGET_STORE;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getMetadataPath;
@@ -96,12 +97,13 @@ public class MetadataMergePomChangeListener
 
         final StoreKey key = getKey( event );
         final String clearPath = getMetadataPath( path );
-        logger.info( "Pom file {} {}, will clean its matched metadata file {}, eventMetadata: {}", path, eventOps,
-                     clearPath, eventMetadata );
+        logger.info( "Pom file {} {}, will clean matched metadata file {}, store: {}", path, eventOps, clearPath, key );
+
         try
         {
             if ( hosted == key.getType() )
             {
+                logger.debug( "Get eventMetadata: {}", eventMetadata );
                 ArtifactStore hosted = null;
                 if ( eventMetadata != null )
                 {
