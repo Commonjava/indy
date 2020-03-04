@@ -50,7 +50,7 @@ public class Batcher
      */
     public static int getParalleledBatchSize( int size, int corePoolSize )
     {
-        if ( size < corePoolSize )
+        if ( size < corePoolSize || corePoolSize <= 0)
         {
             return 1;
         }
