@@ -43,4 +43,18 @@ public class Batcher
         }
         return batches;
     }
+
+    /**
+     * Calculate the batch size. If transfers size is less than pool size, return 1 (no batch). Or return size/core. e.g.
+     * if core is 40, size is 100, return 2; if size is 1000, return 1000/40 = 25.
+     */
+    public static int getParalleledBatchSize( int size, int corePoolSize )
+    {
+        if ( size < corePoolSize || corePoolSize <= 0)
+        {
+            return 1;
+        }
+        return size / corePoolSize;
+    }
+
 }

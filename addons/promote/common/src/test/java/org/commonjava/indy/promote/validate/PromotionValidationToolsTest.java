@@ -22,8 +22,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -37,7 +37,7 @@ public class PromotionValidationToolsTest
     public void testParalleledInBatch()
     {
         PromoteConfig config = new PromoteConfig();
-        Executor executor = Executors.newCachedThreadPool();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newCachedThreadPool();
         PromotionValidationTools tools =
                         new PromotionValidationTools( null, null, null, null, null, null, null, null, executor,
                                                       config );
@@ -64,9 +64,8 @@ public class PromotionValidationToolsTest
     public void testParalleledInBatch_smallSize()
     {
         PromoteConfig config = new PromoteConfig();
-        config.setParalleledBatchSize( 2 );
 
-        Executor executor = Executors.newCachedThreadPool();
+        ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors.newFixedThreadPool( 2 );
         PromotionValidationTools tools =
                         new PromotionValidationTools( null, null, null, null, null, null, null, null, executor,
                                                       config );

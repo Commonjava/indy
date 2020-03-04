@@ -88,6 +88,7 @@ import static org.commonjava.indy.promote.data.PromotionHelper.throwProperExcept
 import static org.commonjava.indy.promote.data.PromotionHelper.timeInMillSeconds;
 import static org.commonjava.indy.promote.data.PromotionHelper.timeInSeconds;
 import static org.commonjava.indy.promote.util.Batcher.batch;
+import static org.commonjava.indy.promote.util.Batcher.getParalleledBatchSize;
 import static org.commonjava.maven.galley.model.TransferOperation.UPLOAD;
 
 /**
@@ -777,8 +778,10 @@ public class PromotionManager
         DrainingExecutorCompletionService<Set<PathTransferResult>> svc =
                         new DrainingExecutorCompletionService<>( transferService );
 
-        int batchSize = config.getParalleledBatchSize();
-        logger.trace( "Exe parallel on collection {} in batch {}", contents, batchSize );
+        int corePoolSize = transferService.getCorePoolSize();
+        int size = contents.size();
+        int batchSize = getParalleledBatchSize( size, corePoolSize );
+        logger.info( "Execute parallel on collection, size: {}, batch: {}", size, batchSize );
         Collection<Collection<Transfer>> batches = batch( contents, batchSize );
 
         final List<String> errors = new ArrayList<>();
@@ -859,8 +862,6 @@ public class PromotionManager
                      timeInSeconds( begin ) );
         return result;
     }
-
-
 
     private Callable<Set<PathTransferResult>> newPathPromotionsJob( final Collection<Transfer> transfers,
                                                                     final ArtifactStore tgt,
