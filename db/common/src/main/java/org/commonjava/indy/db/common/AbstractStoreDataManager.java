@@ -89,21 +89,15 @@ public abstract class AbstractStoreDataManager
     @Inject
     InternalFeatureConfig internalFeatureConfig;
 
-    private static final String AFFECTED_BY_ASYNC_RUNNER_NAME = "store-affected-by-async-runner";
+    protected static final String AFFECTED_BY_ASYNC_RUNNER_NAME = "store-affected-by-async-runner";
 
     @Inject
     @WeftManaged
     @ExecutorConfig( named = AFFECTED_BY_ASYNC_RUNNER_NAME, priority = 4, threads = 32 )
-    private ExecutorService affectedByAsyncRunner;
+    protected ExecutorService affectedByAsyncRunner;
 
     protected AbstractStoreDataManager()
     {
-        if ( affectedByAsyncRunner == null )
-        {
-            //for testing
-            affectedByAsyncRunner = Executors.newFixedThreadPool( 32, new NamedThreadFactory(
-                    AFFECTED_BY_ASYNC_RUNNER_NAME, new ThreadGroup( AFFECTED_BY_ASYNC_RUNNER_NAME ), true, 4 ) );
-        }
     }
 
     @Override
