@@ -168,7 +168,7 @@ public class CassandraNotFoundCache
 
         BoundStatement bound = preparedInsert.bind( key.toString(), resource.getPath(), curDate, timeoutDate,
                                                     timeoutInSeconds );
-        session.executeAsync( bound );
+        session.execute( bound );
         inMemoryCache.put( resource, DUMB_CACHE_VALUE, timeoutInSeconds, TimeUnit.SECONDS );
     }
 
@@ -208,7 +208,7 @@ public class CassandraNotFoundCache
     {
         StoreKey key = ( (KeyedLocation) location ).getKey();
         BoundStatement bound = preparedDeleteByStore.bind( key.toString() );
-        session.executeAsync( bound );
+        session.execute( bound );
         clearInMemoryCache( location );
     }
 
@@ -237,7 +237,7 @@ public class CassandraNotFoundCache
     {
         StoreKey key = getResourceKey( resource );
         BoundStatement bound = preparedDelete.bind( key.toString(), resource.getPath() );
-        session.executeAsync( bound );
+        session.execute( bound );
         inMemoryCache.remove( resource );
     }
 
