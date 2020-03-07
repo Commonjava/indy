@@ -180,10 +180,12 @@ public class DefaultGalleyStorageProvider
         PathMappedStorageConfig pathMappedStorageConfig = getPathMappedStorageConfig();
         if ( cassandraClient != null )
         {
-            Session session = cassandraClient.getSession();
+            String keyspace = config.getCassandraKeyspace();
+            Session session = cassandraClient.getSession( keyspace );
             if ( session != null )
             {
-                pathDB = new CassandraPathDB( pathMappedStorageConfig, session, config.getCassandraKeyspace() );
+                logger.info( "Create pathDB, keyspace: {}", keyspace );
+                pathDB = new CassandraPathDB( pathMappedStorageConfig, session, keyspace );
             }
         }
 

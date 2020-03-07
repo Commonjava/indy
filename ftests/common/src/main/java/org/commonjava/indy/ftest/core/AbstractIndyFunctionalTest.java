@@ -216,7 +216,7 @@ public abstract class AbstractIndyFunctionalTest
         String keyspace = getKeyspace();
         logger.debug( "Drop cassandra keyspace: {}", keyspace );
         CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
-        Session session = cassandraClient.getSession();
+        Session session = cassandraClient.getSession( keyspace );
         if ( session != null )
         {
             try
