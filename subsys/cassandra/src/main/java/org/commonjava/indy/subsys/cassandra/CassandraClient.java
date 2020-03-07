@@ -67,40 +67,43 @@ public class CassandraClient
             logger.info( "Cassandra client not enabled" );
             return;
         }
-        try
-        {
-            host = config.getCassandraHost();
-            port = config.getCassandraPort();
-            SocketOptions socketOptions = new SocketOptions();
-            socketOptions.setConnectTimeoutMillis( 30000 );
-            socketOptions.setReadTimeoutMillis( 30000 );
-            Cluster.Builder builder = Cluster.builder()
-                                             .withoutJMXReporting()
-                                             .addContactPoint( host )
-                                             .withPort( port )
-                                             .withSocketOptions( socketOptions );
-            username = config.getCassandraUser();
-            String password = config.getCassandraPass();
-            if ( isNotBlank( username ) && isNotBlank( password ) )
-            {
-                logger.info( "Build with credentials, user: {}, pass: ****", username );
-                builder.withCredentials( username, password );
-            }
 
-            cluster = builder.build();
-        }
-        catch ( Exception e )
+        host = config.getCassandraHost();
+        port = config.getCassandraPort();
+        SocketOptions socketOptions = new SocketOptions();
+        socketOptions.setConnectTimeoutMillis( 30000 );
+        socketOptions.setReadTimeoutMillis( 30000 );
+        Cluster.Builder builder = Cluster.builder()
+                                         .withoutJMXReporting()
+                                         .addContactPoint( host )
+                                         .withPort( port )
+                                         .withSocketOptions( socketOptions );
+        username = config.getCassandraUser();
+        String password = config.getCassandraPass();
+        if ( isNotBlank( username ) && isNotBlank( password ) )
         {
-            logger.error( "Connecting to Cassandra failed", e );
+            logger.info( "Build with credentials, user: {}, pass: ****", username );
+            builder.withCredentials( username, password );
         }
+        cluster = builder.build();
     }
+
+    Session session;
 
     public Session getSession( String keyspace )
     {
         return sessions.computeIfAbsent( keyspace, key -> {
             logger.info( "Connect to Cassandra, host: {}, port: {}, user: {}, keyspace: {}", host, port, username,
                          key );
-            return cluster.connect();
+            try
+            {
+                return cluster.connect();
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Connecting to Cassandra failed", e );
+            }
+            return null;
         } );
     }
 

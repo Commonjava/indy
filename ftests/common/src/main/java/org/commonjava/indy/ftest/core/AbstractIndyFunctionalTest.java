@@ -196,7 +196,8 @@ public abstract class AbstractIndyFunctionalTest
     public void stop()
             throws IndyLifecycleException
     {
-        dropKeyspace();
+        dropKeyspace( "cache_" );
+        dropKeyspace( "storage_" );
         closeCacheProvider();
         closeQuietly( fixture );
         closeQuietly( client );
@@ -211,9 +212,9 @@ public abstract class AbstractIndyFunctionalTest
         }
     }
 
-    private void dropKeyspace()
+    private void dropKeyspace( String prefix )
     {
-        String keyspace = getKeyspace();
+        String keyspace = getKeyspace( prefix );
         logger.debug( "Drop cassandra keyspace: {}", keyspace );
         CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
         Session session = cassandraClient.getSession( keyspace );
@@ -280,12 +281,12 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/cache.conf", "[default]\ncache.keyspace=" + getKeyspace() );
+        writeConfigFile( "conf.d/cache.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" ) );
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
                         + "storage.gc.batchsize=0\n"
-                        + "storage.cassandra.keyspace=" + getKeyspace() );
+                        + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
 
         writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
 
@@ -301,9 +302,9 @@ public abstract class AbstractIndyFunctionalTest
         }
     }
 
-    private String getKeyspace()
+    private String getKeyspace( String prefix )
     {
-        String keyspace = getClass().getSimpleName();
+        String keyspace = prefix + getClass().getSimpleName();
         if ( keyspace.length() > 48 )
         {
             keyspace = keyspace.substring( 0, 48 ); // keyspace has to be less than 48 characters
