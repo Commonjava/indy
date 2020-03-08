@@ -88,8 +88,6 @@ public class CassandraClient
         cluster = builder.build();
     }
 
-    Session session;
-
     public Session getSession( String keyspace )
     {
         return sessions.computeIfAbsent( keyspace, key -> {
