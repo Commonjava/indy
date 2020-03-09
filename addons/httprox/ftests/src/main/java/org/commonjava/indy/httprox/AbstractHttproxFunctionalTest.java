@@ -28,7 +28,7 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.conn.routing.HttpRoutePlanner;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -74,7 +74,7 @@ public class AbstractHttproxFunctionalTest
         return proxiedHttp( null, null, null );
     }
 
-    protected CloseableHttpClient proxiedHttp( SSLSocketFactory socketFactory ) throws Exception
+    protected CloseableHttpClient proxiedHttp( SSLConnectionSocketFactory socketFactory ) throws Exception
     {
         return proxiedHttp( null, null, socketFactory );
     }
@@ -84,7 +84,7 @@ public class AbstractHttproxFunctionalTest
         return proxiedHttp( user, pass, null );
     }
 
-    protected CloseableHttpClient proxiedHttp( final String user, final String pass, SSLSocketFactory socketFactory ) throws Exception
+    protected CloseableHttpClient proxiedHttp( final String user, final String pass, SSLConnectionSocketFactory socketFactory ) throws Exception
     {
         CredentialsProvider creds = null;
 

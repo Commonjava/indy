@@ -18,6 +18,7 @@ package org.commonjava.indy.httprox.handler;
 import org.apache.http.ProtocolVersion;
 import org.apache.http.RequestLine;
 import org.apache.http.message.BasicRequestLine;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.util.CertificateAndKeys;
@@ -31,9 +32,13 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLServerSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +52,8 @@ import java.net.URL;
 import java.nio.channels.SocketChannel;
 import java.security.KeyStore;
 import java.security.PrivateKey;
+import java.security.Provider;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -135,18 +142,25 @@ public class ProxyMITMSSLServer implements Runnable
 
     private volatile boolean started;
 
-    private char[] keystorePassword = "password".toCharArray(); // keystore password can not be null
+    private volatile ServerSocket sslServerSocket;
+
+    private volatile Socket socket;
+
+    private char[] keystorePassword = "passwd".toCharArray(); // keystore password can not be null
 
     // TODO: What are the memory footprint implications of this? It seems like these will never be purged.
     private static Map<String, KeyStore> keystoreMap = new ConcurrentHashMap(); // cache keystore, key: hostname
 
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
     /**
      * Generate the keystore on-the-fly and initiate SSL socket factory.
      */
     private SSLServerSocketFactory getSSLServerSocketFactory( String host ) throws Exception
     {
         AtomicReference<Exception> err = new AtomicReference<>();
-        KeyStore ks = keystoreMap.computeIfAbsent( host, (k) -> {
+        final KeyStore ks = keystoreMap.computeIfAbsent( host, (k) -> {
             try
             {
                 return getKeyStore(k);
@@ -164,11 +178,20 @@ public class ProxyMITMSSLServer implements Runnable
         }
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance( KeyManagerFactory.getDefaultAlgorithm() );
+        logger.debug( "Created KeyManagerFactory with created Keystore for host [" +host+ "]" );
         kmf.init( ks, keystorePassword );
+        KeyManager[] keyManagers = kmf.getKeyManagers();
+
+        TrustManagerFactory tmf = TrustManagerFactory.getInstance("PKIX");
+        tmf.init(ks);
+        TrustManager[] trustManages = tmf.getTrustManagers();
 
         SSLContext sc = SSLContext.getInstance( "TLS" );
-        sc.init( kmf.getKeyManagers(), null, null );
-        return sc.getServerSocketFactory();
+        sc.init( keyManagers, trustManages, null );
+        logger.debug( "Initialized SSLContext for host [" +host +"]." );
+
+        SSLServerSocketFactory serverSocketFactory = sc.getServerSocketFactory();
+        return serverSocketFactory;
     }
 
     private KeyStore getKeyStore( String host ) throws Exception

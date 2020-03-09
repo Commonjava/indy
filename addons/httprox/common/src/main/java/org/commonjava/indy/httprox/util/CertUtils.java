@@ -15,6 +15,9 @@
  */
 package org.commonjava.indy.httprox.util;
 
+import static org.bouncycastle.asn1.x509.X509Extension.keyUsage;
+import static org.bouncycastle.jce.X509KeyUsage.digitalSignature;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,16 +49,18 @@ import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.asn1.x509.KeyUsage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,40 +87,6 @@ public class CertUtils
     static
     {
         java.security.Security.addProvider(new BouncyCastleProvider());
-    }
-
-    /**
-     * Create a self-signed X.509 cert
-     *
-     * @param pair      KeyPair generated for this request
-     * @param dn        the X.509 Distinguished Name, eg "CN=Test, L=London, C=GB"
-     * @param days      how many days from now the cert is valid for
-     * @param algorithm the signing algorithm, eg "SHA256withRSA"
-     * @return X509Certificate newly generated certificate
-     */
-    public static X509Certificate generateX509Certificate( KeyPair pair, String dn, int days, String algorithm )
-                    throws GeneralSecurityException, OperatorCreationException, IOException
-    {
-        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
-        PrivateKey subPrivKey = pair.getPrivate();
-        PublicKey subPubKey = pair.getPublic();
-        ContentSigner contentSignerBuilder = new JcaContentSignerBuilder( algorithm ).setProvider( BouncyCastleProvider.PROVIDER_NAME ).build( subPrivKey );
-        X500Name name = new X500Name( dn );
-        Date expires = new Date( System.currentTimeMillis() + (MILLIS_IN_DAY * days) );
-
-        X509CertificateHolder holder = new X509v3CertificateBuilder(
-            name,
-            allocateSerialNumber(),
-            new Date(),
-            expires,
-            name,
-            SubjectPublicKeyInfo.getInstance( subPubKey.getEncoded() )
-        ).build(contentSignerBuilder);
-
-        X509Certificate cert = converter.getCertificate( holder );
-
-        logger.debug( "Created cert using CA private key:\n" + cert.toString() );
-        return cert;
     }
 
     /**
@@ -203,59 +174,152 @@ public class CertUtils
     }
 
     /**
-     * Generate X509Certificate using objects from existing issuer and subject certificates.
-     * The generated certificate is signed by issuer PrivateKey.
-     * @param certificate
-     * @param issuerCertificate
-     * @param issuerPrivateKey
-     * @param isIntermediate
-     * @return
+     * Create signed certificate using issuer certificate and private key. This has been optimized 
+     * @param dn                    Distinguished name
+     * @param issuerCertificate     Issuer certificate
+     * @param issuerPrivateKey      Issuer private key
+     * @param isIntermediate        Is the generated certificate an Intermediate
+     * @return                      Certificate and associated keys for a host
+     * @throws OperatorCreationException
      * @throws Exception
      */
-    public static X509Certificate createSignedCertificate( X509Certificate certificate,
-                                                           X509Certificate issuerCertificate,
-                                                           PrivateKey issuerPrivateKey, boolean isIntermediate )
-                    throws Exception
-    {
-        String issuerSigAlg = issuerCertificate.getSigAlgName();
-        X500Principal principal = issuerCertificate.getIssuerX500Principal();
-        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
-        JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder(issuerSigAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        JcaX509v3CertificateBuilder v3CertGen = new JcaX509v3CertificateBuilder(
-            principal,
-            certificate.getSerialNumber(),
-            certificate.getNotBefore(),
-            certificate.getNotAfter(),
-            certificate.getSubjectX500Principal(),
-            certificate.getPublicKey()
-            );
-
-        if ( isIntermediate )
-        {
-            v3CertGen.addExtension(
-                Extension.basicConstraints,
-                true,
-                new BasicConstraints(-1));
-        }
-
-        return converter.getCertificate(v3CertGen.build(contentSignerBuilder.build(issuerPrivateKey)));
-    }
-
     public static CertificateAndKeys createSignedCertificateAndKey( String dn, X509Certificate issuerCertificate,
-                                                                    PrivateKey issuerPrivateKey,
-                                                                    boolean isIntermediate ) 
-            throws OperatorCreationException, Exception
+            PrivateKey issuerPrivateKey,
+            boolean isIntermediateNeeded ) 
+    throws OperatorCreationException, Exception
     {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance( KEY_TYPE_RSA );
+        X509Certificate parentCertificate = null;
+        PrivateKey parentPrivateKey = null;
+
+        if ( isIntermediateNeeded )
+        {
+            KeyPair intermediatePair = keyPairGenerator.generateKeyPair();
+            X500Principal intermediatePrincipal = new X500Principal( "CN=Test Org Intermediate CA" );
+            X509Certificate intermediateCertificate = createIntermediateSignedCertificate( intermediatePair.getPublic(),
+                intermediatePrincipal, DEFAULT_CERT_EXPIRATION_DAYS, DEFAULT_SIGN_ALGORITHM,
+                issuerCertificate, issuerPrivateKey);
+            parentCertificate = intermediateCertificate;
+            parentPrivateKey = intermediatePair.getPrivate();
+        }
+        else
+        {
+            parentCertificate = issuerCertificate;
+            parentPrivateKey = issuerPrivateKey;
+        }
+
         KeyPair pair = keyPairGenerator.generateKeyPair();
-
-        X509Certificate cert = generateX509Certificate( pair, dn, DEFAULT_CERT_EXPIRATION_DAYS, DEFAULT_SIGN_ALGORITHM );
-
+        X500Principal endEntityPrincipal = new X500Principal( dn );
         X509Certificate signedCertificate =
-                        createSignedCertificate( cert, issuerCertificate, issuerPrivateKey, isIntermediate );
+            createEndEntitySignedCertificate( pair.getPublic(),
+            endEntityPrincipal, DEFAULT_CERT_EXPIRATION_DAYS, DEFAULT_SIGN_ALGORITHM,
+            parentCertificate, parentPrivateKey );
+
         PublicKey publicKey = signedCertificate.getPublicKey();
         PrivateKey privateKey = pair.getPrivate();
         return new CertificateAndKeys( signedCertificate, privateKey, publicKey );
+    }
+
+    /**
+     * Create an intermediate certificate using an issuer certificate.
+     * @param subPubKey         Subject PublicKey
+     * @param subjectPrincipal  Subject Principal object
+     * @param days              expiry after days
+     * @param algorithm         algorithm to use to generate the certificate.
+     * @param issuerCertificate Issuer certificate
+     * @param issuerPrivateKey  Issuer PrivateKey
+     * @return                  X509Certificate object
+     * @throws Exception
+     */
+    public static X509Certificate createIntermediateSignedCertificate( PublicKey subPubKey, 
+        X500Principal subjectPrincipal, int days, String algorithm, X509Certificate issuerCertificate,
+            PrivateKey issuerPrivateKey )
+        throws Exception
+    {
+        String issuerSigAlg = issuerCertificate.getSigAlgName();
+        Date notBefore = new Date();
+        Date notAfter = new Date( System.currentTimeMillis() + ( MILLIS_IN_DAY * 356 ) );
+        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+        JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder( DEFAULT_SIGN_ALGORITHM ).setProvider( BouncyCastleProvider.PROVIDER_NAME );
+        JcaX509v3CertificateBuilder v3CertGen = new JcaX509v3CertificateBuilder(
+            issuerCertificate.getSubjectX500Principal(),
+            allocateSerialNumber(),
+            notBefore,
+            notAfter,
+            subjectPrincipal,
+            subPubKey );
+
+        JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+        v3CertGen.addExtension(
+            X509Extension.authorityKeyIdentifier,
+            false,
+            extUtils.createAuthorityKeyIdentifier( issuerCertificate ) );
+        v3CertGen.addExtension(
+            X509Extension.subjectKeyIdentifier,
+            false,
+            extUtils.createSubjectKeyIdentifier( subPubKey ) );
+        v3CertGen.addExtension(
+            X509Extension.basicConstraints,
+            true,
+            new BasicConstraints( 0 ) );
+        v3CertGen.addExtension(
+            X509Extension.keyUsage,
+            true,
+            new KeyUsage( KeyUsage.digitalSignature | KeyUsage.keyCertSign | KeyUsage.cRLSign ) );
+
+    return converter.getCertificate( v3CertGen.build( contentSignerBuilder.build( issuerPrivateKey ) ) );
+}
+
+    /**
+     * Generate X509Certificate using objects from existing issuer and subject certificates.
+     * The generated certificate is signed by issuer PrivateKey.
+     * @param subPubKey             Subject public key
+     * @param dn                    Distinguished name
+     * @param days                  Number of delays the new certificate is valid for
+     * @param algorithm             Algorithm
+     * @param issuerCertificate     Issuer certificate
+     * @param issuerPrivateKey      Issue private key
+     * @param isIntermediate        Is the generated certificate an Intermediate
+     * @return                      X509Certificate
+     * @throws Exception
+     */
+    public static X509Certificate createEndEntitySignedCertificate( PublicKey subPubKey, 
+        X500Principal subjectPrincipal, int days, String algorithm, X509Certificate issuerCertificate,
+            PrivateKey issuerPrivateKey )
+        throws Exception
+    {
+        String issuerSigAlg = issuerCertificate.getSigAlgName();
+        Date notBefore = new Date();
+        Date notAfter = new Date( System.currentTimeMillis() + (MILLIS_IN_DAY * 356) );
+        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+        JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder(DEFAULT_SIGN_ALGORITHM).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        JcaX509v3CertificateBuilder v3CertGen = new JcaX509v3CertificateBuilder(
+            issuerCertificate.getSubjectX500Principal(),
+            allocateSerialNumber(),
+            notBefore,
+            notAfter,
+            subjectPrincipal,
+            subPubKey );
+
+        JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+        v3CertGen.addExtension(
+            X509Extension.authorityKeyIdentifier,
+            false,
+            extUtils.createAuthorityKeyIdentifier( issuerCertificate ) );
+        v3CertGen.addExtension(
+            X509Extension.subjectKeyIdentifier,
+            false,
+            extUtils.createSubjectKeyIdentifier( subPubKey ) );
+        v3CertGen.addExtension(
+            X509Extension.basicConstraints,
+            true,
+            new BasicConstraints( 0 ) );
+        v3CertGen.addExtension(
+            X509Extension.keyUsage,
+            true,
+            new KeyUsage( KeyUsage.digitalSignature | KeyUsage.keyEncipherment ) );
+
+        return converter.getCertificate( v3CertGen.build( contentSignerBuilder.build( issuerPrivateKey ) ) );
     }
 
     private static BigInteger allocateSerialNumber()

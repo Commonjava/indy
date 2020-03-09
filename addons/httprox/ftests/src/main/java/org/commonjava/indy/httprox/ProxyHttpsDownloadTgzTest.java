@@ -19,9 +19,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.helper.HttpResources;
+import org.commonjava.indy.httprox.util.CertUtils;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.junit.Test;
@@ -30,6 +33,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
+
+import javax.net.ssl.SSLContext;
 
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.junit.Assert.assertEquals;
@@ -48,7 +54,7 @@ public class ProxyHttpsDownloadTgzTest
 
     private static final String USER = "user";
 
-    private static final String PASS = "password";
+    private static final String PASS = "passwd";
 
     String https_url = "https://registry.npmjs.org/fsevents/-/fsevents-1.2.4.tgz";
 
@@ -68,19 +74,7 @@ public class ProxyHttpsDownloadTgzTest
 
     protected File getDownloadedFile( String url, boolean withCACert, String user, String pass ) throws Exception
     {
-        CloseableHttpClient client;
-
-        if ( withCACert )
-        {
-            File jks = new File( etcDir, "ssl/ca.jks" );
-            KeyStore trustStore = getTrustStore( jks );
-            SSLSocketFactory socketFactory = new SSLSocketFactory( trustStore );
-            client = proxiedHttp( user, pass, socketFactory );
-        }
-        else
-        {
-            client = proxiedHttp( user, pass );
-        }
+        CloseableHttpClient client = clientInit( withCACert, user, pass );
 
         HttpGet get = new HttpGet( url );
         CloseableHttpResponse response = null;

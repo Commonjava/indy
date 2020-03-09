@@ -19,7 +19,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -27,11 +32,15 @@ import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+
+import javax.net.ssl.SSLContext;
 
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -80,19 +89,7 @@ public class ProxyHttpsTest
 
     protected String get( String url, boolean withCACert, String user, String pass ) throws Exception
     {
-        CloseableHttpClient client;
-
-        if ( withCACert )
-        {
-            File jks = new File( etcDir, "ssl/ca.jks" );
-            KeyStore trustStore = getTrustStore( jks );
-            SSLSocketFactory socketFactory = new SSLSocketFactory( trustStore );
-            client = proxiedHttp( user, pass, socketFactory );
-        }
-        else
-        {
-            client = proxiedHttp( user, pass );
-        }
+        CloseableHttpClient client = clientInit( withCACert, user, pass );
 
         HttpGet get = new HttpGet( url );
         CloseableHttpResponse response = null;
@@ -127,7 +124,7 @@ public class ProxyHttpsTest
     protected KeyStore getTrustStore( File jks ) throws Exception
     {
         KeyStore trustStore = KeyStore.getInstance( KeyStore.getDefaultType() );
-        try (FileInputStream instream = new FileInputStream( jks ))
+        try (InputStream instream = new BufferedInputStream( new FileInputStream( jks )))
         {
             trustStore.load( instream, "passwd".toCharArray() );
         }
@@ -154,5 +151,30 @@ public class ProxyHttpsTest
         copyToConfigFile( "ssl/ca.der", "ssl/ca.der" );
         copyToConfigFile( "ssl/ca.crt", "ssl/ca.crt" );
         copyToConfigFile( "ssl/ca.jks", "ssl/ca.jks" );
+    }
+
+    protected CloseableHttpClient clientInit( boolean withCaCert, String user, String pass )
+        throws KeyStoreException, Exception
+    {
+        CloseableHttpClient httpClient = null;
+        if (withCaCert)
+        {
+            File jks = new File( etcDir, "ssl/ca.jks" );
+            KeyStore trustStore = getTrustStore( jks );
+            System.out.println("Created truststore and loaded CA certificate into store.");
+            TrustStrategy strategy = new TrustSelfSignedStrategy();
+            SSLContextBuilder sslContexts = SSLContexts.custom()
+                .loadTrustMaterial(trustStore, strategy);
+            SSLContext sslContext = sslContexts.build();
+            SSLConnectionSocketFactory socketFatory = new SSLConnectionSocketFactory(sslContext,
+                SSLConnectionSocketFactory.getDefaultHostnameVerifier());
+            httpClient = proxiedHttp( user, pass, socketFatory );
+            System.out.println("Completed loading ssl socket factory for http client.");
+        }
+        else
+        {
+            httpClient = proxiedHttp( user, pass );
+        }
+        return httpClient;
     }
 }

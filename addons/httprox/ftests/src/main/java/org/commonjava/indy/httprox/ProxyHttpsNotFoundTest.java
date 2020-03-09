@@ -18,6 +18,7 @@ package org.commonjava.indy.httprox;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 public class ProxyHttpsNotFoundTest
                 extends ProxyHttpsTest
@@ -25,7 +26,7 @@ public class ProxyHttpsNotFoundTest
 
     private static final String USER = "user";
 
-    private static final String PASS = "password";
+    private static final String PASS = "passwd";
 
     String https_url =
                     "https://oss.sonatype.org/content/repositories/releases/org/commonjava/indy/indy-api/no.pom";
@@ -34,6 +35,7 @@ public class ProxyHttpsNotFoundTest
     public void run() throws Exception
     {
         String ret = get( https_url, true, USER, PASS );
+        assertNotNull ( ret );
         assertTrue( ret.contains( "404 Not Found" ) );
     }
 

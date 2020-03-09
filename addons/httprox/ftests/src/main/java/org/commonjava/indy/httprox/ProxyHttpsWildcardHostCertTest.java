@@ -77,7 +77,8 @@ public class ProxyHttpsWildcardHostCertTest
             File jks = new File( etcDir, "ssl/ca.jks" );
             KeyStore trustStore = getTrustStore( jks );
             SSLSocketFactory socketFactory = new SSLSocketFactory( trustStore );
-            client = proxiedHttp( user, pass, socketFactory );
+            client = null;
+//TODO: implement            client = proxiedHttp( user, pass, socketFactory );
         }
         else
         {
