@@ -26,6 +26,9 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @ApplicationScoped
@@ -36,7 +39,13 @@ public class CassandraClient
     @Inject
     private CassandraConfig config;
 
-    private Session session;
+    private String host;
+
+    private int port;
+
+    private String username;
+
+    final private Map<String, Session> sessions = new ConcurrentHashMap<>();
 
     private Cluster cluster;
 
@@ -58,52 +67,54 @@ public class CassandraClient
             logger.info( "Cassandra client not enabled" );
             return;
         }
-        try
-        {
-            String host = config.getCassandraHost();
-            int port = config.getCassandraPort();
-            SocketOptions socketOptions = new SocketOptions();
-            socketOptions.setConnectTimeoutMillis( 30000 );
-            socketOptions.setReadTimeoutMillis( 30000 );
-            Cluster.Builder builder = Cluster.builder()
-                                             .withoutJMXReporting()
-                                             .addContactPoint( host )
-                                             .withPort( port )
-                                             .withSocketOptions( socketOptions );
-            String username = config.getCassandraUser();
-            String password = config.getCassandraPass();
-            if ( isNotBlank( username ) && isNotBlank( password ) )
-            {
-                logger.info( "Build with credentials, user: {}, pass: ****", username );
-                builder.withCredentials( username, password );
-            }
 
-            cluster = builder.build();
-
-            logger.info( "Connecting to Cassandra, host:{}, port:{}, user:{}", host, port, username );
-            session = cluster.connect();
-        }
-        catch ( Exception e )
+        host = config.getCassandraHost();
+        port = config.getCassandraPort();
+        SocketOptions socketOptions = new SocketOptions();
+        socketOptions.setConnectTimeoutMillis( 30000 );
+        socketOptions.setReadTimeoutMillis( 30000 );
+        Cluster.Builder builder = Cluster.builder()
+                                         .withoutJMXReporting()
+                                         .addContactPoint( host )
+                                         .withPort( port )
+                                         .withSocketOptions( socketOptions );
+        username = config.getCassandraUser();
+        String password = config.getCassandraPass();
+        if ( isNotBlank( username ) && isNotBlank( password ) )
         {
-            logger.error( "Connecting to Cassandra failed", e );
+            logger.info( "Build with credentials, user: {}, pass: ****", username );
+            builder.withCredentials( username, password );
         }
+        cluster = builder.build();
     }
 
-    public Session getSession()
+    public Session getSession( String keyspace )
     {
-        return session;
+        return sessions.computeIfAbsent( keyspace, key -> {
+            logger.info( "Connect to Cassandra, host: {}, port: {}, user: {}, keyspace: {}", host, port, username,
+                         key );
+            try
+            {
+                return cluster.connect();
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Connecting to Cassandra failed", e );
+            }
+            return null;
+        } );
     }
 
     private volatile boolean closed;
 
     public void close()
     {
-        if ( !closed && cluster != null && session != null )
+        if ( !closed && cluster != null && sessions != null )
         {
             logger.info( "Close cassandra client" );
-            session.close();
+            sessions.entrySet().forEach( e -> e.getValue().close() );
+            sessions.clear();
             cluster.close();
-            session = null;
             cluster = null;
             closed = true;
         }

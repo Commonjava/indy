@@ -122,7 +122,7 @@ public class CassandraNotFoundCache
         keyspace = config.getCacheKeyspace();
         maxResultSetSize = config.getNfcMaxResultSetSize();
 
-        session = cassandraClient.getSession();
+        session = cassandraClient.getSession( keyspace );
 
         session.execute( getSchemaCreateKeyspace( keyspace ) );
         session.execute( getSchemaCreateTable( keyspace ) );
