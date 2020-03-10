@@ -20,31 +20,28 @@
 
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-deployments</artifactId>
     <version>2.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-deployments</artifactId>
+  <artifactId>indy-standalone</artifactId>
   <packaging>pom</packaging>
 
-  <name>Indy :: Deployments :: Parent</name>
+  <name>Indy :: Debug :: Local</name>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.commonjava.indy.embed</groupId>
+        <artifactId>indy-embedder-standalone</artifactId>
+        <version>2.0-SNAPSHOT</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   
   <modules>
+    <module>embedder</module>
     <module>launcher</module>
   </modules>
-
-  <profiles>
-    <profile>
-      <id>docker</id>
-      <modules>
-        <module>docker</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>standalone</id>
-      <modules>
-        <module>standalone</module>
-      </modules>
-    </profile>
-  </profiles>
+  
 </project>

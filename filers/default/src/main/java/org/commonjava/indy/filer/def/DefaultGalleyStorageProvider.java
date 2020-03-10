@@ -19,6 +19,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
 import com.datastax.driver.core.Session;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
@@ -29,6 +30,7 @@ import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
+import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
 import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
@@ -71,6 +73,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -176,6 +180,16 @@ public class DefaultGalleyStorageProvider
     private void setupCacheProviderFactory()
     {
         final File storeRoot = config.getStorageRootDirectory();
+
+        if ( indyConfiguration.isStandalone() )
+        {
+            // Only work for local debug mode.
+            ScheduledExecutorService debugDeleteExecutor = Executors.newScheduledThreadPool( 5, new NamedThreadFactory(
+                    "debug-galley-delete-executor", new ThreadGroup( "debug-galley-delete-executor" ), true, 2 ) );
+            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, debugDeleteExecutor );
+            return;
+        }
+
         PathDB pathDB = null;
         PathMappedStorageConfig pathMappedStorageConfig = getPathMappedStorageConfig();
         if ( cassandraClient != null )
