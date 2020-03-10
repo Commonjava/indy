@@ -53,8 +53,6 @@ public class PromoteConfig
 
     private Long lockTimeoutSeconds;
 
-    private String affectedGroupsExcludeFilter;
-
     public PromoteConfig()
     {
     }
@@ -117,17 +115,6 @@ public class PromoteConfig
     public void setLockTimeoutSeconds( Long lockTimeoutSeconds )
     {
         this.lockTimeoutSeconds = lockTimeoutSeconds;
-    }
-
-    public String getAffectedGroupsExcludeFilter()
-    {
-        return affectedGroupsExcludeFilter;
-    }
-
-    @ConfigName( "affected.groups.exclude" )
-    public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
-    {
-        this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
     }
 
     @Override

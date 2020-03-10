@@ -76,7 +76,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
-import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getStackTrace;
 import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverload;
@@ -766,9 +765,8 @@ public class PromotionManager
         Set<Group> affectedGroups;
         try
         {
-            String filter = config.getAffectedGroupsExcludeFilter();
-            affectedGroups = promotionHelper.filterAffectedGroups( storeManager.query().getGroupsAffectedBy( targetKey ), filter );
-            logger.info( "Calculate {} affected groups (exclude: {}): {}", targetKey, filter, affectedGroups );
+            affectedGroups = storeManager.query().getGroupsAffectedBy( targetKey );
+            logger.info( "Calculate affected groups, target: {}, affected-groups: {}", targetKey, affectedGroups );
         }
         catch ( IndyDataException e )
         {

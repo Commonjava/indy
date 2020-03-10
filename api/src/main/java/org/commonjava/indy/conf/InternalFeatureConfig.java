@@ -33,6 +33,8 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private Boolean storeValidation;
 
+    private String affectedGroupsExcludeFilter;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
@@ -46,6 +48,17 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     public void setStoreValidation( Boolean storeValidation) {
         logger.warn("=> Store Validation value set to : " + storeValidation);
         this.storeValidation = storeValidation;
+    }
+
+    public String getAffectedGroupsExcludeFilter()
+    {
+        return affectedGroupsExcludeFilter;
+    }
+
+    @ConfigName( "affected.groups.exclude" )
+    public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
+    {
+        this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
     }
 
     @Override

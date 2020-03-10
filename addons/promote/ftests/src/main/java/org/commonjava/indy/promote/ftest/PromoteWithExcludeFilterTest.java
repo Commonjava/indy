@@ -164,9 +164,4 @@ public class PromoteWithExcludeFilterTest
         }
     }
 
-    protected void initTestConfig( CoreServerFixture fixture ) throws IOException
-    {
-        writeConfigFile( "conf.d/promote.conf", "[promote]\naffected.groups.exclude=^build-\\d+" );
-    }
-
 }

@@ -46,9 +46,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptySet;
-import static org.apache.commons.lang.StringUtils.isBlank;
-
 @ApplicationScoped
 public class PromotionHelper
 {
@@ -310,23 +307,4 @@ public class PromotionHelper
     {
         return System.currentTimeMillis() - begin;
     }
-
-    /**
-     * Filter unnecessary affected groups in clean-up process. Most likely to exclude all the temp groups.
-     */
-    public Set<Group> filterAffectedGroups( Set<Group> affectedGroups, String excludeFilter )
-    {
-        if ( affectedGroups == null )
-        {
-            return emptySet();
-        }
-        if ( isBlank( excludeFilter ) )
-        {
-            return affectedGroups;
-        }
-        return affectedGroups.stream()
-                             .filter( s -> !s.getName().matches( excludeFilter ) )
-                             .collect( Collectors.toSet() );
-    }
-
 }
