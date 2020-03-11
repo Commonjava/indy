@@ -22,6 +22,7 @@ import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.ArtifactStoreQuery;
@@ -84,6 +85,9 @@ public abstract class AbstractStoreDataManager
 
     @Inject
     private SslValidationConfig configuration;
+
+    @Inject
+    private IndyConfiguration indyConfiguration;
 
     @Inject
     StoreDataManager storeDataManager;
@@ -572,11 +576,11 @@ public abstract class AbstractStoreDataManager
         {
             return emptySet();
         }
-        if ( internalFeatureConfig == null )
+        if ( indyConfiguration == null )
         {
             return affectedGroups;
         }
-        String excludeFilter = internalFeatureConfig.getAffectedGroupsExcludeFilter();
+        String excludeFilter = indyConfiguration.getAffectedGroupsExcludeFilter();
         logger.debug( "Filter affected groups, exclude: {}", excludeFilter );
         if ( isBlank( excludeFilter ) )
         {

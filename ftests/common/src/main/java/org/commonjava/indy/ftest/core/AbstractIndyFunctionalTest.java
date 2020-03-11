@@ -281,7 +281,7 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/cache.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" ) );
+        writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace() + "\naffected.groups.exclude=^build-\\d+");
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
@@ -294,8 +294,7 @@ public abstract class AbstractIndyFunctionalTest
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
-            writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false\n"
-                            + "affected.groups.exclude=^build-\\d+" );
+            writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
         }
         else
         {
