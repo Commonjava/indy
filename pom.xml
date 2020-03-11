@@ -1806,6 +1806,7 @@
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <forkCount>${test-forkCount}</forkCount>
             <reportsDirectory>${junit.report.dir}</reportsDirectory>
+            <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
           </configuration>
         </plugin>
         <plugin>
