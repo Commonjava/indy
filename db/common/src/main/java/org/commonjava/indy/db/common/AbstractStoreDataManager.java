@@ -22,6 +22,7 @@ import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.ArtifactStoreQuery;
@@ -61,6 +62,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptySet;
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -82,6 +85,9 @@ public abstract class AbstractStoreDataManager
 
     @Inject
     private SslValidationConfig configuration;
+
+    @Inject
+    private IndyConfiguration indyConfiguration;
 
     @Inject
     StoreDataManager storeDataManager;
@@ -558,7 +564,31 @@ public abstract class AbstractStoreDataManager
             }
         }
 
-        return groups;
+        return filterAffectedGroups( groups );
+    }
+
+    /**
+     * Filter unnecessary affected groups in clean-up process. Most likely to exclude all the temp groups.
+     */
+    protected Set<Group> filterAffectedGroups( Set<Group> affectedGroups )
+    {
+        if ( affectedGroups == null )
+        {
+            return emptySet();
+        }
+        if ( indyConfiguration == null )
+        {
+            return affectedGroups;
+        }
+        String excludeFilter = indyConfiguration.getAffectedGroupsExcludeFilter();
+        logger.debug( "Filter affected groups, exclude: {}", excludeFilter );
+        if ( isBlank( excludeFilter ) )
+        {
+            return affectedGroups;
+        }
+        return affectedGroups.stream()
+                             .filter( s -> !s.getName().matches( excludeFilter ) )
+                             .collect( Collectors.toSet() );
     }
 
 }

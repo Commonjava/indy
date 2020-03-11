@@ -80,6 +80,8 @@ public class DefaultIndyConfiguration
 
     private String nodeId;
 
+    private String affectedGroupsExcludeFilter;
+
     private String cacheKeyspace = "indycache"; // default
 
     public DefaultIndyConfiguration()
@@ -285,6 +287,18 @@ public class DefaultIndyConfiguration
     public void setRemoteMetadataTimeoutSeconds( Integer remoteMetadataTimeoutSeconds )
     {
         this.remoteMetadataTimeoutSeconds = remoteMetadataTimeoutSeconds;
+    }
+
+    @Override
+    public String getAffectedGroupsExcludeFilter()
+    {
+        return affectedGroupsExcludeFilter;
+    }
+
+    @ConfigName( "affected.groups.exclude" )
+    public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
+    {
+        this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
     }
 
     @Override

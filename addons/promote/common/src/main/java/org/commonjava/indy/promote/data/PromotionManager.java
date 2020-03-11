@@ -766,7 +766,7 @@ public class PromotionManager
         try
         {
             affectedGroups = storeManager.query().getGroupsAffectedBy( targetKey );
-            logger.info( "Target {} affected groups: {}", targetKey, affectedGroups );
+            logger.info( "Calculate affected groups, target: {}, affected-groups: {}", targetKey, affectedGroups );
         }
         catch ( IndyDataException e )
         {
