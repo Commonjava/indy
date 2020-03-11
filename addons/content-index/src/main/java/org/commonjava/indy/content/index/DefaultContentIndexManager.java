@@ -73,9 +73,10 @@ public class DefaultContentIndexManager
     @Inject
     private CacheHandle<IndexedStorePath, IndexedStorePath> contentIndex;
 
-    //FIXME: Seems no cache register this listener?
+/*
     @Inject
     private NFCContentListener listener;
+*/
 
     @Inject
     private Instance<PackageIndexingStrategy> indexingStrategyComponents;
@@ -121,6 +122,14 @@ public class DefaultContentIndexManager
         }
 
         contentIndex.executeCache( (cache) -> {
+            /*
+             * The listener was meant to clean up NFC entries. But NFC is not per directory but per concrete path.
+             * This makes the clean-up Java thread like "store-affected-by-async-runner::ContentIndexNFCClean-store
+             * (maven:remote:central)-path(org/sonatype/spice/spice-parent/15/)" useless.
+             * Doing clean-up in the listener also makes it hard to share important information, e.g, the cached
+             * affected groups. The NFC cleanups has been moved to the ContentIndexManager.
+             * We can remove NFCContentListener class entirely next time if we find no problem. ruhan 2020 Mar 11
+             */
 //            cache.addListener( listener );
             queryFactory = Search.getQueryFactory( (Cache) cache ); // Obtain a query factory for the cache
 //            maxResultSetSize = config.getNfcMaxResultSetSize();
