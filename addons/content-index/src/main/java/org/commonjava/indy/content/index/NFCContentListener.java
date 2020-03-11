@@ -61,6 +61,11 @@ class NFCContentListener
     @Inject
     private NotFoundCache nfc;
 
+/*
+ * Maven content index is by-directory which does not make sense for NFC because NFC is by concrete path.
+ * For other package types, we'd better to move the clean-up to content manager itself in order to share some thing
+ * important like the pre-loaded affected groups.
+ *
     @CacheEntryCreated
     public void newIndex( final CacheEntryCreatedEvent<IndexedStorePath, IndexedStorePath> e )
     {
@@ -85,6 +90,7 @@ class NFCContentListener
             }
         }
     }
+*/
 
     // Not sure if this entry modified event should be watched, need some further check
     //    @CacheEntryModified
@@ -114,7 +120,6 @@ class NFCContentListener
             }
         }
     }
-*/
 
     private void nfcClearByContaining( final ArtifactStore store, final String path )
     {
@@ -149,4 +154,5 @@ class NFCContentListener
             }
         } ) );
     }
+*/
 }

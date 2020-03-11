@@ -121,7 +121,7 @@ public class DefaultContentIndexManager
         }
 
         contentIndex.executeCache( (cache) -> {
-            cache.addListener( listener );
+//            cache.addListener( listener );
             queryFactory = Search.getQueryFactory( (Cache) cache ); // Obtain a query factory for the cache
 //            maxResultSetSize = config.getNfcMaxResultSetSize();
             return null;
