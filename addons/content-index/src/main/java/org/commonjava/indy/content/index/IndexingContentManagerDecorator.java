@@ -708,17 +708,12 @@ public abstract class IndexingContentManagerDecorator
                 indexManager.indexTransferIn( transfer, store.getKey() );
             }
 
-            if ( store instanceof Group )
-            {
-                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
-            }
+            nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+
             // We should deIndex the path for all parent groups because the new content of the path
             // may change the content index sequence based on the constituents sequence in parent groups
             if ( store.getType() == StoreType.hosted )
             {
-                //FIXME: One potential problem here: The fixed thread pool is using a blocking queue to
-                // cache runnables, which could cause OOM if there are bunch of uploading happened in
-                // a short time period. We need to monitor if this could happen.
                 final String name = String.format( "ContentIndexStoreDeIndex-store(%s)-path(%s)", store.getKey(), path );
                 final String context =
                         String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
@@ -730,7 +725,10 @@ public abstract class IndexingContentManagerDecorator
                                         storeDataManager.affectedBy( Arrays.asList( store.getKey() ), eventMetadata );
                         if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
                         {
-                            groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
+                            groups.forEach( g -> {
+                                indexManager.deIndexStorePath( g.getKey(), path );
+                                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( g ), path ) );
+                            } );
                         }
                     }
                     catch ( IndyDataException e )
