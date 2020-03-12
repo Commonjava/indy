@@ -90,23 +90,20 @@ public class RepoProxyMethodsTest
                                 "hosted pnc-builds", HostedRepository.class );
     }
 
-    @Test
-    public void run()
+    @Test(expected = IndyClientException.class)
+    public void runPUTWithError()
             throws Exception
     {
-        try
-        {
-            client.content().store( hosted.getKey(), PATH1, new ByteArrayInputStream( CONTENT1.getBytes() ) );
-            fail( "Should not store successfully: proxy remote does not support deployment!" );
-        }
-        catch ( IndyClientException e )
-        {
-            logger.info( e.getMessage() );
-        }
+        client.content().store( hosted.getKey(), PATH1, new ByteArrayInputStream( CONTENT1.getBytes() ) );
+        fail( "Should not store successfully: proxy remote does not support deployment!" );
+    }
 
+    @Test
+    public void runNoContentStored()
+            throws Exception
+    {
         InputStream result = client.content().get( hosted.getKey(), PATH1 );
         assertThat( result, nullValue() );
-
     }
 
     @Override
