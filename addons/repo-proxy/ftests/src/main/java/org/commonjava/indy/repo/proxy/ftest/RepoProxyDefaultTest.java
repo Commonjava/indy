@@ -19,6 +19,7 @@ import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -32,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -84,12 +86,12 @@ public class RepoProxyDefaultTest
         server.expect( server.formatUrl( REPO_NAME, PATH1 ), 200, new ByteArrayInputStream( CONTENT1.getBytes() ) );
 
         remote = client.stores()
-                       .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME,
+                       .create( new RemoteRepository( PKG_TYPE_MAVEN, REPO_NAME,
                                                       server.formatUrl( REPO_NAME ) ), "remote pnc-builds",
                                 RemoteRepository.class );
 
         hosted = client.stores()
-                       .create( new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME ),
+                       .create( new HostedRepository( PKG_TYPE_MAVEN, REPO_NAME ),
                                 "hosted pnc-builds", HostedRepository.class );
         client.content().store( hosted.getKey(), PATH2, new ByteArrayInputStream( CONTENT2.getBytes() ) );
     }

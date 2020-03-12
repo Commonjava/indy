@@ -20,7 +20,9 @@ import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -28,10 +30,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import static javax.servlet.http.HttpServletResponse.SC_MOVED_PERMANENTLY;
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.proxyTo;
 
 @ApplicationScoped
 public class RepoProxyContoller
@@ -41,13 +45,26 @@ public class RepoProxyContoller
     @Inject
     private RepoProxyConfig config;
 
+    @Inject
+    private Instance<RepoProxyResponseDecorator> responseDecoratorInstances;
+
+    private Iterable<RepoProxyResponseDecorator> responseDecorators;
+
     protected RepoProxyContoller()
     {
     }
 
-    public RepoProxyContoller( RepoProxyConfig config )
+    public RepoProxyContoller( final RepoProxyConfig config,
+                               final Iterable<RepoProxyResponseDecorator> responseDecorators )
     {
         this.config = config;
+        this.responseDecorators = responseDecorators;
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        this.responseDecorators = this.responseDecoratorInstances;
     }
 
     public boolean doProxy( ServletRequest request, ServletResponse response )
@@ -71,15 +88,19 @@ public class RepoProxyContoller
                 PathUtils.normalize( httpRequest.getServletPath(), httpRequest.getContextPath(),
                                      httpRequest.getPathInfo() );
         trace( "absolute path {}", absoluteOriginalPath );
-        final String proxyTo = proxyTo( absoluteOriginalPath );
+        final String proxyTo = proxyTo( absoluteOriginalPath, config.getProxyRules() );
         if ( proxyTo == null )
         {
             return false;
         }
         trace( "proxied to path info {}", proxyTo );
+
+        HttpServletResponse decoratedResponse = decoratingResponse( httpRequest, (HttpServletResponse) response );
+
         // Here we do not use redirect but forward.
         // doRedirect( (HttpServletResponse)response, proxyTo );
-        doForward( httpRequest, response, proxyTo );
+        doForward( httpRequest, decoratedResponse, proxyTo );
+
         return true;
     }
 
@@ -97,31 +118,27 @@ public class RepoProxyContoller
                             final String forwardTo )
             throws IOException, ServletException
     {
-        trace( "will redirect to {}",  forwardTo );
+        trace( "will redirect to {}", forwardTo );
         httpRequest.getRequestDispatcher( forwardTo ).forward( httpRequest, response );
     }
 
-    private String proxyTo( final String originalPath )
+    private HttpServletResponse decoratingResponse( final HttpServletRequest request,
+                                                    final HttpServletResponse response )
+            throws IOException
     {
-        for ( Map.Entry<String, String> rule : config.getProxyRules().entrySet() )
+        HttpServletResponse decorated = response;
+
+        for ( RepoProxyResponseDecorator decorator : responseDecorators )
         {
-            trace( "rule key ({}), rule value ({})", rule.getKey(), rule.getValue() );
-            if ( originalPath.indexOf( rule.getKey() ) > 0 )
-            {
-
-                trace( "found proxy rules for path {}: from {} to {}", originalPath, rule.getKey(), rule.getValue() );
-                return originalPath.replace( rule.getKey(), rule.getValue() );
-
-            }
+            decorated = decorator.decoratingResponse( request, decorated );
         }
-        trace( "no proxy rules for path {}, will not do any proxy", originalPath );
-        return null;
+
+        return decorated;
     }
 
     private void trace( final String template, final Object... params )
     {
-        final String finalTemplate = ADDON_NAME + ": " + template;
-        logger.trace( finalTemplate, params );
+        RepoProxyUtils.trace( logger, template, params );
     }
 
 }
