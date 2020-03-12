@@ -26,6 +26,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -80,12 +81,12 @@ public class RepoProxyDisableTest
         server.expect( server.formatUrl( REPO_NAME, PATH1 ), 200, new ByteArrayInputStream( CONTENT1.getBytes() ) );
 
         remote = client.stores()
-                       .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME,
+                       .create( new RemoteRepository( PKG_TYPE_MAVEN, REPO_NAME,
                                                       server.formatUrl( REPO_NAME ) ), "remote pnc-builds",
                                 RemoteRepository.class );
 
         hosted = client.stores()
-                       .create( new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME ),
+                       .create( new HostedRepository( PKG_TYPE_MAVEN, REPO_NAME ),
                                 "hosted pnc-builds", HostedRepository.class );
         client.content().store( hosted.getKey(), PATH2, new ByteArrayInputStream( CONTENT2.getBytes() ) );
     }

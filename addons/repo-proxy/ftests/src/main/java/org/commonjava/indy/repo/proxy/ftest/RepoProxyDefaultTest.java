@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -77,7 +78,7 @@ public class RepoProxyDefaultTest
         server.expect( server.formatUrl( REPO_NAME, PATH1 ), 200, new ByteArrayInputStream( CONTENT1.getBytes() ) );
 
         remote = client.stores()
-                       .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME,
+                       .create( new RemoteRepository( PKG_TYPE_MAVEN, REPO_NAME,
                                                       server.formatUrl( REPO_NAME ) ), "remote pnc-builds",
                                 RemoteRepository.class );
     }

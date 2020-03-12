@@ -23,7 +23,9 @@ import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
@@ -49,13 +51,26 @@ public class RepoProxyContoller
     @Inject
     private ProxyRepoCreateManager repoCreateManager;
 
+    @Inject
+    private Instance<RepoProxyResponseDecorator> responseDecoratorInstances;
+
+    private Iterable<RepoProxyResponseDecorator> responseDecorators;
+
     protected RepoProxyContoller()
     {
     }
 
-    public RepoProxyContoller( RepoProxyConfig config )
+    public RepoProxyContoller( final RepoProxyConfig config,
+                               final Iterable<RepoProxyResponseDecorator> responseDecorators )
     {
         this.config = config;
+        this.responseDecorators = responseDecorators;
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        this.responseDecorators = this.responseDecoratorInstances;
     }
 
     public boolean doProxy( ServletRequest request, ServletResponse response )
@@ -80,9 +95,11 @@ public class RepoProxyContoller
 
         trace( "proxied to path info {}", proxyToPath );
 
+        HttpServletResponse decoratedResponse = decoratingResponse( httpRequest, (HttpServletResponse) response );
+
         // Here we do not use redirect but forward.
         // doRedirect( (HttpServletResponse)response, proxyTo );
-        doForward( httpRequest, response, proxyToPath.get() );
+        doForward( httpRequest, decoratedResponse, proxyToPath.get() );
 
         return true;
     }
@@ -147,6 +164,20 @@ public class RepoProxyContoller
             }
         }
 
+    }
+
+    private HttpServletResponse decoratingResponse( final HttpServletRequest request,
+                                                    final HttpServletResponse response )
+            throws IOException
+    {
+        HttpServletResponse decorated = response;
+
+        for ( RepoProxyResponseDecorator decorator : responseDecorators )
+        {
+            decorated = decorator.decoratingResponse( request, decorated );
+        }
+
+        return decorated;
     }
 
     //TODO: not used but just leave here for reference

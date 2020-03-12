@@ -50,6 +50,8 @@ public class RepoProxyConfig
 
     private static final String API_METHODS_PARAM = "api.methods";
 
+    private static final String NPM_META_REWRITE_ENABLE_PARAM = "npm.meta.rewrite.enabled";
+
     private static final Boolean DEFAULT_ENABLED = Boolean.FALSE;
 
     private static final String DEFAULT_API_PATTERNS = "/api/content/*, /api/folo/track/*";
@@ -68,6 +70,8 @@ public class RepoProxyConfig
 
     private Boolean enabled;
 
+    private Boolean npmMetaRewriteEnabled;
+
     public RepoProxyConfig()
     {
     }
@@ -82,6 +86,16 @@ public class RepoProxyConfig
         return StringUtils.isBlank( repoCreatorRuleBaseDir ) ?
                 DEFAULT_REPO_CREATE_RULE_BASEDIR :
                 repoCreatorRuleBaseDir;
+    }
+
+    public Boolean getNpmMetaRewriteEnabled()
+    {
+        return this.npmMetaRewriteEnabled == null ? DEFAULT_NPM_META_REWRITE_ENABLE : this.npmMetaRewriteEnabled;
+    }
+
+    public Boolean isNpmMetaRewriteEnabled()
+    {
+        return getNpmMetaRewriteEnabled();
     }
 
     public Set<String> getApiPatterns()
@@ -133,6 +147,9 @@ public class RepoProxyConfig
                 {
                     apiMethods.add( method.trim().toUpperCase() );
                 }
+                break;
+            case NPM_META_REWRITE_ENABLE_PARAM:
+                this.npmMetaRewriteEnabled = Boolean.valueOf( value.trim() );
                 break;
             default:
                 break;
