@@ -47,6 +47,7 @@ import org.commonjava.indy.core.model.DefaultPagination;
 import org.commonjava.indy.core.model.Pagination;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +56,7 @@ public class NfcController
 {
 
     @Inject
-    protected AbstractNotFoundCache cache;
+    protected NotFoundCache cache;
 
     @Inject
     protected StoreDataManager storeManager;
@@ -80,7 +81,8 @@ public class NfcController
     {
         return new DefaultPagination<>( page, (handler)->
         {
-            Map<Location, Set<String>> allMissing = cache.getAllMissing( page.getPageIndex(), page.getPageSize() );
+            Map<Location, Set<String>> allMissing =
+                            ( (AbstractNotFoundCache) cache ).getAllMissing( page.getPageIndex(), page.getPageSize() );
             NotFoundCacheDTO dto = getNotFoundCacheDTO( allMissing );
             return dto;
         });
@@ -158,7 +160,7 @@ public class NfcController
                 Set<String> missing;
                 if ( pagingParams != null && pagingParams.length > 0 )
                 {
-                    missing = cache.getMissing( location, pagingParams[0], pagingParams[1] );
+                    missing = ( (AbstractNotFoundCache) cache ).getMissing( location, pagingParams[0], pagingParams[1] );
                 }
                 else
                 {
@@ -192,7 +194,7 @@ public class NfcController
                 Set<String> missing;
                 if ( pagingParams != null && pagingParams.length > 0 )
                 {
-                    missing = cache.getMissing( toLocation( store ), pagingParams[0], pagingParams[1] );
+                    missing = ( (AbstractNotFoundCache) cache ).getMissing( toLocation( store ), pagingParams[0], pagingParams[1] );
                 }
                 else
                 {
@@ -275,7 +277,7 @@ public class NfcController
     public NotFoundCacheInfoDTO getInfo()
     {
         NotFoundCacheInfoDTO dto = new NotFoundCacheInfoDTO();
-        dto.setSize( cache.getSize() );
+        dto.setSize( ( (AbstractNotFoundCache) cache ).getSize() );
         return dto;
     }
 
@@ -306,13 +308,13 @@ public class NfcController
 
                     for ( final StoreKey storeKey : stores )
                     {
-                        size.addAndGet( cache.getSize( storeKey ) );
+                        size.addAndGet( ( (AbstractNotFoundCache) cache ).getSize( storeKey ) );
                     }
                     break;
                 }
                 default:
                 {
-                    size.addAndGet( cache.getSize( key ) );
+                    size.addAndGet( ( (AbstractNotFoundCache) cache ).getSize( key ) );
                     break;
                 }
             }
