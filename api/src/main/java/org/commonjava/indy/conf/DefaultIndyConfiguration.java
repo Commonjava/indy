@@ -56,6 +56,12 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_FORKJOINPOOL_COMMON_PARALLELISM = 48;
 
+    public static final String ISPN_NFC_PROVIDER = "ispn";
+
+    public static final String CASSANDRA_NFC_PROVIDER = "cassandra";
+
+    public static final String DEFAULT_NFC_PROVIDER = ISPN_NFC_PROVIDER;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -142,7 +148,7 @@ public class DefaultIndyConfiguration
     @Override
     public String getNfcProvider()
     {
-        return nfcProvider;
+        return nfcProvider == null ? DEFAULT_NFC_PROVIDER : nfcProvider;
     }
 
     @ConfigName( "nfc.provider" )
