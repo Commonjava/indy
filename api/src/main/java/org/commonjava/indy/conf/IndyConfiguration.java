@@ -85,4 +85,6 @@ public interface IndyConfiguration
     String getCacheKeyspace();
 
     String getAffectedGroupsExcludeFilter();
+
+    String getNfcProvider(); // ispn or cassandra (default)
 }

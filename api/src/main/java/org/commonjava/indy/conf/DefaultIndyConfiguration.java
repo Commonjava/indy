@@ -64,6 +64,8 @@ public class DefaultIndyConfiguration
 
     private Integer storeDisableTimeoutSeconds;
 
+    private String nfcProvider;
+
     private Integer nfcExpirationSweepMinutes;
 
     private Integer nfcMaxResultSetSize;
@@ -135,6 +137,18 @@ public class DefaultIndyConfiguration
     public void setPassthroughTimeoutSeconds( final int seconds )
     {
         passthroughTimeoutSeconds = seconds;
+    }
+
+    @Override
+    public String getNfcProvider()
+    {
+        return nfcProvider;
+    }
+
+    @ConfigName( "nfc.provider" )
+    public void setNfcProvider( String nfcProvider )
+    {
+        this.nfcProvider = nfcProvider;
     }
 
     @ConfigName( "nfc.timeout" )

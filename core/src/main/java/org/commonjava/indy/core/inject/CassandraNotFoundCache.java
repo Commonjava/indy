@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import java.text.SimpleDateFormat;
@@ -47,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 import static org.commonjava.indy.conf.DefaultIndyConfiguration.DEFAULT_NOT_FOUND_CACHE_TIMEOUT_SECONDS;
 
 @ApplicationScoped
-@Default
+@Alternative
 public class CassandraNotFoundCache
                 extends AbstractNotFoundCache
 {
@@ -67,14 +68,14 @@ public class CassandraNotFoundCache
 
     private PreparedStatement preparedQueryByStore;
 
-    public static String getSchemaCreateKeyspace( String keyspace )
+    private static String getSchemaCreateKeyspace( String keyspace )
     {
         return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
                         + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1};";
     }
 
     // @formatter:off
-    public static String getSchemaCreateTable( String keyspace )
+    private static String getSchemaCreateTable( String keyspace )
     {
         return "CREATE TABLE IF NOT EXISTS " + keyspace + ".nfc ("
                         + "storekey varchar,"
@@ -109,9 +110,13 @@ public class CassandraNotFoundCache
     {
     }
 
-    public CassandraNotFoundCache( final IndyConfiguration config )
+    public CassandraNotFoundCache( final IndyConfiguration config, final CacheProducer cacheProducer,
+                                   final CassandraClient cassandraClient )
     {
         this.config = config;
+        this.cacheProducer = cacheProducer;
+        this.cassandraClient = cassandraClient;
+        start();
     }
 
     @PostConstruct
@@ -123,6 +128,11 @@ public class CassandraNotFoundCache
         maxResultSetSize = config.getNfcMaxResultSetSize();
 
         session = cassandraClient.getSession( keyspace );
+        if ( session == null )
+        {
+            logger.warn( "Get Cassandra session failed, keyspace: {}", keyspace );
+            return;
+        }
 
         session.execute( getSchemaCreateKeyspace( keyspace ) );
         session.execute( getSchemaCreateTable( keyspace ) );
