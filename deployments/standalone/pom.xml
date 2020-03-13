@@ -27,20 +27,10 @@
   <artifactId>indy-standalone</artifactId>
   <packaging>pom</packaging>
 
-  <name>Indy :: Debug :: Local</name>
+  <name>Indy :: Standalone</name>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.commonjava.indy.embed</groupId>
-        <artifactId>indy-embedder-standalone</artifactId>
-        <version>2.0-SNAPSHOT</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-  
+
   <modules>
-    <module>embedder</module>
     <module>launcher</module>
   </modules>
   
