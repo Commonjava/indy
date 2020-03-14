@@ -48,10 +48,10 @@ public class StoreChangeListener
     {
         final StoreKey key = store.getKey();
 
-        logger.trace( "Clean index for: {}", key );
+        logger.info( "Clean index for: {}", key );
         contentIndexManager.clearAllIndexedPathInStore( store );
 
-        logger.trace( "Clean index with origin: {}", key );
+        logger.info( "Clean index with origin: {}", key );
         contentIndexManager.clearAllIndexedPathWithOriginalStore( store );
     }
 

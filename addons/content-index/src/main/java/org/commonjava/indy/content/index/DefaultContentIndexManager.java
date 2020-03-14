@@ -322,7 +322,7 @@ public class DefaultContentIndexManager
                                                       .toBuilder()
                                                       .build() );
 
-        logger.trace( "Cleared all indices with group: {}, size: {}", sk, total );
+        logger.debug( "Cleared all indices with group: {}, size: {}", sk, total );
     }
 
     @Override
@@ -350,7 +350,7 @@ public class DefaultContentIndexManager
                                                       .toBuilder()
                                                       .build() );
 
-        logger.trace( "Cleared all indices with origin: {}, size: {}", osk, total );
+        logger.debug( "Cleared all indices with origin: {}, size: {}", osk, total );
     }
 
     private long iterateRemove( final Supplier<Query> queryFunction )
@@ -362,7 +362,7 @@ public class DefaultContentIndexManager
         {
             query = queryFunction.get();
 
-                    List<IndexedStorePath> all = query.list();
+            List<IndexedStorePath> all = query.list();
             all.forEach( ( key ) -> {
                 logger.debug("Removing from content index: {}", key);
                 contentIndex.remove( key );
