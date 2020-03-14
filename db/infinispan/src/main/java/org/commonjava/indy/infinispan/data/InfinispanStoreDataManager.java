@@ -219,6 +219,7 @@ public class InfinispanStoreDataManager
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
+        logger.debug( "Calculate affectedBy for keys: {}", keys );
         checkAffectedByCacheHealth();
 
         final Set<Group> result = new HashSet<>();
@@ -240,6 +241,7 @@ public class InfinispanStoreDataManager
                 Set<StoreKey> affected = affectedByStores.get( key );
                 if ( affected != null )
                 {
+                    logger.debug( "Get affectedByStores, key: {}, affected: {}", key, affected );
                     affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
                     for ( StoreKey gKey : affected )
                     {
@@ -278,6 +280,12 @@ public class InfinispanStoreDataManager
     {
         if ( store == null )
         {
+            return;
+        }
+
+        if ( store instanceof Group && isExcludedGroup( (Group) store ) )
+        {
+            logger.info( "Skip affectedBy calculation of group: {}", store.getName() );
             return;
         }
 

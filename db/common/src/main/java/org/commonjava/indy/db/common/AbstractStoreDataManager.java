@@ -18,7 +18,6 @@ package org.commonjava.indy.db.common;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
-import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
@@ -54,7 +53,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
@@ -64,6 +62,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -570,7 +569,7 @@ public abstract class AbstractStoreDataManager
     /**
      * Filter unnecessary affected groups in clean-up process. Most likely to exclude all the temp groups.
      */
-    protected Set<Group> filterAffectedGroups( Set<Group> affectedGroups )
+    public Set<Group> filterAffectedGroups( Set<Group> affectedGroups )
     {
         if ( affectedGroups == null )
         {
@@ -589,6 +588,12 @@ public abstract class AbstractStoreDataManager
         return affectedGroups.stream()
                              .filter( s -> !s.getName().matches( excludeFilter ) )
                              .collect( Collectors.toSet() );
+    }
+
+    public boolean isExcludedGroup( Group group )
+    {
+        String filter = indyConfiguration.getAffectedGroupsExcludeFilter();
+        return isNotBlank( filter ) && group.getName().matches( filter );
     }
 
 }

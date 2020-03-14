@@ -40,6 +40,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
@@ -178,13 +179,18 @@ public class KojiMavenMetadataProvider
         logger.info( "Koji metadata expired for GA: {}", e.getKey() );
         try
         {
-            List<Group> affected = storeDataManager.query()
+            Set<Group> affected = storeDataManager.query()
                                                            .getAll(
                                                                    s -> group == s.getType() && kojiConfig.isEnabledFor(
                                                                            s.getName() ) )
                                                            .stream()
                                                            .map( s -> (Group) s )
-                                                           .collect( Collectors.toList() );
+                                                           .collect( Collectors.toSet() );
+
+            if ( storeDataManager instanceof AbstractStoreDataManager )
+            {
+                affected = ( (AbstractStoreDataManager) storeDataManager ).filterAffectedGroups( affected );
+            }
 
             if ( !affected.isEmpty() )
             {
@@ -204,7 +210,7 @@ public class KojiMavenMetadataProvider
         }
     }
 
-    private void clearPaths( final List<Group> affected, final String path )
+    private void clearPaths( final Set<Group> affected, final String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
