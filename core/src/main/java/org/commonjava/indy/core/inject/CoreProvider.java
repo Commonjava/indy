@@ -33,6 +33,9 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import static org.commonjava.indy.conf.DefaultIndyConfiguration.CASSANDRA_NFC_PROVIDER;
+import static org.commonjava.indy.conf.DefaultIndyConfiguration.ISPN_NFC_PROVIDER;
+
 @ApplicationScoped
 public class CoreProvider
 {
@@ -76,19 +79,28 @@ public class CoreProvider
         return objectMapper;
     }
 
+
+    private volatile NotFoundCache notFoundCache;
+
     @Produces
     @Default
     public NotFoundCache getNotFoundCache()
     {
-        String nfcProvider = indyConfiguration.getNfcProvider();
-        if ( "ispn".equals( nfcProvider ) )
+        if ( notFoundCache == null )
         {
-            logger.info( "Apply IspnNotFoundCache" );
-            return new IspnNotFoundCache( indyConfiguration, nfcCache );
+            String nfcProvider = indyConfiguration.getNfcProvider();
+            logger.info( "Apply nfc provider: {}", nfcProvider );
+            if ( CASSANDRA_NFC_PROVIDER.equals( nfcProvider ) )
+            {
+                notFoundCache = new CassandraNotFoundCache( indyConfiguration, cacheProducer,
+                                                            cassandraClient );
+            }
+            else
+            {
+                notFoundCache = new IspnNotFoundCache( indyConfiguration, nfcCache ); // default
+            }
         }
-
-        logger.info( "Apply CassandraNotFoundCache" );
-        return new CassandraNotFoundCache( indyConfiguration, cacheProducer, cassandraClient ); // default
+        return notFoundCache;
     }
 
 }
