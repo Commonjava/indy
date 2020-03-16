@@ -17,22 +17,18 @@ package org.commonjava.indy.conf;
 
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
-import org.commonjava.propulsor.config.section.ConfigurationSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-@SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
+@SectionName
 @ApplicationScoped
 public class DefaultIndyConfiguration
     implements IndyConfiguration, IndyConfigInfo, SystemPropertyProvider
@@ -61,6 +57,8 @@ public class DefaultIndyConfiguration
     public static final String CASSANDRA_NFC_PROVIDER = "cassandra";
 
     public static final String DEFAULT_NFC_PROVIDER = ISPN_NFC_PROVIDER;
+
+    public static final Boolean DEFAULT_STANDALONE = false;
 
     private Integer passthroughTimeoutSeconds;
 
@@ -91,6 +89,8 @@ public class DefaultIndyConfiguration
     private String affectedGroupsExcludeFilter;
 
     private String cacheKeyspace = "indycache"; // default
+
+    private Boolean standalone;
 
     public DefaultIndyConfiguration()
     {
@@ -319,6 +319,18 @@ public class DefaultIndyConfiguration
     public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
     {
         this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
+    }
+
+    @Override
+    public Boolean isStandalone()
+    {
+        return this.standalone == null ? DEFAULT_STANDALONE : this.standalone;
+    }
+
+    @ConfigName( "standalone" )
+    public void setStandalone( Boolean standalone )
+    {
+        this.standalone = standalone;
     }
 
     @Override

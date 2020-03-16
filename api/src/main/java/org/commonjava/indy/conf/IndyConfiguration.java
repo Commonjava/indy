@@ -87,4 +87,11 @@ public interface IndyConfiguration
     String getAffectedGroupsExcludeFilter();
 
     String getNfcProvider(); // ispn or cassandra (default)
+
+    /**
+     * Let indy run standalone local mode, which will not enable cassandra path mapped storage
+     * @return
+     * @since 2.0.0
+     */
+    Boolean isStandalone();
 }
