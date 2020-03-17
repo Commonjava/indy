@@ -18,6 +18,7 @@ package org.commonjava.indy.core.ctl;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -184,8 +185,11 @@ public class AdminController
         ArrayList<ArtifactStore> disabledArtifactStores = new ArrayList<>();
         try {
             List<ArtifactStore> allRepositories = storeManager.query().getAll();
+
             for(ArtifactStore as : allRepositories) {
-                if(as.getType() == StoreType.remote && as.isDisabled()) {
+                Set<String> asMetadataKeys = as.getMetadata().keySet();
+
+                if(as.getType() == StoreType.remote && checkForInvalidArtifactStore(asMetadataKeys) ) {
                     disabledArtifactStores.add(as);
                 }
             }
@@ -194,6 +198,10 @@ public class AdminController
             e.printStackTrace();
         }
         return disabledArtifactStores;
+    }
+
+    private Boolean checkForInvalidArtifactStore(Set<String> metadataKeys) {
+        return metadataKeys.contains("HTTP_HEAD_STATUS") || metadataKeys.contains("HTTP_PROTOCOL") || metadataKeys.contains("HTTP_PROTOCOL");
     }
 
 }
