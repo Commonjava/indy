@@ -105,7 +105,7 @@ public class IndySslValidationApiTest extends AbstractIndyFunctionalTest {
 
             assertNotNull(remoteRepoAPIResult);
             assertFalse(remoteRepoAPIResult.isValid());
-            assertThat(remoteRepoAPIResult.getRepositoryUrl(), is(remoteRepoAPIResult.getErrors().get("NOT_ALLOWED_SSL")));
+            assertThat(remoteRepoAPIResult.getRepositoryUrl(), is(remoteRepoAPIResult.getErrors().get("ERR_NOT_ALLOWED_SSL")));
 
         } catch (IndyClientException e) {
             LOGGER.warn("=> Exception in revalidating store " + storedTestRepo.getUrl() +" API call");
