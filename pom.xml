@@ -1016,7 +1016,7 @@
         <version>3.3.0.Final</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.honeycomb.beeline</groupId>
+        <groupId>io.honeycomb.beeline</groupId>
         <artifactId>beeline-core</artifactId>
         <version>${honeycombVersion}</version>
       </dependency>
