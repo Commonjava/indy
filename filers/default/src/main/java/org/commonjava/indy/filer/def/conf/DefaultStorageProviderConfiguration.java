@@ -28,7 +28,7 @@ import java.util.Properties;
 @SectionName( "storage-default" )
 @ApplicationScoped
 public class DefaultStorageProviderConfiguration
-    implements IndyConfigInfo, SystemPropertyProvider
+                implements IndyConfigInfo, SystemPropertyProvider
 {
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
@@ -50,7 +50,7 @@ public class DefaultStorageProviderConfiguration
 
     public DefaultStorageProviderConfiguration( final File storageBasedir )
     {
-        this.storageBasedir = storageBasedir;
+        this( storageBasedir, null );
     }
 
     public DefaultStorageProviderConfiguration( final File storageBasedir, final File nfsStoreBasedir )
@@ -67,7 +67,6 @@ public class DefaultStorageProviderConfiguration
     @Deprecated
     public File getNFSStorageRootDirectory()
     {
-//        return nfsStoreBasedir == null ? DEFAULT_NFS_BASEDIR : nfsStoreBasedir;
         return nfsStoreBasedir;
     }
 
@@ -79,7 +78,8 @@ public class DefaultStorageProviderConfiguration
     }
 
     @ConfigName( "storage.nfs.dir" )
-    public void setNFSStorageRootDirectory(final File nfsStorageRootDirectory){
+    public void setNFSStorageRootDirectory( final File nfsStorageRootDirectory )
+    {
         this.nfsStoreBasedir = nfsStorageRootDirectory;
     }
 
@@ -104,5 +104,87 @@ public class DefaultStorageProviderConfiguration
         p.setProperty( STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
         p.setProperty( NFS_STORAGE_DIR, getStorageRootDirectory().getAbsolutePath() );
         return p;
+    }
+
+    // Path mapped storage config
+
+    private static final String DEFAULT_STORAGE_KEYSPACE = "indystorage";
+
+    private String cassandraKeyspace = DEFAULT_STORAGE_KEYSPACE;
+
+    private int gcBatchSize = 100;
+
+    private int gcGracePeriodInHours = 24;
+
+    private int gcIntervalInMinutes = 30;
+
+    private String fileChecksumAlgorithm = "SHA-256";
+
+    private String deduplicatePattern = "^(generic|npm).+";
+
+    @ConfigName( "storage.cassandra.keyspace" )
+    public void setCassandraKeyspace( String keyspace )
+    {
+        cassandraKeyspace = keyspace;
+    }
+
+    public String getCassandraKeyspace()
+    {
+        return cassandraKeyspace;
+    }
+
+    @ConfigName( "storage.gc.batchsize" )
+    public void setGcBatchSize( int gcBatchSize )
+    {
+        this.gcBatchSize = gcBatchSize;
+    }
+
+    public int getGcBatchSize()
+    {
+        return gcBatchSize;
+    }
+
+    @ConfigName( "storage.gc.graceperiodinhours" )
+    public void setGcGracePeriodInHours( int gcGracePeriodInHours )
+    {
+        this.gcGracePeriodInHours = gcGracePeriodInHours;
+    }
+
+    public int getGcGracePeriodInHours()
+    {
+        return gcGracePeriodInHours;
+    }
+
+    @ConfigName( "storage.gc.intervalinminutes" )
+    public void setGcIntervalInMinutes( int gcIntervalInMinutes )
+    {
+        this.gcIntervalInMinutes = gcIntervalInMinutes;
+    }
+
+    public int getGcIntervalInMinutes()
+    {
+        return gcIntervalInMinutes;
+    }
+
+    @ConfigName( "storage.file.checksum.algorithm" )
+    public void setFileChecksumAlgorithm( String fileChecksumAlgorithm )
+    {
+        this.fileChecksumAlgorithm = fileChecksumAlgorithm;
+    }
+
+    public String getFileChecksumAlgorithm()
+    {
+        return fileChecksumAlgorithm;
+    }
+
+    @ConfigName( "storage.deduplicate.pattern" )
+    public void setDeduplicatePattern( String deduplicatePattern )
+    {
+        this.deduplicatePattern = deduplicatePattern;
+    }
+
+    public String getDeduplicatePattern()
+    {
+        return deduplicatePattern;
     }
 }

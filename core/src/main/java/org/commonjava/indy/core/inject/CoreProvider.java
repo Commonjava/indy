@@ -16,8 +16,15 @@
 package org.commonjava.indy.core.inject;
 
 import com.fasterxml.jackson.databind.Module;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.core.io.ModuleSet;
+import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -26,9 +33,26 @@ import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
+import static org.commonjava.indy.conf.DefaultIndyConfiguration.CASSANDRA_NFC_PROVIDER;
+import static org.commonjava.indy.conf.DefaultIndyConfiguration.ISPN_NFC_PROVIDER;
+
 @ApplicationScoped
 public class CoreProvider
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
+    @Inject
+    private CassandraClient cassandraClient;
+
+    @Inject
+    private CacheProducer cacheProducer;
+
+    @Inject
+    @NfcCache
+    private CacheHandle<String, NfcConcreteResourceWrapper> nfcCache;
 
     @Inject
     private Instance<Module> objectMapperModules;
@@ -50,12 +74,33 @@ public class CoreProvider
 
     @Produces
     @Default
-//    @Production
     public IndyObjectMapper getIndyObjectMapper()
     {
-//        Logger logger = LoggerFactory.getLogger( getClass() );
-//        logger.info( "Core mapper is: {}", objectMapper );
         return objectMapper;
+    }
+
+
+    private volatile NotFoundCache notFoundCache;
+
+    @Produces
+    @Default
+    public NotFoundCache getNotFoundCache()
+    {
+        if ( notFoundCache == null )
+        {
+            String nfcProvider = indyConfiguration.getNfcProvider();
+            logger.info( "Apply nfc provider: {}", nfcProvider );
+            if ( CASSANDRA_NFC_PROVIDER.equals( nfcProvider ) )
+            {
+                notFoundCache = new CassandraNotFoundCache( indyConfiguration, cacheProducer,
+                                                            cassandraClient );
+            }
+            else
+            {
+                notFoundCache = new IspnNotFoundCache( indyConfiguration, nfcCache ); // default
+            }
+        }
+        return notFoundCache;
     }
 
 }

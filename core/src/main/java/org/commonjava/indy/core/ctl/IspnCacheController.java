@@ -16,16 +16,22 @@
 package org.commonjava.indy.core.ctl;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Set;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 @ApplicationScoped
 public class IspnCacheController
@@ -37,34 +43,29 @@ public class IspnCacheController
     @Inject
     private CacheProducer cacheProducer;
 
+    @Inject
+    private IndyObjectMapper mapper;
+
     private EmbeddedCacheManager cacheManager;
+
+    private Map<String, String> string2keyMapper;
 
     @PostConstruct
     private void setUp()
     {
         cacheManager = cacheProducer.getCacheManager();
+        string2keyMapper = new HashMap<>();
+        string2keyMapper.put( "content-index", "org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper" );
+        string2keyMapper.put( "default", "org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper" );
     }
 
     public void clean( String name ) throws IndyWorkflowException
     {
-        if ( ALL_CACHES.equals( name ) ) // clean all caches
+        if ( name.startsWith( "folo" ) || name.startsWith( "store" ) || name.startsWith( "schedule" ) )
         {
-            Set<String> names = cacheManager.getCacheNames();
-            names.forEach( ( n ) -> {
-                if ( !isFoloCache( n ) ) // Prohibit clear of folo caches
-                {
-                   cacheManager.getCache( n ).clear();
-                }
-            } );
-            return;
+            throw new IndyWorkflowException( "Can not clean cache, name: " + name );
         }
 
-        if ( isFoloCache( name ) )
-        {
-            throw new IndyWorkflowException( "Can not clean folo caches, name: " + name );
-        }
-
-        // clean named cache
         Cache<Object, Object> cache = cacheManager.getCache( name );
         if ( cache == null )
         {
@@ -73,8 +74,33 @@ public class IspnCacheController
         cache.clear();
     }
 
-    private boolean isFoloCache( String name )
+    // only work for some caches for debugging
+    public String export( String cacheName, String key ) throws Exception
     {
-        return name != null && name.startsWith( "folo" );
+        Cache<Object, Object> cache = cacheManager.getCache( cacheName );
+        if ( cache == null )
+        {
+            throw new IndyWorkflowException( "Cache not found, name: " + cacheName );
+        }
+        if ( isNotBlank( key ) )
+        {
+            if ( key.startsWith( "/" ) )
+            {
+                key = key.substring( 1 );
+            }
+            String stringMapperClass = string2keyMapper.get( cacheName );
+            if ( stringMapperClass == null )
+            {
+                stringMapperClass = string2keyMapper.get( "default" );
+            }
+            TwoWayKey2StringMapper stringMapper =
+                            (TwoWayKey2StringMapper) Class.forName( stringMapperClass ).newInstance();
+            return mapper.writeValueAsString( cache.get( stringMapper.getKeyMapping( key ) ) );
+        }
+        else
+        {
+            return mapper.writeValueAsString( cache.entrySet() );
+        }
     }
+
 }

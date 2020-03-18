@@ -15,23 +15,10 @@
  */
 package org.commonjava.indy.httprox.util;
 
-//import sun.security.tools.keytool.CertAndKeyGen;
-
-import sun.security.x509.AlgorithmId;
-import sun.security.x509.BasicConstraintsExtension;
-import sun.security.x509.CertificateAlgorithmId;
-import sun.security.x509.CertificateExtensions;
-import sun.security.x509.CertificateSerialNumber;
-import sun.security.x509.CertificateValidity;
-import sun.security.x509.CertificateVersion;
-import sun.security.x509.CertificateX509Key;
-import sun.security.x509.X500Name;
-import sun.security.x509.X509CertImpl;
-import sun.security.x509.X509CertInfo;
-
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.file.Files;
@@ -54,8 +41,24 @@ import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Date;
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
+
+import javax.security.auth.x500.X500Principal;
+
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by ruhan on 9/18/18.
@@ -70,46 +73,58 @@ public class CertUtils
 
     public static final int DEFAULT_CERT_EXPIRATION_DAYS = 365;
 
+    public static final long MILLIS_IN_DAY = 1000L * 60 * 60 * 24;
+
+    public static BigInteger serialNumber = new BigInteger( 64, new SecureRandom() );
+
+    private static Logger logger = LoggerFactory.getLogger( CertUtils.class );
+
+    static
+    {
+        java.security.Security.addProvider(new BouncyCastleProvider());
+    }
+
     /**
      * Create a self-signed X.509 cert
      *
+     * @param pair      KeyPair generated for this request
      * @param dn        the X.509 Distinguished Name, eg "CN=Test, L=London, C=GB"
      * @param days      how many days from now the cert is valid for
      * @param algorithm the signing algorithm, eg "SHA256withRSA"
+     * @return X509Certificate newly generated certificate
      */
     public static X509Certificate generateX509Certificate( KeyPair pair, String dn, int days, String algorithm )
-                    throws GeneralSecurityException, IOException
+                    throws GeneralSecurityException, OperatorCreationException, IOException
     {
-        PrivateKey privateKey = pair.getPrivate();
-        X509CertInfo info = new X509CertInfo();
-        Date from = new Date();
-        Date to = new Date( from.getTime() + TimeUnit.DAYS.toMillis( days ) );
-        CertificateValidity interval = new CertificateValidity( from, to );
-        BigInteger sn = new BigInteger( 64, new SecureRandom() );
-        X500Name owner = new X500Name( dn );
+        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+        PrivateKey subPrivKey = pair.getPrivate();
+        PublicKey subPubKey = pair.getPublic();
+        ContentSigner contentSignerBuilder = new JcaContentSignerBuilder( algorithm ).setProvider( BouncyCastleProvider.PROVIDER_NAME ).build( subPrivKey );
+        X500Name name = new X500Name( dn );
+        Date expires = new Date( System.currentTimeMillis() + (MILLIS_IN_DAY * days) );
 
-        info.set( X509CertInfo.VALIDITY, interval );
-        info.set( X509CertInfo.SERIAL_NUMBER, new CertificateSerialNumber( sn ) );
-        info.set( X509CertInfo.SUBJECT, owner );
-        info.set( X509CertInfo.ISSUER, owner );
-        info.set( X509CertInfo.KEY, new CertificateX509Key( pair.getPublic() ) );
-        info.set( X509CertInfo.VERSION, new CertificateVersion( CertificateVersion.V3 ) );
+        X509CertificateHolder holder = new X509v3CertificateBuilder(
+            name,
+            allocateSerialNumber(),
+            new Date(),
+            expires,
+            name,
+            SubjectPublicKeyInfo.getInstance( subPubKey.getEncoded() )
+        ).build(contentSignerBuilder);
 
-        AlgorithmId algo = new AlgorithmId( AlgorithmId.sha256WithRSAEncryption_oid );
-        info.set( X509CertInfo.ALGORITHM_ID, new CertificateAlgorithmId( algo ) );
+        X509Certificate cert = converter.getCertificate( holder );
 
-        // Sign the cert to identify the algorithm that's used.
-        X509CertImpl cert = new X509CertImpl( info );
-        cert.sign( privateKey, algorithm );
-
-        // Update the algorithm, and resign.
-        algo = (AlgorithmId) cert.get( X509CertImpl.SIG_ALG );
-        info.set( CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, algo );
-        cert = new X509CertImpl( info );
-        cert.sign( privateKey, algorithm );
+        logger.debug( "Created cert using CA private key:\n" + cert.toString() );
         return cert;
     }
 
+    /**
+     * Load a certificate from a file
+     * @param file      location of file
+     * @return          certificate generated from the encoded file bytes
+     * @throws CertificateException
+     * @throws IOException
+     */
     public static X509Certificate loadX509Certificate( File file ) throws CertificateException, IOException
     {
         CertificateFactory cf = CertificateFactory.getInstance( CERT_TYPE_X509 );
@@ -121,6 +136,14 @@ public class CertUtils
         return (X509Certificate) ca;
     }
 
+    /**
+     * Create a keystore object
+     * @return          empty keystore
+     * @throws KeyStoreException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     * @throws IOException
+     */
     public static KeyStore createKeyStore()
                     throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException
     {
@@ -130,6 +153,16 @@ public class CertUtils
         return keyStore;
     }
 
+    /**
+     * Load a keystore using the contents of a file to populate the store
+     * @param file
+     * @param passwd
+     * @return
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws CertificateException
+     * @throws NoSuchAlgorithmException
+     */
     public static KeyStore loadKeyStore( File file, String passwd )
                     throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException
     {
@@ -139,6 +172,12 @@ public class CertUtils
         return keyStore;
     }
 
+    /**
+     * Load a PrivateKey using the encoded bytes of a file
+     * @param filename          file containing PrivateKey bytes
+     * @return                  created PrivateKey
+     * @throws Exception
+     */
     public static PrivateKey getPrivateKey( String filename ) throws Exception
     {
         byte[] keyBytes = Files.readAllBytes( Paths.get( filename ) );
@@ -148,6 +187,12 @@ public class CertUtils
         return kf.generatePrivate( spec );
     }
 
+    /**
+     * Load a PublicKey using the contents of a file
+     * @param filename      file containing PublicKey
+     * @return              created PublicKey
+     * @throws Exception
+     */
     public static PublicKey getPublicKey( String filename ) throws Exception
     {
         byte[] keyBytes = Files.readAllBytes( Paths.get( filename ) );
@@ -157,45 +202,50 @@ public class CertUtils
         return kf.generatePublic( spec );
     }
 
+    /**
+     * Generate X509Certificate using objects from existing issuer and subject certificates.
+     * The generated certificate is signed by issuer PrivateKey.
+     * @param certificate
+     * @param issuerCertificate
+     * @param issuerPrivateKey
+     * @param isIntermediate
+     * @return
+     * @throws Exception
+     */
     public static X509Certificate createSignedCertificate( X509Certificate certificate,
                                                            X509Certificate issuerCertificate,
                                                            PrivateKey issuerPrivateKey, boolean isIntermediate )
                     throws Exception
     {
-        Principal issuer = issuerCertificate.getSubjectDN();
         String issuerSigAlg = issuerCertificate.getSigAlgName();
-
-        byte[] inCertBytes = certificate.getTBSCertificate();
-        X509CertInfo info = new X509CertInfo( inCertBytes );
-        info.set( X509CertInfo.ISSUER, issuer );
+        X500Principal principal = issuerCertificate.getIssuerX500Principal();
+        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+        JcaContentSignerBuilder contentSignerBuilder = new JcaContentSignerBuilder(issuerSigAlg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
+        JcaX509v3CertificateBuilder v3CertGen = new JcaX509v3CertificateBuilder(
+            principal,
+            certificate.getSerialNumber(),
+            certificate.getNotBefore(),
+            certificate.getNotAfter(),
+            certificate.getSubjectX500Principal(),
+            certificate.getPublicKey()
+            );
 
         if ( isIntermediate )
         {
-            CertificateExtensions exts = new CertificateExtensions();
-            BasicConstraintsExtension bce = new BasicConstraintsExtension( true, -1 );
-            exts.set( BasicConstraintsExtension.NAME, new BasicConstraintsExtension( false, bce.getExtensionValue() ) );
-            info.set( X509CertInfo.EXTENSIONS, exts );
+            v3CertGen.addExtension(
+                Extension.basicConstraints,
+                true,
+                new BasicConstraints(-1));
         }
 
-        X509CertImpl outCert = new X509CertImpl( info );
-        outCert.sign( issuerPrivateKey, issuerSigAlg );
-
-        return outCert;
+        return converter.getCertificate(v3CertGen.build(contentSignerBuilder.build(issuerPrivateKey)));
     }
 
     public static CertificateAndKeys createSignedCertificateAndKey( String dn, X509Certificate issuerCertificate,
                                                                     PrivateKey issuerPrivateKey,
-                                                                    boolean isIntermediate ) throws Exception
+                                                                    boolean isIntermediate ) 
+            throws OperatorCreationException, Exception
     {
-        /*
-         * CertAndKeyGen is jre class. Maven compile will fail unless use some additional plugin settings.
-         * Although it is neat and nice, ATM we just use old fashioned code to create cert.
-         *
-        CertAndKeyGen gen = new CertAndKeyGen( KEY_TYPE_RSA, DEFAULT_SIGN_ALGORITHM, null );
-        gen.generate( KEY_BITS );
-        X509Certificate cert = gen.getSelfCertificate(new X500Name(dn), TimeUnit.DAYS.toMillis( DEFAULT_CERT_EXPIRATION_DAYS ));
-        */
-
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance( KEY_TYPE_RSA );
         KeyPair pair = keyPairGenerator.generateKeyPair();
 
@@ -203,9 +253,17 @@ public class CertUtils
 
         X509Certificate signedCertificate =
                         createSignedCertificate( cert, issuerCertificate, issuerPrivateKey, isIntermediate );
-        PublicKey publicKey = pair.getPublic();
+        PublicKey publicKey = signedCertificate.getPublicKey();
         PrivateKey privateKey = pair.getPrivate();
         return new CertificateAndKeys( signedCertificate, privateKey, publicKey );
     }
 
+    private static BigInteger allocateSerialNumber()
+    {
+        BigInteger sn = serialNumber;
+        synchronized (serialNumber) {
+            serialNumber = new BigInteger( 64, new SecureRandom() );
+        }
+        return sn;
+    }
 }

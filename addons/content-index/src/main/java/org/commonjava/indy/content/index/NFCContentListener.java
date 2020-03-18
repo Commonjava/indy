@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -37,7 +35,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.concurrent.ExecutorService;
 
 /**
  * This listener is used to bind the content index cache event to nfc content clearing/adding. The following cases:
@@ -64,11 +61,11 @@ class NFCContentListener
     @Inject
     private NotFoundCache nfc;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "nfc-content-index-cleaning", daemon = true, priority = 4, threads = 8)
-    private ExecutorService nfcIndexCleanExecutor;
-
+/*
+ * Maven content index is by-directory which does not make sense for NFC because NFC is by concrete path.
+ * For other package types, we'd better to move the clean-up to content manager itself in order to share some thing
+ * important like the pre-loaded affected groups.
+ *
     @CacheEntryCreated
     public void newIndex( final CacheEntryCreatedEvent<IndexedStorePath, IndexedStorePath> e )
     {
@@ -93,6 +90,7 @@ class NFCContentListener
             }
         }
     }
+*/
 
     // Not sure if this entry modified event should be watched, need some further check
     //    @CacheEntryModified
@@ -100,6 +98,10 @@ class NFCContentListener
     //
     //    }
 
+/*
+ * Not need to aggressively add missing. In case of path P promoted to pnc-builds, it triggers removal of P in
+ * affected groups, e.g, DA. This does not mean the DA/P is missing. We just let it rebuild next time when retrieved.
+ *
     @CacheEntryRemoved
     public void removeIndex( final CacheEntryRemovedEvent<IndexedStorePath, IndexedStorePath> e )
     {
@@ -125,7 +127,11 @@ class NFCContentListener
         {
             return;
         }
-        nfcIndexCleanExecutor.execute( () -> {
+        final String name = String.format("ContentIndexNFCClean-store(%s)-path(%s)", store.getKey(), path  );
+        final String context =
+                String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "nfcClearByContaining",
+                               store.getKey(), path );
+        storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask(name, context, () -> {
             logger.debug( "Start to clear nfc for groups affected by {} of path {}", store, path );
             try
             {
@@ -146,6 +152,7 @@ class NFCContentListener
                         String.format( "Failed to lookup parent stores which contain %s. Reason: %s", store.getKey(),
                                        e.getMessage() ), e );
             }
-        } );
+        } ) );
     }
+*/
 }

@@ -290,8 +290,14 @@ public class IndyMetricsManager
     }
 
     @MetricWrapper
-    public <T> T wrapWithStandardMetrics( final Supplier<T> method, final Supplier<String> classifier )
+    public <T> T wrapWithStandardMetrics( final Supplier<T> method, @MetricWrapperNamed final Supplier<String> classifier )
     {
+//        if ( logger.isDebugEnabled() )
+//        {
+//            Throwable t = new Throwable();
+//            logger.info( "Wrapping with standard metrics at the following location:", t );
+//        }
+
         String name = classifier.get();
         if ( !checkMetered() || SKIP_METRIC.equals( name ) )
         {
@@ -373,4 +379,13 @@ public class IndyMetricsManager
         } );
     }
 
+    public MetricRegistry getMetricRegistry()
+    {
+        return metricRegistry;
+    }
+
+    public IndyMetricsConfig getConfig()
+    {
+        return config;
+    }
 }

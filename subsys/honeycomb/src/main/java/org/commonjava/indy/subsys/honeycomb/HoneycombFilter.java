@@ -30,7 +30,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
@@ -56,7 +55,11 @@ public class HoneycombFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
                     throws IOException, ServletException
     {
+        logger.trace( "START: {}", getClass().getSimpleName() );
+
         HttpServletRequest hsr = (HttpServletRequest) request;
+        logger.debug( "START: {}", hsr.getPathInfo() );
+
         Span rootSpan = null;
         try
         {
@@ -70,19 +73,15 @@ public class HoneycombFilter
         }
         finally
         {
+            logger.debug( "END: {}", hsr.getPathInfo() );
             if ( rootSpan != null )
             {
-                Span theSpan = rootSpan;
-                Stream.of( config.getFields()).forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        theSpan.addField( field, value );
-                    }
-                });
-
+                honeycombManager.addFields( rootSpan );
                 rootSpan.close();
+                honeycombManager.endTrace();
             }
+
+            logger.trace( "END: {}", getClass().getSimpleName() );
         }
     }
 

@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
@@ -27,15 +28,10 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
-import java.util.stream.Stream;
 
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @Measure
@@ -52,55 +48,52 @@ public class HoneycombMeasureInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        Method method = context.getMethod();
+        String name = method.getDeclaringClass().getSimpleName() + "." + method.getName();
+
+        logger.trace( "START: Honeycomb method wrapper: {}", name );
         if ( !config.isEnabled() )
         {
+            logger.trace( "SKIP: Honeycomb method wrapper: {}", name );
             return context.proceed();
         }
 
-        Method method = context.getMethod();
         Measure measure = method.getAnnotation( Measure.class );
         if ( measure == null )
         {
             measure = method.getDeclaringClass().getAnnotation( Measure.class );
         }
 
-        if ( measure == null )
+        int sampleRate = config.getSampleRate( name );
+        if ( measure == null || sampleRate < 1 )
         {
+            logger.trace( "SKIP: Honeycomb method wrapper (no annotation or span is not configured: {})", name );
             return context.proceed();
         }
 
-        Class<?> cls = context.getMethod().getDeclaringClass();
+        // Seems like the sample rate is managed at the service-request level, not at this level...so let's just
+        // use sample-rate == 0 as a way to turn off child spans like this, and leave the sampling rates out of it
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
 
-        String defaultName = getDefaultName( cls, context.getMethod().getName() );
 
         Span span = null;
         try
         {
-            span = honeycombManager.startChildSpan( defaultName );
-            if ( span != null )
-            {
-                span.markStart();
-            }
-
-            logger.trace( "startChildSpan, span: {}, defaultName: {}", span, defaultName );
+            span = honeycombManager.startChildSpan( name );
+            logger.trace( "startChildSpan, span: {}, name: {}", span, name );
             return context.proceed();
         }
         finally
         {
             if ( span != null )
             {
-                Span theSpan = span;
-                Stream.of( config.getFields()).forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        theSpan.addField( field, value );
-                    }
-                });
+                honeycombManager.addFields( span );
 
                 logger.trace( "closeSpan, {}", span );
                 span.close();
             }
+
+            logger.trace( "END: Honeycomb method wrapper: {}", name );
         }
     }
 

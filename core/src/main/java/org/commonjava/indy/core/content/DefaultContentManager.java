@@ -17,9 +17,6 @@ package org.commonjava.indy.core.content;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.NamedThreadFactory;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
@@ -29,7 +26,6 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -53,13 +49,14 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.IndyContentConstants.CASCADE;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.util.ContentUtils.dedupeListing;
@@ -95,11 +92,6 @@ public class DefaultContentManager
     @Inject
     private IndyConfiguration indyConfig;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "nfc-content-cleaner", priority = 4, daemon = true, threads = 8 )
-    private ExecutorService nfcContentCleanExecutor;
-
     protected DefaultContentManager()
     {
     }
@@ -116,14 +108,6 @@ public class DefaultContentManager
         this.nfc = nfc;
         this.contentDigester = contentDigester;
         this.contentGeneratorManager = contentGeneratorManager;
-        // for testing
-        if ( nfcContentCleanExecutor == null )
-        {
-            nfcContentCleanExecutor = Executors.newFixedThreadPool( 8, new NamedThreadFactory( "nfc-content-cleaner",
-                                                                                               new ThreadGroup(
-                                                                                                       "nfc-content-cleaner" ),
-                                                                                               true, 4 ) );
-        }
     }
 
     @Override
@@ -134,7 +118,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "retrieve.first" ) )
+    @Measure
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -160,7 +144,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "retrieve.all" ) )
+    @Measure
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -185,7 +169,8 @@ public class DefaultContentManager
                 }
 
                 final List<Transfer> storeTransfers = new ArrayList<>();
-                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata, (txfr) -> storeTransfers.add( txfr ) );
+                contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata,
+                                                                     storeTransfers::add );
 
                 // If the content was generated, don't try to retrieve it from a member store...this is the lone exception to retrieveAll
                 // ...if it's generated, it's merged in this case.
@@ -391,22 +376,26 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            nfcContentCleanExecutor.execute( () -> clearNFCEntries( kl, path ) );
+            final String name = String.format("ContentNFCClean-StoreSingle-store(%s)-path(%s)", store.getKey(), path  );
+            final String context =
+                    String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
+                                   store.getKey(), path );
+            storeManager.asyncGroupAffectedBy(
+                    new StoreDataManager.ContextualTask( name, context, () -> clearNFCEntries( kl, path, eventMetadata ) ) );
         }
 
         return txfr;
     }
 
     @Measure
-    protected void clearNFCEntries( final KeyedLocation kl, final String path )
+    protected void clearNFCEntries( final KeyedLocation kl, final String path, EventMetadata eventMetadata )
     {
         try
         {
-            storeManager.query()
-                        .getGroupsAffectedBy( kl.getKey() )
-                        .stream()
-                        .map( ( g ) -> new ConcreteResource( LocationUtils.toLocation( g ), path ) )
-                        .forEach( ( cr ) -> nfc.clearMissing( cr ) );
+            Set<Group> groups = storeManager.affectedBy( Arrays.asList( kl.getKey() ), eventMetadata );
+            groups.stream()
+                  .map( ( g ) -> new ConcreteResource( LocationUtils.toLocation( g ), path ) )
+                  .forEach( ( cr ) -> nfc.clearMissing( cr ) );
 
             nfc.clearMissing( new ConcreteResource( kl, path ) );
         }
@@ -418,7 +407,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "store.all" ) )
+    @Measure
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -441,8 +430,12 @@ public class DefaultContentManager
 
             contentGeneratorManager.handleContentStorage( transferStore, path, txfr, eventMetadata );
 
-            nfcContentCleanExecutor.execute( () -> clearNFCEntries( kl, path ) );
-
+            final String name = String.format("ContentNFCClean-StoreList-location(%s)-path(%s)", kl, path  );
+            final String context =
+                    String.format( "Class: %s, method: %s, location: %s, path: %s", this.getClass().getName(), "store-stores",
+                                   kl, path );
+            storeManager.asyncGroupAffectedBy(
+                    new StoreDataManager.ContextualTask(name, context, () -> clearNFCEntries( kl, path, eventMetadata ) ) );
         }
 
         return txfr;
@@ -463,14 +456,19 @@ public class DefaultContentManager
         if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
         {
             SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
-            if ( info == null || !info.isMetadata() )
+            if ( info != null && info.isMetadata() )
+            {
+                // Set ignore readonly for metadata so that we can delete stale metadata from readonly hosted repo
+                eventMetadata.set( IGNORE_READONLY, Boolean.TRUE );
+            }
+            else
             {
                 logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
                 return false;
             }
         }
 
-        logger.info( "Delete from {}, path: {}", store.getKey(), path );
+        logger.info( "Delete from {}, path: {}, eventMetadata: {}", store.getKey(), path, eventMetadata );
 
         boolean result = false;
         if ( group == store.getKey().getType() )
@@ -591,7 +589,8 @@ public class DefaultContentManager
             }
 
             listed = new ArrayList<>();
-            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata, (list) -> listed.addAll( list ) );
+            contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata,
+                                                                      listed::addAll );
 
             for ( final ArtifactStore member : members )
             {
@@ -614,7 +613,7 @@ public class DefaultContentManager
         else
         {
             listed = downloadManager.list( store, path, metadata );
-            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, (produced) -> listed.addAll( produced ) );
+            contentGeneratorManager.generateDirectoryContentAnd( store, path, listed, metadata, listed::addAll );
         }
 
         return dedupeListing( listed );
@@ -639,7 +638,7 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure( timers = @MetricNamed( "list.all" ) )
+    @Measure
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {

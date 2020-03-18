@@ -250,6 +250,8 @@ public final class ProxyResponseWriter
                     logger.info( "Using proxy authentication: {}", proxyUserPass );
 
                     mdcManager.putExtraHeaders( httpRequest );
+
+                    // FIXME: We cannot trace through this interface currently!
                     mdcManager.putExternalID( proxyUserPass == null ? null : proxyUserPass.getUser() );
 
                     logger.debug( "Proxy UserPass: {}\nConfig secured? {}\nConfig tracking type: {}", proxyUserPass,

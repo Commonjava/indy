@@ -69,6 +69,9 @@ public class IndyDeployment
     private UIConfiguration uiConfiguration;
 
     @Inject
+    private ThreadContextFilter threadContextFilter;
+
+    @Inject
     private ResourceManagementFilter resourceManagementFilter;
 
     @Inject
@@ -162,8 +165,13 @@ public class IndyDeployment
 
         final FilterInfo honeycombFilter =
                         Servlets.filter( "Honeycomb", HoneycombFilter.class,
-                                 new ImmediateInstanceFactory<HoneycombFilter>(
+                                 new ImmediateInstanceFactory<>(
                                          this.honeycombFilter ) );
+
+        final FilterInfo threadContextFilter =
+                Servlets.filter( "ThreadContext Management", ThreadContextFilter.class,
+                                 new ImmediateInstanceFactory<>(
+                                         this.threadContextFilter ) );
 
         final FilterInfo goldenSignalsFilter = Servlets.filter( "Golden-Signals", GoldenSignalsFilter.class,
                                                                 new ImmediateInstanceFactory<>(
@@ -185,6 +193,14 @@ public class IndyDeployment
                                                                                    deployment )
                                                       .addServlet( resteasyServlet )
 
+                                                      .addFilter( threadContextFilter )
+                                                      .addFilterUrlMapping( threadContextFilter.getName(),
+                                                                            "/api/*", DispatcherType.REQUEST )
+
+                                                      .addFilter( honeycombFilter )
+                                                      .addFilterUrlMapping( honeycombFilter.getName(), "/api/*",
+                                                                            DispatcherType.REQUEST )
+
                                                       .addFilter( goldenSignalsFilter )
                                                       .addFilterUrlMapping( goldenSignalsFilter.getName(),
                                                                             "/api/folo/*", DispatcherType.REQUEST )
@@ -203,10 +219,6 @@ public class IndyDeployment
                                                                             "/api/hosted/*", DispatcherType.REQUEST )
                                                       .addFilterUrlMapping( goldenSignalsFilter.getName(),
                                                                             "/api/group/*", DispatcherType.REQUEST )
-
-                                                      .addFilter( honeycombFilter )
-                                                      .addFilterUrlMapping( honeycombFilter.getName(), "/api/*",
-                                                                            DispatcherType.REQUEST )
 
                                                       .addFilter( resourceManagementFilter )
                                                       .addFilterUrlMapping( resourceManagementFilter.getName(),

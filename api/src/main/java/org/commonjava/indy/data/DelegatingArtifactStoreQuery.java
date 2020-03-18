@@ -38,7 +38,7 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         implements ArtifactStoreQuery<T>
 {
 
-    private ArtifactStoreQuery<T> delegate;
+    private ArtifactStoreQuery<T> delegate ;
 
     protected DelegatingArtifactStoreQuery( ArtifactStoreQuery delegate )
     {

@@ -16,8 +16,7 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
-import org.commonjava.indy.measure.annotation.MetricWrapper;
-import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapperStart;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
@@ -28,11 +27,10 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.stream.Stream;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @MetricWrapperStart
@@ -49,30 +47,33 @@ public class HoneycombWrapperStartInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        logger.trace( "START: Honeycomb metrics-start wrapper: {}", name );
         if ( !config.isEnabled() )
         {
+            logger.trace( "SKIP: Honeycomb metrics-start wrapper: {}", name );
             return context.proceed();
         }
 
-        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null )
+        if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( context.getMethod() ) < 1 )
         {
-            context.proceed();
+            logger.trace( "SKIP: Honeycomb metrics-start wrapper (no span name or span not configured: {})", name );
+            return context.proceed();
         }
 
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
         try
         {
             Span span = honeycombManager.startChildSpan( name );
-            if ( span != null )
-            {
-                span.markStart();
-            }
-
             logger.trace( "startChildSpan, span: {}, defaultName: {}", span, name );
         }
         catch ( Exception e )
         {
             logger.error( "Error in honeycomb subsystem! " + e.getMessage(), e );
+        }
+        finally
+        {
+            logger.trace( "END: Honeycomb metrics-start wrapper: {}", name );
         }
 
         return context.proceed();

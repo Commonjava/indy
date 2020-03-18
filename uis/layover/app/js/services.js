@@ -554,7 +554,7 @@ indyServices.factory('CacheSvc', ['$http',
               scope.data = 'Delete failed';
             }
           }, function(response) { // second function handles error
-              scope.data = "Something went wrong - " + response.status + ' ' + response.statusText;
+              scope.data = "Something went wrong - " + response.status + ' ' + response.statusText + ', ' + response.data;
           });
         });
       }

@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-%(short_name)s</artifactId>
-    <version>1.1.1-SNAPSHOT</version>
+    <version>%(version)s</version>
   </parent>
   <artifactId>indy-%(short_name)s-model-java</artifactId>
   <name>Indy :: Add-Ons :: %(long_name)s :: Java Domain Model</name>

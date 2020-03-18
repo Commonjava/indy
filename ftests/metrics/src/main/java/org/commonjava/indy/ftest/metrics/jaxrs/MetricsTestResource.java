@@ -92,8 +92,7 @@ public class MetricsTestResource
 
     @GET
     @Path( "/timer/{isException :[a-zA-Z]+}" )
-    @Measure( timers = @MetricNamed( "testTimerRequest" ),
-                  exceptions = @MetricNamed( "testTimerRequestWithException" ) )
+    @Measure
     public Response getTimer( @PathParam( "isException" ) String isException )
             throws Exception
     {
@@ -109,8 +108,7 @@ public class MetricsTestResource
 
     @GET
     @Path( "/meter/{isException :[a-zA-Z]+}" )
-    @Measure( meters = @MetricNamed( "testMeterRequest" ),
-                  exceptions = @MetricNamed( "testMeterRequestException" ) )
+    @Measure
     public Response getMeter( @PathParam( "isException" ) String isException )
             throws Exception
     {

@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-file-managers</artifactId>
-    <version>1.9.9</version>
+    <version>2.0.0</version>
   </parent>
   
   <artifactId>indy-filer-default</artifactId>
@@ -41,8 +41,16 @@
       <artifactId>galley-cache-partyline</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-cache-path-mapped</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-cassandra</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

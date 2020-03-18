@@ -350,7 +350,7 @@ public class MavenMetadataGenerator
     }
 
     /**
-     *
+     * Generate maven-metadata.xml and checksum files.
      * @param group
      * @param members Concrete stores in group
      * @param path
@@ -370,7 +370,7 @@ public class MavenMetadataGenerator
             toMergePath = normalize( normalize( parentPath( toMergePath ) ), MavenMetadataMerger.METADATA_NAME );
         }
 
-        Transfer target = fileManager.getTransfer( group, toMergePath );
+        final Transfer target = fileManager.getTransfer( group, toMergePath );
         if ( exists( target ) )
         {
             // Means there is no metadata change if this transfer exists, so directly return it.
@@ -378,28 +378,26 @@ public class MavenMetadataGenerator
             eventMetadata.set( GROUP_METADATA_EXISTS, true );
             return target;
         }
-
+        
         AtomicReference<IndyWorkflowException> wfEx = new AtomicReference<>();
-        String mergePath = toMergePath;
+        final String mergePath = toMergePath;
         boolean mergingDone = mergerLocks.ifUnlocked( computeKey(group, toMergePath), p->{
             try
             {
-                logger.debug( "Start metadata generation for the metadata file for this path {} in group {}", path,
-                              group );
+                logger.debug( "Start metadata generation for metadata file {} in group {}", path, group );
                 List<StoreKey> contributing = new ArrayList<>();
                 final Metadata md = generateGroupMetadata( group, members, contributing, path );
                 if ( md != null )
                 {
                     final Versioning versioning = md.getVersioning();
                     logger.trace(
-                            "Regenerated Metadata for group {} of path {}: latest version: {}, versioning versions:{}",
+                            "Regenerated Metadata for group {} of path {}: latest version: {}, versions: {}",
                             group.getKey(), mergePath, versioning != null ? versioning.getLatest() : null,
                             versioning != null ? versioning.getVersions() : null );
                     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     try
                     {
-                        logger.trace( "Metadata file lost for group {} of path {}, will regenerate.", group.getKey(),
-                                      path );
+                        logger.trace( "Regenerate lost metadata, group: {}, path: {}", group.getKey(), path );
                         new MetadataXpp3Writer().write( baos, md );
 
                         final byte[] merged = baos.toByteArray();
@@ -418,7 +416,6 @@ public class MavenMetadataGenerator
                         eventMetadata.set( GROUP_METADATA_GENERATED, true );
                         MetadataInfo info = new MetadataInfo( md );
                         info.setMetadataMergeInfo( mergeInfo );
-
                         putToMetadataCache( group.getKey(), mergePath, info );
                     }
                     catch ( final IOException e )
@@ -451,11 +448,14 @@ public class MavenMetadataGenerator
 
         if ( exists( target ) )
         {
-            // if this is a checksum file, we need to return the original path.
+            // if this is a checksum file, we need to return the original path (if it is metadata, original is target)
             Transfer original = fileManager.getTransfer( group, path );
             if ( exists( original ) )
             {
-                logger.debug( "This is a checksum file, return the original path {}", path );
+                if ( toMergePath != path )
+                {
+                    logger.debug( "This is a checksum file, return the original path {}", path );
+                }
                 return original;
             }
         }

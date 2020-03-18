@@ -18,7 +18,6 @@ package org.commonjava.indy.pkg.maven.content;
 import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.pkg.maven.content.MavenContentsFilteringTransferDecorator;
 import org.commonjava.indy.test.fixture.core.HttpTestFixture;
 import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -153,7 +152,7 @@ public class MavenContentFilteringTransferDecoratorTest
 
         assertThat( transfer.exists(), equalTo( false ) );
 
-        HttpDownload dl = new HttpDownload( url, location, transfer, new HashMap<Transfer, Long>(), new EventMetadata(),
+        HttpDownload dl = new HttpDownload( url, location, transfer, new HashMap<>(), new EventMetadata(),
                                             fixture.getHttp().getHttp(), new ObjectMapper(), metricRegistry, metricConfig );
 
         return dl.call().getTransfer();
@@ -175,7 +174,7 @@ public class MavenContentFilteringTransferDecoratorTest
         MavenContentsFilteringTransferDecorator decorator = new MavenContentsFilteringTransferDecorator();
         listing = decorator.decorateListing( transfer, listing, new EventMetadata() );
 
-        assertThat( listing, CoreMatchers.<String[]>notNullValue() );
+        assertThat( listing, CoreMatchers.notNullValue() );
         assertThat( listing.length, equalTo( 3 ) );
         assertThat( Arrays.asList( listing ).containsAll( listElems ), equalTo( true ) );
     }
@@ -196,7 +195,7 @@ public class MavenContentFilteringTransferDecoratorTest
 
         System.out.println( Arrays.asList( listing ) );
 
-        assertThat( listing, CoreMatchers.<String[]>notNullValue() );
+        assertThat( listing, CoreMatchers.notNullValue() );
         assertThat( listing.length, equalTo( 2 ) );
         assertThat( Arrays.asList( listing ).contains( "1.0-SNAPSHOT/" ), equalTo( false ) );
         assertThat( Arrays.asList( listing ).contains( "1.1-SNAPSHOT/" ), equalTo( false ) );
@@ -217,8 +216,72 @@ public class MavenContentFilteringTransferDecoratorTest
         MavenContentsFilteringTransferDecorator decorator = new MavenContentsFilteringTransferDecorator();
         listing = decorator.decorateListing( transfer, listing, new EventMetadata() );
 
-        assertThat( listing, CoreMatchers.<String[]>notNullValue() );
+        assertThat( listing, CoreMatchers.notNullValue() );
         assertThat( listing.length, equalTo( 0 ) );
+    }
+
+    @Test
+    public void hugeVersionListMetadataWritable()
+            throws Exception
+    {
+        final String fname = "/org/foo/bar/maven-metadata.xml";
+
+        final String content = getHugeVersionListMetadata();
+
+        final String baseUri = fixture.getBaseUri();
+        final SimpleHttpLocation location = new SimpleHttpLocation( "test", baseUri, false, true, true, true, null );
+        final Transfer transfer = fixture.getTransfer( new ConcreteResource( location, fname ) );
+        final String url = fixture.formatUrl( fname );
+
+        assertThat( transfer.exists(), equalTo( false ) );
+
+        try (OutputStream stream = transfer.openOutputStream( TransferOperation.UPLOAD ))
+        {
+            IOUtils.write( content, stream );
+        }
+
+        try (InputStream in = transfer.openInputStream())
+        {
+            List<String> filtered = IOUtils.readLines( in );
+            assertThat( filtered, notNullValue() );
+            StringBuilder builder = new StringBuilder();
+            filtered.forEach( builder::append );
+            String result = builder.toString();
+            assertThat( result.length() > 1000, equalTo( true ) );
+        }
+    }
+
+    private String getHugeVersionListMetadata()
+    {
+        final int latestMajar = 5, latestMinor = 10, latestRelease = 40;
+        final String latest = String.format( "%s.%s.%s", latestMajar, latestMinor, latestRelease );
+
+        final StringBuilder builder = new StringBuilder();
+        builder.append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" )
+               .append( "<metadata>" )
+               .append( "<groupId>org.foo</groupId>" )
+               .append( "<artifactId>bar</artifactId>" )
+               .append( "<versioning>" )
+               .append( String.format( "<latest>%s</latest>", latest ) )
+               .append( String.format( "<release>%s</release>", latest ) )
+               .append( "<versions>" );
+
+        for ( int ma = 1; ma <= latestMajar; ma++ )
+        {
+            for ( int mi = 1; mi <= latestMinor; mi++ )
+            {
+                for ( int rel = 1; rel <= latestRelease; rel++ )
+                {
+                    builder.append( String.format( "<version>%s.%s.%s</version>", ma, mi, rel ) );
+                }
+            }
+        }
+        builder.append( "</versions>" );
+        builder.append( String.format( "<lastUpdated>%s</lastUpdated>", System.currentTimeMillis() ) )
+               .append( "</versioning>" )
+               .append( "</metadata>" );
+
+        return builder.toString();
     }
 
 }

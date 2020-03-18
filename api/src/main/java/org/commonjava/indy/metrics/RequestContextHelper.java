@@ -121,7 +121,7 @@ public class RequestContextHelper
     public static final String REQUEST_LATENCY_NS = "request-latency-ns";
 
     @Thread
-    public static final String REQUEST_LATENCY_MILLIS = "request-latency";
+    public static final String REQUEST_LATENCY_MILLIS = "latency_ms";
 
     @MDC
     public static final String REQUEST_PHASE = "request-phase";
@@ -154,7 +154,13 @@ public class RequestContextHelper
     public static final String X_FORWARDED_FOR = "x-forwarded-for";
 
     @Header @Thread @MDC
-    public static final String EXTERNAL_ID = "external-id";
+    public static final String EXTERNAL_TRACE_ID = "trace-id";
+
+    @Header
+    public static final String SPAN_ID_HEADER = "span-id";
+
+    @Thread @MDC
+    public static final String REQUEST_PARENT_SPAN = "parent-span";
 
     @Thread @MDC
     public static final String CLIENT_ADDR = "client-addr";
@@ -163,7 +169,10 @@ public class RequestContextHelper
     public static final String INTERNAL_ID = "internal-id";
 
     @Thread @MDC
-    public static final String PREFERRED_ID = "preferred-id";
+    public static final String TRACE_ID = "trace-id";
+
+    @Thread
+    public static final String FORCE_METERED = "force-metered";
 
     @Thread
     public static final String IS_METERED = "is-metered";

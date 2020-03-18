@@ -16,9 +16,8 @@
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
 import io.honeycomb.beeline.tracing.Span;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
-import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
@@ -28,12 +27,11 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.stream.Stream;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @MetricWrapper
@@ -50,45 +48,38 @@ public class HoneycombWrapperInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        logger.debug( "START: Honeycomb lambda wrapper: {}", name );
         if ( !config.isEnabled() )
         {
+            logger.debug( "SKIP Honeycomb lambda wrapper: {}", name );
             return context.proceed();
         }
 
-        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
-        if ( name == null )
+        if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( name ) < 1 )
         {
-            context.proceed();
+            logger.debug( "SKIP Honeycomb lambda wrapper (no span name or span not configured: {})", name );
+            return context.proceed();
         }
 
         Span span = null;
         try
         {
             span = honeycombManager.startChildSpan( name );
-            if ( span != null )
-            {
-                span.markStart();
-            }
-
-            logger.trace( "startChildSpan, span: {}, defaultName: {}", span, name );
+            logger.trace( "startChildSpan, span: {}, name: {}", span, name );
             return context.proceed();
         }
         finally
         {
             if ( span != null )
             {
-                Span theSpan = span;
-                Stream.of( config.getFields()).forEach( field->{
-                    Object value = getContext( field );
-                    if ( value != null )
-                    {
-                        theSpan.addField( field, value );
-                    }
-                });
+                honeycombManager.addFields( span );
 
                 logger.trace( "closeSpan, {}", span );
                 span.close();
             }
+
+            logger.debug( "END: Honeycomb lambda wrapper: {}", name );
         }
     }
 

@@ -38,20 +38,16 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_COUNTS;
 import static org.commonjava.indy.metrics.RequestContextHelper.CUMULATIVE_TIMINGS;
-import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.FORCE_METERED;
 import static org.commonjava.indy.metrics.RequestContextHelper.IS_METERED;
-import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
 import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
-import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
 
 @ApplicationScoped
 public class ResourceManagementFilter
@@ -107,28 +103,26 @@ public class ResourceManagementFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
             throws IOException, ServletException
     {
-        String name = Thread.currentThread().getName();
-        String clientAddr = request.getRemoteAddr();
+        logger.trace( "START: {}", getClass().getSimpleName() );
 
         final HttpServletRequest hsr = (HttpServletRequest) request;
-        final String xForwardFor = hsr.getHeader( X_FORWARDED_FOR );
-        if ( xForwardFor != null )
-        {
-            clientAddr = xForwardFor; // OSE proxy use HTTP header 'x-forwarded-for' to represent user IP
-        }
+
+        String name = Thread.currentThread().getName();
 
         String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         String qs = hsr.getQueryString();
 
+        String clientAddr = RequestContextHelper.getContext( CLIENT_ADDR );
+        if ( clientAddr == null )
+        {
+            clientAddr = hsr.getRemoteAddr();
+        }
+
         try
         {
-            ThreadContext.clearContext();
             ThreadContext threadContext = ThreadContext.getContext( true );
 
-            boolean isMetered = metricsManager.isMetered( ()->{
-                String header = hsr.getHeader( FORCE_METERED );
-                return ( header == null || Boolean.parseBoolean( header ) );
-            } );
+            boolean isMetered = metricsManager.isMetered( ()-> RequestContextHelper.getContext( FORCE_METERED, Boolean.FALSE ) );
 
             threadContext.put( IS_METERED, isMetered );
 
@@ -137,14 +131,6 @@ public class ResourceManagementFilter
             threadContext.put( HTTP_REQUEST, hsr );
 
             threadContext.put( METHOD_PATH_TIME, tn );
-
-            threadContext.put( CLIENT_ADDR, clientAddr );
-
-            putRequestIDs( hsr, threadContext, mdcManager );
-
-            mdcManager.putUserIP( clientAddr );
-
-            mdcManager.putExtraHeaders( hsr );
 
             logger.debug( "START request: {} (from: {})", tn, clientAddr );
 
@@ -216,11 +202,12 @@ public class ResourceManagementFilter
             restLogger.info( "END {}{} (from: {})", hsr.getRequestURL(), qs == null ? "" : "?" + qs, clientAddr );
 
             Thread.currentThread().setName( name );
-            ThreadContext.clearContext();
 
             logger.debug( "END request: {} (from: {})", tn, clientAddr );
 
             mdcManager.clear();
+
+            logger.trace( "END: {}", getClass().getSimpleName() );
         }
     }
 
@@ -245,35 +232,6 @@ public class ResourceManagementFilter
                 return SPECIAL_CONTENT_METRIC;
             }
         };
-    }
-
-    /**
-     * Put to MDC / threadContext request IDs.
-    */
-    private void putRequestIDs( HttpServletRequest hsr, ThreadContext threadContext, MDCManager mdcManager )
-    {
-        /* We would always generate internalID and provide that in the MDC.
-         * If the calling service supplies an externalID, we'd map that under its own key.
-         * PreferredID should try to use externalID if it's available, and default over to using internalID if it's not.
-         * What this gives us is a single key we can use to reference an ID for the request,
-         * and whenever possible it'll reflect the externally supplied ID.
-         */
-        String internalID = UUID.randomUUID().toString();
-        String externalID = hsr.getHeader( EXTERNAL_ID );
-        String preferredID = externalID != null ? externalID : internalID;
-
-        mdcManager.putRequestIDs( internalID, externalID, preferredID );
-
-        /*
-         * We should also put the same values in the ThreadContext map, so we can reference them from code without
-         * having to go through the logging framework
-         */
-        threadContext.put( INTERNAL_ID, internalID );
-        if ( externalID != null )
-        {
-            threadContext.put( EXTERNAL_ID, externalID );
-        }
-        threadContext.put( PREFERRED_ID, preferredID );
     }
 
     @Override

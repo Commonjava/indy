@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.mem.data;
 
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
@@ -33,6 +34,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 @ApplicationScoped
@@ -54,6 +56,12 @@ public class MemoryStoreDataManager
     public MemoryStoreDataManager( final boolean unitTestUsage )
     {
         this.dispatcher = new NoOpStoreEventDispatcher();
+        if ( unitTestUsage )
+        {
+            super.affectedByAsyncRunner = Executors.newFixedThreadPool( 4, new NamedThreadFactory(
+                            AFFECTED_BY_ASYNC_RUNNER_NAME, new ThreadGroup( AFFECTED_BY_ASYNC_RUNNER_NAME ), true,
+                            4 ) );
+        }
     }
 
     public MemoryStoreDataManager( final StoreEventDispatcher dispatcher )

@@ -15,10 +15,14 @@
  */
 package org.commonjava.indy.ftest.core;
 
+import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.Module;
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.propulsor.boot.BootStatus;
 import org.commonjava.propulsor.boot.BootException;
 import org.commonjava.indy.client.core.Indy;
@@ -41,7 +45,8 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -86,6 +91,8 @@ public abstract class AbstractIndyFunctionalTest
 
     protected File storageDir;
 
+    protected CacheProvider cacheProvider;
+
     @SuppressWarnings( "resource" )
     @Before
     public void start()
@@ -120,12 +127,19 @@ public abstract class AbstractIndyFunctionalTest
             }
 
             client = createIndyClient();
+            cacheProvider = CDI.current().select( CacheProvider.class ).get();
         }
         catch ( Throwable t )
         {
             logger.error( "Error initializing test", t );
             throw t;
         }
+    }
+
+    // Override this if your test do not access storage
+    protected boolean isPathMappedStorageEnabled()
+    {
+        return true;
     }
 
     protected Indy createIndyClient()
@@ -182,9 +196,54 @@ public abstract class AbstractIndyFunctionalTest
     public void stop()
             throws IndyLifecycleException
     {
-//        waitForEventPropagation();
+        dropKeyspace( "cache_" );
+        dropKeyspace( "storage_" );
+        closeCacheProvider();
         closeQuietly( fixture );
         closeQuietly( client );
+    }
+
+    // TODO: this is a hack due to the "shutdown action not executed" issue. Once propulsor lifecycle shutdown is applied, this can be replaced.
+    private void closeCacheProvider()
+    {
+        if ( cacheProvider != null )
+        {
+            cacheProvider.asAdminView().close();
+        }
+    }
+
+    private void dropKeyspace( String prefix )
+    {
+        String keyspace = getKeyspace( prefix );
+        logger.debug( "Drop cassandra keyspace: {}", keyspace );
+        CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
+        Session session = cassandraClient.getSession( keyspace );
+        if ( session != null )
+        {
+            try
+            {
+                session.execute( "DROP KEYSPACE IF EXISTS " + keyspace );
+            }
+            catch ( Exception ex )
+            {
+                logger.warn( "Failed to drop keyspace: {}, reason: {}", keyspace, ex );
+            }
+        }
+        cassandraClient.close();
+    }
+
+    protected void sleepAndRunFileGC( long milliseconds )
+    {
+        try
+        {
+            Thread.sleep( milliseconds );
+        }
+        catch ( InterruptedException e )
+        {
+            e.printStackTrace();
+        }
+        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
+        cacheProvider.asAdminView().gc();
     }
 
     protected final CoreServerFixture newServerFixture()
@@ -222,18 +281,35 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/storage.conf", "[storage-default]\nstorage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage" );
+        writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" ) + "\naffected.groups.exclude=^build-\\d+");
+        writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
+                        + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
+                        + "storage.gc.graceperiodinhours=0\n"
+                        + "storage.gc.batchsize=0\n"
+                        + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
+
+        writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
-
             writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
         }
         else
         {
             writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
         }
+    }
+
+    private String getKeyspace( String prefix )
+    {
+        String keyspace = prefix + getClass().getSimpleName();
+        if ( keyspace.length() > 48 )
+        {
+            keyspace = keyspace.substring( 0, 48 ); // keyspace has to be less than 48 characters
+        }
+        return keyspace;
     }
 
     protected boolean isSchedulerEnabled()

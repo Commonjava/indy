@@ -27,6 +27,7 @@ import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.util.LocationUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -127,8 +128,7 @@ public class GroupHttpHeadersFromSameRepoWhenNotInPathMaskTest
 //        repoX.setDisabled( true );
 //        client.stores().update( repoX, "disabling" );
 
-        File remoteYFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", MAVEN_PKG_KEY,
-                                      remote.singularEndpointName() + "-Y", PATH ).toFile();
+        File remoteYFile = getPhysicalStorageFile( LocationUtils.toLocation( repoY ), PATH );
 
         waitForEventPropagation();
 

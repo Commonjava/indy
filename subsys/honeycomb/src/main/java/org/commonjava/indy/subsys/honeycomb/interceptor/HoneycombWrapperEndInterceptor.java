@@ -15,9 +15,10 @@
  */
 package org.commonjava.indy.subsys.honeycomb.interceptor;
 
+import io.honeycomb.beeline.tracing.Beeline;
 import io.honeycomb.beeline.tracing.Span;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.measure.annotation.MetricWrapper;
-import org.commonjava.indy.measure.annotation.MetricWrapperNamed;
 import org.commonjava.indy.subsys.honeycomb.HoneycombManager;
 import org.commonjava.indy.subsys.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
@@ -27,11 +28,10 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.stream.Stream;
 
+import static org.commonjava.indy.metrics.IndyMetricsConstants.SKIP_METRIC;
 import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombInterceptorUtils.SAMPLE_OVERRIDE;
 
 @Interceptor
 @MetricWrapper
@@ -48,28 +48,39 @@ public class HoneycombWrapperEndInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        String name = HoneycombInterceptorUtils.getMetricNameFromParam( context );
+        logger.trace( "START: Honeycomb metrics-end wrapper: {}", name );
         if ( !config.isEnabled() )
         {
+            logger.trace( "SKIP: Honeycomb metrics-end wrapper: {}", name );
             return context.proceed();
         }
 
-        Span span = honeycombManager.getBeeline().getActiveSpan();
-        if ( span != null )
+        if ( name == null || SKIP_METRIC.equals( name ) || config.getSampleRate( context.getMethod() ) < 1 )
         {
-            Span theSpan = span;
-            Stream.of( config.getFields()).forEach( field->{
-                Object value = getContext( field );
-                if ( value != null )
-                {
-                    theSpan.addField( field, value );
-                }
-            });
-
-            logger.trace( "closeSpan, {}", span );
-            span.close();
+            logger.trace( "SKIP: Honeycomb metrics-end wrapper (span not configured: {})", name );
+            return context.proceed();
         }
 
-        return context.proceed();
+//        ThreadContext.getContext( true ).put( SAMPLE_OVERRIDE, Boolean.TRUE );
+        Beeline beeline = honeycombManager.getBeeline();
+        Span span = beeline.getActiveSpan();
+        try
+        {
+            if ( span != null )
+            {
+                honeycombManager.addFields( span );
+
+                logger.trace( "closeSpan, {}", span );
+                span.close();
+            }
+
+            return context.proceed();
+        }
+        finally
+        {
+            logger.trace( "END: Honeycomb metrics-end wrapper: {}", name );
+        }
     }
 
 }

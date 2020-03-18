@@ -521,7 +521,7 @@ indyControllers.controller('CacheCtl', ['$scope', '$routeParams', 'CacheSvc', 'C
   };
   $scope.deleteCache = function(){
     if ( !$scope.path || $scope.path.length < 1 ){
-      alert( "You must provide a path!" );
+      alert( "You must provide a valid metadata path!" );
       return;
     }
     CacheSvc.remove($scope, $scope.path, ControlSvc);

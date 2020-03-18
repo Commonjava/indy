@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>1.9.9</version>
+    <version>2.0.0</version>
   </parent>
   
   <artifactId>indy-deployments</artifactId>
@@ -31,8 +31,6 @@
   
   <modules>
     <module>launcher</module>
-<!--     <module>cache-migrator</module>
-    <module>record-extractor</module> -->
   </modules>
 
   <profiles>
@@ -40,6 +38,12 @@
       <id>docker</id>
       <modules>
         <module>docker</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>standalone</id>
+      <modules>
+        <module>standalone</module>
       </modules>
     </profile>
   </profiles>

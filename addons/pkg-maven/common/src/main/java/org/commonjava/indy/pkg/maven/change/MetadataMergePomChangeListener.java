@@ -23,7 +23,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
-import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataCacheManager;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
@@ -38,9 +37,11 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
-import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 
+import static org.commonjava.indy.data.StoreDataManager.AFFECTED_GROUPS;
+import static org.commonjava.indy.data.StoreDataManager.TARGET_STORE;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.pkg.maven.content.MetadataUtil.getMetadataPath;
 import static org.commonjava.indy.util.LocationUtils.getKey;
@@ -92,50 +93,47 @@ public class MetadataMergePomChangeListener
             return;
         }
 
+        EventMetadata eventMetadata = event.getEventMetadata();
+
         final StoreKey key = getKey( event );
         final String clearPath = getMetadataPath( path );
-        logger.info( "Pom file {} {}, will clean its matched metadata file {}", path, eventOps, clearPath );
+        logger.info( "Pom file {} {}, will clean matched metadata file {}, store: {}", path, eventOps, clearPath, key );
+
         try
         {
             if ( hosted == key.getType() )
             {
-                HostedRepository hosted = dataManager.query().getHostedRepository( key.getName() );
-                try
+                logger.debug( "Get eventMetadata: {}", eventMetadata );
+                ArtifactStore hosted = null;
+                if ( eventMetadata != null )
                 {
-                    if ( doClear( hosted, clearPath ) )
-                    {
-                        cacheManager.remove( hosted.getKey(), clearPath );
-                        logger.info( "Metadata file {} in store {} cleared.", path, key );
-                    }
+                    hosted = (ArtifactStore) eventMetadata.get( TARGET_STORE );
                 }
-                catch ( final IOException e )
+                if ( hosted == null )
                 {
-                    logger.error(
-                            String.format( "Failed to delete: %s from hosted: %s when pom version changed. Error: %s",
-                                           path, hosted, e.getMessage() ), e );
+                    hosted = dataManager.getArtifactStore( key );
                 }
 
-                final Set<Group> groups = dataManager.query().getGroupsAffectedBy( key );
+                if ( doClear( hosted, clearPath ) )
+                {
+                    cacheManager.remove( key, clearPath );
+                    logger.info( "Metadata file {} in store {} cleared.", clearPath, key );
+                }
+
+                final Set<Group> groups = dataManager.affectedBy( Arrays.asList( key ), event.getEventMetadata() );
+
                 if ( groups != null )
                 {
-                    logger.info( "Clearing metadata file {} for following groups which are affected by {}: {}", path,
-                                 key, groups );
+                    long begin = System.currentTimeMillis();
                     for ( final Group group : groups )
                     {
-                        try
+                        if ( doClear( group, clearPath ) )
                         {
-                            if ( doClear( group, clearPath ) )
-                            {
-                                cacheManager.remove( group.getKey(), clearPath );
-                            }
-                        }
-                        catch ( final IOException e )
-                        {
-                            logger.error( String.format(
-                                    "Failed to delete: %s from its group: %s when pom version changed. Error: %s", path,
-                                    group, e.getMessage() ), e );
+                            cacheManager.remove( group.getKey(), clearPath );
                         }
                     }
+                    logger.info( "Clearing metadata file {} for {} groups affected by {}, timeMillis: {}", clearPath,
+                                 groups.size(), key, ( System.currentTimeMillis() - begin ) );
                 }
             }
         }
@@ -147,54 +145,51 @@ public class MetadataMergePomChangeListener
     }
 
     private boolean doClear( final ArtifactStore store, final String path )
-            throws IOException
     {
-        boolean isCleared = false;
         logger.trace( "Updating merged metadata file: {} in store: {}", path, store.getKey() );
 
-        final Transfer[] toDelete = { fileManager.getStorageReference( store, path ),
-                fileManager.getStorageReference( store, path + GroupMergeHelper.MERGEINFO_SUFFIX ) };
+        final Transfer item = fileManager.getStorageReference( store, path );
+        final boolean isMetadata = item.getPath().endsWith( MavenMetadataMerger.METADATA_NAME );
 
-        for ( final Transfer item : toDelete )
+        logger.trace( "Attempting to delete: {}", item );
+        if ( item.exists() )
         {
-            logger.trace( "Attempting to delete: {}", item );
-
-            if ( item.exists() )
+            boolean result = deleteQuietly( store, item );
+            logger.trace( "Deleted: {} (success? {})", item, result );
+            if ( result && isMetadata )
             {
-                boolean result = false;
-                try
-                {
-                    result = fileManager.delete( store, item.getPath(),
-                                                 new EventMetadata().set( StoreDataManager.IGNORE_READONLY, true ) );
-                }
-                catch ( IndyWorkflowException e )
-                {
-                    logger.warn( "Deletion failed for metadata clear, transfer is {}, failed reason:{}", item,
-                                 e.getMessage() );
-                }
-
-                logger.trace( "Deleted: {} (success? {})", item, result );
-
-                if ( item.getPath().endsWith( MavenMetadataMerger.METADATA_NAME ) )
-                {
-                    isCleared = result;
-                }
-                if ( fileEvent != null )
-                {
-                    logger.trace( "Firing deletion event for: {}", item );
-                    fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
-                }
+                Transfer info = fileManager.getStorageReference( store, path + GroupMergeHelper.MERGEINFO_SUFFIX );
+                deleteQuietly( store, info );
             }
-            else if ( item.getPath().endsWith( MavenMetadataMerger.METADATA_NAME ) )
+            if ( fileEvent != null )
             {
-                // we should return true here to trigger cache cleaning, because file not exists in store does not mean
-                // metadata not exists in cache.
-                logger.debug(
-                        "Metadata clean for {}: metadata not existed in store, so skipped deletion and mark as deleted",
-                        item );
-                return true;
+                logger.trace( "Firing deletion event for: {}", item );
+                fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
             }
+            return result;
         }
-        return isCleared;
+        else if ( isMetadata )
+        {
+            // we should return true here to trigger cache cleaning, because file not exists in store does not mean
+            // metadata not exists in cache.
+            logger.debug( "Metadata clean for {}: metadata not existed, skip deletion and mark as deleted", item );
+            return true;
+        }
+        return false;
     }
+
+    private boolean deleteQuietly( final ArtifactStore store, final Transfer item )
+    {
+        try
+        {
+            return fileManager.delete( store, item.getPath(),
+                                       new EventMetadata().set( StoreDataManager.IGNORE_READONLY, true ) );
+        }
+        catch ( IndyWorkflowException e )
+        {
+            logger.warn( "Deletion failed for metadata clear, transfer: {}, reason: {}", item, e.getMessage() );
+        }
+        return false;
+    }
+
 }

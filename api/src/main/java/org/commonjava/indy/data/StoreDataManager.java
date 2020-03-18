@@ -45,6 +45,16 @@ public interface StoreDataManager
     String IGNORE_READONLY = "ignore-readonly";
 
     /**
+     * We calculate and pass the affected groups through different modules, e.g, in case of promotion.
+     */
+    String AFFECTED_GROUPS = "affected_groups";
+
+    /**
+     * We pass the target store through different modules, e.g, in case of promotion.
+     */
+    String TARGET_STORE = "target_store";
+
+    /**
      * Need to store change summary for repository change processing
      */
     String CHANGE_SUMMARY = "change-summary";
@@ -143,4 +153,50 @@ public interface StoreDataManager
 
     Set<Group> affectedBy( Collection<StoreKey> keys )
             throws IndyDataException;
+
+    /**
+     * Get affected-by groups from event metadata if provided.
+     * @param keys
+     * @param eventMetadata
+     */
+    Set<Group> affectedBy( Collection<StoreKey> keys, EventMetadata eventMetadata ) throws IndyDataException;
+
+    /**
+     * This api is used for some time-sensitive tasks which should use getGroupsAffectedBy service, as
+     * this service is a little time-consuming now.
+     *
+     * @param contextualTask
+     */
+    void asyncGroupAffectedBy( ContextualTask contextualTask );
+
+    class ContextualTask
+    {
+        private String threadName;
+
+        private String taskContext;
+
+        private Runnable task;
+
+        public ContextualTask( String threadName, String taskContext, Runnable task )
+        {
+            this.threadName = threadName;
+            this.taskContext = taskContext;
+            this.task = task;
+        }
+
+        public String getTaskContext()
+        {
+            return this.taskContext;
+        }
+
+        public String getThreadName(){
+            return this.threadName;
+        }
+
+        public Runnable getTask()
+        {
+            return task;
+        }
+
+    }
 }

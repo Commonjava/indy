@@ -15,9 +15,13 @@
  */
 package org.commonjava.indy.db.common;
 
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.data.ArtifactStoreQuery;
@@ -33,9 +37,11 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
+import org.commonjava.indy.util.ValuePipe;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -46,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
@@ -53,6 +60,9 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptySet;
+import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -75,11 +85,25 @@ public abstract class AbstractStoreDataManager
     @Inject
     private SslValidationConfig configuration;
 
-    @Inject StoreDataManager storeDataManager;
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
+    @Inject
+    StoreDataManager storeDataManager;
 
     @Inject
     InternalFeatureConfig internalFeatureConfig;
 
+    protected static final String AFFECTED_BY_ASYNC_RUNNER_NAME = "store-affected-by-async-runner";
+
+    @Inject
+    @WeftManaged
+    @ExecutorConfig( named = AFFECTED_BY_ASYNC_RUNNER_NAME, priority = 4, threads = 32 )
+    protected ExecutorService affectedByAsyncRunner;
+
+    protected AbstractStoreDataManager()
+    {
+    }
 
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
@@ -452,10 +476,40 @@ public abstract class AbstractStoreDataManager
                                         .collect( Collectors.toSet() );
     }
 
+    @Override
+    public Set<Group> affectedBy( Collection<StoreKey> keys, EventMetadata eventMetadata ) throws IndyDataException
+    {
+        Set<Group> groups = null;
+        if ( eventMetadata != null )
+        {
+            ValuePipe<Set<Group>> valuePipe = (ValuePipe) eventMetadata.get( AFFECTED_GROUPS );
+            groups = valuePipe != null ? valuePipe.get() : null;
+        }
+        if ( groups == null )
+        {
+            groups = affectedBy( keys );
+        }
+        return groups;
+    }
+
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
             throws IndyDataException
     {
         return affectedByFromStores( keys );
+    }
+
+    @Override
+    public void asyncGroupAffectedBy( ContextualTask contextualTask )
+    {
+        if ( StringUtils.isNotBlank( contextualTask.getTaskContext() ) )
+        {
+            MDC.put( "group-affected-runner-context", contextualTask.getTaskContext() );
+        }
+        affectedByAsyncRunner.execute( () -> {
+            Thread.currentThread()
+                  .setName( String.format( "%s::%s", AFFECTED_BY_ASYNC_RUNNER_NAME, contextualTask.getThreadName() ) );
+            contextualTask.getTask().run();
+        } );
     }
 
     protected Set<Group> affectedByFromStores( final Collection<StoreKey> keys )
@@ -509,7 +563,37 @@ public abstract class AbstractStoreDataManager
             }
         }
 
-        return groups;
+        return filterAffectedGroups( groups );
+    }
+
+    /**
+     * Filter unnecessary affected groups in clean-up process. Most likely to exclude all the temp groups.
+     */
+    public Set<Group> filterAffectedGroups( Set<Group> affectedGroups )
+    {
+        if ( affectedGroups == null )
+        {
+            return emptySet();
+        }
+        if ( indyConfiguration == null )
+        {
+            return affectedGroups;
+        }
+        String excludeFilter = indyConfiguration.getAffectedGroupsExcludeFilter();
+        logger.debug( "Filter affected groups, exclude: {}", excludeFilter );
+        if ( isBlank( excludeFilter ) )
+        {
+            return affectedGroups;
+        }
+        return affectedGroups.stream()
+                             .filter( s -> !s.getName().matches( excludeFilter ) )
+                             .collect( Collectors.toSet() );
+    }
+
+    public boolean isExcludedGroup( Group group )
+    {
+        String filter = indyConfiguration.getAffectedGroupsExcludeFilter();
+        return isNotBlank( filter ) && group.getName().matches( filter );
     }
 
 }

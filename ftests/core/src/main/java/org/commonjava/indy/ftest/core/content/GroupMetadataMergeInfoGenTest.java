@@ -24,6 +24,8 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.ConcreteResource;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -195,17 +197,10 @@ public class GroupMetadataMergeInfoGenTest
     private void assertInfoContent( final ArtifactStore store, final String path, final String expectedContent )
             throws Exception
     {
-
-//        final String infoFilePath =
-//                String.format( "%s/var/lib/indy/storage/%s-%s/%s", fixture.getBootOptions().getIndyHome(), group.name(),
-//                               store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX );
-        final File infoFile = Paths.get( fixture.getBootOptions().getHomeDir(), "var/lib/indy/storage", store.getPackageType(),
-                                         group.singularEndpointName() + "-" + store.getName(), path + GroupMergeHelper.MERGEINFO_SUFFIX ).toFile();
-        assertThat( "info file doesn't exist", infoFile.exists(), equalTo( true ) );
-
-        try (final InputStream stream = new FileInputStream( infoFile ))
+        ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ),
+                                                     path + GroupMergeHelper.MERGEINFO_SUFFIX );
+        try (final InputStream stream = cacheProvider.openInputStream( res ) )
         {
-            System.out.println( stream );
             assertThat( IOUtils.toString( stream ), equalTo( expectedContent ) );
         }
     }

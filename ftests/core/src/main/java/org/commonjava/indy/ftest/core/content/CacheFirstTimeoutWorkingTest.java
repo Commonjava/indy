@@ -15,13 +15,11 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.io.File;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -50,7 +48,7 @@ public class CacheFirstTimeoutWorkingTest
         logger.debug( "Starting sleep at: {}", new Date() );
 
         // make sure the non-metadata content times out
-        Thread.sleep( CACHE_TIMEOUT_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( CACHE_TIMEOUT_WAITING_MILLISECONDS );
         logger.debug( "Verifying content timeouts at: {} (timeout: {}s)", new Date(), CACHE_TIMEOUT_SECONDS );
 
         assertThat( "artifact should be removed when cache timeout", pomFile.exists(), equalTo( false ) );
@@ -59,7 +57,7 @@ public class CacheFirstTimeoutWorkingTest
                     equalTo( true ) );
 
         // make sure the metadata content times out
-        Thread.sleep( METADATA_TIMEOUT_ADDITIONAL_WAITING_MILLISECONDS );
+        sleepAndRunFileGC( METADATA_TIMEOUT_ADDITIONAL_WAITING_MILLISECONDS );
         logger.debug( "Verifying metadata timeouts at: {} (timeout: {}s)", new Date(), METADATA_TIMEOUT_SECONDS );
 
         assertThat( "metadata should be removed when metadata timeout", metadataFile.exists(), equalTo( false ) );

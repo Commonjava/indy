@@ -17,22 +17,18 @@ package org.commonjava.indy.conf;
 
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
-import org.commonjava.propulsor.config.section.ConfigurationSectionListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isEmpty;
 
-@SectionName( ConfigurationSectionListener.DEFAULT_SECTION )
+@SectionName
 @ApplicationScoped
 public class DefaultIndyConfiguration
     implements IndyConfiguration, IndyConfigInfo, SystemPropertyProvider
@@ -48,13 +44,21 @@ public class DefaultIndyConfiguration
 
     public static final int DEFAULT_NFC_EXPIRATION_SWEEP_MINUTES = 30;
 
-    public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 10000; // 10,000
+    public static final int DEFAULT_NFC_MAX_RESULT_SET_SIZE = 5000;
 
     public static final Boolean DEFAULT_ALLOW_REMOTE_LIST_DOWNLOAD = false;
 
     public static final int DEFAULT_REMOTE_METADATA_TIMEOUT_SECONDS = 86400;
 
     public static final int DEFAULT_FORKJOINPOOL_COMMON_PARALLELISM = 48;
+
+    public static final String ISPN_NFC_PROVIDER = "ispn";
+
+    public static final String CASSANDRA_NFC_PROVIDER = "cassandra";
+
+    public static final String DEFAULT_NFC_PROVIDER = ISPN_NFC_PROVIDER;
+
+    public static final Boolean DEFAULT_STANDALONE = false;
 
     private Integer passthroughTimeoutSeconds;
 
@@ -63,6 +67,8 @@ public class DefaultIndyConfiguration
     private Integer requestTimeoutSeconds;
 
     private Integer storeDisableTimeoutSeconds;
+
+    private String nfcProvider;
 
     private Integer nfcExpirationSweepMinutes;
 
@@ -80,6 +86,11 @@ public class DefaultIndyConfiguration
 
     private String nodeId;
 
+    private String affectedGroupsExcludeFilter;
+
+    private String cacheKeyspace = "indycache"; // default
+
+    private Boolean standalone;
 
     public DefaultIndyConfiguration()
     {
@@ -132,6 +143,18 @@ public class DefaultIndyConfiguration
     public void setPassthroughTimeoutSeconds( final int seconds )
     {
         passthroughTimeoutSeconds = seconds;
+    }
+
+    @Override
+    public String getNfcProvider()
+    {
+        return nfcProvider == null ? DEFAULT_NFC_PROVIDER : nfcProvider;
+    }
+
+    @ConfigName( "nfc.provider" )
+    public void setNfcProvider( String nfcProvider )
+    {
+        this.nfcProvider = nfcProvider;
     }
 
     @ConfigName( "nfc.timeout" )
@@ -256,6 +279,18 @@ public class DefaultIndyConfiguration
         return clusterEnabled == null ? false : clusterEnabled;
     }
 
+    @ConfigName( "cache.keyspace" )
+    public void setCacheKeyspace( String cacheKeyspace )
+    {
+        this.cacheKeyspace = cacheKeyspace;
+    }
+
+    @Override
+    public String getCacheKeyspace()
+    {
+        return cacheKeyspace;
+    }
+
     @ConfigName( "cluster.enabled" )
     public void setClusterEnabled( Boolean clusterEnabled )
     {
@@ -272,6 +307,30 @@ public class DefaultIndyConfiguration
     public void setRemoteMetadataTimeoutSeconds( Integer remoteMetadataTimeoutSeconds )
     {
         this.remoteMetadataTimeoutSeconds = remoteMetadataTimeoutSeconds;
+    }
+
+    @Override
+    public String getAffectedGroupsExcludeFilter()
+    {
+        return affectedGroupsExcludeFilter;
+    }
+
+    @ConfigName( "affected.groups.exclude" )
+    public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
+    {
+        this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
+    }
+
+    @Override
+    public Boolean isStandalone()
+    {
+        return this.standalone == null ? DEFAULT_STANDALONE : this.standalone;
+    }
+
+    @ConfigName( "standalone" )
+    public void setStandalone( Boolean standalone )
+    {
+        this.standalone = standalone;
     }
 
     @Override

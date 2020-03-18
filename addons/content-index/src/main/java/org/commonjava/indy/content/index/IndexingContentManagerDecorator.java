@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.content.index;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.index.conf.ContentIndexConfig;
@@ -47,6 +45,7 @@ import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -89,11 +88,6 @@ public abstract class IndexingContentManagerDecorator
     @Inject
     private ContentIndexConfig indexCfg;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "content-index-store-deindex", priority = 4, threads = 10 )
-    private Executor deIndexExecutor;
-
     protected IndexingContentManagerDecorator()
     {
     }
@@ -124,7 +118,6 @@ public abstract class IndexingContentManagerDecorator
                                                final ContentIndexConfig indexCfg, final Executor deIndexExecutor)
     {
         this(delegate, storeDataManager, specialPathManager, indexManager, nfc, indexCfg);
-        this.deIndexExecutor = deIndexExecutor;
     }
 
     @Override
@@ -715,24 +708,27 @@ public abstract class IndexingContentManagerDecorator
                 indexManager.indexTransferIn( transfer, store.getKey() );
             }
 
-            if ( store instanceof Group )
-            {
-                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
-            }
+            nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( store ), path ) );
+
             // We should deIndex the path for all parent groups because the new content of the path
             // may change the content index sequence based on the constituents sequence in parent groups
             if ( store.getType() == StoreType.hosted )
             {
-                //FIXME: One potential problem here: The fixed thread pool is using a blocking queue to
-                // cache runnables, which could cause OOM if there are bunch of uploading happened in
-                // a short time period. We need to monitor if this could happen.
-                deIndexExecutor.execute( () -> {
+                final String name = String.format( "ContentIndexStoreDeIndex-store(%s)-path(%s)", store.getKey(), path );
+                final String context =
+                        String.format( "Class: %s, method: %s, store: %s, path: %s", this.getClass().getName(), "store",
+                                       store.getKey(), path );
+                storeDataManager.asyncGroupAffectedBy( new StoreDataManager.ContextualTask(name, context, () -> {
                     try
                     {
-                        Set<Group> groups = storeDataManager.query().getGroupsAffectedBy( store.getKey() );
+                        Set<Group> groups =
+                                        storeDataManager.affectedBy( Arrays.asList( store.getKey() ), eventMetadata );
                         if ( groups != null && !groups.isEmpty() && indexCfg.isEnabled() )
                         {
-                            groups.forEach( g -> indexManager.deIndexStorePath( g.getKey(), path ) );
+                            groups.forEach( g -> {
+                                indexManager.deIndexStorePath( g.getKey(), path );
+                                nfc.clearMissing( new ConcreteResource( LocationUtils.toLocation( g ), path ) );
+                            } );
                         }
                     }
                     catch ( IndyDataException e )
@@ -741,20 +737,11 @@ public abstract class IndexingContentManagerDecorator
                                 String.format( "Failed to get groups which contains: %s for NFC handling. Reason: %s",
                                                store.getKey(), e.getMessage() ), e );
                     }
-                } );
+                } ) );
             }
         }
-//        nfcClearByContaining( store, path );
-
         return transfer;
     }
-
-    //    @Override
-    //    public Transfer store( final List<? extends ArtifactStore> stores, final String path, final InputStream stream, final TransferOperation op )
-    //            throws IndyWorkflowException
-    //    {
-    //        return store( stores, path, stream, op, new EventMetadata() );
-    //    }
 
     @Override
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path,

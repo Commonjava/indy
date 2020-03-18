@@ -16,7 +16,6 @@
 package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
@@ -31,7 +30,6 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
@@ -221,6 +219,7 @@ public class InfinispanStoreDataManager
     @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
     {
+        logger.debug( "Calculate affectedBy for keys: {}", keys );
         checkAffectedByCacheHealth();
 
         final Set<Group> result = new HashSet<>();
@@ -242,6 +241,7 @@ public class InfinispanStoreDataManager
                 Set<StoreKey> affected = affectedByStores.get( key );
                 if ( affected != null )
                 {
+                    logger.debug( "Get affectedByStores, key: {}, affected: {}", key, affected );
                     affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
                     for ( StoreKey gKey : affected )
                     {
@@ -267,10 +267,12 @@ public class InfinispanStoreDataManager
             }
         }
 
-        logger.info( "Groups affected by {} are: {}", keys,
-                     result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
-
-        return result;
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Groups affected by {} are: {}", keys,
+                          result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+        }
+        return filterAffectedGroups( result );
     }
 
     @Override
@@ -278,6 +280,12 @@ public class InfinispanStoreDataManager
     {
         if ( store == null )
         {
+            return;
+        }
+
+        if ( store instanceof Group && isExcludedGroup( (Group) store ) )
+        {
+            logger.info( "Skip affectedBy calculation of group: {}", store.getName() );
             return;
         }
 

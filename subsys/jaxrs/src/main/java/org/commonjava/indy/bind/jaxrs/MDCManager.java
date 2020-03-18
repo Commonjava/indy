@@ -34,11 +34,14 @@ import java.util.UUID;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.metrics.RequestContextHelper.COMPONENT_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_TRACE_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.FORCE_METERED;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_REQUEST_URI;
 import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.PREFERRED_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.TRACE_ID;
+import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PARENT_SPAN;
+import static org.commonjava.indy.metrics.RequestContextHelper.SPAN_ID_HEADER;
 import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 
 @ApplicationScoped
@@ -81,17 +84,22 @@ public class MDCManager
     {
         String internalID = UUID.randomUUID().toString();
         String preferredID = externalID != null ? externalID : internalID;
-        putRequestIDs( internalID, externalID, preferredID );
+        putRequestIDs( internalID, externalID, preferredID, null );
     }
 
-    public void putRequestIDs( String internalID, String externalID, String preferredID )
+    public void putRequestIDs( String internalID, String externalID, String preferredID, final String spanID )
     {
-        RequestContextHelper.setContext( PREFERRED_ID, preferredID );
+        RequestContextHelper.setContext( TRACE_ID, preferredID );
         RequestContextHelper.setContext( INTERNAL_ID, internalID );
 
         if ( externalID != null )
         {
-            RequestContextHelper.setContext( EXTERNAL_ID, externalID );
+            RequestContextHelper.setContext( EXTERNAL_TRACE_ID, externalID );
+        }
+
+        if ( spanID != null )
+        {
+            RequestContextHelper.setContext( REQUEST_PARENT_SPAN, spanID );
         }
     }
 
@@ -104,6 +112,11 @@ public class MDCManager
     {
         // use setContext here so we get this value in ThreadContext too, for decision-making in the workflow, SLI classification, etc.
         setContext( HTTP_METHOD, request.getMethod() );
+
+        String forceMetered = request.getHeader( FORCE_METERED );
+        RequestContextHelper.setContext( FORCE_METERED,
+                                         forceMetered != null && Boolean.TRUE.equals( Boolean.parseBoolean( forceMetered ) ) );
+
         RequestContextHelper.setContext( HTTP_REQUEST_URI, request.getRequestURI() );
         mdcHeadersList.forEach( ( header ) -> RequestContextHelper.setContext( header, request.getHeader( header ) ) );
     }
@@ -118,4 +131,24 @@ public class MDCManager
             }
         } );
     }
+
+    public void putRequestIDs( final HttpServletRequest hsr )
+    {
+        /* We would always generate internalID and provide that in the MDC.
+         * If the calling service supplies an traceID, we'd map that under its own key.
+         * PreferredID should try to use traceID if it's available, and default over to using internalID if it's not.
+         * What this gives us is a single key we can use to reference an ID for the request,
+         * and whenever possible it'll reflect the externally supplied ID.
+         */
+        String internalID = UUID.randomUUID().toString();
+
+        String traceID = hsr.getHeader( EXTERNAL_TRACE_ID );
+        String spanID = hsr.getHeader( SPAN_ID_HEADER );
+
+        String preferredID = traceID != null ? traceID : internalID;
+
+
+        putRequestIDs( internalID, traceID, preferredID, spanID );
+    }
+
 }
