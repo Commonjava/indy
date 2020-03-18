@@ -77,7 +77,7 @@
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
-    <honeycombVersion>1.0.9.commonjava-1-TEMP</honeycombVersion>
+    <honeycombVersion>1.1.0</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>1.1</pathmappedStorageVersion>
@@ -1016,7 +1016,7 @@
         <version>3.3.0.Final</version>
       </dependency>
       <dependency>
-        <groupId>org.commonjava.honeycomb.beeline</groupId>
+        <groupId>io.honeycomb.beeline</groupId>
         <artifactId>beeline-core</artifactId>
         <version>${honeycombVersion}</version>
       </dependency>
