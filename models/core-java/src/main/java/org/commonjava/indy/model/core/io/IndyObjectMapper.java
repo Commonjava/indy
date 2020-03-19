@@ -17,7 +17,6 @@ package org.commonjava.indy.model.core.io;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -37,7 +36,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
 @Alternative
 @Named
@@ -69,7 +67,7 @@ public class IndyObjectMapper
 
     public IndyObjectMapper( final boolean unused, final Module... additionalModules )
     {
-        final Set<Module> mods = new HashSet<Module>();
+        final Set<Module> mods = new HashSet<>();
         mods.add( ApiSerializerModule.INSTANCE );
         mods.add( ProjectVersionRefSerializerModule.INSTANCE );
         mods.add( ProjectRelationshipSerializerModule.INSTANCE );
@@ -82,7 +80,7 @@ public class IndyObjectMapper
 
     public IndyObjectMapper( final Iterable<Module> modules )
     {
-        final Set<Module> mods = new HashSet<Module>();
+        final Set<Module> mods = new HashSet<>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
         mods.add( new ProjectRelationshipSerializerModule() );
@@ -98,7 +96,7 @@ public class IndyObjectMapper
 
     public IndyObjectMapper( Instance<Module> modules, Instance<ModuleSet> moduleSets )
     {
-        final Set<Module> mods = new HashSet<Module>();
+        final Set<Module> mods = new HashSet<>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
         mods.add( new ProjectRelationshipSerializerModule() );
@@ -153,10 +151,7 @@ public class IndyObjectMapper
                 Set<Module> set = moduleSet.getModules();
                 if ( set != null )
                 {
-                    for ( Module module : set )
-                    {
-                        injected.add( module );
-                    }
+                    injected.addAll( set );
                 }
             }
         }
@@ -188,7 +183,7 @@ public class IndyObjectMapper
     }
 
     public String patchLegacyStoreJson( final String json )
-        throws JsonProcessingException, IOException
+        throws IOException
     {
         final JsonNode tree = readTree( json );
         logger.debug( "Patching JSON tree: {}", tree );
