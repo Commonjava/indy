@@ -20,6 +20,9 @@ import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.npm.model.PackageMetadata;
+import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -29,6 +32,7 @@ import java.util.Random;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -71,27 +75,17 @@ public class NPMHostedRetrieveFileTest
         client.content().store( storeKey, versionPath, new ByteArrayInputStream( versionContent.getBytes() ) );
         client.content().store( storeKey, tarballPath, new ByteArrayInputStream( tgz ) );
 
-        final PathInfo result1 = client.content().getInfo( storeKey, packagePath );
-        final PathInfo result2 = client.content().getInfo( storeKey, versionPath );
-        final PathInfo result3 = client.content().getInfo( storeKey, tarballPath );
-
-        assertThat( "no result", result1, notNullValue() );
-        assertThat( "doesn't exist", result1.exists(), equalTo( true ) );
-
-        assertThat( "no result", result2, notNullValue() );
-        assertThat( "doesn't exist", result2.exists(), equalTo( true ) );
-
-        assertThat( "no result", result3, notNullValue() );
-        assertThat( "doesn't exist", result3.exists(), equalTo( true ) );
-
         final InputStream packageStream = client.content().get( storeKey, packagePath );
         final InputStream tarballStream = client.content().get( storeKey, tarballPath );
 
         assertThat( packageStream, notNullValue() );
         assertThat( tarballStream, notNullValue() );
 
-        assertThat( IOUtils.toString( packageStream ), equalTo( packageContent ) );
-        assertThat( IOUtils.toByteArray( tarballStream ), equalTo( tgz ) );
+        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        PackageMetadata pkgMetadata = mapper.readValue( packageStream, PackageMetadata.class );
+        VersionMetadata versionMetadata = pkgMetadata.getVersions().get( "2.1.0" );
+
+        assertNotNull( versionMetadata );
 
         packageStream.close();
         tarballStream.close();

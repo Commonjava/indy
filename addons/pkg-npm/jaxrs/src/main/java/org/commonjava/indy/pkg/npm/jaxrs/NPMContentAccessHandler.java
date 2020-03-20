@@ -103,57 +103,25 @@ public class NPMContentAccessHandler
         eventMetadata = eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
 
         Response response;
-
-        InputStream stream = null;
         try
         {
-            // check the original existed package.json transfer
-            final Transfer existed = contentController.get( sk, path, eventMetadata );
-            Transfer httpMeta = null;
-            Transfer temp = null;
-
-            // copy the existed transfer to temp one
-            if ( existed != null && existed.exists() )
-            {
-                httpMeta = existed.getSiblingMeta( HttpExchangeMetadata.FILE_EXTENSION );
-                temp = existed.getSibling( TEMP_EXTENSION );
-                temp.copyFrom( existed, eventMetadata );
-            }
-
             // store the transfer of new request package.json
-            final Transfer tomerge = contentController.store( sk, path, request.getInputStream(), eventMetadata );
+            final Transfer metadataFile = contentController.store( sk, path, request.getInputStream(), eventMetadata );
 
-            // generate its relevant files from the new request package.json
-            List<Transfer> generated = generateNPMContentsFromTransfer( tomerge, eventMetadata );
-
-            // merged both of the transfers, original existed one and new request one,
-            // then store the transfer, delete unuseful temp and meta transfers.
-            if ( temp != null && temp.exists() )
-            {
-                stream = packageMetadataMerger.merge( temp, tomerge );
-                Transfer merged = contentController.store( sk, path, stream, eventMetadata );
-
-                // for npm group, will not replace with the new http meta when re-upload,
-                // delete the old http meta, will generate the new one with updated CONTENT-LENGTH when npm install
-                httpMeta.delete();
-                temp.delete();
-            }
+            // generate its relevant files from the metadata file package.json
+            List<Transfer> generated = generateNPMContentsFromTransfer( metadataFile, eventMetadata );
 
             final URI uri = uriBuilder.get();
             response = responseWithBuilder( Response.created( uri ), builderModifier );
 
             // generate .http-metadata.json for hosted repo to resolve npm header requirements
-            generateHttpMetadataHeaders( tomerge, generated, request, response );
+            generateHttpMetadataHeaders( metadataFile, generated, request, response );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
             logger.error( String.format( "Failed to upload: %s to: %s. Reason: %s", path, name, e.getMessage() ), e );
 
             response = responseHelper.formatResponse( e, builderModifier );
-        }
-        finally
-        {
-            closeQuietly( stream );
         }
 
         return response;
