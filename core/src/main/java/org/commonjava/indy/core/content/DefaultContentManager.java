@@ -16,13 +16,13 @@
 package org.commonjava.indy.core.content;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -66,7 +66,7 @@ public class DefaultContentManager
         implements ContentManager
 {
 
-    private final Logger logger = LoggerFactory.getLogger( DefaultContentManager.class.getName() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ContentGeneratorManager contentGeneratorManager;
@@ -91,6 +91,9 @@ public class DefaultContentManager
 
     @Inject
     private IndyConfiguration indyConfig;
+
+    @Inject
+    private GroupRepositoryFilterManager repositoryFilterManager;
 
     protected DefaultContentManager()
     {
@@ -232,10 +235,7 @@ public class DefaultContentManager
                                                   e.getMessage() );
             }
 
-            if ( logger.isTraceEnabled() )
-            {
-                logger.trace( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), StringUtils.join(members, "\n  ") );
-            }
+            logger.trace( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), members );
 
             item = contentGeneratorManager.generateGroupFileContent( (Group) store, members, path, eventMetadata );
             boolean generated = ( item != null );
@@ -244,6 +244,7 @@ public class DefaultContentManager
             {
                 if ( PathMaskChecker.checkMask( store, path ) )
                 {
+                    members = repositoryFilterManager.filterForFirstMatch( path, (Group) store, members );
                     for ( final ArtifactStore member : members )
                     {
                         try

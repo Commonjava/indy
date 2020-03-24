@@ -18,6 +18,7 @@ package org.commonjava.indy.core.content;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -47,6 +48,9 @@ public class ContentGeneratorManager
     private Instance<ContentGenerator> contentGeneratorInstance;
 
     private Set<ContentGenerator> contentGenerators;
+
+    @Inject
+    private GroupRepositoryFilterManager repositoryFilterManager;
 
     @Inject
     private PathGenerator pathGenerator;
@@ -91,6 +95,7 @@ public class ContentGeneratorManager
     public Transfer generateGroupFileContent( Group group, List<ArtifactStore> members, String path,
                                               EventMetadata eventMetadata ) throws IndyWorkflowException
     {
+        members = repositoryFilterManager.filter( path, group, members );
         Transfer item = null;
         for ( final ContentGenerator generator : contentGenerators )
         {
@@ -116,6 +121,7 @@ public class ContentGeneratorManager
                                              EventMetadata eventMetadata, Consumer<Transfer> consumer )
                     throws IndyWorkflowException
     {
+        members = repositoryFilterManager.filter( path, group, members );
         for ( final ContentGenerator generator : contentGenerators )
         {
             final Transfer txfr = generator.generateGroupFileContent( group, members, path, eventMetadata );
