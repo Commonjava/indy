@@ -28,11 +28,4 @@ public abstract class ReversePatternNameGroupRepositoryFilter
         }
         return concreteStores;
     }
-
-    @Override
-    public List<ArtifactStore> filterForFirstMatch( String path, Group group, List<ArtifactStore> concreteStores )
-    {
-        return filter( path, group, concreteStores );
-    }
-
 }

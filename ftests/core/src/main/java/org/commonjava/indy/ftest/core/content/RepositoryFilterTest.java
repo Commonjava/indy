@@ -22,6 +22,7 @@ import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.commonjava.indy.subsys.template.ScriptEngine.SCRIPTS_SUBDIR;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -30,9 +31,18 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Given:
- *   - Remote repo R, contains path P1
- *   - Hosted repo build-1 contains path P2 (match -rh* pattern)
+ *   - Custom filter rh-pattern-repofilter.groovy
+ *      - Exclude 'build-\d' if path is normal (ie. not match -rh*)
+ *      - Do filter only if path is normal file, not metadata
+ *
+ * Given:
+ *   - Remote repo R
+ *   - Remote repo R contains normal path P1
+ *   - Remote repo R contains metadata M1
+ *   - Hosted repo build-1
  *   - Hosted repo build-1 contains path P1 (to confuse retrieval process)
+ *   - Hosted repo build-1 contains path P2 (match -rh* pattern)
+ *   - Hosted repo build-1 contains metadata M1
  *   - Group G contains build-1, R
  *
  * When:
@@ -46,6 +56,12 @@ import static org.junit.Assert.assertThat;
  *
  * Then:
  *   - Get content from hosted build-1
+ *
+ * When:
+ *   - Get metadata M1 from group G
+ *
+ * Then:
+ *   - Get merged content from R and build-1
  */
 public class RepositoryFilterTest
                 extends AbstractContentManagementTest
@@ -54,20 +70,41 @@ public class RepositoryFilterTest
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
+    /* @formatter:off */
+    private static final String METADATA_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+        "<metadata>\n" +
+        "  <groupId>org.foo</groupId>\n" +
+        "  <artifactId>bar</artifactId>\n" +
+        "  <versioning>\n" +
+        "    <latest>%version%</latest>\n" +
+        "    <release>%version%</release>\n" +
+        "    <versions>\n" +
+        "      <version>%version%</version>\n" +
+        "    </versions>\n" +
+        "  </versioning>\n" +
+        "</metadata>\n";
+    /* @formatter:on */
+
     @Test
     public void run() throws Exception
     {
         final String path_1 = "org/foo/bar/1.0/bar-1.0.pom";
+        final String content_1_remote = "This is a test from remote";
         final String content_1 = "This is a test";
 
-        final String path_2 = "org/foo/bar/1.0/bar-1.0-rh-0001.pom";
+        final String path_2 = "org/foo/bar/1.0-rh-0001/bar-1.0-rh-0001.pom";
         final String content_2 = "This is a rh test";
 
         final String remoteR = "R";
         final String hostedBuild_1 = "build-1";
         final String groupG = "G";
 
-        server.expect( server.formatUrl( remoteR, path_1 ), 200, new ByteArrayInputStream( content_1.getBytes() ) );
+        final String metadataPath = "org/foo/bar/maven-metadata.xml";
+
+        server.expect( server.formatUrl( remoteR, path_1 ), 200, content_1_remote );
+        server.expect( server.formatUrl( remoteR, metadataPath ), 200,
+                       METADATA_TEMPLATE.replaceAll( "%version%", "1.0" ) );
+
         RemoteRepository remote = client.stores()
                                         .create( new RemoteRepository( MAVEN_PKG_KEY, remoteR,
                                                                        server.formatUrl( remoteR ) ), "Add remote",
@@ -76,8 +113,12 @@ public class RepositoryFilterTest
         HostedRepository hosted = client.stores()
                                         .create( new HostedRepository( MAVEN_PKG_KEY, hostedBuild_1 ), "Add hosted",
                                                  HostedRepository.class );
+
         client.content().store( hosted.getKey(), path_1, new ByteArrayInputStream( content_1.getBytes() ) );
         client.content().store( hosted.getKey(), path_2, new ByteArrayInputStream( content_2.getBytes() ) );
+        client.content()
+              .store( hosted.getKey(), metadataPath, new ByteArrayInputStream(
+                              METADATA_TEMPLATE.replaceAll( "%version%", "1.0-rh-0001" ).getBytes() ) );
 
         Group g = new Group( MAVEN_PKG_KEY, groupG, hosted.getKey(), remote.getKey() );
         g = client.stores().create( g, "Add group", Group.class );
@@ -88,13 +129,20 @@ public class RepositoryFilterTest
         try (InputStream stream = client.content().get( g.getKey(), path_1 ))
         {
             String str = IOUtils.toString( stream );
-            assertThat( str, equalTo( content_1 ) );
+            assertThat( str, equalTo( content_1_remote ) );
         }
 
         try (InputStream stream = client.content().get( g.getKey(), path_2 ))
         {
             String str = IOUtils.toString( stream );
             assertThat( str, equalTo( content_2 ) );
+        }
+
+        try (InputStream stream = client.content().get( g.getKey(), metadataPath ))
+        {
+            String str = IOUtils.toString( stream );
+            assertThat( str, containsString( "<version>1.0</version>" ) );
+            assertThat( str, containsString( "<version>1.0-rh-0001</version>" ) );
         }
     }
 

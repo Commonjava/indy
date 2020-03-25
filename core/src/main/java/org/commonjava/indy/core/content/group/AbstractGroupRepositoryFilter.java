@@ -22,12 +22,6 @@ public abstract class AbstractGroupRepositoryFilter
     }
 
     @Override
-    public List<ArtifactStore> filterForFirstMatch( String path, Group group, List<ArtifactStore> concreteStores )
-    {
-        return concreteStores;
-    }
-
-    @Override
     public int compareTo( GroupRepositoryFilter groupRepositoryFilter )
     {
         int other = groupRepositoryFilter.getPriority();

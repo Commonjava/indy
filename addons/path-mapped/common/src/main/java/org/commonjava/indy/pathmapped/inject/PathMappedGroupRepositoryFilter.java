@@ -70,22 +70,6 @@ public class PathMappedGroupRepositoryFilter
     }
 
     /**
-     * Filter for remote repos plus hosted repos which may contain the first occurrence of the target path.
-     */
-    @Override
-    public List<ArtifactStore> filterForFirstMatch( String path, Group group, List<ArtifactStore> concreteStores )
-    {
-        List<String> candidates = getCandidates( concreteStores );
-        String ret = pathMappedFileManager.getFirstFileSystemContaining( candidates, path );
-
-        return concreteStores.stream()
-                             .filter( store -> store.getType() == StoreType.remote || store.getKey()
-                                                                                           .toString()
-                                                                                           .equals( ret ) )
-                             .collect( Collectors.toList() );
-    }
-
-    /**
      * Get hosted repos
      */
     private List<String> getCandidates( List<ArtifactStore> concreteStores )

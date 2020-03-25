@@ -94,33 +94,6 @@ public class GroupRepositoryFilterManager
     }
 
     /**
-     * Get member repositories that might contain the first occurrence of the specified path.
-     *
-     * @param path
-     * @param group
-     * @param orderedConcreteStores concrete stores in this group and sub groups
-     */
-    public List<ArtifactStore> filterForFirstMatch( String path, Group group,
-                                                    List<ArtifactStore> orderedConcreteStores )
-    {
-        long begin = System.currentTimeMillis();
-        List<ArtifactStore> ret = orderedConcreteStores;
-        for ( GroupRepositoryFilter repositoryFilter : groupRepositoryFilters )
-        {
-            if ( repositoryFilter.canProcess( path, group ) )
-            {
-                ret = repositoryFilter.filterForFirstMatch( path, group, ret );
-            }
-        }
-        if ( ret != orderedConcreteStores )
-        {
-            logger.debug( "Filter stores for first match (elapse: {}), original: {}, ret: {}",
-                          ( System.currentTimeMillis() - begin ), orderedConcreteStores, ret );
-        }
-        return ret;
-    }
-
-    /**
      * Get member repositories that might contain the specified path.
      *
      * @param path
@@ -133,9 +106,15 @@ public class GroupRepositoryFilterManager
         List<ArtifactStore> ret = orderedConcreteStores;
         for ( GroupRepositoryFilter repositoryFilter : groupRepositoryFilters )
         {
+            logger.debug( "Try filter, repositoryFilter: {}", repositoryFilter );
             if ( repositoryFilter.canProcess( path, group ) )
             {
+                logger.debug( "Can process, repositoryFilter: {}", repositoryFilter );
                 ret = repositoryFilter.filter( path, group, ret );
+            }
+            else
+            {
+                logger.debug( "Can not process, repositoryFilter: {}", repositoryFilter );
             }
         }
         if ( ret != orderedConcreteStores )
