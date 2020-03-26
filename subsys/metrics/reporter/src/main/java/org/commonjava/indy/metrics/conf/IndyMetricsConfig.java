@@ -102,9 +102,17 @@ public class IndyMetricsConfig
 
     private final static String INDY_METRICS_KOJI_ENABLED = "koji.enabled";
 
+    private final static String INDY_METRICS_PATH_DB_ENABLED = "pathdb.enabled";
+
+    private final static String INDY_METRICS_PATH_DB_OPERATIONS = "pathdb.operations";
+
     private static final int DEFAULT_METER_RATIO = 1;
 
     private boolean ispnMetricsEnabled;
+
+    private boolean pathDBMetricsEnabled = true; // default
+
+    private String pathDBMetricsOperations;
 
     private String ispnGauges;
 
@@ -508,6 +516,28 @@ public class IndyMetricsConfig
     public boolean isKojiMetricEnabled()
     {
         return kojiMetricEnabled;
+    }
+
+    public boolean isPathDBMetricsEnabled()
+    {
+        return pathDBMetricsEnabled;
+    }
+
+    @ConfigName( INDY_METRICS_PATH_DB_ENABLED )
+    public void setPathDBMetricsEnabled( boolean pathDBMetricsEnabled )
+    {
+        this.pathDBMetricsEnabled = pathDBMetricsEnabled;
+    }
+
+    public String getPathDBMetricsOperations()
+    {
+        return pathDBMetricsOperations;
+    }
+
+    @ConfigName( INDY_METRICS_PATH_DB_OPERATIONS )
+    public void setPathDBMetricsOperations( String pathDBMetricsOperations )
+    {
+        this.pathDBMetricsOperations = pathDBMetricsOperations;
     }
 
     @ConfigName( INDY_METRICS_ISPN_ENABLED )

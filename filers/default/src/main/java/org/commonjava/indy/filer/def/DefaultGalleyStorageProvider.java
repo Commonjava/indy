@@ -26,6 +26,7 @@ import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.commonjava.maven.galley.GalleyInitException;
@@ -78,6 +79,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
@@ -205,12 +207,29 @@ public class DefaultGalleyStorageProvider
 
         if ( pathDB != null )
         {
-            String prefix = metricsManager.getConfig().getNodePrefix();
-            pathDB = new MeasuredPathDB( pathDB, metricsManager.getMetricRegistry(), getSupername( prefix, "pathDB" ) );
+            final IndyMetricsConfig metricsConfig = metricsManager.getConfig();
+            if ( metricsConfig.isPathDBMetricsEnabled() )
+            {
+                final String operations = metricsConfig.getPathDBMetricsOperations();
+                logger.info( "Create measured PathDB, operations: {}" );
+                pathDB = new MeasuredPathDB( pathDB, metricsManager.getMetricRegistry(), getSupername( "pathDB" ) )
+                {
+                    @Override
+                    protected boolean isMetricEnabled( String metricName )
+                    {
+                        if ( isBlank( operations ) || operations.contains( metricName ) )
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                };
+            }
         }
 
         PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot );
 
+        logger.info( "Create cacheProviderFactory, pathDB: {}, physicalStore: {}", pathDB, physicalStore );
         cacheProviderFactory =
                         new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, pathMappedStorageConfig, pathDB,
                                                             physicalStore );
