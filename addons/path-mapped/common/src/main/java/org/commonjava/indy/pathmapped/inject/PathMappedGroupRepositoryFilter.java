@@ -67,6 +67,11 @@ public class PathMappedGroupRepositoryFilter
     public List<ArtifactStore> filter( String path, Group group, List<ArtifactStore> concreteStores )
     {
         List<String> candidates = getCandidates( concreteStores );
+        if ( candidates.isEmpty() )
+        {
+            logger.debug( "No candidate matches, skip" );
+            return concreteStores;
+        }
 
         String strategyPath = getStrategyPath( group.getKey(), path );
         if ( strategyPath == null )

@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.content;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
@@ -210,7 +211,11 @@ public class DefaultContentManager
         if ( group == store.getKey().getType() )
         {
             List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
-            logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), members );
+            if ( logger.isDebugEnabled() )
+            {
+                logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(),
+                              StringUtils.join( members, "\n  " ) );
+            }
 
             item = contentGeneratorManager.generateGroupFileContent( (Group) store, members, path, eventMetadata );
             boolean generated = ( item != null );
