@@ -6,6 +6,7 @@ import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Rule;
@@ -14,19 +15,14 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.commonjava.indy.core.content.group.GroupRepositoryFilterManager.REPO_FILTER;
-import static org.commonjava.indy.model.core.StoreType.group;
-import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.commonjava.indy.subsys.template.ScriptEngine.SCRIPTS_SUBDIR;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -44,6 +40,7 @@ import static org.junit.Assert.assertThat;
  *   - Hosted repo build-1 contains path P2 (match -rh* pattern)
  *   - Hosted repo build-1 contains metadata M1
  *   - Group G contains build-1, R
+ *   - Some other hosted build-x repos without content (to confuse it, we add it before build-1)
  *
  * When:
  *   - Get path P1 from group G
@@ -120,12 +117,28 @@ public class RepositoryFilterTest
               .store( hosted.getKey(), metadataPath, new ByteArrayInputStream(
                               METADATA_TEMPLATE.replaceAll( "%version%", "1.0-rh-0001" ).getBytes() ) );
 
-        Group g = new Group( MAVEN_PKG_KEY, groupG, hosted.getKey(), remote.getKey() );
-        g = client.stores().create( g, "Add group", Group.class );
+        // add confusing repos, hope it is not confused
+        List<StoreKey> storeKeys = new ArrayList<>();
+        for ( int i = 100; i < 200; i++ )
+        {
+            HostedRepository h = client.stores()
+                                       .create( new HostedRepository( MAVEN_PKG_KEY, "build-" + i ), "Add hosted",
+                                                HostedRepository.class );
+            storeKeys.add( h.getKey() );
+        }
+
+        storeKeys.add( hosted.getKey() );
+        storeKeys.add( remote.getKey() );
+
+        // create group
+        StoreKey[] keyArray = new StoreKey[storeKeys.size()];
+        Group g = client.stores()
+                        .create( new Group( MAVEN_PKG_KEY, groupG, storeKeys.toArray( keyArray ) ), "Add group",
+                                 Group.class );
 
         System.out.printf( "\n\nGroup constituents are:\n  %s\n\n", StringUtils.join( g.getConstituents(), "\n  " ) );
 
-        //
+        // get
         try (InputStream stream = client.content().get( g.getKey(), path_1 ))
         {
             String str = IOUtils.toString( stream );

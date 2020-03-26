@@ -2,8 +2,11 @@ package org.commonjava.indy.core.content.group;
 
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
+import org.commonjava.indy.model.core.StoreType;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -13,17 +16,25 @@ import java.util.stream.Collectors;
 public abstract class ReversePatternNameGroupRepositoryFilter
                 extends AbstractGroupRepositoryFilter
 {
-    protected abstract String getPathPattern();
+    protected Pattern pathPattern;
 
-    protected abstract String getFilterPattern();
+    protected Pattern filterPattern;
+
+    public ReversePatternNameGroupRepositoryFilter( String pathPattern, String filterPattern )
+    {
+        this.pathPattern = Pattern.compile( pathPattern );
+        this.filterPattern = Pattern.compile( filterPattern );
+    }
 
     @Override
     public List<ArtifactStore> filter( String path, Group group, List<ArtifactStore> concreteStores )
     {
-        if ( !path.matches( getPathPattern() ) )
+        Matcher matcher = pathPattern.matcher( path );
+        if ( !matcher.matches() )
         {
             return concreteStores.stream()
-                                 .filter( store -> !store.getName().matches( getFilterPattern() ) )
+                                 .filter( store -> store.getType() == StoreType.remote || !filterPattern.matcher(
+                                                 store.getName() ).matches() )
                                  .collect( Collectors.toList() );
         }
         return concreteStores;
