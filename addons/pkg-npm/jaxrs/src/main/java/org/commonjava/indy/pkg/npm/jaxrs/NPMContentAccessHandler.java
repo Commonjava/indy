@@ -62,6 +62,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.core.bind.jaxrs.util.RequestUtils.isDirectoryPath;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -157,7 +158,7 @@ public class NPMContentAccessHandler
 
         Response response = null;
 
-        if ( path == null || path.equals( "" ) )
+        if ( isDirectoryPath( path, request ) )
         {
             logger.info( "Getting listing at: {}", path );
             response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
@@ -282,7 +283,7 @@ public class NPMContentAccessHandler
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
                 path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
-        if ( path == null || path.equals( "" ) )
+        if ( isDirectoryPath( path, request ) )
         {
             logger.info( "Getting listing at: {}", path );
             response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );

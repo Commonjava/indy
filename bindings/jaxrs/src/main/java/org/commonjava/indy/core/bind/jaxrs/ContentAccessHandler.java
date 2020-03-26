@@ -61,6 +61,7 @@ import java.net.URI;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.commonjava.indy.core.bind.jaxrs.util.RequestUtils.isDirectoryPath;
 import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_ENTRY_POINT;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
@@ -248,7 +249,7 @@ public class ContentAccessHandler
 
         Response response = null;
 
-        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith( LISTING_HTML_FILE ) )
+        if ( isDirectoryPath( path, request ) )
         {
             response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
@@ -400,8 +401,7 @@ public class ContentAccessHandler
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
                 path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
-        if ( path == null || path.equals( "" ) || request.getPathInfo().endsWith( "/" ) || path.endsWith(
-                LISTING_HTML_FILE ) )
+        if ( isDirectoryPath( path, request ) )
         {
             response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
