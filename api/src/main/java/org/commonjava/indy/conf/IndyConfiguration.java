@@ -94,4 +94,6 @@ public interface IndyConfiguration
      * @since 2.0.0
      */
     Boolean isStandalone();
+
+    boolean isRepositoryFilterEnabled();
 }

@@ -281,7 +281,8 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" ) + "\naffected.groups.exclude=^build-\\d+");
+        writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" )
+                        + "\naffected.groups.exclude=^build-\\d+" + "\nrepository.filter.enabled=true" );
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
