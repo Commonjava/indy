@@ -23,6 +23,7 @@ import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
+import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
@@ -66,7 +67,7 @@ public class DefaultContentManager
         implements ContentManager
 {
 
-    private final Logger logger = LoggerFactory.getLogger( DefaultContentManager.class.getName() );
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
     private ContentGeneratorManager contentGeneratorManager;
@@ -91,6 +92,9 @@ public class DefaultContentManager
 
     @Inject
     private IndyConfiguration indyConfig;
+
+    @Inject
+    private GroupRepositoryFilterManager repositoryFilterManager;
 
     protected DefaultContentManager()
     {
@@ -154,19 +158,7 @@ public class DefaultContentManager
         {
             if ( group == store.getKey().getType() )
             {
-                List<ArtifactStore> members;
-                try
-                {
-                    members = storeManager.query()
-                                          .packageType( store.getPackageType() )
-                                          .enabledState( true )
-                                          .getOrderedConcreteStoresInGroup( store.getName() );
-                }
-                catch ( final IndyDataException e )
-                {
-                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                      e.getMessage() );
-                }
+                List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
 
                 final List<Transfer> storeTransfers = new ArrayList<>();
                 contentGeneratorManager.generateGroupFileContentAnd( (Group) store, members, path, eventMetadata,
@@ -218,23 +210,11 @@ public class DefaultContentManager
         Transfer item;
         if ( group == store.getKey().getType() )
         {
-            List<ArtifactStore> members;
-            try
+            List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
+            if ( logger.isDebugEnabled() )
             {
-                members = storeManager.query()
-                                      .packageType( store.getPackageType() )
-                                      .enabledState( true )
-                                      .getOrderedConcreteStoresInGroup( store.getName() );
-            }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                  e.getMessage() );
-            }
-
-            if ( logger.isTraceEnabled() )
-            {
-                logger.trace( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(), StringUtils.join(members, "\n  ") );
+                logger.debug( "{} is a group. Attempting downloads from (in order):\n  {}", store.getKey(),
+                              StringUtils.join( members, "\n  " ) );
             }
 
             item = contentGeneratorManager.generateGroupFileContent( (Group) store, members, path, eventMetadata );
@@ -279,6 +259,26 @@ public class DefaultContentManager
         }
 
         return item;
+    }
+
+    private List<ArtifactStore> getOrderedConcreteStoresAndFilter( Group group, String path ) throws IndyWorkflowException
+    {
+        List<ArtifactStore> members;
+        try
+        {
+            members = storeManager.query()
+                                  .packageType( group.getPackageType() )
+                                  .enabledState( true )
+                                  .getOrderedConcreteStoresInGroup( group.getName() );
+        }
+        catch ( final IndyDataException e )
+        {
+            throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, group,
+                                             e.getMessage() );
+        }
+
+        members = repositoryFilterManager.filter( path, group, members );
+        return members;
     }
 
     private Transfer doRetrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
@@ -475,15 +475,7 @@ public class DefaultContentManager
         {
             if ( Boolean.TRUE.equals( eventMetadata.get( CASCADE ) ) )
             {
-                List<ArtifactStore> members;
-                try
-                {
-                    members = storeManager.query().packageType( store.getPackageType() ).enabledState( true ).getOrderedConcreteStoresInGroup( store.getName() );
-                }
-                catch ( final IndyDataException e )
-                {
-                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store, e.getMessage() );
-                }
+                List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
 
                 for ( final ArtifactStore member : members )
                 {
@@ -574,19 +566,7 @@ public class DefaultContentManager
         List<StoreResource> listed;
         if ( group == store.getKey().getType() )
         {
-            List<ArtifactStore> members;
-            try
-            {
-                members = storeManager.query()
-                                      .packageType( store.getPackageType() )
-                                      .enabledState( true )
-                                      .getOrderedConcreteStoresInGroup( store.getName() );
-            }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                  e.getMessage() );
-            }
+            List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
 
             listed = new ArrayList<>();
             contentGeneratorManager.generateGroupDirectoryContentAnd( (Group) store, members, path, eventMetadata,
@@ -692,23 +672,11 @@ public class DefaultContentManager
             SpecialPathInfo spInfo = specialPathManager.getSpecialPathInfo( location, path, store.getPackageType() );
             if ( spInfo == null || !spInfo.isMergable() )
             {
-                try
-                {
-                    final List<ArtifactStore> allMembers = storeManager.query()
-                                          .packageType( store.getPackageType() )
-                                          .enabledState( true )
-                                          .getOrderedConcreteStoresInGroup( store.getName() );
+                List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
 
-                    logger.trace( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
-                    logger.trace( "Members in group {}: {}", store.getName(), allMembers );
-
-                    return getTransfer( allMembers, path, op );
-                }
-                catch ( final IndyDataException e )
-                {
-                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                      e.getMessage() );
-                }
+                logger.trace( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
+                logger.trace( "Members in group {}: {}", store.getName(), members );
+                return getTransfer( members, path, op );
             }
             else
             {
@@ -768,31 +736,19 @@ public class DefaultContentManager
         logger.trace( "Checking existence of: {} in: {}", path, store.getKey() );
         if ( store instanceof Group )
         {
-            try
+            List<ArtifactStore> members = getOrderedConcreteStoresAndFilter( (Group) store, path );
+
+            logger.trace( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
+            logger.trace( "Members in group {}: {}", store.getName(), members );
+
+            for ( ArtifactStore member : members )
             {
-                final List<ArtifactStore> allMembers = storeManager.query()
-                                      .packageType( store.getPackageType() )
-                                      .enabledState( true )
-                                      .getOrderedConcreteStoresInGroup( store.getName() );
-
-                logger.trace( "Trying to retrieve suitable transfer for: {} in group: {}", path, store.getName() );
-                logger.trace( "Members in group {}: {}", store.getName(), allMembers );
-
-                for ( ArtifactStore member : allMembers )
+                if ( exists( member, path ) )
                 {
-                    if ( exists( member, path ) )
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-
-                return false;
             }
-            catch ( final IndyDataException e )
-            {
-                throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
-                                                 e.getMessage() );
-            }
+            return false;
         }
         else
         {
