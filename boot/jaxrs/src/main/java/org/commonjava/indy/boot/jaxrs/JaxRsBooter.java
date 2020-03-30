@@ -28,6 +28,8 @@ import org.commonjava.propulsor.lifecycle.AppLifecycleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.reflect.InvocationTargetException;
+
 import static org.commonjava.propulsor.boot.BootStatus.ERR_LOAD_BOOT_OPTIONS;
 import static org.commonjava.propulsor.boot.BootStatus.ERR_START;
 
@@ -42,7 +44,7 @@ public class JaxRsBooter
 
     public static void main( final String[] args )
     {
-        setUncaughtExceptionHandler();
+        setDefaultUncaughtExceptionHandler();
         BootOptions boot;
         try
         {
@@ -70,6 +72,27 @@ public class JaxRsBooter
             System.err.printf( "ERROR: %s", e.getMessage() );
             System.exit( ERR_START );
         }
+    }
+
+    private static void setDefaultUncaughtExceptionHandler()
+    {
+        Thread.setDefaultUncaughtExceptionHandler( ( thread, error ) -> {
+            if ( error instanceof InvocationTargetException )
+            {
+                final InvocationTargetException ite = (InvocationTargetException) error;
+                System.err.println( "In: " + thread.getName() + "(" + thread.getId()
+                                                    + "), caught InvocationTargetException:" );
+                ite.getTargetException().printStackTrace();
+
+                System.err.println( "...via:" );
+                error.printStackTrace();
+            }
+            else
+            {
+                System.err.println( "In: " + thread.getName() + "(" + thread.getId() + ") Uncaught error:" );
+                error.printStackTrace();
+            }
+        } );
     }
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
