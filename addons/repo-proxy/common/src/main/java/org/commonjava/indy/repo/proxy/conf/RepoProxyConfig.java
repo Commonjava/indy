@@ -15,9 +15,8 @@
  */
 package org.commonjava.indy.repo.proxy.conf;
 
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.indy.repo.proxy.RepoProxyAddon;
-import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
 import org.slf4j.Logger;
@@ -27,8 +26,6 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Set;
 
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
@@ -45,6 +42,8 @@ public class RepoProxyConfig
 
     public static final String SECTION = "repo-proxy";
 
+    public static final String REPO_CREATE_RULE_BASEDIR_PARAM = "repo.create.rule.basedir";
+
     private static final String ENABLED_PARAM = "enabled";
 
     private static final String API_PATTERNS_PARAM = "api.url.patterns";
@@ -57,9 +56,11 @@ public class RepoProxyConfig
 
     private static final String DEFAULT_API_METHODS = "GET,HEAD";
 
-    private static final String PROXY_KEY_PREFIX = "proxy.";
+    private static final Boolean DEFAULT_NPM_META_REWRITE_ENABLE = Boolean.TRUE;
 
-    private final Map<String, String> proxyRules = new LinkedHashMap<>();
+    private static final String DEFAULT_REPO_CREATE_RULE_BASEDIR = "repo-proxy";
+
+    private String repoCreatorRuleBaseDir;
 
     private final Set<String> apiPatterns = new HashSet<>();
 
@@ -71,24 +72,16 @@ public class RepoProxyConfig
     {
     }
 
-    public boolean getEnabled()
+    public boolean isEnabled()
     {
         return this.enabled == null ? DEFAULT_ENABLED : this.enabled;
     }
 
-    public boolean isEnabled()
+    public String getRepoCreatorRuleBaseDir()
     {
-        return getEnabled();
-    }
-
-    public void setEnabled( Boolean enabled )
-    {
-        this.enabled = enabled;
-    }
-
-    public Map<String, String> getProxyRules()
-    {
-        return proxyRules;
+        return StringUtils.isBlank( repoCreatorRuleBaseDir ) ?
+                DEFAULT_REPO_CREATE_RULE_BASEDIR :
+                repoCreatorRuleBaseDir;
     }
 
     public Set<String> getApiPatterns()
@@ -117,13 +110,15 @@ public class RepoProxyConfig
 
     @Override
     public void parameter( final String name, final String value )
-            throws ConfigurationException
     {
         logger.trace( "{}: config tracing: name({})-value({}) ", ADDON_NAME, name, value );
         switch ( name )
         {
             case ENABLED_PARAM:
                 this.enabled = Boolean.valueOf( value.trim() );
+                break;
+            case REPO_CREATE_RULE_BASEDIR_PARAM:
+                this.repoCreatorRuleBaseDir = value.trim();
                 break;
             case API_PATTERNS_PARAM:
                 apiPatterns.clear();
@@ -140,19 +135,7 @@ public class RepoProxyConfig
                 }
                 break;
             default:
-            {
-                if ( name.startsWith( PROXY_KEY_PREFIX ) && name.length() > PROXY_KEY_PREFIX.length() )
-                {
-                    String source = name.substring( PROXY_KEY_PREFIX.length() );
-                    String sourceRepoPath = source.replaceAll( "\\.", "/" );
-                    logger.trace( "{}: Repo {} proxy target is repo {}", ADDON_NAME, source, value );
-                    proxyRules.put( sourceRepoPath, value.replaceAll( ":", "/" ) );
-                }
-                else
-                {
-                    throw new ConfigurationException( "Invalid parameter: '%s'.", value, name, SECTION );
-                }
-            }
+                break;
         }
     }
 

@@ -21,11 +21,7 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.commonjava.test.http.expect.ExpectationServer;
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -38,20 +34,17 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * Check if the repo proxy addon can proxy a hosted repo to a remote repo
+ * Check if the repo proxy addon can proxy a hosted repo to a same-named remote repo if no creator rules defined
  * <br/>
  * GIVEN:
  * <ul>
- *     <li>Hosted and Remote Repo</li>
- *     <li>Hosted does not contain pathA but remote does</li>
- *     <li>Hosted contains pathB but remote does not</li>
- *     <li>Configured the repo-proxy disabled</li>
- *     <li>Configured proxy rule with mapping hosted proxy to remote</li>
+ *     <li>Remote Repo and contains pathA, but does not contain pathB</li>
+ *     <li>Configured the repo-proxy enabled</li>
  * </ul>
  * <br/>
  * WHEN:
  * <ul>
- *     <li>Request pathA and pathB through hosted</li>
+ *     <li>Request pathA and pathB through a Hosted repo which is same-named as Remote</li>
  * </ul>
  * <br/>
  * THEN:
@@ -64,7 +57,7 @@ public class RepoProxyDefaultTest
 {
     private static final String REPO_NAME = "pnc-builds";
 
-    private HostedRepository hosted;
+    private HostedRepository hosted = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME );
 
     private RemoteRepository remote;
 
@@ -87,11 +80,6 @@ public class RepoProxyDefaultTest
                        .create( new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME,
                                                       server.formatUrl( REPO_NAME ) ), "remote pnc-builds",
                                 RemoteRepository.class );
-
-        hosted = client.stores()
-                       .create( new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME ),
-                                "hosted pnc-builds", HostedRepository.class );
-        client.content().store( hosted.getKey(), PATH2, new ByteArrayInputStream( CONTENT2.getBytes() ) );
     }
 
     @Test
@@ -123,8 +111,7 @@ public class RepoProxyDefaultTest
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/repo-proxy.conf",
-                         "[repo-proxy]\nenabled=true\nproxy.maven.hosted.pnc-builds=maven:remote:pnc-builds" );
+        writeConfigFile( "conf.d/repo-proxy.conf", "[repo-proxy]\nenabled=true" );
     }
 
 }

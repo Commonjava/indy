@@ -40,22 +40,24 @@ import static org.junit.Assert.assertThat;
  * GIVEN:
  * <ul>
  *     <li>Hosted and Remote Repo</li>
- *     <li>Hosted does not contain pathA but remote does</li>
- *     <li>Configured the repo-proxy disabled</li>
+ *     <li>Hosted does not contain path1 but remote does</li>
+ *     <li>Hosted contain path2 but remote does not</li>
+ *     <li>Configured the repo-proxy enabled</li>
  *     <li>Configured proxy rule with mapping hosted proxy to remote</li>
- *     <li>Configured api url patterns</li>
+ *     <li>Configured api url patterns as /api/admin/stores/* with only GET methods allowed (means enable store load proxy)</li>
  * </ul>
  * <br/>
  * WHEN:
  * <ul>
- *     <li>Request pathA through hosted with specific url patterns</li>
- *     <li>Request pathA through hosted without specific url patterns</li>
+ *     <li>Load hosted with specific url patterns</li>
+ *     <li>Request path1 and path2 through hosted without specific url patterns</li>
  * </ul>
  * <br/>
  * THEN:
  * <ul>
- *     <li>The content of pathA can be returned correctly from hosted when patterns applied</li>
- *     <li>The content of pathA can be returned correctly from hosted when patterns not applied</li>
+ *     <li>Loaded store is remote but not hosted</li>
+ *     <li>The content of path1 can not be returned correctly from hosted as no proxy happened</li>
+ *     <li>The content of pathA can be returned correctly from hosted as no proxy happened</li>
  * </ul>
  */
 public class RepoProxyPatternsTest
@@ -87,6 +89,7 @@ public class RepoProxyPatternsTest
                                                       server.formatUrl( REPO_NAME ) ), "remote pnc-builds",
                                 RemoteRepository.class );
 
+        //        hosted = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME );
         hosted = client.stores()
                        .create( new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME ),
                                 "hosted pnc-builds", HostedRepository.class );
@@ -118,7 +121,7 @@ public class RepoProxyPatternsTest
             throws IOException
     {
         writeConfigFile( "conf.d/repo-proxy.conf",
-                         "[repo-proxy]\nenabled=true\nproxy.maven.hosted.pnc-builds=maven:remote:pnc-builds\napi.url.patterns=/api/admin/stores/*\napi.methods=GET,HEAD" );
+                         "[repo-proxy]\nenabled=true\napi.url.patterns=/api/admin/stores/*\napi.methods=GET,HEAD" );
     }
 
 }

@@ -20,12 +20,10 @@ import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -116,14 +114,6 @@ public class RepoProxyDisableTest
         result = client.content().get( remote.getKey(), PATH2 );
         assertThat( result, nullValue() );
 
-    }
-
-    @Override
-    protected void initTestConfig( CoreServerFixture fixture )
-            throws IOException
-    {
-        writeConfigFile( "conf.d/repo-proxy.conf",
-                         "[repo-proxy]\nproxy.maven.hosted.pnc-builds=maven:remote:pnc-builds" );
     }
 
 }

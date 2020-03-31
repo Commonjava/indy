@@ -15,14 +15,12 @@
  */
 package org.commonjava.indy.repo.proxy.ftest;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -30,8 +28,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -41,17 +37,15 @@ import static org.junit.Assert.fail;
  * <br/>
  * GIVEN:
  * <ul>
- *     <li>Hosted and Remote Repo</li>
- *     <li>Hosted does not contain pathA but remote does</li>
- *     <li>Configured the repo-proxy disabled</li>
- *     <li>Configured proxy rule with mapping hosted proxy to remote</li>
+ *     <li>Remote Repo and contains pathA</li>
+ *     <li>Configured the repo-proxy enabled</li>
  *     <li>Configured api methods</li>
  * </ul>
  * <br/>
  * WHEN:
  * <ul>
- *     <li>Request pathA through hosted with specified api methods</li>
- *     <li>Request pathA through hosted without specified api methods</li>
+ *     <li>Request pathA through a hosted repo which is same-named as Remote with specified api methods</li>
+ *     <li>Request pathA through the hosted without specified api methods</li>
  * </ul>
  * <br/>
  * THEN:
@@ -85,12 +79,10 @@ public class RepoProxyMethodsTest
                                                       server.formatUrl( REPO_NAME ) ), "remote pnc-builds",
                                 RemoteRepository.class );
 
-        hosted = client.stores()
-                       .create( new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME ),
-                                "hosted pnc-builds", HostedRepository.class );
+        hosted = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME );
     }
 
-    @Test(expected = IndyClientException.class)
+    @Test( expected = IndyClientException.class )
     public void runPUTWithError()
             throws Exception
     {
@@ -110,8 +102,7 @@ public class RepoProxyMethodsTest
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/repo-proxy.conf",
-                         "[repo-proxy]\nenabled=true\nproxy.maven.hosted.pnc-builds=maven:remote:pnc-builds\napi.methods=PUT" );
+        writeConfigFile( "conf.d/repo-proxy.conf", "[repo-proxy]\nenabled=true\napi.methods=PUT" );
     }
 
 }

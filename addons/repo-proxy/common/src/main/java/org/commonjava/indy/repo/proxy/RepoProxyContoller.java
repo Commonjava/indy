@@ -15,7 +15,10 @@
  */
 package org.commonjava.indy.repo.proxy;
 
+import org.commonjava.indy.model.core.RemoteRepository;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.repo.proxy.conf.RepoProxyConfig;
+import org.commonjava.indy.repo.proxy.create.ProxyRepoCreateManager;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +31,12 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
+import java.util.Optional;
 
+import static java.util.Optional.empty;
 import static javax.servlet.http.HttpServletResponse.SC_MOVED_PERMANENTLY;
-import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getOriginalStoreKeyFromPath;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getProxyTo;
 
 @ApplicationScoped
 public class RepoProxyContoller
@@ -40,6 +45,9 @@ public class RepoProxyContoller
 
     @Inject
     private RepoProxyConfig config;
+
+    @Inject
+    private ProxyRepoCreateManager repoCreateManager;
 
     protected RepoProxyContoller()
     {
@@ -53,34 +61,92 @@ public class RepoProxyContoller
     public boolean doProxy( ServletRequest request, ServletResponse response )
             throws IOException, ServletException
     {
+        if ( !checkEnabled() )
+        {
+            return false;
+        }
+
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if ( !checkApiMethods( httpRequest ) )
+        {
+            return false;
+        }
+
+        final Optional<String> proxyToPath = proxyTo( httpRequest );
+        if ( !proxyToPath.isPresent() )
+        {
+            return false;
+        }
+
+        trace( "proxied to path info {}", proxyToPath );
+
+        // Here we do not use redirect but forward.
+        // doRedirect( (HttpServletResponse)response, proxyTo );
+        doForward( httpRequest, response, proxyToPath.get() );
+
+        return true;
+    }
+
+    private boolean checkEnabled()
+    {
         if ( !config.isEnabled() )
         {
             trace( "addon not enabled, will not do any proxy." );
             return false;
         }
-        final HttpServletRequest httpRequest = (HttpServletRequest) request;
-        final String method = httpRequest.getMethod().trim().toUpperCase();
+        return true;
+    }
+
+    private boolean checkApiMethods( HttpServletRequest request )
+    {
+        final String method = request.getMethod().trim().toUpperCase();
         if ( !config.getApiMethods().contains( method ) )
         {
             trace( "http method {} not allowed for the request, no proxy action will be performed", method );
             return false;
         }
-        final String pathInfo = httpRequest.getPathInfo();
+        return true;
+    }
+
+    private Optional<String> proxyTo( HttpServletRequest request )
+    {
+        final String pathInfo = request.getPathInfo();
 
         final String absoluteOriginalPath =
-                PathUtils.normalize( httpRequest.getServletPath(), httpRequest.getContextPath(),
-                                     httpRequest.getPathInfo() );
-        trace( "absolute path {}", absoluteOriginalPath );
-        final String proxyTo = proxyTo( absoluteOriginalPath );
-        if ( proxyTo == null )
+                PathUtils.normalize( request.getServletPath(), request.getContextPath(), request.getPathInfo() );
+
+        final Optional<String> originKeyStr = getOriginalStoreKeyFromPath( absoluteOriginalPath );
+        if ( !originKeyStr.isPresent() )
         {
-            return false;
+            trace( "No matched repo path in absolute path {}, so no proxy action will be performed",
+                   absoluteOriginalPath );
+            return empty();
         }
-        trace( "proxied to path info {}", proxyTo );
-        // Here we do not use redirect but forward.
-        // doRedirect( (HttpServletResponse)response, proxyTo );
-        doForward( httpRequest, response, proxyTo );
-        return true;
+        else
+        {
+            try
+            {
+                final Optional<RemoteRepository> proxyToRemote =
+                        repoCreateManager.createProxyRemote( StoreKey.fromString( originKeyStr.get() ) );
+                if ( !proxyToRemote.isPresent() )
+                {
+                    trace( "The proxy to remote can not be created or found for original store {}, no proxy will do.",
+                           originKeyStr.get() );
+                    return empty();
+                }
+                else
+                {
+                    trace( "absolute path {}", absoluteOriginalPath );
+                    return getProxyTo( absoluteOriginalPath, proxyToRemote.get().getKey() );
+                }
+            }
+            catch ( RepoProxyException e )
+            {
+                logger.error( "[Repository Proxy]: Error happened to create proxy to repository.", e );
+                return empty();
+            }
+        }
+
     }
 
     //TODO: not used but just leave here for reference
@@ -97,31 +163,13 @@ public class RepoProxyContoller
                             final String forwardTo )
             throws IOException, ServletException
     {
-        trace( "will redirect to {}",  forwardTo );
+        trace( "will forward to {}", forwardTo );
         httpRequest.getRequestDispatcher( forwardTo ).forward( httpRequest, response );
-    }
-
-    private String proxyTo( final String originalPath )
-    {
-        for ( Map.Entry<String, String> rule : config.getProxyRules().entrySet() )
-        {
-            trace( "rule key ({}), rule value ({})", rule.getKey(), rule.getValue() );
-            if ( originalPath.indexOf( rule.getKey() ) > 0 )
-            {
-
-                trace( "found proxy rules for path {}: from {} to {}", originalPath, rule.getKey(), rule.getValue() );
-                return originalPath.replace( rule.getKey(), rule.getValue() );
-
-            }
-        }
-        trace( "no proxy rules for path {}, will not do any proxy", originalPath );
-        return null;
     }
 
     private void trace( final String template, final Object... params )
     {
-        final String finalTemplate = ADDON_NAME + ": " + template;
-        logger.trace( finalTemplate, params );
+        RepoProxyUtils.trace( this.logger, template, params );
     }
 
 }
