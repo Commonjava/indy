@@ -16,9 +16,11 @@
 package org.commonjava.indy.repo.proxy;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.PackageTypeConstants;
+import org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor;
 import org.commonjava.indy.repo.proxy.conf.RepoProxyConfig;
+import org.commonjava.maven.galley.util.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,8 +36,12 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getOriginalStoreKeyFromPath;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.isNPMMetaPath;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.keyToPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.trace;
 
 /**
@@ -57,8 +63,6 @@ public class NPMMetadtaRewriteResponseDecorator
 
     private Map<String, String> npmRules;
 
-    private static final String METADATA_NAME = "package.json";
-
     @PostConstruct
     public void init()
     {
@@ -67,7 +71,7 @@ public class NPMMetadtaRewriteResponseDecorator
             npmRules = new HashMap<>();
             for ( Map.Entry<String, String> rule : config.getProxyRules().entrySet() )
             {
-                String packageType = rule.getKey().split( "/" )[0];
+                String packageType = rule.getKey().split( ":" )[0];
                 if ( packageType != null && packageType.trim().equalsIgnoreCase( PackageTypeConstants.PKG_TYPE_NPM ) )
                 {
                     npmRules.put( rule.getKey(), rule.getValue() );
@@ -92,26 +96,34 @@ public class NPMMetadtaRewriteResponseDecorator
             return response;
         }
 
-        if ( npmRules.isEmpty() )
+        final String absoluteOriginalPath =
+                PathUtils.normalize( request.getServletPath(), request.getContextPath(), request.getPathInfo() );
+
+        final Optional<String> originKeyStr = getOriginalStoreKeyFromPath( absoluteOriginalPath );
+        if ( !originKeyStr.isPresent() )
         {
-            trace( logger, "No npm proxy rules defined, don't decorate for NPM metadata rewriting" );
+            return response;
+        }
+        if ( !NPMPackageTypeDescriptor.NPM_PKG_KEY.equals(
+                StoreKey.fromString( originKeyStr.get() ).getPackageType() ) )
+        {
             return response;
         }
 
-        final String pathInfo = request.getPathInfo();
+        final String path = extractPath( absoluteOriginalPath, originKeyStr.get() );
 
-        for ( Map.Entry<String, String> npmRule : npmRules.entrySet() )
+        final String pathInfo = request.getPathInfo();
+        if ( isNPMMetaPath( path ) )
         {
-            final String originalRepoPath = npmRule.getKey();
-            final boolean ruleInPath = pathInfo.contains( originalRepoPath );
-            if ( ruleInPath )
+            for ( Map.Entry<String, String> npmRule : npmRules.entrySet() )
             {
-                final String path = extractPath( pathInfo, originalRepoPath );
-                if ( isNPMMetaPath( path ) )
+                final String originalRepoPath = keyToPath( npmRule.getKey() );
+                final boolean ruleInPath = pathInfo.contains( originalRepoPath );
+                if ( ruleInPath )
                 {
                     return new NPMMetadataRewriteResponseWrapper( request, response,
-                                                                  Collections.singletonMap( originalRepoPath,
-                                                                                            npmRule.getValue() ) );
+                                                                  Collections.singletonMap( originalRepoPath, keyToPath(
+                                                                          npmRule.getValue() ) ) );
                 }
                 else
                 {
@@ -119,25 +131,11 @@ public class NPMMetadtaRewriteResponseDecorator
                 }
             }
         }
-        return response;
-    }
-
-    private boolean isNPMMetaPath( final String path )
-    {
-        if ( StringUtils.isBlank( path ) )
+        else
         {
-            return false;
+            trace( logger, "NPM meta rewrite: {} is not a metadata path", path );
         }
-        // This is considering the single path for npm standard like "/jquery"
-        final boolean isSinglePath = path.split( "/" ).length < 2;
-        // This is considering the scoped path for npm standard like "/@type/jquery"
-        final boolean isScopedPath = path.startsWith( "@" ) && path.split( "/" ).length < 3;
-        // This is considering the package.json file itself
-        final boolean isPackageJson = path.trim().endsWith( "/" + METADATA_NAME );
-
-        trace( logger, "path: {}, isSinglePath: {}, isScopedPath: {}, isPackageJson: {}", path, isSinglePath,
-               isScopedPath, isPackageJson );
-        return isSinglePath || isScopedPath || isPackageJson;
+        return response;
     }
 
     private static class NPMMetadataRewriteResponseWrapper

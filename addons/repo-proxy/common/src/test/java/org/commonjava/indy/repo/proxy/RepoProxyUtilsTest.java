@@ -1,3 +1,5 @@
+package org.commonjava.indy.repo.proxy;
+
 import org.commonjava.indy.repo.proxy.RepoProxyUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -56,5 +58,19 @@ public class RepoProxyUtilsTest
         repoPath = "/npm/hosted/jkl/";
         path = RepoProxyUtils.extractPath( fullPath, repoPath );
         assertThat( path, equalTo( "/org/commonjava/indy/indy-api/2.0/indy-api-2.0.jar" ) );
+    }
+
+    @Test
+    public void testIsNPMMetaPath()
+    {
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "/jquery" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "jquery" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "/jquery/package.json" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "jquery/package.json" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "/@react/core" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "@react/core" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "/@react/core/package.json" ) );
+        assertTrue( RepoProxyUtils.isNPMMetaPath( "@react/core/package.json" ) );
+
     }
 }

@@ -42,8 +42,7 @@ public class RepoProxyUtils
         if ( StringUtils.isNotBlank( proxyToStoreString ) )
         {
             logger.trace( "Found proxy to store rule: from {} to {}", originStoreKeyStr, proxyToStoreString );
-            return of( ( originalPath.replace( originStoreKeyStr.replaceAll( ":", "/" ),
-                                               proxyToStoreString.replaceAll( ":", "/" ) ) ) );
+            return of( ( originalPath.replace( keyToPath( originStoreKeyStr ), keyToPath( proxyToStoreString ) ) ) );
         }
         else
         {
@@ -85,8 +84,9 @@ public class RepoProxyUtils
         return storeKeyString == null ? empty() : of( storeKeyString );
     }
 
-    public static String extractPath( final String fullPath, final String repoPath )
+    public static String extractPath( final String fullPath, final String repoKeyOrPath )
     {
+        final String repoPath = repoKeyOrPath.contains( ":" ) ? keyToPath( repoKeyOrPath ) : repoKeyOrPath;
         if ( StringUtils.isBlank( fullPath ) || !fullPath.contains( repoPath ) )
         {
             return "";
@@ -109,5 +109,35 @@ public class RepoProxyUtils
     {
         final String finalTemplate = ADDON_NAME + ": " + template;
         logger.trace( finalTemplate, params );
+    }
+
+    private static final String METADATA_NAME = "package.json";
+
+    static boolean isNPMMetaPath( final String path )
+    {
+        if ( StringUtils.isBlank( path ) )
+        {
+            return false;
+        }
+        String checkingPath = path;
+        if ( path.startsWith( "/" ) )
+        {
+            checkingPath = path.substring( 1 );
+        }
+        // This is considering the single path for npm standard like "/jquery"
+        final boolean isSinglePath = checkingPath.split( "/" ).length < 2;
+        // This is considering the scoped path for npm standard like "/@type/jquery"
+        final boolean isScopedPath = checkingPath.startsWith( "@" ) && checkingPath.split( "/" ).length < 3;
+        // This is considering the package.json file itself
+        final boolean isPackageJson = checkingPath.trim().endsWith( "/" + METADATA_NAME );
+
+        trace( logger, "path: {}, isSinglePath: {}, isScopedPath: {}, isPackageJson: {}", path, isSinglePath,
+               isScopedPath, isPackageJson );
+        return isSinglePath || isScopedPath || isPackageJson;
+    }
+
+    public static String keyToPath( final String keyStr )
+    {
+        return keyStr.contains( ":" ) ? keyStr.replaceAll( ":", "/" ) : keyStr;
     }
 }

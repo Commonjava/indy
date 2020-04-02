@@ -128,8 +128,6 @@ public class RepoProxyContoller
 
     private Optional<String> getProxyTo( HttpServletRequest request )
     {
-        final String pathInfo = request.getPathInfo();
-
         final String absoluteOriginalPath =
                 PathUtils.normalize( request.getServletPath(), request.getContextPath(), request.getPathInfo() );
 
