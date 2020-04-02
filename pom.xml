@@ -80,7 +80,7 @@
     <honeycombVersion>1.1.0</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>1.1</pathmappedStorageVersion>
+    <pathmappedStorageVersion>1.2</pathmappedStorageVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
@@ -417,11 +417,6 @@
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-pathmapped</artifactId>
-        <version>2.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
