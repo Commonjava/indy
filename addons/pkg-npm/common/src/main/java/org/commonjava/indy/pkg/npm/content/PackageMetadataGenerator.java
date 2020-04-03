@@ -250,9 +250,11 @@ public class PackageMetadataGenerator
 
         DistTag distTags = new DistTag();
         Map<String, VersionMetadata> versions = new LinkedHashMap<>(  );
-        for ( int i = 0; i < packagePaths.size(); i++ )
+
+        PackagePath latest = packagePaths.get( packagePaths.size() - 1 );
+
+        for ( PackagePath packagePath : packagePaths )
         {
-            PackagePath packagePath = packagePaths.get( i );
             String versionPath = packagePath.getVersionPath();
             logger.debug( "Retrieving the version file {} from store {}", versionPath, store );
             Transfer metaFile = fileManager.retrieveRaw( store, versionPath, eventMetadata );
@@ -300,7 +302,7 @@ public class PackageMetadataGenerator
                 }
 
                 // Set couple of attributes based on the latest version metadata
-                if ( i == packagePaths.size() - 1 )
+                if ( packagePath.getVersion().equals( latest.getVersion() ) )
                 {
                     packageMetadata.setName( versionMetadata.getName() );
                     packageMetadata.setDescription( versionMetadata.getDescription() );
