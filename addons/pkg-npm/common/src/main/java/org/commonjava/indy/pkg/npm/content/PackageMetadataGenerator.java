@@ -15,8 +15,12 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.MergedContentAction;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
@@ -45,6 +49,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,11 +75,15 @@ public class PackageMetadataGenerator
     @Inject
     private NPMStoragePathCalculator storagePathCalculator;
 
+    @Inject
+    private DownloadManager downloadManager;
+
     protected PackageMetadataGenerator()
     {
     }
 
     public PackageMetadataGenerator( final DirectContentAccess fileManager, final StoreDataManager storeManager,
+                                     final DownloadManager downloadManager,
                                      final TypeMapper typeMapper, final PackageMetadataMerger merger,
                                      final GroupMergeHelper mergeHelper, final NotFoundCache nfc,
                                      final PathGenerator pathGenerator,
@@ -82,6 +91,7 @@ public class PackageMetadataGenerator
                                      final MergedContentAction... mergedContentActions )
     {
         super( fileManager, storeManager, mergeHelper, nfc, mergedContentActions );
+        this.downloadManager = downloadManager;
         this.typeMapper = typeMapper;
         this.pathGenerator = pathGenerator;
         this.merger = merger;
@@ -222,28 +232,12 @@ public class PackageMetadataGenerator
 
         // Parse the path of the tar (e.g.: jquery/-/jquery-7.6.1.tgz or @types/jquery/-/jquery-2.2.3.tgz)
         // to get the version, then try to get the version metadata by the path (@scoped/)package/version
-        List<String> versionPaths = firstLevelFiles.stream()
-                       .map( (res) -> {
-                           String tarPath = res.getPath();
-                           String[] pathParts = tarPath.split( "/" );
-                           if ( tarPath.startsWith( "@" ) )
-                           {
-                               String scopedName = pathParts[0];
-                               String packageName = pathParts[1];
-                               String tarName = pathParts[3];
-                               return normalize( scopedName, packageName, tarName.substring( packageName.length() + 1, tarName.length() - 4 ) );
-                           }
-                           else
-                           {
-                               String packageName = pathParts[0];
-                               String tarName = pathParts[2];
-                               return normalize( packageName, tarName.substring( packageName.length() + 1, tarName.length() - 4 ) );
-                           }
-                       } )
-                       .sorted()
+        List<PackagePath> packagePaths = firstLevelFiles.stream()
+                       .map( (res) -> new PackagePath( res.getPath() ) )
+                       .sorted( Comparator.comparing( PackagePath::getVersion ) )
                        .collect( Collectors.toList());
 
-        if ( versionPaths.size() == 0 )
+        if ( packagePaths.size() == 0 )
         {
             return false;
         }
@@ -256,16 +250,33 @@ public class PackageMetadataGenerator
 
         DistTag distTags = new DistTag();
         Map<String, VersionMetadata> versions = new LinkedHashMap<>(  );
-        for ( int i = 0; i < versionPaths.size(); i++ )
+
+        PackagePath latest = packagePaths.get( packagePaths.size() - 1 );
+
+        for ( PackagePath packagePath : packagePaths )
         {
-            String versionPath = versionPaths.get( i );
+            String versionPath = packagePath.getVersionPath();
             logger.debug( "Retrieving the version file {} from store {}", versionPath, store );
             Transfer metaFile = fileManager.retrieveRaw( store, versionPath, eventMetadata );
             if ( metaFile == null )
             {
-                //TODO Do we need to get the package.json from .tgz if there
-                // is no file in the path package/version ?
-                continue;
+                // The metadata file (@scoped/)package/version for the specific version is missing, still need to extract it from tarball
+                String tarPath = packagePath.getTarPath();
+                Transfer tar = fileManager.retrieveRaw( store, tarPath, eventMetadata );
+                if ( tar == null )
+                {
+                    logger.warn( "Tarball file {} is missing in the store {}.", tarPath, store.getKey() );
+                    continue;
+                }
+                logger.info( "Extracting package metadata package.json from tarball {} and store it in {}/{}", tarPath, store.getKey(), versionPath );
+                metaFile = extractMetaFileFromTarballAndStore( store, versionPath, tar );
+
+                if ( metaFile == null )
+                {
+                    logger.warn( "Package metadata is missing in tarball {}/{}.", store.getKey(), tarPath );
+                    continue;
+                }
+
             }
 
             try ( InputStream input = metaFile.openInputStream() )
@@ -291,7 +302,7 @@ public class PackageMetadataGenerator
                 }
 
                 // Set couple of attributes based on the latest version metadata
-                if ( i == versionPaths.size() - 1 )
+                if ( packagePath.getVersion().equals( latest.getVersion() ) )
                 {
                     packageMetadata.setName( versionMetadata.getName() );
                     packageMetadata.setDescription( versionMetadata.getDescription() );
@@ -335,6 +346,34 @@ public class PackageMetadataGenerator
 
         logger.debug( "writePackageMetadata, DONE, store: {}", store.getKey() );
         return true;
+    }
+
+    private Transfer extractMetaFileFromTarballAndStore( ArtifactStore store, String versionPath, Transfer tar )
+    {
+
+        Transfer metaFile = null;
+        try (
+            final TarArchiveInputStream tarIn = new TarArchiveInputStream(
+                            new GzipCompressorInputStream( tar.openInputStream() )  )
+        )
+        {
+            TarArchiveEntry currentEntry = tarIn.getNextTarEntry();
+            while ( currentEntry != null )
+            {
+                if ( currentEntry.isFile() && currentEntry.getName().equals( "package/package.json" ) )
+                {
+                    metaFile = downloadManager.store( store, versionPath, tarIn, TransferOperation.UPLOAD );
+                    break;
+                }
+                currentEntry = tarIn.getNextTarEntry();
+            }
+        }
+        catch ( IOException | IndyWorkflowException e )
+        {
+            logger.error( "Extract/store metadata file {} error.", versionPath, e );
+        }
+        return metaFile;
+
     }
 
     private boolean exists( final Transfer transfer )

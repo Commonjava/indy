@@ -87,7 +87,7 @@ public class PackageMetadataGeneratorTest
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );
 
         fileManager = new DefaultDownloadManager( stores, core.getTransferManager(), core.getLocationExpander(), rescanService );
-        generator = new PackageMetadataGenerator( contentAccess, stores, types, merger, helper, new MemoryNotFoundCache(), new IndyPathGenerator( Collections.singleton( new NPMStoragePathCalculator() ) ), new NPMStoragePathCalculator() );
+        generator = new PackageMetadataGenerator( contentAccess, stores, downloads, types, merger, helper, new MemoryNotFoundCache(), new IndyPathGenerator( Collections.singleton( new NPMStoragePathCalculator() ) ), new NPMStoragePathCalculator() );
 
     }
 
@@ -105,25 +105,19 @@ public class PackageMetadataGeneratorTest
         storeFile( location, "jquery/9.0.5", "metadata/version-1.json" );
         storeFile( location, "jquery/9.0.6", "metadata/version-2.json" );
 
+        final String jqueryMetadataPath = "jquery/package.json";
+
         // Check the package metadata before generation.
-        Transfer before = fileManager.retrieve( hostedRepository, "jquery/package.json" );
+        Transfer before = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
         assertNull(before);
 
-        Transfer metadataFile = generator.generateFileContent( hostedRepository, "jquery/package.json", new EventMetadata(  ) );
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, jqueryMetadataPath, new EventMetadata(  ) );
         assertNotNull(metadataFile);
-        final IndyObjectMapper mapper = new IndyObjectMapper( true );
-        try ( InputStream input = metadataFile.openInputStream() )
-        {
-            PackageMetadata packageMetadata = mapper.readValue( input, PackageMetadata.class );
 
-            assertNotNull( packageMetadata );
-            assertEquals( 2, packageMetadata.getVersions().size());
-            assertEquals("Unexpected package name.", "json", packageMetadata.getName());
-            assertEquals( "Unexpected latest version.","9.0.6", packageMetadata.getDistTags().getLatest() );
-        }
+        verifyMetadata( metadataFile );
 
         // Check the package metadata after generation.
-        Transfer after = fileManager.retrieve( hostedRepository, "jquery/package.json" );
+        Transfer after = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
         assertNotNull(after);
     }
 
@@ -141,26 +135,123 @@ public class PackageMetadataGeneratorTest
         storeFile( location, "@babel/core/7.7.5", "metadata/scoped-version-1.json" );
         storeFile( location, "@babel/core/7.7.7", "metadata/scoped-version-2.json" );
 
+        final String babelCoreMetadataPath = "@babel/core/package.json";
+
         // Check the package metadata before generation.
-        Transfer before = fileManager.retrieve( hostedRepository, "@babel/core/package.json" );
+        Transfer before = fileManager.retrieve( hostedRepository, babelCoreMetadataPath );
         assertNull(before);
 
-        Transfer metadataFile = generator.generateFileContent( hostedRepository, "@babel/core/package.json", new EventMetadata(  ) );
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, babelCoreMetadataPath, new EventMetadata(  ) );
         assertNotNull(metadataFile);
+
+        verifyScopedMetadata(metadataFile);
+
+        // Check the package metadata after generation.
+        Transfer after = fileManager.retrieve( hostedRepository, babelCoreMetadataPath );
+        assertNotNull(after);
+    }
+
+    @Test
+    public void generateMetadataFromTarballWhenMissing() throws Exception
+    {
+        ChangeSummary summary = new ChangeSummary( "test","Init NPM hosted repo." );
+        final HostedRepository hostedRepository = new HostedRepository( NPM_PKG_KEY, "npm-builds" );
+        initStore(hostedRepository, summary);
+
+        final KeyedLocation location = LocationUtils.toLocation( hostedRepository );
+
+        storeFile( location, "jquery/-/jquery-9.0.5.tgz", "tarball/version-1.tgz");
+        storeFile( location, "jquery/-/jquery-9.0.6.tgz", "tarball/version-2.tgz");
+
+        final String jqueryMetadataPath = "jquery/package.json";
+
+        // There is no specific metadata in the path <PACKAGE_NAME>/<VERSION>
+        Transfer metafile = fileManager.retrieve( hostedRepository, "jquery/9.0.5" );
+        assertNull( metafile );
+
+        // Check the package metadata before generation.
+        Transfer before = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
+        assertNull(before);
+
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, jqueryMetadataPath, new EventMetadata(  ) );
+        assertNotNull(metadataFile);
+
+        verifyMetadata( metadataFile );
+
+        // Check the package metadata after generation.
+        Transfer after = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
+        assertNotNull(after);
+
+        // Cached the extracted metadata file in the path <PACKAGE_NAME>/<VERSION>
+        metafile = fileManager.retrieve( hostedRepository, "jquery/9.0.5" );
+        assertNotNull( metafile );
+    }
+
+    private void verifyMetadata( Transfer metadataFile ) throws Exception
+    {
+
         final IndyObjectMapper mapper = new IndyObjectMapper( true );
         try ( InputStream input = metadataFile.openInputStream() )
         {
             PackageMetadata packageMetadata = mapper.readValue( input, PackageMetadata.class );
-            System.out.println( mapper.writeValueAsString( packageMetadata ) );
+
+            assertNotNull( packageMetadata );
+            assertEquals( 2, packageMetadata.getVersions().size());
+            assertEquals("Unexpected package name.", "json", packageMetadata.getName());
+            assertEquals( "Unexpected latest version.","9.0.6", packageMetadata.getDistTags().getLatest() );
+        }
+
+    }
+
+    @Test
+    public void generateMetadataFromTarballWhenMissingForScoped() throws Exception
+    {
+        ChangeSummary summary = new ChangeSummary( "test","Init NPM hosted repo." );
+        final HostedRepository hostedRepository = new HostedRepository( NPM_PKG_KEY, "npm-builds" );
+        initStore(hostedRepository, summary);
+
+        final KeyedLocation location = LocationUtils.toLocation( hostedRepository );
+
+        storeFile( location, "@babel/core/-/core-7.7.5.tgz", "tarball/scoped-version-1.tgz");
+        storeFile( location, "@babel/core/-/core-7.7.7.tgz", "tarball/scoped-version-2.tgz");
+
+        // There is no specific metadata in the path <PACKAGE_NAME>/<VERSION>
+        Transfer metafile = fileManager.retrieve( hostedRepository, "@babel/core/7.7.5" );
+        assertNull( metafile );
+
+        final String babelCoreMetadataPath = "@babel/core/package.json";
+
+        // Check the package metadata before generation.
+        Transfer before = fileManager.retrieve( hostedRepository, babelCoreMetadataPath );
+        assertNull(before);
+
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, babelCoreMetadataPath, new EventMetadata(  ) );
+        assertNotNull(metadataFile);
+
+        verifyScopedMetadata(metadataFile);
+
+        // Check the package metadata after generation.
+        Transfer after = fileManager.retrieve( hostedRepository, babelCoreMetadataPath );
+        assertNotNull(after);
+
+        // Cached the extracted metadata file in the path <PACKAGE_NAME>/<VERSION>
+        metafile = fileManager.retrieve( hostedRepository, "@babel/core/7.7.5" );
+        assertNotNull( metafile );
+    }
+
+    private void verifyScopedMetadata( Transfer metadataFile ) throws Exception
+    {
+
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        try ( InputStream input = metadataFile.openInputStream() )
+        {
+            PackageMetadata packageMetadata = mapper.readValue( input, PackageMetadata.class );
             assertNotNull( packageMetadata );
             assertEquals( 2, packageMetadata.getVersions().size());
             assertEquals("Unexpected package name.", "@babel/core", packageMetadata.getName());
             assertEquals( "Unexpected latest version.","7.7.7", packageMetadata.getDistTags().getLatest() );
         }
 
-        // Check the package metadata after generation.
-        Transfer after = fileManager.retrieve( hostedRepository, "@babel/core/package.json" );
-        assertNotNull(after);
     }
 
     private void initStore( HostedRepository hostedRepository, ChangeSummary summary ) throws Exception
