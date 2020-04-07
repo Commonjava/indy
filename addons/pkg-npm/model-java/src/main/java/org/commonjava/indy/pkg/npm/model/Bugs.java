@@ -32,6 +32,12 @@ public class Bugs
         this.email = null;
     }
 
+    public Bugs( final String url )
+    {
+        this.url = url;
+        this.email = null;
+    }
+
     public Bugs( final String url, final String email )
     {
         this.url = url;
