@@ -1871,6 +1871,7 @@
               <exclude>**/.pydevproject</exclude>
               <exclude>**/Jenkinsfile</exclude>
               <exclude>**/MAVEN_ENV</exclude>
+	      <exclude>**/*.cql</exclude>
             </excludes>
           </configuration>
         </plugin>
