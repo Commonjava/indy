@@ -87,7 +87,14 @@ public class RepoProxyContoller
             return false;
         }
 
-        final Optional<String> proxyToPath = proxyTo( httpRequest );
+        final Optional<StoreKey> proxyToRemoteKey = getProxyToRemoteKey( httpRequest );
+        if ( !proxyToRemoteKey.isPresent() )
+        {
+            return false;
+        }
+
+        final String absoluteOriginalPath = getAbsolutePath( httpRequest );
+        final Optional<String> proxyToPath = getProxyTo( absoluteOriginalPath, proxyToRemoteKey.get() );
         if ( !proxyToPath.isPresent() )
         {
             return false;
@@ -95,7 +102,7 @@ public class RepoProxyContoller
 
         trace( "proxied to path info {}", proxyToPath );
 
-        HttpServletResponse decoratedResponse = decoratingResponse( httpRequest, (HttpServletResponse) response );
+        HttpServletResponse decoratedResponse = decoratingResponse( httpRequest, (HttpServletResponse) response, proxyToRemoteKey.get() );
 
         // Here we do not use redirect but forward.
         // doRedirect( (HttpServletResponse)response, proxyTo );
@@ -125,12 +132,9 @@ public class RepoProxyContoller
         return true;
     }
 
-    private Optional<String> proxyTo( HttpServletRequest request )
+    private Optional<StoreKey> getProxyToRemoteKey( HttpServletRequest request )
     {
-        final String pathInfo = request.getPathInfo();
-
-        final String absoluteOriginalPath =
-                PathUtils.normalize( request.getServletPath(), request.getContextPath(), request.getPathInfo() );
+        final String absoluteOriginalPath = getAbsolutePath( request );
 
         final Optional<String> originKeyStr = getOriginalStoreKeyFromPath( absoluteOriginalPath );
         if ( !originKeyStr.isPresent() )
@@ -154,7 +158,7 @@ public class RepoProxyContoller
                 else
                 {
                     trace( "absolute path {}", absoluteOriginalPath );
-                    return getProxyTo( absoluteOriginalPath, proxyToRemote.get().getKey() );
+                    return Optional.of( proxyToRemote.get().getKey() );
                 }
             }
             catch ( RepoProxyException e )
@@ -166,15 +170,21 @@ public class RepoProxyContoller
 
     }
 
+    private String getAbsolutePath(HttpServletRequest request){
+        final String pathInfo = request.getPathInfo();
+
+        return PathUtils.normalize( request.getServletPath(), request.getContextPath(), request.getPathInfo() );
+    }
+
     private HttpServletResponse decoratingResponse( final HttpServletRequest request,
-                                                    final HttpServletResponse response )
+                                                    final HttpServletResponse response, final StoreKey proxyToStoreKey )
             throws IOException
     {
         HttpServletResponse decorated = response;
 
         for ( RepoProxyResponseDecorator decorator : responseDecorators )
         {
-            decorated = decorator.decoratingResponse( request, decorated );
+            decorated = decorator.decoratingResponse( request, decorated, proxyToStoreKey );
         }
 
         return decorated;

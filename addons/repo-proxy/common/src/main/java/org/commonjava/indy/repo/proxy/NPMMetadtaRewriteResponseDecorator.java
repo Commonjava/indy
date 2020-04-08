@@ -36,7 +36,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
-import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getProxyToStoreKey;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.keyToPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.trace;
 
@@ -60,7 +59,8 @@ public class NPMMetadtaRewriteResponseDecorator
     private static final String METADATA_NAME = "package.json";
 
     @Override
-    public HttpServletResponse decoratingResponse( HttpServletRequest request, HttpServletResponse response )
+    public HttpServletResponse decoratingResponse( final HttpServletRequest request, final HttpServletResponse response,
+                                                   final StoreKey proxyToStoreKey )
             throws IOException
     {
         if ( !config.isEnabled() || !config.isNpmMetaRewriteEnabled() )
@@ -88,19 +88,13 @@ public class NPMMetadtaRewriteResponseDecorator
         }
 
         final String originalRepoPath = keyToPath( originalRepoStr );
-
         final String path = extractPath( pathInfo, originalRepoPath );
         if ( isNPMMetaPath( path ) )
         {
-            final Optional<StoreKey> proxyToKey = getProxyToStoreKey( pathInfo );
-            if ( proxyToKey.isPresent() )
-            {
-                final String proxyToKeyPath = keyToPath( proxyToKey.get() );
-                trace( logger, "NPM rewriting replacement: from {} to {}", proxyToKeyPath, originalRepoPath );
-                return new NPMMetadataRewriteResponseWrapper( request, response,
-                                                              Collections.singletonMap( originalRepoPath,
-                                                                                        proxyToKeyPath ) );
-            }
+            final String proxyToKeyPath = keyToPath( proxyToStoreKey );
+            trace( logger, "NPM rewriting replacement: from {} to {}", proxyToKeyPath, originalRepoPath );
+            return new NPMMetadataRewriteResponseWrapper( request, response, Collections.singletonMap( originalRepoPath,
+                                                                                                       proxyToKeyPath ) );
         }
         else
         {

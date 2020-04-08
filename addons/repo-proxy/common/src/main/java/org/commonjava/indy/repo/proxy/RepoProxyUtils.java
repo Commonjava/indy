@@ -56,19 +56,6 @@ public class RepoProxyUtils
         return empty();
     }
 
-    public static Optional<StoreKey> getProxyToStoreKey( final String originalPath )
-    {
-        final Optional<String> origStoreKey = getOriginalStoreKeyFromPath( originalPath );
-        if ( origStoreKey.isPresent() )
-        {
-            final String originStoreKeyStr = origStoreKey.get();
-            final String[] parts = originStoreKeyStr.split( ":" );
-            final String proxyToStoreString = parts[0] + ":" + StoreType.remote.singularEndpointName() + ":" + parts[2];
-            return of( StoreKey.fromString( proxyToStoreString ) );
-        }
-        return empty();
-    }
-
     public static Optional<String> getOriginalStoreKeyFromPath( final String originalPath )
     {
         final Pattern pat = Pattern.compile( STORE_PATH_PATTERN );
