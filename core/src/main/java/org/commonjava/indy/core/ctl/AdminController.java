@@ -18,12 +18,17 @@ package org.commonjava.indy.core.ctl;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.content.ContentManager;
+import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.data.*;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -32,8 +37,11 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 
 @ApplicationScoped
 public class AdminController
@@ -44,6 +52,15 @@ public class AdminController
 
     @Inject
     private StoreDataManager storeManager;
+
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
+    @Inject
+    private ContentManager contentManager;
+
+    @Inject
+    private DownloadManager downloadManager;
 
     /* Injected to make sure this gets initialized up front. */
     @SuppressWarnings( "unused" )
@@ -151,11 +168,27 @@ public class AdminController
         }
     }
 
-    public void delete( final StoreKey key, final String user, final String changelog )
+    public void delete( final StoreKey key, final String user, final String changelog, final boolean deleteCount )
         throws IndyWorkflowException
     {
+        // safe check
+        if ( deleteCount )
+        {
+            if ( !key.getName().matches( indyConfiguration.getDisposableStorePattern() ) )
+            {
+                throw new IndyWorkflowException( ApplicationStatus.FORBIDDEN.code(), "Content deletion not allowed" );
+            }
+        }
+
         try
         {
+            ArtifactStore store = storeManager.getArtifactStore( key );
+            if ( store != null && deleteCount )
+            {
+                logger.info( "Delete content of {}", key );
+                deleteCount( store );
+            }
+
             storeManager.deleteArtifactStore( key, new ChangeSummary( user, changelog ), new EventMetadata() );
         }
         catch ( final IndyDataException e )
@@ -166,6 +199,16 @@ public class AdminController
                 status = e.getStatus();
             }
             throw new IndyWorkflowException( status, "Failed to delete: {}. Reason: {}", e, key, e.getMessage() );
+        }
+    }
+
+    private void deleteCount( final ArtifactStore store ) throws IndyWorkflowException
+    {
+        List<Transfer> contents = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
+        Set<String> pending = contents.stream().map( Transfer::getPath ).collect( Collectors.toSet() );
+        for ( String path : pending )
+        {
+            contentManager.delete( store, path, new EventMetadata().set( IGNORE_READONLY, Boolean.TRUE ) );
         }
     }
 
