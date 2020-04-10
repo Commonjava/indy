@@ -47,8 +47,7 @@ public class RepoProxyUtils
             final String originStoreKeyStr = origStoreKey.get();
             final String[] parts = originStoreKeyStr.split( ":" );
             final String proxyToStorePathString = keyToPath( proxyToKey );
-            final String proxyTo =
-                    originalPath.replaceAll( keyToPath( originStoreKeyStr), proxyToStorePathString );
+            final String proxyTo = originalPath.replaceAll( keyToPath( originStoreKeyStr ), proxyToStorePathString );
             logger.trace( "Found proxy to store rule: from {} to {}", originStoreKeyStr, proxyToStorePathString );
             return of( proxyTo );
         }
@@ -96,7 +95,12 @@ public class RepoProxyUtils
             checkingRepoPath = repoPath.substring( 0, repoPath.length() - 1 );
         }
         final int pos = fullPath.indexOf( checkingRepoPath );
-        String path = fullPath.substring( pos + checkingRepoPath.length() + 1 );
+        final int pathStartPos = pos + checkingRepoPath.length() + 1;
+        if ( pathStartPos >= fullPath.length() )
+        {
+            return "";
+        }
+        String path = fullPath.substring( pathStartPos );
         if ( StringUtils.isNotBlank( path ) && !path.startsWith( "/" ) )
         {
             path = "/" + path;

@@ -57,6 +57,16 @@ public class RepoProxyUtilsTest
         repoPath = "/npm/hosted/jkl/";
         path = RepoProxyUtils.extractPath( fullPath, repoPath );
         assertThat( path, equalTo( "/org/commonjava/indy/indy-api/2.0/indy-api-2.0.jar" ) );
+
+        fullPath = "/api/content/npm/hosted/jkl/";
+        repoPath = "/npm/hosted/jkl/";
+        path = RepoProxyUtils.extractPath( fullPath, repoPath );
+        assertThat( path, equalTo( "" ) );
+
+        fullPath = "/api/content/npm/hosted/jkl";
+        repoPath = "/npm/hosted/jkl/";
+        path = RepoProxyUtils.extractPath( fullPath, repoPath );
+        assertThat( path, equalTo( "" ) );
     }
 
     @Test
