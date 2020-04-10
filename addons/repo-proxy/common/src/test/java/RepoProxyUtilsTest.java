@@ -83,27 +83,4 @@ public class RepoProxyUtilsTest
         assertThat( proxyTo.get(), equalTo( "/api/folo/track/npm/remote/hosted-jkl/@react/core" ) );
     }
 
-    @Test
-    public void testProxyToStoreKey()
-    {
-        String fullPath = "/api/content/maven/group/abc/org/commonjava/indy/maven-metadata.xml";
-        Optional<StoreKey> proxyTo = RepoProxyUtils.getProxyToStoreKey( fullPath );
-        assertTrue( proxyTo.isPresent() );
-        assertThat( proxyTo.get(), equalTo( fromString( "maven:remote:abc" ) ) );
-
-        fullPath = "/api/browse/content/maven/hosted/def/org/commonjava/indy/1.0/";
-        proxyTo = RepoProxyUtils.getProxyToStoreKey( fullPath );
-        assertTrue( proxyTo.isPresent() );
-        assertThat( proxyTo.get(), equalTo( fromString( "maven:remote:def" ) ) );
-
-        fullPath = "/api/folo/track/npm/group/ghi/jquery";
-        proxyTo = RepoProxyUtils.getProxyToStoreKey( fullPath );
-        assertTrue( proxyTo.isPresent() );
-        assertThat( proxyTo.get(), equalTo( fromString( "npm:remote:ghi" ) ) );
-
-        fullPath = "/api/folo/track/npm/hosted/jkl/@react/core";
-        proxyTo = RepoProxyUtils.getProxyToStoreKey( fullPath );
-        assertTrue( proxyTo.isPresent() );
-        assertThat( proxyTo.get(), equalTo( fromString( "npm:remote:jkl" ) ) );
-    }
 }

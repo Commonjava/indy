@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2013 Red Hat, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -48,24 +48,11 @@ public class RepoProxyUtils
             final String[] parts = originStoreKeyStr.split( ":" );
             final String proxyToStorePathString = keyToPath( proxyToKey );
             final String proxyTo =
-                    originalPath.replaceAll( originStoreKeyStr.replaceAll( ":", "/" ), proxyToStorePathString );
+                    originalPath.replaceAll( keyToPath( originStoreKeyStr), proxyToStorePathString );
             logger.trace( "Found proxy to store rule: from {} to {}", originStoreKeyStr, proxyToStorePathString );
             return of( proxyTo );
         }
 
-        return empty();
-    }
-
-    public static Optional<StoreKey> getProxyToStoreKey( final String originalPath )
-    {
-        final Optional<String> origStoreKey = getOriginalStoreKeyFromPath( originalPath );
-        if ( origStoreKey.isPresent() )
-        {
-            final String originStoreKeyStr = origStoreKey.get();
-            final String[] parts = originStoreKeyStr.split( ":" );
-            final String proxyToStoreString = parts[0] + ":" + StoreType.remote.singularEndpointName() + ":" + parts[2];
-            return of( StoreKey.fromString( proxyToStoreString ) );
-        }
         return empty();
     }
 

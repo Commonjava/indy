@@ -21,7 +21,7 @@ import org.commonjava.indy.model.core.*;
 class DefaultRule extends AbstractProxyRepoCreateRule {
     @Override
     boolean matches(StoreKey storeKey) {
-        return "maven".equals(storeKey.getPackageType()) && (StoreType.group == storeKey.getType() || StoreType.hosted == storeKey.getType())
+        return StoreType.group == storeKey.getType() || StoreType.hosted == storeKey.getType()
     }
 
     @Override
@@ -29,7 +29,8 @@ class DefaultRule extends AbstractProxyRepoCreateRule {
         def pkgType = key.getPackageType()
         def type = key.getType().singularEndpointName()
         def name = key.getName()
-        return new RemoteRepository(key.getPackageType(), key.getName(), String.format("http://some.indy/api/content/%s/%s/%s", pkgType, type, name))
+        return new RemoteRepository(pkgType, String.format("%s-%s", type, name), String.format("http://some.indy/api/content/%s/%s/%s", pkgType, type, name))
     }
+
 
 }
