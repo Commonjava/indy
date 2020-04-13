@@ -359,13 +359,13 @@ public class StoreAdminHandler
     public Response delete(final @PathParam("packageType") String packageType,
                            final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
                            final @ApiParam(required = true) @PathParam("name") String name,
-                           final @QueryParam("deleteContent") boolean deleteCount,
+                           final @QueryParam("deleteContent") boolean deleteContent,
                            @Context final HttpServletRequest request,
                            final @Context SecurityContext securityContext) {
         final StoreType st = StoreType.get(type);
         final StoreKey key = new StoreKey(packageType, st, name);
 
-        logger.info( "Deleting: {}, deleteCount: {}", key, deleteCount );
+        logger.info( "Deleting: {}, deleteContent: {}", key, deleteContent );
         Response response;
         try {
             String summary = null;
@@ -383,11 +383,11 @@ public class StoreAdminHandler
             if (isEmpty(summary)) {
                 summary = "Changelog not provided";
             }
-            summary += ( ", deleteCount:" + deleteCount );
+            summary += ( ", deleteContent:" + deleteContent );
 
             String user = securityManager.getUser(securityContext, request);
 
-            adminController.delete( key, user, summary, deleteCount );
+            adminController.delete( key, user, summary, deleteContent );
 
             response = noContent().build();
         } catch (final IndyWorkflowException e) {

@@ -168,11 +168,11 @@ public class AdminController
         }
     }
 
-    public void delete( final StoreKey key, final String user, final String changelog, final boolean deleteCount )
+    public void delete( final StoreKey key, final String user, final String changelog, final boolean deleteContent )
         throws IndyWorkflowException
     {
         // safe check
-        if ( deleteCount )
+        if ( deleteContent )
         {
             if ( !key.getName().matches( indyConfiguration.getDisposableStorePattern() ) )
             {
@@ -183,10 +183,10 @@ public class AdminController
         try
         {
             ArtifactStore store = storeManager.getArtifactStore( key );
-            if ( store != null && deleteCount )
+            if ( store != null && deleteContent )
             {
                 logger.info( "Delete content of {}", key );
-                deleteCount( store );
+                deleteContent( store );
             }
 
             storeManager.deleteArtifactStore( key, new ChangeSummary( user, changelog ), new EventMetadata() );
@@ -202,7 +202,7 @@ public class AdminController
         }
     }
 
-    private void deleteCount( final ArtifactStore store ) throws IndyWorkflowException
+    private void deleteContent( final ArtifactStore store ) throws IndyWorkflowException
     {
         List<Transfer> contents = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
         Set<String> pending = contents.stream().map( Transfer::getPath ).collect( Collectors.toSet() );
