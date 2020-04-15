@@ -169,7 +169,7 @@ public class BasicAuthenticationOAuthTranslator
                             "BASIC authentication translated into OAuth 2.0 bearer token. Handing off to Keycloak." );
                     resultValues.add( value );
 
-                    KeycloakBearerTokenDebug.debugToken( encodedToken );
+//                    KeycloakBearerTokenDebug.debugToken( encodedToken );
                     exchange.getResponseHeaders().add( new HttpString( INDY_BEARER_TOKEN ), encodedToken );
                 }
             }
