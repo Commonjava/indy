@@ -504,16 +504,14 @@ public class MavenMetadataGenerator
     }
 
     /**
-     * Will generate group related files(e.g maven-metadata.xml) from cache level, which means all the generation of the
-     * files will be cached. In terms of cache clearing, see #{@link MetadataMergeListener}
+     * Generate group related files (e.g maven-metadata.xml) from three levels.
+     * 1. cache, which means all the generation of the files will be cached. In terms of cache clearing, see #{@link MetadataMergeListener}
+     * 2. read cached from member hosted repos and try to download from member remote repos
+     * 3. generate by member hosted repos (list dir trying to find version directories)
      *
      * @param group
      * @param members concrete store in group
      * @param path
-     *
-     * @return
-     *
-     * @throws IndyWorkflowException
      */
     private Metadata generateGroupMetadata( final Group group, final List<ArtifactStore> members,
                                             final List<StoreKey> contributingMembers, final String path )
