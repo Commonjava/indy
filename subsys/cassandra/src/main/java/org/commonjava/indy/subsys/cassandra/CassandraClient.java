@@ -71,8 +71,8 @@ public class CassandraClient
         host = config.getCassandraHost();
         port = config.getCassandraPort();
         SocketOptions socketOptions = new SocketOptions();
-        socketOptions.setConnectTimeoutMillis( 30000 );
-        socketOptions.setReadTimeoutMillis( 30000 );
+        socketOptions.setConnectTimeoutMillis( 120000 );
+        socketOptions.setReadTimeoutMillis( 120000 );
         Cluster.Builder builder = Cluster.builder()
                                          .withoutJMXReporting()
                                          .addContactPoint( host )
