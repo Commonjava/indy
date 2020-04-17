@@ -22,10 +22,14 @@ import com.datastax.driver.core.WriteType;
 import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.core.policies.DefaultRetryPolicy;
 import com.datastax.driver.core.policies.RetryPolicy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConfigurableRetryPolicy
                 implements RetryPolicy
 {
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     final private RetryPolicy delegate = DefaultRetryPolicy.INSTANCE;
 
     final int retries; // number of retries
@@ -43,6 +47,7 @@ public class ConfigurableRetryPolicy
     public RetryDecision onReadTimeout( Statement statement, ConsistencyLevel cl, int requiredResponses,
                                         int receivedResponses, boolean dataRetrieved, int nbRetry )
     {
+        logger.warn( "ReadTimeout, statement: {}, nbRetry: {}, retries: {}", statement, nbRetry, retries );
         if ( nbRetry >= retries )
         {
             return RetryDecision.rethrow();
