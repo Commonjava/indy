@@ -41,6 +41,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.commonjava.indy.content.DownloadManager.ROOT_PATH;
 import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 
 @ApplicationScoped
@@ -204,12 +205,7 @@ public class AdminController
 
     private void deleteContent( final ArtifactStore store ) throws IndyWorkflowException
     {
-        List<Transfer> contents = downloadManager.listRecursively( store.getKey(), DownloadManager.ROOT_PATH );
-        Set<String> pending = contents.stream().map( Transfer::getPath ).collect( Collectors.toSet() );
-        for ( String path : pending )
-        {
-            contentManager.delete( store, path, new EventMetadata().set( IGNORE_READONLY, Boolean.TRUE ) );
-        }
+        downloadManager.delete( store, ROOT_PATH, new EventMetadata().set( IGNORE_READONLY, Boolean.TRUE ) );
     }
 
     public boolean exists( final StoreKey key )
