@@ -132,6 +132,11 @@ public abstract class IndexingContentManagerDecorator
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.retrieveFirst( stores, path, eventMetadata );
+        }
+
         Transfer transfer = null;
         for ( ArtifactStore store : stores )
         {
@@ -157,6 +162,11 @@ public abstract class IndexingContentManagerDecorator
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.retrieveAll( stores, path, eventMetadata );
+        }
+
         List<Transfer> results = new ArrayList<>();
         stores.stream().map( ( store ) -> {
             try
@@ -187,6 +197,11 @@ public abstract class IndexingContentManagerDecorator
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.retrieve( store, path, eventMetadata );
+        }
+
         if ( store == null )
         {
             return null;
@@ -453,6 +468,11 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final ArtifactStore store, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.getTransfer( store, path, op );
+        }
+
         Transfer transfer = getIndexedTransfer( store.getKey(), null, path, TransferOperation.DOWNLOAD, new EventMetadata(  ) );
         if ( exists( transfer ) )
         {
@@ -585,6 +605,11 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final StoreKey storeKey, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.getTransfer( storeKey, path, op );
+        }
+
         Transfer transfer = getIndexedTransfer( storeKey, null, path, TransferOperation.DOWNLOAD, new EventMetadata(  ) );
         if ( exists( transfer ) )
         {
@@ -670,6 +695,11 @@ public abstract class IndexingContentManagerDecorator
     public Transfer getTransfer( final List<ArtifactStore> stores, final String path, final TransferOperation op )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.getTransfer( stores, path, op );
+        }
+
         Transfer transfer = null;
         for ( ArtifactStore store : stores )
         {
@@ -697,6 +727,11 @@ public abstract class IndexingContentManagerDecorator
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.store( store, path, stream, op, eventMetadata );
+        }
+
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Storing: {} in: {} from indexing level", path, store.getKey() );
         Transfer transfer = delegate.store( store, path, stream, op, eventMetadata );
@@ -748,6 +783,11 @@ public abstract class IndexingContentManagerDecorator
                            final InputStream stream, final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.store( stores, topKey, path, stream, op, eventMetadata );
+        }
+
         Transfer transfer = delegate.store( stores, topKey, path, stream, op, eventMetadata );
         if ( transfer != null )
         {
@@ -790,6 +830,11 @@ public abstract class IndexingContentManagerDecorator
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.delete( store, path, eventMetadata );
+        }
+
         boolean result = delegate.delete( store, path, eventMetadata );
         if ( result && indexCfg.isEnabled() )
         {
@@ -811,6 +856,11 @@ public abstract class IndexingContentManagerDecorator
                               final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        if ( !indexCfg.isEnabled() )
+        {
+            return delegate.deleteAll( stores, path, eventMetadata );
+        }
+
         boolean result = false;
         for ( ArtifactStore store : stores )
         {

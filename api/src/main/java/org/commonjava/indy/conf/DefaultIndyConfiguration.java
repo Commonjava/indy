@@ -92,6 +92,8 @@ public class DefaultIndyConfiguration
 
     private Boolean standalone;
 
+    private boolean repositoryFilterEnabled;
+
     public DefaultIndyConfiguration()
     {
     }
@@ -325,6 +327,18 @@ public class DefaultIndyConfiguration
     public Boolean isStandalone()
     {
         return this.standalone == null ? DEFAULT_STANDALONE : this.standalone;
+    }
+
+    @ConfigName( "repository.filter.enabled" )
+    public void setRepositoryFilterEnabled( boolean repositoryFilterEnabled )
+    {
+        this.repositoryFilterEnabled = repositoryFilterEnabled;
+    }
+
+    @Override
+    public boolean isRepositoryFilterEnabled()
+    {
+        return repositoryFilterEnabled;
     }
 
     @ConfigName( "standalone" )
