@@ -15,91 +15,83 @@
  */
 package org.commonjava.indy.repo.proxy.ftest.create;
 
-import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule;
+import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Collection;
+import java.util.Collections;
 
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * Check if the repo proxy addon can proxy a hosted repo automatically with no remote setup
+ * Check if the content browse rewriting features in npm can work well for this proxy addon
  * <br/>
  * GIVEN:
  * <ul>
  *     <li>A external repo with specified path </li>
  *     <li>Configured the repo-proxy enabled</li>
- *     <li>Deployed a repo creator script whose rule to create remote repo which points to the external repo</li>
+ *     <li>Deployed a repo creator script whose rule to create npm remote repo which points to the external repo</li>
  * </ul>
  * <br/>
  * WHEN:
  * <ul>
- *     <li>Request path through a Hosted repo</li>
+ *     <li>Request directory path through content-browse api for a npm hosted repo</li>
  * </ul>
  * <br/>
  * THEN:
  * <ul>
- *     <li>The content of path can be returned correctly from hosted, but pathB can not</li>
- *     <li>The remote repo which is same-named as hosted has been set up.</li>
+ *     <li>The content for this request can be returned correctly.</li>
+ *     <li>The content should include hosted repo info for both store key and key path.</li>
  * </ul>
  */
-public class RepoProxyCreatorDefaultTest
+public class RepoProxyCreatorNPMContentBrowseTest
         extends AbstractContentManagementTest
 
 {
     private static final String REPO_NAME = "test";
 
-    private HostedRepository hosted = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME );
-
-    private static final String PATH = "foo/bar/1.0/foo-bar-1.0.txt";
-
-    private static final String CONTENT = "This is content";
-
-    @Before
-    public void setupRepos()
-            throws Exception
-    {
-        server.expect( server.formatUrl( REPO_NAME, PATH ), 200, new ByteArrayInputStream( CONTENT.getBytes() ) );
-    }
+    private HostedRepository hosted = new HostedRepository( NPM_PKG_KEY, REPO_NAME );
 
     @Test
     public void run()
             throws Exception
     {
         final StoreKey remoteKey =
-                new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, REPO_NAME );
+                new StoreKey( NPM_PKG_KEY, StoreType.remote, REPO_NAME );
         RemoteRepository remote = client.stores().load( remoteKey, RemoteRepository.class );
         assertThat( remote, nullValue() );
 
-        try (InputStream result = client.content().get( hosted.getKey(), PATH ))
-        {
-            assertThat( result, notNullValue() );
-            final String content = IOUtils.toString( result );
-            assertThat( content, equalTo( CONTENT ) );
-        }
+        ContentBrowseResult result = client.module( IndyContentBrowseClientModule.class ).getContentList( hosted.getKey(), "" );
+        assertThat( result, notNullValue() );
 
         remote = client.stores().load( remoteKey, RemoteRepository.class );
         assertThat( remote, notNullValue() );
+
+        assertThat( result.getStoreKey(), equalTo( hosted.getKey() ) );
+        assertThat( result.getStoreBrowseUrl(), containsString( "npm/hosted/test" ) );
+        assertThat( result.getStoreContentUrl(), containsString( "npm/hosted/test" ) );
+
     }
 
     @Override
     protected void initTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/repo-proxy.conf", "[repo-proxy]\nenabled=true" );
+        writeConfigFile( "conf.d/repo-proxy.conf", "[repo-proxy]\nenabled=true\n\n[content-browse]\nenabled=true\n" );
     }
 
     @Override
@@ -121,7 +113,7 @@ public class RepoProxyCreatorDefaultTest
             "class DefaultRule extends AbstractProxyRepoCreateRule {\n" +
             "    @Override\n" +
             "    boolean matches(StoreKey storeKey) {\n" +
-            "        return \"maven\".equals(storeKey.getPackageType())\n" +
+            "        return \"npm\".equals(storeKey.getPackageType())\n" +
             "    }\n" +
             "    @Override\n" +
             "    Optional<RemoteRepository> createRemote(StoreKey key) {\n" +
@@ -129,5 +121,11 @@ public class RepoProxyCreatorDefaultTest
             "    }\n" +
             "}";
         // @formatter:on;
+    }
+
+    @Override
+    protected Collection<IndyClientModule> getAdditionalClientModules()
+    {
+        return Collections.singletonList( new IndyContentBrowseClientModule() );
     }
 }
