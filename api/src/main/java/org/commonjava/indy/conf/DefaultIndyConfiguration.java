@@ -88,6 +88,8 @@ public class DefaultIndyConfiguration
 
     private String affectedGroupsExcludeFilter;
 
+    private int fileSystemContainingBatchSize = 100; // default
+
     private String cacheKeyspace = "indycache"; // default
 
     private Boolean standalone;
@@ -321,6 +323,18 @@ public class DefaultIndyConfiguration
     public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
     {
         this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
+    }
+
+    @Override
+    public int getFileSystemContainingBatchSize()
+    {
+        return fileSystemContainingBatchSize;
+    }
+
+    @ConfigName( "filesystem.containing.batch.size" )
+    public void setFileSystemContainingBatchSize( int fileSystemContainingBatchSize )
+    {
+        this.fileSystemContainingBatchSize = fileSystemContainingBatchSize;
     }
 
     @Override
