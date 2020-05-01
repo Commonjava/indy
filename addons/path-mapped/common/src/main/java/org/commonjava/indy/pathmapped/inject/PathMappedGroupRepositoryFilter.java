@@ -92,9 +92,18 @@ public class PathMappedGroupRepositoryFilter
         int batchSize = indyConfig.getFileSystemContainingBatchSize();
         List<List<String>> subSets = Lists.partition( candidates, batchSize );
         subSets.forEach( subSet -> {
-            logger.debug( "getFileSystemContaining, strategyPath: {}, subSet: {}", strategyPath, subSet );
-            Set<String> s = pathMappedFileManager.getFileSystemContainingDirectory( subSet, strategyPath );
-            ret.addAll( s );
+            logger.debug( "Get file system containing, strategyPath: {}, subSet: {}", strategyPath, subSet );
+            Set<String> st = pathMappedFileManager.getFileSystemContainingDirectory( subSet, strategyPath );
+            if ( st == null )
+            {
+                // query failed but those candidates may contain the target path so we add all subSet candidates
+                logger.warn( "Get fileSystems query failed, add subSet candidates" );
+                ret.addAll( subSet );
+            }
+            else
+            {
+                ret.addAll( st );
+            }
         } );
 
         return concreteStores.stream()
