@@ -58,6 +58,10 @@ public class IndyVersioningProvider
             {
                 props.load( is );
             }
+            else
+            {
+                logger.warn( "Resource not found, file: {}, loader: {}", INDY_VERSIONING_PROPERTIES, cl );
+            }
         }
         catch ( final IOException e )
         {
@@ -81,6 +85,10 @@ public class IndyVersioningProvider
             if ( is != null )
             {
                 deprApis.load( is );
+            }
+            else
+            {
+                logger.warn( "Resource not found, file: {}, loader: {}", INDY_DEPRECATED_APIS_PROPERTIES, cl );
             }
         }
         catch ( final IOException e )
