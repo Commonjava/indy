@@ -48,9 +48,11 @@ public class IndyVersioningProvider
 
     public IndyVersioningProvider()
     {
+        ClassLoader cl = IndyVersioningProvider.class.getClassLoader();
+
         // Load indy-version
         final Properties props = new Properties();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream( INDY_VERSIONING_PROPERTIES ))
+        try (InputStream is = cl.getResourceAsStream( INDY_VERSIONING_PROPERTIES ))
         {
             if ( is != null )
             {
@@ -74,7 +76,7 @@ public class IndyVersioningProvider
         logger.info( "Get deprecatedApiFile: {}", deprecatedApiFile );
 
         final Properties deprApis = new Properties();
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream( deprecatedApiFile ))
+        try (InputStream is = cl.getResourceAsStream( deprecatedApiFile ))
         {
             if ( is != null )
             {
