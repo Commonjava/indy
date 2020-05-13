@@ -79,7 +79,8 @@ public class ConnectionPoolProvider
         {
             try
             {
-                AgroalDataSourceConfiguration config = new AgroalPropertiesReader().readProperties( poolInfo.getProperties() ).get();
+                AgroalPropertiesReader propertiesReader = new AgroalPropertiesReader( ConnectionPoolConfig.DS_PROPERTY_PREFIX );
+                AgroalDataSourceConfiguration config = propertiesReader.readProperties( poolInfo.getProperties() ).get();
                 config.setMetricsEnabled( poolInfo.isUseMetrics() );
                 AgroalDataSource ds = AgroalDataSource.from( config, new AgroalDataSourceLogger( poolInfo.getName() ) );
 
