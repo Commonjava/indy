@@ -42,6 +42,8 @@ public class DefaultStorageProviderConfiguration
 
     private File storageBasedir;
 
+    private File legacyStorageBasedir;
+
     private File nfsStoreBasedir;
 
     public DefaultStorageProviderConfiguration()
@@ -81,6 +83,17 @@ public class DefaultStorageProviderConfiguration
     public void setNFSStorageRootDirectory( final File nfsStorageRootDirectory )
     {
         this.nfsStoreBasedir = nfsStorageRootDirectory;
+    }
+
+    public File getLegacyStorageBasedir()
+    {
+        return legacyStorageBasedir;
+    }
+
+    @ConfigName( "storage.legacy.dir" )
+    public void setLegacyStorageBasedir( File legacyStorageBasedir )
+    {
+        this.legacyStorageBasedir = legacyStorageBasedir;
     }
 
     @Override

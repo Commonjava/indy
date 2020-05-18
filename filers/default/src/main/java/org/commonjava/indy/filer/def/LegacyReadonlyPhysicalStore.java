@@ -21,6 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
@@ -31,9 +34,12 @@ public class LegacyReadonlyPhysicalStore
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
-    public LegacyReadonlyPhysicalStore( File baseDir )
+    protected final File legacyBaseDir;
+
+    public LegacyReadonlyPhysicalStore( File baseDir, File legacyBaseDir )
     {
         super( baseDir );
+        this.legacyBaseDir = legacyBaseDir;
     }
 
     @Override
@@ -46,6 +52,39 @@ public class LegacyReadonlyPhysicalStore
             return true;
         }
         return super.delete( fileInfo );
+    }
+
+    @Override
+    public InputStream getInputStream( String storageFile ) throws IOException
+    {
+        File f;
+        if ( legacyBaseDir != null && isLegacyFile( storageFile ) )
+        {
+            f = new File( legacyBaseDir, storageFile );
+            if ( f.isDirectory() || !f.exists() )
+            {
+                logger.debug( "Target file not exists, file: {}", f.getAbsolutePath() );
+                return null;
+            }
+            return new FileInputStream( f );
+        }
+        else
+        {
+            return super.getInputStream( storageFile );
+        }
+    }
+
+    @Override
+    public boolean exists( String storageFile )
+    {
+        if ( legacyBaseDir != null && isLegacyFile( storageFile ) )
+        {
+            return new File( legacyBaseDir, storageFile ).exists();
+        }
+        else
+        {
+            return super.exists( storageFile );
+        }
     }
 
     //Legacy folders: generic-http, maven, npm
