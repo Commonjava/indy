@@ -23,9 +23,12 @@ import javax.enterprise.inject.Alternative;
 import javax.inject.Named;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static org.apache.commons.lang.StringUtils.isBlank;
 
 @Alternative
@@ -82,20 +85,29 @@ public class IndyDeprecatedApis
         logger.debug( "Parsed deprecatedApis:{}, minApiVersion:{}", deprecatedApis, minApiVersion );
     }
 
-    public DeprecatedApiEntry getDeprecated( String reqApiVersion )
+    public Optional<DeprecatedApiEntry> getDeprecated( String reqApiVersion )
     {
         if ( isBlank( reqApiVersion ))
         {
-            return null;
+            return empty();
         }
-        Float reqVer = Float.parseFloat( reqApiVersion );
+        Float reqVer;
+        try
+        {
+            reqVer = Float.parseFloat( reqApiVersion );
+        }
+        catch ( NumberFormatException e )
+        {
+            logger.warn( "Unknown api version: {}", reqApiVersion );
+            return empty();
+        }
 
         // the scopes may overlap, we go through range entries first and other entries next
         for ( DeprecatedApiEntry et : deprecatedApis )
         {
             if ( et.range != null && et.range.containsFloat( reqVer ) )
             {
-                return et;
+                return of( et );
             }
         }
 
@@ -103,11 +115,11 @@ public class IndyDeprecatedApis
         {
             if ( et.endVersion != null && reqVer <= et.endVersion )
             {
-                return et;
+                return of( et );
             }
         }
 
-        return null;
+        return empty();
     }
 
     public String getMinApiVersion()

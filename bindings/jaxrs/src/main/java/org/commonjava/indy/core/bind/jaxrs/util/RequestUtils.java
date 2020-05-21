@@ -16,7 +16,6 @@
 package org.commonjava.indy.core.bind.jaxrs.util;
 
 import org.commonjava.maven.galley.util.PathUtils;
-import org.slf4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.HttpMethod;
@@ -30,10 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static org.commonjava.indy.IndyRequestConstants.LISTING_HTML_FILE;
 import static org.commonjava.indy.core.ctl.ContentController.BROWSER_USER_AGENT;
 import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_API_ROOT;
 import static org.commonjava.indy.core.ctl.ContentController.CONTENT_BROWSE_ROOT;
-import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
 
 public final class RequestUtils
 {
@@ -84,5 +83,30 @@ public final class RequestUtils
             builderModifier.accept(builder);
         }
         return builder.build();
+    }
+
+    /**
+     * Check if a path with request is a request to access directory listing
+     *
+     * @param path
+     * @param request
+     * @return
+     */
+    public static boolean isDirectoryPath( final String path, final HttpServletRequest request )
+    {
+        return path == null || path.equals( "" ) || isDirectoryPathForRequest( request ) || path.endsWith(
+                LISTING_HTML_FILE );
+    }
+
+    /**
+     * Check if http request is accessing directory listing
+     *
+     * @param request
+     * @return
+     */
+    public static boolean isDirectoryPathForRequest( final HttpServletRequest request )
+    {
+        final String pathInfo = request.getPathInfo().trim();
+        return pathInfo.endsWith( "/" ) || pathInfo.endsWith( LISTING_HTML_FILE );
     }
 }
