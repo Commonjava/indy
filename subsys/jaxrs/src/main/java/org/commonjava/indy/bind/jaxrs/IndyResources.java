@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import org.commonjava.indy.bind.jaxrs.util.REST;
-
 /**
  * Marker interface that denotes a class providing JAX-RS resource methods. This is used to collect resources for use in an undertow/resteasy 
  * deployment.

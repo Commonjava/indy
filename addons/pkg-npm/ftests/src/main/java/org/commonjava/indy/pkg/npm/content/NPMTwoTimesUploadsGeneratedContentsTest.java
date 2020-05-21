@@ -18,12 +18,17 @@ package org.commonjava.indy.pkg.npm.content;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.npm.model.PackageMetadata;
+import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Map;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -69,7 +74,16 @@ public class NPMTwoTimesUploadsGeneratedContentsTest
         client.content().store( storeKey, path, content1 );
         client.content().store( storeKey, path, content2 );
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+        final InputStream is = client.content().get( storeKey, path );
+
+        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        PackageMetadata packageMetadata = mapper.readValue( is, PackageMetadata.class );
+
+        Map<String, VersionMetadata> versions = packageMetadata.getVersions();
+        assertThat( versions, notNullValue() );
+        assertThat( versions.size(), equalTo( 2 ) );
+        assertThat( versions.get( "1.5.1" ).getVersion(), equalTo( "1.5.1" ) );
+        assertThat( versions.get( "1.6.2" ).getVersion(), equalTo( "1.6.2" ) );
 
         assertThat( client.content().exists( storeKey, firstTarballPath ), equalTo( true ) );
         assertThat( client.content().exists( storeKey, firstVersionPath ), equalTo( true ) );

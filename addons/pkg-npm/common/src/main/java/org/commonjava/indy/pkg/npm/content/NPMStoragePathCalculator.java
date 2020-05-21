@@ -15,12 +15,17 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import org.apache.commons.io.FilenameUtils;
 import org.commonjava.indy.content.StoragePathCalculator;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.maven.galley.io.SpecialPathConstants;
+import org.commonjava.maven.galley.model.SpecialPathInfo;
+import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
@@ -46,22 +51,59 @@ public class NPMStoragePathCalculator
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    @Inject
+    SpecialPathManager specialPathManager;
+
+    protected NPMStoragePathCalculator()
+    {
+    }
+
+    public NPMStoragePathCalculator( SpecialPathManager specialPathManager )
+    {
+        this.specialPathManager = specialPathManager;
+    }
+
     @Override
     public String calculateStoragePath( final StoreKey key, final String path )
     {
+
         if ( PKG_TYPE_NPM.equals( key.getPackageType() ) )
         {
+            String pkg = path;
+
+            final String extension = getSpecialPathExt( path );
+            if ( extension != null )
+            {
+                pkg = path.substring( 0, path.indexOf( extension ) );
+            }
+
             // This is considering the single path for npm standard like "/jquery"
-            final boolean isSinglePath = path.split( "/" ).length < 2;
+            final boolean isSinglePath = pkg.split( "/" ).length < 2;
             // This is considering the scoped path for npm standard like "/@type/jquery"
-            final boolean isScopedPath = path.startsWith( "@" ) && path.split( "/" ).length < 3;
+            final boolean isScopedPath = pkg.startsWith( "@" ) && pkg.split( "/" ).length < 3;
             if ( isSinglePath || isScopedPath )
             {
-                logger.debug( "Modifying target path: {}, appending '{}'", path, METADATA_NAME );
-                return normalize( path, METADATA_NAME );
+                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, METADATA_NAME, key.toString() );
+                return extension != null ?
+                                normalize( pkg, METADATA_NAME + extension ) : normalize( pkg, METADATA_NAME );
             }
         }
 
         return path;
     }
+
+    private String getSpecialPathExt( String path )
+    {
+
+        SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( path, SpecialPathConstants.PKG_TYPE_NPM );
+
+        if ( spi != null && spi.isMetadata() )
+        {
+            return path.endsWith( SpecialPathConstants.HTTP_METADATA_EXT ) ?
+                            SpecialPathConstants.HTTP_METADATA_EXT :
+                            "." + FilenameUtils.getExtension( path );
+        }
+        return null;
+    }
+
 }

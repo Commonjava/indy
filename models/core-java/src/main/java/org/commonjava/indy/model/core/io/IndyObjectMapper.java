@@ -18,7 +18,12 @@ package org.commonjava.indy.model.core.io;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.Module;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
@@ -117,6 +122,7 @@ public class IndyObjectMapper
     {
         setSerializationInclusion( Include.NON_EMPTY );
         configure( Feature.AUTO_CLOSE_JSON_CONTENT, true );
+        configure( DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
 
         enable( SerializationFeature.INDENT_OUTPUT, SerializationFeature.USE_EQUALITY_FOR_OBJECT_ID );
 

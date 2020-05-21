@@ -989,7 +989,7 @@ public class DefaultDownloadManager
             // We should allow deletion of the group level mergeable metadata here, for supporting
             // the cascading deletion from hosted member pom file deletion. See MetadataMergePomChangeListener.metaClear
             // for details
-            final SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( path );
+            final SpecialPathInfo pathInfo = specialPathManager.getSpecialPathInfo( path, store.getPackageType() );
             if ( pathInfo == null || !pathInfo.isMetadata() || !pathInfo.isMergable() )
             {
                 return false;

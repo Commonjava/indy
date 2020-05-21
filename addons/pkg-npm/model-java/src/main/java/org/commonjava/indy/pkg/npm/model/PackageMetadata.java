@@ -80,7 +80,7 @@ public class PackageMetadata
     @ApiModelProperty( required = false, dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
     private Bugs bugs;
 
-    private String license;
+    private License license;
 
     public PackageMetadata()
     {
@@ -231,12 +231,12 @@ public class PackageMetadata
         this.bugs = bugs;
     }
 
-    public String getLicense()
+    public License getLicense()
     {
         return license;
     }
 
-    public void setLicense( String license )
+    public void setLicense( License license )
     {
         this.license = license;
     }
@@ -313,7 +313,7 @@ public class PackageMetadata
         while ( maintainer.hasNext() )
         {
             UserInfo m = (UserInfo) maintainer.next();
-            if ( !maintainers.contains( m ) )
+            if ( m.getName() != null && !maintainers.contains( m ) )
             {
                 this.addMaintainers( new UserInfo( m.getName(), m.getEmail(), m.getUrl() ) );
                 changed = true;

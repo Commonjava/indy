@@ -60,6 +60,8 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_STANDALONE = false;
 
+    public static final String DEFAULT_DISPOSABLE_STORE_PATTERN = ".*test.*";
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -95,6 +97,8 @@ public class DefaultIndyConfiguration
     private Boolean standalone;
 
     private boolean repositoryFilterEnabled;
+
+    private String disposableStorePattern;
 
     public DefaultIndyConfiguration()
     {
@@ -249,6 +253,18 @@ public class DefaultIndyConfiguration
     public void setAllowRemoteListDownload( Boolean allowRemoteListDownload )
     {
         this.allowRemoteListDownload = allowRemoteListDownload;
+    }
+
+    @Override
+    public String getDisposableStorePattern()
+    {
+        return disposableStorePattern == null ? DEFAULT_DISPOSABLE_STORE_PATTERN : disposableStorePattern;
+    }
+
+    @ConfigName( "disposable.store.pattern" )
+    public void setDisposableStorePattern( String disposableStorePattern )
+    {
+        this.disposableStorePattern = disposableStorePattern;
     }
 
     private File getSyspropDir( final String property )
