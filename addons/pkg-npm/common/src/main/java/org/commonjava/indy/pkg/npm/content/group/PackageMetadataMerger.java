@@ -22,6 +22,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
+import org.commonjava.indy.pkg.npm.model.io.PackageSerializerModule;
 import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,16 +48,24 @@ public class PackageMetadataMerger
     @Inject
     private Instance<PackageMetadataProvider> metadataProviderInstances;
 
+    @Inject
+    private PackageSerializerModule packageSerializerModule;
+
+    @Inject
+    private IndyObjectMapper mapper;
+
     private List<PackageMetadataProvider> metadataProviders;
 
     public PackageMetadataMerger()
     {
     }
 
-    public PackageMetadataMerger( Iterable<PackageMetadataProvider> providers )
+    public PackageMetadataMerger( Iterable<PackageMetadataProvider> providers, IndyObjectMapper mapper )
     {
         metadataProviders = new ArrayList<>();
         providers.forEach( provider -> metadataProviders.add( provider ) );
+
+        this.mapper = mapper;
     }
 
     @PostConstruct
@@ -67,6 +76,8 @@ public class PackageMetadataMerger
         {
             metadataProviderInstances.forEach( provider -> metadataProviders.add( provider ) );
         }
+
+        mapper.registerModule( packageSerializerModule );
     }
 
     public byte[] merge( final Collection<Transfer> sources, final Group group, final String path )
@@ -79,7 +90,6 @@ public class PackageMetadataMerger
         boolean merged = false;
 
         final PackageMetadata packageMetadata = new PackageMetadata();
-        final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
         for ( final Transfer src : sources )
         {
@@ -157,7 +167,6 @@ public class PackageMetadataMerger
         InputStream stream = null;
 
         final PackageMetadata packageMetadata = new PackageMetadata();
-        final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
         for ( final Transfer src : sources )
         {

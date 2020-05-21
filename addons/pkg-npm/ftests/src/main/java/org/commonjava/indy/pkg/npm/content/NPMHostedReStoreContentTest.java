@@ -66,10 +66,7 @@ public class NPMHostedReStoreContentTest
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
         client.content().store( storeKey, path, content1 );
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
-
         client.content().store( storeKey, path, content2 );
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         final InputStream is = client.content().get( storeKey, path );
 

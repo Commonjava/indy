@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>2.1.1-SNAPSHOT</version>
+    <version>2.2.1-SNAPSHOT</version>
   </parent>
   
   <groupId>org.commonjava.indy.embed</groupId>
@@ -222,6 +222,14 @@
       <artifactId>indy-event-audit-common</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-repo-proxy-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-repo-proxy-jaxrs</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.commonjava.atlas</groupId>
@@ -351,6 +359,10 @@
       <artifactId>cassandra-unit</artifactId>
     </dependency>
 -->
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-repo-proxy</artifactId>
+    </dependency>
   </dependencies>
   
   <build>
@@ -457,6 +469,7 @@
               <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>
               <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>
               <dependency>org.commonjava.indy:indy-ftests-changelog</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-repo-proxy</dependency>
             </dependenciesToScan>
           </configuration>
           <executions>
