@@ -60,6 +60,8 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_STANDALONE = false;
 
+    public static final String DEFAULT_DISPOSABLE_STORE_PATTERN = ".*test.*";
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -88,11 +90,15 @@ public class DefaultIndyConfiguration
 
     private String affectedGroupsExcludeFilter;
 
+    private int fileSystemContainingBatchSize = 100; // default
+
     private String cacheKeyspace = "indycache"; // default
 
     private Boolean standalone;
 
     private boolean repositoryFilterEnabled;
+
+    private String disposableStorePattern;
 
     public DefaultIndyConfiguration()
     {
@@ -249,6 +255,18 @@ public class DefaultIndyConfiguration
         this.allowRemoteListDownload = allowRemoteListDownload;
     }
 
+    @Override
+    public String getDisposableStorePattern()
+    {
+        return disposableStorePattern == null ? DEFAULT_DISPOSABLE_STORE_PATTERN : disposableStorePattern;
+    }
+
+    @ConfigName( "disposable.store.pattern" )
+    public void setDisposableStorePattern( String disposableStorePattern )
+    {
+        this.disposableStorePattern = disposableStorePattern;
+    }
+
     private File getSyspropDir( final String property )
     {
         String dir = System.getProperty( property );
@@ -321,6 +339,18 @@ public class DefaultIndyConfiguration
     public void setAffectedGroupsExcludeFilter( String affectedGroupsExcludeFilter )
     {
         this.affectedGroupsExcludeFilter = affectedGroupsExcludeFilter;
+    }
+
+    @Override
+    public int getFileSystemContainingBatchSize()
+    {
+        return fileSystemContainingBatchSize;
+    }
+
+    @ConfigName( "filesystem.containing.batch.size" )
+    public void setFileSystemContainingBatchSize( int fileSystemContainingBatchSize )
+    {
+        this.fileSystemContainingBatchSize = fileSystemContainingBatchSize;
     }
 
     @Override

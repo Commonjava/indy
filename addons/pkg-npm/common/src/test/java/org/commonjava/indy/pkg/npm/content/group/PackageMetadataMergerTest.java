@@ -29,10 +29,12 @@ import org.commonjava.indy.pkg.npm.model.PackageMetadata;
 import org.commonjava.indy.pkg.npm.model.Repository;
 import org.commonjava.indy.pkg.npm.model.UserInfo;
 import org.commonjava.indy.pkg.npm.model.VersionMetadata;
+import org.commonjava.indy.pkg.npm.model.io.PackageSerializerModule;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.event.NoOpFileEventManager;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
+import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
@@ -69,13 +71,19 @@ public class PackageMetadataMergerTest
 
     private CacheProvider cacheProvider;
 
+    private IndyObjectMapper mapper;
+
     @Before
     public void setup()
             throws Exception
     {
         cacheProvider = new FileCacheProvider( temp.newFolder( "cache" ), new IndyPathGenerator(
-                Collections.singleton( new NPMStoragePathCalculator() ) ), new NoOpFileEventManager(),
+                Collections.singleton( new NPMStoragePathCalculator( new SpecialPathManagerImpl(  ) ) ) ), new NoOpFileEventManager(),
                                                new TransferDecoratorManager( new NoOpTransferDecorator() ), false );
+
+        mapper = new IndyObjectMapper( true );
+        mapper.registerModule( new PackageSerializerModule() );
+
     }
 
     @Test
@@ -95,8 +103,8 @@ public class PackageMetadataMergerTest
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
-        byte[] output = new PackageMetadataMerger( Collections.emptyList() ).merge( sources, g, path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        byte[] output = new PackageMetadataMerger( Collections.emptyList(), mapper ).merge( sources, g, path );
+
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -108,7 +116,7 @@ public class PackageMetadataMergerTest
         assertThat( merged.getReadmeFilename(), equalTo( "README.md" ) );
         assertThat( merged.getHomepage(), equalTo( "https://jquery.com" ) );
         assertThat( merged.getBugs().getUrl(), equalTo( "https://github.com/jquery/jquery/issues" ) );
-        assertThat( merged.getLicense(), equalTo( "MIT" ) );
+        assertThat( merged.getLicense().getType(), equalTo( "MIT" ) );
 
         // dist-tags object merging verification
         assertThat( merged.getDistTags().getBeta(), equalTo( "3.2.1-beta.1" ) );
@@ -165,8 +173,8 @@ public class PackageMetadataMergerTest
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
-        byte[] output = new PackageMetadataMerger( Collections.emptyList() ).merge( sources, g, path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        byte[] output = new PackageMetadataMerger( Collections.emptyList(), mapper ).merge( sources, g, path );
+
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -178,7 +186,7 @@ public class PackageMetadataMergerTest
         assertThat( merged.getReadmeFilename(), equalTo( "README1.md" ) );
         assertThat( merged.getHomepage(), equalTo( "https://jquery1.com" ) );
         assertThat( merged.getBugs().getUrl(), equalTo( "https://github.com/jquery1/jquery1/issues" ) );
-        assertThat( merged.getLicense(), equalTo( "MIT1" ) );
+        assertThat( merged.getLicense().getType(), equalTo( "MIT1" ) );
 
         // dist-tags object merging verification
         assertThat( merged.getDistTags().getBeta(), equalTo( "2.2.1" ) );
@@ -208,8 +216,8 @@ public class PackageMetadataMergerTest
 
         List<Transfer> sources = Arrays.asList( t1, t2 );
 
-        byte[] output = new PackageMetadataMerger( Collections.emptyList() ).merge( sources, g, path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        byte[] output = new PackageMetadataMerger( Collections.emptyList(), mapper ).merge( sources, g, path );
+
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -221,7 +229,7 @@ public class PackageMetadataMergerTest
         assertThat( merged.getReadmeFilename(), equalTo( "README1.md" ) );
         assertThat( merged.getHomepage(), equalTo( "https://jquery1.com" ) );
         assertThat( merged.getBugs().getUrl(), equalTo( "https://github.com/jquery1/jquery1/issues" ) );
-        assertThat( merged.getLicense(), equalTo( "MIT1" ) );
+        assertThat( merged.getLicense().getType(), equalTo( "MIT1" ) );
 
         // dist-tags object merging verification
         assertThat( merged.getDistTags().getBeta(), equalTo( "2.2.1" ) );
@@ -260,9 +268,8 @@ public class PackageMetadataMergerTest
         provided.setMaintainers( added );
         TestPackageMetadataProvider testProvider = new TestPackageMetadataProvider( provided );
 
-        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ) ).merge( sources, g,
+        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ), mapper ).merge( sources, g,
                                                                                                       path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -307,9 +314,8 @@ public class PackageMetadataMergerTest
 
         TestPackageMetadataProvider testProvider = new TestPackageMetadataProvider( provided );
 
-        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ) ).merge( sources, g,
+        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ), mapper ).merge( sources, g,
                                                                                                       path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -338,9 +344,8 @@ public class PackageMetadataMergerTest
 
         TestPackageMetadataProvider testProvider = new TestPackageMetadataProvider( provided );
 
-        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ) ).merge( sources, g,
+        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ), mapper ).merge( sources, g,
                                                                                                       path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -364,9 +369,8 @@ public class PackageMetadataMergerTest
         TestPackageMetadataProvider testProvider = new TestPackageMetadataProvider(
                         new IndyWorkflowException( "Failed to get provider content" ) );
 
-        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ) ).merge( sources, g,
+        byte[] output = new PackageMetadataMerger( Collections.singletonList( testProvider ), mapper ).merge( sources, g,
                                                                                                       path );
-        IndyObjectMapper mapper = new IndyObjectMapper( true );
         PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
                                                    PackageMetadata.class );
 
@@ -378,7 +382,7 @@ public class PackageMetadataMergerTest
         assertThat( merged.getReadmeFilename(), equalTo( "README1.md" ) );
         assertThat( merged.getHomepage(), equalTo( "https://jquery1.com" ) );
         assertThat( merged.getBugs().getUrl(), equalTo( "https://github.com/jquery1/jquery1/issues" ) );
-        assertThat( merged.getLicense(), equalTo( "MIT1" ) );
+        assertThat( merged.getLicense().getType(), equalTo( "MIT1" ) );
 
         // dist-tags object merging verification
         assertThat( merged.getDistTags().getBeta(), equalTo( "2.2.1" ) );

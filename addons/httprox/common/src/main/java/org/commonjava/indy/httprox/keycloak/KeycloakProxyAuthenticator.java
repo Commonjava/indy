@@ -184,7 +184,7 @@ public class KeycloakProxyAuthenticator
         AccessToken token;
         try
         {
-            KeycloakBearerTokenDebug.debugToken( tokenString );
+//            KeycloakBearerTokenDebug.debugToken( tokenString );
 
             logger.debug( "Verifying token: '{}'", tokenString );
             token = RSATokenVerifier.verifyToken( tokenString, getHardcodedRealmKey( deployment ), deployment.getRealmInfoUrl() );
