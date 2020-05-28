@@ -132,6 +132,7 @@ public class IndyKojiContentProvider
             List ret = cache.get( buildId );
             if ( ret != null )
             {
+                logger.trace( "Build {} got its tags from tags query cache, no need to query from koji again", buildId );
                 map.put( buildId, ret );
             }
             else
@@ -141,7 +142,15 @@ public class IndyKojiContentProvider
         }
         if ( !missed.isEmpty() )
         {
+            logger.trace( "Builds which did not find tags in tags query cache: {}", missed );
             Map<Integer, List<KojiTagInfo>> retrieved = kojiClient.listTags( missed, session );
+            if ( logger.isTraceEnabled() )
+            {
+                for ( Map.Entry<Integer, List<KojiTagInfo>> entry : retrieved.entrySet() )
+                {
+                    logger.trace( "Build {} has {} tags from remote koji", entry.getKey(), entry.getValue().size() );
+                }
+            }
             map.putAll( retrieved );
             retrieved.forEach( ( k, v ) -> cache.put( k, v ) );
         }
