@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
-import static org.commonjava.indy.model.core.StoreKey.fromString;
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
@@ -53,7 +52,8 @@ public class RepoProxyUtils
             final String originStoreKeyStr = origStoreKey.get();
             final String[] parts = originStoreKeyStr.split( ":" );
             final String proxyToStorePathString = keyToPath( proxyToKey );
-            final String proxyTo = originalPath.replaceAll( keyToPath( originStoreKeyStr ), proxyToStorePathString );
+            final String proxyTo =
+                    replaceAllWithNoRegex( originalPath, keyToPath( originStoreKeyStr ), proxyToStorePathString );
             logger.trace( "Found proxy to store rule: from {} to {}", originStoreKeyStr, proxyToStorePathString );
             return of( proxyTo );
         }
@@ -151,5 +151,15 @@ public class RepoProxyUtils
             final String finalTemplate = ADDON_NAME + ": " + template;
             logger.trace( finalTemplate, params );
         }
+    }
+
+    public static String replaceAllWithNoRegex( String originalStr, String target, String replacement )
+    {
+        String result = originalStr;
+        while ( result.indexOf( target ) > 0 )
+        {
+            result = result.replace( target, replacement );
+        }
+        return result;
     }
 }

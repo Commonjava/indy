@@ -38,6 +38,11 @@ public class RepoProxyUtilsTest
         assertTrue( storeKeyStr.isPresent() );
         assertThat( storeKeyStr.get(), equalTo( "maven:group:abc" ) );
 
+        path = "/api/content/maven/group/builds-untested+shared-imports/org/commonjava/indy/maven-metadata.xml";
+        storeKeyStr = getOriginalStoreKeyFromPath( path );
+        assertTrue( storeKeyStr.isPresent() );
+        assertThat( storeKeyStr.get(), equalTo( "maven:group:builds-untested+shared-imports" ) );
+
         path = "/api/content/maven/hosted/def";
         storeKeyStr = getOriginalStoreKeyFromPath( path );
         assertTrue( storeKeyStr.isPresent() );
@@ -51,6 +56,7 @@ public class RepoProxyUtilsTest
         path = "/api/content/npm/groupe/ghi/";
         storeKeyStr = getOriginalStoreKeyFromPath( path );
         assertFalse( storeKeyStr.isPresent() );
+
     }
 
     @Test
@@ -59,6 +65,11 @@ public class RepoProxyUtilsTest
         String fullPath = "/api/content/maven/group/abc/org/commonjava/indy/maven-metadata.xml";
         String repoPath = "maven/group/abc";
         String path = extractPath( fullPath, repoPath );
+        assertThat( path, equalTo( "/org/commonjava/indy/maven-metadata.xml" ) );
+
+        fullPath = "/api/content/maven/group/builds-untested+shared-imports/org/commonjava/indy/maven-metadata.xml";
+        repoPath = "maven/group/builds-untested+shared-imports";
+        path = extractPath( fullPath, repoPath );
         assertThat( path, equalTo( "/org/commonjava/indy/maven-metadata.xml" ) );
 
         fullPath = "/api/content/maven/hosted/def/org/commonjava/indy/1.0/";
@@ -95,6 +106,11 @@ public class RepoProxyUtilsTest
         assertTrue( proxyTo.isPresent() );
         assertThat( proxyTo.get(), equalTo( "/api/content/maven/remote/group-abc/org/commonjava/indy/maven-metadata.xml" ) );
 
+        fullPath = "/api/content/maven/group/builds-untested+shared-imports/org/commonjava/indy/maven-metadata.xml";
+        proxyTo = getProxyTo( fullPath, StoreKey.fromString( "maven:remote:group-builds-untested+shared-imports" ) );
+        assertTrue( proxyTo.isPresent() );
+        assertThat( proxyTo.get(), equalTo( "/api/content/maven/remote/group-builds-untested+shared-imports/org/commonjava/indy/maven-metadata.xml" ) );
+
         fullPath = "/api/browse/content/maven/hosted/def/org/commonjava/indy/1.0/";
         proxyTo = getProxyTo( fullPath, StoreKey.fromString( "maven:remote:hosted-def" ) );
         assertTrue( proxyTo.isPresent() );
@@ -109,6 +125,12 @@ public class RepoProxyUtilsTest
         proxyTo = getProxyTo( fullPath, StoreKey.fromString( "npm:remote:hosted-jkl") );
         assertTrue( proxyTo.isPresent() );
         assertThat( proxyTo.get(), equalTo( "/api/folo/track/npm/remote/hosted-jkl/@react/core" ) );
+    }
+
+    @Test
+    public void test(){
+
+
     }
 
 }
