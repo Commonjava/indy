@@ -44,7 +44,6 @@ import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePa
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getOriginalStoreKeyFromPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getProxyTo;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.isNPMMetaPath;
-import static org.commonjava.indy.repo.proxy.RepoProxyUtils.keyToPath;
 
 @ApplicationScoped
 public class RepoProxyController
@@ -223,7 +222,7 @@ public class RepoProxyController
                 {
                     // For npm metadata request with trailing /, it's still a normal content request even
                     // if it's a content browse liked request, so we still need to do proxy
-                    final String path = extractPath( absoluteOriginalPath, keyToPath( storeKeyStr ) );
+                    final String path = extractPath( absoluteOriginalPath );
                     if ( isNPMMetaPath( path ) )
                     {
                         trace( "This is a npm metadata request with trailing / {}, will do proxy", absoluteOriginalPath );
