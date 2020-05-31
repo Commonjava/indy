@@ -18,6 +18,7 @@ package org.commonjava.indy.repo.proxy;
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +39,9 @@ public class RepoProxyUtils
 
     private static final String STORE_PATH_PATTERN = ".*/(maven|npm)/(group|hosted)/(.+?)(/.*)?";
 
+    // For legacy indy content api: /api/$repoType/$name/*
+    private static final String STORE_PATH_PATTERN_NO_PKG = ".*/(group|hosted)/(.+?)(/.*)?";
+
     private static final String NPM_METADATA_NAME = "package.json";
 
     static Optional<String> getProxyTo( final String originalPath, final StoreKey proxyToKey )
@@ -50,21 +54,38 @@ public class RepoProxyUtils
         if ( origStoreKey.isPresent() )
         {
             final String originStoreKeyStr = origStoreKey.get();
-            final String[] parts = originStoreKeyStr.split( ":" );
-            final String proxyToStorePathString = keyToPath( proxyToKey );
-            final String proxyTo =
-                    replaceAllWithNoRegex( originalPath, keyToPath( originStoreKeyStr ), proxyToStorePathString );
-            logger.trace( "Found proxy to store rule: from {} to {}", originStoreKeyStr, proxyToStorePathString );
+            final StoreKey originStoreKey = StoreKey.fromString( originStoreKeyStr );
+            if ( !originStoreKey.getPackageType().equals( proxyToKey.getPackageType() ) )
+            {
+                logger.warn(
+                        "The proxy to store has different package type with original store: original: {}, proxyTo: {}",
+                        originStoreKey.getPackageType(), proxyToKey.getPackageType() );
+                return empty();
+            }
+            final String proxyTo = replaceAllWithNoRegex( originalPath, noPkgStorePath( originStoreKeyStr ),
+                                                          noPkgStorePath( proxyToKey ) );
+            logger.trace( "Found proxy to store rule: from {} to {}", originStoreKeyStr, proxyToKey );
             return of( proxyTo );
         }
 
         return empty();
     }
 
+    static String noPkgStorePath( StoreKey key )
+    {
+        return String.format( "%s/%s", key.getType(), key.getName() );
+    }
+
+    static String noPkgStorePath( String keyString )
+    {
+        final StoreKey key = StoreKey.fromString( keyString );
+        return noPkgStorePath( key );
+    }
+
     static Optional<String> getOriginalStoreKeyFromPath( final String originalPath )
     {
-        final Pattern pat = Pattern.compile( STORE_PATH_PATTERN );
-        final Matcher match = pat.matcher( originalPath );
+        Pattern pat = Pattern.compile( STORE_PATH_PATTERN );
+        Matcher match = pat.matcher( originalPath );
         String storeKeyString = null;
         if ( match.matches() )
         {
@@ -73,45 +94,58 @@ public class RepoProxyUtils
         }
         else
         {
-            logger.trace( "There is not matched original store key in path {}", originalPath );
+            // Tweak for legacy content path: the legacy content path is like /api/$type/$name/* which does not contain package type, so
+            // here we treat this type of content patch specially.
+            pat = Pattern.compile( STORE_PATH_PATTERN_NO_PKG );
+            match = pat.matcher( originalPath );
+            if ( match.matches() )
+            {
+                final String pkgType = PackageTypeConstants.PKG_TYPE_MAVEN;
+                storeKeyString = String.format( "%s:%s:%s", pkgType, match.group( 1 ), match.group( 2 ) );
+                logger.trace( "Found matched original store key {} by legacy content path in path {}", storeKeyString,
+                              originalPath );
+            }
+            else
+            {
+                logger.trace( "There is not matched original store key in path {}", originalPath );
+            }
         }
 
         return ofNullable( storeKeyString );
     }
 
-    static String keyToPath( final String keyString )
+    static String extractPath( final String fullPath )
     {
-        return StringUtils.isNotBlank( keyString ) ? keyString.replaceAll( ":", "/" ) : "";
-    }
-
-    static String keyToPath( final StoreKey key )
-    {
-        return keyToPath( key.toString() );
-    }
-
-    static String extractPath( final String fullPath, final String repoPath )
-    {
-        if ( StringUtils.isBlank( fullPath ) || !fullPath.contains( repoPath ) )
+        if ( StringUtils.isBlank( fullPath ) )
         {
             return "";
         }
-        String checkingRepoPath = repoPath;
-        if ( repoPath.endsWith( "/" ) )
+
+        final Pattern pat = Pattern.compile( STORE_PATH_PATTERN_NO_PKG );
+        final Matcher match = pat.matcher( fullPath );
+        if ( match.matches() )
         {
-            checkingRepoPath = repoPath.substring( 0, repoPath.length() - 1 );
+            final String pkgType = PackageTypeConstants.PKG_TYPE_MAVEN;
+            final String repoPath = String.format( "%s/%s", match.group( 1 ), match.group( 2 ) );
+            String checkingRepoPath = repoPath;
+            if ( repoPath.endsWith( "/" ) )
+            {
+                checkingRepoPath = repoPath.substring( 0, repoPath.length() - 1 );
+            }
+            final int pos = fullPath.indexOf( checkingRepoPath );
+            final int pathStartPos = pos + checkingRepoPath.length() + 1;
+            if ( pathStartPos >= fullPath.length() )
+            {
+                return "";
+            }
+            String path = fullPath.substring( pathStartPos );
+            if ( StringUtils.isNotBlank( path ) && !path.startsWith( "/" ) )
+            {
+                path = "/" + path;
+            }
+            return path;
         }
-        final int pos = fullPath.indexOf( checkingRepoPath );
-        final int pathStartPos = pos + checkingRepoPath.length() + 1;
-        if ( pathStartPos >= fullPath.length() )
-        {
-            return "";
-        }
-        String path = fullPath.substring( pathStartPos );
-        if ( StringUtils.isNotBlank( path ) && !path.startsWith( "/" ) )
-        {
-            path = "/" + path;
-        }
-        return path;
+        return "";
     }
 
     static boolean isNPMMetaPath( final String path )
