@@ -454,6 +454,11 @@ public class FoloAdminController
                 TransferOperation.UPLOAD :
                 TransferOperation.DOWNLOAD );
 
+        if ( transfer == null )
+        {
+            return entry;
+        }
+
         contentDigester.removeMetadata( transfer );
 
         TransferMetadata artifactData =
