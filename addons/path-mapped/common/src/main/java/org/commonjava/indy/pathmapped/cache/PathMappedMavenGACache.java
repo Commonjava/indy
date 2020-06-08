@@ -20,6 +20,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.google.common.collect.Lists;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -43,6 +44,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +70,10 @@ public class PathMappedMavenGACache
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String SCANNED_STORES = "scanned-stores";
+
+    private static final int SCAN_BATCH_SIZE = 100;
+
+    private static final int TIMER_PERIOD_MINUTES = 60;
 
     // @formatter:off
     private static String getSchemaCreateTable( String keyspace )
@@ -204,7 +211,7 @@ public class PathMappedMavenGACache
             {
                 fill();
             }
-        }, MINUTES.toMillis( 30 ), MINUTES.toMillis( 30 ) ); // every 30 min
+        }, MINUTES.toMillis( TIMER_PERIOD_MINUTES ), MINUTES.toMillis( TIMER_PERIOD_MINUTES ) );
     }
 
     public void fill()
@@ -232,12 +239,19 @@ public class PathMappedMavenGACache
         Set<String> scanned = getScannedStores();
 
         // find not-scanned stores, notScanned = matched - scanned
-        Set<String> notScanned = new HashSet<>( matched );
+        List<String> notScanned = new ArrayList<>( matched );
         notScanned.removeAll( scanned );
 
         if ( !notScanned.isEmpty() )
         {
-            scanAndUpdate( notScanned );
+            List<List<String>> batches = Lists.partition( notScanned, SCAN_BATCH_SIZE );
+            batches.forEach( batch -> {
+                boolean success = scanAndUpdate( batch );
+                if ( !success )
+                {
+                    logger.warn( "Scan failed for: {}", batch ); // just log it, timer task will try the failed later
+                }
+            } );
             scanned = getScannedStores(); // refresh scanned
         }
 
@@ -263,7 +277,7 @@ public class PathMappedMavenGACache
         return matched;
     }
 
-    private void scanAndUpdate( Set<String> notScanned )
+    private boolean scanAndUpdate( Collection<String> notScanned )
     {
         logger.info( "Scan and update, notScanned: {}", notScanned );
 
@@ -276,12 +290,13 @@ public class PathMappedMavenGACache
         catch ( Exception ex )
         {
             logger.error( "Failed to scan: ", ex );
-            return;
+            return false;
         }
 
         logger.debug( "Scan complete, completed: {}, gaMap: {}", completed, gaMap );
         gaMap.forEach( ( ga, stores ) -> update( ga, stores ) );
         update( SCANNED_STORES, completed );
+        return true;
     }
 
     private void update( String ga, Set<String> set )
@@ -308,7 +323,7 @@ public class PathMappedMavenGACache
      * @param gaMap
      * @param completed
      */
-    private void scan( final Set<String> notScanned, final Map<String, Set<String>> gaMap, final Set<String> completed )
+    private void scan( final Collection<String> notScanned, final Map<String, Set<String>> gaMap, final Set<String> completed )
     {
         PathDB pathDB = pathMappedFileManager.getPathDB();
         notScanned.forEach( storeName -> {
