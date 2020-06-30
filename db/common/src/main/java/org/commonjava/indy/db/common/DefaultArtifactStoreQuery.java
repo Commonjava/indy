@@ -304,7 +304,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                         }
                         catch ( Exception error )
                         {
-                            logger.warn( "Invalid repository, url: '{}'. Reason: {}", targetUrl, error.getMessage() );
+                            logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
                             return false;
                         }
 
@@ -342,7 +342,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                             }
                             catch ( Exception error )
                             {
-                                logger.warn( "Invalid repository, url: '{}'. Reason: {}", targetUrl, error.getMessage() );
+                                logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
                                 return false;
                             }
 
