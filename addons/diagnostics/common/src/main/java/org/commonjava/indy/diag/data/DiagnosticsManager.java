@@ -80,56 +80,68 @@ public class DiagnosticsManager
 
     public String getThreadDumpString()
     {
+        return getThreadDumpString( null ); // all states
+    }
+
+    public String getThreadDumpString( Thread.State state )
+    {
         Thread[] threads = new Thread[Thread.activeCount()];
         Thread.enumerate( threads );
 
         Map<Long, Thread> threadMap = new HashMap<>();
         Stream.of( threads ).forEach( t -> threadMap.put( t.getId(), t ) );
         ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
-        ThreadInfo[] threadInfos = threadMXBean.getThreadInfo( threadMXBean.getAllThreadIds(), 100 );
+        ThreadInfo[] threadInfos = threadMXBean.getThreadInfo( threadMXBean.getAllThreadIds(), Integer.MAX_VALUE );
 
         StringBuilder sb = new StringBuilder();
         Stream.of( threadInfos ).forEachOrdered( ( ti ) -> {
-            if ( sb.length() > 0 )
+            if ( state == null || state == ti.getThreadState() )
             {
-                sb.append( "\n\n" );
+                appendThreadInfo( sb, threadMap, ti );
             }
-
-            String threadGroup = "Unknown";
-            Thread t = threadMap.get(ti.getThreadId());
-            if ( t != null )
-            {
-                ThreadGroup tg = t.getThreadGroup();
-                if ( tg != null )
-                {
-                    threadGroup = tg.getName();
-                }
-            }
-
-            sb.append( ti.getThreadName() )
-              .append("\n  Group: ")
-              .append( threadGroup )
-              .append( "\n  State: " )
-              .append( ti.getThreadState() )
-              .append( "\n  Lock Info: " )
-              .append( ti.getLockInfo() )
-              .append( "\n  Monitors:" );
-
-            MonitorInfo[] monitors = ti.getLockedMonitors();
-            if ( monitors == null || monitors.length < 1 )
-            {
-                sb.append( "  -NONE-" );
-            }
-            else
-            {
-                sb.append( "\n  - " ).append( join( monitors, "\n  - " ) );
-            }
-
-            sb.append( "\n  Trace:\n    " ).append( join( ti.getStackTrace(), "\n    " ) );
-
         } );
 
         return sb.toString();
+    }
+
+    private void appendThreadInfo( StringBuilder sb, Map<Long, Thread> threadMap, ThreadInfo ti )
+    {
+        if ( sb.length() > 0 )
+        {
+            sb.append( "\n\n" );
+        }
+
+        String threadGroup = "Unknown";
+        Thread t = threadMap.get( ti.getThreadId() );
+        if ( t != null )
+        {
+            ThreadGroup tg = t.getThreadGroup();
+            if ( tg != null )
+            {
+                threadGroup = tg.getName();
+            }
+        }
+
+        sb.append( ti.getThreadName() )
+          .append( "\n  Group: " )
+          .append( threadGroup )
+          .append( "\n  State: " )
+          .append( ti.getThreadState() )
+          .append( "\n  Lock Info: " )
+          .append( ti.getLockInfo() )
+          .append( "\n  Monitors:" );
+
+        MonitorInfo[] monitors = ti.getLockedMonitors();
+        if ( monitors == null || monitors.length < 1 )
+        {
+            sb.append( "  -NONE-" );
+        }
+        else
+        {
+            sb.append( "\n  - " ).append( join( monitors, "\n  - " ) );
+        }
+
+        sb.append( "\n  Trace:\n    " ).append( join( ti.getStackTrace(), "\n    " ) );
     }
 
     public File getDiagnosticBundle()
