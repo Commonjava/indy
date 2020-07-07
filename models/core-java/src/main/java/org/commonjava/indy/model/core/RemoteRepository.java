@@ -121,6 +121,11 @@ public class RemoteRepository
     @JsonProperty( "prefetch_rescan_time" )
     private String prefetchRescanTimestamp;
 
+    @ApiModelProperty(
+            value = "Indicate if the remote host is a indy instance, default is false." )
+    @JsonProperty("indy_remote")
+    private boolean indyRemote = false;
+
     public RemoteRepository()
     {
         super();
@@ -459,6 +464,16 @@ public class RemoteRepository
         this.prefetchRescanTimestamp = prefetchRescanTimestamp;
     }
 
+    public boolean isIndyRemote()
+    {
+        return indyRemote;
+    }
+
+    public void setIndyRemote( boolean indyRemote )
+    {
+        this.indyRemote = indyRemote;
+    }
+
     @Override
     public RemoteRepository copyOf()
     {
@@ -492,6 +507,7 @@ public class RemoteRepository
         repo.setPrefetchPriority( getPrefetchPriority() );
         repo.setPrefetchRescan( isPrefetchRescan() );
         repo.setPrefetchRescanTimestamp( getPrefetchRescanTimestamp() );
+        repo.setIndyRemote( isIndyRemote() );
 
         copyRestrictions( repo );
         copyBase( repo );
@@ -530,6 +546,7 @@ public class RemoteRepository
         out.writeBoolean( prefetchRescan );
         out.writeObject( prefetchListingType );
         out.writeObject( prefetchRescanTimestamp );
+        out.writeBoolean( indyRemote );
     }
 
     @Override
@@ -569,6 +586,7 @@ public class RemoteRepository
         this.prefetchRescan = in.readBoolean();
         this.prefetchListingType = (String) in.readObject();
         this.prefetchRescanTimestamp = (String) in.readObject();
+        this.indyRemote = in.readBoolean();
     }
 
 }
