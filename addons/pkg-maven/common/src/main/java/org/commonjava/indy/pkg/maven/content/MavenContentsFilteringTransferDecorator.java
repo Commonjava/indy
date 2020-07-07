@@ -16,9 +16,11 @@
 package org.commonjava.indy.pkg.maven.content;
 
 import java.io.ByteArrayInputStream;
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -32,6 +34,7 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import com.codahale.metrics.Timer;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.atlas.maven.ident.util.SnapshotUtils;
 import org.commonjava.atlas.maven.ident.version.part.SnapshotPart;
@@ -50,6 +53,8 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Represents a decorator responsible for filtering out location contents based on location settings. Effectively it is
@@ -381,6 +386,27 @@ public class MavenContentsFilteringTransferDecorator
         public void write( final int b )
         {
             buffer.append( (char) b );
+        }
+
+        @Override
+        public void write( byte[] buff, int offset, int len )
+        {
+            if ( buff != null && len > 0 )
+            {
+                if (len > buff.length || buff.length - offset < len )
+                    throw new ArrayIndexOutOfBoundsException( "Out of bounds exception" );
+
+                boolean isSubArray = len < buff.length || offset != 0;
+                byte[] everything = ( isSubArray ? Arrays.copyOfRange( buff, offset, len ) : buff );
+                try (CharArrayWriter writer = new CharArrayWriter( len ) )
+                {
+                    IOUtils.write ( everything, writer, UTF_8 );
+                    buffer.append( writer.toCharArray() );
+                } catch ( IOException ioe )
+                {
+                    logger.error ( ioe.getMessage() );
+                }
+            }
         }
 
         @Override
