@@ -53,6 +53,12 @@ if [ "x${TEST_ETC}" != "x" ]; then
 else
   echo "No test configuration specified."
   INDY_HOME=$PWD/indy
+  cat > $ETC_BASE/conf.d/default.conf <<-EOF
+[default]
+standalone=true
+[ssl]
+remote.ssl.required=false
+EOF
   cat > $ETC_BASE/logging/logback.xml <<-EOF
 <configuration>
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
