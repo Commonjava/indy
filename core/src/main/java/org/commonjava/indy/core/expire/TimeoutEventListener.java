@@ -189,7 +189,7 @@ public class TimeoutEventListener
                 }
                 else if ( type == StoreType.remote )
                 {
-                    SpecialPathInfo info = specialPathManager.getSpecialPathInfo( transfer );
+                    SpecialPathInfo info = specialPathManager.getSpecialPathInfo( transfer, key.getPackageType() );
                     if ( info == null || !info.isMetadata() )
                     {
                         logger.debug( "Accessed resource {} timeout will be reset.", transfer );
