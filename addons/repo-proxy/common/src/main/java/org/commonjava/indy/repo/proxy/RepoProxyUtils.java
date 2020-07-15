@@ -173,8 +173,6 @@ public class RepoProxyUtils
 
     static String getRequestAbsolutePath( HttpServletRequest request )
     {
-        final String pathInfo = request.getPathInfo();
-
         return normalize( request.getServletPath(), request.getContextPath(), request.getPathInfo() );
     }
 

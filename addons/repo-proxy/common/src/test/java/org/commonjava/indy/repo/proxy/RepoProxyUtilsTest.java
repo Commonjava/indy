@@ -86,24 +86,36 @@ public class RepoProxyUtilsTest
         fullPath = "/api/content/maven/group/builds-untested+shared-imports/org/commonjava/indy/maven-metadata.xml";
         path = extractPath( fullPath );
         assertThat( path, equalTo( "/org/commonjava/indy/maven-metadata.xml" ) );
+        path = extractPath( fullPath );
+        assertThat( path, equalTo( "/org/commonjava/indy/maven-metadata.xml" ) );
 
         fullPath = "/api/content/maven/hosted/def/org/commonjava/indy/1.0/";
+        path = extractPath( fullPath );
+        assertThat( path, equalTo( "/org/commonjava/indy/1.0/" ) );
         path = extractPath( fullPath );
         assertThat( path, equalTo( "/org/commonjava/indy/1.0/" ) );
 
         fullPath = "/api/content/npm/group/ghi/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom";
         path = extractPath( fullPath );
         assertThat( path, equalTo( "/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
+        path = extractPath( fullPath );
+        assertThat( path, equalTo( "/org/commonjava/indy/indy-api/1.0/indy-api-1.0.pom" ) );
 
         fullPath = "/api/content/npm/hosted/jkl/org/commonjava/indy/indy-api/2.0/indy-api-2.0.jar";
+        path = extractPath( fullPath );
+        assertThat( path, equalTo( "/org/commonjava/indy/indy-api/2.0/indy-api-2.0.jar" ) );
         path = extractPath( fullPath );
         assertThat( path, equalTo( "/org/commonjava/indy/indy-api/2.0/indy-api-2.0.jar" ) );
 
         fullPath = "/api/content/npm/hosted/jkl/";
         path = extractPath( fullPath );
         assertThat( path, equalTo( "" ) );
+        path = extractPath( fullPath );
+        assertThat( path, equalTo( "" ) );
 
         fullPath = "/api/content/npm/hosted/jkl";
+        path = extractPath( fullPath );
+        assertThat( path, equalTo( "" ) );
         path = extractPath( fullPath );
         assertThat( path, equalTo( "" ) );
     }

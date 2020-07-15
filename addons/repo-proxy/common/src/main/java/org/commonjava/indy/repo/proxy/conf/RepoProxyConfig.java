@@ -54,6 +54,8 @@ public class RepoProxyConfig
 
     private static final String CONTENT_BROWSE_REWRITE_ENABLE_PARAM = "content-browse.rewrite.enabled";
 
+    private static final String REPO_PROXY_BLOCK_LIST = "block.path.patterns";
+
     private static final Boolean DEFAULT_ENABLED = Boolean.FALSE;
 
     private static final String DEFAULT_API_PATTERNS = "/api/content/*, /api/folo/track/*, /api/browse/*, /api/group/*, /api/hosted/*";
@@ -71,6 +73,8 @@ public class RepoProxyConfig
     private final Set<String> apiPatterns = new HashSet<>();
 
     private final Set<String> apiMethods = new HashSet<>();
+
+    private final Set<String> blockListPatterns = new HashSet<>();
 
     private Boolean enabled;
 
@@ -130,6 +134,11 @@ public class RepoProxyConfig
         return apiMethods;
     }
 
+    public Set<String> getBlockListPatterns()
+    {
+        return blockListPatterns;
+    }
+
     @Override
     public void parameter( final String name, final String value )
     {
@@ -161,6 +170,13 @@ public class RepoProxyConfig
                 break;
             case CONTENT_BROWSE_REWRITE_ENABLE_PARAM:
                 this.contentBrowseRewriteEnabled = Boolean.valueOf( value.trim() );
+                break;
+            case REPO_PROXY_BLOCK_LIST:
+                blockListPatterns.clear();
+                for ( String pattern : value.split( "," ) )
+                {
+                    blockListPatterns.add( pattern.trim() );
+                }
                 break;
             default:
                 break;
