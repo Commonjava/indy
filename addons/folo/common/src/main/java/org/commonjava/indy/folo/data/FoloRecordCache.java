@@ -22,8 +22,7 @@ import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
@@ -42,8 +41,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 
 @ApplicationScoped
 public class FoloRecordCache

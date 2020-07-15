@@ -15,11 +15,10 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import org.commonjava.indy.metrics.RequestContextHelper;
-import org.commonjava.indy.metrics.TrafficClassifier;
+import org.commonjava.indy.util.RequestContextHelper;
+import org.commonjava.indy.subsys.metrics.IndyTrafficClassifier;
 import org.commonjava.indy.sli.metrics.GoldenSignalsFunctionMetrics;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
-import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +38,8 @@ import java.util.Set;
 
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_MILLIS;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_LATENCY_MILLIS;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_LATENCY_NS;
 
 @ApplicationScoped
 public class GoldenSignalsFilter
@@ -50,12 +49,12 @@ public class GoldenSignalsFilter
     private GoldenSignalsMetricSet metricSet;
 
     @Inject
-    private TrafficClassifier classifier;
+    private IndyTrafficClassifier classifier;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     // For Unit-testing
-    GoldenSignalsFilter( final GoldenSignalsMetricSet metricSet, TrafficClassifier classifier )
+    GoldenSignalsFilter( final GoldenSignalsMetricSet metricSet, IndyTrafficClassifier classifier )
     {
         this.metricSet = metricSet;
         this.classifier = classifier;

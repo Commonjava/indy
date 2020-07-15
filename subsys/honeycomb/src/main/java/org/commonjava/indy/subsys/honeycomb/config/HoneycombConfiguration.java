@@ -32,15 +32,15 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
-import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
-import static org.commonjava.indy.metrics.RequestContextHelper.TRACE_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_MILLIS;
-import static org.commonjava.indy.metrics.RequestContextHelper.REST_ENDPOINT_PATH;
+import static org.commonjava.indy.util.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.util.RequestContextHelper.CONTENT_TRACKING_ID;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.util.RequestContextHelper.PATH;
+import static org.commonjava.indy.util.RequestContextHelper.TRACE_ID;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_LATENCY_MILLIS;
+import static org.commonjava.indy.util.RequestContextHelper.REST_ENDPOINT_PATH;
 
 @SectionName( "honeycomb" )
 @ApplicationScoped

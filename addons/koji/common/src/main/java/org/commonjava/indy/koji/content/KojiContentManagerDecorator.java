@@ -31,8 +31,7 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.util.KojiUtils;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -63,7 +62,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
 

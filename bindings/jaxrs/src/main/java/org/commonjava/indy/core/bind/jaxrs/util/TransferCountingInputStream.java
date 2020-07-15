@@ -17,20 +17,19 @@ package org.commonjava.indy.core.bind.jaxrs.util;
 
 import com.codahale.metrics.Meter;
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.getDefaultName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
 
 public class TransferCountingInputStream
         extends IdempotentCloseInputStream

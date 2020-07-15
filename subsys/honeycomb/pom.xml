@@ -29,6 +29,10 @@
 
   <dependencies>
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-honeycomb</artifactId>
+    </dependency>
+    <dependency>
       <groupId>io.honeycomb.beeline</groupId>
       <artifactId>beeline-core</artifactId>
     </dependency>

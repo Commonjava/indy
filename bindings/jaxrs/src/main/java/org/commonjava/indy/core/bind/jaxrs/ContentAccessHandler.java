@@ -26,8 +26,8 @@ import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferCountingInputStream;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.BatchDeleteRequest;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
@@ -66,13 +66,12 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static org.commonjava.indy.core.bind.jaxrs.util.RequestUtils.isDirectoryPath;
-import static org.commonjava.indy.core.ctl.ContentController.LISTING_HTML_FILE;
-import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_ENTRY_POINT;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.METADATA_CONTENT;
-import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.metrics.RequestContextHelper.PATH;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
+import static org.commonjava.indy.util.RequestContextHelper.CONTENT_ENTRY_POINT;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.util.RequestContextHelper.METADATA_CONTENT;
+import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.util.RequestContextHelper.PATH;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 
 @ApplicationScoped

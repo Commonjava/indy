@@ -28,8 +28,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
+import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -60,7 +59,6 @@ import static java.lang.Boolean.TRUE;
 import static org.apache.commons.lang.StringUtils.contains;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.apache.commons.lang.StringUtils.trimToEmpty;
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
 import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**

@@ -16,8 +16,8 @@
 package org.commonjava.indy.subsys.infinispan.metrics;
 
 import com.codahale.metrics.MetricRegistry;
-import org.commonjava.indy.metrics.MetricSetProvider;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.o11yphant.metrics.MetricSetProvider;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

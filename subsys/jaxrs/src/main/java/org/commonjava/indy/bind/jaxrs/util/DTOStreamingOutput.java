@@ -19,10 +19,8 @@ import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +30,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.getDefaultName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
 
 public class DTOStreamingOutput
         implements StreamingOutput

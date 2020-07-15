@@ -16,7 +16,7 @@
 package org.commonjava.indy.sli.metrics;
 
 import com.codahale.metrics.MetricRegistry;
-import org.commonjava.indy.metrics.MetricSetProvider;
+import org.commonjava.o11yphant.metrics.MetricSetProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;

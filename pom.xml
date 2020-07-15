@@ -83,6 +83,7 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>1.6</pathmappedStorageVersion>
+    <o11yphantVersion>1.0-SNAPSHOT</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
@@ -1599,6 +1600,18 @@
         <groupId>ch.qos.logback.contrib</groupId>
         <artifactId>logback-jackson</artifactId>
         <version>${logbackContribVersion}</version>
+      </dependency>
+
+      <!-- o11yphant dependencies -->
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-honeycomb</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-metrics-core</artifactId>
+        <version>${o11yphantVersion}</version>
       </dependency>
 
       <!-- propulsor dependencies -->

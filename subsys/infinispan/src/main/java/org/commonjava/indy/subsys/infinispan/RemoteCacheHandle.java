@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.infinispan.client.hotrod.RemoteCache;
 
 import static com.codahale.metrics.MetricRegistry.name;

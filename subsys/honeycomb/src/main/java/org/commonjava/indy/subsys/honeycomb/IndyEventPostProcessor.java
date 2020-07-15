@@ -18,17 +18,17 @@ package org.commonjava.indy.subsys.honeycomb;
 import com.codahale.metrics.Meter;
 import io.honeycomb.libhoney.EventPostProcessor;
 import io.honeycomb.libhoney.eventdata.EventData;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.getDefaultName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
 
 @ApplicationScoped
 public class IndyEventPostProcessor implements EventPostProcessor

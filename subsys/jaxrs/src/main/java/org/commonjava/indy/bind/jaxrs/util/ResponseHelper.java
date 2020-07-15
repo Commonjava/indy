@@ -19,16 +19,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
@@ -48,8 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class ResponseHelper

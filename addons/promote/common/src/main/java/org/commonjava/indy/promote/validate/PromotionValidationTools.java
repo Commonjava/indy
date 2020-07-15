@@ -27,7 +27,7 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.ArtifactStoreQuery;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.conf.PromoteConfig;
@@ -57,7 +57,7 @@ import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.model.HttpExchangeMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;

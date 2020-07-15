@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
