@@ -49,8 +49,8 @@ indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc',
     StoreDisableSvc.setDisabledMap($scope);
 
     $scope.remoteOptionLegend = StoreUtilSvc.remoteOptionLegend();
-    
-    $scope.listing = RemoteSvc.resource.query({}, function(listing){
+    $scope.packageType = packageType($location.$$path);
+    $scope.listing = RemoteSvc.resource.query({packageType: $scope.packageType}, function(listing){
       if ( listing.items ){
           for(var i=0; i<listing.items.length; i++){
             var item = listing.items[i];
@@ -150,8 +150,8 @@ indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc',
     StoreDisableSvc.setDisabledMap($scope);
 
     $scope.hostedOptionLegend = StoreUtilSvc.hostedOptionLegend();
-  
-    $scope.listing = HostedSvc.resource.query({}, function(listing){
+    $scope.packageType = packageType($location.$$path);
+    $scope.listing = HostedSvc.resource.query({packageType: $scope.packageType}, function(listing){
       if ( listing.items ){
           for(var i=0; i<listing.items.length; i++){
             var item = listing.items[i];
@@ -229,12 +229,12 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
   }
 }]);
 
-indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', 'AllStoreDisableSvc', function($q, $scope, $location, GroupSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc, AllStoreDisableSvc) {
+indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', 'AllStoreDisableSvc', 'PackageTypeSvc', function($q, $scope, $location, GroupSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc, AllStoreDisableSvc, PackageTypeSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
-
     StoreDisableSvc.setDisabledMap($scope);
 
-    $scope.listing = GroupSvc.resource.query({}, function(listing){
+    $scope.packageType = packageType($location.$$path);
+    $scope.listing = GroupSvc.resource.query({packageType: $scope.packageType}, function(listing){
       if ( listing.items ){
           for(var i=0; i<listing.items.length; i++){
             var item = listing.items[i];
