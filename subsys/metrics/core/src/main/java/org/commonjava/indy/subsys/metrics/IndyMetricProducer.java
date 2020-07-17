@@ -15,12 +15,26 @@
  */
 package org.commonjava.indy.subsys.metrics;
 
-public class MetricsConstants
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+
+public class IndyMetricProducer
 {
-    public static final String METRICS_PHASE = "metrics-phase";
 
-    public static final String PRELIMINARY_METRICS = "preliminary";
+    @ApplicationScoped
+    @Produces
+    public MetricRegistry getMetricRegistry()
+    {
+        return new MetricRegistry();
+    }
 
-    public static final String FINAL_METRICS = "final";
+    @ApplicationScoped
+    @Produces
+    public HealthCheckRegistry getHealthCheckRegistry() {
+        return new HealthCheckRegistry();
+    }
 
 }

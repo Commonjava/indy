@@ -31,7 +31,6 @@ import org.commonjava.o11yphant.metrics.MetricsConstants;
 import org.commonjava.o11yphant.metrics.MetricSetProvider;
 import org.commonjava.o11yphant.metrics.healthcheck.CompoundHealthCheck;
 import org.commonjava.o11yphant.metrics.healthcheck.AbstractHealthCheck;
-import org.commonjava.indy.subsys.metrics.reporter.ReporterIntializer;
 import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.model.Location;
 import org.slf4j.Logger;
@@ -91,9 +90,6 @@ public class IndyMetricsManager
     private Instance<CompoundHealthCheck> indyCompoundHealthChecks;
 
     @Inject
-    ReporterIntializer reporter;
-
-    @Inject
     private Instance<MetricSetProvider> metricSetProviderInstances;
 
     @Inject
@@ -143,16 +139,6 @@ public class IndyMetricsManager
         {
             setUpTransportMetricConfig();
         }
-    }
-
-    public void startReporter() throws Exception
-    {
-        if ( !config.isMetricsEnabled() )
-        {
-            return;
-        }
-        logger.info( "Start metrics reporters" );
-        reporter.initReporter( metricRegistry );
     }
 
     private void setUpTransportMetricConfig()

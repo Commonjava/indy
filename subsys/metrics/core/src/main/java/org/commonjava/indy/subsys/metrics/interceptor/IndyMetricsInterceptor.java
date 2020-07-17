@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.metrics.jaxrs.interceptor;
+package org.commonjava.indy.subsys.metrics.interceptor;
 
 import com.codahale.metrics.Timer;
 import org.commonjava.o11yphant.annotation.Measure;
@@ -44,7 +44,7 @@ import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
 
 @Interceptor
 @Measure
-public class MetricsInterceptor
+public class IndyMetricsInterceptor
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 

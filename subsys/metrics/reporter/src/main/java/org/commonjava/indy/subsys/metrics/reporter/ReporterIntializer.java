@@ -28,6 +28,7 @@ import org.elasticsearch.metrics.ElasticsearchReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -59,9 +60,16 @@ public class ReporterIntializer
     @Inject
     private IndyMetricsConfig config;
 
-    public void initReporter( MetricRegistry metrics ) throws Exception
-    {
+    @Inject
+    private MetricRegistry metrics;
 
+    public ReporterIntializer()
+    {
+    }
+
+    @PostConstruct
+    public void init() throws Exception
+    {
         if ( !config.isReporterEnabled() )
         {
             initConsoleReporter( metrics, config );

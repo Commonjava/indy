@@ -29,7 +29,7 @@
 
   <interceptors>
     <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
-    <class>org.commonjava.indy.subsys.metrics.jaxrs.interceptor.MetricsInterceptor</class>
+    <class>org.commonjava.indy.subsys.metrics.interceptor.IndyMetricsInterceptor</class>
     <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombMeasureInterceptor</class>
     <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperInterceptor</class>
     <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperStartInterceptor</class>

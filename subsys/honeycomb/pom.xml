@@ -33,20 +33,8 @@
       <artifactId>o11yphant-honeycomb</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.honeycomb.beeline</groupId>
-      <artifactId>beeline-core</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.servlet</groupId>
-      <artifactId>jboss-servlet-api_3.0_spec</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
