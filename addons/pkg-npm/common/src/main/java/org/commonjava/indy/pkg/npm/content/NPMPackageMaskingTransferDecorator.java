@@ -15,9 +15,8 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -32,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 

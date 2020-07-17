@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.filer.def;
 
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 
 public class IndyTimingProvider

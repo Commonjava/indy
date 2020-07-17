@@ -17,7 +17,7 @@ package org.commonjava.indy.db.metered;
 
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

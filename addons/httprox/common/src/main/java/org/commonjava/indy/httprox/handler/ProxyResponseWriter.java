@@ -22,7 +22,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -33,7 +33,7 @@ import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
 import org.commonjava.indy.httprox.util.ProxyMeter;
 import org.commonjava.indy.httprox.util.ProxyResponseHelper;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.http.HttpWrapper;
@@ -54,19 +54,14 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
-import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
+import static org.commonjava.indy.util.RequestContextHelper.getContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.CONNECT_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;

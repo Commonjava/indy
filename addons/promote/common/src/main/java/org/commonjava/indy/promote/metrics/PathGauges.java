@@ -16,7 +16,7 @@
 package org.commonjava.indy.promote.metrics;
 
 import com.codahale.metrics.Gauge;
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 
 import javax.annotation.PostConstruct;

@@ -21,7 +21,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;

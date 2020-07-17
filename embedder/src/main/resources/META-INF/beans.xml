@@ -29,11 +29,11 @@
 
   <interceptors>
     <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
-    <class>org.commonjava.indy.metrics.jaxrs.interceptor.MetricsInterceptor</class>
-    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombMeasureInterceptor</class>
-    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperInterceptor</class>
-    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperStartInterceptor</class>
-    <class>org.commonjava.indy.subsys.honeycomb.interceptor.HoneycombWrapperEndInterceptor</class>
+    <class>org.commonjava.indy.subsys.metrics.interceptor.IndyMetricsInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombMeasureInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperStartInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperEndInterceptor</class>
   </interceptors>
 
   <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->

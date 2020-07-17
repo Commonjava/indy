@@ -27,7 +27,7 @@ import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
-import org.commonjava.indy.subsys.honeycomb.HoneycombFilter;
+import org.commonjava.o11yphant.honeycomb.HoneycombFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;

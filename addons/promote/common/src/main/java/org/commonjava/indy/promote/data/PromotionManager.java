@@ -28,7 +28,7 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -55,7 +55,7 @@ import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;

@@ -27,7 +27,7 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import java.io.InputStream;
 
-import static org.commonjava.indy.metrics.conf.IndyMetricsConfig.INDY_METRICS_NODE_PREFIX;
+import static org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig.INDY_METRICS_NODE_PREFIX;
 
 @ApplicationScoped
 @SectionName( IndyWeftConfig.SECTION_NAME )

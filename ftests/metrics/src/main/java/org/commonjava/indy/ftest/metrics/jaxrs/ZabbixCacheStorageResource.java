@@ -16,7 +16,7 @@
 package org.commonjava.indy.ftest.metrics.jaxrs;
 
 import org.commonjava.indy.bind.jaxrs.IndyResources;
-import org.commonjava.indy.metrics.zabbix.cache.ZabbixCacheStorage;
+import org.commonjava.indy.subsys.metrics.zabbix.cache.ZabbixCacheStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -17,16 +17,13 @@ package org.commonjava.indy.httprox.handler;
 
 import com.codahale.metrics.MetricRegistry;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -44,10 +41,10 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 import javax.inject.Inject;
 import java.io.IOException;
 
-import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
+import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 

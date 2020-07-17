@@ -18,7 +18,7 @@ package org.commonjava.indy.sli.metrics;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricSet;
 import com.codahale.metrics.health.HealthCheck;
-import org.commonjava.indy.metrics.healthcheck.IndyCompoundHealthCheck;
+import org.commonjava.o11yphant.metrics.healthcheck.CompoundHealthCheck;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
@@ -26,11 +26,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.metrics.TrafficClassifierConstants.FUNCTIONS;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FUNCTIONS;
 
 @ApplicationScoped
 public class GoldenSignalsMetricSet
-        implements MetricSet, IndyCompoundHealthCheck
+        implements MetricSet, CompoundHealthCheck
 {
     private Map<String, GoldenSignalsFunctionMetrics> functionMetrics = new HashMap<>();
 
