@@ -23,10 +23,10 @@
   <interceptors>
     <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
     <class>org.commonjava.indy.subsys.metrics.interceptor.IndyMetricsInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombMeasureInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperStartInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.HoneycombWrapperEndInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.vertical.HoneycombMeasureInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.vertical.HoneycombWrapperInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.vertical.HoneycombWrapperStartInterceptor</class>
+    <class>org.commonjava.o11yphant.honeycomb.interceptor.vertical.HoneycombWrapperEndInterceptor</class>
   </interceptors>
 
   <decorators>
