@@ -224,15 +224,24 @@ public class IndyMetricsManager
     @MetricWrapperStart
     public Timer.Context startTimer( @MetricWrapperNamed String name )
     {
+        return startTimerInternal( name );
+    }
+
+    private Timer.Context startTimerInternal( String name )
+    {
         Timer.Context tctx = this.metricRegistry.timer( name ).time();
         ThreadContext ctx = ThreadContext.getContext( true );
         ctx.put( TIMER + name, tctx );
-
         return tctx;
     }
 
     @MetricWrapperEnd
     public long stopTimer( @MetricWrapperNamed String name )
+    {
+        return stopTimerInternal( name );
+    }
+
+    private long stopTimerInternal( String name )
     {
         ThreadContext ctx = ThreadContext.getContext( false );
         if ( ctx == null )
@@ -301,7 +310,7 @@ public class IndyMetricsManager
         String errorName = name( name, EXCEPTION );
         String eClassName = null;
 
-        Timer.Context timer = startTimer( timerName );
+        Timer.Context timer = startTimerInternal( timerName );
         logger.trace( "START: {} ({})", metricName, timer );
 
         long start = System.nanoTime();
@@ -347,7 +356,7 @@ public class IndyMetricsManager
     {
         if ( timers != null )
         {
-            timers.forEach( ( name, timer ) -> stopTimer( name ) );
+            timers.forEach( ( name, timer ) -> stopTimerInternal( name ) );
         }
     }
 
