@@ -32,12 +32,17 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.servlet.http.HttpServletResponse.SC_MOVED_PERMANENTLY;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
+import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePath;
@@ -78,7 +83,7 @@ public class RepoProxyController
         this.responseDecorators = this.responseDecoratorInstances;
     }
 
-    public boolean doProxy( ServletRequest request, ServletResponse response )
+    public boolean doFilter( ServletRequest request, ServletResponse response )
             throws IOException, ServletException
     {
         if ( !checkEnabled() )
@@ -87,39 +92,18 @@ public class RepoProxyController
         }
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+
         if ( !checkApiMethods( httpRequest ) )
         {
             return false;
         }
 
-        final Optional<StoreKey> proxyToRemoteKey = getProxyToRemoteKey( httpRequest );
-        if ( !proxyToRemoteKey.isPresent() )
+        if ( doBlock( httpRequest, (HttpServletResponse) response ) )
         {
-            return false;
+            return true;
         }
 
-        final String absoluteOriginalPath = getRequestAbsolutePath( httpRequest );
-        final Optional<String> proxyToPath = getProxyTo( absoluteOriginalPath, proxyToRemoteKey.get() );
-        if ( !proxyToPath.isPresent() )
-        {
-            return false;
-        }
-
-        if ( !handleContentBrowseRewrite( absoluteOriginalPath, httpRequest ) )
-        {
-            return false;
-        }
-
-        trace( "proxied to path info {}", proxyToPath );
-
-        HttpServletResponse decoratedResponse =
-                decoratingResponse( httpRequest, (HttpServletResponse) response, proxyToRemoteKey.get() );
-
-        // Here we do not use redirect but forward.
-        // doRedirect( (HttpServletResponse)response, proxyTo );
-        doForward( httpRequest, decoratedResponse, proxyToPath.get() );
-
-        return true;
+        return doProxy( httpRequest, (HttpServletResponse) response );
     }
 
     private boolean checkEnabled()
@@ -140,6 +124,67 @@ public class RepoProxyController
             trace( "http method {} not allowed for the request, no proxy action will be performed", method );
             return false;
         }
+        return true;
+    }
+
+    private boolean doBlock( HttpServletRequest request, HttpServletResponse response ) throws IOException
+    {
+        final String fullPath = getRequestAbsolutePath( request );
+        final String path = extractPath( fullPath );
+        for ( String patStr : config.getBlockListPatterns() )
+        {
+            Pattern pattern = Pattern.compile( patStr );
+            if ( pattern.matcher( path ).matches() )
+            {
+                logger.trace( "{} matches the block pattern {}", fullPath, patStr );
+                handleNotFound( response, path );
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void handleNotFound( HttpServletResponse response, String path )
+            throws IOException
+    {
+        setContext( HTTP_STATUS, String.valueOf( SC_NOT_FOUND ) );
+        final String notFoundReponse = String.format( "Path %s is set as blocked in indy static-proxy", path );
+        response.getWriter().write( notFoundReponse );
+        response.addHeader( "Content-Type", MediaType.TEXT_PLAIN );
+        response.sendError( SC_NOT_FOUND );
+    }
+
+    private boolean doProxy( HttpServletRequest httpRequest, HttpServletResponse httpResponse )
+            throws IOException, ServletException
+    {
+        final Optional<StoreKey> proxyToRemoteKey = getProxyToRemoteKey( httpRequest );
+        if ( !proxyToRemoteKey.isPresent() )
+        {
+            return false;
+        }
+
+        final String absoluteOriginalPath = getRequestAbsolutePath( httpRequest );
+
+        final Optional<String> proxyToPath = getProxyTo( absoluteOriginalPath, proxyToRemoteKey.get() );
+        if ( !proxyToPath.isPresent() )
+        {
+            return false;
+        }
+
+        if ( !handleContentBrowseRewrite( absoluteOriginalPath, httpRequest ) )
+        {
+            return false;
+        }
+
+        trace( "proxied to path info {}", proxyToPath );
+
+        HttpServletResponse decoratedResponse =
+                decoratingResponse( httpRequest, httpResponse, proxyToRemoteKey.get() );
+
+        // Here we do not use redirect but forward.
+        // doRedirect( (HttpServletResponse)response, proxyTo );
+        doForward( httpRequest, decoratedResponse, proxyToPath.get() );
+
         return true;
     }
 
