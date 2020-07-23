@@ -56,11 +56,19 @@ public class ContentBrowseRewriteResponseDecorator
             return response;
         }
 
+        if ( config.isRemoteIndyListingRewriteEnabled() )
+        {
+            logger.debug(
+                    "[{}] Will use remote indy content listing instead, so will not decorate the response for remote proxy type of content browse rewriting.",
+                    ADDON_NAME );
+            return response;
+        }
+
         final String absolutePath = getRequestAbsolutePath( request );
         if ( !absolutePath.startsWith( "/api/browse/" ) )
         {
             logger.debug(
-                    "[{}] Content browse rewrite: {} is not a content browse request, will not decorate the response for content browse rewriting. ",
+                    "[{}] Content browse rewrite: {} is not a content browse request, will not decorate the response. ",
                     ADDON_NAME, absolutePath );
             return response;
         }

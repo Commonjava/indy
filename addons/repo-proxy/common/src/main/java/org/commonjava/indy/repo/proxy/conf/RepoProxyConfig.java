@@ -56,6 +56,12 @@ public class RepoProxyConfig
 
     private static final String REPO_PROXY_BLOCK_LIST = "block.path.patterns";
 
+    private static final String REMOTE_INDY_URL = "remote.indy.url";
+
+    private static final String REMOTE_INDY_REQUEST_TIMEOUT = "remote.indy.request.timeout";
+
+    private static final String REMOTE_INDY_LISTING_REWRITE_ENABLED = "remote.indy.listing.rewrite.enabled";
+
     private static final Boolean DEFAULT_ENABLED = Boolean.FALSE;
 
     private static final String DEFAULT_API_PATTERNS = "/api/content/*, /api/folo/track/*, /api/browse/*, /api/group/*, /api/hosted/*";
@@ -67,6 +73,8 @@ public class RepoProxyConfig
     private static final String DEFAULT_REPO_CREATE_RULE_BASEDIR = "repo-proxy";
 
     private static final Boolean DEFAULT_CONTENT_BROWSE_REWRITE_ENABLE = Boolean.TRUE;
+
+    private static final Integer DEFAULT_REMOTE_INDY_REQUEST_TIMEOUT = 60;
 
     private String repoCreatorRuleBaseDir;
 
@@ -81,6 +89,12 @@ public class RepoProxyConfig
     private Boolean npmMetaRewriteEnabled;
 
     private Boolean contentBrowseRewriteEnabled;
+
+    private String defaultRemoteIndyUrl;
+
+    private Boolean remoteIndyListingRewriteEnabled;
+
+    private Integer remoteIndyRequestTimeout;
 
     public RepoProxyConfig()
     {
@@ -139,6 +153,25 @@ public class RepoProxyConfig
         return blockListPatterns;
     }
 
+    public String getDefaultRemoteIndyUrl()
+    {
+        if ( defaultRemoteIndyUrl != null && !defaultRemoteIndyUrl.endsWith( "/" ) )
+        {
+            return defaultRemoteIndyUrl + "/";
+        }
+        return defaultRemoteIndyUrl;
+    }
+
+    public Boolean isRemoteIndyListingRewriteEnabled()
+    {
+        return remoteIndyListingRewriteEnabled == null ? DEFAULT_ENABLED : this.remoteIndyListingRewriteEnabled;
+    }
+
+    public Integer getRemoteIndyRequestTimeout()
+    {
+        return remoteIndyRequestTimeout == null ? DEFAULT_REMOTE_INDY_REQUEST_TIMEOUT : remoteIndyRequestTimeout;
+    }
+
     @Override
     public void parameter( final String name, final String value )
     {
@@ -177,6 +210,15 @@ public class RepoProxyConfig
                 {
                     blockListPatterns.add( pattern.trim() );
                 }
+                break;
+            case REMOTE_INDY_URL:
+                this.defaultRemoteIndyUrl = value.trim();
+                break;
+            case REMOTE_INDY_LISTING_REWRITE_ENABLED:
+                this.remoteIndyListingRewriteEnabled = Boolean.valueOf( value.trim() );
+                break;
+            case REMOTE_INDY_REQUEST_TIMEOUT:
+                this.remoteIndyRequestTimeout = Integer.parseInt( value.trim() );
                 break;
             default:
                 break;
