@@ -17,8 +17,8 @@ package org.commonjava.indy.subsys.metrics.interceptor;
 
 import com.codahale.metrics.Timer;
 import org.commonjava.o11yphant.annotation.Measure;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
+import org.commonjava.o11yphant.metrics.MetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public class IndyMetricsInterceptor
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private MetricsManager metricsManager;
 
     @Inject
     private IndyMetricsConfig config;
@@ -57,7 +57,7 @@ public class IndyMetricsInterceptor
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
-        if ( !config.isMetricsEnabled() || !metricsManager.checkMetered() )
+        if ( !config.isEnabled() || !metricsManager.checkMetered() )
         {
             return context.proceed();
         }

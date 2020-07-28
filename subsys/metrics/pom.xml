@@ -31,7 +31,6 @@
 
   <modules>
     <module>core</module>
-    <module>reporter</module>
     <module>prometheus</module>
   </modules>
 

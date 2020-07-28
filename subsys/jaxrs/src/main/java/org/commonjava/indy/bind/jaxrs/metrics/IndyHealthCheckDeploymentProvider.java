@@ -44,7 +44,7 @@ public class IndyHealthCheckDeploymentProvider
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
-        if ( !config.isMetricsEnabled() )
+        if ( !config.isEnabled() )
         {
             return null;
         }

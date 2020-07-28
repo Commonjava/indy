@@ -20,10 +20,6 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.graphite.Graphite;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
-import org.commonjava.indy.subsys.metrics.zabbix.cache.ZabbixCacheStorage;
-import org.commonjava.indy.subsys.metrics.zabbix.reporter.IndyZabbixReporter;
-import org.commonjava.indy.subsys.metrics.zabbix.sender.IndyZabbixSender;
-import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import org.elasticsearch.metrics.ElasticsearchReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +31,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by xiabai on 3/3/17.
- */
 @ApplicationScoped
 public class ReporterIntializer
 {
@@ -47,15 +40,7 @@ public class ReporterIntializer
 
     public final static String INDY_METRICS_REPORTER_CONSOLEREPORTER = "console";
 
-    public final static String INDY_METRICS_REPORTER_ZABBIXREPORTER = "zabbix";
-
     public final static String INDY_METRICS_REPORTER_ELKEPORTER = "elasticsearch";
-
-    @Inject
-    private IndyHttpProvider indyHttpProvider;
-
-    @Inject
-    private ZabbixCacheStorage cache;
 
     @Inject
     private IndyMetricsConfig config;
@@ -79,12 +64,6 @@ public class ReporterIntializer
         {
             initGraphiteReporterForSimpleMetric( metrics, config );
             initGraphiteReporterForJVMMetric( metrics, config );
-        }
-
-        if ( this.isExistReporter( INDY_METRICS_REPORTER_ZABBIXREPORTER ) )
-        {
-            this.initZabbixReporterForJVMMetric( metrics, config );
-            this.initZabbixReporterForSimpleMetric( metrics, config );
         }
 
         if ( this.isExistReporter( INDY_METRICS_REPORTER_CONSOLEREPORTER ) )
@@ -139,10 +118,7 @@ public class ReporterIntializer
 
     private void initConsoleReporter( MetricRegistry metrics, IndyMetricsConfig config )
     {
-        ConsoleReporter.forRegistry( metrics )
-                       .build()
-                       .start( config.getConsolePeriod(),
-                               TimeUnit.SECONDS );
+        ConsoleReporter.forRegistry( metrics ).build().start( config.getConsolePeriod(), TimeUnit.SECONDS );
     }
 
     private void initGraphiteReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config )
@@ -177,46 +153,4 @@ public class ReporterIntializer
 
     }
 
-    private void initZabbixReporterForSimpleMetric( MetricRegistry metrics, IndyMetricsConfig config )
-    {
-        IndyZabbixReporter reporter = initZabbixReporter( metrics, config )
-                        .filter( ( name, metric ) -> isApplicationMetric( name ) )
-                        .build( initZabbixSender() );
-
-        reporter.start( config.getZabbixSimplePriod(), TimeUnit.SECONDS );
-    }
-
-    private void initZabbixReporterForJVMMetric( MetricRegistry metrics, IndyMetricsConfig config )
-    {
-        IndyZabbixReporter reporter = initZabbixReporter( metrics, config )
-                        .filter( ( name, metric ) -> isJvmMetric( name ) )
-                        .build( initZabbixSender() );
-
-        reporter.start( config.getZabbixJVMPriod(), TimeUnit.SECONDS );
-    }
-
-    private IndyZabbixReporter.Builder initZabbixReporter( MetricRegistry metrics, IndyMetricsConfig config )
-    {
-        return IndyZabbixReporter.forRegistry( metrics )
-                                 .prefix( config.getZabbixPrefix() )
-                                 .convertRatesTo( TimeUnit.SECONDS )
-                                 .convertDurationsTo( TimeUnit.MILLISECONDS )
-                                 .hostName( config.getZabbixLocalHostName() );
-    }
-
-    private IndyZabbixSender initZabbixSender()
-    {
-        final IndyZabbixSender zabbixSender = IndyZabbixSender.create()
-                                                              .zabbixHost( config.getZabbixHost() )
-                                                              .zabbixPort( config.getZabbixPort() )
-                                                              .zabbixHostUrl( config.getZabbixApiHostUrl() )
-                                                              .zabbixUserName( config.getZabbixUser() )
-                                                              .zabbixUserPwd( config.getZabbixPwd() )
-                                                              .hostName( config.getZabbixLocalHostName() )
-                                                              .bCreateNotExistZabbixSender( true )
-                                                              .indyHttpProvider( indyHttpProvider )
-                                                              .metricsZabbixCache( cache )
-                                                              .build();
-        return zabbixSender;
-    }
 }
