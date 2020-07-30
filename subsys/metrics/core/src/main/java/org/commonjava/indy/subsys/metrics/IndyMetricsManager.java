@@ -29,6 +29,7 @@ import org.commonjava.o11yphant.annotation.MetricWrapperStart;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.o11yphant.metrics.MetricsConstants;
 import org.commonjava.o11yphant.metrics.MetricSetProvider;
+import org.commonjava.o11yphant.metrics.MetricsManager;
 import org.commonjava.o11yphant.metrics.healthcheck.CompoundHealthCheck;
 import org.commonjava.o11yphant.metrics.healthcheck.AbstractHealthCheck;
 import org.commonjava.maven.galley.config.TransportMetricConfig;
@@ -71,6 +72,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
  */
 @ApplicationScoped
 public class IndyMetricsManager
+                implements MetricsManager
 {
 
     public static final String METRIC_LOGGER_NAME = "org.commonjava.indy.metrics";
@@ -108,7 +110,7 @@ public class IndyMetricsManager
     @PostConstruct
     public void init()
     {
-        if ( !config.isMetricsEnabled() )
+        if ( !config.isEnabled() )
         {
             logger.info( "Indy metrics subsystem not enabled" );
             return;
@@ -204,6 +206,12 @@ public class IndyMetricsManager
     private String normalizeName( String name )
     {
         return name.replaceAll( ":", "." );
+    }
+
+    @Override
+    public HealthCheckRegistry getHealthCheckRegistry()
+    {
+        return healthCheckRegistry;
     }
 
     public boolean isMetered( Supplier<Boolean> meteringOverride )

@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.metrics.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.o11yphant.conf.MetricsConfig;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 
@@ -30,7 +31,7 @@ import static org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig.SECTION;
 @SectionName( SECTION )
 @ApplicationScoped
 public class IndyMetricsConfig
-                implements IndyConfigInfo
+                implements IndyConfigInfo, MetricsConfig
 {
     public static final String SECTION = "metrics";
 
@@ -63,34 +64,14 @@ public class IndyMetricsConfig
 
     private final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
 
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL = "zabbix.api.url";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT = "zabbix.sender.port";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST = "zabbix.sender.host";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_USER = "zabbix.user";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD = "zabbix.pwd";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME = "zabbix.indy.host";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX = "zabbix.reporter.prefix";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD = "zabbix.reporter.simple.period";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD = "zabbix.reporter.jvm.period";
-
-    private final static String INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD =
-                    "zabbix.reporter.healthcheck.period";
-
     private final static String INDY_METRICS_REPORTER_ELKREPORTER_PREFIX = "elk.reporter.prefix";
 
     private final static String INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD = "elk.reporter.simple.period";
 
     private final static String INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD = "elk.reporter.jvm.period";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD = "elk.reporter.healthcheck.period";
+    private final static String INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD =
+                    "elk.reporter.healthcheck.period";
 
     private final static String INDY_METRICS_REPORTER_ELKREPORTER_INDEX = "elk.reporter.index";
 
@@ -133,26 +114,6 @@ public class IndyMetricsConfig
     private String elkHosts;
 
     private String elkIndex;
-
-    private String zabbixPrefix;
-
-    private int zabbixSimplePriod;
-
-    private int zabbixJVMPriod;
-
-    private int zabbixHealthcheckPeriod;
-
-    private String zabbixApiHostUrl;
-
-    private String zabbixHost;
-
-    private int zabbixPort;
-
-    private String zabbixUser;
-
-    private String zabbixPwd;
-
-    private String zabbixLocalHostName;
 
     private String reporter;
 
@@ -288,115 +249,6 @@ public class IndyMetricsConfig
         this.elkIndex = elkIndex;
     }
 
-    public String getZabbixPrefix()
-    {
-        return zabbixPrefix;
-    }
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_PREFIX )
-    public void setZabbixPrefix( String zabbixPrefix )
-    {
-        this.zabbixPrefix = zabbixPrefix;
-    }
-
-    public int getZabbixSimplePriod()
-    {
-        return zabbixSimplePriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_SIMPLE_PERIOD )
-    public void setZabbixSimplePriod( int zabbixSimplePriod )
-    {
-        this.zabbixSimplePriod = zabbixSimplePriod;
-    }
-
-    public int getZabbixJVMPriod()
-    {
-        return zabbixJVMPriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_JVM_PERIOD )
-    public void setZabbixJVMPriod( int zabbixJVMPriod )
-    {
-        this.zabbixJVMPriod = zabbixJVMPriod;
-    }
-
-    public int getZabbixHealthcheckPeriod()
-    {
-        return zabbixHealthcheckPeriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_HEALTHCHECK_PERIOD )
-    public void setZabbixHealthcheckPeriod( int zabbixHealthcheckPeriod )
-    {
-        this.zabbixHealthcheckPeriod = zabbixHealthcheckPeriod;
-    }
-
-    public String getZabbixApiHostUrl()
-    {
-        return zabbixApiHostUrl;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_API_HOST_URL )
-    public void setZabbixApiHostUrl( String zabbixApiHostUrl )
-    {
-        this.zabbixApiHostUrl = zabbixApiHostUrl;
-    }
-
-    public String getZabbixHost()
-    {
-        return zabbixHost;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST )
-    public void setZabbixHost( String zabbixHost )
-    {
-        this.zabbixHost = zabbixHost;
-    }
-
-    public int getZabbixPort()
-    {
-        return zabbixPort;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_HOST_PORT )
-    public void setZabbixPort( int zabbixPort )
-    {
-        this.zabbixPort = zabbixPort;
-    }
-
-    public String getZabbixUser()
-    {
-        return zabbixUser;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_USER )
-    public void setZabbixUser( String zabbixUser )
-    {
-        this.zabbixUser = zabbixUser;
-    }
-
-    public String getZabbixPwd()
-    {
-        return zabbixPwd;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_PWD )
-    public void setZabbixPwd( String zabbixPwd )
-    {
-        this.zabbixPwd = zabbixPwd;
-    }
-
-    public String getZabbixLocalHostName()
-    {
-        return zabbixLocalHostName;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ZABBIXREPORTER_LOCAL_HOSTNAME )
-    public void setZabbixLocalHostName( String zabbixLocalHostName )
-    {
-        this.zabbixLocalHostName = zabbixLocalHostName;
-    }
-
     public boolean isReporterEnabled()
     {
         return reporterEnabled;
@@ -408,13 +260,13 @@ public class IndyMetricsConfig
         this.reporterEnabled = reporterEnabled;
     }
 
-    public boolean isMetricsEnabled()
+    public boolean isEnabled()
     {
         return metricsEnabled;
     }
 
     @ConfigName( INDY_METRICS_ISENABLED )
-    public void setMetricsEnabled( boolean metricsEnabled )
+    public void setEnabled( boolean metricsEnabled )
     {
         this.metricsEnabled = metricsEnabled;
     }

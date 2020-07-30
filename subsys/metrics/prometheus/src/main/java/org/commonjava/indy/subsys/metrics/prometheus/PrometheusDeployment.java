@@ -49,7 +49,7 @@ public class PrometheusDeployment
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
-        if ( !config.isMetricsEnabled() || !config.getReporter().contains( PROMETHEUS_REPORTER ) )
+        if ( !config.isEnabled() || !config.getReporter().contains( PROMETHEUS_REPORTER ) )
         {
             return null;
         }
