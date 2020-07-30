@@ -44,6 +44,7 @@ import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
 import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getOriginalStoreKeyFromPath;
@@ -63,6 +64,9 @@ public class RepoProxyController
 
     @Inject
     private Instance<RepoProxyResponseDecorator> responseDecoratorInstances;
+
+    @Inject
+    private ContentBrowseRemoteIndyListingRewriteManager listingRewriter;
 
     private Iterable<RepoProxyResponseDecorator> responseDecorators;
 
@@ -93,17 +97,25 @@ public class RepoProxyController
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
 
+
         if ( !checkApiMethods( httpRequest ) )
         {
             return false;
         }
 
-        if ( doBlock( httpRequest, (HttpServletResponse) response ) )
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if ( doBlock( httpRequest, httpResponse ) )
         {
             return true;
         }
 
-        return doProxy( httpRequest, (HttpServletResponse) response );
+        if ( doListingResponseRewrite( httpRequest, httpResponse ) )
+        {
+            return true;
+        }
+
+        return doProxy( httpRequest, httpResponse );
     }
 
     private boolean checkEnabled()
@@ -142,6 +154,18 @@ public class RepoProxyController
             }
         }
         return false;
+    }
+
+    private boolean doListingResponseRewrite( HttpServletRequest request, HttpServletResponse response) throws IOException{
+        if ( !config.isEnabled() || !config.isRemoteIndyListingRewriteEnabled() )
+        {
+            logger.debug(
+                    "[{}] Addon not enabled or not allowed to use remote indy listing rewriting, will not decorate the response by remote indy listing rewriting.",
+                    ADDON_NAME );
+            return false;
+        }
+
+       return listingRewriter.rewriteResponse( request, response );
     }
 
     private void handleNotFound( HttpServletResponse response, String path )
@@ -234,6 +258,7 @@ public class RepoProxyController
 
         for ( RepoProxyResponseDecorator decorator : responseDecorators )
         {
+            logger.trace( "RepoProxyResponseDecorator class: {}", decorator.getClass() );
             decorated = decorator.decoratingResponse( request, decorated, proxyToStoreKey );
         }
 
