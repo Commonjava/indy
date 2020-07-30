@@ -16,6 +16,9 @@
 package org.commonjava.indy.subsys.metrics.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.o11yphant.conf.ConsoleConfig;
+import org.commonjava.o11yphant.conf.ELKConfig;
+import org.commonjava.o11yphant.conf.GraphiteConfig;
 import org.commonjava.o11yphant.conf.MetricsConfig;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
@@ -25,9 +28,6 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig.SECTION;
 
-/**
- * Created by xiabai on 3/17/17.
- */
 @SectionName( SECTION )
 @ApplicationScoped
 public class IndyMetricsConfig
@@ -35,57 +35,53 @@ public class IndyMetricsConfig
 {
     public static final String SECTION = "metrics";
 
-    public final static String INDY_METRICS_NODE_PREFIX = "node.prefix";
+    public final static String NODE_PREFIX = "node.prefix";
 
-    private final static String INDY_METRICS_REPORTER = "reporter";
+    private final static String REPORTER = "reporter";
 
-    private final static String INDY_METRICS_REPORTER_CONSOLE_PERIOD = "console.reporter.period";
+    private final static String REPORTER_CONSOLE_PERIOD = "console.reporter.period";
 
-    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME = "graphite.hostname";
+    private final static String GRAPHITE_HOSTNAME = "graphite.hostname";
 
-    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT = "graphite.port";
+    private final static String GRAPHITE_PORT = "graphite.port";
 
-    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX = "graphite.reporter.prefix";
+    private final static String GRAPHITE_REPORTER_PREFIX = "graphite.reporter.prefix";
 
-    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_SIMPLE_PERIOD = "graphite.reporter.simple.period";
+    private final static String GRAPHITE_REPORTER_SIMPLE_PERIOD = "graphite.reporter.simple.period";
 
-    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_JVM_PERIOD = "graphite.reporter.jvm.period";
+    private final static String GRAPHITE_REPORTER_JVM_PERIOD = "graphite.reporter.jvm.period";
 
-    private final static String INDY_METRICS_REPORTER_GRPHITEREPORTER_HEALTHCHECK_PERIOD =
-                    "graphite.reporter.healthcheck.period";
+    private final static String GRAPHITE_REPORTER_HEALTHCHECK_PERIOD = "graphite.reporter.healthcheck.period";
 
-    private final static String INDY_METRICS_ISENABLED = "enabled";
+    private final static String ENABLED = "enabled";
 
-    private static final String INDY_METRICS_METER_RATIO = "meter.ratio";
+    private static final String METER_RATIO = "meter.ratio";
 
-    private final static String INDY_METRICS_ISPN_ENABLED = "ispn.enabled";
+    private final static String ISPN_ENABLED = "ispn.enabled";
 
-    private final static String INDY_METRICS_ISPN_GAUGES = "ispn.gauges";
+    private final static String ISPN_GAUGES = "ispn.gauges";
 
-    private final static String INDY_METRICS_REPORTER_ISENABLED = "reporter.enabled";
+    private final static String ELK_REPORTER_PREFIX = "elk.reporter.prefix";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_PREFIX = "elk.reporter.prefix";
+    private final static String ELK_REPORTER_SIMPLE_PERIOD = "elk.reporter.simple.period";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD = "elk.reporter.simple.period";
+    private final static String ELK_REPORTER_JVM_PERIOD = "elk.reporter.jvm.period";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD = "elk.reporter.jvm.period";
+    private final static String ELK_REPORTER_HEALTHCHECK_PERIOD = "elk.reporter.healthcheck.period";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD =
-                    "elk.reporter.healthcheck.period";
+    private final static String ELK_REPORTER_INDEX = "elk.reporter.index";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_INDEX = "elk.reporter.index";
+    private final static String ELK_REPORTER_HOSTS = "elk.reporter.hosts";
 
-    private final static String INDY_METRICS_REPORTER_ELKREPORTER_HOSTS = "elk.reporter.hosts";
+    private static final String MEASURE_TRANSPORT = "measure.transport";
 
-    private static final String INDY_METRICS_MEASURE_TRANSPORT = "measure.transport";
+    private static final String MEASURE_TRANSPORT_REPOS = "measure.transport.repos";
 
-    private static final String INDY_METRICS_MEASURE_TRANSPORT_REPOS = "measure.transport.repos";
+    private final static String KOJI_ENABLED = "koji.enabled";
 
-    private final static String INDY_METRICS_KOJI_ENABLED = "koji.enabled";
+    private final static String PATH_DB_ENABLED = "pathdb.enabled";
 
-    private final static String INDY_METRICS_PATH_DB_ENABLED = "pathdb.enabled";
-
-    private final static String INDY_METRICS_PATH_DB_OPERATIONS = "pathdb.operations";
+    private final static String PATH_DB_OPERATIONS = "pathdb.operations";
 
     private static final int DEFAULT_METER_RATIO = 1;
 
@@ -105,11 +101,11 @@ public class IndyMetricsConfig
 
     private String elkPrefix;
 
-    private int elkSimplePriod;
+    private int elkSimplePeriod;
 
-    private int elkJVMPriod;
+    private int elkJVMPeriod;
 
-    private int elkHealthCheckPriod;
+    private int elkHealthCheckPeriod;
 
     private String elkHosts;
 
@@ -117,21 +113,19 @@ public class IndyMetricsConfig
 
     private String reporter;
 
-    private String grphiterHostName;
+    private String graphiteHostName;
 
-    private int grphiterPort;
+    private int graphitePort;
 
-    private String grphiterPrefix;
+    private String graphitePrefix;
 
-    private int grphiterSimplePriod;
+    private int graphiteSimplePeriod;
 
-    private int grphiterJVMPriod;
+    private int graphiteJVMPeriod;
 
-    private int grphiterHealthcheckPeriod;
+    private int graphiteHealthcheckPeriod;
 
     private boolean metricsEnabled;
-
-    private boolean reporterEnabled;
 
     private boolean kojiMetricEnabled;
 
@@ -144,7 +138,7 @@ public class IndyMetricsConfig
         return measureTransport;
     }
 
-    @ConfigName( INDY_METRICS_NODE_PREFIX )
+    @ConfigName( NODE_PREFIX )
     public void setNodePrefix( String nodePrefix )
     {
         this.nodePrefix = nodePrefix;
@@ -155,7 +149,7 @@ public class IndyMetricsConfig
         return nodePrefix;
     }
 
-    @ConfigName( INDY_METRICS_MEASURE_TRANSPORT )
+    @ConfigName( MEASURE_TRANSPORT )
     public void setMeasureTransport( boolean measureTransport )
     {
         this.measureTransport = measureTransport;
@@ -166,98 +160,52 @@ public class IndyMetricsConfig
         return measureTransportRepos;
     }
 
-    @ConfigName( INDY_METRICS_MEASURE_TRANSPORT_REPOS )
+    @ConfigName( MEASURE_TRANSPORT_REPOS )
     public void setMeasureTransportRepos( String measureTransportRepos )
     {
         this.measureTransportRepos = measureTransportRepos;
     }
 
-    public int getConsolePeriod()
-    {
-        return consolePeriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_CONSOLE_PERIOD )
+    @ConfigName( REPORTER_CONSOLE_PERIOD )
     public void setConsolePeriod( int consolePeriod )
     {
         this.consolePeriod = consolePeriod;
     }
 
-    public String getElkPrefix()
-    {
-        return elkPrefix;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_PREFIX )
+    @ConfigName( ELK_REPORTER_PREFIX )
     public void setElkPrefix( String elkPrefix )
     {
         this.elkPrefix = elkPrefix;
     }
 
-    public int getElkSimplePriod()
+    @ConfigName( ELK_REPORTER_SIMPLE_PERIOD )
+    public void setElkSimplePeriod( int elkSimplePeriod )
     {
-        return elkSimplePriod;
+        this.elkSimplePeriod = elkSimplePeriod;
     }
 
-    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_SIMPLE_PERIOD )
-    public void setElkSimplePriod( int elkSimplePriod )
+    @ConfigName( ELK_REPORTER_JVM_PERIOD )
+    public void setElkJVMPeriod( int elkJVMPeriod )
     {
-        this.elkSimplePriod = elkSimplePriod;
+        this.elkJVMPeriod = elkJVMPeriod;
     }
 
-    public int getElkJVMPriod()
+    @ConfigName( ELK_REPORTER_HEALTHCHECK_PERIOD )
+    public void setElkHealthCheckPeriod( int elkHealthCheckPeriod )
     {
-        return elkJVMPriod;
+        this.elkHealthCheckPeriod = elkHealthCheckPeriod;
     }
 
-    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_JVM_PERIOD )
-    public void setElkJVMPriod( int elkJVMPriod )
-    {
-        this.elkJVMPriod = elkJVMPriod;
-    }
-
-    public int getElkHealthCheckPriod()
-    {
-        return elkHealthCheckPriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_HEALTHCHECK_PERIOD )
-    public void setElkHealthCheckPriod( int elkHealthCheckPriod )
-    {
-        this.elkHealthCheckPriod = elkHealthCheckPriod;
-    }
-
-    public String getElkHosts()
-    {
-        return elkHosts;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_HOSTS )
+    @ConfigName( ELK_REPORTER_HOSTS )
     public void setElkHosts( String elkHosts )
     {
         this.elkHosts = elkHosts;
     }
 
-    public String getElkIndex()
-    {
-        return elkIndex;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ELKREPORTER_INDEX )
+    @ConfigName( ELK_REPORTER_INDEX )
     public void setElkIndex( String elkIndex )
     {
         this.elkIndex = elkIndex;
-    }
-
-    public boolean isReporterEnabled()
-    {
-        return reporterEnabled;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_ISENABLED )
-    public void setReporterEnabled( boolean reporterEnabled )
-    {
-        this.reporterEnabled = reporterEnabled;
     }
 
     public boolean isEnabled()
@@ -265,13 +213,13 @@ public class IndyMetricsConfig
         return metricsEnabled;
     }
 
-    @ConfigName( INDY_METRICS_ISENABLED )
+    @ConfigName( ENABLED )
     public void setEnabled( boolean metricsEnabled )
     {
         this.metricsEnabled = metricsEnabled;
     }
 
-    @ConfigName( INDY_METRICS_METER_RATIO )
+    @ConfigName( METER_RATIO )
     public void setMeterRatio( int meterRatio )
     {
         this.meterRatio = meterRatio;
@@ -282,84 +230,55 @@ public class IndyMetricsConfig
         return meterRatio == null ? DEFAULT_METER_RATIO : meterRatio;
     }
 
+    @Override
     public String getReporter()
     {
         return reporter;
     }
 
-    @ConfigName( INDY_METRICS_REPORTER )
+    @ConfigName( REPORTER )
     public void setReporter( String reporter )
     {
         this.reporter = reporter;
     }
 
-    public String getGrphiterHostName()
+    @ConfigName( GRAPHITE_HOSTNAME )
+    public void setGraphiteHostName( String graphiteHostName )
     {
-        return grphiterHostName;
+        this.graphiteHostName = graphiteHostName;
     }
 
-    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_HOSTNAME )
-    public void setGrphiterHostName( String grphiterHostName )
+    @ConfigName( GRAPHITE_PORT )
+    public void setGraphitePort( int graphitePort )
     {
-        this.grphiterHostName = grphiterHostName;
+        this.graphitePort = graphitePort;
     }
 
-    public int getGrphiterPort()
+    @ConfigName( GRAPHITE_REPORTER_PREFIX )
+    public void setGraphitePrefix( String graphitePrefix )
     {
-        return grphiterPort;
+        this.graphitePrefix = graphitePrefix;
     }
 
-    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_PORT )
-    public void setGrphiterPort( int grphiterPort )
+    @ConfigName( GRAPHITE_REPORTER_SIMPLE_PERIOD )
+    public void setGraphiteSimplePeriod( int graphiteSimplePeriod )
     {
-        this.grphiterPort = grphiterPort;
+        this.graphiteSimplePeriod = graphiteSimplePeriod;
     }
 
-    public String getGrphiterPrefix()
+    @ConfigName( GRAPHITE_REPORTER_JVM_PERIOD )
+    public void setGraphiteJVMPeriod( int graphiteJVMPeriod )
     {
-        return grphiterPrefix;
+        this.graphiteJVMPeriod = graphiteJVMPeriod;
     }
 
-    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_PREFIX )
-    public void setGrphiterPrefix( String grphiterPrefix )
+    @ConfigName( GRAPHITE_REPORTER_HEALTHCHECK_PERIOD )
+    public void setGraphiteHealthcheckPeriod( int graphiteHealthcheckPeriod )
     {
-        this.grphiterPrefix = grphiterPrefix;
+        this.graphiteHealthcheckPeriod = graphiteHealthcheckPeriod;
     }
 
-    public int getGrphiterSimplePriod()
-    {
-        return grphiterSimplePriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_SIMPLE_PERIOD )
-    public void setGrphiterSimplePriod( int grphiterSimplePriod )
-    {
-        this.grphiterSimplePriod = grphiterSimplePriod;
-    }
-
-    public int getGrphiterJVMPriod()
-    {
-        return grphiterJVMPriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_JVM_PERIOD )
-    public void setGrphiterJVMPriod( int grphiterJVMPriod )
-    {
-        this.grphiterJVMPriod = grphiterJVMPriod;
-    }
-
-    public int getGrphiterHealthcheckPeriod()
-    {
-        return grphiterHealthcheckPeriod;
-    }
-
-    @ConfigName( INDY_METRICS_REPORTER_GRPHITEREPORTER_HEALTHCHECK_PERIOD )
-    public void setGrphiterHealthcheckPeriod( int grphiterHealthcheckPeriod )
-    {
-        this.grphiterHealthcheckPeriod = grphiterHealthcheckPeriod;
-    }
-
-    @ConfigName( INDY_METRICS_KOJI_ENABLED )
+    @ConfigName( KOJI_ENABLED )
     public void setKojiMetricEnabled( boolean kojiMetricEnabled )
     {
         this.kojiMetricEnabled = kojiMetricEnabled;
@@ -375,7 +294,7 @@ public class IndyMetricsConfig
         return pathDBMetricsEnabled;
     }
 
-    @ConfigName( INDY_METRICS_PATH_DB_ENABLED )
+    @ConfigName( PATH_DB_ENABLED )
     public void setPathDBMetricsEnabled( boolean pathDBMetricsEnabled )
     {
         this.pathDBMetricsEnabled = pathDBMetricsEnabled;
@@ -386,13 +305,13 @@ public class IndyMetricsConfig
         return pathDBMetricsOperations;
     }
 
-    @ConfigName( INDY_METRICS_PATH_DB_OPERATIONS )
+    @ConfigName( PATH_DB_OPERATIONS )
     public void setPathDBMetricsOperations( String pathDBMetricsOperations )
     {
         this.pathDBMetricsOperations = pathDBMetricsOperations;
     }
 
-    @ConfigName( INDY_METRICS_ISPN_ENABLED )
+    @ConfigName( ISPN_ENABLED )
     public void setIspnMetricsEnabled( boolean ispnMetricsEnabled )
     {
         this.ispnMetricsEnabled = ispnMetricsEnabled;
@@ -403,7 +322,7 @@ public class IndyMetricsConfig
         return ispnMetricsEnabled;
     }
 
-    @ConfigName( INDY_METRICS_ISPN_GAUGES )
+    @ConfigName( ISPN_GAUGES )
     public void setIspnGauges( String ispnGauges )
     {
         this.ispnGauges = ispnGauges;
@@ -412,6 +331,40 @@ public class IndyMetricsConfig
     public String getIspnGauges()
     {
         return ispnGauges;
+    }
+
+    @Override
+    public ConsoleConfig getConsoleConfig()
+    {
+        ConsoleConfig ret = new ConsoleConfig();
+        ret.setConsolePeriodInSeconds( consolePeriod );
+        return ret;
+    }
+
+    @Override
+    public GraphiteConfig getGraphiteConfig()
+    {
+        GraphiteConfig ret = new GraphiteConfig();
+        ret.setGraphiteHostName( graphiteHostName );
+        ret.setGraphitePort( graphitePort );
+        ret.setGraphitePeriodInSeconds( graphiteSimplePeriod );
+        ret.setGraphitePrefix( graphitePrefix );
+        ret.setGraphiteJVMPeriodInSeconds( graphiteJVMPeriod );
+        ret.setGraphiteHealthcheckPeriodInSeconds( graphiteHealthcheckPeriod );
+        return ret;
+    }
+
+    @Override
+    public ELKConfig getELKConfig()
+    {
+        ELKConfig ret = new ELKConfig();
+        ret.setElkHosts( elkHosts );
+        ret.setElkIndex( elkIndex );
+        ret.setElkPeriodInSeconds( elkSimplePeriod );
+        ret.setElkJVMPeriodInSeconds( elkJVMPeriod );
+        ret.setElkPrefix( elkPrefix );
+        ret.setElkHealthCheckPeriodInSeconds( elkHealthCheckPeriod );
+        return ret;
     }
 
     public String getDefaultConfigFileName()

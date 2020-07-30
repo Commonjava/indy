@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.subsys.metrics;
 
-import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.IndyRequestConstants;
 import org.commonjava.o11yphant.metrics.TrafficClassifier;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -34,6 +33,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -57,17 +57,13 @@ import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 
 @ApplicationScoped
-public class IndyTrafficClassifier extends TrafficClassifier
+public class IndyTrafficClassifier
+                extends TrafficClassifier
 {
-    private static final String CACHED_FUNCTIONS = "cached-functions";
-
-    private static final Set<String> MODIFY_METHODS = new HashSet<>( asList( "POST", "PUT", "DELETE" ) );
-
     private static final Set<String> FOLO_RECORD_ENDPOINTS = new HashSet<>( asList( "record", "report" ) );
 
     private static final Set<String> DEPRECATED_CONTENT_ENDPOINTS =
-            new HashSet<>( asList( "group", "hosted", "remote" ) );
-
+                    new HashSet<>( asList( "group", "hosted", "remote" ) );
 
     private SpecialPathManager specialPathManager;
 
@@ -77,21 +73,11 @@ public class IndyTrafficClassifier extends TrafficClassifier
         this.specialPathManager = specialPathManager;
     }
 
-    public List<String> classifyFunctions( String restPath, String method )
+    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method )
     {
-        ThreadContext ctx = ThreadContext.getContext( false );
-        if ( ctx != null )
-        {
-            List<String> cached = (List<String>) ctx.get( CACHED_FUNCTIONS );
-            if ( cached != null )
-            {
-                return cached;
-            }
-        }
-
         List<String> result = new ArrayList<>();
 
-        String[] pathParts = restPath.split("/" );
+        String[] pathParts = restPath.split( "/" );
         if ( pathParts.length >= 2 )
         {
             String[] classifierParts = new String[pathParts.length - 1];
@@ -105,7 +91,7 @@ public class IndyTrafficClassifier extends TrafficClassifier
                 result = singletonList( FN_PROMOTION );
             }
             else if ( "admin".equals( classifierParts[0] ) && "stores".equals( classifierParts[1] )
-                    && classifierParts.length > 2 )
+                            && classifierParts.length > 2 )
             {
                 if ( MODIFY_METHODS.contains( method ) )
                 {
@@ -118,14 +104,15 @@ public class IndyTrafficClassifier extends TrafficClassifier
                 // this is a browse / list request
                 result = singletonList( FN_CONTENT_LISTING );
             }
-            else if ( ( "content".equals( classifierParts[0] ) && classifierParts.length >= 4 && ( restPath.endsWith( "/" )
-                    || restPath.endsWith( IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
+            else if ( ( "content".equals( classifierParts[0] ) && classifierParts.length >= 4 && (
+                            restPath.endsWith( "/" ) || restPath.endsWith(
+                                            IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
             {
                 // this is an old version of the browse / list request
                 result = singletonList( FN_CONTENT_LISTING );
             }
             else if ( ( DEPRECATED_CONTENT_ENDPOINTS.contains( classifierParts[0] ) && ( restPath.endsWith( "/" )
-                    || restPath.endsWith( IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
+                            || restPath.endsWith( IndyRequestConstants.LISTING_HTML_FILE ) ) ) )
             {
                 // this is an old, OLD version of the browse / list request
                 result = singletonList( FN_CONTENT_LISTING );
@@ -178,8 +165,6 @@ public class IndyTrafficClassifier extends TrafficClassifier
                 }
             }
         }
-
-        ctx.put( CACHED_FUNCTIONS, result );
         return result;
     }
 
@@ -232,7 +217,8 @@ public class IndyTrafficClassifier extends TrafficClassifier
         return PackageTypeConstants.isValidPackageType( packageType ) && StoreType.get( storeType ) != null;
     }
 
-    private boolean isMetadata( final String packageType, final String storeType, final String storeName, final String[] pathParts, final int realPathStartIdx )
+    private boolean isMetadata( final String packageType, final String storeType, final String storeName,
+                                final String[] pathParts, final int realPathStartIdx )
     {
         Location location = getLightweightLocation( packageType, storeType, storeName );
 
@@ -252,7 +238,8 @@ public class IndyTrafficClassifier extends TrafficClassifier
         switch ( st )
         {
             case remote:
-                return new RepositoryLocation( new RemoteRepository( packageType, storeName, "http://used.to.classify.requests.only/" ) );
+                return new RepositoryLocation( new RemoteRepository( packageType, storeName,
+                                                                     "http://used.to.classify.requests.only/" ) );
             case hosted:
                 return new CacheOnlyLocation( new HostedRepository( packageType, storeName ) );
             default:
@@ -260,14 +247,4 @@ public class IndyTrafficClassifier extends TrafficClassifier
         }
     }
 
-    public List<String> getCachedFunctionClassifiers()
-    {
-        ThreadContext ctx = ThreadContext.getContext( false );
-        if ( ctx != null )
-        {
-            return (List<String>) ctx.get( CACHED_FUNCTIONS );
-        }
-
-        return null;
-    }
 }
