@@ -22,6 +22,8 @@ import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 
+import java.util.Map;
+
 public class IndyContentBrowseClientModule
         extends IndyClientModule
 {
@@ -39,5 +41,13 @@ public class IndyContentBrowseClientModule
     {
         return http.get( UrlUtils.buildUrl( "browse", packageType, type.singularEndpointName(), name, path ),
                          ContentBrowseResult.class );
+    }
+
+    public Map<String, String> headForContentList( final StoreKey key, final String path )
+            throws IndyClientException
+    {
+        return http.head(
+                UrlUtils.buildUrl( "browse", key.getPackageType(), key.getType().singularEndpointName(), key.getName(),
+                                   path ) );
     }
 }

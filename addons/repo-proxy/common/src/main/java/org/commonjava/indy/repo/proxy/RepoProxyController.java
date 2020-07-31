@@ -156,7 +156,9 @@ public class RepoProxyController
         return false;
     }
 
-    private boolean doListingResponseRewrite( HttpServletRequest request, HttpServletResponse response) throws IOException{
+    private boolean doListingResponseRewrite( HttpServletRequest request, HttpServletResponse response )
+            throws IOException
+    {
         if ( !config.isEnabled() || !config.isRemoteIndyListingRewriteEnabled() )
         {
             logger.debug(
@@ -165,7 +167,7 @@ public class RepoProxyController
             return false;
         }
 
-       return listingRewriter.rewriteResponse( request, response );
+        return listingRewriter.rewriteResponse( request, response );
     }
 
     private void handleNotFound( HttpServletResponse response, String path )
@@ -175,7 +177,7 @@ public class RepoProxyController
         final String notFoundReponse = String.format( "Path %s is set as blocked in indy static-proxy", path );
         response.getWriter().write( notFoundReponse );
         response.addHeader( "Content-Type", MediaType.TEXT_PLAIN );
-        response.sendError( SC_NOT_FOUND );
+        response.sendError( SC_NOT_FOUND, notFoundReponse );
     }
 
     private boolean doProxy( HttpServletRequest httpRequest, HttpServletResponse httpResponse )
