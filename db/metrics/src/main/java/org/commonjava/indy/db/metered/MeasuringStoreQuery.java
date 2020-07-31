@@ -18,7 +18,7 @@ package org.commonjava.indy.db.metered;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -40,11 +40,11 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
 {
     private final ArtifactStoreQuery<ArtifactStore> query;
 
-    private final IndyMetricsManager metricsManager;
+    private final DefaultMetricsManager metricsManager;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public MeasuringStoreQuery( final ArtifactStoreQuery<ArtifactStore> query, final IndyMetricsManager metricsManager )
+    public MeasuringStoreQuery( final ArtifactStoreQuery<ArtifactStore> query, final DefaultMetricsManager metricsManager )
     {
         this.query = query;
         this.metricsManager = metricsManager;

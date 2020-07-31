@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.util.HttpUtils;
@@ -59,7 +59,7 @@ public class ResponseHelper
     private ObjectMapper mapper;
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     @Inject
     private IndyMetricsConfig metricsConfig;

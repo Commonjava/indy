@@ -16,7 +16,7 @@
 package org.commonjava.indy.pkg.npm.content;
 
 import com.codahale.metrics.Timer;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -47,7 +47,7 @@ public class NPMPackageMaskingTransferDecorator
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     public NPMPackageMaskingTransferDecorator()
     {
@@ -100,14 +100,14 @@ public class NPMPackageMaskingTransferDecorator
 
         private String contextURL;
 
-        private IndyMetricsManager metricsManager;
+        private DefaultMetricsManager metricsManager;
 
         private byte[] bytes;
 
         boolean masked;
 
         private PackageMaskingInputStream( final InputStream stream, final String contextURL,
-                                           final IndyMetricsManager metricsManager )
+                                           final DefaultMetricsManager metricsManager )
         {
             super( stream );
             this.contextURL = contextURL;

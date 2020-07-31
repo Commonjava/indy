@@ -25,7 +25,7 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
@@ -123,7 +123,10 @@ public class DefaultGalleyStorageProvider
     private Instance<TransferDecorator> transferDecorators;
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
+
+    @Inject
+    private IndyMetricsConfig metricsConfig;
 
     @Inject
     private CassandraConfig cassandraConfig;
@@ -207,7 +210,6 @@ public class DefaultGalleyStorageProvider
 
         if ( pathDB != null )
         {
-            final IndyMetricsConfig metricsConfig = metricsManager.getConfig();
             if ( metricsConfig.isPathDBMetricsEnabled() )
             {
                 final String operations = metricsConfig.getPathDBMetricsOperations();

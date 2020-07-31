@@ -17,7 +17,7 @@ package org.commonjava.indy.core.bind.jaxrs.util;
 
 import com.codahale.metrics.Meter;
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 import org.slf4j.Logger;
@@ -37,7 +37,7 @@ public class TransferCountingInputStream
 
     private static final String TRANSFER_UPLOAD_METRIC_NAME = "indy.transferred.content.upload";
 
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     private IndyMetricsConfig metricsConfig;
 
@@ -48,7 +48,7 @@ public class TransferCountingInputStream
         super( new CountingInputStream( stream ) );
     }
 
-    public TransferCountingInputStream( final InputStream stream, final IndyMetricsManager metricsManager,
+    public TransferCountingInputStream( final InputStream stream, final DefaultMetricsManager metricsManager,
                                         final IndyMetricsConfig metricsConfig )
     {
         this( stream );

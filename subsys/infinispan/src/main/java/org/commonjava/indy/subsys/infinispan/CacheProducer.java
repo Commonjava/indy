@@ -23,7 +23,7 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.infinispan.config.ISPNClusterConfiguration;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
@@ -80,7 +80,7 @@ public class CacheProducer
     private IndyConfiguration indyConfiguration;
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     @Inject
     private IndyMetricsConfig metricsConfig;

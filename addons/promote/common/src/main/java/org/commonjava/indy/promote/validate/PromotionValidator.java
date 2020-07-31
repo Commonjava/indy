@@ -28,7 +28,7 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.o11yphant.annotation.Measure;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.promote.conf.PromoteConfig;
@@ -88,7 +88,7 @@ public class PromotionValidator
     private PromoteConfig config;
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     @Inject
     @WeftManaged
@@ -103,7 +103,7 @@ public class PromotionValidator
 
     public PromotionValidator( PromoteValidationsManager validationsManager, PromotionValidationTools validationTools,
                                StoreDataManager storeDataMgr, DownloadManager downloadManager,
-                               WeftExecutorService validateService, IndyMetricsManager metricsManager )
+                               WeftExecutorService validateService, DefaultMetricsManager metricsManager )
     {
         this.validationsManager = validationsManager;
         this.validationTools = validationTools;

@@ -26,7 +26,7 @@ import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferCountingInputStream;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.BatchDeleteRequest;
 import org.commonjava.indy.model.core.PackageTypes;
@@ -92,7 +92,7 @@ public class ContentAccessHandler
     protected JaxRsRequestHelper jaxRsRequestHelper;
 
     @Inject
-    protected IndyMetricsManager metricsManager;
+    protected DefaultMetricsManager metricsManager;
 
     @Inject
     protected IndyMetricsConfig metricsConfig;

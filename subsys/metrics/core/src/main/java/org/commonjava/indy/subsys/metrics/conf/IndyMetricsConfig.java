@@ -225,6 +225,7 @@ public class IndyMetricsConfig
         this.meterRatio = meterRatio;
     }
 
+    @Override
     public int getMeterRatio()
     {
         return meterRatio == null ? DEFAULT_METER_RATIO : meterRatio;

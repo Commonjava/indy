@@ -83,6 +83,12 @@ public class IndyHoneycombConfiguration
     }
 
     @Override
+    public String getServiceName()
+    {
+        return "indy";
+    }
+
+    @Override
     public void sectionStarted( final String name ) throws ConfigurationException
     {
         // NOP; just block map init in the underlying implementation.

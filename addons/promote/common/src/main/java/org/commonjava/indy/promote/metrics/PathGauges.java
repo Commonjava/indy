@@ -16,7 +16,7 @@
 package org.commonjava.indy.promote.metrics;
 
 import com.codahale.metrics.Gauge;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 
 import javax.annotation.PostConstruct;
@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PathGauges
 {
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     private AtomicInteger total = new AtomicInteger();
 
@@ -48,7 +48,7 @@ public class PathGauges
         registerPathPromotionGauges( metricsManager );
     }
 
-    private void registerPathPromotionGauges( IndyMetricsManager metricsManager )
+    private void registerPathPromotionGauges( DefaultMetricsManager metricsManager )
     {
         Map<String, Gauge<Integer>> gauges = new HashMap<>();
         gauges.put( "total", () -> getTotal() );

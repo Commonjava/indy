@@ -18,7 +18,7 @@ package org.commonjava.indy.bind.jaxrs;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.o11yphant.annotation.Measure;
 import org.commonjava.o11yphant.metrics.MetricsConstants;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
@@ -81,7 +81,7 @@ public class ResourceManagementFilter
     private SpecialPathManager specialPathManager;
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
