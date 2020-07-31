@@ -23,6 +23,7 @@ import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.repo.proxy.conf.RepoProxyConfig;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
@@ -34,10 +35,15 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.HttpMethod;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Optional;
 
+import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+import static javax.servlet.http.HttpServletResponse.SC_METHOD_NOT_ALLOWED;
+import static javax.servlet.http.HttpServletResponse.SC_OK;
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePath;
 
@@ -78,8 +84,8 @@ public class ContentBrowseRemoteIndyListingRewriteManager
             try
             {
                 //FIXME: Here we used a MemPassMgr for simple. Maybe some changes in future for more complex cases.
-                indyClient =
-                        new Indy( siteConfig, new MemoryPasswordManager(), mapper, new IndyContentBrowseClientModule() );
+                indyClient = new Indy( siteConfig, new MemoryPasswordManager(), mapper,
+                                       new IndyContentBrowseClientModule() );
             }
             catch ( IndyClientException e )
             {
@@ -115,6 +121,13 @@ public class ContentBrowseRemoteIndyListingRewriteManager
                     ADDON_NAME, absolutePath );
             return false;
         }
+        final String httpMethod = request.getMethod();
+        if ( !httpMethod.equals( HttpMethod.GET ) && !httpMethod.equals( HttpMethod.HEAD ) )
+        {
+            logger.warn( "[{}] Directory listing does not support this type of method: {}", ADDON_NAME, httpMethod );
+            response.sendError( SC_METHOD_NOT_ALLOWED );
+            return true;
+        }
 
         final String pathInfo = request.getPathInfo();
         final Optional<String> originalRepo = RepoProxyUtils.getOriginalStoreKeyFromPath( pathInfo );
@@ -129,37 +142,63 @@ public class ContentBrowseRemoteIndyListingRewriteManager
 
         logger.trace( "Start to get remote indy content list for indy {} and path {}", remoteIndyUrl, path );
 
-        URL remoteIndyURL = new URL( remoteIndyUrl );
-        String remoteIndyHost = remoteIndyURL.getHost();
-        int remotePort = remoteIndyURL.getPort();
-        // 80 or 443 can be ignored in http(s) url
-        if ( remotePort != 80 && remotePort != 443 && remotePort > 0 )
+        try
         {
-            remoteIndyHost = remoteIndyHost + ":" + remotePort;
-        }
-        String localProxyHost = request.getServerName();
-        int localPort = request.getServerPort();
-        if ( localPort != 80 && localPort != 443 && localPort > 0 )
-        {
-            localProxyHost = localProxyHost + ":" + localPort;
-        }
-        final StoreKey originalStoreKey = StoreKey.fromString( originalRepo.get() );
-        final String remoteContentResult = getRemoteIndyListingContent( originalStoreKey, path );
+            URL remoteIndyURL = new URL( remoteIndyUrl );
+            String remoteIndyHost = remoteIndyURL.getHost();
+            int remotePort = remoteIndyURL.getPort();
+            // 80 or 443 can be ignored in http(s) url
+            if ( remoteIndyUrl.contains( ":" ) && remotePort != 80 && remotePort != 443 && remotePort > 0 )
+            {
+                remoteIndyHost = remoteIndyHost + ":" + remotePort;
+            }
+            String localProxyHost = request.getServerName();
+            int localPort = request.getServerPort();
+            if ( localPort != 80 && localPort != 443 && localPort > 0 )
+            {
+                localProxyHost = localProxyHost + ":" + localPort;
+            }
+            final StoreKey originalStoreKey = StoreKey.fromString( originalRepo.get() );
+            final String remoteContentResult = getRemoteIndyListingContent( originalStoreKey, path );
 
-        if ( StringUtils.isNotBlank( remoteContentResult ) )
+            if ( StringUtils.isNotBlank( remoteContentResult ) )
+            {
+                logger.trace( "Start replacing original host {} to target host {}", remoteIndyHost, localProxyHost );
+                final String replaced =
+                        RepoProxyUtils.replaceAllWithNoRegex( remoteContentResult, remoteIndyHost, localProxyHost );
+                logger.trace( "Replaced result for remote indy content list: {}", replaced );
+                switch ( httpMethod )
+                {
+                    case HttpMethod.GET:
+                        logger.trace( "Handle get request for content browse rewrite" );
+                        response.getWriter().write( replaced );
+                        return true;
+                    case HttpMethod.HEAD:
+                        logger.trace( "Handle head request for content browse rewrite" );
+                        Map<String, String> headers = getRemoteIndyListingHeaders( originalStoreKey, path );
+                        //FIXME: I'm not sure if it is a good idea to do this replacement as all other headers info is based on
+                        //       Original remote indy content info.
+                        headers.put( ApplicationHeader.content_length.key(), Long.toString( replaced.length() ) );
+                        for ( Map.Entry<String, String> entry : headers.entrySet() )
+                        {
+                            response.setHeader( entry.getKey(), entry.getValue() );
+                        }
+                        response.setStatus( SC_OK );
+                        return true;
+                }
+            }
+        }
+        catch ( IOException | IndyClientException e )
         {
-            logger.trace( "Start replacing original host {} to target host {}", remoteIndyHost, localProxyHost );
-            final String replaced =
-                    RepoProxyUtils.replaceAllWithNoRegex( remoteContentResult, remoteIndyHost, localProxyHost );
-            logger.trace( "Replaced result for remote indy content list: {}", replaced );
-            response.getWriter().write( replaced );
+            logger.error( String.format( "[%s]Error happened during content browse rewriting", ADDON_NAME ), e );
+            response.sendError( SC_INTERNAL_SERVER_ERROR, e.getMessage() );
             return true;
         }
         return false;
     }
 
     private String getRemoteIndyListingContent( final StoreKey key, final String path )
-            throws IOException
+            throws IOException, IndyClientException
     {
         if ( indyClient == null )
         {
@@ -169,16 +208,23 @@ public class ContentBrowseRemoteIndyListingRewriteManager
                 throw new IOException( "Failed to init indy client to access remote indy" );
             }
         }
-        try
+        ContentBrowseResult result =
+                indyClient.module( IndyContentBrowseClientModule.class ).getContentList( key, path );
+        return mapper.writeValueAsString( result );
+    }
+
+    private Map<String, String> getRemoteIndyListingHeaders( final StoreKey key, final String path )
+            throws IOException, IndyClientException
+    {
+        if ( indyClient == null )
         {
-            ContentBrowseResult result =
-                    indyClient.module( IndyContentBrowseClientModule.class ).getContentList( key, path );
-            return mapper.writeValueAsString( result );
+            initIndyClient();
+            if ( indyClient == null )
+            {
+                throw new IOException( "Failed to init indy client to access remote indy" );
+            }
         }
-        catch ( IndyClientException e )
-        {
-            throw new IOException( e );
-        }
+        return indyClient.module( IndyContentBrowseClientModule.class ).headForContentList( key, path );
     }
 
 }

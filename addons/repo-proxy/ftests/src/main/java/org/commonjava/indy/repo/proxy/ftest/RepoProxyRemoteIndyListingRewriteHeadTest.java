@@ -15,36 +15,42 @@
  */
 package org.commonjava.indy.repo.proxy.ftest;
 
-import org.apache.commons.io.IOUtils;
+import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
-import org.commonjava.indy.repo.proxy.RepoProxyUtils;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.HttpMethod;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 /**
- * Check if the repo proxy addon can correcly handle the remote indy listing rewrite function
+ * Check if the repo proxy addon can correctly handle the remote indy listing rewrite function for head request
  * <br/>
  * GIVEN:
  * <ul>
@@ -54,16 +60,16 @@ import static org.junit.Assert.assertThat;
  * <br/>
  * WHEN:
  * <ul>
- *     <li>Request path of directory listing</li>
+ *     <li>Request path of directory listing with head method</li>
  * </ul>
  * <br/>
  * THEN:
  * <ul>
- *     <li>Response is from the configured remote indy with same direcoty path</li>
- *     <li>Response content is using replaced host info for url related info</li>
+ *     <li>Response is from the configured remote indy with same directory path</li>
+ *     <li>Response head content-length is using replaced content length</li>
  * </ul>
  */
-public class RepoProxyRemoteIndyListingRewriteTest
+public class RepoProxyRemoteIndyListingRewriteHeadTest
         extends AbstractIndyFunctionalTest
 {
     private static final String REPO_NAME = "test";
@@ -71,8 +77,6 @@ public class RepoProxyRemoteIndyListingRewriteTest
     private final HostedRepository hosted = new HostedRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, REPO_NAME );
 
     private static final String PATH = "/foo/bar/";
-
-    private static final String PATH_WITHOUT_LAST_SLASH = "/foo/bar";
 
     private final IndyObjectMapper mapper = new IndyObjectMapper( true );
 
@@ -83,28 +87,40 @@ public class RepoProxyRemoteIndyListingRewriteTest
     public void setupRepos()
             throws Exception
     {
-        server.expect( server.formatUrl( "api/browse/maven/hosted", REPO_NAME, PATH_WITHOUT_LAST_SLASH ), 200,
+        server.expect( HttpMethod.GET, server.formatUrl( "api/browse/maven/hosted", REPO_NAME, PATH ), 200,
                        new ByteArrayInputStream( getExpectedRemoteContent().getBytes() ) );
+
+        server.expect( HttpMethod.HEAD, server.formatUrl( "api/browse/maven/hosted", REPO_NAME, PATH ),
+                       ( request, response ) -> {
+                           response.addHeader( ApplicationHeader.content_type.key(),
+                                               ApplicationContent.application_json );
+                           response.addHeader( ApplicationHeader.content_length.key(), Long.toString( 1 ) );
+                           response.addHeader( ApplicationHeader.last_modified.key(),
+                                               HttpUtils.formatDateHeader( new Date() ) );
+                           response.addHeader( ApplicationHeader.md5.key(), "ThisIsFakeMD5" );
+                           response.addHeader( ApplicationHeader.sha1.key(), "ThisIsFakeSHA1" );
+                           response.setStatus( HttpServletResponse.SC_OK );
+                       } );
     }
 
     @Test
-    public void run()
+    public void runHead()
             throws Exception
     {
-        try (InputStream result = client.content().get( hosted.getKey(), PATH ))
+        Map<String, String> headers =
+                client.module( IndyContentBrowseClientModule.class ).headForContentList( hosted.getKey(), PATH );
+        assertNotNull( headers );
+        assertFalse( headers.isEmpty() );
+        for ( Map.Entry<String, String> entry : headers.entrySet() )
         {
-            assertThat( result, notNullValue() );
-            final String content = IOUtils.toString( result );
-            ContentBrowseResult rewrittenResult = mapper.readValue( content, ContentBrowseResult.class );
-            final String originalContent = getExpectedRemoteContent();
-            ContentBrowseResult originalResult = mapper.readValue( originalContent, ContentBrowseResult.class );
-            assertThat( rewrittenResult.getStoreKey(), equalTo( originalResult.getStoreKey() ) );
-            assertThat( rewrittenResult.getPath(), equalTo( originalResult.getPath() ) );
-            assertThat( rewrittenResult.getParentPath(), equalTo( originalResult.getParentPath() ) );
-
-            assertThat( rewrittenResult.getStoreBrowseUrl(), not( originalResult.getStoreBrowseUrl() ) );
-            assertThat( rewrittenResult.getStoreContentUrl(), not( originalResult.getStoreContentUrl() ) );
+            logger.debug( "{} : {}", entry.getKey(), entry.getValue() );
         }
+        assertThat( headers.get( ApplicationHeader.content_type.key().toLowerCase() ),
+                    equalTo( ApplicationContent.application_json ) );
+        assertThat( headers.get( ApplicationHeader.content_length.key().toLowerCase() ), not( "1" ) );
+        assertThat( headers.get( ApplicationHeader.md5.key().toLowerCase() ), equalTo( "ThisIsFakeMD5" ) );
+        assertThat( headers.get( ApplicationHeader.sha1.key().toLowerCase() ), equalTo( "ThisIsFakeSHA1" ) );
+
     }
 
     @Override
@@ -115,6 +131,12 @@ public class RepoProxyRemoteIndyListingRewriteTest
         logger.debug( "Remote url: {}", url );
         writeConfigFile( "conf.d/repo-proxy.conf", "[repo-proxy]\nenabled=true\napi.methods=GET,HEAD\n"
                 + "remote.indy.listing.rewrite.enabled=true\nremote.indy.url=" + url );
+    }
+
+    @Override
+    protected Collection<IndyClientModule> getAdditionalClientModules()
+    {
+        return Collections.singletonList( new IndyContentBrowseClientModule() );
     }
 
     private String getExpectedRemoteContent()
@@ -142,6 +164,5 @@ public class RepoProxyRemoteIndyListingRewriteTest
         result.setListingUrls( Collections.singletonList( listResult ) );
 
         return mapper.writeValueAsString( result );
-
     }
 }
