@@ -17,7 +17,6 @@ package org.commonjava.indy.repo.proxy.ftest;
 
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule;
-import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -26,7 +25,6 @@ import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
-import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,14 +32,11 @@ import org.junit.Test;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.HttpMethod;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -87,9 +82,6 @@ public class RepoProxyRemoteIndyListingRewriteHeadTest
     public void setupRepos()
             throws Exception
     {
-        server.expect( HttpMethod.GET, server.formatUrl( "api/browse/maven/hosted", REPO_NAME, PATH ), 200,
-                       new ByteArrayInputStream( getExpectedRemoteContent().getBytes() ) );
-
         server.expect( HttpMethod.HEAD, server.formatUrl( "api/browse/maven/hosted", REPO_NAME, PATH ),
                        ( request, response ) -> {
                            response.addHeader( ApplicationHeader.content_type.key(),
@@ -117,7 +109,7 @@ public class RepoProxyRemoteIndyListingRewriteHeadTest
         }
         assertThat( headers.get( ApplicationHeader.content_type.key().toLowerCase() ),
                     equalTo( ApplicationContent.application_json ) );
-        assertThat( headers.get( ApplicationHeader.content_length.key().toLowerCase() ), not( "1" ) );
+        assertThat( headers.get( ApplicationHeader.content_length.key().toLowerCase() ), equalTo( "1" ) );
         assertThat( headers.get( ApplicationHeader.md5.key().toLowerCase() ), equalTo( "ThisIsFakeMD5" ) );
         assertThat( headers.get( ApplicationHeader.sha1.key().toLowerCase() ), equalTo( "ThisIsFakeSHA1" ) );
 
@@ -139,30 +131,4 @@ public class RepoProxyRemoteIndyListingRewriteHeadTest
         return Collections.singletonList( new IndyContentBrowseClientModule() );
     }
 
-    private String getExpectedRemoteContent()
-            throws IOException
-    {
-        final String url = server.formatUrl( "" );
-        ContentBrowseResult result = new ContentBrowseResult();
-        result.setStoreKey( hosted.getKey() );
-        final String rootStorePath =
-                PathUtils.normalize( url, "api/browse", hosted.getKey().toString().replaceAll( ":", "/" ) );
-        result.setParentUrl( PathUtils.normalize( rootStorePath, "foo", "/" ) );
-        result.setParentPath( "foo/" );
-        result.setPath( "foo/bar/" );
-        result.setStoreBrowseUrl( rootStorePath );
-        result.setStoreContentUrl(
-                PathUtils.normalize( url, "api/content", hosted.getKey().toString().replaceAll( ":", "/" ) ) );
-        result.setSources( Collections.singletonList( rootStorePath ) );
-        ContentBrowseResult.ListingURLResult listResult = new ContentBrowseResult.ListingURLResult();
-        final String path = PATH + "foo-bar.txt";
-        listResult.setListingUrl( PathUtils.normalize( rootStorePath, path ) );
-        listResult.setPath( path );
-        Set<String> sources = new HashSet<>();
-        sources.add( "indy:" + hosted.getKey().toString() + path );
-        listResult.setSources( sources );
-        result.setListingUrls( Collections.singletonList( listResult ) );
-
-        return mapper.writeValueAsString( result );
-    }
 }

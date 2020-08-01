@@ -23,7 +23,6 @@ import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.repo.proxy.conf.RepoProxyConfig;
-import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
@@ -140,52 +139,22 @@ public class ContentBrowseRemoteIndyListingRewriteManager
         final String path = RepoProxyUtils.extractPath( absolutePath );
         final String remoteIndyUrl = config.getDefaultRemoteIndyUrl();
 
-        logger.trace( "Start to get remote indy content list for indy {} and path {}", remoteIndyUrl, path );
-
+        logger.trace( "Start to do {} request to remote indy content list for indy {} and path {}", httpMethod,
+                      remoteIndyUrl, path );
         try
         {
-            URL remoteIndyURL = new URL( remoteIndyUrl );
-            String remoteIndyHost = remoteIndyURL.getHost();
-            int remotePort = remoteIndyURL.getPort();
-            // 80 or 443 can be ignored in http(s) url
-            if ( remoteIndyUrl.contains( ":" ) && remotePort != 80 && remotePort != 443 && remotePort > 0 )
-            {
-                remoteIndyHost = remoteIndyHost + ":" + remotePort;
-            }
-            String localProxyHost = request.getServerName();
-            int localPort = request.getServerPort();
-            if ( localPort != 80 && localPort != 443 && localPort > 0 )
-            {
-                localProxyHost = localProxyHost + ":" + localPort;
-            }
             final StoreKey originalStoreKey = StoreKey.fromString( originalRepo.get() );
-            final String remoteContentResult = getRemoteIndyListingContent( originalStoreKey, path );
-
-            if ( StringUtils.isNotBlank( remoteContentResult ) )
+            switch ( httpMethod )
             {
-                logger.trace( "Start replacing original host {} to target host {}", remoteIndyHost, localProxyHost );
-                final String replaced =
-                        RepoProxyUtils.replaceAllWithNoRegex( remoteContentResult, remoteIndyHost, localProxyHost );
-                logger.trace( "Replaced result for remote indy content list: {}", replaced );
-                switch ( httpMethod )
-                {
-                    case HttpMethod.GET:
-                        logger.trace( "Handle get request for content browse rewrite" );
-                        response.getWriter().write( replaced );
-                        return true;
-                    case HttpMethod.HEAD:
-                        logger.trace( "Handle head request for content browse rewrite" );
-                        Map<String, String> headers = getRemoteIndyListingHeaders( originalStoreKey, path );
-                        //FIXME: I'm not sure if it is a good idea to do this replacement as all other headers info is based on
-                        //       Original remote indy content info.
-                        headers.put( ApplicationHeader.content_length.key(), Long.toString( replaced.length() ) );
-                        for ( Map.Entry<String, String> entry : headers.entrySet() )
-                        {
-                            response.setHeader( entry.getKey(), entry.getValue() );
-                        }
-                        response.setStatus( SC_OK );
-                        return true;
-                }
+                case HttpMethod.GET:
+                    return handleGetRequest( remoteIndyUrl, originalStoreKey, path, request, response );
+                case HttpMethod.HEAD:
+                    return handleHeadRequest( originalStoreKey, path, response );
+                default:
+                    logger.warn( "[{}] Directory listing does not support this type of method: {}", ADDON_NAME,
+                                 httpMethod );
+                    response.sendError( SC_METHOD_NOT_ALLOWED );
+                    return true;
             }
         }
         catch ( IOException | IndyClientException e )
@@ -194,6 +163,40 @@ public class ContentBrowseRemoteIndyListingRewriteManager
             response.sendError( SC_INTERNAL_SERVER_ERROR, e.getMessage() );
             return true;
         }
+    }
+
+    private boolean handleGetRequest( final String remoteIndyUrl, final StoreKey originalStoreKey, final String path,
+                                      final HttpServletRequest request, final HttpServletResponse response )
+            throws IOException, IndyClientException
+    {
+        URL remoteIndyURL = new URL( remoteIndyUrl );
+        String remoteIndyHost = remoteIndyURL.getHost();
+        int remotePort = remoteIndyURL.getPort();
+        // 80 or 443 can be ignored in http(s) url
+        if ( remoteIndyUrl.contains( ":" ) && remotePort != 80 && remotePort != 443 && remotePort > 0 )
+        {
+            remoteIndyHost = remoteIndyHost + ":" + remotePort;
+        }
+        String localProxyHost = request.getServerName();
+        int localPort = request.getServerPort();
+        if ( localPort != 80 && localPort != 443 && localPort > 0 )
+        {
+            localProxyHost = localProxyHost + ":" + localPort;
+        }
+
+        final String remoteContentResult = getRemoteIndyListingContent( originalStoreKey, path );
+
+        if ( StringUtils.isNotBlank( remoteContentResult ) )
+        {
+            logger.trace( "Start replacing original host {} to target host {}", remoteIndyHost, localProxyHost );
+            final String replaced =
+                    RepoProxyUtils.replaceAllWithNoRegex( remoteContentResult, remoteIndyHost, localProxyHost );
+            logger.trace( "Replaced result for remote indy content list: {}", replaced );
+            logger.trace( "Handle get request for content browse rewrite" );
+            response.getWriter().write( replaced );
+            return true;
+        }
+
         return false;
     }
 
@@ -211,6 +214,20 @@ public class ContentBrowseRemoteIndyListingRewriteManager
         ContentBrowseResult result =
                 indyClient.module( IndyContentBrowseClientModule.class ).getContentList( key, path );
         return mapper.writeValueAsString( result );
+    }
+
+    private boolean handleHeadRequest( final StoreKey originalStoreKey, final String path,
+                                       final HttpServletResponse response )
+            throws IOException, IndyClientException
+    {
+        logger.trace( "Handle head request for content browse rewrite" );
+        Map<String, String> headers = getRemoteIndyListingHeaders( originalStoreKey, path );
+        for ( Map.Entry<String, String> entry : headers.entrySet() )
+        {
+            response.setHeader( entry.getKey(), entry.getValue() );
+        }
+        response.setStatus( SC_OK );
+        return true;
     }
 
     private Map<String, String> getRemoteIndyListingHeaders( final StoreKey key, final String path )
