@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.infinispan.client.hotrod.RemoteCache;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -23,7 +23,7 @@ import static com.codahale.metrics.MetricRegistry.name;
 public class RemoteCacheHandle<K,V> extends BasicCacheHandle<K, V>
 {
 
-    public RemoteCacheHandle( String named, RemoteCache<K, V> cache, IndyMetricsManager metricsManager, String metricPrefix )
+    public RemoteCacheHandle( String named, RemoteCache<K, V> cache, DefaultMetricsManager metricsManager, String metricPrefix )
     {
         super( named, cache, metricsManager, metricPrefix );
     }

@@ -19,7 +19,7 @@ import com.codahale.metrics.Meter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.o11yphant.annotation.Measure;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,11 +43,11 @@ public class TransferStreamingOutput
 
     private InputStream stream;
 
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     private IndyMetricsConfig metricsConfig;
 
-    public TransferStreamingOutput( final InputStream stream, final IndyMetricsManager metricsManager,
+    public TransferStreamingOutput( final InputStream stream, final DefaultMetricsManager metricsManager,
                                     final IndyMetricsConfig metricsConfig )
     {
         this.stream = stream;

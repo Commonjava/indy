@@ -19,7 +19,7 @@ import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,11 +45,11 @@ public class DTOStreamingOutput
 
     private final Object dto;
 
-    private final IndyMetricsManager metricsManager;
+    private final DefaultMetricsManager metricsManager;
 
     private final IndyMetricsConfig metricsConfig;
 
-    public DTOStreamingOutput( final ObjectMapper mapper, final Object dto, final IndyMetricsManager metricsManager,
+    public DTOStreamingOutput( final ObjectMapper mapper, final Object dto, final DefaultMetricsManager metricsManager,
                                final IndyMetricsConfig metricsConfig )
     {
         this.mapper = mapper;

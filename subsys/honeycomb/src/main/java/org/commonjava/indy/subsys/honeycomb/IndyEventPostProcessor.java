@@ -18,7 +18,7 @@ package org.commonjava.indy.subsys.honeycomb;
 import com.codahale.metrics.Meter;
 import io.honeycomb.libhoney.EventPostProcessor;
 import io.honeycomb.libhoney.eventdata.EventData;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +37,7 @@ public class IndyEventPostProcessor implements EventPostProcessor
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     @Inject
     private IndyMetricsConfig metricsConfig;

@@ -38,7 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.atlas.maven.ident.util.SnapshotUtils;
 import org.commonjava.atlas.maven.ident.version.part.SnapshotPart;
-import org.commonjava.indy.subsys.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Location;
@@ -70,7 +70,7 @@ public class MavenContentsFilteringTransferDecorator
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     @Override
     public OverriddenBooleanValue decorateExists( final Transfer transfer, final EventMetadata metadata )
@@ -205,11 +205,11 @@ public class MavenContentsFilteringTransferDecorator
 
         private Transfer transfer;
 
-        private IndyMetricsManager metricsManager;
+        private DefaultMetricsManager metricsManager;
 
         private MetadataFilteringOutputStream( final OutputStream stream, final boolean allowsSnapshots,
                                                final boolean allowsReleases, Transfer transfer,
-                                               final IndyMetricsManager metricsManager )
+                                               final DefaultMetricsManager metricsManager )
         {
             super( stream );
             this.allowsSnapshots = allowsSnapshots;
