@@ -23,7 +23,6 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.commonjava.maven.galley.util.PathUtils;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -33,13 +32,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -77,12 +72,15 @@ public class RepoProxyRemoteIndyListingRewriteGetTest
     @Rule
     public ExpectationServer server = new ExpectationServer( "" );
 
+    private String expectedRemoteContent;
+
     @Before
     public void setupRepos()
             throws Exception
     {
+        expectedRemoteContent = TestUtils.getExpectedRemoteContent( server, hosted, PATH, mapper );
         server.expect( server.formatUrl( "api/browse/maven/hosted", REPO_NAME, PATH ), 200,
-                       new ByteArrayInputStream( getExpectedRemoteContent().getBytes() ) );
+                       new ByteArrayInputStream( expectedRemoteContent.getBytes() ) );
     }
 
     @Test
@@ -92,8 +90,7 @@ public class RepoProxyRemoteIndyListingRewriteGetTest
         ContentBrowseResult rewrittenResult =
                 client.module( IndyContentBrowseClientModule.class ).getContentList( hosted.getKey(), PATH );
         assertNotNull( rewrittenResult );
-        final String originalContent = getExpectedRemoteContent();
-        ContentBrowseResult originalResult = mapper.readValue( originalContent, ContentBrowseResult.class );
+        ContentBrowseResult originalResult = mapper.readValue( expectedRemoteContent, ContentBrowseResult.class );
         assertThat( rewrittenResult.getStoreKey(), equalTo( originalResult.getStoreKey() ) );
         assertThat( rewrittenResult.getPath(), equalTo( originalResult.getPath() ) );
         assertThat( rewrittenResult.getParentPath(), equalTo( originalResult.getParentPath() ) );
@@ -118,30 +115,4 @@ public class RepoProxyRemoteIndyListingRewriteGetTest
         return Collections.singletonList( new IndyContentBrowseClientModule() );
     }
 
-    private String getExpectedRemoteContent()
-            throws IOException
-    {
-        final String url = server.formatUrl( "" );
-        ContentBrowseResult result = new ContentBrowseResult();
-        result.setStoreKey( hosted.getKey() );
-        final String rootStorePath =
-                PathUtils.normalize( url, "api/browse", hosted.getKey().toString().replaceAll( ":", "/" ) );
-        result.setParentUrl( PathUtils.normalize( rootStorePath, "foo", "/" ) );
-        result.setParentPath( "foo/" );
-        result.setPath( "foo/bar/" );
-        result.setStoreBrowseUrl( rootStorePath );
-        result.setStoreContentUrl(
-                PathUtils.normalize( url, "api/content", hosted.getKey().toString().replaceAll( ":", "/" ) ) );
-        result.setSources( Collections.singletonList( rootStorePath ) );
-        ContentBrowseResult.ListingURLResult listResult = new ContentBrowseResult.ListingURLResult();
-        final String path = PATH + "foo-bar.txt";
-        listResult.setListingUrl( PathUtils.normalize( rootStorePath, path ) );
-        listResult.setPath( path );
-        Set<String> sources = new HashSet<>();
-        sources.add( "indy:" + hosted.getKey().toString() + path );
-        listResult.setSources( sources );
-        result.setListingUrls( Collections.singletonList( listResult ) );
-
-        return mapper.writeValueAsString( result );
-    }
 }
