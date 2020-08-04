@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import com.codahale.metrics.Timer;
+import org.commonjava.o11yphant.metrics.api.Timer;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;

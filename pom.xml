@@ -783,18 +783,6 @@
         <type>tar.gz</type>
         <scope>provided</scope>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics-prometheus</artifactId>
-        <version>2.4.0-SNAPSHOT</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-ftests-metrics</artifactId>
-        <version>2.4.0-SNAPSHOT</version>
-        <scope>test</scope>
-      </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -1601,6 +1589,11 @@
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>o11yphant-honeycomb</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-metrics-api</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>

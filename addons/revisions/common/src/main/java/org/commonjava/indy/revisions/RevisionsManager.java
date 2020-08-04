@@ -36,7 +36,7 @@ import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.IndyLifecycleEvent;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 
 import static org.commonjava.indy.flat.data.DataFileStoreUtils.INDY_STORE;
 

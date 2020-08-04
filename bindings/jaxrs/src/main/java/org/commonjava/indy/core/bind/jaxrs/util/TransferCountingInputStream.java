@@ -15,8 +15,8 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.util;
 
-import com.codahale.metrics.Meter;
 import org.apache.commons.io.input.CountingInputStream;
+import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
@@ -28,8 +28,8 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getDefaultName;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 
 public class TransferCountingInputStream
         extends IdempotentCloseInputStream

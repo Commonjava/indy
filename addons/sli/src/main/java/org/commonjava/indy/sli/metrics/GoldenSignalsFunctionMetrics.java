@@ -15,10 +15,13 @@
  */
 package org.commonjava.indy.sli.metrics;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.Timer;
-import com.codahale.metrics.health.HealthCheck;
+import org.commonjava.o11yphant.metrics.api.healthcheck.HealthCheck;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.api.Metric;
+import org.commonjava.o11yphant.metrics.api.Timer;
+import org.commonjava.o11yphant.metrics.healthcheck.impl.HealthCheckResult;
+import org.commonjava.o11yphant.metrics.impl.O11Meter;
+import org.commonjava.o11yphant.metrics.impl.O11Timer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,19 +30,23 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 
 public class GoldenSignalsFunctionMetrics
 {
-    private String name;
+    private final String name;
 
-    private Meter load = new Meter();
+    private final Meter load;
 
-    private Timer latency = new Timer();
+    private final Timer latency;
 
-    private Meter errors = new Meter();
+    private final Meter errors;
 
-    private Meter throughput = new Meter();
+    private final Meter throughput;
 
     GoldenSignalsFunctionMetrics( String name )
     {
         this.name = name;
+        this.load = new O11Meter();
+        this.errors = new O11Meter(  );
+        this.throughput = new O11Meter(  );
+        this.latency = new O11Timer(  );
     }
 
     Map<String, Metric> getMetrics()
@@ -83,20 +90,18 @@ public class GoldenSignalsFunctionMetrics
     }
 
     final class GSFunctionHealthCheck
-            extends HealthCheck
+                    implements HealthCheck
     {
         @Override
-        protected Result check()
+        public Result check()
                 throws Exception
         {
             // FIXME: We need need to incorporate the SLO targets to determine whether health / unhealthy.
-            return Result.builder()
-                         .withDetail( "latency", latency.getSnapshot().get99thPercentile() )
-                         .withDetail( "errors", errors.getOneMinuteRate() )
-                         .withDetail( "throughput", throughput.getOneMinuteRate() )
-                         .withDetail( "load", load.getOneMinuteRate() )
-                         .healthy()
-                         .build();
+            return new HealthCheckResult(true)
+                                    .withDetail( "latency", latency.getSnapshot().get99thPercentile() )
+                                    .withDetail( "errors", errors.getOneMinuteRate() )
+                                    .withDetail( "throughput", throughput.getOneMinuteRate() )
+                                    .withDetail( "load", load.getOneMinuteRate() );
         }
     }
 }

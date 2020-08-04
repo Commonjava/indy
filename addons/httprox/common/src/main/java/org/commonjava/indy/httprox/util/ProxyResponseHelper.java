@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.httprox.util;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.IndyWorkflowException;
@@ -45,6 +43,8 @@ import org.commonjava.indy.util.UrlInfo;
 import org.commonjava.maven.galley.TransferException;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.o11yphant.metrics.api.Timer;
+import org.commonjava.o11yphant.metrics.MetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,17 +54,15 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static com.codahale.metrics.MetricRegistry.name;
-import static java.lang.Integer.parseInt;
 import static org.commonjava.indy.util.RequestContextHelper.CONTENT_ENTRY_POINT;
 import static org.commonjava.indy.util.RequestContextHelper.METADATA_CONTENT;
 import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.util.RequestContextHelper.PATH;
-import static org.commonjava.indy.util.RequestContextHelper.getContext;
 import static org.commonjava.indy.util.RequestContextHelper.setContext;
 import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 /**
  * Created by ruhan on 9/20/18.
@@ -83,7 +81,7 @@ public class ProxyResponseHelper
 
     private final IndyMetricsConfig metricsConfig;
 
-    private final MetricRegistry metricRegistry;
+    private final MetricsManager metricsManager;
 
     private final String cls;
 
@@ -94,7 +92,8 @@ public class ProxyResponseHelper
     private boolean transferred;
 
     public ProxyResponseHelper( HttpRequest httpRequest, HttproxConfig config, ContentController contentController,
-                                ProxyRepositoryCreator repoCreator, StoreDataManager storeManager, IndyMetricsConfig metricsConfig, MetricRegistry metricRegistry, String cls )
+                                ProxyRepositoryCreator repoCreator, StoreDataManager storeManager,
+                                IndyMetricsConfig metricsConfig, MetricsManager metricsManager, String cls )
     {
         this.httpRequest = httpRequest;
         this.config = config;
@@ -102,7 +101,7 @@ public class ProxyResponseHelper
         this.repoCreator = repoCreator;
         this.storeManager = storeManager;
         this.metricsConfig = metricsConfig;
-        this.metricRegistry = metricRegistry;
+        this.metricsManager = metricsManager;
         this.cls = cls;
     }
 
@@ -110,15 +109,15 @@ public class ProxyResponseHelper
                     throws IndyDataException
     {
         ArtifactStore store = null;
-        if ( metricsConfig == null || metricRegistry == null )
+        if ( metricsConfig == null || metricsManager == null )
         {
             store = doGetArtifactStore( trackingId, url );
         }
 
         if ( store == null )
         {
-            Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "getArtifactStore" ) );
-            Timer.Context timerContext = timer.time();
+            Timer.Context timerContext =
+                            metricsManager.startTimer( name( metricsConfig.getNodePrefix(), cls, "getArtifactStore" ) );
             try
             {
                 store = doGetArtifactStore( trackingId, url );
@@ -295,14 +294,14 @@ public class ProxyResponseHelper
         setContext( PATH, path );
         setContext( METADATA_CONTENT, Boolean.toString( false ) );
 
-        if ( metricsConfig == null || metricRegistry == null )
+        if ( metricsConfig == null || metricsManager == null )
         {
             doTransfer( http, store, path, writeBody, proxyUserPass, meter );
             return;
         }
 
-        Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "transfer" ) );
-        Timer.Context timerContext = timer.time();
+        Timer.Context timerContext =
+                        metricsManager.startTimer( name( metricsConfig.getNodePrefix(), cls, "transfer" ) );
         try
         {
             doTransfer( http, store, path, writeBody, proxyUserPass, meter );

@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.core.inject;
 
-import org.commonjava.o11yphant.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;

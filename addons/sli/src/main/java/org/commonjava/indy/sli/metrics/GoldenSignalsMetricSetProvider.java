@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.sli.metrics;
 
-import com.codahale.metrics.MetricRegistry;
+import org.commonjava.o11yphant.metrics.api.MetricSet;
 import org.commonjava.o11yphant.metrics.MetricSetProvider;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -29,8 +29,14 @@ public class GoldenSignalsMetricSetProvider
     private GoldenSignalsMetricSet metricSet;
 
     @Override
-    public void registerMetricSet( final MetricRegistry registry )
+    public MetricSet getMetricSet()
     {
-        registry.register( "sli.golden", metricSet );
+        return metricSet;
+    }
+
+    @Override
+    public String getName()
+    {
+        return "sli.golden";
     }
 }

@@ -15,12 +15,15 @@
  */
 package org.commonjava.indy.sli.metrics;
 
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricSet;
-import com.codahale.metrics.health.HealthCheck;
-import org.commonjava.o11yphant.metrics.healthcheck.CompoundHealthCheck;
+import org.commonjava.o11yphant.metrics.api.healthcheck.HealthCheck;
+import org.commonjava.o11yphant.metrics.api.Metric;
+import org.commonjava.o11yphant.metrics.api.MetricSet;
+import org.commonjava.o11yphant.metrics.MetricsManager;
+import org.commonjava.o11yphant.metrics.api.healthcheck.CompoundHealthCheck;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -30,17 +33,24 @@ import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.
 
 @ApplicationScoped
 public class GoldenSignalsMetricSet
-        implements MetricSet, CompoundHealthCheck
+                implements MetricSet, CompoundHealthCheck
 {
     private Map<String, GoldenSignalsFunctionMetrics> functionMetrics = new HashMap<>();
 
+    @Inject
+    private MetricsManager metricsManager;
+
     public GoldenSignalsMetricSet()
     {
-        Stream.of( FUNCTIONS )
-              .forEach( function -> {
-                  System.out.println( "Wiring SLI metrics for: " + function );
-                  functionMetrics.put( function, new GoldenSignalsFunctionMetrics( function ) );
-              } );
+    }
+
+    @PostConstruct
+    private void init()
+    {
+        Stream.of( FUNCTIONS ).forEach( function -> {
+            System.out.println( "Wiring SLI metrics for: " + function );
+            functionMetrics.put( function, new GoldenSignalsFunctionMetrics( function ) );
+        } );
     }
 
     @Override
@@ -61,7 +71,7 @@ public class GoldenSignalsMetricSet
     public Map<String, HealthCheck> getHealthChecks()
     {
         Map<String, HealthCheck> checks = new HashMap<>();
-        functionMetrics.forEach( (key,value)-> checks.put( "sli.golden." + key, value.getHealthCheck() ) );
+        functionMetrics.forEach( ( key, value ) -> checks.put( "sli.golden." + key, value.getHealthCheck() ) );
         return checks;
     }
 }

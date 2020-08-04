@@ -16,10 +16,10 @@
 package org.commonjava.indy.subsys.metrics.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.o11yphant.conf.ConsoleConfig;
-import org.commonjava.o11yphant.conf.ELKConfig;
-import org.commonjava.o11yphant.conf.GraphiteConfig;
-import org.commonjava.o11yphant.conf.MetricsConfig;
+import org.commonjava.o11yphant.metrics.conf.ConsoleConfig;
+import org.commonjava.o11yphant.metrics.conf.ELKConfig;
+import org.commonjava.o11yphant.metrics.conf.GraphiteConfig;
+import org.commonjava.o11yphant.metrics.conf.MetricsConfig;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 

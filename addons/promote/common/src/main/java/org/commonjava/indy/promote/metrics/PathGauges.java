@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.promote.metrics;
 
-import com.codahale.metrics.Gauge;
+import org.commonjava.o11yphant.metrics.api.Gauge;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 
