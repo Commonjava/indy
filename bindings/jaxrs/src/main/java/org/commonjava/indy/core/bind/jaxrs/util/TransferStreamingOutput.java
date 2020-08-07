@@ -15,10 +15,10 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.util;
 
-import com.codahale.metrics.Meter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.o11yphant.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
+import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
@@ -32,8 +32,8 @@ import java.io.OutputStream;
 
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getDefaultName;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 
 public class TransferStreamingOutput
     implements StreamingOutput

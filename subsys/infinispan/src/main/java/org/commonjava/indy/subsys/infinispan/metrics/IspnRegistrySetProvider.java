@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan.metrics;
 
-import com.codahale.metrics.MetricRegistry;
+import org.commonjava.o11yphant.metrics.api.MetricSet;
 import org.commonjava.o11yphant.metrics.MetricSetProvider;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -29,12 +29,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 @ApplicationScoped
 public class IspnRegistrySetProvider
-        implements MetricSetProvider
+                implements MetricSetProvider
 {
     @Inject
     private IndyMetricsConfig metricsConfig;
@@ -48,14 +48,9 @@ public class IspnRegistrySetProvider
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
-    public void registerMetricSet( final MetricRegistry registry )
+    public MetricSet getMetricSet()
     {
-        if ( !metricsConfig.isIspnMetricsEnabled() )
-        {
-            return;
-        }
-
-        logger.info( "Adding ISPN checks to registry: {}", registry );
+        logger.info( "Adding ISPN checks" );
         String gauges = metricsConfig.getIspnGauges();
         List<String> list = null;
         if ( gauges != null )
@@ -71,8 +66,18 @@ public class IspnRegistrySetProvider
                 caches.forEach( ( n ) -> cacheProducer.getCacheManager().getCache( n ) );
             }
         }
+        return new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list );
+    }
 
-        registry.register( name( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN ),
-                                 new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list ) );
+    @Override
+    public String getName()
+    {
+        return name( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN );
+    }
+
+    @Override
+    public boolean isEnabled()
+    {
+        return metricsConfig.isIspnMetricsEnabled();
     }
 }

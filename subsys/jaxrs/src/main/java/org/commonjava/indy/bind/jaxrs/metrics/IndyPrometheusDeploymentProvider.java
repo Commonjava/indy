@@ -15,16 +15,24 @@
  */
 package org.commonjava.indy.bind.jaxrs.metrics;
 
-import com.codahale.metrics.health.HealthCheckRegistry;
-import com.codahale.metrics.servlets.HealthCheckServlet;
+import io.undertow.servlet.api.DeploymentInfo;
+import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
+import org.commonjava.o11yphant.metrics.jaxrs.PrometheusDeploymentProvider;
 
-import javax.enterprise.inject.spi.CDI;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.core.Application;
 
-public class IndyHealthCheckServletContextListener extends HealthCheckServlet.ContextListener
+@ApplicationScoped
+public class IndyPrometheusDeploymentProvider
+        extends IndyDeploymentProvider
 {
+    @Inject
+    private PrometheusDeploymentProvider prometheusDeploymentProvider;
+
     @Override
-    protected HealthCheckRegistry getHealthCheckRegistry()
+    public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
-        return CDI.current().select( HealthCheckRegistry.class ).get();
+        return prometheusDeploymentProvider.getDeploymentInfo( contextRoot );
     }
 }

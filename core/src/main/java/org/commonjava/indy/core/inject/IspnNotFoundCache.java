@@ -16,7 +16,7 @@
 package org.commonjava.indy.core.inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.o11yphant.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;

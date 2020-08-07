@@ -27,7 +27,7 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -56,10 +56,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static java.lang.String.format;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 /**
  * Created by jdcasey on 9/11/15.

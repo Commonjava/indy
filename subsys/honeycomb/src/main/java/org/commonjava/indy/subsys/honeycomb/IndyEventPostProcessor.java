@@ -15,27 +15,22 @@
  */
 package org.commonjava.indy.subsys.honeycomb;
 
-import com.codahale.metrics.Meter;
 import io.honeycomb.libhoney.EventPostProcessor;
 import io.honeycomb.libhoney.eventdata.EventData;
+import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getDefaultName;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 
 @ApplicationScoped
 public class IndyEventPostProcessor implements EventPostProcessor
 {
-
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     @Inject
     private DefaultMetricsManager metricsManager;
 

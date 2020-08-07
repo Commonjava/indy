@@ -16,7 +16,7 @@
 package org.commonjava.indy.bind.jaxrs;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
-import org.commonjava.o11yphant.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.o11yphant.metrics.MetricsConstants;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.util.RequestContextHelper;

@@ -56,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.commonjava.o11yphant.metrics.MetricsConstants.getSupername;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
 
 /**
