@@ -122,7 +122,7 @@ public class RepoProxyBlockListTest
             throws IOException
     {
         writeConfigFile( "conf.d/repo-proxy.conf",
-                         "[repo-proxy]\nenabled=true\nnapi.methods=GET,HEAD\nblock.path.patterns=/org/apache/plugins/maven-metadata.xml" );
+                         "[repo-proxy]\nenabled=true\napi.methods=GET,HEAD\nblock.path.patterns=/org/apache/plugins/maven-metadata.xml" );
     }
 
 }
