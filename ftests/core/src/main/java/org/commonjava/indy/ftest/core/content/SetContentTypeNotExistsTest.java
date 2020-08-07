@@ -59,7 +59,7 @@ public class SetContentTypeNotExistsTest
     public void run() throws Exception
     {
         final String content = "This is some content " + System.currentTimeMillis() + "." + System.nanoTime();
-        final String path = "org/foo/foo-project/1/foo-1.jar";
+        final String path = "org/foo/foo-project/1/foo-1.nodefine";
 
         server.expect( "GET", server.formatUrl( STORE, path ), ( request, response ) -> {
             response.setStatus( 200 );
