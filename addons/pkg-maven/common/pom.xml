@@ -93,7 +93,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-core</artifactId>
+      <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
   </dependencies>
 
