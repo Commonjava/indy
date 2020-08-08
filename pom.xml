@@ -82,12 +82,12 @@
     <honeycombVersion>1.1.0</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>1.6</pathmappedStorageVersion>
+    <pathmappedStorageVersion>1.7-SNAPSHOT</pathmappedStorageVersion>
     <o11yphantVersion>1.0-SNAPSHOT</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.0</atlasVersion>
-    <galleyVersion>1.3</galleyVersion>
+    <galleyVersion>1.4-SNAPSHOT</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
@@ -1437,7 +1437,7 @@
       <dependency>
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
-        <version>1.9.1</version>
+        <version>1.9.4</version>
       </dependency>
       
       <dependency>
@@ -1993,7 +1993,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <arguments>ci -d</arguments>
+                <arguments>ci</arguments>
               </configuration>
             </execution>
 

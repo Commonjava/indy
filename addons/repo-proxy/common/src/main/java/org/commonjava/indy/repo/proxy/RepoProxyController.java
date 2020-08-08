@@ -32,19 +32,24 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.servlet.http.HttpServletResponse.SC_MOVED_PERMANENTLY;
+import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getOriginalStoreKeyFromPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getProxyTo;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.isNPMMetaPath;
-import static org.commonjava.indy.repo.proxy.RepoProxyUtils.keyToPath;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class RepoProxyController
@@ -59,6 +64,9 @@ public class RepoProxyController
 
     @Inject
     private Instance<RepoProxyResponseDecorator> responseDecoratorInstances;
+
+    @Inject
+    private ContentBrowseRemoteIndyListingRewriteManager listingRewriter;
 
     private Iterable<RepoProxyResponseDecorator> responseDecorators;
 
@@ -79,7 +87,7 @@ public class RepoProxyController
         this.responseDecorators = this.responseDecoratorInstances;
     }
 
-    public boolean doProxy( ServletRequest request, ServletResponse response )
+    public boolean doFilter( ServletRequest request, ServletResponse response )
             throws IOException, ServletException
     {
         if ( !checkEnabled() )
@@ -88,39 +96,26 @@ public class RepoProxyController
         }
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+
         if ( !checkApiMethods( httpRequest ) )
         {
             return false;
         }
 
-        final Optional<StoreKey> proxyToRemoteKey = getProxyToRemoteKey( httpRequest );
-        if ( !proxyToRemoteKey.isPresent() )
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        if ( doBlock( httpRequest, httpResponse ) )
         {
-            return false;
+            return true;
         }
 
-        final String absoluteOriginalPath = getRequestAbsolutePath( httpRequest );
-        final Optional<String> proxyToPath = getProxyTo( absoluteOriginalPath, proxyToRemoteKey.get() );
-        if ( !proxyToPath.isPresent() )
+        if ( doListingResponseRewrite( httpRequest, httpResponse ) )
         {
-            return false;
+            return true;
         }
 
-        if ( !handleContentBrowseRewrite( absoluteOriginalPath, httpRequest ) )
-        {
-            return false;
-        }
-
-        trace( "proxied to path info {}", proxyToPath );
-
-        HttpServletResponse decoratedResponse =
-                decoratingResponse( httpRequest, (HttpServletResponse) response, proxyToRemoteKey.get() );
-
-        // Here we do not use redirect but forward.
-        // doRedirect( (HttpServletResponse)response, proxyTo );
-        doForward( httpRequest, decoratedResponse, proxyToPath.get() );
-
-        return true;
+        return doProxy( httpRequest, httpResponse );
     }
 
     private boolean checkEnabled()
@@ -141,6 +136,81 @@ public class RepoProxyController
             trace( "http method {} not allowed for the request, no proxy action will be performed", method );
             return false;
         }
+        return true;
+    }
+
+    private boolean doBlock( HttpServletRequest request, HttpServletResponse response ) throws IOException
+    {
+        final String fullPath = getRequestAbsolutePath( request );
+        final String path = extractPath( fullPath );
+        for ( String patStr : config.getBlockListPatterns() )
+        {
+            Pattern pattern = Pattern.compile( patStr );
+            if ( pattern.matcher( path ).matches() )
+            {
+                logger.trace( "{} matches the block pattern {}", fullPath, patStr );
+                handleNotFound( response, path );
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean doListingResponseRewrite( HttpServletRequest request, HttpServletResponse response )
+            throws IOException
+    {
+        if ( !config.isEnabled() || !config.isRemoteIndyListingRewriteEnabled() )
+        {
+            logger.debug(
+                    "[{}] Addon not enabled or not allowed to use remote indy listing rewriting, will not decorate the response by remote indy listing rewriting.",
+                    ADDON_NAME );
+            return false;
+        }
+
+        return listingRewriter.rewriteResponse( request, response );
+    }
+
+    private void handleNotFound( HttpServletResponse response, String path )
+            throws IOException
+    {
+        setContext( HTTP_STATUS, String.valueOf( SC_NOT_FOUND ) );
+        final String notFoundReponse = String.format( "Path %s is set as blocked in indy static-proxy", path );
+        response.getWriter().write( notFoundReponse );
+        response.addHeader( "Content-Type", MediaType.TEXT_PLAIN );
+        response.sendError( SC_NOT_FOUND, notFoundReponse );
+    }
+
+    private boolean doProxy( HttpServletRequest httpRequest, HttpServletResponse httpResponse )
+            throws IOException, ServletException
+    {
+        final Optional<StoreKey> proxyToRemoteKey = getProxyToRemoteKey( httpRequest );
+        if ( !proxyToRemoteKey.isPresent() )
+        {
+            return false;
+        }
+
+        final String absoluteOriginalPath = getRequestAbsolutePath( httpRequest );
+
+        final Optional<String> proxyToPath = getProxyTo( absoluteOriginalPath, proxyToRemoteKey.get() );
+        if ( !proxyToPath.isPresent() )
+        {
+            return false;
+        }
+
+        if ( !handleContentBrowseRewrite( absoluteOriginalPath, httpRequest ) )
+        {
+            return false;
+        }
+
+        trace( "proxied to path info {}", proxyToPath );
+
+        HttpServletResponse decoratedResponse =
+                decoratingResponse( httpRequest, httpResponse, proxyToRemoteKey.get() );
+
+        // Here we do not use redirect but forward.
+        // doRedirect( (HttpServletResponse)response, proxyTo );
+        doForward( httpRequest, decoratedResponse, proxyToPath.get() );
+
         return true;
     }
 
@@ -190,6 +260,7 @@ public class RepoProxyController
 
         for ( RepoProxyResponseDecorator decorator : responseDecorators )
         {
+            logger.trace( "RepoProxyResponseDecorator class: {}", decorator.getClass() );
             decorated = decorator.decoratingResponse( request, decorated, proxyToStoreKey );
         }
 
@@ -223,7 +294,7 @@ public class RepoProxyController
                 {
                     // For npm metadata request with trailing /, it's still a normal content request even
                     // if it's a content browse liked request, so we still need to do proxy
-                    final String path = extractPath( absoluteOriginalPath, keyToPath( storeKeyStr ) );
+                    final String path = extractPath( absoluteOriginalPath );
                     if ( isNPMMetaPath( path ) )
                     {
                         trace( "This is a npm metadata request with trailing / {}, will do proxy", absoluteOriginalPath );
