@@ -62,7 +62,7 @@ class ContentReplacingOutputStream
                 final String replaceTo = repoReplacing.getKey();
                 final String origin = repoReplacing.getValue();
                 logger.trace( "Repository Proxy: Content rewriting: Replacing {} to {}", origin, replaceTo );
-                content = content.replaceAll( origin, replaceTo );
+                content = RepoProxyUtils.replaceAllWithNoRegex( content, origin, replaceTo );
             }
             originalStream.write( content.getBytes() );
             originalStream.flush();
