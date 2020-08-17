@@ -108,6 +108,8 @@ public class NPMPackageMaskingTransferDecorator
 
         boolean masked;
 
+        private static final int SIZE = 1024;
+
         private PackageMaskingInputStream( final InputStream stream, final String contextURL,
                                            final IndyMetricsManager metricsManager )
         {
@@ -164,9 +166,12 @@ public class NPMPackageMaskingTransferDecorator
             {
                 ByteArrayOutputStream bos = new ByteArrayOutputStream();
                 int read;
-                while ( ( read = super.read() ) >= 0 )
                 {
-                    bos.write( read );
+                    byte[] buffer = new byte[SIZE];
+                    while ( ( read = super.read(buffer, 0, buffer.length) ) >= 0 )
+                    {
+                        bos.write( buffer, 0, read );
+                    }
                 }
                 byte[] rawBytes = bos.toByteArray();
                 String raw = new String( rawBytes, UTF_8 );

@@ -30,6 +30,18 @@ public final class ApplicationContent
 
     public static final String application_zip = "application/zip";
 
+    public static final String application_gzip = "application/x-gzip";
+
+    public static final String application_jar = "application/java-archive";
+
+    public static final String application_tar = "application/x-tar";
+
+    public static final String application_ar = "application/x-archive";
+
+    public static final String application_7z = "application/x-7z-compressed";
+
+    public static final String application_rar = "application/x-rar-compressed";
+
     public static final String text_css = "text/css";
 
     public static final String text_html = "text/html";

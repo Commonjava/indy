@@ -164,7 +164,6 @@ public class IndyClientHttp
      */
     @Deprecated
     public void connect( final HttpClientConnectionManager connectionManager )
-            throws IndyClientException
     {
         // NOP, now that we've moved to HttpFactory.
     }
@@ -309,9 +308,8 @@ public class IndyClientHttp
             }
 
             final String json = entityToString( response );
-            final T value = objectMapper.readValue( json, typeRef );
 
-            return value;
+            return objectMapper.readValue( json, typeRef );
         }
         catch ( final IOException e )
         {
@@ -329,7 +327,7 @@ public class IndyClientHttp
         connect();
 
         addLoggingMDCToHeaders(req);
-        CloseableHttpResponse response = null;
+        CloseableHttpResponse response;
         try
         {
             final CloseableHttpClient client = newClient();
@@ -366,7 +364,7 @@ public class IndyClientHttp
             addLoggingMDCToHeaders(req);
             if ( headers != null )
             {
-                headers.forEach( (k, v) -> { req.setHeader( k, v );} );
+                headers.forEach( req::setHeader );
             }
             final CloseableHttpClient client = newClient();
 
@@ -416,7 +414,7 @@ public class IndyClientHttp
         catch ( final ClientProtocolException e )
         {
             final Throwable cause = e.getCause();
-            if ( cause != null && ( cause instanceof IndyClientException ) )
+            if ( cause instanceof IndyClientException )
             {
                 throw (IndyClientException) cause;
             }
@@ -483,7 +481,7 @@ public class IndyClientHttp
         connect();
 
         addLoggingMDCToHeaders(request);
-        CloseableHttpResponse response = null;
+        CloseableHttpResponse response;
         try
         {
             final CloseableHttpClient client = newClient();
@@ -514,7 +512,7 @@ public class IndyClientHttp
         checkRequestValue( value );
         connect();
 
-        CloseableHttpResponse response = null;
+        CloseableHttpResponse response;
         try
         {
             final HttpPost req = newRawPost( buildUrl( baseUrl, path ) );
@@ -852,8 +850,7 @@ public class IndyClientHttp
 
     public HttpGet newRawGet( final String url )
     {
-        final HttpGet req = new HttpGet( url );
-        return req;
+        return new HttpGet( url );
     }
 
     public HttpGet newJsonGet( final String url )
@@ -872,8 +869,7 @@ public class IndyClientHttp
 
     public HttpDelete newDelete( final String url )
     {
-        final HttpDelete req = new HttpDelete( url );
-        return req;
+        return new HttpDelete( url );
     }
 
     public HttpPut newJsonPut( final String url )
@@ -885,8 +881,7 @@ public class IndyClientHttp
 
     public HttpPut newRawPut( final String url )
     {
-        final HttpPut req = new HttpPut( url );
-        return req;
+        return new HttpPut( url );
     }
 
     public HttpPost newJsonPost( final String url )

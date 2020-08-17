@@ -60,9 +60,37 @@
           </div>
           <div class="collapse navbar-collapse" id="navbar-collapse-1">
               <ul class="nav navbar-nav" ng-controller="NavCtl">
+
+<!--
                   <li><a class="fa btn btn-lg" href="#/remote">Remote Repositories</a></li>
                   <li><a class="fa btn btn-lg" href="#/hosted">Hosted Repositories</a></li>
                   <li><a class="fa btn btn-lg" href="#/group">Groups</a></li>
+-->
+                  <li class="dropdown">
+                      <a href="#" class="fa btn btn-lg dropdown-toggle" data-toggle="dropdown">Remote Repositories <span class="caret"></span></a>
+                      <ul class="dropdown-menu" role="menu">
+                          <li><a class="fa" href="#/remote/maven">maven</a></li>
+                          <li><a class="fa" href="#/remote/generic-http">generic-http</a></li>
+                          <li><a class="fa" href="#/remote/npm">npm</a></li>
+                      </ul>
+                  </li>
+                  <li class="dropdown">
+                      <a href="#" class="fa btn btn-lg dropdown-toggle" data-toggle="dropdown">Hosted Repositories <span class="caret"></span></a>
+                      <ul class="dropdown-menu" role="menu">
+                          <li><a class="fa" href="#/hosted/maven">maven</a></li>
+                          <li><a class="fa" href="#/hosted/generic-http">generic-http</a></li>
+                          <li><a class="fa" href="#/hosted/npm">npm</a></li>
+                      </ul>
+                  </li>
+                  <li class="dropdown">
+                      <a href="#" class="fa btn btn-lg dropdown-toggle" data-toggle="dropdown">Groups <span class="caret"></span></a>
+                      <ul class="dropdown-menu" role="menu">
+                          <li><a class="fa" href="#/group/maven">maven</a></li>
+                          <li><a class="fa" href="#/group/generic-http">generic-http</a></li>
+                          <li><a class="fa" href="#/group/npm">npm</a></li>
+                      </ul>
+                  </li>
+
                   <li><a class="fa btn btn-lg" href="rest-api.html">REST API</a></li>
                   <li class="dropdown">
                       <a href="#" class="dropdown-toggle" data-toggle="dropdown">More <span class="caret"></span></a>
