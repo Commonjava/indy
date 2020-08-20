@@ -48,6 +48,8 @@ public class IndyHoneycombConfiguration
 
     private static final String SAMPLE_PREFIX = "sample.";
 
+    private static final String ENVIRONMENT_MAPPINGS = "environment.mappings";
+
     private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
 
     private boolean enabled;
@@ -65,6 +67,8 @@ public class IndyHoneycombConfiguration
     private Set<String> spansExcluded = Collections.emptySet();
 
     private Set<String> fields;
+
+    private String environmentMappings;
 
     public IndyHoneycombConfiguration()
     {
@@ -110,6 +114,9 @@ public class IndyHoneycombConfiguration
                 break;
             case BASE_SAMPLE_RATE:
                 this.baseSampleRate = Integer.parseInt( value.trim() );
+                break;
+            case ENVIRONMENT_MAPPINGS:
+                this.environmentMappings = value.trim();
                 break;
             case FIELDS:
                 this.fields = Collections.unmodifiableSet(
@@ -157,6 +164,12 @@ public class IndyHoneycombConfiguration
     public Set<String> getFieldSet()
     {
         return fields == null ? DEFAULT_FIELDS : fields;
+    }
+
+    @Override
+    public String getEnvironmentMappings()
+    {
+        return environmentMappings;
     }
 
 }
