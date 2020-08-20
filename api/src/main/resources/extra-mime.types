@@ -1,1 +1,10 @@
-application/maven+xml       pom
+application/maven+xml         pom
+application/java-archive      jar
+application/x-gzip            gz
+application/x-gzip            tgz
+application/x-tar             tar
+application/x-archive         a
+application/x-archive         ar
+application/x-7z-compressed   7z
+application/x-rar-compressed  rar
+application/zip               zip
