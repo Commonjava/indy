@@ -53,6 +53,16 @@ public class IndyPromoteClientModule
         return result;
     }
 
+    public GroupPromoteResult promoteToGroup( final StoreKey src, final StoreKey target )
+            throws IndyClientException
+    {
+        final GroupPromoteRequest req = new GroupPromoteRequest( src, target );
+        final GroupPromoteResult
+                result = http.postWithResponse( GROUP_PROMOTE_PATH, req, GroupPromoteResult.class, HttpStatus.SC_OK );
+
+        return result;
+    }
+
     public GroupPromoteResult promoteToGroup( final GroupPromoteRequest request )
             throws IndyClientException
     {
