@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import java.util.Optional;
+
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 public class PackagePath
@@ -109,6 +111,21 @@ public class PackagePath
     public String getVersionPath()
     {
         return isScoped() ? normalize( scopedName, packageName, version ) : normalize( packageName, version );
+    }
+
+    public static Optional<PackagePath> parse( final String tarPath )
+    {
+        String[] parts = tarPath.split( "/" );
+        if ( parts.length < 3 )
+        {
+            return Optional.empty();
+        }
+        else if ( tarPath.startsWith( "@" ) && parts.length < 4 )
+        {
+            return Optional.empty();
+        }
+        PackagePath packagePath = new PackagePath( tarPath );
+        return Optional.of( packagePath );
     }
 
     @Override
