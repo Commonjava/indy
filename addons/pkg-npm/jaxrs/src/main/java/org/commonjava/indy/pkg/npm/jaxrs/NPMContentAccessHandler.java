@@ -428,9 +428,9 @@ public class NPMContentAccessHandler
                     return null;
                 }
                 // remove scope if present
-                if ( tarball.startsWith( '@' ) && tarball.contains( '/' ) )
+                if ( tarball.startsWith( "@" ) && tarball.contains( "/" ) )
                 {
-                    tarball = tarball.split( '/', 2 )[1];
+                    tarball = tarball.split( "/", 2 )[1];
                 }
 
                 tarballPath = Paths.get( idnode.asText(), "-", tarball ).toString();
