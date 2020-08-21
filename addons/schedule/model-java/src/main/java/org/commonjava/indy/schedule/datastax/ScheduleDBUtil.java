@@ -12,7 +12,7 @@ public class ScheduleDBUtil
                         + "jobname varchar,"
                         + "storekey varchar,"
                         + "scheduletime timestamp,"
-                        + "lifescan bigint,"
+                        + "lifespan bigint,"
                         + "expiration varchar,"
                         + "PRIMARY KEY (storekey, jobname)"
                         + ");";

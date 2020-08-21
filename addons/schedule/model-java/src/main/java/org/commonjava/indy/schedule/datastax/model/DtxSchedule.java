@@ -25,7 +25,7 @@ public class DtxSchedule
     private Date scheduleTime;
 
     @Column
-    private Long lifescan;
+    private Long lifespan;
 
     @Column
     private String expiration;
@@ -33,13 +33,13 @@ public class DtxSchedule
     public DtxSchedule() {}
 
     public DtxSchedule( String jobType, String jobName, String storeKey, Date scheduleTime,
-                        Long lifescan, String expiration )
+                        Long lifespan, String expiration )
     {
         this.jobType = jobType;
         this.jobName = jobName;
         this.storeKey = storeKey;
         this.scheduleTime = scheduleTime;
-        this.lifescan = lifescan;
+        this.lifespan = lifespan;
         this.expiration = expiration;
     }
 
@@ -83,14 +83,14 @@ public class DtxSchedule
         this.scheduleTime = scheduleTime;
     }
 
-    public Long getLifescan()
+    public Long getLifespan()
     {
-        return lifescan;
+        return lifespan;
     }
 
-    public void setLifescan( Long lifescan )
+    public void setLifespan( Long lifespan )
     {
-        this.lifescan = lifescan;
+        this.lifespan = lifespan;
     }
 
     public String getExpiration()
@@ -112,13 +112,13 @@ public class DtxSchedule
             return false;
         DtxSchedule that = (DtxSchedule) o;
         return storeKey.equals( that.storeKey ) && jobName.equals( that.jobName ) && jobType.equals( that.jobType )
-                        && scheduleTime.equals( that.scheduleTime ) && lifescan.equals( that.lifescan )
+                        && scheduleTime.equals( that.scheduleTime ) && lifespan.equals( that.lifespan )
                         && expiration.equals( that.expiration );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( storeKey, jobName, jobType, scheduleTime, lifescan, expiration );
+        return Objects.hash( storeKey, jobName, jobType, scheduleTime, lifespan, expiration );
     }
 }
