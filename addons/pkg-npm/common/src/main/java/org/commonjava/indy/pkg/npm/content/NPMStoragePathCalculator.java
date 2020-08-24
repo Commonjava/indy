@@ -66,8 +66,14 @@ public class NPMStoragePathCalculator
     @Override
     public String calculateStoragePath( final StoreKey key, final String path )
     {
+        return calculateStoragePath( key, path, false );
+    }
 
-        if ( PKG_TYPE_NPM.equals( key.getPackageType() ) )
+    @Override
+    public String calculateStoragePath( final StoreKey key, final String path, final boolean asDir )
+    {
+
+        if ( !asDir && PKG_TYPE_NPM.equals( key.getPackageType() ) )
         {
             String pkg = path;
 
@@ -83,9 +89,11 @@ public class NPMStoragePathCalculator
             final boolean isScopedPath = pkg.startsWith( "@" ) && pkg.split( "/" ).length < 3;
             if ( isSinglePath || isScopedPath )
             {
-                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, METADATA_NAME, key.toString() );
+                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, METADATA_NAME,
+                              key.toString() );
                 return extension != null ?
-                                normalize( pkg, METADATA_NAME + extension ) : normalize( pkg, METADATA_NAME );
+                        normalize( pkg, METADATA_NAME + extension ) :
+                        normalize( pkg, METADATA_NAME );
             }
         }
 
@@ -100,8 +108,8 @@ public class NPMStoragePathCalculator
         if ( spi != null && spi.isMetadata() )
         {
             return path.endsWith( SpecialPathConstants.HTTP_METADATA_EXT ) ?
-                            SpecialPathConstants.HTTP_METADATA_EXT :
-                            "." + FilenameUtils.getExtension( path );
+                    SpecialPathConstants.HTTP_METADATA_EXT :
+                    "." + FilenameUtils.getExtension( path );
         }
         return null;
     }

@@ -29,8 +29,6 @@ import org.commonjava.indy.core.change.event.IndyFileEventManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -150,7 +148,7 @@ public class DefaultDownloadManager
                                    final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors,
                                    WeftExecutorService rescanService )
     {
-        this(storeManager, transfers, locationExpander, rescanService);
+        this( storeManager, transfers, locationExpander, rescanService );
         this.contentAdvisors = contentAdvisors;
     }
 
@@ -158,14 +156,15 @@ public class DefaultDownloadManager
                                    final LocationExpander locationExpander, Instance<ContentAdvisor> contentAdvisors,
                                    final NotFoundCache nfc, WeftExecutorService rescanService )
     {
-        this(storeManager, transfers, locationExpander, contentAdvisors, rescanService);
+        this( storeManager, transfers, locationExpander, contentAdvisors, rescanService );
         this.nfc = nfc;
     }
+
     @Override
     public List<StoreResource> list( final ArtifactStore store, final String path )
             throws IndyWorkflowException
     {
-        return list(store, path, new EventMetadata() );
+        return list( store, path, new EventMetadata() );
     }
 
     @Override
@@ -181,8 +180,14 @@ public class DefaultDownloadManager
         {
             try
             {
-                final List<ListingResult> results = transfers.listAll(
-                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ), eventMetadata );
+                List<? extends KeyedLocation> locs = LocationUtils.toLocations( store );
+                for ( KeyedLocation l : locs )
+                {
+                    l.setAttribute( Location.AS_DIRECTORY, Boolean.TRUE );
+                }
+                final List<ListingResult> results =
+                        transfers.listAll( locationExpander.expand( new VirtualResource( locs, path ) ),
+                                           eventMetadata );
 
                 for ( final ListingResult lr : results )
                 {
@@ -219,12 +224,13 @@ public class DefaultDownloadManager
         }
         else
         {
-            if ( ! PathMaskChecker.checkListingMask( store, path ) )
+            if ( !PathMaskChecker.checkListingMask( store, path ) )
             {
                 return result; // if list not permitted for the path, return empty list
             }
 
             final KeyedLocation loc = LocationUtils.toLocation( store );
+            loc.setAttribute( Location.AS_DIRECTORY, Boolean.TRUE );
             final StoreResource res = new StoreResource( loc, path );
             if ( store instanceof RemoteRepository )
             {
@@ -300,7 +306,8 @@ public class DefaultDownloadManager
 
     @Override
     @Measure
-    public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
+    public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path,
+                                     final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         final String dir = PathUtils.dirname( path );
@@ -308,8 +315,14 @@ public class DefaultDownloadManager
         final List<StoreResource> result = new ArrayList<>();
         try
         {
+            List<? extends KeyedLocation> locs = LocationUtils.toLocations( stores );
+            for ( KeyedLocation l : locs )
+            {
+                l.setAttribute( Location.AS_DIRECTORY, Boolean.TRUE );
+            }
             final List<ListingResult> results = transfers.listAll(
-                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ), eventMetadata );
+                    locationExpander.expand( new VirtualResource( locs, path ) ),
+                    eventMetadata );
 
             for ( final ListingResult lr : results )
             {
@@ -414,11 +427,9 @@ public class DefaultDownloadManager
     {
         try
         {
-            List<Transfer> txfrs = transfers.retrieveAll(
+            return transfers.retrieveAll(
                     locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ),
                     eventMetadata );
-
-            return txfrs;
         }
         catch ( final TransferException e )
         {
@@ -462,7 +473,7 @@ public class DefaultDownloadManager
             return null;
         }
 
-        if ( !PathMaskChecker.checkMask( store, path))
+        if ( !PathMaskChecker.checkMask( store, path ) )
         {
             return null;
         }
@@ -508,14 +519,13 @@ public class DefaultDownloadManager
             throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
                                              e.getMessage() );
         }
-        
+
         return target;
     }
 
     @Override
     @Measure
-    public boolean exists(final ArtifactStore store, String path)
-            throws IndyWorkflowException
+    public boolean exists( final ArtifactStore store, String path )
     {
         if ( !PathMaskChecker.checkMask( store, path ) )
         {
@@ -525,16 +535,19 @@ public class DefaultDownloadManager
         final ConcreteResource res = new ConcreteResource( LocationUtils.toLocation( store ), path );
         if ( store instanceof RemoteRepository )
         {
-            try {
+            try
+            {
                 return transfers.exists( res );
-            } catch (TransferException e) {
+            }
+            catch ( TransferException e )
+            {
                 logger.warn( "Existence check: " + e.getMessage(), e );
                 return false;
             }
         }
         else
         {
-            Transfer target = transfers.getCacheReference(res);
+            Transfer target = transfers.getCacheReference( res );
             if ( target != null )
             {
                 return target.exists();
@@ -586,12 +599,11 @@ public class DefaultDownloadManager
                                              store.getKey() );
         }
 
-
         if ( store instanceof HostedRepository )
         {
             final HostedRepository deploy = (HostedRepository) store;
 
-//            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+            //            final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
             final ContentQuality quality = getQuality( path );
             if ( quality != ContentQuality.METADATA )
             {
@@ -627,7 +639,8 @@ public class DefaultDownloadManager
         try
         {
             KeyedLocation loc = LocationUtils.toLocation( store );
-            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
+            boolean resetReadonly =
+                    ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
             try
             {
                 if ( resetReadonly )
@@ -772,7 +785,7 @@ public class DefaultDownloadManager
                                          final TransferOperation op )
             throws IndyWorkflowException
     {
-//        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
+        //        final ArtifactPathInfo pathInfo = ArtifactPathInfo.parse( path );
         final ContentQuality quality = getQuality( path );
 
         Transfer transfer = null;
@@ -789,15 +802,16 @@ public class DefaultDownloadManager
                               op );
 
                 // [jdcasey]: We don't want to use NFC for hosted repos any more...consumes memory and isn't much faster than filesystem
-//                if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
-//                {
-//                    transfer = getStorageReferenceWithNFC( store, path );
-//                }
-//                else
-//                {
-                    transfer = getStorageReference( store, path );
-//                }
-                logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
+                //                if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
+                //                {
+                //                    transfer = getStorageReferenceWithNFC( store, path );
+                //                }
+                //                else
+                //                {
+                transfer = getStorageReference( store, path );
+                //                }
+                logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(),
+                              transfer == null ? "NONE" : transfer.getFullPath() );
                 if ( transfer != null && !transfer.exists() && ( op == DOWNLOAD || op == LISTING ) )
                 {
                     transfer = null;
@@ -820,6 +834,7 @@ public class DefaultDownloadManager
         return transfer;
     }
 
+    @Deprecated
     private Transfer getStorageReferenceWithNFC( final ArtifactStore store, final String... path )
     {
         ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
@@ -854,7 +869,7 @@ public class DefaultDownloadManager
                     //                    logger.info( "Selecting it for non-artifact storage: {}", path );
                     return true;
                 }
-                else if (  ContentQuality.SNAPSHOT == pathQuality )
+                else if ( ContentQuality.SNAPSHOT == pathQuality )
                 {
                     if ( dp.isAllowSnapshots() )
                     {
@@ -899,14 +914,14 @@ public class DefaultDownloadManager
         if ( storeIsSuitableFor( store, quality, op ) )
         {
             // [jdcasey]: We don't want to use NFC for hosted repos any more...consumes memory and isn't much faster than filesystem
-//            if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
-//            {
-//                return getStorageReferenceWithNFC( store, path );
-//            }
-//            else
-//            {
-                return getStorageReference( store, path );
-//            }
+            //            if ( store.getKey().getType() == hosted && ( op == DOWNLOAD || op == LISTING ) )
+            //            {
+            //                return getStorageReferenceWithNFC( store, path );
+            //            }
+            //            else
+            //            {
+            return getStorageReference( store, path );
+            //            }
         }
 
         logger.warn( "Store {} not suitable for: {}", store, op );
@@ -918,16 +933,29 @@ public class DefaultDownloadManager
     @Measure
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        Logger logger = LoggerFactory.getLogger( getClass() );
-        logger.trace( "Retrieving cache reference (Transfer) to: {} in: {}", Arrays.asList( path ), store.getKey() );
-
-        ConcreteResource resource = new ConcreteResource( LocationUtils.toLocation( store ), path );
-        return transfers.getCacheReference( resource );
+        return getStorageReference( store, Boolean.FALSE, path );
     }
 
     @Override
     @Measure
     public Transfer getStorageReference( final StoreKey key, final String... path )
+            throws IndyWorkflowException
+    {
+        return getStorageReference( key, Boolean.FALSE, path );
+    }
+
+    private Transfer getStorageReference( final ArtifactStore store, final Boolean asDir, final String... path )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.trace( "Retrieving cache reference (Transfer) to: {} in: {}", Arrays.asList( path ), store.getKey() );
+
+        KeyedLocation l = LocationUtils.toLocation( store );
+        l.setAttribute( Location.AS_DIRECTORY, asDir );
+        ConcreteResource resource = new ConcreteResource( l, path );
+        return transfers.getCacheReference( resource );
+    }
+
+    private Transfer getStorageReference( final StoreKey key, final Boolean asDir,  final String... path )
             throws IndyWorkflowException
     {
         ArtifactStore store;
@@ -946,7 +974,7 @@ public class DefaultDownloadManager
             throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", key );
         }
 
-        return getStorageReference( store, path );
+        return getStorageReference( store, asDir, path );
     }
 
     @Override
@@ -1012,7 +1040,7 @@ public class DefaultDownloadManager
      * clean just the cache (storage of groups and remote repos)
      */
     private boolean deleteCache( ArtifactStore store, String path, EventMetadata eventMetadata )
-                    throws IndyWorkflowException
+            throws IndyWorkflowException
     {
         if ( store.getKey().getType() == hosted )
         {
@@ -1033,7 +1061,8 @@ public class DefaultDownloadManager
         try
         {
             Location loc = item.getLocation();
-            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
+            boolean resetReadonly =
+                    ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
             try
             {
                 if ( resetReadonly )
@@ -1191,7 +1220,7 @@ public class DefaultDownloadManager
             throws IndyWorkflowException
     {
         final List<Transfer> result = new ArrayList<>();
-        final Transfer transfer = getStorageReference( src, startPath );
+        final Transfer transfer = getStorageReference( src, Boolean.TRUE, startPath );
         recurseListing( transfer, result );
         logger.debug( "listRecursively result: {}", result );
         return result;
@@ -1202,6 +1231,7 @@ public class DefaultDownloadManager
     {
         if ( transfer.isDirectory() )
         {
+            logger.trace( "{} is a directory", transfer );
             try
             {
                 final String[] children = transfer.list();
@@ -1219,12 +1249,14 @@ public class DefaultDownloadManager
         }
         else if ( transfer.exists() )
         {
+            logger.trace( "{} is not a directory", transfer );
             SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( transfer.getPath() );
             if ( spi == null || spi.isListable() )
             {
                 result.add( transfer );
             }
         }
+        logger.trace( "{} does not exist", transfer );
     }
 
     private ContentQuality getQuality( String path )
@@ -1242,7 +1274,6 @@ public class DefaultDownloadManager
         return null;
     }
 
-
     private void fireIndyStoreErrorEvent( TransferLocationException e )
     {
         Location location = e.getLocation();
@@ -1250,6 +1281,5 @@ public class DefaultDownloadManager
 
         fileEventManager.fire( new IndyStoreErrorEvent( kl.getKey(), e ) );
     }
-
 
 }

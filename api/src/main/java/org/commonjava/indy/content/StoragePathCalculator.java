@@ -25,4 +25,6 @@ import org.commonjava.indy.model.core.StoreKey;
 public interface StoragePathCalculator
 {
     String calculateStoragePath( StoreKey storeKey, String path );
+
+    String calculateStoragePath( StoreKey storeKey, String path, boolean asDirectory);
 }

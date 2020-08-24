@@ -22,6 +22,7 @@ import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.io.PathGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,9 @@ public class IndyPathGenerator
 
     private Set<StoragePathCalculator> pathCalculators;
 
-    public IndyPathGenerator(){}
+    public IndyPathGenerator()
+    {
+    }
 
     public IndyPathGenerator( Set<StoragePathCalculator> pathCalculators )
     {
@@ -78,8 +81,7 @@ public class IndyPathGenerator
         final KeyedLocation kl = (KeyedLocation) resource.getLocation();
         final StoreKey key = kl.getKey();
 
-        final String name = key.getPackageType() + "/" + key.getType()
-                               .name() + "-" + key.getName();
+        final String name = key.getPackageType() + "/" + key.getType().name() + "-" + key.getName();
 
         return PathUtils.join( name, getPath( resource ) );
     }
@@ -112,12 +114,19 @@ public class IndyPathGenerator
             // - aa/bb/aabbccddeeff001122/simple-1.0.pom
             // - aa/bb/aabbccddeeff001122/gulp-size
             // - 00/11/001122334455667788/gulp-size-1.3.0.tgz
-            path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, f.getName() );
+            path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest,
+                                  f.getName() );
         }
         else
         {
+            final Boolean asDir = kl.getAttribute( Location.AS_DIRECTORY, Boolean.class ) == null ?
+                    Boolean.FALSE :
+                    kl.getAttribute( Location.AS_DIRECTORY, Boolean.class );
+
+//            logger.debug( "Location is treated as directory? {}", asDir );
+
             AtomicReference<String> pathref = new AtomicReference<>( path );
-            pathCalculators.forEach( c -> pathref.set( c.calculateStoragePath( key, pathref.get() ) ) );
+            pathCalculators.forEach( c -> pathref.set( c.calculateStoragePath( key, pathref.get(), asDir ) ) );
 
             path = pathref.get();
         }

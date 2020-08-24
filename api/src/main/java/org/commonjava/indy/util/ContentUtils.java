@@ -35,8 +35,8 @@ public final class ContentUtils
      */
     public static List<StoreResource> dedupeListing( final List<StoreResource> listing )
     {
-        final List<StoreResource> result = new ArrayList<StoreResource>();
-        final Map<String, StoreResource> mapping = new LinkedHashMap<String, StoreResource>();
+        final List<StoreResource> result = new ArrayList<>();
+        final Map<String, StoreResource> mapping = new LinkedHashMap<>();
         for ( final StoreResource res : listing )
         {
             final String path = res.getPath();
