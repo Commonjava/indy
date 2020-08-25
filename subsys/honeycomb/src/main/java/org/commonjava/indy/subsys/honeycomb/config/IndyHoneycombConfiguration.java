@@ -50,6 +50,8 @@ public class IndyHoneycombConfiguration
 
     private static final String ENVIRONMENT_MAPPINGS = "environment.mappings";
 
+    private static final String CP_NAMES = "cp.names";
+
     private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
 
     private boolean enabled;
@@ -69,6 +71,8 @@ public class IndyHoneycombConfiguration
     private Set<String> fields;
 
     private String environmentMappings;
+
+    private String cpNames;
 
     public IndyHoneycombConfiguration()
     {
@@ -117,6 +121,9 @@ public class IndyHoneycombConfiguration
                 break;
             case ENVIRONMENT_MAPPINGS:
                 this.environmentMappings = value.trim();
+                break;
+            case CP_NAMES:
+                this.cpNames = value.trim();
                 break;
             case FIELDS:
                 this.fields = Collections.unmodifiableSet(
@@ -170,6 +177,12 @@ public class IndyHoneycombConfiguration
     public String getEnvironmentMappings()
     {
         return environmentMappings;
+    }
+
+    @Override
+    public String getCPNames()
+    {
+        return cpNames;
     }
 
 }
