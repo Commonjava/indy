@@ -45,7 +45,11 @@ public final class LocationUtils
     {
     }
 
-    public static KeyedLocation toLocation( final ArtifactStore store )
+    public static KeyedLocation toLocation( final ArtifactStore store ) {
+        return toLocation( store, false );
+    }
+
+    public static KeyedLocation toLocation( final ArtifactStore store, final Boolean asDir )
     {
         if ( store == null )
         {
@@ -55,6 +59,7 @@ public final class LocationUtils
         KeyedLocation location = (KeyedLocation) store.getTransientMetadata( KEYED_LOCATION_METADATA );
         if ( location != null )
         {
+            location.setAttribute( Location.AS_DIRECTORY,asDir );
             return location;
         }
 
@@ -84,74 +89,46 @@ public final class LocationUtils
             }
         }
 
-        if ( location != null )
-        {
-            location.setAttribute( PATH_STYLE, store.getPathStyle() );
+        location.setAttribute( PATH_STYLE, store.getPathStyle() );
 
-            Map<String, String> metadata = store.getMetadata();
-            if ( metadata != null )
-            {
-                Location loc = location;
-                metadata.forEach( ( k, v ) -> {
-                    if ( !loc.getAttributes().containsKey( k ) )
-                    {
-                        loc.setAttribute( k, v );
-                    }
-                } );
-            }
+        Map<String, String> metadata = store.getMetadata();
+        if ( metadata != null )
+        {
+            Location loc = location;
+            metadata.forEach( ( k, v ) -> {
+                if ( !loc.getAttributes().containsKey( k ) )
+                {
+                    loc.setAttribute( k, v );
+                }
+            } );
         }
 
+        location.setAttribute( Location.AS_DIRECTORY,asDir );
         store.setTransientMetadata( KEYED_LOCATION_METADATA, location );
 
         return location;
     }
-
-    //    public static CacheOnlyLocation toCacheLocation( final StoreKey key )
-    //    {
-    //        if ( key == null )
-    //        {
-    //            return null;
-    //        }
-    //
-    //        if ( key.getType() == StoreType.group )
-    //        {
-    //            return new GroupLocation( key.getName() );
-    //        }
-    //
-    //        return new CacheOnlyLocation( key );
-    //    }
-    //
-    //    public static List<? extends KeyedLocation> toCacheLocations( final StoreKey... keys )
-    //    {
-    //        return toCacheLocations( Arrays.asList( keys ) );
-    //    }
-    //
-    //    public static List<? extends KeyedLocation> toCacheLocations( final Collection<StoreKey> keys )
-    //    {
-    //        final List<KeyedLocation> result = new ArrayList<KeyedLocation>();
-    //        for ( final StoreKey key : keys )
-    //        {
-    //            final KeyedLocation loc = toCacheLocation( key );
-    //            if ( loc != null )
-    //            {
-    //                result.add( loc );
-    //            }
-    //        }
-    //
-    //        return result;
-    //    }
 
     public static List<? extends KeyedLocation> toLocations( final ArtifactStore... stores )
     {
         return toLocations( Arrays.asList( stores ) );
     }
 
-    public static List<? extends KeyedLocation> toLocations( final List<? extends ArtifactStore> stores )
+    public static List<? extends KeyedLocation> toLocations(final Boolean asDir, final ArtifactStore... stores )
     {
-        final List<KeyedLocation> locations = new ArrayList<KeyedLocation>();
+        return toLocations( Arrays.asList( stores ), asDir );
+    }
+
+    public static List<? extends KeyedLocation> toLocations( final List<? extends ArtifactStore> stores ){
+        return toLocations( stores, false );
+    }
+
+    public static List<? extends KeyedLocation> toLocations( final List<? extends ArtifactStore> stores, final Boolean asDir )
+    {
+        final List<KeyedLocation> locations = new ArrayList<>();
         for ( final ArtifactStore store : stores )
         {
-            final KeyedLocation loc = toLocation( store );
+            final KeyedLocation loc = toLocation( store, asDir );
             if ( loc != null )
             {
                 locations.add( loc );

@@ -17,7 +17,6 @@ package org.commonjava.indy.promote.validate.model;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -25,7 +24,10 @@ import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.promote.validate.PromotionValidationTools;
+import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -72,7 +74,7 @@ public class ValidationRequest
                 paths = ( (PathsPromoteRequest) promoteRequest ).getPaths();
             }
 
-            if ( paths == null )
+            if ( paths == null || paths.isEmpty())
             {
                 if ( sourceRepository != null )
                 {
@@ -90,6 +92,9 @@ public class ValidationRequest
             }
             requestPaths = paths;
         }
+
+        final Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.info( "Collected paths for validation req before listing: {}", requestPaths );
 
         if ( !includeMetadata || !includeChecksums )
         {
@@ -114,6 +119,10 @@ public class ValidationRequest
                     Transfer txfr = tools.getTransfer( res );
                     if ( txfr != null )
                     {
+                        //FIXME: This is used to let galley ignore the NPMPathStorageCalculator handling,
+                        //       which will append package.json and make txfr.isDirectory return false even
+                        //       if it is really a directory.
+                        txfr.getLocation().setAttribute( Location.AS_DIRECTORY, true );
                         if ( txfr.isDirectory() )
                         {
                             listRecursively( store, txfr.getPath(), paths );

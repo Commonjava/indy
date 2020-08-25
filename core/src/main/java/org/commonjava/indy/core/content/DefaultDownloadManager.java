@@ -174,20 +174,12 @@ public class DefaultDownloadManager
     {
         final List<StoreResource> result = new ArrayList<>();
 
-        //        final String dir = PathUtils.dirname( path );
-
         if ( store.getKey().getType() == StoreType.group )
         {
             try
             {
-                List<? extends KeyedLocation> locs = LocationUtils.toLocations( store );
-                for ( KeyedLocation l : locs )
-                {
-                    l.setAttribute( Location.AS_DIRECTORY, Boolean.TRUE );
-                }
-                final List<ListingResult> results =
-                        transfers.listAll( locationExpander.expand( new VirtualResource( locs, path ) ),
-                                           eventMetadata );
+                final List<ListingResult> results = transfers.listAll(
+                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( true, store ), path ) ), eventMetadata );
 
                 for ( final ListingResult lr : results )
                 {
@@ -229,8 +221,7 @@ public class DefaultDownloadManager
                 return result; // if list not permitted for the path, return empty list
             }
 
-            final KeyedLocation loc = LocationUtils.toLocation( store );
-            loc.setAttribute( Location.AS_DIRECTORY, Boolean.TRUE );
+            final KeyedLocation loc = LocationUtils.toLocation( store, true );
             final StoreResource res = new StoreResource( loc, path );
             if ( store instanceof RemoteRepository )
             {
@@ -306,8 +297,7 @@ public class DefaultDownloadManager
 
     @Override
     @Measure
-    public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path,
-                                     final EventMetadata eventMetadata )
+    public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
         final String dir = PathUtils.dirname( path );
@@ -315,14 +305,8 @@ public class DefaultDownloadManager
         final List<StoreResource> result = new ArrayList<>();
         try
         {
-            List<? extends KeyedLocation> locs = LocationUtils.toLocations( stores );
-            for ( KeyedLocation l : locs )
-            {
-                l.setAttribute( Location.AS_DIRECTORY, Boolean.TRUE );
-            }
             final List<ListingResult> results = transfers.listAll(
-                    locationExpander.expand( new VirtualResource( locs, path ) ),
-                    eventMetadata );
+                    locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores, true ), path ) ), eventMetadata );
 
             for ( final ListingResult lr : results )
             {
@@ -639,8 +623,7 @@ public class DefaultDownloadManager
         try
         {
             KeyedLocation loc = LocationUtils.toLocation( store );
-            boolean resetReadonly =
-                    ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
+            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
             try
             {
                 if ( resetReadonly )
@@ -810,8 +793,7 @@ public class DefaultDownloadManager
                 //                {
                 transfer = getStorageReference( store, path );
                 //                }
-                logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(),
-                              transfer == null ? "NONE" : transfer.getFullPath() );
+                logger.trace( "Checking {} (exists? {}; file: {})", transfer, transfer != null && transfer.exists(), transfer == null ? "NONE" : transfer.getFullPath() );
                 if ( transfer != null && !transfer.exists() && ( op == DOWNLOAD || op == LISTING ) )
                 {
                     transfer = null;
@@ -933,7 +915,7 @@ public class DefaultDownloadManager
     @Measure
     public Transfer getStorageReference( final ArtifactStore store, final String... path )
     {
-        return getStorageReference( store, Boolean.FALSE, path );
+        return getStorageReference( store, false, path );
     }
 
     @Override
@@ -941,7 +923,7 @@ public class DefaultDownloadManager
     public Transfer getStorageReference( final StoreKey key, final String... path )
             throws IndyWorkflowException
     {
-        return getStorageReference( key, Boolean.FALSE, path );
+        return getStorageReference( key, false, path );
     }
 
     private Transfer getStorageReference( final ArtifactStore store, final Boolean asDir, final String... path )
@@ -949,8 +931,7 @@ public class DefaultDownloadManager
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Retrieving cache reference (Transfer) to: {} in: {}", Arrays.asList( path ), store.getKey() );
 
-        KeyedLocation l = LocationUtils.toLocation( store );
-        l.setAttribute( Location.AS_DIRECTORY, asDir );
+        KeyedLocation l = LocationUtils.toLocation( store, asDir );
         ConcreteResource resource = new ConcreteResource( l, path );
         return transfers.getCacheReference( resource );
     }
@@ -1061,8 +1042,7 @@ public class DefaultDownloadManager
         try
         {
             Location loc = item.getLocation();
-            boolean resetReadonly =
-                    ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
+            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
             try
             {
                 if ( resetReadonly )
@@ -1220,7 +1200,7 @@ public class DefaultDownloadManager
             throws IndyWorkflowException
     {
         final List<Transfer> result = new ArrayList<>();
-        final Transfer transfer = getStorageReference( src, Boolean.TRUE, startPath );
+        final Transfer transfer = getStorageReference( src, true, startPath );
         recurseListing( transfer, result );
         logger.debug( "listRecursively result: {}", result );
         return result;
@@ -1231,7 +1211,6 @@ public class DefaultDownloadManager
     {
         if ( transfer.isDirectory() )
         {
-            logger.trace( "{} is a directory", transfer );
             try
             {
                 final String[] children = transfer.list();
@@ -1249,7 +1228,6 @@ public class DefaultDownloadManager
         }
         else if ( transfer.exists() )
         {
-            logger.trace( "{} is not a directory", transfer );
             SpecialPathInfo spi = specialPathManager.getSpecialPathInfo( transfer.getPath() );
             if ( spi == null || spi.isListable() )
             {

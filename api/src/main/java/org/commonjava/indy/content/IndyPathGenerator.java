@@ -123,7 +123,7 @@ public class IndyPathGenerator
                     Boolean.FALSE :
                     kl.getAttribute( Location.AS_DIRECTORY, Boolean.class );
 
-//            logger.debug( "Location is treated as directory? {}", asDir );
+            logger.trace( "Location is treated as directory? {}", asDir );
 
             AtomicReference<String> pathref = new AtomicReference<>( path );
             pathCalculators.forEach( c -> pathref.set( c.calculateStoragePath( key, pathref.get(), asDir ) ) );
