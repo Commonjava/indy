@@ -69,6 +69,9 @@ public class IndyDeployment
     private UIConfiguration uiConfiguration;
 
     @Inject
+    private SlashTolerationFilter slashTolerationFilter;
+
+    @Inject
     private ThreadContextFilter threadContextFilter;
 
     @Inject
@@ -163,6 +166,11 @@ public class IndyDeployment
                                                     .addMapping( "/api-docs*" )
                                                     .addMapping( "/api-docs/*" );
 
+        final FilterInfo slashTolerationFilter =
+                        Servlets.filter("SlashToleration", SlashTolerationFilter.class,
+                                 new ImmediateInstanceFactory<>(
+                                         this.slashTolerationFilter ) );
+
         final FilterInfo honeycombFilter =
                         Servlets.filter( "Honeycomb", HoneycombFilter.class,
                                  new ImmediateInstanceFactory<>(
@@ -191,6 +199,11 @@ public class IndyDeployment
                                                       .setContextPath( contextRoot )
                                                       .addServletContextAttribute( ResteasyDeployment.class.getName(),
                                                                                    deployment )
+
+                                                      .addFilter( slashTolerationFilter )
+                                                      .addFilterUrlMapping( slashTolerationFilter.getName(),
+                                                                            "//*", DispatcherType.REQUEST )
+
                                                       .addServlet( resteasyServlet )
 
                                                       .addFilter( threadContextFilter )
