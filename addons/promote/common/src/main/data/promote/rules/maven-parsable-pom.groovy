@@ -5,7 +5,7 @@ import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 
-class ParsablePom implements ValidationRule {
+class MavenParsablePom implements ValidationRule {
 
     String validate(ValidationRequest request) {
         def errors = Collections.synchronizedList(new ArrayList());

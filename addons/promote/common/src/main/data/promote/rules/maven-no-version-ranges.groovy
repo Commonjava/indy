@@ -5,7 +5,7 @@ import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 
-class NoVersionRanges implements ValidationRule {
+class MavenNoVersionRanges implements ValidationRule {
 
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true)

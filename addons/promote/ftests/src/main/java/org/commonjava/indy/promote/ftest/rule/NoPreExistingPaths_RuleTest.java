@@ -42,7 +42,7 @@ public class NoPreExistingPaths_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "no-pre-existing-paths.groovy";
+    private static final String RULE = "maven-no-pre-existing-paths.groovy";
 
     private static final String PREFIX = "no-pre-existing-paths/";
 
