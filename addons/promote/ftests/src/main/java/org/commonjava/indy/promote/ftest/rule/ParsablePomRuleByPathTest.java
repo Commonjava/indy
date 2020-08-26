@@ -36,7 +36,7 @@ public class ParsablePomRuleByPathTest
                 extends AbstractValidationRuleTest<HostedRepository>
 {
 
-    private static final String RULE = "parsable-pom.groovy";
+    private static final String RULE = "maven-parsable-pom.groovy";
 
     @Test
     @Category( EventDependent.class )

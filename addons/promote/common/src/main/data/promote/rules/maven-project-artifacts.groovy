@@ -7,7 +7,7 @@ import org.apache.commons.lang.StringUtils
 import org.slf4j.LoggerFactory
 import java.util.concurrent.ConcurrentHashMap
 
-class ProjectArtifacts implements ValidationRule {
+class MavenProjectArtifacts implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
         def classifierAndTypeSet = request.getValidationParameter("classifierAndTypeSet")
