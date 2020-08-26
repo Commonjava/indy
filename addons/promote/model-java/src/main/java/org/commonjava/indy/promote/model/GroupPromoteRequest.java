@@ -19,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 
 /**
  * Configuration for promoting artifacts from one store to another (denoted by their corresponding {@link StoreKey}'s). If paths are provided, only
@@ -31,11 +32,15 @@ public class GroupPromoteRequest
                 extends AbstractPromoteRequest<GroupPromoteRequest>
 {
 
-    @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{remote,hosted,group}:name')", required=true )
+    @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{maven, npm}:{remote,hosted,group}:name')", required=true )
     private StoreKey source;
 
-    @ApiModelProperty( value="Name of the Indy target group to promote TO (MUST be pre-existing)", required=true )
+    @Deprecated
+    @ApiModelProperty( value="Name of the Indy target group to promote TO (MUST be pre-existing)" )
     private String targetGroup;
+
+    @ApiModelProperty( value="Indy store/repository key to promote TO (formatted as: '{maven, npm}:{hosted,group}:name')" )
+    private StoreKey target;
 
     @ApiModelProperty( value="Run validations, verify source and target locations ONLY, do not modify anything!" )
     private boolean dryRun;
@@ -44,10 +49,18 @@ public class GroupPromoteRequest
     {
     }
 
+    @Deprecated
     public GroupPromoteRequest( final StoreKey source, final String targetGroup )
     {
         this.source = source;
         this.targetGroup = targetGroup;
+        this.target = new StoreKey( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.group, targetGroup );
+    }
+
+    public GroupPromoteRequest( final StoreKey source, final StoreKey target )
+    {
+        this.source = source;
+        this.target = target;
     }
 
     public StoreKey getSource()
@@ -65,17 +78,22 @@ public class GroupPromoteRequest
     @JsonIgnore
     public StoreKey getTargetKey()
     {
-        return new StoreKey( StoreType.group, getTargetGroup() );
+        return target != null ?
+                target :
+                new StoreKey( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.group, getTargetGroup() );
     }
 
+    @Deprecated
     public String getTargetGroup()
     {
         return targetGroup;
     }
 
+    @Deprecated
     public GroupPromoteRequest setTargetGroup( final String targetGroup )
     {
         this.targetGroup = targetGroup;
+        this.target = StoreKey.fromString( "maven:group:" + targetGroup );
         return this;
     }
 
@@ -87,6 +105,17 @@ public class GroupPromoteRequest
     public GroupPromoteRequest setDryRun( final boolean dryRun )
     {
         this.dryRun = dryRun;
+        return this;
+    }
+
+    public StoreKey getTarget()
+    {
+        return target;
+    }
+
+    public GroupPromoteRequest setTarget( StoreKey target )
+    {
+        this.target = target;
         return this;
     }
 

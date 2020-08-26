@@ -34,7 +34,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.callback.PromotionCallbackHelper;
 import org.commonjava.indy.promote.change.event.PathsPromoteCompleteEvent;
 import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
@@ -144,7 +143,7 @@ public class PromotionManager
     @Inject
     private Locker<StoreKey> byGroupTargetLocks;
 
-    private Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
+    private final Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
 
     @WeftManaged
     @Inject
@@ -204,7 +203,7 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
+        final StoreKey targetKey = getTargetKey( request.getTarget().getName(), request.getTarget().getPackageType() );
 
         if ( !storeManager.hasArtifactStore( targetKey ) )
         {
@@ -240,7 +239,7 @@ public class PromotionManager
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
                      request.getTargetGroup() );
 
-        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
+        final StoreKey targetKey = getTargetKey( request.getTarget().getName(), request.getTarget().getPackageType() );
         byGroupTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
             Group target;
             try
@@ -344,11 +343,10 @@ public class PromotionManager
      * @param targetName the target group name
      * @return the group store key
      */
-    private StoreKey getTargetKey( final String targetName )
+    private StoreKey getTargetKey( final String targetName, final String packageType )
     {
-        return targetGroupKeyMap.computeIfAbsent( targetName,
-                                                  k -> new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY,
-                                                                     StoreType.group, targetName ) );
+        return targetGroupKeyMap.computeIfAbsent( packageType + "-" + targetName,
+                                                  k -> new StoreKey( packageType, StoreType.group, targetName ) );
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )

@@ -6,7 +6,7 @@
   "repository": "https://github.com/Commonjava/indy",
   "license": "ASLv2",
   "dependencies": {
-    "angular": "1.8.0",
+    "angular": "1.5.8",
     "angular-ui-bootstrap": "0.13.4",
     "angular-route": "1.5.8",
     "angular-loader": "1.5.8",
