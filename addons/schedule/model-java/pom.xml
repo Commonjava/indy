@@ -29,6 +29,10 @@
             <version>${cassandraUnitVersion}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-subsys-cassandra</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

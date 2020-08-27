@@ -5,6 +5,12 @@ public class ScheduleDBUtil
 
     public static final String TABLE_SCHEDULE = "schedule";
 
+    public static String getSchemaCreateKeyspace( String keyspace )
+    {
+        return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
+                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1};";
+    }
+
     public static String getSchemaCreateTableSchedule( String keyspace )
     {
         return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_SCHEDULE + " ("
@@ -13,7 +19,8 @@ public class ScheduleDBUtil
                         + "storekey varchar,"
                         + "scheduletime timestamp,"
                         + "lifespan bigint,"
-                        + "expiration varchar,"
+                        + "expired boolean,"
+                        + "ttl bigint,"
                         + "PRIMARY KEY (storekey, jobname)"
                         + ");";
     }
