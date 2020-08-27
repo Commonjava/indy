@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
-import com.codahale.metrics.MetricRegistry;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.test.fixture.core.HttpTestFixture;
@@ -27,6 +26,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.transport.htcli.internal.HttpDownload;
 import org.commonjava.maven.galley.transport.htcli.model.SimpleHttpLocation;
+import org.commonjava.o11yphant.metrics.DefaultMetricRegistry;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.commonjava.o11yphant.metrics.util.MetricUtils.newDefaultMetricRegistry;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -46,7 +47,7 @@ public class MavenContentFilteringTransferDecoratorTest
     @Rule
     public HttpTestFixture fixture = new HttpTestFixture( "test", new MavenContentsFilteringTransferDecorator() );
 
-    private static MetricRegistry metricRegistry = new MetricRegistry();
+    private static DefaultMetricRegistry metricRegistry = newDefaultMetricRegistry();
 
     private static TransportMetricConfig metricConfig = new TransportMetricConfig()
     {
