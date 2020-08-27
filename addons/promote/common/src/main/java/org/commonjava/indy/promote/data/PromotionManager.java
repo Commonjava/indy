@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -659,7 +660,12 @@ public class PromotionManager
         List<Transfer> contents;
         if ( paths == null || paths.isEmpty() )
         {
+            // This is used to let galley ignore the NPMPathStorageCalculator handling,
+            // which will append package.json to a directory transfer and make listing not applicable.
+            ThreadContext context = ThreadContext.getContext( true );
+            context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.TRUE );
             contents = downloadManager.listRecursively( source, DownloadManager.ROOT_PATH );
+            context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.FALSE );
         }
         else
         {
