@@ -33,7 +33,7 @@ public class ScheduleTest
         config.setCassandraPort( 9142 );
 
         CassandraClient client = new CassandraClient( config );
-        ScheduleDB scheduleDB = new ScheduleDB( client, SCHEDULE_KEYSPACE );
+        scheduleDB = new ScheduleDB( client, SCHEDULE_KEYSPACE );
     }
 
     @After
