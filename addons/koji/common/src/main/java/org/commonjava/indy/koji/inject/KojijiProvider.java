@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.koji.inject;
 
-import com.codahale.metrics.MetricRegistry;
 import com.redhat.red.build.koji.KojiClient;
 import com.redhat.red.build.koji.KojiClientException;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
@@ -27,6 +26,7 @@ import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
+import org.commonjava.o11yphant.metrics.api.MetricRegistry;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;

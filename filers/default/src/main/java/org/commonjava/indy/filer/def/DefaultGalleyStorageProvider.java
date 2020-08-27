@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.filer.def;
 
-import com.codahale.metrics.MetricRegistry;
 import com.datastax.driver.core.Session;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.NamedThreadFactory;
@@ -25,6 +24,7 @@ import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.api.MetricRegistry;
 import org.commonjava.o11yphant.metrics.api.Timer;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
