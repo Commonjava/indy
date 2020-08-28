@@ -95,7 +95,7 @@ public class DTOStreamingOutput
                 logger.trace( "Wrote: {} bytes", cout.getByteCount() );
 
                 String name = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME,
-                                       getDefaultName( dto.getClass().getSimpleName(), "write" ), METER );
+                                       getDefaultName( dto.getClass(), "write" ), METER );
 
                 long end = System.nanoTime();
                 double elapsed = (end-start)/NANOS_PER_SEC;
