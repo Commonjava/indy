@@ -5,10 +5,11 @@ public class ScheduleDBUtil
 
     public static final String TABLE_SCHEDULE = "schedule";
 
-    public static String getSchemaCreateKeyspace( String keyspace )
+    public static String getSchemaCreateKeyspace( ScheduleDBConfig config, String keyspace )
     {
         return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
-                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1};";
+                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':"
+                        + config.getReplicationFactor() + "};";
     }
 
     public static String getSchemaCreateTableSchedule( String keyspace )

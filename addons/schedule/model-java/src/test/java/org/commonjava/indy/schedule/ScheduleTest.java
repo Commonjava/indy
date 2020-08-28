@@ -3,6 +3,7 @@ package org.commonjava.indy.schedule;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.commonjava.indy.schedule.datastax.JobType;
 import org.commonjava.indy.schedule.datastax.ScheduleDB;
+import org.commonjava.indy.schedule.datastax.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
@@ -33,7 +34,8 @@ public class ScheduleTest
         config.setCassandraPort( 9142 );
 
         CassandraClient client = new CassandraClient( config );
-        scheduleDB = new ScheduleDB( client, SCHEDULE_KEYSPACE );
+        ScheduleDBConfig scheduleDBConfig = new ScheduleDBConfig( SCHEDULE_KEYSPACE, 1 );
+        scheduleDB = new ScheduleDB( scheduleDBConfig, client );
     }
 
     @After

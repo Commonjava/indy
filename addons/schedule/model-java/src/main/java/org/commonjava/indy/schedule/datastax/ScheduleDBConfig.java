@@ -16,9 +16,12 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
 
     private String scheduleKeyspace;
 
-    public ScheduleDBConfig( String keyspace )
+    private Integer replicationFactor;
+
+    public ScheduleDBConfig( String keyspace, Integer replicationFactor )
     {
         this.scheduleKeyspace = keyspace;
+        this.replicationFactor = replicationFactor;
     }
 
     public String getScheduleKeyspace()
@@ -30,6 +33,17 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
     public void setScheduleKeyspace( String scheduleKeyspace )
     {
         this.scheduleKeyspace = scheduleKeyspace;
+    }
+
+    public Integer getReplicationFactor()
+    {
+        return replicationFactor;
+    }
+
+    @ConfigName( "schedule.keyspace.replica" )
+    public void setReplicationFactor( Integer replicationFactor )
+    {
+        this.replicationFactor = replicationFactor;
     }
 
     @Override

@@ -47,9 +47,9 @@ public class ScheduleDB
 
     private PreparedStatement preparedExpiredUpdate;
 
-    public ScheduleDB( CassandraClient client, String keyspace )
+    public ScheduleDB( ScheduleDBConfig config, CassandraClient client )
     {
-        this.config = new ScheduleDBConfig( keyspace );
+        this.config = config;
         this.client = client;
         init();
     }
@@ -62,7 +62,7 @@ public class ScheduleDB
 
         session = client.getSession( keyspace );
 
-        session.execute( ScheduleDBUtil.getSchemaCreateKeyspace( keyspace ) );
+        session.execute( ScheduleDBUtil.getSchemaCreateKeyspace( config, keyspace ) );
         session.execute( ScheduleDBUtil.getSchemaCreateTableSchedule( keyspace ) );
         session.execute( ScheduleDBUtil.getSchemaCreateTypeIndex4Schedule( keyspace ) );
 
@@ -70,9 +70,9 @@ public class ScheduleDB
 
         expirationMapper = manager.mapper( DtxSchedule.class, keyspace );
 
-        preparedTTLExpiredQuery = session.prepare( "SELECT storekey, jobtype, jobname, scheduletime, lifespan, expired, ttl(ttl) as ttl FROM " + keyspace + ".schedule WHERE expired = false ALLOW FILTERING" );
+        preparedTTLExpiredQuery = session.prepare( "SELECT storekey, jobtype, jobname, scheduletime, lifespan, expired, ttl(ttl) as ttl FROM " + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE + " WHERE expired = false ALLOW FILTERING" );
 
-        preparedExpiredQuery = session.prepare( "SELECT storekey, jobtype, jobname, scheduletime, lifespan, expired FROM " + keyspace + ".schedule WHERE expired = true ALLOW FILTERING" );
+        preparedExpiredQuery = session.prepare( "SELECT storekey, jobtype, jobname, scheduletime, lifespan, expired FROM " + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE + " WHERE expired = true ALLOW FILTERING" );
 
         preparedTTLSetting = session.prepare( "UPDATE " + keyspace +  "." + ScheduleDBUtil.TABLE_SCHEDULE + " USING TTL ? SET ttl=? WHERE storekey = ? and  jobname = ?" );
 
