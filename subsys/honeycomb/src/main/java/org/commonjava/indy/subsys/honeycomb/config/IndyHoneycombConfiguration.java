@@ -16,12 +16,14 @@
 package org.commonjava.indy.subsys.honeycomb.config;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
 import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,6 +38,9 @@ public class IndyHoneycombConfiguration
                 extends MapSectionListener
                 implements IndyConfigInfo, HoneycombConfiguration
 {
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
     private static final String ENABLED = "enabled";
 
     private static final String WRITE_KEY = "write.key";
@@ -183,6 +188,12 @@ public class IndyHoneycombConfiguration
     public String getCPNames()
     {
         return cpNames;
+    }
+
+    @Override
+    public String getNodeId()
+    {
+        return indyConfiguration.getNodeId();
     }
 
 }
