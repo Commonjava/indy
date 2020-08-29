@@ -1050,7 +1050,7 @@ public class MavenMetadataGenerator
             final Map<String, String> coordMap = new HashMap<>();
             coordMap.put( ARTIFACT_ID, info.getArtifactId() );
             coordMap.put( GROUP_ID, info.getGroupId() );
-            coordMap.put( VERSION, info.getVersion() );
+            coordMap.put( VERSION, info.getReleaseVersion() + LOCAL_SNAPSHOT_VERSION_PART );
 
             final String lastUpdated = SnapshotUtils.generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
 
