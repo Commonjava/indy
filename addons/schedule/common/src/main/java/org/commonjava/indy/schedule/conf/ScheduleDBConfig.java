@@ -1,4 +1,4 @@
-package org.commonjava.indy.schedule.datastax;
+package org.commonjava.indy.schedule.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;

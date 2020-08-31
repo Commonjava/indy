@@ -1,19 +1,18 @@
 package org.commonjava.indy.schedule;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
-import org.commonjava.indy.schedule.datastax.ScheduleDB;
-import org.commonjava.indy.schedule.datastax.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
 
-import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class ScheduleTest
@@ -57,10 +56,10 @@ public class ScheduleTest
 
         Collection<DtxSchedule> schedules = scheduleDB.queryExpiredSchedule();
 
-        assertThat( schedules.size(), equalTo( 1 ) );
+        assertThat( schedules.size(), Matchers.equalTo( 1 ) );
 
         schedules.forEach( schedule -> {
-            assertThat(schedule.getExpired(), equalTo(true));
+            assertThat( schedule.getExpired(), Matchers.equalTo( true));
         } );
     }
 
