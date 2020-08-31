@@ -1,4 +1,4 @@
-package org.commonjava.indy.schedule.datastax;
+package org.commonjava.indy.schedule;
 
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
@@ -6,6 +6,7 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
+import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.slf4j.Logger;
@@ -18,10 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-
-import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.set;
-import static com.datastax.driver.core.querybuilder.QueryBuilder.ttl;
 
 @ApplicationScoped
 public class ScheduleDB

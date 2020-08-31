@@ -1,4 +1,6 @@
-package org.commonjava.indy.schedule.datastax;
+package org.commonjava.indy.schedule;
+
+import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 
 public class ScheduleDBUtil
 {

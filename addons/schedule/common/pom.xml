@@ -9,11 +9,14 @@
         <version>2.5.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>indy-schedule-model-java</artifactId>
-    <name>Indy :: Add-Ons :: Schedule :: Java Domain Model</name>
+    <artifactId>indy-schedule-common</artifactId>
+    <name>Indy :: Add-Ons :: Schedule :: Common</name>
 
     <dependencies>
-        <!--Datastax Java Driver-->
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-schedule-model-java</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.datastax.cassandra</groupId>
             <artifactId>cassandra-driver-core</artifactId>
@@ -24,6 +27,17 @@
             <artifactId>cassandra-driver-mapping</artifactId>
             <version>${datastaxVersion}</version>
         </dependency>
+        <dependency>
+            <groupId>org.cassandraunit</groupId>
+            <artifactId>cassandra-unit</artifactId>
+            <version>${cassandraUnitVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-subsys-cassandra</artifactId>
+        </dependency>
     </dependencies>
+
 
 </project>
