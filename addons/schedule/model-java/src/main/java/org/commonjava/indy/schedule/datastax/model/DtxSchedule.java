@@ -34,9 +34,6 @@ public class DtxSchedule
     @Column
     private Boolean expired;
 
-    @Column
-    private Long ttl;
-
     public DtxSchedule() {}
 
     public DtxSchedule( String storeKey, String jobType, String jobName, Date scheduleTime,
@@ -109,10 +106,6 @@ public class DtxSchedule
         this.expired = expired;
     }
 
-    public Long getTtl() { return ttl; }
-
-    public void setTtl( Long ttl ) { this.ttl = ttl; }
-
     public UUID getScheduleUID() { return scheduleUID; }
 
     public void setScheduleUID( UUID scheduleUID ) { this.scheduleUID = scheduleUID; }
@@ -134,5 +127,13 @@ public class DtxSchedule
     public int hashCode()
     {
         return Objects.hash( storeKey, jobName, jobType, scheduleTime, lifespan, expired );
+    }
+
+    @Override
+    public String toString()
+    {
+        return "DtxSchedule{" + "storeKey='" + storeKey + '\'' + ", jobName='" + jobName + '\'' + ", scheduleUID="
+                        + scheduleUID + ", jobType='" + jobType + '\'' + ", scheduleTime=" + scheduleTime
+                        + ", lifespan=" + lifespan + ", expired=" + expired + '}';
     }
 }

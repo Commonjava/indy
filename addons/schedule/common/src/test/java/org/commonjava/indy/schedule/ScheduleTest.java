@@ -53,11 +53,11 @@ public class ScheduleTest
 
         Long timeout = Long.valueOf( 10 );
 
-        scheduleDB.createSchedule(storeKey,JobType.CONTENT.getJobType(),jobName,timeout );
+        scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName, timeout );
 
         Thread.sleep( timeout * 1000 );
 
-        scheduleDB.queryTTLAndSetExpiredSchedule( new Date(  ) );
+        scheduleDB.queryAndSetExpiredSchedule( new Date() );
 
         DtxSchedule schedule = scheduleDB.querySchedule( storeKey, jobName );
 

@@ -25,7 +25,6 @@ public class ScheduleDBUtil
                         + "scheduletime timestamp,"
                         + "lifespan bigint,"
                         + "expired boolean,"
-                        + "ttl bigint,"
                         + "PRIMARY KEY (storekey, jobname)"
                         + ");";
     }
