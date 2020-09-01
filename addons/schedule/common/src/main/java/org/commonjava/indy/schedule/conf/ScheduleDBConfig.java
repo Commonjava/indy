@@ -18,10 +18,13 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
 
     private Integer replicationFactor;
 
-    public ScheduleDBConfig( String keyspace, Integer replicationFactor )
+    private Long partitionKeyRange;
+
+    public ScheduleDBConfig( String keyspace, Integer replicationFactor, Long partitionKeyRange )
     {
         this.scheduleKeyspace = keyspace;
         this.replicationFactor = replicationFactor;
+        this.partitionKeyRange = partitionKeyRange;
     }
 
     public String getScheduleKeyspace()
@@ -44,6 +47,17 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
     public void setReplicationFactor( Integer replicationFactor )
     {
         this.replicationFactor = replicationFactor;
+    }
+
+    public Long getPartitionKeyRange()
+    {
+        return partitionKeyRange;
+    }
+
+    @ConfigName( "schedule.partition.range" )
+    public void setPartitionKeyRange( Long partitionKeyRange )
+    {
+        this.partitionKeyRange = partitionKeyRange;
     }
 
     @Override

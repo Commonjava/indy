@@ -7,6 +7,7 @@ import com.datastax.driver.mapping.annotations.Table;
 
 import java.util.Date;
 import java.util.Objects;
+import java.util.UUID;
 
 @Table( name = "schedule", readConsistency = "QUORUM", writeConsistency = "QUORUM" )
 public class DtxSchedule
@@ -17,6 +18,9 @@ public class DtxSchedule
 
     @ClusteringColumn
     private String jobName;
+
+    @Column
+    private UUID scheduleUID;
 
     @Column
     private String jobType;
@@ -105,15 +109,13 @@ public class DtxSchedule
         this.expired = expired;
     }
 
-    public Long getTtl()
-    {
-        return ttl;
-    }
+    public Long getTtl() { return ttl; }
 
-    public void setTtl( Long ttl )
-    {
-        this.ttl = ttl;
-    }
+    public void setTtl( Long ttl ) { this.ttl = ttl; }
+
+    public UUID getScheduleUID() { return scheduleUID; }
+
+    public void setScheduleUID( UUID scheduleUID ) { this.scheduleUID = scheduleUID; }
 
     @Override
     public boolean equals( Object o )

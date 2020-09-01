@@ -11,7 +11,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collection;
+import java.util.Date;
 
 import static org.junit.Assert.assertThat;
 
@@ -33,7 +33,8 @@ public class ScheduleTest
         config.setCassandraPort( 9142 );
 
         CassandraClient client = new CassandraClient( config );
-        ScheduleDBConfig scheduleDBConfig = new ScheduleDBConfig( SCHEDULE_KEYSPACE, 1 );
+        ScheduleDBConfig scheduleDBConfig =
+                        new ScheduleDBConfig( SCHEDULE_KEYSPACE, 1, Long.valueOf( 60 * 60 * 1000 ) );
         scheduleDB = new ScheduleDB( scheduleDBConfig, client );
     }
 
@@ -46,21 +47,22 @@ public class ScheduleTest
     @Test
     public void test() throws Exception
     {
+
+        final String storeKey = "maven:hosted:test";
+        final String jobName = "org/jboss";
+
         Long timeout = Long.valueOf( 10 );
 
-        scheduleDB.createSchedule( "maven:hosted:test", JobType.CONTENT.getJobType(), "org/jboss", timeout );
+        scheduleDB.createSchedule(storeKey,JobType.CONTENT.getJobType(),jobName,timeout );
 
         Thread.sleep( timeout * 1000 );
 
-        scheduleDB.queryTTLAndSetExpiredSchedule();
+        scheduleDB.queryTTLAndSetExpiredSchedule( new Date(  ) );
 
-        Collection<DtxSchedule> schedules = scheduleDB.queryExpiredSchedule();
+        DtxSchedule schedule = scheduleDB.querySchedule( storeKey, jobName );
 
-        assertThat( schedules.size(), Matchers.equalTo( 1 ) );
+        assertThat( schedule.getExpired(), Matchers.equalTo( true ) );
 
-        schedules.forEach( schedule -> {
-            assertThat( schedule.getExpired(), Matchers.equalTo( true));
-        } );
     }
 
 

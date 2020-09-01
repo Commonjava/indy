@@ -6,6 +6,7 @@ public class ScheduleDBUtil
 {
 
     public static final String TABLE_SCHEDULE = "schedule";
+    public static final String TABLE_EXPIRATION = "expiration";
 
     public static String getSchemaCreateKeyspace( ScheduleDBConfig config, String keyspace )
     {
@@ -19,12 +20,24 @@ public class ScheduleDBUtil
         return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_SCHEDULE + " ("
                         + "jobtype varchar,"
                         + "jobname varchar,"
+                        + "scheduleuid uuid,"
                         + "storekey varchar,"
                         + "scheduletime timestamp,"
                         + "lifespan bigint,"
                         + "expired boolean,"
                         + "ttl bigint,"
                         + "PRIMARY KEY (storekey, jobname)"
+                        + ");";
+    }
+
+    public static String getSchemaCreateTableExpiration( String keyspace )
+    {
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_EXPIRATION + " ("
+                        + "expirationpid bigint,"
+                        + "scheduleuid uuid,"
+                        + "storekey varchar,"
+                        + "jobname varchar,"
+                        + "PRIMARY KEY (expirationpid, scheduleuid)"
                         + ");";
     }
 
