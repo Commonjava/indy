@@ -21,6 +21,10 @@ import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @SectionName( PromoteConfig.SECTION )
 @ApplicationScoped
@@ -39,6 +43,8 @@ public class PromoteConfig
 
     private static final String AUTOLOCK_HOSTED_REPOS = "autolock.hosted.repos";
 
+    private static final String NPM_VERSION_SCOPE_VALID = "npm.version.scope.valid";
+
     public static final long DEFAULT_LOCK_TIMEOUT_SECONDS = 30;
 
     public static final boolean DEFAULT_AUTOLOCK = true;
@@ -52,6 +58,8 @@ public class PromoteConfig
     private Boolean autoLockHostedRepos;
 
     private Long lockTimeoutSeconds;
+
+    private String npmVersionScopeValid;
 
     public PromoteConfig()
     {
@@ -115,6 +123,31 @@ public class PromoteConfig
     public void setLockTimeoutSeconds( Long lockTimeoutSeconds )
     {
         this.lockTimeoutSeconds = lockTimeoutSeconds;
+    }
+
+    public String getNpmVersionScopeValid()
+    {
+        return npmVersionScopeValid;
+    }
+
+    @ConfigName( PromoteConfig.NPM_VERSION_SCOPE_VALID )
+    public void setNpmVersionScopeValid( String npmVersionScopeValid )
+    {
+        this.npmVersionScopeValid = npmVersionScopeValid;
+    }
+
+    public Set<String> getValidNpmVersionScopes()
+    {
+        if ( getNpmVersionScopeValid() == null )
+        {
+            return Collections.emptySet();
+        }
+        String[] scopes = getNpmVersionScopeValid().split( "," );
+        if ( scopes.length == 0 )
+        {
+            return Collections.emptySet();
+        }
+        return Arrays.stream( scopes ).map( String::trim ).collect( Collectors.toSet() );
     }
 
     @Override

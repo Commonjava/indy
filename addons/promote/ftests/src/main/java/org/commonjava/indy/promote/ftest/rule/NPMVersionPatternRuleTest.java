@@ -22,6 +22,7 @@ import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -160,6 +161,12 @@ public class NPMVersionPatternRuleTest
     {
         String path = "promote/rules/" + RULE;
         return readTestResource( path );
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture ) throws IOException{
+        super.initTestConfig( fixture );
+        writeConfigFile( "conf.d/promote.conf", "[promote]\nenabled=true\nnpm.version.scope.valid=redhat" );
     }
 
     protected ValidationRuleSet getRuleSet()

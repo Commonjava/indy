@@ -18,12 +18,13 @@ class NPMVersionPattern implements ValidationRule {
                 logger.info("No 'versionPattern' parameter specified in rule-set: {}, will only check redhat scoped rule.", request.getRuleSet().getName())
             }
             def tools = request.getTools()
+            def validScopes = tools.getNPMValidVersionScopes()
             tools.paralleledEach(request.getSourcePaths(), { it ->
                 def pkg = tools.getNPMPackagePath(it)
                 if (pkg.isPresent()) {
                     def pkgPath = pkg.get()
-                    def isRedHatScoped = pkgPath.scoped && pkgPath.scopedName == "@redhat"
-                    if (!isRedHatScoped && versionPattern != null) {
+                    def isValidScoped = pkgPath.scoped && validScopes.contains(pkgPath.scopedName.substring(1))
+                    if (!isValidScoped && versionPattern != null) {
                         def vs = pkgPath.version
                         logger.info("Start to do version match for path {} with version {}", pkgPath, vs)
                         if (!vs.matches(versionPattern)) {

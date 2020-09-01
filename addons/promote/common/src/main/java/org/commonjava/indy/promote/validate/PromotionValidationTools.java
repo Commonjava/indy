@@ -16,7 +16,6 @@
 package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
-import org.bouncycastle.util.Pack;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
@@ -32,7 +31,6 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.pkg.npm.content.PackagePath;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
 import org.commonjava.indy.promote.conf.PromoteConfig;
@@ -73,7 +71,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -624,6 +621,10 @@ public class PromotionValidationTools
     public Transfer getTransfer( final StoreResource resource )
     {
         return transferManager.getCacheReference( resource );
+    }
+
+    public Set<String> getNPMValidVersionScopes(){
+        return promoteConfig.getValidNpmVersionScopes();
     }
 
     public <T> void paralleledEach( Collection<T> collection, Closure closure )
