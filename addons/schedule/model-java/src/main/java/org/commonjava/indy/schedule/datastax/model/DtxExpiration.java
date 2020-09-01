@@ -5,6 +5,7 @@ import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Table( name = "expiration", readConsistency = "QUORUM", writeConsistency = "QUORUM" )
@@ -16,6 +17,9 @@ public class DtxExpiration
 
     @ClusteringColumn
     private UUID scheduleUID;
+
+    @Column
+    private Date expirationTime;
 
     @Column
     private String jobName;
@@ -61,6 +65,16 @@ public class DtxExpiration
     public void setStorekey( String storekey )
     {
         this.storekey = storekey;
+    }
+
+    public Date getExpirationTime()
+    {
+        return expirationTime;
+    }
+
+    public void setExpirationTime( Date expirationTime )
+    {
+        this.expirationTime = expirationTime;
     }
 
     @Override
