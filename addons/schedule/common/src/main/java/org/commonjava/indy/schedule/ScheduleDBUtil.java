@@ -22,6 +22,7 @@ public class ScheduleDBUtil
                         + "jobname varchar,"
                         + "scheduleuid uuid,"
                         + "storekey varchar,"
+                        + "payload varchar,"
                         + "scheduletime timestamp,"
                         + "lifespan bigint,"
                         + "expired boolean,"

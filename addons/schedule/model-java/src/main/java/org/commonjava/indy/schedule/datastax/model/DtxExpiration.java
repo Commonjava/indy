@@ -27,6 +27,17 @@ public class DtxExpiration
     @Column
     private String storekey;
 
+    public DtxExpiration() {}
+
+    public DtxExpiration( Long expirationPID, UUID scheduleUID, Date expirationTime, String storekey, String jobName )
+    {
+        this.expirationPID = expirationPID;
+        this.scheduleUID = scheduleUID;
+        this.expirationTime = expirationTime;
+        this.storekey = storekey;
+        this.jobName = jobName;
+    }
+
     public Long getExpirationPID()
     {
         return expirationPID;

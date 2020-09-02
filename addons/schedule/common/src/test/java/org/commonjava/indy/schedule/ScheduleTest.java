@@ -50,10 +50,11 @@ public class ScheduleTest
 
         final String storeKey = "maven:hosted:test";
         final String jobName = "org/jboss";
+        final String payload = "json_string";
 
         Long timeout = Long.valueOf( 10 );
 
-        scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName, timeout );
+        scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName, payload, timeout );
 
         Thread.sleep( timeout * 1000 );
 

@@ -17,9 +17,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -74,32 +71,34 @@ public class ScheduleDB
         scheduleMapper = manager.mapper( DtxSchedule.class, keyspace );
         expirationMapper = manager.mapper( DtxExpiration.class, keyspace );
 
-        preparedExpiredQuery = session.prepare( "SELECT scheduleuid, expirationtime, storekey, jobname FROM " + keyspace + "." + ScheduleDBUtil.TABLE_EXPIRATION + " WHERE expirationpid = ?" );
+        preparedExpiredQuery = session.prepare(
+                        "SELECT scheduleuid, expirationtime, storekey, jobname FROM " + keyspace + "."
+                                        + ScheduleDBUtil.TABLE_EXPIRATION + " WHERE expirationpid = ?" );
 
-        preparedSingleScheduleQuery = session.prepare( "SELECT storekey, jobtype, jobname, scheduletime, lifespan, expired FROM " + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE + " WHERE storekey = ? and  jobname = ?" );
+        preparedSingleScheduleQuery = session.prepare(
+                        "SELECT storekey, jobtype, jobname, scheduletime, scheduleuid, payload, lifespan, expired FROM "
+                                        + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE
+                                        + " WHERE storekey = ? and  jobname = ?" );
 
-        preparedExpiredUpdate = session.prepare( "UPDATE " + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE + " SET expired = true WHERE  storekey = ? and  jobname = ?"  );
+        preparedExpiredUpdate = session.prepare( "UPDATE " + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE
+                                                                 + " SET expired = true WHERE  storekey = ? and  jobname = ?" );
 
     }
 
-    public void createSchedule( String storeKey, String jobType, String jobName, Long timeout )
+    public void createSchedule( String storeKey, String jobType, String jobName, String payload, Long timeout )
     {
 
         UUID scheduleUID = UUID.randomUUID();
         Date scheduleTime = new Date();
 
-        DtxSchedule schedule = new DtxSchedule( storeKey, jobType, jobName, scheduleTime, timeout );
-        schedule.setExpired( Boolean.FALSE );
-        schedule.setScheduleUID( scheduleUID );
+        DtxSchedule schedule =
+                        new DtxSchedule( storeKey, jobType, jobName, scheduleUID, scheduleTime, payload, timeout );
         scheduleMapper.save( schedule );
 
-        DtxExpiration expiration = new DtxExpiration();
         Date expirationTime = calculateExpirationTime( scheduleTime, timeout );
-        expiration.setExpirationPID( calculateExpirationPID( expirationTime ) );
-        expiration.setExpirationTime( expirationTime );
-        expiration.setScheduleUID( scheduleUID );
-        expiration.setJobName( jobName );
-        expiration.setStorekey( storeKey );
+        DtxExpiration expiration =
+                        new DtxExpiration( calculateExpirationPID( expirationTime ), scheduleUID, expirationTime,
+                                           storeKey, jobName );
         expirationMapper.save( expiration );
 
     }
@@ -130,6 +129,8 @@ public class ScheduleDB
             schedule.setExpired( row.getBool( "expired" ) );
             schedule.setScheduleTime( row.getTimestamp( "scheduletime" ) );
             schedule.setLifespan( row.getLong( "lifespan" ) );
+            schedule.setScheduleUID( row.getUUID( "scheduleuid" ) );
+            schedule.setPayload( row.getString( "payload" ) );
 
             return schedule;
         }
@@ -151,6 +152,7 @@ public class ScheduleDB
             expiration.setExpirationTime( row.getTimestamp( "expirationtime" ) );
             expiration.setStorekey( row.getString( "storekey" ) );
             expiration.setJobName( row.getString( "jobname" ) );
+            expiration.setScheduleUID( row.getUUID( "scheduleuid" ) );
             expirations.add( expiration );
         } );
 
@@ -165,9 +167,8 @@ public class ScheduleDB
             {
                 DtxSchedule schedule = querySchedule( expiration.getStorekey(), expiration.getJobName() );
 
-                Date calExpirationTime = calculateExpirationTime( schedule.getScheduleTime(), schedule.getLifespan() );
-                if ( schedule != null && !schedule.getExpired() &&
-                                !calExpirationTime.after( expiration.getExpirationTime() ) )
+                if ( schedule != null && !schedule.getExpired() && schedule.getScheduleUID()
+                                                                           .equals( expiration.getScheduleUID() ) )
                 {
                     BoundStatement boundU = preparedExpiredUpdate.bind( schedule.getStoreKey(), schedule.getJobName() );
                     session.execute( boundU );

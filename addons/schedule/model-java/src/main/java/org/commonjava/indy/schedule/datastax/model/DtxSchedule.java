@@ -34,16 +34,22 @@ public class DtxSchedule
     @Column
     private Boolean expired;
 
+    @Column
+    private String payload;
+
     public DtxSchedule() {}
 
-    public DtxSchedule( String storeKey, String jobType, String jobName, Date scheduleTime,
-                        Long lifespan )
+    public DtxSchedule( String storeKey, String jobType, String jobName, UUID scheduleUID, Date scheduleTime,
+                        String payload, Long lifespan )
     {
         this.jobType = jobType;
         this.jobName = jobName;
         this.storeKey = storeKey;
         this.scheduleTime = scheduleTime;
+        this.payload = payload;
         this.lifespan = lifespan;
+        this.expired = Boolean.FALSE;
+        this.scheduleUID = scheduleUID;
     }
 
     public String getJobType()
@@ -110,6 +116,10 @@ public class DtxSchedule
 
     public void setScheduleUID( UUID scheduleUID ) { this.scheduleUID = scheduleUID; }
 
+    public String getPayload() { return payload; }
+
+    public void setPayload( String payload ) { this.payload = payload; }
+
     @Override
     public boolean equals( Object o )
     {
@@ -134,6 +144,6 @@ public class DtxSchedule
     {
         return "DtxSchedule{" + "storeKey='" + storeKey + '\'' + ", jobName='" + jobName + '\'' + ", scheduleUID="
                         + scheduleUID + ", jobType='" + jobType + '\'' + ", scheduleTime=" + scheduleTime
-                        + ", lifespan=" + lifespan + ", expired=" + expired + '}';
+                        + ", lifespan=" + lifespan + ", expired=" + expired + ", payload='" + payload + '\'' + '}';
     }
 }
