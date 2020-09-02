@@ -22,12 +22,12 @@ import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.model.ValidationResult;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
-import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -163,11 +163,6 @@ public class NPMVersionPatternRuleTest
         return readTestResource( path );
     }
 
-    @Override
-    protected void initTestConfig( CoreServerFixture fixture ) throws IOException{
-        super.initTestConfig( fixture );
-        writeConfigFile( "conf.d/promote.conf", "[promote]\nenabled=true\nnpm.version.scope.valid=redhat" );
-    }
 
     protected ValidationRuleSet getRuleSet()
     {
@@ -175,7 +170,10 @@ public class NPMVersionPatternRuleTest
         ruleSet.setName( "test" );
         ruleSet.setStoreKeyPattern( "npm:hosted:target" );
         ruleSet.setRuleNames( Collections.singletonList( getRuleScriptFile() ) );
-        ruleSet.setValidationParameters( Collections.singletonMap( "versionPattern", "\\d\\.\\d" ) );
+        Map<String, String> validtionParams = new HashMap<>();
+        validtionParams.put( "versionPattern", "\\d\\.\\d" );
+        validtionParams.put( "validScope", "redhat" );
+        ruleSet.setValidationParameters( validtionParams );
 
         return ruleSet;
     }
