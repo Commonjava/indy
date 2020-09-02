@@ -623,10 +623,6 @@ public class PromotionValidationTools
         return transferManager.getCacheReference( resource );
     }
 
-    public Set<String> getNPMValidVersionScopes(){
-        return promoteConfig.getValidNpmVersionScopes();
-    }
-
     public <T> void paralleledEach( Collection<T> collection, Closure closure )
     {
         final Logger logger = LoggerFactory.getLogger( this.getClass() );
