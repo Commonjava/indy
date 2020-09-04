@@ -22,11 +22,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class GoldenSignalsMetricSetProvider
+public class IndyGoldenSignalsMetricSetProvider
         implements MetricSetProvider
 {
     @Inject
-    private GoldenSignalsMetricSet metricSet;
+    private IndyGoldenSignalsMetricSet metricSet;
 
     @Override
     public MetricSet getMetricSet()

@@ -218,7 +218,7 @@ public class DefaultGalleyStorageProvider
             {
                 final String operations = metricsConfig.getPathDBMetricsOperations();
                 logger.info( "Create measured PathDB, operations: {}" );
-                pathDB = new MeasuredPathDB( pathDB, metricRegistry, getSupername( "pathDB" ) )
+                pathDB = new MeasuredPathDB( pathDB, metricsManager, getSupername( "pathDB" ) )
                 {
                     @Override
                     protected boolean isMetricEnabled( String metricName )

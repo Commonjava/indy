@@ -33,7 +33,7 @@ import org.commonjava.indy.httprox.util.ProxyMeter;
 import org.commonjava.indy.httprox.util.ProxyResponseHelper;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
+import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -114,7 +114,7 @@ public final class ProxyResponseWriter
 
     private final MetricsManager metricManager;
 
-    private GoldenSignalsMetricSet sliMetricSet;
+    private IndyGoldenSignalsMetricSet sliMetricSet;
 
     private long startNanos;
 
@@ -133,7 +133,7 @@ public final class ProxyResponseWriter
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
                                 final MDCManager mdcManager, final ProxyRepositoryCreator repoCreator,
                                 final StreamConnection accepted, final IndyMetricsConfig metricsConfig,
-                                final MetricsManager metricManager, final GoldenSignalsMetricSet sliMetricSet,
+                                final MetricsManager metricManager, final IndyGoldenSignalsMetricSet sliMetricSet,
                                 final CacheProducer cacheProducer,
                                 final long start, final WeftExecutorService executor )
     {
