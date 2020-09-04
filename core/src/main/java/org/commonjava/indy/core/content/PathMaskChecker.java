@@ -42,8 +42,10 @@ public class PathMaskChecker
             // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
             if ( isRegexPattern( pattern ) )
             {
-                if ( path.matches( pattern.substring( 2, pattern.length() - 1 ) ) )
+                final String realRegex = pattern.substring( 2, pattern.length() - 1 );
+                if ( path.matches( realRegex ) )
                 {
+                    logger.trace( "Checking mask in: {}, pattern with regex: {} - MATCH", repo.getName(), realRegex );
                     return true;
                 }
             }
