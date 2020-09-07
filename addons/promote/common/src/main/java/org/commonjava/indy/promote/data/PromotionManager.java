@@ -208,7 +208,7 @@ public class PromotionManager
 
         if ( !storeManager.hasArtifactStore( targetKey ) )
         {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            String error = String.format( "No such target group: %s.", request.getTarget() );
             logger.warn( error );
 
             return new GroupPromoteResult( request, error );
@@ -238,7 +238,7 @@ public class PromotionManager
     {
         ValidationResult validation = new ValidationResult();
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
-                     request.getTargetGroup() );
+                     request.getTarget() );
 
         final StoreKey targetKey = getTargetKey( request.getTarget().getName(), request.getTarget().getPackageType() );
         byGroupTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
@@ -250,7 +250,7 @@ public class PromotionManager
             catch ( IndyDataException e )
             {
                 error.set( new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e,
-                                                   request.getTargetGroup(), e.getMessage() ) );
+                                                   request.getTarget(), e.getMessage() ) );
                 return null;
             }
 
@@ -370,13 +370,13 @@ public class PromotionManager
         }
         catch ( IndyDataException e )
         {
-            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
+            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTarget(),
                                           e.getMessage() );
         }
 
         if ( target == null )
         {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            String error = String.format( "No such target group: %s.", request.getTarget() );
             logger.warn( error );
 
             return new GroupPromoteResult( request, error );
@@ -475,7 +475,7 @@ public class PromotionManager
             Exception ex = error.get();
             if ( ex != null )
             {
-                String msg = "Group promotion failed. Target: " + request.getTargetGroup() + ", Source: "
+                String msg = "Group promotion failed. Target: " + request.getTarget() + ", Source: "
                         + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
                 ret = new GroupPromoteResult( request, msg );
@@ -986,7 +986,7 @@ public class PromotionManager
 
         logger.debug( "Store target transfer: {}", target );
         EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
-        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<Set>( affectedGroups ) );
+        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<>( affectedGroups ) );
         eventMetadata.set( TARGET_STORE, tgt );
 
         try (InputStream stream = transfer.openInputStream( true ))
