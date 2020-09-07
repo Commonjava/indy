@@ -9,22 +9,27 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.util.Properties;
 
-@SectionName( "schedule" )
+@SectionName( "scheduledb" )
 @ApplicationScoped
 public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
 {
 
     private String scheduleKeyspace;
 
-    private Integer replicationFactor;
+    private int replicationFactor;
 
-    private Long partitionKeyRange;
+    private long partitionKeyRange;
 
-    public ScheduleDBConfig( String keyspace, Integer replicationFactor, Long partitionKeyRange )
+    private long scheduleRatePeriod;
+
+    private Boolean enabled;
+
+    public ScheduleDBConfig( String keyspace, int replicationFactor, long partitionKeyRange, long period )
     {
         this.scheduleKeyspace = keyspace;
         this.replicationFactor = replicationFactor;
         this.partitionKeyRange = partitionKeyRange;
+        this.scheduleRatePeriod = period;
     }
 
     public String getScheduleKeyspace()
@@ -38,27 +43,37 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
         this.scheduleKeyspace = scheduleKeyspace;
     }
 
-    public Integer getReplicationFactor()
+    public int getReplicationFactor()
     {
         return replicationFactor;
     }
 
     @ConfigName( "schedule.keyspace.replica" )
-    public void setReplicationFactor( Integer replicationFactor )
+    public void setReplicationFactor( int replicationFactor )
     {
         this.replicationFactor = replicationFactor;
     }
 
-    public Long getPartitionKeyRange()
+    public long getPartitionKeyRange()
     {
         return partitionKeyRange;
     }
 
     @ConfigName( "schedule.partition.range" )
-    public void setPartitionKeyRange( Long partitionKeyRange )
+    public void setPartitionKeyRange( long partitionKeyRange )
     {
         this.partitionKeyRange = partitionKeyRange;
     }
+
+    public Boolean isEnabled() { return enabled; }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( Boolean enabled ) { this.enabled = enabled; }
+
+    public long getScheduleRatePeriod() { return scheduleRatePeriod; }
+
+    @ConfigName( "schedule.rate.period" )
+    public void setScheduleRatePeriod( long scheduleRatePeriod ) { this.scheduleRatePeriod = scheduleRatePeriod; }
 
     @Override
     public String getDefaultConfigFileName()
