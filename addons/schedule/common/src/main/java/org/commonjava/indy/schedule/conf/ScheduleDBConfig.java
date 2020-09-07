@@ -24,6 +24,8 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
 
     private Boolean enabled;
 
+    public ScheduleDBConfig () {}
+
     public ScheduleDBConfig( String keyspace, int replicationFactor, long partitionKeyRange, long period )
     {
         this.scheduleKeyspace = keyspace;

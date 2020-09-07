@@ -57,6 +57,8 @@ public class ScheduleDB
 
     ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
 
+    public ScheduleDB() {}
+
     public ScheduleDB( ScheduleDBConfig config, CassandraClient client )
     {
         this.config = config;
