@@ -11,7 +11,7 @@ import java.util.Properties;
 
 @SectionName( "scheduledb" )
 @ApplicationScoped
-public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
+public class ScheduleDBConfig implements IndyConfigInfo
 {
 
     private String scheduleKeyspace;
@@ -88,10 +88,5 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
     {
         return null;
     }
-
-    @Override
-    public Properties getSystemPropertyAdditions()
-    {
-        return null;
-    }
+    
 }
