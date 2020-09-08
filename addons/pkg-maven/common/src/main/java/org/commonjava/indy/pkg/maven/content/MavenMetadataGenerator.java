@@ -1057,12 +1057,9 @@ public class MavenMetadataGenerator
             coordMap.put( GROUP_ID, info.getGroupId() );
             coordMap.put( VERSION, info.getReleaseVersion() + LOCAL_SNAPSHOT_VERSION_PART );
 
-            final String lastUpdated = generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
 
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
-
-            xml.createElement( doc, "versioning", Collections.singletonMap( LAST_UPDATED, lastUpdated ) );
 
             // the last one is the most recent
             SnapshotPart snap = snaps.get( snaps.size() - 1 );
@@ -1076,6 +1073,9 @@ public class MavenMetadataGenerator
                 snapMap.put( TIMESTAMP, SnapshotUtils.generateSnapshotTimestamp( snap.getTimestamp() ) );
                 snapMap.put( BUILD_NUMBER, Integer.toString( snap.getBuildNumber() ) );
             }
+
+            final String lastUpdated = generateUpdateTimestamp( snap.getTimestamp() );
+            xml.createElement( doc, "versioning", Collections.singletonMap( LAST_UPDATED, lastUpdated ) );
 
             xml.createElement( doc, "versioning/snapshot", snapMap );
 
