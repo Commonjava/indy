@@ -74,7 +74,6 @@ import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1057,7 +1056,6 @@ public class MavenMetadataGenerator
             coordMap.put( GROUP_ID, info.getGroupId() );
             coordMap.put( VERSION, info.getReleaseVersion() + LOCAL_SNAPSHOT_VERSION_PART );
 
-
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
 
@@ -1099,7 +1097,7 @@ public class MavenMetadataGenerator
 
                     snapMap.put( EXTENSION, mapping == null ? pathInfo.getType() : mapping.getExtension() );
                     snapMap.put( VALUE, pathInfo.getVersion() );
-                    snapMap.put( UPDATED, getUpdatedString( pathInfo.getSnapshotInfo(), lastUpdated ) );
+                    snapMap.put( UPDATED, generateUpdateTimestamp( pathInfo.getSnapshotInfo().getTimestamp() ) );
 
                     xml.createElement( doc, "versioning/snapshotVersions/snapshotVersion", snapMap );
                 }
@@ -1125,22 +1123,6 @@ public class MavenMetadataGenerator
         }
 
         return true;
-    }
-
-    /*
-     * To generate '<updated>yyyyMMDDHHmmSS</updated>'.
-     * This is how Maven dependency resolver decides what the latest snapshot is. We should get it from the timestamp. If null, fall back to lastUpdated.
-     */
-    private String getUpdatedString( SnapshotPart snapshotPart, String lastUpdated )
-    {
-        if ( snapshotPart != null && snapshotPart.getTimestamp() != null )
-        {
-            return generateUpdateTimestamp( snapshotPart.getTimestamp() );
-        }
-        else
-        {
-            return lastUpdated;
-        }
     }
 
     // Parking this here, transplanted from ScheduleManager, because this is where it belongs. It might be
