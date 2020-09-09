@@ -74,6 +74,7 @@ import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,6 +89,8 @@ import java.util.stream.Collectors;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
+import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.generateUpdateTimestamp;
+import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.getCurrentTimestamp;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -951,7 +954,7 @@ public class MavenMetadataGenerator
             coordMap.put( ARTIFACT_ID, samplePomInfo == null ? null : samplePomInfo.getArtifactId() );
             coordMap.put( GROUP_ID, samplePomInfo == null ? null : samplePomInfo.getGroupId() );
 
-            final String lastUpdated = SnapshotUtils.generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
+            final String lastUpdated = generateUpdateTimestamp( getCurrentTimestamp() );
 
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
@@ -1014,14 +1017,17 @@ public class MavenMetadataGenerator
         return true;
     }
 
-    private boolean writeSnapshotMetadata( final ArtifactPathInfo info, final List<StoreResource> files,
+    /**
+     * First level will contain files that have the timestamp-buildNumber version suffix, e.g., 'o11yphant-metrics-api-1.0-20200805.065728-1.pom'
+     * we need to parse each this info and add them to snapshot versions.
+     */
+    private boolean writeSnapshotMetadata( final ArtifactPathInfo info, final List<StoreResource> firstLevelFiles,
                                            final ArtifactStore store, final String path,
                                            final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        // first level will contain files that have the timestamp-buildnumber version suffix...for each, we need to parse this info.
         final Map<SnapshotPart, Set<ArtifactPathInfo>> infosBySnap = new HashMap<>();
-        for ( final StoreResource resource : files )
+        for ( final StoreResource resource : firstLevelFiles )
         {
             final ArtifactPathInfo resInfo = ArtifactPathInfo.parse( resource.getPath() );
             if ( resInfo != null )
@@ -1052,13 +1058,10 @@ public class MavenMetadataGenerator
             coordMap.put( GROUP_ID, info.getGroupId() );
             coordMap.put( VERSION, info.getReleaseVersion() + LOCAL_SNAPSHOT_VERSION_PART );
 
-            final String lastUpdated = SnapshotUtils.generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
-
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
 
-            xml.createElement( doc, "versioning", Collections.singletonMap( LAST_UPDATED, lastUpdated ) );
-
+            // the last one is the most recent
             SnapshotPart snap = snaps.get( snaps.size() - 1 );
             Map<String, String> snapMap = new HashMap<>();
             if ( snap.isLocalSnapshot() )
@@ -1068,18 +1071,19 @@ public class MavenMetadataGenerator
             else
             {
                 snapMap.put( TIMESTAMP, SnapshotUtils.generateSnapshotTimestamp( snap.getTimestamp() ) );
-
                 snapMap.put( BUILD_NUMBER, Integer.toString( snap.getBuildNumber() ) );
             }
+
+            final Date currentTimestamp = getCurrentTimestamp();
+
+            final String lastUpdated = getUpdateTimestamp( snap, currentTimestamp );
+            xml.createElement( doc, "versioning", Collections.singletonMap( LAST_UPDATED, lastUpdated ) );
 
             xml.createElement( doc, "versioning/snapshot", snapMap );
 
             for ( SnapshotPart snap1 : snaps )
             {
-                snap = snap1;
-
-                // the last one is the most recent.
-                final Set<ArtifactPathInfo> infos = infosBySnap.get( snap );
+                final Set<ArtifactPathInfo> infos = infosBySnap.get( snap1 );
                 for ( final ArtifactPathInfo pathInfo : infos )
                 {
                     snapMap = new HashMap<>();
@@ -1097,7 +1101,7 @@ public class MavenMetadataGenerator
 
                     snapMap.put( EXTENSION, mapping == null ? pathInfo.getType() : mapping.getExtension() );
                     snapMap.put( VALUE, pathInfo.getVersion() );
-                    snapMap.put( UPDATED, lastUpdated );
+                    snapMap.put( UPDATED, getUpdateTimestamp( pathInfo.getSnapshotInfo(), currentTimestamp ) );
 
                     xml.createElement( doc, "versioning/snapshotVersions/snapshotVersion", snapMap );
                 }
@@ -1123,6 +1127,16 @@ public class MavenMetadataGenerator
         }
 
         return true;
+    }
+
+    private String getUpdateTimestamp( SnapshotPart snapshot, Date currentTimestamp )
+    {
+        Date timestamp = snapshot.getTimestamp();
+        if ( timestamp == null )
+        {
+            timestamp = currentTimestamp;
+        }
+        return generateUpdateTimestamp( timestamp );
     }
 
     // Parking this here, transplanted from ScheduleManager, because this is where it belongs. It might be
