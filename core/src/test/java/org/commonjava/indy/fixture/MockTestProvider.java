@@ -16,22 +16,21 @@
 package org.commonjava.indy.fixture;
 
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
+import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
+import org.commonjava.cdi.util.weft.config.WeftConfig;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
+import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Produces;
 
-//TODO: This provider is fully duplicated with org.commonjava.indy.test.fixture.core.MockGalleyProvider
-//      in test/fixture-core for some dependency reasons in addons. Should be refactored in another
-//      common test module in the future.
-
 @ApplicationScoped
 @Alternative
-public class MockGalleyProvider
+public class MockTestProvider
 {
     @Produces
     public TransportManagerConfig getTransportManagerConfig()
@@ -76,4 +75,15 @@ public class MockGalleyProvider
         return null;
     }
 
+    @Produces
+    public WeftConfig getWeftConfig()
+    {
+        return new DefaultWeftConfig();
+    }
+
+    @Produces
+    public HoneycombConfiguration getHoneycombConfiguration()
+    {
+        return null;
+    }
 }

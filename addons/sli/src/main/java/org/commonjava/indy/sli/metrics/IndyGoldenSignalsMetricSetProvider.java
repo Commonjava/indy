@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.fixture;
+package org.commonjava.indy.sli.metrics;
 
-import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
-import org.commonjava.cdi.util.weft.config.WeftConfig;
+import org.commonjava.o11yphant.metrics.api.MetricSet;
+import org.commonjava.o11yphant.metrics.MetricSetProvider;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
-import javax.enterprise.inject.Produces;
+import javax.inject.Inject;
 
 @ApplicationScoped
-@Alternative
-public class MockWeftProvider
+public class IndyGoldenSignalsMetricSetProvider
+        implements MetricSetProvider
 {
-    @Produces
-    public WeftConfig getWeftConfig()
+    @Inject
+    private IndyGoldenSignalsMetricSet metricSet;
+
+    @Override
+    public MetricSet getMetricSet()
     {
-        return new DefaultWeftConfig();
+        return metricSet;
     }
 
+    @Override
+    public String getName()
+    {
+        return "sli.golden";
+    }
 }

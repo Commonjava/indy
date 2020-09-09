@@ -15,28 +15,22 @@
  */
 package org.commonjava.indy.sli.metrics;
 
-import org.commonjava.o11yphant.metrics.api.MetricSet;
-import org.commonjava.o11yphant.metrics.MetricSetProvider;
+import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FUNCTIONS;
 
 @ApplicationScoped
-public class GoldenSignalsMetricSetProvider
-        implements MetricSetProvider
+public class IndyGoldenSignalsMetricSet
+                extends GoldenSignalsMetricSet
 {
-    @Inject
-    private GoldenSignalsMetricSet metricSet;
-
     @Override
-    public MetricSet getMetricSet()
+    protected Collection<String> getFunctions()
     {
-        return metricSet;
+        return Arrays.asList( FUNCTIONS );
     }
 
-    @Override
-    public String getName()
-    {
-        return "sli.golden";
-    }
 }

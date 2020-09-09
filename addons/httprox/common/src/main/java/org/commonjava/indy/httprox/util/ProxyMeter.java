@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.httprox.util;
 
-import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
+import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
 import org.slf4j.Logger;
 import org.commonjava.indy.util.RequestContextHelper;
 
@@ -41,13 +41,13 @@ public class ProxyMeter
 
     private final long startNanos;
 
-    private final GoldenSignalsMetricSet sliMetricSet;
+    private final IndyGoldenSignalsMetricSet sliMetricSet;
 
     private final Logger restLogger;
 
     private final SocketAddress peerAddress;
 
-    public ProxyMeter( final String method, final String requestLine, final long startNanos, final GoldenSignalsMetricSet sliMetricSet, final Logger restLogger,
+    public ProxyMeter( final String method, final String requestLine, final long startNanos, final IndyGoldenSignalsMetricSet sliMetricSet, final Logger restLogger,
                        final SocketAddress peerAddress )
     {
         this.method = method;
