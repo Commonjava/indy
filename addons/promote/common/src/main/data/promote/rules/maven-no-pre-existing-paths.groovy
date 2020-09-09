@@ -5,7 +5,7 @@ import org.commonjava.indy.promote.validate.PromotionValidationException
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 
-class NoPreExistingPaths implements ValidationRule {
+class MavenNoPreExistingPaths implements ValidationRule {
 
     String validate(ValidationRequest request) throws PromotionValidationException {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, false);

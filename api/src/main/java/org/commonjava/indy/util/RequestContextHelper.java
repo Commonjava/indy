@@ -185,6 +185,8 @@ public class RequestContextHelper
     @MDC
     public static final String CUMULATIVE_COUNTS = "cumulative-counts";
 
+    @Thread
+    public static final String IS_RAW_VIEW = "is-raw-view";
 
     // these are well-known values we'll be using in our log aggregation filters
     public static final String REQUEST_PHASE_START = "start";

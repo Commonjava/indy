@@ -5,7 +5,7 @@ import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.slf4j.LoggerFactory
 
-class ProjectVersionPattern implements ValidationRule {
+class MavenProjectVersionPattern implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
         def versionPattern = request.getValidationParameter("versionPattern")

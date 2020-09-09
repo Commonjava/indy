@@ -66,19 +66,19 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "no-pre-existing-paths.groovy";
+    private static final String RULE = "maven-no-pre-existing-paths.groovy";
 
     private static final String PREFIX = "no-pre-existing-paths/";
 
     /* @formatter:off */
     private static final String[] RULES = {
-        "parsable-pom.groovy",
-        "artifact-refs-via.groovy",
-        "no-pre-existing-paths.groovy",
-        "no-snapshots.groovy",
-        "no-version-ranges.groovy",
-        "project-version-pattern.groovy",
-        "project-artifacts.groovy"
+        "maven-parsable-pom.groovy",
+        "maven-artifact-refs-via.groovy",
+        "maven-no-pre-existing-paths.groovy",
+        "maven-no-snapshots.groovy",
+        "maven-no-version-ranges.groovy",
+        "maven-project-version-pattern.groovy",
+        "maven-project-artifacts.groovy"
     };
     /* @formatter:on */
 

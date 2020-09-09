@@ -37,7 +37,7 @@ public class NoVersionRanges_DependencyVersion_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "no-version-ranges.groovy";
+    private static final String RULE = "maven-no-version-ranges.groovy";
 
     @Test
     @Category( EventDependent.class )

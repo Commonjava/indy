@@ -43,7 +43,7 @@ public class GroupPromoteTest
         assertThat( result.getRequest()
                           .getSource(), equalTo( source.getKey() ) );
         assertThat( result.getRequest()
-                          .getTargetGroup(), equalTo( target.getName() ) );
+                          .getTarget().getName(), equalTo( target.getName() ) );
 
         assertThat( result.getError(), nullValue() );
 

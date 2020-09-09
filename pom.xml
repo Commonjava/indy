@@ -85,7 +85,7 @@
     <o11yphantVersion>1.0-SNAPSHOT</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
-    <atlasVersion>1.1.0</atlasVersion>
+    <atlasVersion>1.1.1-SNAPSHOT</atlasVersion>
     <galleyVersion>1.5-SNAPSHOT</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
