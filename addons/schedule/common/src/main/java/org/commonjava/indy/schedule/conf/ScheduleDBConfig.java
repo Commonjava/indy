@@ -80,13 +80,15 @@ public class ScheduleDBConfig implements IndyConfigInfo
     @Override
     public String getDefaultConfigFileName()
     {
-        return null;
+        return "conf.d/schedule.conf";
     }
 
     @Override
     public InputStream getDefaultConfig()
     {
-        return null;
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-scheduledb.conf" );
     }
 
 }
