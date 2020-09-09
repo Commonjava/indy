@@ -17,6 +17,9 @@ package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
@@ -26,14 +29,32 @@ import javax.inject.Inject;
 public class ScheduleManagerBooter
         implements BootupAction
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Inject
-    private Instance<ScheduleManager> scheduleManager;
+    private ScheduleDBConfig scheduleDBConfig;
+
+    @Inject
+    private Instance<ScheduleManager> scheduleManagers;
 
     @Override
     public void init()
             throws IndyLifecycleException
     {
-        scheduleManager.get().init();
+        for ( ScheduleManager scheduleManager : scheduleManagers )
+        {
+            if ( scheduleDBConfig.isEnabled() && scheduleManager instanceof ScheduleDBManager )
+            {
+                scheduleManagers.get().init();
+            }
+            else if ( scheduleManager instanceof DefaultScheduleManager )
+            {
+                scheduleManagers.get().init();
+            }
+
+        }
+
     }
 
     @Override

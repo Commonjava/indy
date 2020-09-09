@@ -94,24 +94,14 @@ import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE
  * type of function.
  */
 @SuppressWarnings( "RedundantThrows" )
-@ApplicationScoped
+//@ApplicationScoped
 public class ScheduleDBManager
         implements ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    public static final String PAYLOAD = "payload";
-
     public static final String ANY = "__ANY__";
-
-    public static final String CONTENT_JOB_TYPE = "CONTENT";
-
-    public static final String JOB_TYPE = "JOB_TYPE";
-
-    public static final String SCHEDULE_TIME = "SCHEDULE_TIME";
-
-    public static final String SCHEDULE_UUID = "SCHEDULE_UUID";
 
     @Inject
     private StoreDataManager dataManager;
@@ -320,7 +310,7 @@ public class ScheduleDBManager
         logger.info( "Scheduling timeout for: {} in: {} in: {} seconds (at: {}).", path, key, timeoutSeconds,
                      new Date( System.currentTimeMillis() + ( timeoutSeconds * 1000 ) ) );
 
-        scheduleForStore( key, CONTENT_JOB_TYPE, path, new ContentExpiration( key, path ), timeoutSeconds );
+        scheduleForStore( key, JobType.CONTENT.getJobType(), path, new ContentExpiration( key, path ), timeoutSeconds );
     }
 
     public void setSnapshotTimeouts( final StoreKey key, final String path )

@@ -27,6 +27,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.schedule.datastax.JobType;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -70,7 +71,7 @@ public class TimeoutEventListener
     public void onExpirationEvent( @Observes final SchedulerEvent event )
     {
         if ( !( event instanceof SchedulerTriggerEvent ) || !event.getJobType()
-                                                                  .equals( ScheduleManager.CONTENT_JOB_TYPE ) )
+                                                                  .equals( JobType.CONTENT.getJobType() ) )
         {
             return;
         }

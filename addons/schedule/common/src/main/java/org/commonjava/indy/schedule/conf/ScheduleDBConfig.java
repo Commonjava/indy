@@ -88,5 +88,5 @@ public class ScheduleDBConfig implements IndyConfigInfo
     {
         return null;
     }
-    
+
 }

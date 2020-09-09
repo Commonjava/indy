@@ -48,7 +48,7 @@ public class StoreKeyMatcher
     {
         return cacheHandle.execute( BasicCache::keySet )
                           .stream()
-                          .filter( key -> key != null && key.exists() && key.groupName().equals( ScheduleManager.groupName( storeKey, eventType ) ) )
+                          .filter( key -> key != null && key.exists() && key.groupName().equals( ScheduleManagerUtils.groupName( storeKey, eventType ) ) )
                           .collect( Collectors.toSet() );
     }
 }

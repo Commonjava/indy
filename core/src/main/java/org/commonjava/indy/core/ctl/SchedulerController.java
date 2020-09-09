@@ -20,18 +20,14 @@ import org.commonjava.indy.core.change.StoreEnablementManager;
 import org.commonjava.indy.core.expire.Expiration;
 import org.commonjava.indy.core.expire.ExpirationSet;
 import org.commonjava.indy.core.expire.ScheduleManager;
-import org.commonjava.indy.core.expire.StoreKeyMatcher;
+import org.commonjava.indy.core.expire.ScheduleManagerUtils;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.infinispan.commons.api.BasicCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SchedulerController
@@ -58,7 +54,7 @@ public class SchedulerController
         try
         {
             Expiration expiration = scheduleManager.findSingleExpiration(
-                    new StoreKeyMatcher( storeKey, StoreEnablementManager.DISABLE_TIMEOUT ) );
+                    storeKey, StoreEnablementManager.DISABLE_TIMEOUT );
 
             if ( expiration == null )
             {
@@ -84,13 +80,7 @@ public class SchedulerController
         {
 
             // This key matcher will compare with the cache key group to see if the group ends with the "Disable-Timeout"(jobtype)
-            ExpirationSet expirations = scheduleManager.findMatchingExpirations(
-                    cacheHandle -> cacheHandle.execute( BasicCache::keySet )
-                                              .stream()
-                                              .filter( key -> key.getType()
-                                                                 .equals( StoreEnablementManager.DISABLE_TIMEOUT ) )
-                                              .collect( Collectors.toSet() ) );
-
+            ExpirationSet expirations = scheduleManager.findMatchingExpirations( StoreEnablementManager.DISABLE_TIMEOUT );
 
             // TODO: This seems REALLY inefficient...
             storeDataManager.getAllArtifactStores().forEach( (store)->{
@@ -110,7 +100,7 @@ public class SchedulerController
 
     private Expiration indefiniteDisable( ArtifactStore store )
     {
-        return new Expiration( ScheduleManager.groupName( store.getKey(), StoreEnablementManager.DISABLE_TIMEOUT ), StoreEnablementManager.DISABLE_TIMEOUT );
+        return new Expiration( ScheduleManagerUtils.groupName( store.getKey(), StoreEnablementManager.DISABLE_TIMEOUT ), StoreEnablementManager.DISABLE_TIMEOUT );
     }
 
 }
