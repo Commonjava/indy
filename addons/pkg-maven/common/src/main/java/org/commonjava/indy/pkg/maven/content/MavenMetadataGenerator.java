@@ -74,6 +74,7 @@ import java.io.StringReader;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -89,6 +90,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.generateUpdateTimestamp;
+import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.getCurrentTimestamp;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -952,7 +954,7 @@ public class MavenMetadataGenerator
             coordMap.put( ARTIFACT_ID, samplePomInfo == null ? null : samplePomInfo.getArtifactId() );
             coordMap.put( GROUP_ID, samplePomInfo == null ? null : samplePomInfo.getGroupId() );
 
-            final String lastUpdated = generateUpdateTimestamp( SnapshotUtils.getCurrentTimestamp() );
+            final String lastUpdated = generateUpdateTimestamp( getCurrentTimestamp() );
 
             doc.appendChild( doc.createElementNS( doc.getNamespaceURI(), "metadata" ) );
             xml.createElement( doc.getDocumentElement(), null, coordMap );
@@ -1072,7 +1074,9 @@ public class MavenMetadataGenerator
                 snapMap.put( BUILD_NUMBER, Integer.toString( snap.getBuildNumber() ) );
             }
 
-            final String lastUpdated = generateUpdateTimestamp( snap.getTimestamp() );
+            final Date currentTimestamp = getCurrentTimestamp();
+
+            final String lastUpdated = getUpdateTimestamp( snap, currentTimestamp );
             xml.createElement( doc, "versioning", Collections.singletonMap( LAST_UPDATED, lastUpdated ) );
 
             xml.createElement( doc, "versioning/snapshot", snapMap );
@@ -1097,7 +1101,7 @@ public class MavenMetadataGenerator
 
                     snapMap.put( EXTENSION, mapping == null ? pathInfo.getType() : mapping.getExtension() );
                     snapMap.put( VALUE, pathInfo.getVersion() );
-                    snapMap.put( UPDATED, generateUpdateTimestamp( pathInfo.getSnapshotInfo().getTimestamp() ) );
+                    snapMap.put( UPDATED, getUpdateTimestamp( pathInfo.getSnapshotInfo(), currentTimestamp ) );
 
                     xml.createElement( doc, "versioning/snapshotVersions/snapshotVersion", snapMap );
                 }
@@ -1123,6 +1127,16 @@ public class MavenMetadataGenerator
         }
 
         return true;
+    }
+
+    private String getUpdateTimestamp( SnapshotPart snapshot, Date currentTimestamp )
+    {
+        Date timestamp = snapshot.getTimestamp();
+        if ( timestamp == null )
+        {
+            timestamp = currentTimestamp;
+        }
+        return generateUpdateTimestamp( timestamp );
     }
 
     // Parking this here, transplanted from ScheduleManager, because this is where it belongs. It might be
