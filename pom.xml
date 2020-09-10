@@ -75,25 +75,25 @@
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
     <jacksonVersion>2.10.1</jacksonVersion>
-    <metricsVersion>4.0.2</metricsVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
     <honeycombVersion>1.1.0</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>1.7</pathmappedStorageVersion>
+    <pathmappedStorageVersion>1.8-SNAPSHOT</pathmappedStorageVersion>
+    <o11yphantVersion>1.0-SNAPSHOT</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1-SNAPSHOT</atlasVersion>
-    <galleyVersion>1.4</galleyVersion>
+    <galleyVersion>1.5-SNAPSHOT</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
-    <kojijiVersion>2.12</kojijiVersion>
+    <kojijiVersion>2.13-SNAPSHOT</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.11</jhttpcVersion>
-    <weftVersion>1.17</weftVersion>
+    <weftVersion>1.18-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
@@ -771,33 +771,16 @@
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics-core</artifactId>
+        <artifactId>indy-subsys-metrics</artifactId>
         <version>2.5.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics-reporter</artifactId>
-        <version>2.5.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics-prometheus</artifactId>
-        <version>2.5.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-metrics-reporter</artifactId>
+        <artifactId>indy-subsys-metrics</artifactId>
         <version>2.5.0-SNAPSHOT</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
-      </dependency>
-
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-ftests-metrics</artifactId>
-        <version>2.5.0-SNAPSHOT</version>
-        <scope>test</scope>
       </dependency>
 
       <dependency>
@@ -1074,38 +1057,6 @@
         <groupId>javax.cache</groupId>
         <artifactId>cache-api</artifactId>
         <version>1.0.0</version>
-      </dependency>
-
-      <!-- START: metrics support-->
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-core</artifactId>
-        <version>${metricsVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-jvm</artifactId>
-        <version>${metricsVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-healthchecks</artifactId>
-        <version>${metricsVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-graphite</artifactId>
-        <version>${metricsVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-servlets</artifactId>
-        <version>${metricsVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.dropwizard.metrics</groupId>
-        <artifactId>metrics-json</artifactId>
-        <version>${metricsVersion}</version>
       </dependency>
 
       <!-- START: appender of logback for elasticsearch support-->
@@ -1599,6 +1550,23 @@
         <groupId>ch.qos.logback.contrib</groupId>
         <artifactId>logback-jackson</artifactId>
         <version>${logbackContribVersion}</version>
+      </dependency>
+
+      <!-- o11yphant dependencies -->
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-honeycomb</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-metrics-api</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-metrics-core</artifactId>
+        <version>${o11yphantVersion}</version>
       </dependency>
 
       <!-- propulsor dependencies -->

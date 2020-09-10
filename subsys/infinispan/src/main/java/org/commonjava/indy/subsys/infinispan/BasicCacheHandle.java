@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static com.codahale.metrics.MetricRegistry.name;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 public class BasicCacheHandle<K,V>
 {
@@ -32,7 +32,7 @@ public class BasicCacheHandle<K,V>
 
     protected BasicCache<K,V> cache;
 
-    protected IndyMetricsManager metricsManager;
+    protected DefaultMetricsManager metricsManager;
 
     private String metricPrefix;
 
@@ -52,7 +52,7 @@ public class BasicCacheHandle<K,V>
     {
     }
 
-    protected BasicCacheHandle( String named, BasicCache<K, V> cache, IndyMetricsManager metricsManager, String metricPrefix )
+    protected BasicCacheHandle( String named, BasicCache<K, V> cache, DefaultMetricsManager metricsManager, String metricPrefix )
     {
         this.name = named;
         this.cache = cache;

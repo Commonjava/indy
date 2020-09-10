@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.template.fixture;
 
-import org.commonjava.indy.metrics.system.StoragePathProvider;
+import org.commonjava.o11yphant.metrics.system.StoragePathProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;

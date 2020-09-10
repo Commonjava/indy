@@ -23,7 +23,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;

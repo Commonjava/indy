@@ -15,16 +15,15 @@
  */
 package org.commonjava.indy.subsys.cpool;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheck;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import io.agroal.api.AgroalDataSource;
 import io.agroal.api.AgroalDataSourceListener;
 import io.agroal.api.AgroalDataSourceMetrics;
 import io.agroal.api.configuration.AgroalDataSourceConfiguration;
 import io.agroal.api.configuration.supplier.AgroalPropertiesReader;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.o11yphant.metrics.api.Gauge;
+import org.commonjava.o11yphant.metrics.api.MetricRegistry;
+import org.commonjava.o11yphant.metrics.healthcheck.impl.HealthCheckResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static javax.naming.Context.INITIAL_CONTEXT_FACTORY;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 @ApplicationScoped
 public class ConnectionPoolProvider
@@ -50,9 +50,6 @@ public class ConnectionPoolProvider
 
     @Inject
     private MetricRegistry metricRegistry;
-
-    @Inject
-    private HealthCheckRegistry healthCheckRegistry;
 
     public void init()
             throws IndyLifecycleException
@@ -110,49 +107,46 @@ public class ConnectionPoolProvider
 
 
     private void registerMetrics(AgroalDataSourceMetrics agroalMetrics, String name) {
-        metricRegistry.register(MetricRegistry.name(name, "acquireCount"), (Gauge<Long>) agroalMetrics::acquireCount);
-        metricRegistry.register(MetricRegistry.name(name, "creationCount"), (Gauge<Long>) agroalMetrics::creationCount);
-        metricRegistry.register(MetricRegistry.name(name, "leakDetectionCount"), (Gauge<Long>) agroalMetrics::leakDetectionCount);
-        metricRegistry.register(MetricRegistry.name(name, "destroyCount"), (Gauge<Long>) agroalMetrics::destroyCount);
-        metricRegistry.register(MetricRegistry.name(name, "flushCount"), (Gauge<Long>) agroalMetrics::flushCount);
-        metricRegistry.register(MetricRegistry.name(name, "invalidCount"), (Gauge<Long>) agroalMetrics::invalidCount);
-        metricRegistry.register(MetricRegistry.name(name, "reapCount"), (Gauge<Long>) agroalMetrics::reapCount);
+        metricRegistry.register(name(name, "acquireCount"), (Gauge<Long>) agroalMetrics::acquireCount);
+        metricRegistry.register(name(name, "creationCount"), (Gauge<Long>) agroalMetrics::creationCount);
+        metricRegistry.register(name(name, "leakDetectionCount"), (Gauge<Long>) agroalMetrics::leakDetectionCount);
+        metricRegistry.register(name(name, "destroyCount"), (Gauge<Long>) agroalMetrics::destroyCount);
+        metricRegistry.register(name(name, "flushCount"), (Gauge<Long>) agroalMetrics::flushCount);
+        metricRegistry.register(name(name, "invalidCount"), (Gauge<Long>) agroalMetrics::invalidCount);
+        metricRegistry.register(name(name, "reapCount"), (Gauge<Long>) agroalMetrics::reapCount);
 
-        metricRegistry.register(MetricRegistry.name(name, "activeCount"), (Gauge<Long>) agroalMetrics::activeCount);
-        metricRegistry.register(MetricRegistry.name(name, "availableCount"), (Gauge<Long>) agroalMetrics::availableCount);
-        metricRegistry.register(MetricRegistry.name(name, "maxUsedCount"), (Gauge<Long>) agroalMetrics::maxUsedCount);
-        metricRegistry.register(MetricRegistry.name(name, "awaitingCount"), (Gauge<Long>) agroalMetrics::awaitingCount);
-        metricRegistry.register(MetricRegistry.name(name, "blockingTimeAverage"), (Gauge<Duration>) agroalMetrics::blockingTimeAverage);
-        metricRegistry.register(MetricRegistry.name(name, "blockingTimeMax"), (Gauge<Duration>) agroalMetrics::blockingTimeMax);
-        metricRegistry.register(MetricRegistry.name(name, "blockingTimeTotal"), (Gauge<Duration>) agroalMetrics::blockingTimeTotal);
-        metricRegistry.register(MetricRegistry.name(name, "creationTimeAverage"), (Gauge<Duration>) agroalMetrics::creationTimeAverage);
-        metricRegistry.register(MetricRegistry.name(name, "creationTimeMax"), (Gauge<Duration>) agroalMetrics::creationTimeMax);
-        metricRegistry.register(MetricRegistry.name(name, "creationTimeTotal"), (Gauge<Duration>) agroalMetrics::creationTimeTotal);
+        metricRegistry.register(name(name, "activeCount"), (Gauge<Long>) agroalMetrics::activeCount);
+        metricRegistry.register(name(name, "availableCount"), (Gauge<Long>) agroalMetrics::availableCount);
+        metricRegistry.register(name(name, "maxUsedCount"), (Gauge<Long>) agroalMetrics::maxUsedCount);
+        metricRegistry.register(name(name, "awaitingCount"), (Gauge<Long>) agroalMetrics::awaitingCount);
+        metricRegistry.register(name(name, "blockingTimeAverage"), (Gauge<Duration>) agroalMetrics::blockingTimeAverage);
+        metricRegistry.register(name(name, "blockingTimeMax"), (Gauge<Duration>) agroalMetrics::blockingTimeMax);
+        metricRegistry.register(name(name, "blockingTimeTotal"), (Gauge<Duration>) agroalMetrics::blockingTimeTotal);
+        metricRegistry.register(name(name, "creationTimeAverage"), (Gauge<Duration>) agroalMetrics::creationTimeAverage);
+        metricRegistry.register(name(name, "creationTimeMax"), (Gauge<Duration>) agroalMetrics::creationTimeMax);
+        metricRegistry.register(name(name, "creationTimeTotal"), (Gauge<Duration>) agroalMetrics::creationTimeTotal);
     }
 
-    private void registerHealthChecks(AgroalDataSource ds, String name)
+    private void registerHealthChecks( AgroalDataSource ds, String name )
     {
-        healthCheckRegistry.register(name, new HealthCheck()
-        {
-            @Override protected Result check()
+        metricRegistry.registerHealthCheck( name, () -> {
+            try (Connection con = ds.getConnection())
             {
-                try ( Connection con = ds.getConnection() )
+                if ( con.isValid( 5 ) )
                 {
-                    if ( con.isValid(5) )
-                    {
-                        return Result.healthy();
-                    }
-                    else
-                    {
-                        return Result.unhealthy( "validation check failed for DataSource %s", name );
-                    }
+                    return HealthCheckResult.healthy();
                 }
-                catch ( SQLException e )
+                else
                 {
-                    return Result.unhealthy( e );
+                    return HealthCheckResult.unhealthy(
+                                    String.format( "validation check failed for DataSource %s", name ) );
                 }
             }
-        });
+            catch ( SQLException e )
+            {
+                return HealthCheckResult.unhealthy( e );
+            }
+        } );
     }
 
     private static class AgroalDataSourceLogger implements AgroalDataSourceListener

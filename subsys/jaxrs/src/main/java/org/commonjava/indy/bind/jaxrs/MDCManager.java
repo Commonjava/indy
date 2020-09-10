@@ -18,7 +18,7 @@ package org.commonjava.indy.bind.jaxrs;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -32,17 +32,17 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
-import static org.commonjava.indy.metrics.RequestContextHelper.CLIENT_ADDR;
-import static org.commonjava.indy.metrics.RequestContextHelper.COMPONENT_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.EXTERNAL_TRACE_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.FORCE_METERED;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_REQUEST_URI;
-import static org.commonjava.indy.metrics.RequestContextHelper.INTERNAL_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.TRACE_ID;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PARENT_SPAN;
-import static org.commonjava.indy.metrics.RequestContextHelper.SPAN_ID_HEADER;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
+import static org.commonjava.indy.util.RequestContextHelper.CLIENT_ADDR;
+import static org.commonjava.indy.util.RequestContextHelper.COMPONENT_ID;
+import static org.commonjava.indy.util.RequestContextHelper.EXTERNAL_TRACE_ID;
+import static org.commonjava.indy.util.RequestContextHelper.FORCE_METERED;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_REQUEST_URI;
+import static org.commonjava.indy.util.RequestContextHelper.INTERNAL_ID;
+import static org.commonjava.indy.util.RequestContextHelper.TRACE_ID;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PARENT_SPAN;
+import static org.commonjava.indy.util.RequestContextHelper.SPAN_ID_HEADER;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class MDCManager

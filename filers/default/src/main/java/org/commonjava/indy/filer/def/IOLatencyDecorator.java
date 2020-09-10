@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.filer.def;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import org.apache.commons.io.input.CountingInputStream;
 import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -24,6 +22,7 @@ import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
+import org.commonjava.o11yphant.metrics.api.Meter;
 
 import java.io.IOException;
 import java.io.InputStream;

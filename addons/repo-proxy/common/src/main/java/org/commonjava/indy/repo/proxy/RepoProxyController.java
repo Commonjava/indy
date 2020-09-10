@@ -41,8 +41,6 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static javax.servlet.http.HttpServletResponse.SC_MOVED_PERMANENTLY;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
@@ -50,6 +48,8 @@ import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePa
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getOriginalStoreKeyFromPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getProxyTo;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.isNPMMetaPath;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 
 @ApplicationScoped
 public class RepoProxyController

@@ -15,11 +15,10 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import org.commonjava.indy.metrics.RequestContextHelper;
-import org.commonjava.indy.metrics.TrafficClassifier;
-import org.commonjava.indy.sli.metrics.GoldenSignalsFunctionMetrics;
-import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
-import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.indy.util.RequestContextHelper;
+import org.commonjava.indy.subsys.metrics.IndyTrafficClassifier;
+import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
+import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,28 +33,26 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 
-import static org.apache.commons.lang3.StringUtils.join;
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_MILLIS;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_LATENCY_MILLIS;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_LATENCY_NS;
 
 @ApplicationScoped
 public class GoldenSignalsFilter
     implements Filter
 {
     @Inject
-    private GoldenSignalsMetricSet metricSet;
+    private IndyGoldenSignalsMetricSet metricSet;
 
     @Inject
-    private TrafficClassifier classifier;
+    private IndyTrafficClassifier classifier;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     // For Unit-testing
-    GoldenSignalsFilter( final GoldenSignalsMetricSet metricSet, TrafficClassifier classifier )
+    GoldenSignalsFilter( final IndyGoldenSignalsMetricSet metricSet, IndyTrafficClassifier classifier )
     {
         this.metricSet = metricSet;
         this.classifier = classifier;
@@ -79,9 +76,9 @@ public class GoldenSignalsFilter
 
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
+        Collection<String> functions = classifier.classifyFunctions( req.getPathInfo(), req.getMethod() );
         try
         {
-            Set<String> functions = new HashSet<>( classifier.classifyFunctions( req.getPathInfo(), req.getMethod() ) );
             functions.forEach( function -> metricSet.function( function ).ifPresent(
                     GoldenSignalsFunctionMetrics::started ) );
         }
@@ -96,8 +93,8 @@ public class GoldenSignalsFilter
         }
         catch ( IOException | ServletException | RuntimeException e )
         {
-            new HashSet<>( classifier.classifyFunctions( req.getPathInfo(), req.getMethod() ) ).forEach(
-                    function -> metricSet.function( function ).ifPresent( GoldenSignalsFunctionMetrics::error ) );
+            functions.forEach( function -> metricSet.function( function )
+                                                    .ifPresent( GoldenSignalsFunctionMetrics::error ) );
             throw e;
         }
         finally
@@ -110,14 +107,13 @@ public class GoldenSignalsFilter
             RequestContextHelper.setContext( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
             RequestContextHelper.setContext( REQUEST_LATENCY_MILLIS, (end-start) / NANOS_PER_MILLISECOND  );
 
-            Set<String> functions = new HashSet<>( classifier.classifyFunctions( req.getPathInfo(), req.getMethod() ) );
             boolean error = resp.getStatus() > 499;
 
-            functions.forEach( function -> metricSet.function( function ).ifPresent( ms -> {
-                ms.latency( end-start ).call();
+            functions.forEach( function -> metricSet.function( function ).ifPresent( functionMetrics -> {
+                functionMetrics.latency( end-start ).call();
                 if ( error )
                 {
-                    ms.error();
+                    functionMetrics.error();
                 }
             } ) );
 
