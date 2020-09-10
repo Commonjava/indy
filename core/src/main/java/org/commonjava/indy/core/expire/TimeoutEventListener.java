@@ -28,6 +28,7 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.schedule.datastax.JobType;
+import org.commonjava.indy.schedule.event.ScheduleTriggerEvent;
 import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -76,10 +77,26 @@ public class TimeoutEventListener
             return;
         }
 
+        handleExpiration( event.getPayload() );
+    }
+
+    public void onExpirationEvent( @Observes final ScheduleTriggerEvent event )
+    {
+        if ( !event.getJobType().equals( JobType.CONTENT.getJobType() ) )
+        {
+            return;
+        }
+
+        handleExpiration( event.getPayload() );
+
+    }
+
+    private void handleExpiration( String payload )
+    {
         ContentExpiration expiration;
         try
         {
-            expiration = objectMapper.readValue( event.getPayload(), ContentExpiration.class );
+            expiration = objectMapper.readValue( payload, ContentExpiration.class );
         }
         catch ( final IOException e )
         {
@@ -107,13 +124,13 @@ public class TimeoutEventListener
         catch ( IndyWorkflowException e )
         {
             logger.error(
-                    String.format( "Failed to retrieve Transfer for: %s in: %s (for content timeout). Reason: %s", path,
-                                   key, e ), e );
+                            String.format( "Failed to retrieve Transfer for: %s in: %s (for content timeout). Reason: %s", path,
+                                           key, e ), e );
         }
         catch ( IndyDataException e )
         {
             logger.error(
-                    String.format( "Failed to retrieve ArtifactStore for: %s (for content timeout). Reason: %s", key, e ), e );
+                            String.format( "Failed to retrieve ArtifactStore for: %s (for content timeout). Reason: %s", key, e ), e );
         }
     }
 

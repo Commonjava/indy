@@ -22,6 +22,8 @@ public class ScheduleTest
 
     ScheduleDB scheduleDB;
 
+    CassandraClient client;
+
     @Before
     public void start() throws Exception
     {
@@ -32,7 +34,7 @@ public class ScheduleTest
         config.setCassandraHost( "localhost" );
         config.setCassandraPort( 9142 );
 
-        CassandraClient client = new CassandraClient( config );
+        client = new CassandraClient( config );
         ScheduleDBConfig scheduleDBConfig =
                         new ScheduleDBConfig( SCHEDULE_KEYSPACE, 1, 60 * 60 * 1000, 3 );
         scheduleDB = new ScheduleDB( scheduleDBConfig, client );
@@ -41,6 +43,7 @@ public class ScheduleTest
     @After
     public void stop() throws Exception
     {
+        client.close();
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
     }
 

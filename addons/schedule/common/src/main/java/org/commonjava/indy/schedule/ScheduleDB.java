@@ -10,19 +10,17 @@ import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.model.DtxExpiration;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
+import org.commonjava.indy.schedule.event.ScheduleTriggerEvent;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
 import javax.inject.Inject;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -40,6 +38,9 @@ public class ScheduleDB
 
     @Inject
     ScheduleDBConfig config;
+
+    @Inject
+    Event<ScheduleTriggerEvent> eventDispatcher;
 
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
@@ -199,8 +200,8 @@ public class ScheduleDB
                     BoundStatement boundU = preparedExpiredUpdate.bind( schedule.getStoreKey(), schedule.getJobName() );
                     session.execute( boundU );
 
-                    //TODO trigger the expired event
                     logger.debug( "Expired entry: {}", schedule );
+                    eventDispatcher.fire( new ScheduleTriggerEvent( schedule.getJobType(), schedule.getPayload() ) );
                 }
             }
         } );
