@@ -20,17 +20,17 @@ import org.commonjava.indy.model.core.StoreKey;
 /**
  * Created by jdcasey on 9/11/15.
  */
-public interface PromoteRequest<T extends PromoteRequest<T>>
+public interface PromoteRequest
 {
     StoreKey getSource();
 
-    T setSource( StoreKey source );
+    PromoteRequest setSource( StoreKey source );
 
     StoreKey getTargetKey();
 
     boolean isDryRun();
 
-    T setDryRun( boolean dryRun );
+    PromoteRequest setDryRun( boolean dryRun );
 
     boolean isFireEvents();
 

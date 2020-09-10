@@ -32,27 +32,58 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-public class ParsablePomRuleByPathTest
+/**
+ * This is used to test npm-parsable-package-meta rule can work correctly for parsable package.json:
+ * <b>GIVEN:</b>
+ * <ul>
+ *     <li>Rule-set with npm-parsable-package-meta</li>
+ *     <li>Source and target hosted repo with npm pkg type</li>
+ *     <li>Source repo contains valid and invalid package.json</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>WHEN:</b>
+ * <ul>
+ *     <li>Do paths promotion from source repo to target repo</li>
+ * </ul>
+ *
+ * <br/>
+ * <b>THEN:</b>
+ * <ul>
+ *     <li>Validation failed and validation errors for rule is in result</li>
+ *     <li>Validation errors only contains the paths for invalid package.json</li>
+ * </ul>
+ */
+public class NPMParsablePkgMetaRuleByPathTest
                 extends AbstractValidationRuleTest<HostedRepository>
 {
 
-    private static final String RULE = "maven-parsable-pom.groovy";
+    private static final String RULE = "npm-parsable-package-meta.groovy";
+
+    private static final String INVALID = "wrong/package.json";
+    private static final String VALID = "valid/package.json";
 
     @Test
     @Category( EventDependent.class )
     public void run() throws Exception
     {
-        String invalid = "org/foo/invalid/1/invalid-1.pom";
-        String valid = "org/foo/valid/1/valid-1.pom";
-
-        deploy( invalid, "This is not parsable" );
-        deploy( valid, "<?xml version=\"1.0\"?>\n<project><modelVersion>4.0.0</modelVersion><groupId>org.foo</groupId>"
-                        + "<artifactId>valid</artifactId><version>1</version></project>" );
+        deploy( INVALID, "This is not parsable" );
+        deployResource( VALID, "npm-parsable-pkg-meta/package.json" );
+        assertThat( client.content().exists( source.getKey(), INVALID ), equalTo( true ) );
+        assertThat( client.content().exists( source.getKey(), VALID ), equalTo( true ) );
 
         waitForEventPropagation();
 
-        PathsPromoteRequest request = new PathsPromoteRequest( source.getKey(), target.getKey() );
-        request.setPaths( new HashSet( Arrays.asList( invalid, valid )) );
+        PathsPromoteRequest request = new PathsPromoteRequest( source.getKey(), target.getKey(), VALID, INVALID );
+        check(request);
+
+        request = new PathsPromoteRequest( source.getKey(), target.getKey() );
+        check(request);
+
+    }
+
+    private void check(PathsPromoteRequest request) throws Exception{
+        request.setPaths( new HashSet<>( Arrays.asList( INVALID, VALID )) );
 
         PathsPromoteResult result = module.promoteByPath( request );
         assertThat( result, notNullValue() );
@@ -63,17 +94,16 @@ public class ParsablePomRuleByPathTest
         Map<String, String> validatorErrors = validations.getValidatorErrors();
         assertThat( validatorErrors, notNullValue() );
 
-        System.out.println( validatorErrors );
+        logger.info( "Validation errors: {}", validatorErrors );
 
         String errors = validatorErrors.get( RULE );
         assertThat( errors, notNullValue() );
 
-        System.out.println( validatorErrors );
-        assertThat( errors.contains( valid ), equalTo( false ) );
-        assertThat( errors.contains( invalid ), equalTo( true ) );
+        assertThat( errors.contains( VALID ), equalTo( false ) );
+        assertThat( errors.contains( INVALID ), equalTo( true ) );
     }
 
-    public ParsablePomRuleByPathTest()
+    public NPMParsablePkgMetaRuleByPathTest()
     {
         super( HostedRepository.class );
     }

@@ -57,7 +57,7 @@ public class ProjectVersionPatternRuleForTempBuildTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "project-version-pattern.groovy";
+    private static final String RULE = "maven-project-version-pattern.groovy";
 
     @Test
     @Category( EventDependent.class )

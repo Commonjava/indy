@@ -16,7 +16,6 @@
 package org.commonjava.indy.promote.validate;
 
 import groovy.lang.Closure;
-import org.bouncycastle.util.Pack;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
@@ -31,8 +30,9 @@ import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.pkg.PackageTypeConstants;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.content.PackagePath;
+import org.commonjava.indy.pkg.npm.model.PackageMetadata;
 import org.commonjava.indy.promote.conf.PromoteConfig;
 import org.commonjava.indy.promote.validate.model.ValidationRequest;
 import org.commonjava.indy.util.LocationUtils;
@@ -64,12 +64,13 @@ import org.commonjava.indy.util.RequestContextHelper;
 import org.slf4j.MDC;
 
 import javax.inject.Inject;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -131,6 +132,9 @@ public class PromotionValidationTools
 
     @Inject
     private PromoteConfig promoteConfig;
+
+    @Inject
+    private IndyObjectMapper objectMapper;
 
     @Inject
     @WeftManaged
@@ -335,6 +339,34 @@ public class PromotionValidationTools
         Transfer transfer = retrieve( request.getSourceRepository(), path );
 
         return pomReader.readLocalPom( artifactRef.asProjectVersionRef(), transfer, MavenPomView.ALL_PROFILES );
+    }
+
+    @Measure
+    public PackageMetadata readLocalPackageJson( final String path, final ValidationRequest request )
+            throws IndyWorkflowException
+    {
+        Transfer transfer = retrieve( request.getSourceRepository(), path );
+        try
+        {
+            if ( transfer.exists() && transfer.getPath().endsWith( "package.json" ) )
+            {
+                try (InputStream is = transfer.openInputStream())
+                {
+                    return objectMapper.readValue( is, PackageMetadata.class );
+                }
+            }
+            else
+            {
+                throw new IndyWorkflowException(
+                        "Invalid artifact path: %s. Could not parse package metadata from path.", path );
+            }
+        }
+        catch ( IOException e )
+        {
+            throw new IndyWorkflowException(
+                    "Invalid artifact path: %s. Could not parse package metadata from path by error: %s", path,
+                    e.getMessage() );
+        }
     }
 
     public ArtifactRef getArtifact( final String path )

@@ -6,7 +6,7 @@ import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 
-class NoSnapshots implements ValidationRule {
+class MavenNoSnapshots implements ValidationRule {
 
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true)

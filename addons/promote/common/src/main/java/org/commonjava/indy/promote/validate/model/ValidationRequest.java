@@ -15,9 +15,9 @@
  */
 package org.commonjava.indy.promote.validate.model;
 
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -25,6 +25,7 @@ import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.promote.validate.PromotionValidationTools;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.maven.galley.model.Transfer;
 
 import java.util.HashSet;
@@ -46,7 +47,7 @@ public class ValidationRequest
 
     private Set<String> requestPaths;
 
-    private ArtifactStore sourceRepository;
+    private final ArtifactStore sourceRepository;
 
     public ValidationRequest( PromoteRequest promoteRequest, ValidationRuleSet ruleSet, PromotionValidationTools tools, ArtifactStore sourceRepository )
     {
@@ -72,14 +73,19 @@ public class ValidationRequest
                 paths = ( (PathsPromoteRequest) promoteRequest ).getPaths();
             }
 
-            if ( paths == null )
+            if ( paths == null || paths.isEmpty())
             {
                 if ( sourceRepository != null )
                 {
                     try
                     {
                         paths = new HashSet<>();
+                        // This is used to let galley ignore the NPMPathStorageCalculator handling,
+                        // which will append package.json to a directory transfer and make listing not applicable.
+                        ThreadContext context = ThreadContext.getContext( true );
+                        context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.TRUE );
                         listRecursively( sourceRepository, "/", paths );
+                        context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.FALSE );
                     }
                     catch ( IndyWorkflowException e )
                     {

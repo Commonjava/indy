@@ -10,7 +10,7 @@ import org.commonjava.atlas.maven.ident.DependencyScope
 import org.commonjava.maven.galley.maven.rel.ModelProcessorConfig
 import org.slf4j.LoggerFactory
 
-class ArtifactRefAvailability implements ValidationRule {
+class MavenArtifactRefAvailability implements ValidationRule {
 
     String validate(ValidationRequest request) {
         def verifyStoreKeys = request.getTools().getValidationStoreKeys(request, true);
