@@ -13,17 +13,18 @@ import java.util.Map;
 public class IndyCassandraConnectionRootSpanFields
                 extends CassandraConnectionRootSpanFields
 {
-    private CassandraClient cassandraClient;
+
+    private final Map<String, Session> sessions;
 
     @Inject
     public IndyCassandraConnectionRootSpanFields( CassandraClient cassandraClient )
     {
-        this.cassandraClient = cassandraClient;
+        this.sessions = Collections.unmodifiableMap( cassandraClient.getSessions() );
     }
 
     @Override
     protected Map<String, Session> getSessions()
     {
-        return Collections.unmodifiableMap( cassandraClient.getSessions() );
+        return sessions;
     }
 }
