@@ -32,7 +32,7 @@ import java.util.Optional;
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.getRequestAbsolutePath;
-import static org.commonjava.indy.repo.proxy.RepoProxyUtils.keyToPath;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.noPkgStorePath;
 
 @ApplicationScoped
 public class ContentBrowseRewriteResponseDecorator
@@ -56,11 +56,19 @@ public class ContentBrowseRewriteResponseDecorator
             return response;
         }
 
+        if ( config.isRemoteIndyListingRewriteEnabled() )
+        {
+            logger.debug(
+                    "[{}] Will use remote indy content listing instead, so will not decorate the response for remote proxy type of content browse rewriting.",
+                    ADDON_NAME );
+            return response;
+        }
+
         final String absolutePath = getRequestAbsolutePath( request );
         if ( !absolutePath.startsWith( "/api/browse/" ) )
         {
             logger.debug(
-                    "[{}] Content browse rewrite: {} is not a content browse request, will not decorate the response for content browse rewriting. ",
+                    "[{}] Content browse rewrite: {} is not a content browse request, will not decorate the response. ",
                     ADDON_NAME, absolutePath );
             return response;
         }
@@ -77,12 +85,12 @@ public class ContentBrowseRewriteResponseDecorator
 
         final StoreKey originalKey = StoreKey.fromString( originalRepoStr );
 
-        final String originalRepoPath = keyToPath( originalRepoStr );
-        final String path = extractPath( pathInfo, originalRepoPath );
+        final String originalRepoPath = noPkgStorePath( originalRepoStr );
+        final String path = extractPath( pathInfo );
         final boolean ruleInPath = pathInfo.contains( originalRepoPath );
         if ( ruleInPath )
         {
-            final String proxyToKeyPath = keyToPath( proxyToStoreKey );
+            final String proxyToKeyPath = noPkgStorePath( proxyToStoreKey );
             final Map<String, String> replacingMap = new HashMap<>(2);
             replacingMap.put( originalRepoPath, proxyToKeyPath );
             replacingMap.put( originalRepoStr, proxyToStoreKey.toString() );

@@ -16,7 +16,9 @@
 package org.commonjava.indy.pkg.npm.content;
 
 import org.apache.commons.io.FilenameUtils;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.content.StoragePathCalculator;
+import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.io.SpecialPathConstants;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
@@ -66,8 +68,14 @@ public class NPMStoragePathCalculator
     @Override
     public String calculateStoragePath( final StoreKey key, final String path )
     {
+        ThreadContext threadContext = ThreadContext.getContext( true );
+        final Boolean isRawView = threadContext.get( RequestContextHelper.IS_RAW_VIEW ) == null ?
+                Boolean.FALSE :
+                (Boolean)threadContext.get( RequestContextHelper.IS_RAW_VIEW );
 
-        if ( PKG_TYPE_NPM.equals( key.getPackageType() ) )
+        logger.trace( "Location is treated as raw view? {}", isRawView );
+
+        if ( !isRawView && PKG_TYPE_NPM.equals( key.getPackageType() ) )
         {
             String pkg = path;
 
@@ -83,9 +91,11 @@ public class NPMStoragePathCalculator
             final boolean isScopedPath = pkg.startsWith( "@" ) && pkg.split( "/" ).length < 3;
             if ( isSinglePath || isScopedPath )
             {
-                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, METADATA_NAME, key.toString() );
+                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, METADATA_NAME,
+                              key.toString() );
                 return extension != null ?
-                                normalize( pkg, METADATA_NAME + extension ) : normalize( pkg, METADATA_NAME );
+                        normalize( pkg, METADATA_NAME + extension ) :
+                        normalize( pkg, METADATA_NAME );
             }
         }
 
@@ -100,8 +110,8 @@ public class NPMStoragePathCalculator
         if ( spi != null && spi.isMetadata() )
         {
             return path.endsWith( SpecialPathConstants.HTTP_METADATA_EXT ) ?
-                            SpecialPathConstants.HTTP_METADATA_EXT :
-                            "." + FilenameUtils.getExtension( path );
+                    SpecialPathConstants.HTTP_METADATA_EXT :
+                    "." + FilenameUtils.getExtension( path );
         }
         return null;
     }

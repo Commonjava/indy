@@ -46,7 +46,7 @@ public class RepositoryProxyFilter
     public void doFilter( ServletRequest request, ServletResponse response, FilterChain chain )
             throws IOException, ServletException
     {
-        if ( !contoller.doProxy( request, response ) )
+        if ( !contoller.doFilter( request, response ) )
         {
             chain.doFilter( request, response );
         }

@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.IndyWorkflowException;
@@ -34,7 +35,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.promote.callback.PromotionCallbackHelper;
 import org.commonjava.indy.promote.change.event.PathsPromoteCompleteEvent;
 import org.commonjava.indy.promote.change.event.PromoteCompleteEvent;
@@ -144,7 +144,7 @@ public class PromotionManager
     @Inject
     private Locker<StoreKey> byGroupTargetLocks;
 
-    private Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
+    private final Map<String, StoreKey> targetGroupKeyMap = new ConcurrentHashMap<>( 1 );
 
     @WeftManaged
     @Inject
@@ -204,11 +204,11 @@ public class PromotionManager
             return new GroupPromoteResult( request, error );
         }
 
-        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
+        final StoreKey targetKey = getTargetKey( request.getTarget().getName(), request.getTarget().getPackageType() );
 
         if ( !storeManager.hasArtifactStore( targetKey ) )
         {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            String error = String.format( "No such target group: %s.", request.getTarget() );
             logger.warn( error );
 
             return new GroupPromoteResult( request, error );
@@ -238,9 +238,9 @@ public class PromotionManager
     {
         ValidationResult validation = new ValidationResult();
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
-                     request.getTargetGroup() );
+                     request.getTarget() );
 
-        final StoreKey targetKey = getTargetKey( request.getTargetGroup() );
+        final StoreKey targetKey = getTargetKey( request.getTarget().getName(), request.getTarget().getPackageType() );
         byGroupTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
             Group target;
             try
@@ -250,7 +250,7 @@ public class PromotionManager
             catch ( IndyDataException e )
             {
                 error.set( new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e,
-                                                   request.getTargetGroup(), e.getMessage() ) );
+                                                   request.getTarget(), e.getMessage() ) );
                 return null;
             }
 
@@ -344,11 +344,10 @@ public class PromotionManager
      * @param targetName the target group name
      * @return the group store key
      */
-    private StoreKey getTargetKey( final String targetName )
+    private StoreKey getTargetKey( final String targetName, final String packageType )
     {
-        return targetGroupKeyMap.computeIfAbsent( targetName,
-                                                  k -> new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY,
-                                                                     StoreType.group, targetName ) );
+        return targetGroupKeyMap.computeIfAbsent( packageType + "-" + targetName,
+                                                  k -> new StoreKey( packageType, StoreType.group, targetName ) );
     }
 
     public GroupPromoteResult rollbackGroupPromote( GroupPromoteResult result, String user )
@@ -371,13 +370,13 @@ public class PromotionManager
         }
         catch ( IndyDataException e )
         {
-            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
+            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTarget(),
                                           e.getMessage() );
         }
 
         if ( target == null )
         {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            String error = String.format( "No such target group: %s.", request.getTarget() );
             logger.warn( error );
 
             return new GroupPromoteResult( request, error );
@@ -476,7 +475,7 @@ public class PromotionManager
             Exception ex = error.get();
             if ( ex != null )
             {
-                String msg = "Group promotion failed. Target: " + request.getTargetGroup() + ", Source: "
+                String msg = "Group promotion failed. Target: " + request.getTarget() + ", Source: "
                         + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
                 ret = new GroupPromoteResult( request, msg );
@@ -661,7 +660,12 @@ public class PromotionManager
         List<Transfer> contents;
         if ( paths == null || paths.isEmpty() )
         {
+            // This is used to let galley ignore the NPMPathStorageCalculator handling,
+            // which will append package.json to a directory transfer and make listing not applicable.
+            ThreadContext context = ThreadContext.getContext( true );
+            context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.TRUE );
             contents = downloadManager.listRecursively( source, DownloadManager.ROOT_PATH );
+            context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.FALSE );
         }
         else
         {
@@ -982,7 +986,7 @@ public class PromotionManager
 
         logger.debug( "Store target transfer: {}", target );
         EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
-        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<Set>( affectedGroups ) );
+        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<>( affectedGroups ) );
         eventMetadata.set( TARGET_STORE, tgt );
 
         try (InputStream stream = transfer.openInputStream( true ))

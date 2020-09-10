@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import java.util.Optional;
+
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 public class PackagePath
@@ -44,15 +46,29 @@ public class PackagePath
             isScoped = Boolean.TRUE;
             scopedName = pathParts[0];
             packageName = pathParts[1];
-            String tarName = pathParts[3];
-            version = tarName.substring( packageName.length() + 1, tarName.length() - 4 );
+            if ( pathParts.length == 4 && "-".equals( pathParts[2] ) )
+            {
+                String tarName = pathParts[3];
+                version = tarName.substring( packageName.length() + 1, tarName.length() - 4 );
+            }
+            else if ( pathParts.length == 3 )
+            {
+                version = pathParts[2];
+            }
         }
         else
         {
             isScoped = Boolean.FALSE;
             packageName = pathParts[0];
-            String tarName = pathParts[2];
-            version = tarName.substring( packageName.length() + 1, tarName.length() - 4 );
+            if ( pathParts.length == 3 && "-".equals( pathParts[1] ) )
+            {
+                String tarName = pathParts[2];
+                version = tarName.substring( packageName.length() + 1, tarName.length() - 4 );
+            }
+            else if ( pathParts.length == 2 )
+            {
+                version = pathParts[1];
+            }
         }
     }
 
@@ -109,6 +125,26 @@ public class PackagePath
     public String getVersionPath()
     {
         return isScoped() ? normalize( scopedName, packageName, version ) : normalize( packageName, version );
+    }
+
+    public static Optional<PackagePath> parse( final String tarPath )
+    {
+        String path = tarPath;
+        if ( path.startsWith( "/" ) )
+        {
+            path = path.substring( 1 );
+        }
+        String[] parts = path.split( "/" );
+        if ( parts.length < 2 )
+        {
+            return Optional.empty();
+        }
+        else if ( path.startsWith( "@" ) && parts.length < 3 )
+        {
+            return Optional.empty();
+        }
+        PackagePath packagePath = new PackagePath( path );
+        return Optional.of( packagePath );
     }
 
     @Override

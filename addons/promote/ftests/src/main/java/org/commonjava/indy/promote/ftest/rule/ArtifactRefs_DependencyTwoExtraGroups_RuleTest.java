@@ -45,7 +45,7 @@ public class ArtifactRefs_DependencyTwoExtraGroups_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "artifact-refs-via.groovy";
+    private static final String RULE = "maven-artifact-refs-via.groovy";
 
     private static final String PREFIX = "artifact-refs-via/";
 

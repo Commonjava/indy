@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.util.Objects;
 
 public class ScheduleKey implements Externalizable, Serializable
 {
@@ -72,14 +73,14 @@ public class ScheduleKey implements Externalizable, Serializable
     @Override
     public boolean equals( Object obj )
     {
-        if ( obj == null || !( obj instanceof ScheduleKey ) )
+        if ( !( obj instanceof ScheduleKey ) )
         {
             return false;
         }
 
         final ScheduleKey that = (ScheduleKey) obj;
-        return equalsWithNull( this.storeKey, that.storeKey ) && equalsWithNull( this.type, that.type )
-                && equalsWithNull( this.name, that.name );
+        return Objects.equals( this.storeKey, that.storeKey ) && Objects.equals( this.type, that.type )
+                && Objects.equals( this.name, that.name );
     }
 
     @Override
@@ -91,11 +92,6 @@ public class ScheduleKey implements Externalizable, Serializable
         result = prime * result + ( ( type == null ) ? 0 : type.hashCode() );
         result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
         return result;
-    }
-
-    private boolean equalsWithNull( final Object one, final Object two )
-    {
-        return one == two || ( one != null && two != null && one.equals( two ) );
     }
 
     public String toStringKey()

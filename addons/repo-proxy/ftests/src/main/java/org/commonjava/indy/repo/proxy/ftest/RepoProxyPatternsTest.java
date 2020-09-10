@@ -58,7 +58,7 @@ import static org.junit.Assert.assertThat;
  * <ul>
  *     <li>Loaded store is remote but not hosted</li>
  *     <li>The content of path1 can not be returned correctly from hosted as no proxy happened</li>
- *     <li>The content of pathA can be returned correctly from hosted as no proxy happened</li>
+ *     <li>The content of path2 can be returned correctly from hosted as no proxy happened</li>
  * </ul>
  */
 public class RepoProxyPatternsTest
