@@ -17,6 +17,7 @@ package org.commonjava.indy.diag.bind.jaxrs;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
@@ -42,6 +43,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import static java.lang.System.currentTimeMillis;
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 import static org.commonjava.indy.util.ApplicationContent.application_zip;
 import static org.commonjava.indy.util.ApplicationContent.text_plain;
@@ -76,7 +79,27 @@ public class DiagnosticsResource
         String threadDump = diagnosticsManager.getThreadDumpString();
         return Response.ok( threadDump )
                        .header( ApplicationHeader.content_disposition.key(),
-                                "attachment; filename=indy-threads-" + System.currentTimeMillis() + ".txt" )
+                                "attachment; filename=indy-threads-" + currentTimeMillis() + ".txt" )
+                       .build();
+    }
+
+    @ApiOperation( "Retrieve a thread dump for Indy, filtered by state." )
+    @ApiResponses( { @ApiResponse( code = 200, response = String.class, message = "Thread dump content" ) } )
+    @GET
+    @Path( "/threads/{state: (new|runnable|blocked|waiting|timed_waiting|terminated)}" )
+    @Produces( text_plain )
+    public Response getThreadDumpByState(
+                    @ApiParam( "Thread state, should be in (new|runnable|blocked|waiting|timed_waiting|terminated)" ) final @PathParam( "state" ) String state )
+    {
+        Thread.State tState = Thread.State.valueOf( state );
+        if ( tState == null )
+        {
+            return Response.status( BAD_REQUEST ).build();
+        }
+        String threadDump = diagnosticsManager.getThreadDumpString( tState );
+        return Response.ok( threadDump )
+                       .header( ApplicationHeader.content_disposition.key(),
+                                "attachment; filename=indy-" + state + "-threads-" + currentTimeMillis() + ".txt" )
                        .build();
     }
 
@@ -97,7 +120,7 @@ public class DiagnosticsResource
 
             return Response.ok( bundle )
                            .header( ApplicationHeader.content_disposition.key(),
-                                    "attachment; filename=indy-diagnostic-bundle-" + System.currentTimeMillis() + ".zip" )
+                                    "attachment; filename=indy-diagnostic-bundle-" + currentTimeMillis() + ".zip" )
                            .build();
         }
         catch ( IOException e )
@@ -124,7 +147,7 @@ public class DiagnosticsResource
 
             return Response.ok( bundle )
                            .header( ApplicationHeader.content_disposition.key(),
-                                    "attachment; filename=indy-repo-bundle-" + System.currentTimeMillis() + ".zip" )
+                                    "attachment; filename=indy-repo-bundle-" + currentTimeMillis() + ".zip" )
                            .build();
         }
         catch ( IOException e )
@@ -217,7 +240,7 @@ public class DiagnosticsResource
             {
                 return Response.ok( dto ).build();
             }
-            return Response.status( Response.Status.BAD_REQUEST )
+            return Response.status( BAD_REQUEST )
                            .type( MediaType.TEXT_PLAIN_TYPE )
                            .entity( String.format( "Invalid log level: %s", level ) )
                            .build();

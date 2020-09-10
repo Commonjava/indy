@@ -32,8 +32,7 @@ import java.util.Optional;
 import static org.commonjava.indy.repo.proxy.RepoProxyAddon.ADDON_NAME;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.extractPath;
 import static org.commonjava.indy.repo.proxy.RepoProxyUtils.isNPMMetaPath;
-import static org.commonjava.indy.repo.proxy.RepoProxyUtils.keyToPath;
-import static org.commonjava.indy.repo.proxy.RepoProxyUtils.trace;
+import static org.commonjava.indy.repo.proxy.RepoProxyUtils.noPkgStorePath;
 
 /**
  * This response decorator will do following
@@ -82,11 +81,11 @@ public class NPMMetadtaRewriteResponseDecorator
             return response;
         }
 
-        final String originalRepoPath = keyToPath( originalRepoStr );
-        final String path = extractPath( pathInfo, originalRepoPath );
+        final String originalRepoPath = noPkgStorePath( originalRepoStr );
+        final String path = extractPath( pathInfo );
         if ( isNPMMetaPath( path ) )
         {
-            final String proxyToKeyPath = keyToPath( proxyToStoreKey );
+            final String proxyToKeyPath = noPkgStorePath( proxyToStoreKey );
             logger.debug( "[{}] NPM rewriting replacement: from {} to {}", ADDON_NAME, proxyToKeyPath,
                           originalRepoPath );
             return new ContentReplacingResponseWrapper( request, response,

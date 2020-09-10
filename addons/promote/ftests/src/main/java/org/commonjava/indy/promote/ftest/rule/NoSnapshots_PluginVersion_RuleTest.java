@@ -37,7 +37,7 @@ public class NoSnapshots_PluginVersion_RuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "no-snapshots.groovy";
+    private static final String RULE = "maven-no-snapshots.groovy";
 
     @Test
     @Category( EventDependent.class )

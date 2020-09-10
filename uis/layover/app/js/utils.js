@@ -81,3 +81,15 @@ var appPath = function( path ){
   
   return result;
 };
+
+var packageType = function( path ){
+    //console.log(path);
+    var lastSlash = path.lastIndexOf('/');
+    if( lastSlash && lastSlash > -1 ){
+      return path.substring(lastSlash + 1);
+    }
+    else
+    {
+      return '_all';
+    }
+};

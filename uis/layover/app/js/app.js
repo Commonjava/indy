@@ -39,16 +39,19 @@ indy.config(['$routeProvider', '$controllerProvider', '$compileProvider', '$filt
   indy.provide = $provide;
   
   $routeProvider.when('/remote', {templateUrl: 'partials/remote-list.html'});
+  $routeProvider.when('/remote/:packageType', {templateUrl: 'partials/remote-list.html'});
   $routeProvider.when('/remote/:packageType/view/:name', {templateUrl: 'partials/remote-detail.html'});
   $routeProvider.when('/remote/new', {templateUrl: 'partials/remote-edit.html'});
   $routeProvider.when('/remote/:packageType/edit/:name', {templateUrl: 'partials/remote-edit.html'});
 
   $routeProvider.when('/hosted', {templateUrl: 'partials/hosted-list.html'});
+  $routeProvider.when('/hosted/:packageType', {templateUrl: 'partials/hosted-list.html'});
   $routeProvider.when('/hosted/:packageType/view/:name', {templateUrl: 'partials/hosted-detail.html'});
   $routeProvider.when('/hosted/new', {templateUrl: 'partials/hosted-edit.html'});
   $routeProvider.when('/hosted/:packageType/edit/:name', {templateUrl: 'partials/hosted-edit.html'});
 
   $routeProvider.when('/group', {templateUrl: 'partials/group-list.html'});
+  $routeProvider.when('/group/:packageType', {templateUrl: 'partials/group-list.html'});
   $routeProvider.when('/group/:packageType/view/:name', {templateUrl: 'partials/group-detail.html'});
   $routeProvider.when('/group/new', {templateUrl: 'partials/group-edit.html'});
   $routeProvider.when('/group/:packageType/edit/:name', {templateUrl: 'partials/group-edit.html'});

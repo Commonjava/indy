@@ -42,11 +42,28 @@
       </encoder>
     </appender>
 
+  <logger name="org.xnio.nio" level="WARN"/>
+  <logger name="io.undertow" level="WARN"/>
+  <logger name="org.jboss" level="WARN"/>
+  <logger name="org.keycloak" level="WARN"/>
+  <logger name="org.infinispan" level="WARN"/>
+  <logger name="io.netty" level="WARN"/>
+  <logger name="com.datastax" level="WARN" />
+  <logger name="org.apache.http" level="WARN"/>
+  <logger name="org.jboss.weld" level="ERROR"/>
+
+
   <logger name="org.commonjava.indy" level="TRACE"/>
   <logger name="org.commonjava.maven.galley" level="TRACE"/>
+
+  <logger name="org.commonjava.propulsor" level="INFO" />
+  <logger name="org.commonjava.atlas" level="INFO" />
+  <logger name="org.commonjava.util.jhttpc" level="INFO" />
+
   <logger name="org.commonjava.indy.model.core.StoreKey" level="INFO" />
   <logger name="org.commonjava.indy.pkg.npm.content.NPMStoragePathCalculator" level="INFO" />
   <logger name="org.commonjava.indy.metrics" level="INFO" />
+  <logger name="org.commonjava.indy.subsys.honeycomb" level="INFO" />
 
   <root level="DEBUG">
     <appender-ref ref="STDOUT" />

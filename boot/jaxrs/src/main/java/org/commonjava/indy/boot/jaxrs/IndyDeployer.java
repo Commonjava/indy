@@ -18,6 +18,7 @@ package org.commonjava.indy.boot.jaxrs;
 import io.undertow.Undertow;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.encoding.ContentEncodingRepository;
 import io.undertow.server.handlers.encoding.DeflateEncodingProvider;
 import io.undertow.server.handlers.encoding.EncodingHandler;
@@ -26,6 +27,8 @@ import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.DeploymentManager;
 import org.commonjava.indy.bind.jaxrs.IndyDeployment;
+import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.MimeTyper;
 import org.commonjava.propulsor.boot.BootOptions;
 import org.commonjava.propulsor.boot.PortFinder;
 import org.commonjava.propulsor.deploy.DeployException;
@@ -37,6 +40,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.servlet.ServletException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 @ApplicationScoped
@@ -57,6 +62,9 @@ public class IndyDeployer
 
     @Inject
     private RestConfig restConfig;
+
+    @Inject
+    private MimeTyper mimeTyper;
 
     @Override
     public void stop()
@@ -136,18 +144,32 @@ public class IndyDeployer
         return t;
     }
 
+    private static final Set<String> NO_NEED_GZIPPED_CONTENT = new HashSet<>();
+
+    static
+    {
+        NO_NEED_GZIPPED_CONTENT.add( ApplicationContent.application_gzip );
+    }
+
     private EncodingHandler getGzipEncodeHandler( final DeploymentManager dm )
             throws ServletException
     {
         // FROM: https://stackoverflow.com/questions/28295752/compressing-undertow-server-responses#28329810
         final Predicate sizePredicate = Predicates.parse( "max-content-size[" + Long.toString( 5 * 1024 ) + "]" );
 
+        // For firefox bug: https://bugzilla.mozilla.org/show_bug.cgi?id=610679
+        final Predicate fileTypePredicate = v -> {
+            final String path = v.getRequestPath();
+            return !NO_NEED_GZIPPED_CONTENT.contains( mimeTyper.getContentType( path ).toLowerCase() );
+        };
+
+        final Predicate mixePredicate = v -> sizePredicate.resolve( v ) && fileTypePredicate.resolve( v );
+
         EncodingHandler eh = new EncodingHandler(
                 new ContentEncodingRepository().addEncodingHandler( "gzip", new GzipEncodingProvider(), 50,
-                                                                    sizePredicate ) ).setNext( dm.start() );
+                                                                    mixePredicate ) ).setNext( dm.start() );
 //                                               .addEncodingHandler( "deflate", new DeflateEncodingProvider(), 51,
 //                                                                    sizePredicate ) ).setNext( dm.start() );
         return eh;
     }
-
 }

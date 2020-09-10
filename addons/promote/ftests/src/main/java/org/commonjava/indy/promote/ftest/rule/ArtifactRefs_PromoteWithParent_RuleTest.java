@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 public class ArtifactRefs_PromoteWithParent_RuleTest
     extends AbstractValidationRuleTest<HostedRepository>
 {
-    private static final String RULE = "artifact-refs-via.groovy";
+    private static final String RULE = "maven-artifact-refs-via.groovy";
 
     private static final String PREFIX = "artifact-refs-via/";
 
