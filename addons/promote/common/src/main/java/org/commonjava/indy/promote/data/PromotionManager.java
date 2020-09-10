@@ -936,6 +936,7 @@ public class PromotionManager
         }
 
         Transfer target = contentManager.getTransfer( tgt, path, UPLOAD );
+        EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
 
         /*
          * if we hit an existing metadata.xml, we remove it from both target repo and affected groups. The metadata
@@ -948,12 +949,13 @@ public class PromotionManager
             {
                 if ( target != null && target.exists() )
                 {
-                    target.delete( true );
+                    contentManager.delete( tgt,path, eventMetadata );
+//                    target.delete( true );
                 }
                 result.skipped = true;
                 logger.info( "Metadata, mark as skipped and remove it if exists, target: {}", target );
             }
-            catch ( IOException e )
+            catch ( IndyWorkflowException e )
             {
                 String msg = String.format( "Failed to promote: %s. Target: %s. Failed to remove metadata.",
                                             transfer, request.getTarget() );
@@ -985,9 +987,7 @@ public class PromotionManager
         }
 
         logger.debug( "Store target transfer: {}", target );
-        EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
-        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<>( affectedGroups ) );
-        eventMetadata.set( TARGET_STORE, tgt );
+        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<>( affectedGroups ) ).set( TARGET_STORE, tgt );
 
         try (InputStream stream = transfer.openInputStream( true ))
         {
