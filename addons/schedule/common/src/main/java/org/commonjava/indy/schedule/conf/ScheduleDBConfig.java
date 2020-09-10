@@ -22,6 +22,8 @@ public class ScheduleDBConfig implements IndyConfigInfo
 
     private long scheduleRatePeriod;
 
+    private int offsetHours;
+
     private Boolean enabled;
 
     public ScheduleDBConfig () {}
@@ -76,6 +78,17 @@ public class ScheduleDBConfig implements IndyConfigInfo
 
     @ConfigName( "schedule.rate.period" )
     public void setScheduleRatePeriod( long scheduleRatePeriod ) { this.scheduleRatePeriod = scheduleRatePeriod; }
+
+    public int getOffsetHours()
+    {
+        return offsetHours;
+    }
+
+    @ConfigName( "schedule.hours.offset" )
+    public void setOffsetHours( int offsetHours )
+    {
+        this.offsetHours = offsetHours;
+    }
 
     @Override
     public String getDefaultConfigFileName()

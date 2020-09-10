@@ -17,6 +17,12 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -111,9 +117,15 @@ public class ScheduleDB
                                         + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE
                                         + " WHERE storekey = ? " );
 
-        // TODO,  need to consider how to handle the rest ones when the time(hour) switching
         service.scheduleAtFixedRate( () -> {
-            queryAndSetExpiredSchedule( new Date() );
+            // When the hour shift, the service need to check the remaining jobs expired in the last minutes of the last hour.
+            LocalDateTime localDateTime = LocalDateTime.now();
+            if ( localDateTime.getMinute() <= config.getScheduleRatePeriod() / 60 )
+            {
+                LocalDateTime offsetDateTime = localDateTime.minusHours( config.getOffsetHours() );
+                queryAndSetExpiredSchedule( Date.from( offsetDateTime.atZone( ZoneId.systemDefault() ).toInstant() ) );
+            }
+            queryAndSetExpiredSchedule( Date.from( localDateTime.atZone( ZoneId.systemDefault() ).toInstant() ) );
         }, 10, config.getScheduleRatePeriod(), TimeUnit.SECONDS );
 
     }
