@@ -9,22 +9,31 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 import java.util.Properties;
 
-@SectionName( "schedule" )
+@SectionName( "scheduledb" )
 @ApplicationScoped
-public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
+public class ScheduleDBConfig implements IndyConfigInfo
 {
 
     private String scheduleKeyspace;
 
-    private Integer replicationFactor;
+    private int replicationFactor;
 
-    private Long partitionKeyRange;
+    private long partitionKeyRange;
 
-    public ScheduleDBConfig( String keyspace, Integer replicationFactor, Long partitionKeyRange )
+    private long scheduleRatePeriod;
+
+    private int offsetHours;
+
+    private Boolean enabled;
+
+    public ScheduleDBConfig () {}
+
+    public ScheduleDBConfig( String keyspace, int replicationFactor, long partitionKeyRange, long period )
     {
         this.scheduleKeyspace = keyspace;
         this.replicationFactor = replicationFactor;
         this.partitionKeyRange = partitionKeyRange;
+        this.scheduleRatePeriod = period;
     }
 
     public String getScheduleKeyspace()
@@ -38,43 +47,61 @@ public class ScheduleDBConfig implements IndyConfigInfo, SystemPropertyProvider
         this.scheduleKeyspace = scheduleKeyspace;
     }
 
-    public Integer getReplicationFactor()
+    public int getReplicationFactor()
     {
         return replicationFactor;
     }
 
     @ConfigName( "schedule.keyspace.replica" )
-    public void setReplicationFactor( Integer replicationFactor )
+    public void setReplicationFactor( int replicationFactor )
     {
         this.replicationFactor = replicationFactor;
     }
 
-    public Long getPartitionKeyRange()
+    public long getPartitionKeyRange()
     {
         return partitionKeyRange;
     }
 
     @ConfigName( "schedule.partition.range" )
-    public void setPartitionKeyRange( Long partitionKeyRange )
+    public void setPartitionKeyRange( long partitionKeyRange )
     {
         this.partitionKeyRange = partitionKeyRange;
+    }
+
+    public Boolean isEnabled() { return enabled; }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( Boolean enabled ) { this.enabled = enabled; }
+
+    public long getScheduleRatePeriod() { return scheduleRatePeriod; }
+
+    @ConfigName( "schedule.rate.period" )
+    public void setScheduleRatePeriod( long scheduleRatePeriod ) { this.scheduleRatePeriod = scheduleRatePeriod; }
+
+    public int getOffsetHours()
+    {
+        return offsetHours;
+    }
+
+    @ConfigName( "schedule.hours.offset" )
+    public void setOffsetHours( int offsetHours )
+    {
+        this.offsetHours = offsetHours;
     }
 
     @Override
     public String getDefaultConfigFileName()
     {
-        return null;
+        return "conf.d/schedule.conf";
     }
 
     @Override
     public InputStream getDefaultConfig()
     {
-        return null;
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-scheduledb.conf" );
     }
 
-    @Override
-    public Properties getSystemPropertyAdditions()
-    {
-        return null;
-    }
 }

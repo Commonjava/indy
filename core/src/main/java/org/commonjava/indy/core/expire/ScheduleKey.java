@@ -61,7 +61,7 @@ public class ScheduleKey implements Externalizable, Serializable
 
     public String groupName()
     {
-        return ScheduleManager.groupName( this.storeKey, this.type );
+        return ScheduleManagerUtils.groupName( this.storeKey, this.type );
     }
 
     public static ScheduleKey fromGroupWithName( final String group, final String name )

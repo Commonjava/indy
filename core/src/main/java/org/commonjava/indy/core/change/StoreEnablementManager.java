@@ -31,6 +31,7 @@ import org.commonjava.indy.measure.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.schedule.event.ScheduleTriggerEvent;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,44 +130,63 @@ public class StoreEnablementManager
 
         if ( (evt instanceof SchedulerTriggerEvent) && DISABLE_TIMEOUT.equals( evt.getJobType() ) )
         {
-            String keystr = evt.getPayload();
-            StoreKey key = null;
+            handleDisableTimeout( evt.getPayload() );
+        }
+    }
+
+    @Measure
+    public void onDisableTimeout( @Observes ScheduleTriggerEvent evt )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        logger.debug( "Checking for store-reenable event in: {} (trigger? {} Disable-Timeout? {})", evt,
+                      true, DISABLE_TIMEOUT.equals( evt.getJobType() ) );
+
+        if ( DISABLE_TIMEOUT.equals( evt.getJobType() ) )
+        {
+            handleDisableTimeout( evt.getPayload() );
+        }
+    }
+
+    private void handleDisableTimeout( String payload )
+    {
+        Logger logger = LoggerFactory.getLogger( getClass() );
+        String keystr = payload;
+        StoreKey key = null;
+        try
+        {
+            key = objectMapper.readValue( keystr, StoreKey.class );
+        }
+        catch ( IOException e )
+        {
+            logger.warn( "Failed to read StoreKey from JSON string: '{}' in event payload.", keystr );
+        }
+
+        logger.debug( "Read key: {} from JSON string: '{}' in event payload.", key, keystr );
+        if ( key != null )
+        {
             try
             {
-                key = objectMapper.readValue( keystr, StoreKey.class );
-            }
-            catch ( IOException e )
-            {
-                logger.warn( "Failed to read StoreKey from JSON string: '{}' in event payload.", keystr );
-            }
-
-            logger.debug( "Read key: {} from JSON string: '{}' in event payload.", key, keystr );
-            if ( key != null )
-            {
-                try
+                ArtifactStore store = storeDataManager.getArtifactStore( key );
+                if ( store == null )
                 {
-                    ArtifactStore store = storeDataManager.getArtifactStore( key );
-                    if ( store == null )
-                    {
-                        logger.warn( "Attempt to re-enable missing repository! Skipping." );
-                        return;
-                    }
-
-                    store = store.copyOf();
-                    if ( store.isDisabled() )
-                    {
-                        store.setDisabled( false );
-
-                        storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER,
-                                                                                       "Re-enabling " + key ),
-                                                             false, true, new EventMetadata() );
-
-                    }
+                    logger.warn( "Attempt to re-enable missing repository! Skipping." );
+                    return;
                 }
-                catch ( IndyDataException e )
+
+                store = store.copyOf();
+                if ( store.isDisabled() )
                 {
-                    logger.error( String.format( "Failed to re-enable %s", key ), e);
+                    store.setDisabled( false );
+
+                    storeDataManager.storeArtifactStore( store, new ChangeSummary( ChangeSummary.SYSTEM_USER,
+                                                                                   "Re-enabling " + key ),
+                                                         false, true, new EventMetadata() );
+
                 }
+            }
+            catch ( IndyDataException e )
+            {
+                logger.error( String.format( "Failed to re-enable %s", key ), e);
             }
         }
     }
