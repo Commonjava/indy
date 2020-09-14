@@ -1,0 +1,51 @@
+{
+  "_id": "@babel/parser",
+  "_rev": "87-0bf11730f53724368fe4fc3bef482fed",
+  "name": "@babel/parser",
+  "dist-tags": {
+    "latest": "7.0.0-beta.48"
+  },
+  "versions": {
+    "7.0.0-beta.48": {
+      "name": "@babel/parser",
+      "version": "7.0.0-beta.48",
+      "description": "A JavaScript parser",
+      "author": {
+        "name": "Sebastian McKenzie",
+        "email": "sebmck@gmail.com"
+      },
+      "homepage": "https://babeljs.io/",
+      "license": "MIT",
+      "keywords": [
+        "babel",
+        "javascript",
+        "parser",
+        "tc39",
+        "ecmascript",
+        "@babel/parser"
+      ],
+      "main": "lib/index.js",
+      "files": [
+        "bin",
+        "lib"
+      ],
+      "engines": {
+        "node": ">=6.0.0"
+      },
+      "bin": {
+        "parser": "./bin/babel-parser.js"
+      },
+      "_id": "@babel/parser@7.0.0-beta.48",
+      "_npmVersion": "5.6.0",
+      "_nodeVersion": "8.10.0",
+      "dist": {
+        "integrity": "sha512-X3pKxvy7vL79zc/6XS6cCObyuRMnsRGRu7d3zVSPZGCdxkK0/wTeFRwseRjcvhReV/6LW2D8H8qHVFFL0c+5+w==",
+        "shasum": "f93895cbacee703c0ec98e5af3901c77edd9f1d7",
+        "tarball": "https://registry.npmjs.org/@babel/parser/-/parser-7.0.0-beta.48.tgz",
+        "fileCount": 6,
+        "unpackedSize": 380503,
+        "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJbBxCGCRA9TVsSAnZWagAALkIQAI8MHP43v0t5yW+5eb8a\nFvCKyfUV5pYIAgLwyT6QlxWhW37Yy2x1jqzQPVFDz3TEvXHSetOroranW1v6\nH3RrGgFfV6ouyrKnYgk8JpTXHWlHKXWB0m0BqkOrMQwDdQVVVeIxdpQr1yrb\noyt5AjRZ272dKN0Q4iQTeLqC6uxUXYlarbBRUgWXx5BuLh//rVjIJGQ5Fj2m\nZcFFGRjbyw9Hdb0/wo7x0lV6VEi4Oh2wRNZuskIFBRNAiHdrCLf1IZEDsQRE\nGRXuKXc6Xj8LeHvoS2V5Vvs7dbuUq5lq5oiRiTEkPt032MSftU8tsl4UysVn\n1krvHCQYqNCg5WgKJlqXZCae+AxUWj9UacC98aq4vAeZl3DVzoJ5n5ENcHcI\na9Wrs0qumfODoxaDOSs+DNXAYnSc91zoguH187OOCLfas2Gw1MyRIXnJwvnH\nVnwnQyFBuRDDigxBGrRVVFkY6cf+vzoSaVIs5VL8wI85FDtKK/JmTtGwWLtk\nE1xG2tQVl622gWNZqPvoKbS5U1glbq9oPq7ECkPwWA9DSzdBidXfdezyMxJe\n1weMKBjz4+cOvzDS5ybdDPjQE1HlfQ3ffWz8nMm1agoLMXBz5e9pqYo098sL\n+FbijDCbi2Db3fD3UT1DBFMp3+GHuhe4/Aiow2TgL6l9rPlijvXVtAZdnRPV\ng+id\r\n=kdOk\r\n-----END PGP SIGNATURE-----\r\n"
+      }
+    }
+  }
+}
