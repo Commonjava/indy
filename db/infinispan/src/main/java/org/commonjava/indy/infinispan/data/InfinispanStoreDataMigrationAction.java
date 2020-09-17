@@ -85,7 +85,7 @@ public class InfinispanStoreDataMigrationAction
     {
         String clsName = storeDataManager.getClass().getName();
 
-        if ( !( storeDataManager instanceof InfinispanStoreDataManager ) )
+        if ( !( storeDataManager instanceof InfinispanStoreDataManager && ((InfinispanStoreDataManager) storeDataManager).isStandaloneMode() ) )
         {
             logger.info( "Store manager {} is not based on Infinispan. Skipping migration.", clsName );
             return false;

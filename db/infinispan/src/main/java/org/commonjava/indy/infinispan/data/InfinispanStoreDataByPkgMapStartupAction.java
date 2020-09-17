@@ -32,7 +32,7 @@ public class InfinispanStoreDataByPkgMapStartupAction
     public void start()
             throws IndyLifecycleException
     {
-        if ( storeDataManager instanceof InfinispanStoreDataManager )
+        if ( storeDataManager instanceof InfinispanStoreDataManager && ((InfinispanStoreDataManager) storeDataManager).isStandaloneMode() )
         {
             ((InfinispanStoreDataManager)storeDataManager).initByPkgMap();
         }

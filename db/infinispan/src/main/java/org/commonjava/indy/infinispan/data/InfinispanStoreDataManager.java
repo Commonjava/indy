@@ -16,7 +16,9 @@
 package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.audit.ChangeSummary;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
+import org.commonjava.indy.data.StandaloneStoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.db.common.StoreUpdateAction;
@@ -30,8 +32,8 @@ import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,7 +53,7 @@ import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_D
 import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
-@Alternative
+@StandaloneStoreDataManager
 public class InfinispanStoreDataManager
                 extends AbstractStoreDataManager
 {
@@ -72,6 +74,10 @@ public class InfinispanStoreDataManager
     @Inject
     private StoreEventDispatcher dispatcher;
 
+    @Inject
+    private IndyConfiguration indyConfiguration;
+
+    private boolean isStandaloneMode;
 
     @Override
     protected StoreEventDispatcher getStoreEventDispatcher()
@@ -92,6 +98,16 @@ public class InfinispanStoreDataManager
         this.storesByPkg = new CacheHandle( STORE_BY_PKG_CACHE, storesByPkg );
         this.affectedByStores = new CacheHandle( AFFECTED_BY_STORE_CACHE, affectedByStoresCache );
         logger.warn( "Constructor init: STARTUP ACTIONS MAY NOT RUN." );
+    }
+
+    @PostConstruct
+    public void init()
+    {
+        isStandaloneMode = indyConfiguration.isStandalone();
+    }
+
+    public boolean isStandaloneMode() {
+        return isStandaloneMode;
     }
 
     @Override

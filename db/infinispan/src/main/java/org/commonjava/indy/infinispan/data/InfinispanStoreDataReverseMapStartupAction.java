@@ -33,7 +33,7 @@ public class InfinispanStoreDataReverseMapStartupAction
     @Override
     public void start()
     {
-        if ( storeDataManager instanceof InfinispanStoreDataManager )
+        if ( storeDataManager instanceof InfinispanStoreDataManager && ((InfinispanStoreDataManager) storeDataManager).isStandaloneMode() )
         {
             ( (InfinispanStoreDataManager) storeDataManager ).initAffectedBy();
         }
