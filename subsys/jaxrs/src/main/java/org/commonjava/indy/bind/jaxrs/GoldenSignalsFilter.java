@@ -76,7 +76,9 @@ public class GoldenSignalsFilter
 
         HttpServletRequest req = (HttpServletRequest) servletRequest;
         HttpServletResponse resp = (HttpServletResponse) servletResponse;
-        Collection<String> functions = classifier.classifyFunctions( req.getPathInfo(), req.getMethod() );
+        String path = req.getPathInfo();
+        Collection<String> functions = classifier.classifyFunctions( path, req.getMethod() );
+        logger.debug( "Get classified golden functions, path: {}, method: {}, functions: {}", path, req.getMethod(), functions );
         try
         {
             functions.forEach( function -> metricSet.function( function ).ifPresent(
@@ -84,7 +86,7 @@ public class GoldenSignalsFilter
         }
         catch ( Exception e )
         {
-            logger.error( "Failed to classify / measure load for: " + req.getPathInfo(), e );
+            logger.error( "Failed to classify / measure load for: " + path, e );
         }
 
         try
