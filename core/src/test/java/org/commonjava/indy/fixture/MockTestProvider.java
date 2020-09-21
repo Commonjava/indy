@@ -23,6 +23,7 @@ import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
 import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
+import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
@@ -83,6 +84,12 @@ public class MockTestProvider
 
     @Produces
     public HoneycombConfiguration getHoneycombConfiguration()
+    {
+        return null;
+    }
+
+    @Produces
+    public GoldenSignalsMetricSet getGoldenSignalsMetricSet()
     {
         return null;
     }

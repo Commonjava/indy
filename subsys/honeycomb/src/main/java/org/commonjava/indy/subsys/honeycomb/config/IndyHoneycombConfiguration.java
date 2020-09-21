@@ -43,6 +43,8 @@ public class IndyHoneycombConfiguration
 
     private static final String ENABLED = "enabled";
 
+    private static final String CONSOLE_TRANSPORT = "console.transport";
+
     private static final String WRITE_KEY = "write.key";
 
     private static final String DATASET = "dataset";
@@ -60,6 +62,8 @@ public class IndyHoneycombConfiguration
     private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
 
     private boolean enabled;
+
+    private boolean consoleTransport;
 
     private String writeKey;
 
@@ -93,6 +97,12 @@ public class IndyHoneycombConfiguration
     public boolean isEnabled()
     {
         return enabled;
+    }
+
+    @Override
+    public boolean isConsoleTransport()
+    {
+        return consoleTransport;
     }
 
     @Override
@@ -133,6 +143,9 @@ public class IndyHoneycombConfiguration
             case FIELDS:
                 this.fields = Collections.unmodifiableSet(
                                 new HashSet<>( Arrays.asList( value.trim().split( "\\s*,\\s*" ) ) ) );
+                break;
+            case CONSOLE_TRANSPORT:
+                this.consoleTransport = Boolean.parseBoolean( value.trim() );
                 break;
             default:
                 if ( name.startsWith( SAMPLE_PREFIX ) && name.length() > SAMPLE_PREFIX.length() )
