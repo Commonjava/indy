@@ -15,38 +15,41 @@
  */
 package org.commonjava.indy.infinispan.data;
 
-import org.commonjava.indy.action.IndyLifecycleException;
-import org.commonjava.indy.action.StartupAction;
+import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.data.StandaloneStoreDataManager;
 import org.commonjava.indy.data.StoreDataManager;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-public class InfinispanStoreDataByPkgMapStartupAction
-        implements StartupAction
-{
+@ApplicationScoped
+public class StoreDataManagerProvider {
 
     @Inject
+    @StandaloneStoreDataManager
+    InfinispanStoreDataManager infinispanStoreDataManager;
+
+    @Inject
+    IndyConfiguration indyConfiguration;
+
     private StoreDataManager storeDataManager;
 
-    @Override
-    public void start()
-            throws IndyLifecycleException
+    private boolean isStandaloneMode;
+
+    @PostConstruct
+    public void init()
     {
-        if ( storeDataManager instanceof InfinispanStoreDataManager && storeDataManager.isStandaloneMode() )
-        {
-            ((InfinispanStoreDataManager)storeDataManager).initByPkgMap();
-        }
+        isStandaloneMode = indyConfiguration.isStoreManagerStandalone();
     }
 
-    @Override
-    public int getStartupPriority()
+    @Produces
+    @Default
+    public StoreDataManager getStoreDataManager()
     {
-        return 11;
-    }
-
-    @Override
-    public String getId()
-    {
-        return "Infinispan by-pkg map initializer";
+        storeDataManager = isStandaloneMode ? infinispanStoreDataManager : infinispanStoreDataManager;
+        return storeDataManager;
     }
 }

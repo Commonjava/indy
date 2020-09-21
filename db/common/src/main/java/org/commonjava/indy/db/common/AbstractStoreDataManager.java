@@ -596,4 +596,9 @@ public abstract class AbstractStoreDataManager
         return isNotBlank( filter ) && group.getName().matches( filter );
     }
 
+    @Override
+    public boolean isStandaloneMode()
+    {
+        return false;
+    }
 }

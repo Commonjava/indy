@@ -100,6 +100,13 @@ public interface IndyConfiguration
      */
     Boolean isStandalone();
 
+    /**
+     * Decide storeDataManager to run as standalone mode or cassandra mode
+     * @return
+     * @since 2.5.0
+     */
+    Boolean isStoreManagerStandalone();
+
     boolean isRepositoryFilterEnabled();
 
     String getGACacheStorePattern();
