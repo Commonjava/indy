@@ -49,6 +49,7 @@ public class StoreDataManagerProvider {
     @Default
     public StoreDataManager getStoreDataManager()
     {
+        // If isStandaloneMode is false, return CassandraStoreDataManager instantiation
         storeDataManager = isStandaloneMode ? infinispanStoreDataManager : infinispanStoreDataManager;
         return storeDataManager;
     }
