@@ -35,6 +35,7 @@ import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
 import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
+import org.commonjava.o11yphant.metrics.TrafficClassifier;
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
 import org.junit.rules.TemporaryFolder;
 
@@ -184,6 +185,12 @@ public class TestProvider
 
     @Produces
     public GoldenSignalsMetricSet getGoldenSignalsMetricSet()
+    {
+        return null;
+    }
+
+    @Produces
+    public TrafficClassifier getTrafficClassifier()
     {
         return null;
     }
