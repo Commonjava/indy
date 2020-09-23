@@ -60,6 +60,8 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_STANDALONE = false;
 
+    public static final Boolean DEFAULT_STORE_MANAGER_STANDALONE = false;
+
     public static final String DEFAULT_DISPOSABLE_STORE_PATTERN = ".*test.*";
 
     private Integer passthroughTimeoutSeconds;
@@ -95,6 +97,8 @@ public class DefaultIndyConfiguration
     private String cacheKeyspace = "indycache"; // default
 
     private Boolean standalone;
+
+    private Boolean storeManagerStandalone;
 
     private boolean repositoryFilterEnabled;
 
@@ -361,6 +365,12 @@ public class DefaultIndyConfiguration
         return this.standalone == null ? DEFAULT_STANDALONE : this.standalone;
     }
 
+    @Override
+    public Boolean isStoreManagerStandalone()
+    {
+        return this.storeManagerStandalone == null ? DEFAULT_STORE_MANAGER_STANDALONE : this.storeManagerStandalone;
+    }
+
     @ConfigName( "repository.filter.enabled" )
     public void setRepositoryFilterEnabled( boolean repositoryFilterEnabled )
     {
@@ -389,6 +399,12 @@ public class DefaultIndyConfiguration
     public void setStandalone( Boolean standalone )
     {
         this.standalone = standalone;
+    }
+
+    @ConfigName( "store.manager.standalone" )
+    public void setStoreManagerStandalone( Boolean storeManagerStandalone )
+    {
+        this.storeManagerStandalone = storeManagerStandalone;
     }
 
     @Override

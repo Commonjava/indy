@@ -255,4 +255,11 @@ public class StoreReverseMapMigrationTest
             fail( "Downloaded XML not equal to expected XML" );
         }
     }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "main.conf", "store.manager.standalone=true\n" + readTestResource( "default-test-main.conf" ) );
+    }
 }
