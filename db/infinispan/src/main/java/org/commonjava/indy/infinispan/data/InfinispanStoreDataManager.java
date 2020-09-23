@@ -77,8 +77,6 @@ public class InfinispanStoreDataManager
     @Inject
     private IndyConfiguration indyConfiguration;
 
-    private boolean isStandaloneMode;
-
     @Override
     protected StoreEventDispatcher getStoreEventDispatcher()
     {
@@ -98,17 +96,6 @@ public class InfinispanStoreDataManager
         this.storesByPkg = new CacheHandle( STORE_BY_PKG_CACHE, storesByPkg );
         this.affectedByStores = new CacheHandle( AFFECTED_BY_STORE_CACHE, affectedByStoresCache );
         logger.warn( "Constructor init: STARTUP ACTIONS MAY NOT RUN." );
-    }
-
-    @PostConstruct
-    public void init()
-    {
-        isStandaloneMode = indyConfiguration.isStoreManagerStandalone();
-    }
-
-    @Override
-    public boolean isStandaloneMode() {
-        return isStandaloneMode;
     }
 
     @Override

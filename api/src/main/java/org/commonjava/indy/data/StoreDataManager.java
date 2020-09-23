@@ -169,8 +169,6 @@ public interface StoreDataManager
      */
     void asyncGroupAffectedBy( ContextualTask contextualTask );
 
-    boolean isStandaloneMode();
-
     class ContextualTask
     {
         private String threadName;
