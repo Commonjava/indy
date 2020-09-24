@@ -8,7 +8,9 @@ import com.datastax.driver.mapping.annotations.Table;
 import java.util.Map;
 import java.util.Set;
 
-@Table( name = "artifactstore", readConsistency = "QUORUM", writeConsistency = "QUORUM" )
+import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_STORE;
+
+@Table( name = TABLE_STORE, readConsistency = "QUORUM", writeConsistency = "QUORUM" )
 public class DtxArtifactStore
 {
 

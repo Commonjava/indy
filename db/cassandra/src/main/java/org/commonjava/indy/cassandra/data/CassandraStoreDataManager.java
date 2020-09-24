@@ -57,7 +57,8 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
-        return null;
+        DtxArtifactStore dtxArtifactStore = storeQuery.removeArtifactStore( key.getPackageType(), key.getType(), key.getName() );
+        return toArtifactStore( dtxArtifactStore );
     }
 
     @Override

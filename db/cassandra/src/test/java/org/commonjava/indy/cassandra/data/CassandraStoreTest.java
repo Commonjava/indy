@@ -66,6 +66,12 @@ public class CassandraStoreTest
 
         assertThat(storeSet.size(), equalTo( 1 ));
 
+        storeQuery.removeArtifactStore( store.getPackageType(), StoreType.hosted, store.getName() );
+
+        Set<DtxArtifactStore> storeSet2 = storeQuery.getAllArtifactStores();
+
+        assertThat(storeSet2.size(), equalTo( 0 ));
+
     }
 
 }

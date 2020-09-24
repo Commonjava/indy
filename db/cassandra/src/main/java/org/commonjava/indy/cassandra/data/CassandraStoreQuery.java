@@ -19,6 +19,8 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_STORE;
+
 @ApplicationScoped
 public class CassandraStoreQuery
 {
@@ -38,6 +40,8 @@ public class CassandraStoreQuery
     private PreparedStatement preparedSingleArtifactStoreQuery;
 
     private PreparedStatement preparedArtifactStoresQuery;
+
+    private PreparedStatement preparedArtifactStoreDel;
 
     public CassandraStoreQuery() {}
 
@@ -63,9 +67,15 @@ public class CassandraStoreQuery
 
         storeMapper = manager.mapper( DtxArtifactStore.class, keySpace );
 
-        preparedSingleArtifactStoreQuery = session.prepare( "select * from " + keySpace + ".artifactstore where packagetype=? and storetype=? and name=?" );
+        preparedSingleArtifactStoreQuery = session.prepare(
+                        "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
+                                        + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=? AND name=?" );
 
-        preparedArtifactStoresQuery = session.prepare( "select * from " + keySpace + ".artifactstore" );
+        preparedArtifactStoresQuery = session.prepare(
+                        "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
+                                        + keySpace + "." + TABLE_STORE );
+
+        preparedArtifactStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=? AND name=? IF EXISTS" );
     }
 
     public DtxArtifactStore getArtifactStore( String packageType, StoreType type, String name )
@@ -87,6 +97,17 @@ public class CassandraStoreQuery
         } );
 
         return dtxArtifactStoreSet;
+    }
+
+    public DtxArtifactStore removeArtifactStore( String packageType, StoreType type, String name )
+    {
+        DtxArtifactStore dtxArtifactStore = getArtifactStore( packageType, type, name );
+        if ( dtxArtifactStore != null )
+        {
+            BoundStatement bound = preparedArtifactStoreDel.bind( packageType, type.name(), name );
+            session.execute( bound );
+        }
+        return dtxArtifactStore;
     }
 
     private DtxArtifactStore toDtxArtifactStore( Row row )
