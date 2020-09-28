@@ -7,7 +7,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
-import org.commonjava.indy.cassandra.data.config.CassandraStoreConfig;
+import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public class CassandraStoreQuery
     CassandraClient client;
 
     @Inject
-    CassandraStoreConfig storeConfig;
+    IndyStoreManagerConfig config;
 
     private Mapper<DtxArtifactStore> storeMapper;
 
@@ -45,10 +45,10 @@ public class CassandraStoreQuery
 
     public CassandraStoreQuery() {}
 
-    public CassandraStoreQuery( CassandraClient client, CassandraStoreConfig config )
+    public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config )
     {
         this.client = client;
-        this.storeConfig = config;
+        this.config = config;
         init();
     }
 
@@ -56,11 +56,11 @@ public class CassandraStoreQuery
     public void init()
     {
 
-        String keySpace = storeConfig.getKeyspace();
+        String keySpace = config.getKeyspace();
 
         session = client.getSession( keySpace );
 
-        session.execute( CassandraStoreUtil.getSchemaCreateKeyspace( keySpace, storeConfig ) );
+        session.execute( CassandraStoreUtil.getSchemaCreateKeyspace( keySpace, config ) );
         session.execute( CassandraStoreUtil.getSchemaCreateTableStore( keySpace ) );
 
         MappingManager manager = new MappingManager( session );
