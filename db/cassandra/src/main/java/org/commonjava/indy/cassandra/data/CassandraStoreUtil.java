@@ -1,9 +1,11 @@
 package org.commonjava.indy.cassandra.data;
 
-import org.commonjava.indy.cassandra.data.config.CassandraStoreConfig;
+import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 
 public class CassandraStoreUtil
 {
+
+    public static final String TABLE_STORE = "artifactstore";
 
     public static final String PACKAGE_TYPE = "packageType";
     public static final String STORE_TYPE = "storeType";
@@ -52,15 +54,15 @@ public class CassandraStoreUtil
     public static final String CONSTITUENTS = "constituents";
     public static final String PREPEND_CONSTITUENT = "prependConstituent";
 
-    public static String getSchemaCreateKeyspace( String keySpace, CassandraStoreConfig storeConfig )
+    public static String getSchemaCreateKeyspace( String keySpace, IndyStoreManagerConfig config )
     {
         return "CREATE KEYSPACE IF NOT EXISTS " + keySpace
-                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':" + storeConfig.getReplicationFactor() + "};";
+                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':" + config.getReplicationFactor() + "};";
     }
 
     public static String getSchemaCreateTableStore( String keySpace )
     {
-        return "CREATE TABLE IF NOT EXISTS " + keySpace + ".artifactstore ("
+        return "CREATE TABLE IF NOT EXISTS " + keySpace + "." + TABLE_STORE + " ("
                         + "packagetype varchar,"
                         + "storetype varchar,"
                         + "name varchar,"

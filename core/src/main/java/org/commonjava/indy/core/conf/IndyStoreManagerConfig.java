@@ -1,4 +1,4 @@
-package org.commonjava.indy.cassandra.data.config;
+package org.commonjava.indy.core.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.propulsor.config.annotation.ConfigName;
@@ -7,18 +7,18 @@ import org.commonjava.propulsor.config.annotation.SectionName;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 
-@SectionName( "artifact_store" )
+@SectionName("store-manager")
 @ApplicationScoped
-public class CassandraStoreConfig implements IndyConfigInfo
+public class IndyStoreManagerConfig implements IndyConfigInfo
 {
 
     private String keyspace;
 
     private int replicationFactor;
 
-    public CassandraStoreConfig() {}
+    public IndyStoreManagerConfig() {}
 
-    public CassandraStoreConfig( String keyspace, int replicationFactor )
+    public IndyStoreManagerConfig( String keyspace, int replicationFactor )
     {
         this.keyspace = keyspace;
         this.replicationFactor = replicationFactor;
@@ -29,7 +29,7 @@ public class CassandraStoreConfig implements IndyConfigInfo
         return keyspace;
     }
 
-    @ConfigName( "store.keyspace" )
+    @ConfigName( "store.manager.keyspace" )
     public void setKeyspace( String keyspace )
     {
         this.keyspace = keyspace;
@@ -40,7 +40,7 @@ public class CassandraStoreConfig implements IndyConfigInfo
         return replicationFactor;
     }
 
-    @ConfigName( "store.keyspace.replica" )
+    @ConfigName( "store.manager.replica" )
     public void setReplicationFactor( int replicationFactor )
     {
         this.replicationFactor = replicationFactor;
@@ -49,12 +49,14 @@ public class CassandraStoreConfig implements IndyConfigInfo
     @Override
     public String getDefaultConfigFileName()
     {
-        return "";
+        return "conf.d/store-manager.conf";
     }
 
     @Override
     public InputStream getDefaultConfig()
     {
-        return null;
+        return Thread.currentThread()
+                     .getContextClassLoader()
+                     .getResourceAsStream( "default-store-manager.conf" );
     }
 }

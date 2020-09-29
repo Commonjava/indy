@@ -1,7 +1,7 @@
 package org.commonjava.indy.cassandra.data;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.commonjava.indy.cassandra.data.config.CassandraStoreConfig;
+import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
@@ -18,7 +18,6 @@ import static org.junit.Assert.assertThat;
 public class CassandraStoreTest
 {
 
-
     CassandraClient client;
 
     CassandraStoreQuery storeQuery;
@@ -34,7 +33,7 @@ public class CassandraStoreTest
         config.setCassandraPort( 9142 );
 
         client = new CassandraClient( config );
-        CassandraStoreConfig storeConfig = new CassandraStoreConfig("noncontent", 1);
+        IndyStoreManagerConfig storeConfig = new IndyStoreManagerConfig( "noncontent", 1);
 
         storeQuery = new CassandraStoreQuery( client, storeConfig );
 
@@ -65,6 +64,12 @@ public class CassandraStoreTest
         Set<DtxArtifactStore> storeSet = storeQuery.getAllArtifactStores();
 
         assertThat(storeSet.size(), equalTo( 1 ));
+
+        storeQuery.removeArtifactStore( store.getPackageType(), StoreType.hosted, store.getName() );
+
+        Set<DtxArtifactStore> storeSet2 = storeQuery.getAllArtifactStores();
+
+        assertThat(storeSet2.size(), equalTo( 0 ));
 
     }
 
