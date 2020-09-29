@@ -60,15 +60,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-reporter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-prometheus</artifactId>
+      <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -320,10 +312,6 @@
       <artifactId>indy-ftests-pkg-npm</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-metrics</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -464,7 +452,6 @@
               <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
               <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>
               <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>

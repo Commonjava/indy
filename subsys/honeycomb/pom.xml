@@ -29,8 +29,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>io.honeycomb.beeline</groupId>
-      <artifactId>beeline-core</artifactId>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-honeycomb</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -38,15 +38,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jboss.spec.javax.servlet</groupId>
-      <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+      <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-reporter</artifactId>
+      <artifactId>indy-subsys-cassandra</artifactId>
     </dependency>
   </dependencies>
 

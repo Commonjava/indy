@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.filer.def;
 
-import org.commonjava.indy.metrics.IndyMetricsManager;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 
 public class IndyTimingProvider
@@ -23,9 +23,9 @@ public class IndyTimingProvider
 {
     private final String name;
 
-    private final IndyMetricsManager metricsManager;
+    private final DefaultMetricsManager metricsManager;
 
-    public IndyTimingProvider( final String name, final IndyMetricsManager metricsManager )
+    public IndyTimingProvider( final String name, final DefaultMetricsManager metricsManager )
     {
         this.name = name;
         this.metricsManager = metricsManager;

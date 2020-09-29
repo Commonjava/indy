@@ -32,7 +32,6 @@
   <modules>
     <module>common</module>
     <module>core</module>
-    <module>metrics</module>
   </modules>
   
   <dependencies>

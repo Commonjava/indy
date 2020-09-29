@@ -1,0 +1,46 @@
+{
+  "_id": "@scoped/invalid",
+  "_rev": "503-dea6298026b47a40bc7e38ad234e119f",
+  "name": "@scoped/invalid",
+  "description": "@scoped/invalid",
+  "versions": {
+    "1": {
+      "name": "@scoped/invalid",
+      "description": "@scoped/invalid",
+      "lib": "lib",
+      "main": "./dist/node-jquery.js",
+      "version": "1",
+      "_id": "@scoped/invalid@1",
+      "engines": {
+        "node": "*"
+      },
+      "_engineSupported": true,
+      "_npmVersion": "0.3.15",
+      "_nodeVersion": "v0.4.2",
+      "directories": {
+        "lib": "./lib"
+      },
+      "files": [
+        ""
+      ],
+      "_defaultsLoaded": true,
+      "dist": {
+        "shasum": "2ae2d661e906c1a01e044a71bb5b2743942183e5",
+        "tarball": "https://registry.npmjs.org/@scoped/invalid/-/invalid-1.tgz"
+      }
+    }
+  },
+  "time": {
+    "modified": "2017-04-23T10:57:14.309Z",
+    "created": "2011-03-19T07:19:56.392Z",
+    "1": "2011-03-19T07:19:56.956Z"
+  },
+  "license": "MIT1",
+  "_attachments": {
+    "invalid-1.tgz": {
+      "content_type": "application/octet-stream",
+      "data": "H4sIAAAAAAAAA+3VvU/CQBQA8AJiDGFw0P3SgUmhV2hLiIPGOCgLxJhowtK0B5zSlvSKIob4FzO6+47yNYjEBDCE92vII+/utYUHr/lC13Ze7BYrKBujAcswZKSWoS3GKYUWLWqVqGZZkIegGwoxNndLcz0R2SEhSqvDf923an1H5Wf9n8T8swj89V5DNtgslZb2v6hb8/6bOvS/qFNTIdp6b+Nne97/jwwhqm97TK0Q9d2zy2X1TKZeWSh44MssjTMuE07Iu9Ek63mECxKyXrcT2G68xbP5eI37Luuf++wNfkzxSlwqYFFeEBIRE5Hcypx2QBrqTRgGYYX4AZELRHSZw5ucuQ2V5HKE9XlEqAqVw/HZ7F7UDkJZHp+9wx3mi/FHuL2/VjPDzH9/rTtj/v+nG3sC/GX+mzALNArRxPm/DYv9nz4BotZgrddYNf91TYf+w1EyNMOS/S9SCDj/t6BWTR3E07KeHt0triSVY0UvPDxmlc9682kAr6/ECexPJE9Tyyqy07eXoysZZP3RrL5WTR/KbAKOC4hb6S9CCCGEEEIIIYQQQgghhBBCCO2Jb1YuZAYAKAAA",
+      "length": 380
+    }
+  }
+}

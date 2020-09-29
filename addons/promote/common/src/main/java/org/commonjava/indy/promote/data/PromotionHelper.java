@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
+
 @ApplicationScoped
 public class PromotionHelper
 {
@@ -194,10 +196,11 @@ public class PromotionHelper
     public List<String> deleteFromStore( final Set<String> completed, final ArtifactStore targetStore )
     {
         List<String> errors = new ArrayList<>();
+        final EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
         completed.forEach( p -> {
             try
             {
-                contentManager.delete( targetStore, p );
+                contentManager.delete( targetStore, p, eventMetadata );
             }
             catch ( IndyWorkflowException e )
             {
