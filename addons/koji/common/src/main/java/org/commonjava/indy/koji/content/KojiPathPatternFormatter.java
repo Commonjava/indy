@@ -16,7 +16,7 @@
 package org.commonjava.indy.koji.content;
 
 import com.redhat.red.build.koji.model.xmlrpc.KojiArchiveInfo;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
 import org.commonjava.atlas.maven.ident.ref.SimpleProjectRef;
 import org.commonjava.indy.koji.util.KojiUtils;

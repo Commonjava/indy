@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan.config;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.SystemPropertyProvider;
 import org.commonjava.propulsor.config.annotation.ConfigName;
