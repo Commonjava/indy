@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.util.RequestContextHelper.CLIENT_ADDR;
 import static org.commonjava.indy.util.RequestContextHelper.COMPONENT_ID;
 import static org.commonjava.indy.util.RequestContextHelper.EXTERNAL_TRACE_ID;

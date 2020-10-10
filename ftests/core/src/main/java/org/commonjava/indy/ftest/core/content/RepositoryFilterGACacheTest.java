@@ -18,7 +18,7 @@ package org.commonjava.indy.ftest.core.content;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
