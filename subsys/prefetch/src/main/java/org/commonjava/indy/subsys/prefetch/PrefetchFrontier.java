@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.StoreResource;

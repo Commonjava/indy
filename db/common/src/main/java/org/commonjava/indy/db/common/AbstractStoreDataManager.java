@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.db.common;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.WeftManaged;
@@ -61,7 +61,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.emptySet;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;

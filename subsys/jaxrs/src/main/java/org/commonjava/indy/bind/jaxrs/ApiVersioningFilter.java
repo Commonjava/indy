@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static io.undertow.util.StatusCodes.GONE;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_API_VERSION;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CUR_API_VERSION;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_MIN_API_VERSION;

@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.stats;
 
-import org.apache.commons.lang.math.FloatRange;
+import org.apache.commons.lang3.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +29,7 @@ import java.util.Set;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Alternative
 @Named
@@ -47,7 +47,7 @@ public class IndyDeprecatedApis
     {
         this.props = props;
 
-        Float minVersion = 0f;
+        float minVersion = 0f;
 
         Set<String> keys = props.stringPropertyNames();
         for ( String key : keys )
@@ -55,16 +55,16 @@ public class IndyDeprecatedApis
             DeprecatedApiEntry et;
             String value = props.getProperty( key );
 
-            Float startVersion;
-            Float endVersion;
+            float startVersion;
+            float endVersion;
 
-            if ( key.indexOf( "," ) >= 0 ) // range
+            if ( key.contains( "," ) ) // range
             {
                 key = key.replaceAll( "[\\[|\\]]", "" ); // strip off square brackets if present
                 String[] kv = key.split( "," );
                 startVersion = Float.parseFloat( kv[0].trim() );
                 endVersion = Float.parseFloat( kv[1].trim() );
-                et = new DeprecatedApiEntry( new FloatRange( startVersion, endVersion ), value);
+                et = new DeprecatedApiEntry( Range.between( startVersion, endVersion ), value);
             }
             else
             {
@@ -80,7 +80,7 @@ public class IndyDeprecatedApis
             deprecatedApis.add( et );
         }
 
-        minApiVersion = minVersion.toString();
+        minApiVersion = Float.toString(minVersion);
 
         logger.debug( "Parsed deprecatedApis:{}, minApiVersion:{}", deprecatedApis, minApiVersion );
     }
@@ -105,7 +105,7 @@ public class IndyDeprecatedApis
         // the scopes may overlap, we go through range entries first and other entries next
         for ( DeprecatedApiEntry et : deprecatedApis )
         {
-            if ( et.range != null && et.range.containsFloat( reqVer ) )
+            if ( et.range != null && et.range.contains( reqVer ) )
             {
                 return of( et );
             }
@@ -129,7 +129,7 @@ public class IndyDeprecatedApis
 
     public static class DeprecatedApiEntry
     {
-        private FloatRange range;
+        private Range<Float> range;
 
         private Float endVersion;
 
@@ -146,7 +146,7 @@ public class IndyDeprecatedApis
             this.value = value;
         }
 
-        public DeprecatedApiEntry( FloatRange floatRange, String value )
+        public DeprecatedApiEntry( Range<Float> floatRange, String value )
         {
             this.range = floatRange;
             this.value = value;

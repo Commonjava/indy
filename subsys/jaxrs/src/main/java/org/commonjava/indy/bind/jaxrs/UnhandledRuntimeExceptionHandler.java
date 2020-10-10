@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +39,7 @@ public class UnhandledRuntimeExceptionHandler
         logger.error( "Unhandled exception: " + exception.getMessage(), exception );
 
         return Response.status( Response.Status.INTERNAL_SERVER_ERROR )
-                       .entity( ExceptionUtils.getFullStackTrace( exception ) )
+                       .entity( ExceptionUtils.getStackTrace( exception ) )
                        .type( MediaType.TEXT_PLAIN )
                        .build();
     }

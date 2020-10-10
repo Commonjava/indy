@@ -52,7 +52,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.apache.commons.io.IOUtils.copy;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @ApplicationScoped
 @Named( "stores" )
