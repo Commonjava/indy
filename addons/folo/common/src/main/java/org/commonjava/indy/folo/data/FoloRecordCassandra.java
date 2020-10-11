@@ -1,0 +1,433 @@
+package org.commonjava.indy.folo.data;
+
+import com.datastax.driver.core.*;
+import com.datastax.driver.mapping.Mapper;
+import com.datastax.driver.mapping.MappingManager;
+import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.StartupAction;
+import org.commonjava.indy.folo.change.FoloBackupListener;
+import org.commonjava.indy.folo.change.FoloExpirationWarningListener;
+import org.commonjava.indy.folo.conf.FoloConfig;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
+import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.maven.galley.util.UrlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
+import java.net.MalformedURLException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+@ApplicationScoped
+@FoloStoreToCassandra
+public class FoloRecordCassandra implements FoloRecord,StartupAction {
+
+    private final static String DOWNLOADS = "DOWNLOAD";
+    private final static String UPLOADS = "UPLOAD";
+
+    private final Logger logger = LoggerFactory.getLogger( this.getClass() );
+
+    @Inject
+    CassandraClient cassandraClient;
+
+    @Inject
+    FoloConfig config;
+
+    @Context
+    UriInfo uriInfo;
+
+    @FoloInprogressCache
+    @Inject
+    private CacheHandle<TrackedContentEntry, TrackedContentEntry> inProgressRecords;
+
+    @FoloSealedCache
+    @Inject
+    private CacheHandle<TrackingKey, TrackedContent> sealedRecords;
+
+    @Inject
+    private FoloBackupListener foloBackupListener;
+
+    @Inject
+    private FoloExpirationWarningListener expirationWarningListener;
+
+
+
+    private Session session;
+    private Mapper<DtxBuildRecord> buildsMapper;
+    private Mapper<DtxTrackingRecord> trackingMapper;
+
+    private PreparedStatement getTrackingRecordByBuildIdAndPath;
+    private PreparedStatement getTrackingRecordBySealed;
+    private PreparedStatement getTrackingRecordsByTrackingKey;
+
+
+    private static String createFoloBuildsTable( String keyspace )
+    {
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + ".builds ("
+                + "id text,"
+                + "sealed boolean,"
+                + "started timestamp,"
+                + "finished timestamp,"
+                + "PRIMARY KEY (id)"
+                + ");";
+    }
+
+    private static String createFoloRecordsTable( String keyspace )
+    {
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + ".records ("
+                + "tracking_key text,"
+                + "sealed boolean,"
+                + "store_key text,"
+                + "access_channel text,"
+                + "path text,"
+                + "origin_url text,"
+                + "local_url text,"
+                + "store_effect text,"
+                + "md5 text,"
+                + "sha256 text,"
+                + "sha1 text,"
+                + "size bigint,"
+                + "timestamps set<bigint>,"
+                + "PRIMARY KEY ((tracking_key),path)"
+                + ");";
+    }
+
+    private static String createFoloKeyspace( String keyspace)
+    {
+        return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
+                + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':3 };";
+    }
+
+
+    private static String createFoloPathIdx(String  keyspace) {
+        return "CREATE INDEX IF NOT EXISTS path_idx ON " + keyspace + ".records (path);";
+    }
+
+    private static String createFoloSealedIdx(String  keyspace) {
+        return "CREATE INDEX IF NOT EXISTS sealed_idx ON " + keyspace + ".records (sealed);";
+    }
+
+    private static String createFoloBuildIdIdx(String  keyspace) {
+        return "CREATE INDEX IF NOT EXISTS tracking_key_idx ON " + keyspace + ".records (tracking_key);";
+    }
+
+
+    @PostConstruct
+    public void initialize() {
+
+        logger.warn("-- Creating Cassandra Folo Records Keyspace and Tables  ---");
+
+        String foloCassandraKeyspace = config.getFoloCassandraKeyspace();
+
+        session = cassandraClient.getSession(foloCassandraKeyspace);
+        session.execute(createFoloKeyspace(foloCassandraKeyspace));
+        session.execute(createFoloBuildsTable(foloCassandraKeyspace));
+        session.execute(createFoloRecordsTable(foloCassandraKeyspace));
+        session.execute(createFoloSealedIdx(foloCassandraKeyspace));
+
+        MappingManager mappingManager = new MappingManager(session);
+        buildsMapper = mappingManager.mapper(DtxBuildRecord.class,foloCassandraKeyspace);
+        trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
+
+        getTrackingRecordByBuildIdAndPath =
+                session.prepare("SELECT * FROM " + foloCassandraKeyspace + ".records WHERE tracking_key=? AND path=?;");
+        getTrackingRecordBySealed =
+                session.prepare("SELECT * FROM " +  foloCassandraKeyspace + ".records WHERE sealed=?;");
+
+        getTrackingRecordsByTrackingKey =
+                session.prepare("SELECT * FROM "  + foloCassandraKeyspace + ".records WHERE tracking_key=?;");
+
+        logger.warn("-- Cassandra Folo Records Keyspace and Tables created  ---");
+
+    }
+
+    @Override
+    public boolean recordArtifact(TrackedContentEntry entry) throws FoloContentException, IndyWorkflowException {
+
+        String buildId = entry.getTrackingKey().getId();
+        String path = entry.getPath();
+
+//        String api = uriInfo.getBaseUriBuilder().path("api").build().toString();
+        String content  = "content";
+        String packageType = entry.getStoreKey().getPackageType();
+        String storeKey = entry.getStoreKey().getType().singularEndpointName();
+        String name = entry.getStoreKey().getName();
+
+
+        try {
+            String localUrl;
+
+            localUrl = UrlUtils.buildUrl("" ,content , packageType , storeKey ,name , path );
+
+            BoundStatement bind = getTrackingRecordByBuildIdAndPath.bind(buildId,path);
+            ResultSet trackingRecord = session.execute(bind);
+            Row one = trackingRecord.one();
+
+            if(one!=null) {
+                DtxTrackingRecord dtxTrackingRecord = one.get(0, DtxTrackingRecord.class);
+                Boolean state = dtxTrackingRecord.getState();
+
+                if(state) {
+                    throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
+                }  else {
+
+                    DtxTrackingRecord dtxTrackingRecord1 =
+                            DtxTrackingRecord.fromTrackedContentEntry(entry,false);
+
+                    if(dtxTrackingRecord.getTrackingKey().equals(dtxTrackingRecord1.getTrackingKey()) &&
+                        dtxTrackingRecord.getPath().equals(dtxTrackingRecord1.getPath())) {
+
+                        dtxTrackingRecord1.setLocalUrl(localUrl);
+
+                        trackingMapper.save(dtxTrackingRecord1);
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+
+            } else {
+                DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
+                dtxTrackingRecord.setLocalUrl(localUrl);
+                trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
+                return true;
+            }
+
+        } catch (MalformedURLException e) {
+            throw new IndyWorkflowException( "Mailformed URL  for record: {}  path: {}", entry.getTrackingKey(),entry.getPath() );
+        }
+
+
+    }
+
+    @Override
+    public void delete(TrackingKey key) {
+
+        // Do we  want to remove records from DB?
+
+    }
+
+    @Override
+    public void replaceTrackingRecord(TrackedContent record) {
+
+        saveTrackedContentRecords(record);
+
+    }
+
+    @Override
+    public boolean hasRecord(TrackingKey key) {
+        return hasSealedRecord(key) || hasInProgressRecord(key);
+    }
+
+    @Override
+    public boolean hasSealedRecord(TrackingKey key) {
+
+        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
+        ResultSet execute = session.execute(bind);
+        Row one = execute.one();
+        if(one != null) {
+            Boolean sealed = one.getBool("sealed");
+            if(sealed) {
+                return true;
+            } else {
+                return false;
+            }
+        }else {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean hasInProgressRecord(TrackingKey key) {
+        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
+        ResultSet execute = session.execute(bind);
+        Row one = execute.one();
+        if(one != null) {
+            Boolean sealed = one.getBool("sealed");
+            if(!sealed) {
+                return true;
+            } else {
+                return false;
+            }
+        }else {
+            return false;
+        }
+    }
+
+    @Override
+    public TrackedContent get(TrackingKey key) {
+        List<DtxTrackingRecord> trackingRecords =  getDtxTrackingRecordsFromDb(key);
+        return transformDtxTrackingRecordToTrackingContent(key,trackingRecords);
+    }
+
+    @Override
+    public TrackedContent seal(TrackingKey trackingKey) {
+        List<DtxTrackingRecord> trackingRecords =  getDtxTrackingRecordsFromDb(trackingKey);
+        DtxTrackingRecord recordCheck = trackingRecords.get(0);
+        if(recordCheck.getState()) {
+            logger.debug( "Tracking record: {} already sealed! Returning sealed record.", trackingKey );
+            return transformDtxTrackingRecordToTrackingContent(trackingKey,trackingRecords);
+        }
+        logger.debug( "Sealing record for: {}", trackingKey );
+        for(DtxTrackingRecord record : trackingRecords) {
+            record.setState(true);
+            trackingMapper.save(record);
+        }
+        return transformDtxTrackingRecordToTrackingContent(trackingKey,trackingRecords);
+    }
+
+    @Override
+    public Set<TrackingKey> getInProgressTrackingKey() {
+        BoundStatement inProgress = getTrackingRecordBySealed.bind(false);
+        ResultSet getInProgressRecords = session.execute(inProgress);
+        List<Row> allInProgress = getInProgressRecords.all();
+        Iterator<Row> iterator = allInProgress.iterator();
+
+        Set<TrackingKey> trackingKeys = new HashSet<>();
+        while (iterator.hasNext()) {
+            Row next = iterator.next();
+            String tracking_key = next.getString("tracking_key");
+            trackingKeys.add(new TrackingKey(tracking_key));
+        }
+        return trackingKeys;
+    }
+
+    @Override
+    public Set<TrackingKey> getSealedTrackingKey() {
+        BoundStatement inProgress = getTrackingRecordBySealed.bind(true);
+        ResultSet getInProgressRecords = session.execute(inProgress);
+        List<Row> allInProgress = getInProgressRecords.all();
+        Iterator<Row> iterator = allInProgress.iterator();
+
+        Set<TrackingKey> trackingKeys = new HashSet<>();
+        while (iterator.hasNext()) {
+            Row next = iterator.next();
+            String tracking_key = next.getString("tracking_key");
+            trackingKeys.add(new TrackingKey(tracking_key));
+        }
+
+        return trackingKeys;
+    }
+
+    @Override
+    public Set<TrackedContent> getSealed() {
+
+        Set<TrackedContent> trackedContents = new HashSet<>();
+        Set<TrackingKey> sealedTrackingKeys = getSealedTrackingKey();
+
+        for(TrackingKey trackingKey : sealedTrackingKeys) {
+
+            List<DtxTrackingRecord> dtxTrackingRecordsFromDb = getDtxTrackingRecordsFromDb(trackingKey);
+            TrackedContent trackedContent = transformDtxTrackingRecordToTrackingContent(trackingKey, dtxTrackingRecordsFromDb);
+
+            trackedContents.add(trackedContent);
+        }
+
+        return trackedContents;
+    }
+
+    @Override
+    public void addSealedRecord(TrackedContent record) {
+
+        saveTrackedContentRecords(record);
+
+    }
+
+    @Override
+    public void start() throws IndyLifecycleException {
+        logger.warn("--- FoloRecordsCassandra starting up ---");
+    }
+
+    @Override
+    public int getStartupPriority() {
+        return 0;
+    }
+
+    @Override
+    public String getId() {
+        return "Folo2Cassandra";
+    }
+
+    private TrackedContent transformDtxTrackingRecordToTrackingContent(TrackingKey trackingKey, List<DtxTrackingRecord> trackingRecords) {
+
+        List<TrackedContentEntry> records =  new ArrayList<>();
+
+        for(DtxTrackingRecord record : trackingRecords) {
+            records.add(DtxTrackingRecord.toTrackingContentEntry(record));
+        }
+        Set<TrackedContentEntry> uploads =
+                records.stream().filter(record -> record.getEffect().toString().equals(UPLOADS)).collect(Collectors.toSet());
+
+//        logger.warn("-- Processing {} uploads  from  tracking key {} " ,  uploads.size() ,  trackingKey);
+
+        Set<TrackedContentEntry> downloads =
+                records.stream().filter(record -> record.getEffect().toString().equals(DOWNLOADS)).collect(Collectors.toSet());
+
+//        logger.warn("-- Processing {} downloads  from  tracking key {} " ,  downloads.size() ,  trackingKey);
+
+        TrackedContent trackedContent =
+                new TrackedContent(trackingKey, uploads, downloads);
+
+        return trackedContent;
+
+    }
+
+    private List<DtxTrackingRecord>  getDtxTrackingRecordsFromDb(TrackingKey trackingKey)  {
+
+        List<DtxTrackingRecord> trackingRecords =  new ArrayList<>();
+
+        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(trackingKey.getId());
+        ResultSet execute = session.execute(bind);
+        List<Row> allTrackingRecordsByTrackingKey = execute.all();
+
+//        logger.warn("-- Fetched {} tracking  records from key {}",allTrackingRecordsByTrackingKey.size(),trackingKey);
+
+        Iterator<Row> iteratorDtxTrackingRecords = allTrackingRecordsByTrackingKey.iterator();
+        while (iteratorDtxTrackingRecords.hasNext()) {
+            Row next = iteratorDtxTrackingRecords.next();
+            DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord();
+            dtxTrackingRecord.setTrackingKey(next.getString("tracking_key"));
+            dtxTrackingRecord.setState(next.getBool("sealed"));
+            dtxTrackingRecord.setLocalUrl(next.getString("local_url"));
+            dtxTrackingRecord.setOriginUrl(next.getString("origin_url"));
+            dtxTrackingRecord.setTimestamps(next.getSet("timestamps",Long.class));
+            dtxTrackingRecord.setPath(next.getString("path"));
+            dtxTrackingRecord.setStoreEffect(next.getString("store_effect"));
+            dtxTrackingRecord.setSha256(next.getString("sha256"));
+            dtxTrackingRecord.setSha1(next.getString("sha1"));
+            dtxTrackingRecord.setMd5(next.getString("md5"));
+            dtxTrackingRecord.setSize(next.getLong("size"));
+            dtxTrackingRecord.setStoreKey(next.getString("store_key"));
+            dtxTrackingRecord.setAccessChannel(next.getString("access_channel"));
+            trackingRecords.add(dtxTrackingRecord);
+        }
+        return trackingRecords;
+    }
+
+    private void saveTrackedContentRecords(TrackedContent record) {
+        Set<TrackedContentEntry> downloads = record.getDownloads();
+        Set<TrackedContentEntry> uploads = record.getUploads();
+        TrackingKey key = record.getKey();
+
+        for(TrackedContentEntry downloadEntry : downloads) {
+            DtxTrackingRecord downloadRecord =
+                    DtxTrackingRecord.fromTrackedContentEntry(downloadEntry, true);
+            trackingMapper.save(downloadRecord);
+        }
+
+        for(TrackedContentEntry uploadEntry : uploads) {
+            DtxTrackingRecord uploadRecord =
+                    DtxTrackingRecord.fromTrackedContentEntry(uploadEntry, true);
+            trackingMapper.save(uploadRecord);
+        }
+    }
+}

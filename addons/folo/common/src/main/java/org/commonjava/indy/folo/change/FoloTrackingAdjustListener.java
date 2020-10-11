@@ -17,6 +17,7 @@ package org.commonjava.indy.folo.change;
 
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.folo.conf.FoloConfig;
+import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
@@ -47,7 +48,7 @@ public class FoloTrackingAdjustListener
     private FoloConfig foloConfig;
 
     @Inject
-    private FoloRecordCache recordManager;
+    private FoloRecord recordManager;
 
     @Inject
     private PromoteChangeManager promoteChangeManager;

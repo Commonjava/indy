@@ -149,6 +149,45 @@ public class TrackedContentEntry
         this.originUrl = originUrl;
     }
 
+
+    public void setTrackingKey(TrackingKey trackingKey) {
+        this.trackingKey = trackingKey;
+    }
+
+    public void setAccessChannel(AccessChannel accessChannel) {
+        this.accessChannel = accessChannel;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public void setEffect(StoreEffect effect) {
+        this.effect = effect;
+    }
+
+    public void setMd5(String md5) {
+        this.md5 = md5;
+    }
+
+    public void setSha256(String sha256) {
+        this.sha256 = sha256;
+    }
+
+    public void setSha1(String sha1) {
+        this.sha1 = sha1;
+    }
+
+    public void setSize(Long size) {
+        this.size = size;
+    }
+
+    public void setIndex(long index) {
+        this.index = index;
+    }
+
+
+
     @Override
     public int compareTo( final TrackedContentEntry other )
     {
