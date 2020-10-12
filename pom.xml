@@ -95,7 +95,7 @@
     <jhttpcVersion>1.11</jhttpcVersion>
     <weftVersion>1.18-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
-    <propulsorVersion>1.4</propulsorVersion>
+    <propulsorVersion>1.5-SNAPSHOT</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
     <annotationVersion>1.3.2</annotationVersion>
     <activationVersion>1.2.0</activationVersion>
