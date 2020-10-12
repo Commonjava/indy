@@ -108,17 +108,10 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     }
 
 
-    private static String createFoloPathIdx(String  keyspace) {
-        return "CREATE INDEX IF NOT EXISTS path_idx ON " + keyspace + ".records (path);";
-    }
-
     private static String createFoloSealedIdx(String  keyspace) {
         return "CREATE INDEX IF NOT EXISTS sealed_idx ON " + keyspace + ".records (sealed);";
     }
-
-    private static String createFoloBuildIdIdx(String  keyspace) {
-        return "CREATE INDEX IF NOT EXISTS tracking_key_idx ON " + keyspace + ".records (tracking_key);";
-    }
+    
 
 
     @PostConstruct
