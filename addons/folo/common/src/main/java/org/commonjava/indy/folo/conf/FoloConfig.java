@@ -100,7 +100,7 @@ public class FoloConfig
 
     @ConfigName("folo.cassandra.keyspace")
     public void setFoloCassandraKeyspace(String foloCassandraKeyspace) {
-        logger.warn("\n\n-- SETING FOLO KEYSPACEE NAME: "  + foloCassandraKeyspace);
+        logger.warn("\n\n-- SETING FOLO KEYSPACE NAME: "  + foloCassandraKeyspace);
         this.foloCassandraKeyspace = foloCassandraKeyspace;
     }
 
