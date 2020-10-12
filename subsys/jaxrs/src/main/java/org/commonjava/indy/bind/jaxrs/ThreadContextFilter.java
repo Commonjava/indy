@@ -16,7 +16,6 @@
 package org.commonjava.indy.bind.jaxrs;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
-import org.commonjava.indy.measure.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +30,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
-import static org.commonjava.indy.metrics.RequestContextHelper.X_FORWARDED_FOR;
+import static org.commonjava.indy.util.RequestContextHelper.X_FORWARDED_FOR;
 
 @ApplicationScoped
 public class ThreadContextFilter

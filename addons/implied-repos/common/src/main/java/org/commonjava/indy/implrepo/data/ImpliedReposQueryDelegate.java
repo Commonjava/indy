@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.implrepo.data;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.data.DelegatingArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.ArtifactStoreQuery;

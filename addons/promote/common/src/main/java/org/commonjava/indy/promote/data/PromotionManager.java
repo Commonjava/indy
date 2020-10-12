@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.promote.data;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.cdi.util.weft.DrainingExecutorCompletionService;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
@@ -29,7 +29,7 @@ import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.measure.annotation.Measure;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -55,7 +55,7 @@ import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
@@ -208,7 +208,7 @@ public class PromotionManager
 
         if ( !storeManager.hasArtifactStore( targetKey ) )
         {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            String error = String.format( "No such target group: %s.", request.getTarget() );
             logger.warn( error );
 
             return new GroupPromoteResult( request, error );
@@ -238,7 +238,7 @@ public class PromotionManager
     {
         ValidationResult validation = new ValidationResult();
         logger.info( "Running validations for promotion of: {} to group: {}", request.getSource(),
-                     request.getTargetGroup() );
+                     request.getTarget() );
 
         final StoreKey targetKey = getTargetKey( request.getTarget().getName(), request.getTarget().getPackageType() );
         byGroupTargetLocks.lockAnd( targetKey, config.getLockTimeoutSeconds(), k -> {
@@ -250,7 +250,7 @@ public class PromotionManager
             catch ( IndyDataException e )
             {
                 error.set( new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e,
-                                                   request.getTargetGroup(), e.getMessage() ) );
+                                                   request.getTarget(), e.getMessage() ) );
                 return null;
             }
 
@@ -370,13 +370,13 @@ public class PromotionManager
         }
         catch ( IndyDataException e )
         {
-            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTargetGroup(),
+            throw new PromotionException( "Cannot retrieve target group: %s. Reason: %s", e, request.getTarget(),
                                           e.getMessage() );
         }
 
         if ( target == null )
         {
-            String error = String.format( "No such target group: %s.", request.getTargetGroup() );
+            String error = String.format( "No such target group: %s.", request.getTarget() );
             logger.warn( error );
 
             return new GroupPromoteResult( request, error );
@@ -475,7 +475,7 @@ public class PromotionManager
             Exception ex = error.get();
             if ( ex != null )
             {
-                String msg = "Group promotion failed. Target: " + request.getTargetGroup() + ", Source: "
+                String msg = "Group promotion failed. Target: " + request.getTarget() + ", Source: "
                         + request.getSource() + ", Reason: " + getStackTrace( ex );
                 logger.warn( msg );
                 ret = new GroupPromoteResult( request, msg );
@@ -936,6 +936,7 @@ public class PromotionManager
         }
 
         Transfer target = contentManager.getTransfer( tgt, path, UPLOAD );
+        EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
 
         /*
          * if we hit an existing metadata.xml, we remove it from both target repo and affected groups. The metadata
@@ -948,12 +949,13 @@ public class PromotionManager
             {
                 if ( target != null && target.exists() )
                 {
-                    target.delete( true );
+                    contentManager.delete( tgt,path, eventMetadata );
+//                    target.delete( true );
                 }
                 result.skipped = true;
                 logger.info( "Metadata, mark as skipped and remove it if exists, target: {}", target );
             }
-            catch ( IOException e )
+            catch ( IndyWorkflowException e )
             {
                 String msg = String.format( "Failed to promote: %s. Target: %s. Failed to remove metadata.",
                                             transfer, request.getTarget() );
@@ -985,9 +987,7 @@ public class PromotionManager
         }
 
         logger.debug( "Store target transfer: {}", target );
-        EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
-        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<Set>( affectedGroups ) );
-        eventMetadata.set( TARGET_STORE, tgt );
+        eventMetadata.set( AFFECTED_GROUPS, new ValuePipe<>( affectedGroups ) ).set( TARGET_STORE, tgt );
 
         try (InputStream stream = transfer.openInputStream( true ))
         {

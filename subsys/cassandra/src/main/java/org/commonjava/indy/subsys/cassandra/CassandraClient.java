@@ -29,7 +29,7 @@ import javax.inject.Inject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ApplicationScoped
 public class CassandraClient
@@ -126,5 +126,10 @@ public class CassandraClient
             cluster = null;
             closed = true;
         }
+    }
+
+    public Map<String, Session> getSessions()
+    {
+        return sessions;
     }
 }

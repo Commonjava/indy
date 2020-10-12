@@ -28,7 +28,7 @@ import org.commonjava.indy.model.core.dto.NotFoundCacheInfoDTO;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class IndyNfcClientModule
         extends IndyClientModule

@@ -18,7 +18,6 @@ package org.commonjava.indy.promote.validate.model;
 import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.indy.metrics.RequestContextHelper;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
@@ -26,6 +25,7 @@ import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.PromotionValidationException;
 import org.commonjava.indy.promote.validate.PromotionValidationTools;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.maven.galley.model.Transfer;
 
 import java.util.HashSet;

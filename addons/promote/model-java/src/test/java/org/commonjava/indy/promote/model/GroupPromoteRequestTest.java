@@ -42,7 +42,7 @@ public class GroupPromoteRequestTest
         final GroupPromoteRequest result = mapper.readValue( json, GroupPromoteRequest.class );
 
         assertThat( result.getSource(), equalTo( req.getSource() ) );
-        assertThat( result.getTargetGroup(), equalTo( req.getTargetGroup() ) );
+        assertThat( result.getTarget(), equalTo( req.getTarget() ) );
     }
 
 }

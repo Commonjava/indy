@@ -15,14 +15,11 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -31,29 +28,69 @@ public class PackagePathTest
     @Test
     public void testNormal()
     {
-        Optional<PackagePath> packagePath = PackagePath.parse( "jquery/-/jquery-1.2.3-redhat-1.tgz" );
+        Optional<PackagePath> packagePath = PackagePath.parse( "/jquery/-/jquery-1.2.3-redhat-1.tgz" );
         assertTrue( packagePath.isPresent() );
         PackagePath path = packagePath.get();
-        assertFalse( path.isScoped() );
-        assertThat( path.getPackageName(), equalTo( "jquery" ) );
-        assertThat( path.getVersionPath(), equalTo( "jquery/1.2.3-redhat-1" ) );
-        assertThat( path.getVersion(), equalTo( "1.2.3-redhat-1" ) );
-        packagePath = PackagePath.parse( "jquery/jquery-1.2.3-redhat-1.tgz" );
-        assertFalse( packagePath.isPresent() );
+        assertResult( path, "jquery", null, "jquery/1.2.3-redhat-1", "1.2.3-redhat-1" );
+
+        packagePath = PackagePath.parse( "/jquery/-/jquery-1.2.3-redhat-1.tgz" );
+        assertTrue( packagePath.isPresent() );
+        path = packagePath.get();
+        assertResult( path, "jquery", null, "jquery/1.2.3-redhat-1", "1.2.3-redhat-1" );
     }
 
     @Test
     public void testScoped()
     {
-        Optional<PackagePath> packagePath = PackagePath.parse( "@angular/core/-/core-1.2.3-redhat-1.tgz" );
+        Optional<PackagePath> packagePath = PackagePath.parse( "/@angular/core/-/core-1.2.3-redhat-1.tgz" );
         assertTrue( packagePath.isPresent() );
         PackagePath path = packagePath.get();
-        assertTrue( path.isScoped() );
-        assertThat( path.getPackageName(), equalTo( "core" ) );
-        assertThat( path.getScopedName(), equalTo( "@angular" ) );
-        assertThat( path.getVersionPath(), equalTo( "@angular/core/1.2.3-redhat-1" ) );
-        assertThat( path.getVersion(), equalTo( "1.2.3-redhat-1" ) );
-        packagePath = PackagePath.parse( "@angular/core/jquery-1.2.3-redhat-1.tgz" );
-        assertFalse( packagePath.isPresent() );
+        assertResult( path, "core", "@angular", "@angular/core/1.2.3-redhat-1", "1.2.3-redhat-1" );
+
+        packagePath = PackagePath.parse( "@angular/core/-/core-1.2.3-redhat-1.tgz" );
+        assertTrue( packagePath.isPresent() );
+        path = packagePath.get();
+        assertResult( path, "core", "@angular", "@angular/core/1.2.3-redhat-1", "1.2.3-redhat-1" );
+    }
+
+    @Test
+    public void testNormalVersionPath()
+    {
+        Optional<PackagePath> packagePath = PackagePath.parse( "/keycloak-connect/8.0.0-rc.2" );
+        assertTrue( packagePath.isPresent() );
+        PackagePath path = packagePath.get();
+        assertResult( path, "keycloak-connect", null, "keycloak-connect/8.0.0-rc.2", "8.0.0-rc.2" );
+
+        packagePath = PackagePath.parse( "keycloak-connect/8.0.0-rc.2" );
+        assertTrue( packagePath.isPresent() );
+        path = packagePath.get();
+        assertResult( path, "keycloak-connect", null, "keycloak-connect/8.0.0-rc.2", "8.0.0-rc.2" );
+    }
+
+    @Test
+    public void testScopedVersionPath()
+    {
+        Optional<PackagePath> packagePath = PackagePath.parse( "/@redhat/keycloak-connect/8.0.0-rc.2" );
+        assertTrue( packagePath.isPresent() );
+        PackagePath path = packagePath.get();
+        assertResult( path, "keycloak-connect", "@redhat", "@redhat/keycloak-connect/8.0.0-rc.2", "8.0.0-rc.2" );
+
+        packagePath = PackagePath.parse( "/@redhat/keycloak-connect/8.0.0-rc.2" );
+        assertTrue( packagePath.isPresent() );
+        path = packagePath.get();
+        assertResult( path, "keycloak-connect", "@redhat", "@redhat/keycloak-connect/8.0.0-rc.2", "8.0.0-rc.2" );
+    }
+
+    private void assertResult( final PackagePath packagePath, final String expectedPackage, final String expectedScope,
+                               final String expectVersionPath, final String expectVersion )
+    {
+        assertThat( packagePath.isScoped(), equalTo( expectedScope != null ) );
+        assertThat( packagePath.getPackageName(), equalTo( expectedPackage ) );
+        if ( packagePath.isScoped() )
+        {
+            assertThat( packagePath.getScopedName(), equalTo( expectedScope ) );
+        }
+        assertThat( packagePath.getVersionPath(), equalTo( expectVersionPath ) );
+        assertThat( packagePath.getVersion(), equalTo( expectVersion ) );
     }
 }

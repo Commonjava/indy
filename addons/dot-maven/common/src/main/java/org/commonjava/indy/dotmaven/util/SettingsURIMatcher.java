@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.dotmaven.util;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -35,6 +35,9 @@ public class GroupPromoteRequest
     @ApiModelProperty( value="Indy store/repository key to promote FROM (formatted as: '{maven, npm}:{remote,hosted,group}:name')", required=true )
     private StoreKey source;
 
+    /**
+     * @deprecated As this only represents a maven type target group, will be deprecated in future. Please refer to use {@link #target} instead
+     */
     @Deprecated
     @ApiModelProperty( value="Name of the Indy target group to promote TO (MUST be pre-existing)" )
     private String targetGroup;
@@ -49,6 +52,11 @@ public class GroupPromoteRequest
     {
     }
 
+    /**
+     * @param source
+     * @param targetGroup
+     * @deprecated As this constructor only works for maven type target group, will be deprecated in future. Please use {@link #GroupPromoteRequest(StoreKey, StoreKey)} instead
+     */
     @Deprecated
     public GroupPromoteRequest( final StoreKey source, final String targetGroup )
     {
@@ -78,17 +86,21 @@ public class GroupPromoteRequest
     @JsonIgnore
     public StoreKey getTargetKey()
     {
-        return target != null ?
-                target :
-                new StoreKey( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.group, getTargetGroup() );
+        return getTarget();
     }
 
+    /**
+     * @deprecated As this only returns a maven typed target group, it will be deprecated in future. Please use {@link #getTarget()} instead
+     */
     @Deprecated
     public String getTargetGroup()
     {
         return targetGroup;
     }
 
+    /**
+     * @deprecated As this only creates a maven typed target group, it will be deprecated in future. Please use {@link #setTarget(StoreKey)} instead
+     */
     @Deprecated
     public GroupPromoteRequest setTargetGroup( final String targetGroup )
     {
@@ -110,6 +122,10 @@ public class GroupPromoteRequest
 
     public StoreKey getTarget()
     {
+        if ( target == null )
+        {
+            target = new StoreKey( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.group, getTargetGroup() );
+        }
         return target;
     }
 
