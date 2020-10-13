@@ -18,6 +18,7 @@ package org.commonjava.indy.core.conf;
 import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.inject.Production;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
@@ -26,8 +27,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import java.io.InputStream;
-
-import static org.commonjava.indy.metrics.conf.IndyMetricsConfig.INDY_METRICS_NODE_PREFIX;
 
 @ApplicationScoped
 @SectionName( IndyWeftConfig.SECTION_NAME )
@@ -46,7 +45,7 @@ public class IndyWeftConfig
 
     public static final String ENABLED = "enabled";
 
-    public static final String NODE_PREFIX = INDY_METRICS_NODE_PREFIX;
+    public static final String NODE_PREFIX = IndyMetricsConfig.NODE_PREFIX;
 
     public static final String THREADS_SUFFIX = ".threads";
 

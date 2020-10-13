@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.revisions;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.commonjava.indy.audit.ChangeSummary.SYSTEM_USER;
 import static org.commonjava.indy.subsys.git.GitManager.COMMIT_CHANGELOG_ENTRIES;
 import static org.hamcrest.CoreMatchers.equalTo;

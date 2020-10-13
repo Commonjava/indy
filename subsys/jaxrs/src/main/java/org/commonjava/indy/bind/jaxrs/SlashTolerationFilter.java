@@ -24,6 +24,12 @@ public class SlashTolerationFilter
         implements Filter
 {
     @Override
+    public void init( final FilterConfig filterConfig )
+                    throws ServletException
+    {
+    }
+
+    @Override
     public void doFilter( ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain )
             throws IOException, ServletException
     {
@@ -31,4 +37,10 @@ public class SlashTolerationFilter
         String newURI = hsr.getRequestURI().replaceAll( "/+", "/" );
         servletRequest.getRequestDispatcher(newURI).forward(servletRequest, servletResponse);
     }
+
+    @Override
+    public void destroy()
+    {
+    }
+
 }

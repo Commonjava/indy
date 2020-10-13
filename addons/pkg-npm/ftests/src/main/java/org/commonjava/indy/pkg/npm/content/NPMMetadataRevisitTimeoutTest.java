@@ -18,12 +18,14 @@ package org.commonjava.indy.pkg.npm.content;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.model.DistTag;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,6 +63,7 @@ public class NPMMetadataRevisitTimeoutTest
     private static final String PATH = "jquery";
 
     @Test
+    @Category( TimingDependent.class )
     public void test()
             throws Exception
     {
@@ -76,15 +79,6 @@ public class NPMMetadataRevisitTimeoutTest
             mapper.writeValue( resp.getWriter(), src );
             resp.getWriter().flush();
         } );
-
-        //FIXME: After using galley-0.16.8, I'm not sure the second retrieval of npm metadata will get path of
-        //       "A/jquery/package.json" while the first retrieval is "A/jquery". So I add a new expectation here
-        //       to let the second retrieval can work. Need further checking.
-        //        server.expect( "GET", server.formatUrl( REPO, PATH+"/package.json" ), (req, resp)->{
-        //            resp.setStatus( 200 );
-        //            mapper.writeValue( resp.getWriter(), src );
-        //            resp.getWriter().flush();
-        //        } );
 
         final int METADATA_TIMEOUT_SECOND = 3;
         final int TIMEOUT_WAIT_MILLI_S = 1000;

@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 
-import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang3.StringUtils.join;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;

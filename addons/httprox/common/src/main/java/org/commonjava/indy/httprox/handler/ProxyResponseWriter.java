@@ -15,14 +15,12 @@
  */
 package org.commonjava.indy.httprox.handler;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.http.HttpRequest;
 import org.apache.http.RequestLine;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -33,9 +31,9 @@ import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.httprox.util.HttpConduitWrapper;
 import org.commonjava.indy.httprox.util.ProxyMeter;
 import org.commonjava.indy.httprox.util.ProxyResponseHelper;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
+import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -43,6 +41,8 @@ import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.o11yphant.metrics.api.Timer;
+import org.commonjava.o11yphant.metrics.MetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -54,19 +54,12 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import javax.inject.Inject;
 
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 
-import static com.codahale.metrics.MetricRegistry.name;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
-import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.ALLOW_HEADER_VALUE;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.CONNECT_METHOD;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.GET_METHOD;
@@ -77,6 +70,7 @@ import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_L
 import static org.commonjava.indy.subsys.http.util.UserPass.parse;
 import static org.commonjava.indy.util.ApplicationHeader.proxy_authenticate;
 import static org.commonjava.indy.util.ApplicationStatus.PROXY_AUTHENTICATION_REQUIRED;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 public final class ProxyResponseWriter
                 implements ChannelListener<ConduitStreamSinkChannel>
@@ -118,9 +112,9 @@ public final class ProxyResponseWriter
 
     private final MDCManager mdcManager;
 
-    private final MetricRegistry metricRegistry;
+    private final MetricsManager metricManager;
 
-    private GoldenSignalsMetricSet sliMetricSet;
+    private IndyGoldenSignalsMetricSet sliMetricSet;
 
     private long startNanos;
 
@@ -139,7 +133,7 @@ public final class ProxyResponseWriter
                                 final KeycloakProxyAuthenticator proxyAuthenticator, final CacheProvider cacheProvider,
                                 final MDCManager mdcManager, final ProxyRepositoryCreator repoCreator,
                                 final StreamConnection accepted, final IndyMetricsConfig metricsConfig,
-                                final MetricRegistry metricRegistry, final GoldenSignalsMetricSet sliMetricSet,
+                                final MetricsManager metricManager, final IndyGoldenSignalsMetricSet sliMetricSet,
                                 final CacheProducer cacheProducer,
                                 final long start, final WeftExecutorService executor )
     {
@@ -153,7 +147,7 @@ public final class ProxyResponseWriter
         this.peerAddress = accepted.getPeerAddress();
         this.sourceChannel = accepted.getSourceChannel();
         this.metricsConfig = metricsConfig;
-        this.metricRegistry = metricRegistry;
+        this.metricManager = metricManager;
         this.sliMetricSet = sliMetricSet;
         startNanos = start;
         this.cls = ClassUtils.getAbbreviatedName( getClass().getName(), 1 ); // e.g., foo.bar.ClassA -> f.b.ClassA
@@ -169,14 +163,14 @@ public final class ProxyResponseWriter
     @Override
     public void handleEvent( final ConduitStreamSinkChannel channel )
     {
-        if ( metricsConfig == null || metricRegistry == null )
+        if ( metricsConfig == null || metricManager == null )
         {
             doHandleEvent( channel );
             return;
         }
 
-        Timer timer = metricRegistry.timer( name( metricsConfig.getNodePrefix(), cls, "handleEvent" ) );
-        Timer.Context timerContext = timer.time();
+        Timer.Context timerContext =
+                        metricManager.startTimer( name( metricsConfig.getNodePrefix(), cls, "handleEvent" ) );
         try
         {
             doHandleEvent( channel );
@@ -243,7 +237,7 @@ public final class ProxyResponseWriter
             {
                 ProxyResponseHelper proxyResponseHelper =
                         new ProxyResponseHelper( httpRequest, config, contentController, repoCreator, storeManager,
-                                                 metricsConfig, metricRegistry, cls );
+                                                 metricsConfig, metricManager, cls );
                 try
                 {
                     if ( repoCreator == null )

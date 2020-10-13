@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.filer.def;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import com.datastax.driver.core.Session;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.NamedThreadFactory;
@@ -25,8 +23,11 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.api.MetricRegistry;
+import org.commonjava.o11yphant.metrics.api.Timer;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.commonjava.maven.galley.GalleyInitException;
@@ -80,7 +81,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getSupername;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.*;
@@ -123,7 +124,13 @@ public class DefaultGalleyStorageProvider
     private Instance<TransferDecorator> transferDecorators;
 
     @Inject
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
+
+    @Inject
+    private MetricRegistry metricRegistry;
+
+    @Inject
+    private IndyMetricsConfig metricsConfig;
 
     @Inject
     private CassandraConfig cassandraConfig;
@@ -207,12 +214,11 @@ public class DefaultGalleyStorageProvider
 
         if ( pathDB != null )
         {
-            final IndyMetricsConfig metricsConfig = metricsManager.getConfig();
             if ( metricsConfig.isPathDBMetricsEnabled() )
             {
                 final String operations = metricsConfig.getPathDBMetricsOperations();
                 logger.info( "Create measured PathDB, operations: {}" );
-                pathDB = new MeasuredPathDB( pathDB, metricsManager.getMetricRegistry(), getSupername( "pathDB" ) )
+                pathDB = new MeasuredPathDB( pathDB, metricsManager, getSupername( "pathDB" ) )
                 {
                     @Override
                     protected boolean isMetricEnabled( String metricName )
@@ -283,12 +289,12 @@ public class DefaultGalleyStorageProvider
 
     private Function<String, Meter> meterProvider()
     {
-        return (name)->metricsManager.getMeter( name );
+        return ( name ) -> metricsManager.getMeter( name );
     }
 
     private Function<String, Timer.Context> timerProvider()
     {
-        return (name)->metricsManager.startTimer( name );
+        return ( name ) -> metricsManager.startTimer( name );
     }
 
     private ChecksummingTransferDecorator getChecksummingTransferDecorator()

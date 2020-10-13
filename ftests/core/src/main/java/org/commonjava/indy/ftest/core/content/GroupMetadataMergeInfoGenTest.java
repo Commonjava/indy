@@ -16,7 +16,7 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.ArtifactStore;
