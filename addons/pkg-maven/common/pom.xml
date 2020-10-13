@@ -42,6 +42,10 @@
       <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.atlas</groupId>
+      <artifactId>atlas-identities</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.archetype</groupId>
       <artifactId>archetype-catalog</artifactId>
     </dependency>
