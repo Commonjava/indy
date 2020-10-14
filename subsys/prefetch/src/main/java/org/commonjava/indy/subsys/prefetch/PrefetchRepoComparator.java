@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.prefetch;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.model.core.RemoteRepository;
 
 import java.time.ZoneId;

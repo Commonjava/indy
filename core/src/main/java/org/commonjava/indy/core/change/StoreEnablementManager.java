@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.core.change;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
