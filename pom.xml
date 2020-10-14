@@ -85,7 +85,7 @@
     <pathmappedStorageVersion>1.7</pathmappedStorageVersion>
 
     <!-- commonjava/redhat projects -->
-    <atlasVersion>1.1.1-SNAPSHOT</atlasVersion>
+    <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.4</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
