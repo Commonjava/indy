@@ -144,13 +144,13 @@ public class FoloRecordCache implements FoloRecord {
         return hasSealedRecord( key ) || hasInProgressRecord( key );
     }
 
-    @Override
+//    @Override
     public synchronized boolean hasSealedRecord(final TrackingKey key)
     {
         return sealedRecordCache.containsKey( key );
     }
 
-    @Override
+//    @Override
     @Measure
     public synchronized boolean hasInProgressRecord(final TrackingKey key)
     {

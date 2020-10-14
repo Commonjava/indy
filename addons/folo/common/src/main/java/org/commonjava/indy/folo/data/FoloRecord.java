@@ -20,10 +20,10 @@ public interface FoloRecord {
 
     boolean hasRecord(TrackingKey key);
 
-    boolean hasSealedRecord(TrackingKey key);
+//    boolean hasSealedRecord(TrackingKey key);
 
-    @Measure
-    boolean hasInProgressRecord(TrackingKey key);
+//    @Measure
+//    boolean hasInProgressRecord(TrackingKey key);
 
     TrackedContent get(TrackingKey key);
 

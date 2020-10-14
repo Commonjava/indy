@@ -355,6 +355,8 @@ public class FoloAdminController
                                       .map( TrackingKey::getId )
                                       .collect( Collectors.toSet() );
         }
+
+
         Set<String> sealed = null;
         if ( types.contains( FoloConstants.TRACKING_TYPE.SEALED ) )
         {
@@ -363,6 +365,8 @@ public class FoloAdminController
                                   .map( TrackingKey::getId )
                                   .collect( Collectors.toSet() );
         }
+
+
         if ( ( inProgress != null && !inProgress.isEmpty() ) || ( sealed != null && !sealed.isEmpty() ) )
         {
             return new TrackingIdsDTO( inProgress, sealed );

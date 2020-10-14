@@ -111,7 +111,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private static String createFoloSealedIdx(String  keyspace) {
         return "CREATE INDEX IF NOT EXISTS sealed_idx ON " + keyspace + ".records (sealed);";
     }
-    
+
 
 
     @PostConstruct
@@ -221,9 +221,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         return hasSealedRecord(key) || hasInProgressRecord(key);
     }
 
-    @Override
     public boolean hasSealedRecord(TrackingKey key) {
-
         BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
         ResultSet execute = session.execute(bind);
         Row one = execute.one();
@@ -238,8 +236,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             return false;
         }
     }
-
-    @Override
+    
     public boolean hasInProgressRecord(TrackingKey key) {
         BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
         ResultSet execute = session.execute(bind);
@@ -265,6 +262,12 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     @Override
     public TrackedContent seal(TrackingKey trackingKey) {
         List<DtxTrackingRecord> trackingRecords =  getDtxTrackingRecordsFromDb(trackingKey);
+
+        if(trackingRecords == null ||  trackingRecords.isEmpty()) {
+            logger.debug( "Tracking record: {} doesn't exist! Returning empty record.", trackingKey );
+            return new TrackedContent(trackingKey,new HashSet<>() ,  new HashSet<>());
+        }
+
         DtxTrackingRecord recordCheck = trackingRecords.get(0);
         if(recordCheck.getState()) {
             logger.debug( "Tracking record: {} already sealed! Returning sealed record.", trackingKey );
@@ -280,36 +283,16 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Override
     public Set<TrackingKey> getInProgressTrackingKey() {
-        BoundStatement inProgress = getTrackingRecordBySealed.bind(false);
-        ResultSet getInProgressRecords = session.execute(inProgress);
-        List<Row> allInProgress = getInProgressRecords.all();
-        Iterator<Row> iterator = allInProgress.iterator();
-
-        Set<TrackingKey> trackingKeys = new HashSet<>();
-        while (iterator.hasNext()) {
-            Row next = iterator.next();
-            String tracking_key = next.getString("tracking_key");
-            trackingKeys.add(new TrackingKey(tracking_key));
-        }
-        return trackingKeys;
+        return getTrackingKeys(false);
     }
 
     @Override
     public Set<TrackingKey> getSealedTrackingKey() {
-        BoundStatement inProgress = getTrackingRecordBySealed.bind(true);
-        ResultSet getInProgressRecords = session.execute(inProgress);
-        List<Row> allInProgress = getInProgressRecords.all();
-        Iterator<Row> iterator = allInProgress.iterator();
-
-        Set<TrackingKey> trackingKeys = new HashSet<>();
-        while (iterator.hasNext()) {
-            Row next = iterator.next();
-            String tracking_key = next.getString("tracking_key");
-            trackingKeys.add(new TrackingKey(tracking_key));
-        }
-
-        return trackingKeys;
+        return getTrackingKeys(true);
     }
+
+
+
 
     @Override
     public Set<TrackedContent> getSealed() {
@@ -422,5 +405,20 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
                     DtxTrackingRecord.fromTrackedContentEntry(uploadEntry, true);
             trackingMapper.save(uploadRecord);
         }
+    }
+
+    private Set<TrackingKey> getTrackingKeys(Boolean sealed) {
+        BoundStatement inProgress = getTrackingRecordBySealed.bind(sealed);
+        ResultSet getInProgressRecords = session.execute(inProgress);
+        List<Row> allInProgress = getInProgressRecords.all();
+        Iterator<Row> iterator = allInProgress.iterator();
+
+        Set<TrackingKey> trackingKeys = new HashSet<>();
+        while (iterator.hasNext()) {
+            Row next = iterator.next();
+            String tracking_key = next.getString("tracking_key");
+            trackingKeys.add(new TrackingKey(tracking_key));
+        }
+        return trackingKeys;
     }
 }
