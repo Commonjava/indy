@@ -141,7 +141,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     public Stream<StoreKey> streamArtifactStoreKeys()
     {
-        return null;
+        return getAllArtifactStores().stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ).stream();
     }
 
     @Override
