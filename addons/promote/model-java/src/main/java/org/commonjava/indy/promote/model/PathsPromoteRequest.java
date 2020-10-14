@@ -109,7 +109,7 @@ public class PathsPromoteRequest
 
     public Set<String> getPaths()
     {
-        return paths == null ? Collections.<String> emptySet() : paths;
+        return paths == null ? Collections.emptySet() : paths;
     }
 
     public PathsPromoteRequest setPaths( final Set<String> paths )

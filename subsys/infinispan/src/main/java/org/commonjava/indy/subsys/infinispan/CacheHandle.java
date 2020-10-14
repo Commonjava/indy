@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.metrics.IndyMetricsManager;
 import org.infinispan.Cache;
 import org.slf4j.Logger;

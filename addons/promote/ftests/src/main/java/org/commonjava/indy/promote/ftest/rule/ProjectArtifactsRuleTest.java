@@ -39,7 +39,7 @@ public class ProjectArtifactsRuleTest
         extends AbstractValidationRuleTest<Group>
 {
 
-    private static final String RULE = "project-artifacts.groovy";
+    private static final String RULE = "maven-project-artifacts.groovy";
 
     private static final String CONTENT = "this is some content";
 

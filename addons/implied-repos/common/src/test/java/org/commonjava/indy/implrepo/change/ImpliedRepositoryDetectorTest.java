@@ -16,7 +16,7 @@
 package org.commonjava.indy.implrepo.change;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.ArtifactStoreValidator;
 import org.commonjava.indy.data.IndyDataException;

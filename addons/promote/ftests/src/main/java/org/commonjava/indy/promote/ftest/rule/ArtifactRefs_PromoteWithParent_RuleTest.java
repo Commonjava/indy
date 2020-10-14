@@ -16,7 +16,7 @@
 package org.commonjava.indy.promote.ftest.rule;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 public class ArtifactRefs_PromoteWithParent_RuleTest
     extends AbstractValidationRuleTest<HostedRepository>
 {
-    private static final String RULE = "artifact-refs-via.groovy";
+    private static final String RULE = "maven-artifact-refs-via.groovy";
 
     private static final String PREFIX = "artifact-refs-via/";
 

@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.core.content.group;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.GroupRepositoryFilter;
 import org.commonjava.indy.model.core.ArtifactStore;

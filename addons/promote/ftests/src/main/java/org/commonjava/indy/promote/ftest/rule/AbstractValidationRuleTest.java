@@ -24,6 +24,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
@@ -62,7 +63,7 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
 
         module = client.module( IndyPromoteClientModule.class );
 
-        HostedRepository shr = new HostedRepository( "source" );
+        HostedRepository shr = new HostedRepository( getPackageType(), "source" );
         shr.setAllowSnapshots( true );
 
         System.out.println("Validation rule test client:"+ client);
@@ -70,11 +71,13 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
         source = client.stores().create( shr, "creating test source", HostedRepository.class );
         if ( Group.class.equals( targetCls ) )
         {
-            target = (T) client.stores().create( new Group( TARGET_NAME ), "creating test target", Group.class );
+            target = (T) client.stores()
+                               .create( new Group( getPackageType(), TARGET_NAME ), "creating test target",
+                                        Group.class );
         }
         else if ( HostedRepository.class.equals( targetCls ) )
         {
-            HostedRepository hr = new HostedRepository( TARGET_NAME );
+            HostedRepository hr = new HostedRepository( getPackageType(), TARGET_NAME );
             hr.setAllowSnapshots( true );
 
             target = (T) client.stores().create( hr, "creating test target", HostedRepository.class );
@@ -178,5 +181,10 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
     {
         super.initTestConfig( fixture );
         writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=true" );
+    }
+
+    protected String getPackageType(){
+        //default is maven
+        return PackageTypeConstants.PKG_TYPE_MAVEN;
     }
 }
