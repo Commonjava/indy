@@ -62,24 +62,12 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
 
     private Session session;
-    private Mapper<DtxBuildRecord> buildsMapper;
     private Mapper<DtxTrackingRecord> trackingMapper;
 
     private PreparedStatement getTrackingRecordByBuildIdAndPath;
     private PreparedStatement getTrackingRecordBySealed;
     private PreparedStatement getTrackingRecordsByTrackingKey;
 
-
-    private static String createFoloBuildsTable( String keyspace )
-    {
-        return "CREATE TABLE IF NOT EXISTS " + keyspace + ".builds ("
-                + "id text,"
-                + "sealed boolean,"
-                + "started timestamp,"
-                + "finished timestamp,"
-                + "PRIMARY KEY (id)"
-                + ");";
-    }
 
     private static String createFoloRecordsTable( String keyspace )
     {
@@ -123,12 +111,10 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
         session = cassandraClient.getSession(foloCassandraKeyspace);
         session.execute(createFoloKeyspace(foloCassandraKeyspace));
-        session.execute(createFoloBuildsTable(foloCassandraKeyspace));
         session.execute(createFoloRecordsTable(foloCassandraKeyspace));
         session.execute(createFoloSealedIdx(foloCassandraKeyspace));
 
         MappingManager mappingManager = new MappingManager(session);
-        buildsMapper = mappingManager.mapper(DtxBuildRecord.class,foloCassandraKeyspace);
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
 
         getTrackingRecordByBuildIdAndPath =
@@ -149,54 +135,34 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         String buildId = entry.getTrackingKey().getId();
         String path = entry.getPath();
 
-//        String api = uriInfo.getBaseUriBuilder().path("api").build().toString();
-        String content  = "content";
-        String packageType = entry.getStoreKey().getPackageType();
-        String storeKey = entry.getStoreKey().getType().singularEndpointName();
-        String name = entry.getStoreKey().getName();
+        BoundStatement bind = getTrackingRecordByBuildIdAndPath.bind(buildId,path);
+        ResultSet trackingRecord = session.execute(bind);
+        Row one = trackingRecord.one();
 
+        if(one!=null) {
+            DtxTrackingRecord dtxTrackingRecord = one.get(0, DtxTrackingRecord.class);
+            Boolean state = dtxTrackingRecord.getState();
 
-        try {
-            String localUrl;
+            if(state) {
+                throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
+            }  else {
 
-            localUrl = UrlUtils.buildUrl("" ,content , packageType , storeKey ,name , path );
+                DtxTrackingRecord dtxTrackingRecord1 =
+                        DtxTrackingRecord.fromTrackedContentEntry(entry,false);
 
-            BoundStatement bind = getTrackingRecordByBuildIdAndPath.bind(buildId,path);
-            ResultSet trackingRecord = session.execute(bind);
-            Row one = trackingRecord.one();
-
-            if(one!=null) {
-                DtxTrackingRecord dtxTrackingRecord = one.get(0, DtxTrackingRecord.class);
-                Boolean state = dtxTrackingRecord.getState();
-
-                if(state) {
-                    throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
-                }  else {
-
-                    DtxTrackingRecord dtxTrackingRecord1 =
-                            DtxTrackingRecord.fromTrackedContentEntry(entry,false);
-
-                    if(dtxTrackingRecord.getTrackingKey().equals(dtxTrackingRecord1.getTrackingKey()) &&
-                        dtxTrackingRecord.getPath().equals(dtxTrackingRecord1.getPath())) {
-
-                        dtxTrackingRecord1.setLocalUrl(localUrl);
-
-                        trackingMapper.save(dtxTrackingRecord1);
-                        return true;
-                    } else {
-                        return false;
-                    }
+                if(dtxTrackingRecord.getTrackingKey().equals(dtxTrackingRecord1.getTrackingKey()) &&
+                    dtxTrackingRecord.getPath().equals(dtxTrackingRecord1.getPath())) {
+                    trackingMapper.save(dtxTrackingRecord1);
+                    return true;
+                } else {
+                    return false;
                 }
-
-            } else {
-                DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
-                dtxTrackingRecord.setLocalUrl(localUrl);
-                trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
-                return true;
             }
 
-        } catch (MalformedURLException e) {
-            throw new IndyWorkflowException( "Mailformed URL  for record: {}  path: {}", entry.getTrackingKey(),entry.getPath() );
+        } else {
+            DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
+            trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
+            return true;
         }
 
 
@@ -236,7 +202,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             return false;
         }
     }
-    
+
     public boolean hasInProgressRecord(TrackingKey key) {
         BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
         ResultSet execute = session.execute(bind);

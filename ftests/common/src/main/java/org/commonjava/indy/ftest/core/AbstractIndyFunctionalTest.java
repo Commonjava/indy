@@ -290,10 +290,9 @@ public abstract class AbstractIndyFunctionalTest
                         + "storage.gc.batchsize=0\n"
                         + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
 
-//        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"
-//                        + "\nfolo.cassandra.keyspace=folo");
-
         writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+
+//        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo");
 
         if ( isSchedulerEnabled() )
         {
