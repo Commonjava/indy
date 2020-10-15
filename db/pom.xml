@@ -35,6 +35,7 @@
     <module>flat</module>
     <module>infinispan</module>
     <module>metrics</module>
+    <module>cassandra</module>
   </modules>
   
 </project>

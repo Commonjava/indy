@@ -13,50 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.ftest.core.fixture;
+package org.commonjava.indy.infinispan.data;
 
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.data.StandaloneStoreDataManager;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.data.StoreEventDispatcher;
-import org.commonjava.indy.flat.data.DataFileStoreDataManager;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.subsys.datafile.DataFileManager;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-/**
- * Created by jdcasey on 5/2/16.
- */
 @ApplicationScoped
-public class IDETestProvider
-{
+public class StoreDataManagerProvider {
+
+    @Inject
+    @StandaloneStoreDataManager
+    InfinispanStoreDataManager infinispanStoreDataManager;
+
+    @Inject
+    IndyConfiguration indyConfiguration;
+
     private StoreDataManager storeDataManager;
 
-    @Inject
-    private StoreEventDispatcher dispatcher;
-
-    @Inject
-    private IndyConfiguration config;
-
-    @Inject
-    private DataFileManager dataFileManager;
-
-    @Inject
-    private IndyObjectMapper objectMapper;
+    private boolean isStandaloneMode;
 
     @PostConstruct
-    public void start()
+    public void init()
     {
-        storeDataManager = new DataFileStoreDataManager( dataFileManager, objectMapper, dispatcher );
+        isStandaloneMode = indyConfiguration.isStoreManagerStandalone();
     }
 
     @Produces
-    @TestStoreDataManager
+    @Default
     public StoreDataManager getStoreDataManager()
     {
+        // If isStandaloneMode is false, return CassandraStoreDataManager instantiation
+        storeDataManager = isStandaloneMode ? infinispanStoreDataManager : infinispanStoreDataManager;
         return storeDataManager;
     }
 }

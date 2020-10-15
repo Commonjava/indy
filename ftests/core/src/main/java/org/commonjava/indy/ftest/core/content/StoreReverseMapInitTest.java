@@ -22,6 +22,7 @@ import org.commonjava.indy.ftest.core.fixture.StoreTestDataBootupAction;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -249,5 +250,12 @@ public class StoreReverseMapInitTest
             e.printStackTrace();
             fail( "Downloaded XML not equal to expected XML" );
         }
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture )
+            throws IOException
+    {
+        writeConfigFile( "main.conf", "store.manager.standalone=true\n" + readTestResource( "default-test-main.conf" ) );
     }
 }
