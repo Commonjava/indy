@@ -77,6 +77,8 @@ public class IndyKojiConfig
 
     private static final int DEFAULT_QUERY_CACHE_EXPIRATION_HOURS = 3; // 3 hours for volatile caches
 
+    private static final Boolean DEFAULT_SERVER_PEM_ENABLED = true;
+
     private Boolean enabled;
 
     private String url;
@@ -84,6 +86,8 @@ public class IndyKojiConfig
     private String clientPemPath;
 
     private String serverPemPath;
+
+    private Boolean serverPemEnabled;
 
     private String keyPassword;
 
@@ -247,6 +251,11 @@ public class IndyKojiConfig
         return serverPemPath;
     }
 
+    public Boolean getServerPemEnabled()
+    {
+        return serverPemEnabled == null ? DEFAULT_SERVER_PEM_ENABLED : serverPemEnabled;
+    }
+
     public String getClientPemPath()
     {
         return clientPemPath;
@@ -316,6 +325,8 @@ public class IndyKojiConfig
     {
         this.serverPemPath = serverPemPath;
     }
+
+    public void setServerPemEnabled ( Boolean serverPemEnabled ) { this.serverPemEnabled = serverPemEnabled; }
 
     public void setKeyPassword( String keyPassword )
     {
@@ -580,6 +591,11 @@ public class IndyKojiConfig
             case "server.pem.path":
             {
                 this.serverPemPath = value;
+                break;
+            }
+            case "server.pem.enabled":
+            {
+                this.serverPemEnabled = Boolean.valueOf( value.trim() );
                 break;
             }
             case "max.connections":
