@@ -16,7 +16,7 @@
 package org.commonjava.indy.subsys.http.util;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.commonjava.indy.util.ApplicationHeader;

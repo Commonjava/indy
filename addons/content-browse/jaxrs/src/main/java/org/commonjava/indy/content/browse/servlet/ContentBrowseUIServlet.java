@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.content.browse.servlet;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.bind.jaxrs.ui.AbstractUIServlet;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.content.browse.conf.ContentBrowseConfig;

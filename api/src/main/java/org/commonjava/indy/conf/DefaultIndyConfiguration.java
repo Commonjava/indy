@@ -25,8 +25,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
-import static org.apache.commons.lang.StringUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @SectionName
 @ApplicationScoped
