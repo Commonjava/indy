@@ -92,7 +92,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private static String createFoloKeyspace( String keyspace)
     {
         return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
-                + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':3 };";
+                + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1 };";
     }
 
 
