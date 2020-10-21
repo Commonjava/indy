@@ -88,7 +88,7 @@ public class DtxTrackingRecord {
         this.storeKey = entry.getStoreKey().toString();
         this.accessChannel = entry.getAccessChannel().toString();
         this.path = entry.getPath();
-        this.originUrl = entry.getOriginUrl();
+        this.originUrl = entry.getOriginUrl() == null  || entry.getOriginUrl().isEmpty() ? "" : entry.getOriginUrl();
         this.localUrl = "";
         this.storeEffect = entry.getEffect().toString();
         this.md5 = entry.getMd5();

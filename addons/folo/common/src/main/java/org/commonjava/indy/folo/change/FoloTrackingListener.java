@@ -140,6 +140,9 @@ public class FoloTrackingListener
         }
 
         EventMetadata metadata = event.getEventMetadata();
+
+        logger.warn(">>> Metadata: " + metadata);
+
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {

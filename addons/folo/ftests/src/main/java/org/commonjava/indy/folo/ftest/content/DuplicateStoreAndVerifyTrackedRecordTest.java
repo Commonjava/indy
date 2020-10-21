@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.folo.ftest.content;
 
+import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
@@ -48,24 +49,29 @@ public class DuplicateStoreAndVerifyTrackedRecordTest
 
         final byte[] b = ( "This is a test: " + System.nanoTime() ).getBytes();
         final InputStream stream = new ByteArrayInputStream( b );
-        //System.out.println( ">>> " + b.length ); // 30
+        System.out.println( ">>> " + b.length ); // 30
 
         final byte[] b2 = ( "This is another test: " + System.nanoTime() ).getBytes();
         final InputStream stream2 = new ByteArrayInputStream( b2 );
-        //System.out.println( ">>> " + b2.length ); // 36
+        System.out.println( ">>> " + b2.length ); // 36
 
         System.out.println( ">>> store stream" );
         content.store( trackingId, storeKey, path, stream );
 
         System.out.println( ">>> store stream 2" );
-        content.store( trackingId, storeKey, path, stream2 );
+        PathInfo store = content.store(trackingId, storeKey, path, stream2);
 
-        admin.sealTrackingRecord( trackingId );
+        System.out.println(">>> Store content length: " + store.getContentLength());
+
+        boolean b1 = admin.sealTrackingRecord(trackingId);
+        System.out.println(">>>  seal tracking record: " + b1);
 
         TrackedContentDTO report = admin.getTrackingReport( trackingId );
         Set<TrackedContentEntryDTO> uploads = report.getUploads();
         uploads.forEach( et -> {
              System.out.println( ">>> md5: " + et.getMd5() + ", size=" + et.getSize() );
+            System.out.println(">>> B2: " + b2.length);
+            System.out.println(">>> B2 long: " + (long) b2.length );
              assertThat( "Mismatched size for: " + et.getPath(), et.getSize(), equalTo( (long) b2.length ) );
         } );
     }

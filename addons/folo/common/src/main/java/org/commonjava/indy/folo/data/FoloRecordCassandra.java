@@ -140,13 +140,28 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         Row one = trackingRecord.one();
 
         if(one!=null) {
-            DtxTrackingRecord dtxTrackingRecord = one.get(0, DtxTrackingRecord.class);
+
+            DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord();
+            dtxTrackingRecord.setTrackingKey(one.getString("tracking_key"));
+            dtxTrackingRecord.setState(one.getBool("sealed"));
+            dtxTrackingRecord.setLocalUrl(one.getString("local_url"));
+            dtxTrackingRecord.setOriginUrl(one.getString("origin_url"));
+            dtxTrackingRecord.setTimestamps(one.getSet("timestamps",Long.class));
+            dtxTrackingRecord.setPath(one.getString("path"));
+            dtxTrackingRecord.setStoreEffect(one.getString("store_effect"));
+            dtxTrackingRecord.setSha256(one.getString("sha256"));
+            dtxTrackingRecord.setSha1(one.getString("sha1"));
+            dtxTrackingRecord.setMd5(one.getString("md5"));
+            dtxTrackingRecord.setSize(one.getLong("size"));
+            dtxTrackingRecord.setStoreKey(one.getString("store_key"));
+            dtxTrackingRecord.setAccessChannel(one.getString("access_channel"));
+
+
             Boolean state = dtxTrackingRecord.getState();
 
             if(state) {
                 throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
             }  else {
-
                 DtxTrackingRecord dtxTrackingRecord1 =
                         DtxTrackingRecord.fromTrackedContentEntry(entry,false);
 
@@ -160,6 +175,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             }
 
         } else {
+
             DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
             trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
             return true;
