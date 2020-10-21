@@ -33,14 +33,11 @@ public class StoreKeyMatcher
 
     //TODO: will have a thought to replace this type of matcher with a ISPN query API in the future to get better performance.
 
-    private final StoreKey storeKey;
-
-    private final String eventType;
+    private final String groupName;
 
     public StoreKeyMatcher( final StoreKey key, final String eventType )
     {
-        this.storeKey = key;
-        this.eventType = eventType;
+        this.groupName = ScheduleManager.groupName( key, eventType );
     }
 
     @Override
@@ -48,7 +45,7 @@ public class StoreKeyMatcher
     {
         return cacheHandle.execute( BasicCache::keySet )
                           .stream()
-                          .filter( key -> key != null && key.exists() && key.groupName().equals( ScheduleManager.groupName( storeKey, eventType ) ) )
+                          .filter( key -> key != null && key.exists() && key.groupName().equals( groupName ) )
                           .collect( Collectors.toSet() );
     }
 }
