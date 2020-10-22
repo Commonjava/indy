@@ -12,6 +12,7 @@ import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.util.UrlUtils;
@@ -26,6 +27,8 @@ import javax.ws.rs.core.UriInfo;
 import java.net.MalformedURLException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.commonjava.indy.folo.data.DtxTrackingRecord.fromCassandraRow;
 
 @ApplicationScoped
 @FoloStoreToCassandra
@@ -141,21 +144,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
         if(one!=null) {
 
-            DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord();
-            dtxTrackingRecord.setTrackingKey(one.getString("tracking_key"));
-            dtxTrackingRecord.setState(one.getBool("sealed"));
-            dtxTrackingRecord.setLocalUrl(one.getString("local_url"));
-            dtxTrackingRecord.setOriginUrl(one.getString("origin_url"));
-            dtxTrackingRecord.setTimestamps(one.getSet("timestamps",Long.class));
-            dtxTrackingRecord.setPath(one.getString("path"));
-            dtxTrackingRecord.setStoreEffect(one.getString("store_effect"));
-            dtxTrackingRecord.setSha256(one.getString("sha256"));
-            dtxTrackingRecord.setSha1(one.getString("sha1"));
-            dtxTrackingRecord.setMd5(one.getString("md5"));
-            dtxTrackingRecord.setSize(one.getLong("size"));
-            dtxTrackingRecord.setStoreKey(one.getString("store_key"));
-            dtxTrackingRecord.setAccessChannel(one.getString("access_channel"));
-
+            DtxTrackingRecord dtxTrackingRecord = fromCassandraRow(one);
 
             Boolean state = dtxTrackingRecord.getState();
 
@@ -187,8 +176,32 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     @Override
     public void delete(TrackingKey key) {
 
-        // Do we  want to remove records from DB?
+        // Without delete logic because we need to keep all records in cassandra for auditing
 
+        // get  records from DB
+//        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key.getId());
+//        ResultSet trackingRecord = session.execute(bind);
+//        List<Row> all = trackingRecord.all();
+
+        // transform from row to  dtxTrackingRecord
+//        List<DtxTrackingRecord> records =  new ArrayList<>();
+//        for (Row row :  all) {
+//            DtxTrackingRecord record = fromCassandraRow(row);
+//            records.add(record);
+//        }
+
+        // check if they are  temporary builds  maven:hosted:temporary-builds
+//        boolean b =
+//                records.stream()
+//                    .map(dtxRec -> StoreKey.fromString(dtxRec.getStoreKey()))
+//                    .allMatch(storeKey -> storeKey.getType().singularEndpointName().equalsIgnoreCase(TEMP_BUILDS));
+
+        // if they  are delete them
+//        if(b) {
+//            for (DtxTrackingRecord record : records) {
+//                trackingMapper.deleteAsync(record);
+//            }
+//        }
     }
 
     @Override

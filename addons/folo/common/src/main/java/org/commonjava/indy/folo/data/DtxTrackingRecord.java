@@ -1,6 +1,7 @@
 package org.commonjava.indy.folo.data;
 
 
+import com.datastax.driver.core.Row;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
@@ -141,6 +142,26 @@ public class DtxTrackingRecord {
         trackedContentEntry.setTimestamps(record.getTimestamps());
 
         return trackedContentEntry;
+    }
+
+    public static DtxTrackingRecord fromCassandraRow(Row row) {
+
+        DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord();
+        dtxTrackingRecord.setTrackingKey(row.getString("tracking_key"));
+        dtxTrackingRecord.setState(row.getBool("sealed"));
+        dtxTrackingRecord.setLocalUrl(row.getString("local_url"));
+        dtxTrackingRecord.setOriginUrl(row.getString("origin_url"));
+        dtxTrackingRecord.setTimestamps(row.getSet("timestamps",Long.class));
+        dtxTrackingRecord.setPath(row.getString("path"));
+        dtxTrackingRecord.setStoreEffect(row.getString("store_effect"));
+        dtxTrackingRecord.setSha256(row.getString("sha256"));
+        dtxTrackingRecord.setSha1(row.getString("sha1"));
+        dtxTrackingRecord.setMd5(row.getString("md5"));
+        dtxTrackingRecord.setSize(row.getLong("size"));
+        dtxTrackingRecord.setStoreKey(row.getString("store_key"));
+        dtxTrackingRecord.setAccessChannel(row.getString("access_channel"));
+
+        return dtxTrackingRecord;
     }
 
     public String getLocalUrl() {

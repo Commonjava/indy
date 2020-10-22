@@ -141,16 +141,21 @@ public class ExportAndImportTrackingReportTest
              }
          } );
 
+
+        //** Disabled behavour because we need to keep audit logs
+        //
+
         // check ids are cleaned
-        TrackingIdsDTO idsDTO = adminClientModule.getTrackingIds( FOLO_TYPE_SEALED );
-        assertNull( idsDTO );
+//        TrackingIdsDTO idsDTO = adminClientModule.getTrackingIds( FOLO_TYPE_SEALED );
+//        assertNull( idsDTO );
 
         // import
-        adminClientModule.importTrackingReportZip( new ByteArrayInputStream( bytes ) );
+//        adminClientModule.importTrackingReportZip( new ByteArrayInputStream( bytes ) );
 
         // check again
-        idsDTO = adminClientModule.getTrackingIds( FOLO_TYPE_SEALED );
-        checkIdsDTO( idsDTO, trackingIds, adminClientModule );
+//        idsDTO = adminClientModule.getTrackingIds( FOLO_TYPE_SEALED );
+//        checkIdsDTO( idsDTO, trackingIds, adminClientModule );
+        //**
 
     }
 
