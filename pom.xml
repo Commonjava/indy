@@ -1833,6 +1833,7 @@
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <forkCount>${it-forkCount}</forkCount>
             <reportsDirectory>${failsafe.report.dir}</reportsDirectory>
+            <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
 <!--             <rerunFailingTestsCount>1</rerunFailingTestsCount> -->
             <includes>
               <include>**/*Test.java</include>
