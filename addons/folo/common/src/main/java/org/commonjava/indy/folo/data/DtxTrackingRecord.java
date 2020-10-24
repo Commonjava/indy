@@ -11,6 +11,7 @@ import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Table(name = "records" )
@@ -96,7 +97,7 @@ public class DtxTrackingRecord {
         this.sha256 = entry.getSha256();
         this.sha1 = entry.getSha1();
         this.size = entry.getSize();
-        this.timestamps = entry.getTimestamps();
+        this.timestamps = entry.getTimestamps()==null ? new HashSet<>() : entry.getTimestamps();
     }
 
     public static DtxTrackingRecord fromTrackedContentEntry(TrackedContentEntry entry,Boolean sealed) {
@@ -116,7 +117,7 @@ public class DtxTrackingRecord {
         dtxTrackingRecord.setPath(entry.getPath());
         dtxTrackingRecord.setSize(entry.getSize());
         dtxTrackingRecord.setStoreEffect(entry.getEffect().toString());
-        dtxTrackingRecord.setTimestamps(entry.getTimestamps());
+        dtxTrackingRecord.setTimestamps(entry.getTimestamps()==null ? new HashSet<>() : entry.getTimestamps());
         dtxTrackingRecord.setStoreKey(entry.getStoreKey().toString());
         return dtxTrackingRecord;
     }

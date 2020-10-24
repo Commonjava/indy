@@ -90,8 +90,9 @@ public class FoloBackupListenerTest
         // the above are copied from StoreFileAndVerifyInTrackingReportTest
         // next, we check the backup dir contains two files, one from startup action, the other is just added
 
-        File f1 = new File( dataDir, FOLO_DIR + "/" + BAK_DIR +"/sealed/" + trackingId );
-        assertTrue( f1.exists() );
+        //**/
+//        File f1 = new File( dataDir, FOLO_DIR + "/" + BAK_DIR +"/sealed/" + trackingId );
+//        assertTrue( f1.exists() );
 
         File f2 = new File( dataDir, FOLO_DIR + "/" + BAK_DIR +"/sealed" );
         assertDumped( f2 );
