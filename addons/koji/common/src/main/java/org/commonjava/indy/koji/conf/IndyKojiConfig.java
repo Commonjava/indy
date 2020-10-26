@@ -643,9 +643,7 @@ public class IndyKojiConfig
                 }
                 else
                 {
-                    throw new ConfigurationException(
-                            "Invalid parameter: '%s'.",
-                            value, name, SECTION_NAME );
+                    throw new ConfigurationException( "Invalid KOJI config parameter: %s=%s", name, value );
                 }
             }
         }
