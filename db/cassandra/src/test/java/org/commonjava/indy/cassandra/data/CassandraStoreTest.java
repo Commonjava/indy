@@ -3,6 +3,7 @@ package org.commonjava.indy.cassandra.data;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.junit.After;
@@ -49,17 +50,7 @@ public class CassandraStoreTest
     @Test
     public void testQuery()
     {
-        DtxArtifactStore store = new DtxArtifactStore();
-        store.setPackageType( "maven" );
-        store.setStoreType( StoreType.hosted.name() );
-        store.setName( "build-01" );
-        store.setDescription( "test cassandra store" );
-        store.setDisabled( true );
-
-        Set<String> maskPatterns = new HashSet<>(  );
-
-        store.setPathMaskPatterns( maskPatterns );
-        storeQuery.createDtxArtifactStore( store );
+        DtxArtifactStore store = createTestStore( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.hosted.name() );
 
         Set<DtxArtifactStore> storeSet = storeQuery.getAllArtifactStores();
 
@@ -79,9 +70,27 @@ public class CassandraStoreTest
 
         assertThat( storeQuery.isEmpty(), equalTo( Boolean.FALSE ));
 
+        createTestStore( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.hosted.name() );
+
+        assertThat( storeQuery.isEmpty(), equalTo( Boolean.TRUE ));
+    }
+
+    @Test
+    public void testGetStoreByPkgAndType()
+    {
+
+        createTestStore( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.hosted.name() );
+        Set<DtxArtifactStore> artifactStoreSet =
+                        storeQuery.getArtifactStoresByPkgAndType( PackageTypeConstants.PKG_TYPE_MAVEN,
+                                                                  StoreType.hosted );
+        assertThat(artifactStoreSet.size(), equalTo( 1 ));
+    }
+
+    private DtxArtifactStore createTestStore( final String packageType, final String storeType )
+    {
         DtxArtifactStore store = new DtxArtifactStore();
-        store.setPackageType( "maven" );
-        store.setStoreType( StoreType.hosted.name() );
+        store.setPackageType( packageType );
+        store.setStoreType( storeType );
         store.setName( "build-01" );
         store.setDescription( "test cassandra store" );
         store.setDisabled( true );
@@ -91,7 +100,7 @@ public class CassandraStoreTest
         store.setPathMaskPatterns( maskPatterns );
         storeQuery.createDtxArtifactStore( store );
 
-        assertThat( storeQuery.isEmpty(), equalTo( Boolean.TRUE ));
+        return store;
     }
 
 }

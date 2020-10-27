@@ -12,6 +12,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,6 +91,30 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
             ret.put( store.getKey(), store );
         } );
         return ret;
+    }
+
+    @Override
+    @Measure
+    public Set<StoreKey> getStoreKeysByPkg( final String pkg )
+    {
+        Set<StoreKey> storeKeySet = new HashSet<>(  );
+        for ( StoreType storeType : StoreType.values() )
+        {
+            storeKeySet.addAll( getStoreKeysByPkgAndType( pkg, storeType ) );
+        }
+        return storeKeySet;
+    }
+
+    @Override
+    @Measure
+    public Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type )
+    {
+        Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
+        Set<StoreKey> storeKeySet = new HashSet<>(  );
+        dtxArtifactStoreSet.forEach( dtxArtifactStore -> {
+            storeKeySet.add( new StoreKey( pkg, type, dtxArtifactStore.getName() ) );
+        } );
+        return storeKeySet;
     }
 
     @Override

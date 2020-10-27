@@ -45,6 +45,8 @@ public class CassandraStoreQuery
 
     private PreparedStatement preparedArtifactStoreExistedQuery;
 
+    private PreparedStatement preparedArtifactStoresQueryByKeys;
+
     public CassandraStoreQuery() {}
 
     public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config )
@@ -77,6 +79,10 @@ public class CassandraStoreQuery
                         "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
                                         + keySpace + "." + TABLE_STORE );
 
+        preparedArtifactStoresQueryByKeys = session.prepare(
+                        "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
+                                        + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=?" );
+
         preparedArtifactStoreExistedQuery = session.prepare( "SELECT name FROM " + keySpace + "." + TABLE_STORE + " LIMIT 1");
 
         preparedArtifactStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=? AND name=? IF EXISTS" );
@@ -87,6 +93,19 @@ public class CassandraStoreQuery
         BoundStatement bound = preparedSingleArtifactStoreQuery.bind( packageType, type.name(), name );
         ResultSet result = session.execute( bound );
         return toDtxArtifactStore( result.one() );
+    }
+
+    public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
+    {
+        BoundStatement bound = preparedArtifactStoresQueryByKeys.bind( packageType, type.name() );
+        ResultSet result = session.execute( bound );
+
+        Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>(  );
+        result.forEach( row -> {
+            dtxArtifactStoreSet.add( toDtxArtifactStore( row ) );
+        } );
+
+        return dtxArtifactStoreSet;
     }
 
     public Set<DtxArtifactStore> getAllArtifactStores()
