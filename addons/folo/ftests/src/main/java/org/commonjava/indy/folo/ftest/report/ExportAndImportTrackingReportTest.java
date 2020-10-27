@@ -192,11 +192,7 @@ public class ExportAndImportTrackingReportTest
 //        Set<String> sealed = idsDTO.getSealed();
 //        assertTrue( sealed.containsAll( expectedIds ) );
 //        assertEquals( 2, sealed.stream().distinct().collect(Collectors.toSet()).size() );
-
-
-        System.out.println(">>>>" +idsDTO.getSealed());
-
-        System.out.println(">>>>" + idsDTO.getInProgress());
+        
 
         final List<Exception> ex = new ArrayList<>();
         idsDTO.getSealed().forEach( (id) -> {

@@ -414,7 +414,6 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             String tracking_key = next.getString("tracking_key");
             trackingKeys.add(new TrackingKey(tracking_key));
         }
-        //**/
         return trackingKeys.stream().distinct().collect(Collectors.toSet());
     }
 }
