@@ -12,6 +12,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +69,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     }
 
     @Override
+    @Measure
     public Set<ArtifactStore> getAllArtifactStores()
     {
         Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getAllArtifactStores();
@@ -79,6 +81,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     }
 
     @Override
+    @Measure
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         Map<StoreKey, ArtifactStore> ret = new HashMap<>();
@@ -99,13 +102,13 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     public boolean isStarted()
     {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isEmpty()
     {
-        return false;
+        return storeQuery.isEmpty();
     }
 
     @Override
@@ -120,7 +123,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         DtxArtifactStore dtxArtifactStore = toDtxArtifactStore( storeKey, store );
         storeQuery.createDtxArtifactStore( dtxArtifactStore );
 
-        return toArtifactStore( storeQuery.getArtifactStore( storeKey.getPackageType(), storeKey.getType(), storeKey.getName() ));
+        return toArtifactStore( dtxArtifactStore );
     }
 
     private DtxArtifactStore toDtxArtifactStore( StoreKey storeKey, ArtifactStore store )

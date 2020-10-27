@@ -73,4 +73,25 @@ public class CassandraStoreTest
 
     }
 
+    @Test
+    public void testIsEmpty()
+    {
+
+        assertThat( storeQuery.isEmpty(), equalTo( Boolean.FALSE ));
+
+        DtxArtifactStore store = new DtxArtifactStore();
+        store.setPackageType( "maven" );
+        store.setStoreType( StoreType.hosted.name() );
+        store.setName( "build-01" );
+        store.setDescription( "test cassandra store" );
+        store.setDisabled( true );
+
+        Set<String> maskPatterns = new HashSet<>(  );
+
+        store.setPathMaskPatterns( maskPatterns );
+        storeQuery.createDtxArtifactStore( store );
+
+        assertThat( storeQuery.isEmpty(), equalTo( Boolean.TRUE ));
+    }
+
 }

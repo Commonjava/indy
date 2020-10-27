@@ -43,6 +43,8 @@ public class CassandraStoreQuery
 
     private PreparedStatement preparedArtifactStoreDel;
 
+    private PreparedStatement preparedArtifactStoreExistedQuery;
+
     public CassandraStoreQuery() {}
 
     public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config )
@@ -75,6 +77,8 @@ public class CassandraStoreQuery
                         "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
                                         + keySpace + "." + TABLE_STORE );
 
+        preparedArtifactStoreExistedQuery = session.prepare( "SELECT name FROM " + keySpace + "." + TABLE_STORE + " LIMIT 1");
+
         preparedArtifactStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=? AND name=? IF EXISTS" );
     }
 
@@ -97,6 +101,13 @@ public class CassandraStoreQuery
         } );
 
         return dtxArtifactStoreSet;
+    }
+
+    public Boolean isEmpty()
+    {
+        BoundStatement bound = preparedArtifactStoresQuery.bind();
+        ResultSet result = session.execute( bound );
+        return result.one() != null;
     }
 
     public DtxArtifactStore removeArtifactStore( String packageType, StoreType type, String name )
