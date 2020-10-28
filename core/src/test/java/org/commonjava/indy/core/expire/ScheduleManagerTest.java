@@ -52,7 +52,7 @@ public class ScheduleManagerTest
     {
         StoreKey k = new StoreKey( "maven", StoreType.remote, "repo1" );
         ScheduleKey key = new ScheduleKey(k, ScheduleManager.CONTENT_JOB_TYPE, "/abc");
-        final StoreKey sk = ScheduleManager.storeKeyFrom( key.groupName() );
+        final StoreKey sk = ScheduleManager.storeKeyFrom( key.getGroupName() );
         System.out.println(">>> " + sk);
         assertNotNull( sk );
         assertEquals( sk, k );
