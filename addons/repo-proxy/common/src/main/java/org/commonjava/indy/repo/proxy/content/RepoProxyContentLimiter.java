@@ -6,7 +6,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.repo.proxy.conf.RepoProxyConfig;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.util.LocationUtils;
@@ -24,18 +23,20 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Map;
 
+import static org.commonjava.indy.model.core.StoreType.remote;
+
 @ApplicationScoped
 @Listener
 public class RepoProxyContentLimiter
 {
 
-    private CacheHandle<String, String> storedPaths;
+    private final CacheHandle<String, String> storedPaths;
 
-    private RepoProxyConfig config;
+    private final RepoProxyConfig config;
 
-    private StoreDataManager storeDataManager;
+    private final StoreDataManager storeDataManager;
 
-    private ContentManager contentManager;
+    private final ContentManager contentManager;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -58,10 +59,13 @@ public class RepoProxyContentLimiter
         }
 
         StoreKey storeKey = LocationUtils.getKey( storageEvent );
-        String path = storageEvent.getTransfer().getPath();
-        String skp = storeKey.toString() + "#" + path;
+        if ( remote == storeKey.getType() )
+        {
+            String path = storageEvent.getTransfer().getPath();
+            String skp = storeKey.toString() + "#" + path;
 
-        storedPaths.put( skp, skp );
+            storedPaths.put( skp, skp );
+        }
     }
 
     private boolean isEnabled()
@@ -99,19 +103,23 @@ public class RepoProxyContentLimiter
     {
         String[] parts = skp.split( "#" );
         StoreKey storeKey = StoreKey.fromString( parts[0] );
-        ArtifactStore store = null;
-        try
+
+        if ( remote == storeKey.getType() )
         {
-            store = storeDataManager.getArtifactStore( storeKey );
-            contentManager.delete( store, parts[1] );
-        }
-        catch ( IndyDataException e )
-        {
-            logger.warn( "Failed to lookup store: {} from event: {}", storeKey, skp );
-        }
-        catch ( IndyWorkflowException e )
-        {
-            logger.warn( "Failed to delete: {} from: {}, from event: {}", parts[1], storeKey, skp );
+            ArtifactStore store;
+            try
+            {
+                store = storeDataManager.getArtifactStore( storeKey );
+                contentManager.delete( store, parts[1] );
+            }
+            catch ( IndyDataException e )
+            {
+                logger.warn( "Failed to lookup store: {} from event: {}", storeKey, skp );
+            }
+            catch ( IndyWorkflowException e )
+            {
+                logger.warn( "Failed to delete: {} from: {}, from event: {}", parts[1], storeKey, skp );
+            }
         }
     }
 
