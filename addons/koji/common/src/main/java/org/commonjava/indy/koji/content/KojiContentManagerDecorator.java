@@ -447,7 +447,10 @@ public abstract class KojiContentManagerDecorator
                                                          kojiUtils.formatStorageUrl( config.getStorageRootUrl(), build ),
                                                          config.getDownloadTimeoutSeconds() );
 
-                remote.setServerCertPem( config.getServerPemContent() );
+                if ( config.getServerPemEnabled() )
+                {
+                    remote.setServerCertPem( config.getServerPemContent() );
+                }
 
                 if ( isBinaryBuild )
                 {

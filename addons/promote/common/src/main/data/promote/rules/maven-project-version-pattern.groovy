@@ -1,5 +1,6 @@
 package org.commonjava.indy.promote.rules
 
+import java.util.regex.Pattern
 import org.apache.commons.lang.StringUtils;
 import org.commonjava.indy.promote.validate.model.ValidationRequest
 import org.commonjava.indy.promote.validate.model.ValidationRule
@@ -8,7 +9,7 @@ import org.slf4j.LoggerFactory
 class MavenProjectVersionPattern implements ValidationRule {
 
     String validate(ValidationRequest request) throws Exception {
-        def versionPattern = request.getValidationParameter("versionPattern")
+        def versionPattern = request.getVersionPattern()
         def errors = Collections.synchronizedList(new ArrayList());
 
         if (versionPattern != null) {
@@ -17,9 +18,10 @@ class MavenProjectVersionPattern implements ValidationRule {
                 def ref = tools.getArtifact(it)
                 if (ref != null) {
                     def vs = ref.getVersionString()
-                    if (!vs.matches(versionPattern)) {
+                    def matcher = versionPattern.matcher(vs)
+                    if (!matcher.matches()) {
                         errors.add(String.format("%s does not match version pattern: '%s' (version was: '%s')",
-                                it, versionPattern, vs))
+                                it, versionPattern.pattern(), vs))
                     }
                 }
             })
