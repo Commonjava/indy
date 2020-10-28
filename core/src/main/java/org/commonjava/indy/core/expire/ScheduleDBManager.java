@@ -129,25 +129,24 @@ public class ScheduleDBManager
     private ScheduleDB scheduleDB;
 
     @Inject
-    private ScheduleDBConfig scheduleDBConfig;
+    private IndySchedulerConfig schedulerConfig;
 
     @PostConstruct
     public void init()
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.info( "ScheduleDB disabled. Skipping initialization" );
+            logger.info( "Scheduler disabled. Skipping initialization" );
             return;
         }
-
     }
 
     public void rescheduleSnapshotTimeouts( final HostedRepository deploy )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -174,9 +173,9 @@ public class ScheduleDBManager
     public void rescheduleProxyTimeouts( final RemoteRepository repo )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -210,9 +209,9 @@ public class ScheduleDBManager
     public void setProxyTimeouts( final StoreKey key, final String path )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -277,9 +276,9 @@ public class ScheduleDBManager
                                                final Object payload, final int startSeconds )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -301,9 +300,9 @@ public class ScheduleDBManager
                                                         final int timeoutSeconds )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -316,9 +315,9 @@ public class ScheduleDBManager
     public void setSnapshotTimeouts( final StoreKey key, final String path )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -377,9 +376,9 @@ public class ScheduleDBManager
     public void rescheduleDisableTimeout( final StoreKey key )
             throws IndySchedulerException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 
@@ -439,9 +438,9 @@ public class ScheduleDBManager
     public Set<DtxSchedule> rescheduleAllBefore( final Collection<DtxSchedule> schedules, final long timeout )
     {
 
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return Collections.emptySet();
         }
 
@@ -462,9 +461,9 @@ public class ScheduleDBManager
 
     public Expiration findSingleExpiration( final StoreKey key, final String jobType )
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return null;
         }
 
@@ -484,9 +483,9 @@ public class ScheduleDBManager
 
     public ExpirationSet findMatchingExpirations( final StoreKey key, final String jobType )
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return null;
         }
 
@@ -597,9 +596,9 @@ public class ScheduleDBManager
     public void stop()
             throws IndyLifecycleException
     {
-        if ( !scheduleDBConfig.isEnabled() )
+        if ( !schedulerConfig.isEnabled() )
         {
-            logger.debug( "ScheduleDB disabled." );
+            logger.debug( "Scheduler disabled." );
             return;
         }
 

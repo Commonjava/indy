@@ -17,6 +17,8 @@ package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.core.conf.IndyDurableStateConfig;
+import org.commonjava.indy.core.conf.IndySchedulerConfig;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,22 +35,25 @@ public class ScheduleManagerBooter
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private ScheduleDBConfig scheduleDBConfig;
+    private Instance<ScheduleManager> scheduleManagers;
 
     @Inject
-    private Instance<ScheduleManager> scheduleManagers;
+    private IndyDurableStateConfig durableConfig;
 
     @Override
     public void init()
             throws IndyLifecycleException
     {
+
         for ( ScheduleManager scheduleManager : scheduleManagers )
         {
-            if ( scheduleDBConfig.isEnabled() && scheduleManager instanceof ScheduleDBManager )
+            if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_CASSANDRA )
+                            && scheduleManager instanceof ScheduleDBManager )
             {
                 scheduleManagers.get().init();
             }
-            else if ( scheduleManager instanceof DefaultScheduleManager )
+            else if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_INFINISPAN )
+                            && scheduleManager instanceof DefaultScheduleManager )
             {
                 scheduleManagers.get().init();
             }
