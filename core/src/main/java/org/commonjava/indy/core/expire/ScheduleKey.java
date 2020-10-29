@@ -17,6 +17,10 @@ package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -25,13 +29,20 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Objects;
 
+@Indexed
 public class ScheduleKey implements Externalizable, Serializable
 {
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private StoreKey storeKey;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String type;
 
+    @Field( index = Index.YES, analyze = Analyze.NO )
     private String name;
+
+    @Field( index = Index.YES, analyze = Analyze.NO )
+    private String groupName;
 
     public ScheduleKey()
     {
@@ -42,6 +53,7 @@ public class ScheduleKey implements Externalizable, Serializable
         this.storeKey = storeKey;
         this.type = type;
         this.name = name;
+        this.groupName = ScheduleManager.groupName( this.storeKey, this.type );
     }
 
     public StoreKey getStoreKey()
@@ -59,9 +71,9 @@ public class ScheduleKey implements Externalizable, Serializable
         return name;
     }
 
-    public String groupName()
+    public String getGroupName()
     {
-        return ScheduleManager.groupName( this.storeKey, this.type );
+        return groupName;
     }
 
     public static ScheduleKey fromGroupWithName( final String group, final String name )
@@ -134,5 +146,7 @@ public class ScheduleKey implements Externalizable, Serializable
 
         final String nameStr = (String) in.readObject();
         name = "".equals( nameStr ) ? null : nameStr;
+
+        groupName = ScheduleManager.groupName( storeKey, type );
     }
 }
