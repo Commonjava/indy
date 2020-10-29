@@ -9,6 +9,7 @@ public class CassandraStoreUtil
 
     public static final String PACKAGE_TYPE = "packageType";
     public static final String STORE_TYPE = "storeType";
+    public static final String NAME_HASH_PREFIX = "nameHashPrefix";
     public static final String NAME = "name";
     public static final String DESCRIPTION = "description";
     public static final String DISABLED = "disabled";
@@ -54,6 +55,8 @@ public class CassandraStoreUtil
     public static final String CONSTITUENTS = "constituents";
     public static final String PREPEND_CONSTITUENT = "prependConstituent";
 
+    public static final int MODULO_VALUE = 10;
+
     public static String getSchemaCreateKeyspace( String keySpace, IndyStoreManagerConfig config )
     {
         return "CREATE KEYSPACE IF NOT EXISTS " + keySpace
@@ -63,6 +66,8 @@ public class CassandraStoreUtil
     public static String getSchemaCreateTableStore( String keySpace )
     {
         return "CREATE TABLE IF NOT EXISTS " + keySpace + "." + TABLE_STORE + " ("
+                        + "typekey varchar,"
+                        + "namehashprefix int,"
                         + "packagetype varchar,"
                         + "storetype varchar,"
                         + "name varchar,"
@@ -77,7 +82,24 @@ public class CassandraStoreUtil
                         + "authoritativeindex boolean,"
                         + "rescaninprogress boolean,"
                         + "extras map<text, text>,"
-                        + "PRIMARY KEY (( packagetype, storetype ), name )"
+                        + "PRIMARY KEY (( typekey, namehashprefix ), name )"
                         + ");";
+    }
+
+    public static String getSchemaCreateIndex4Store( String keyspace )
+    {
+        return "CREATE INDEX IF NOT EXISTS typekey_idx on " + keyspace + "." + TABLE_STORE + " (typekey)";
+    }
+
+    public static int getHashPrefix( final String name )
+    {
+        String prefix = name.length() > 12 ? name.substring( 0, 12 ) : name;
+        // Sometimes it returns the negative value from hashCode(), let's use a shift mask to handle it
+        return (prefix.hashCode() & 0x7fffffff) % MODULO_VALUE;
+    }
+
+    public static String getTypeKey( final String packageType, final String storeType )
+    {
+        return packageType + ":" + storeType;
     }
 }

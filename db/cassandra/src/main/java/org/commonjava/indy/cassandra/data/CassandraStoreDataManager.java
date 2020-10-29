@@ -155,6 +155,9 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     {
 
         DtxArtifactStore dtxArtifactStore = new DtxArtifactStore();
+        dtxArtifactStore.setTypeKey(
+                        CassandraStoreUtil.getTypeKey( storeKey.getPackageType(), storeKey.getType().name() ) );
+        dtxArtifactStore.setNameHashPrefix( CassandraStoreUtil.getHashPrefix( storeKey.getName() ) );
         dtxArtifactStore.setPackageType( storeKey.getPackageType() );
         dtxArtifactStore.setStoreType( storeKey.getType().name() );
         dtxArtifactStore.setName( storeKey.getName() );

@@ -1,5 +1,6 @@
 package org.commonjava.indy.cassandra.data;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
@@ -86,12 +87,27 @@ public class CassandraStoreTest
         assertThat(artifactStoreSet.size(), equalTo( 1 ));
     }
 
+    @Test
+    public void testHashPrefix()
+    {
+        for ( int i = 0; i< 50; i++ )
+        {
+            String generatedName = RandomStringUtils.random( 10, true, false );
+            int result = CassandraStoreUtil.getHashPrefix( generatedName );
+            assertThat( (0 <= result && result < CassandraStoreUtil.MODULO_VALUE), equalTo( true ) );
+        }
+
+    }
+
     private DtxArtifactStore createTestStore( final String packageType, final String storeType )
     {
+        String name = "build-001";
         DtxArtifactStore store = new DtxArtifactStore();
+        store.setTypeKey( CassandraStoreUtil.getTypeKey( packageType, storeType ) );
         store.setPackageType( packageType );
         store.setStoreType( storeType );
-        store.setName( "build-01" );
+        store.setNameHashPrefix( CassandraStoreUtil.getHashPrefix( name ) );
+        store.setName( name );
         store.setDescription( "test cassandra store" );
         store.setDisabled( true );
 

@@ -66,38 +66,43 @@ public class CassandraStoreQuery
 
         session.execute( CassandraStoreUtil.getSchemaCreateKeyspace( keySpace, config ) );
         session.execute( CassandraStoreUtil.getSchemaCreateTableStore( keySpace ) );
+        session.execute( CassandraStoreUtil.getSchemaCreateIndex4Store( keySpace ) );
 
         MappingManager manager = new MappingManager( session );
 
         storeMapper = manager.mapper( DtxArtifactStore.class, keySpace );
 
         preparedSingleArtifactStoreQuery = session.prepare(
-                        "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
-                                        + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=? AND name=?" );
+                        "SELECT packagetype, storeType, namehashprefix, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
+                                        + keySpace + "." + TABLE_STORE + " WHERE typekey=? AND namehashprefix=? AND name=?" );
 
         preparedArtifactStoresQuery = session.prepare(
-                        "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
+                        "SELECT packagetype, storeType, namehashprefix, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
                                         + keySpace + "." + TABLE_STORE );
 
         preparedArtifactStoresQueryByKeys = session.prepare(
-                        "SELECT packagetype, storeType, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
-                                        + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=?" );
+                        "SELECT packagetype, storeType, namehashprefix, name, description, transientMetadata, metadata, disabled, disableTimeout, pathStyle, pathMaskPatterns, authoritativeIndex, createTime, rescanInProgress, extras FROM "
+                                        + keySpace + "." + TABLE_STORE + " WHERE typekey=?" );
 
         preparedArtifactStoreExistedQuery = session.prepare( "SELECT name FROM " + keySpace + "." + TABLE_STORE + " LIMIT 1");
 
-        preparedArtifactStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_STORE + " WHERE packagetype=? AND storetype=? AND name=? IF EXISTS" );
+        preparedArtifactStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_STORE + " WHERE typekey=? AND namehashprefix=? AND name=? IF EXISTS" );
     }
 
     public DtxArtifactStore getArtifactStore( String packageType, StoreType type, String name )
     {
-        BoundStatement bound = preparedSingleArtifactStoreQuery.bind( packageType, type.name(), name );
+        BoundStatement bound = preparedSingleArtifactStoreQuery.bind(
+                        CassandraStoreUtil.getTypeKey( packageType, type.name() ),
+                        CassandraStoreUtil.getHashPrefix( name ), name );
         ResultSet result = session.execute( bound );
         return toDtxArtifactStore( result.one() );
     }
 
     public Set<DtxArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType type )
     {
-        BoundStatement bound = preparedArtifactStoresQueryByKeys.bind( packageType, type.name() );
+
+        BoundStatement bound = preparedArtifactStoresQueryByKeys.bind(
+                        CassandraStoreUtil.getTypeKey( packageType, type.name() ) );
         ResultSet result = session.execute( bound );
 
         Set<DtxArtifactStore> dtxArtifactStoreSet = new HashSet<>(  );
@@ -134,7 +139,7 @@ public class CassandraStoreQuery
         DtxArtifactStore dtxArtifactStore = getArtifactStore( packageType, type, name );
         if ( dtxArtifactStore != null )
         {
-            BoundStatement bound = preparedArtifactStoreDel.bind( packageType, type.name(), name );
+            BoundStatement bound = preparedArtifactStoreDel.bind( CassandraStoreUtil.getTypeKey( packageType, type.name() ),  CassandraStoreUtil.getHashPrefix( name ), name );
             session.execute( bound );
         }
         return dtxArtifactStore;
@@ -150,6 +155,7 @@ public class CassandraStoreQuery
         store.setPackageType( row.getString( CassandraStoreUtil.PACKAGE_TYPE ) );
         store.setStoreType( row.getString( CassandraStoreUtil.STORE_TYPE ) );
         store.setName( row.getString( CassandraStoreUtil.NAME ) );
+        store.setNameHashPrefix( row.getInt( CassandraStoreUtil.NAME_HASH_PREFIX ) );
         store.setPathMaskPatterns( row.getSet( CassandraStoreUtil.PATH_MASK_PATTERNS, String.class ) );
         store.setPathStyle( row.getString( CassandraStoreUtil.PATH_STYLE ) );
         store.setDisabled( row.getBool( CassandraStoreUtil.DISABLED ) );

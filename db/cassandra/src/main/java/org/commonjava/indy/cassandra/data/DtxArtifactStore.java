@@ -15,13 +15,19 @@ public class DtxArtifactStore
 {
 
     @PartitionKey(0)
-    private String packageType;
+    private String typeKey;
 
     @PartitionKey(1)
-    private String storeType;
+    private Integer nameHashPrefix;
 
     @ClusteringColumn
     private String name;
+
+    @Column
+    private String packageType;
+
+    @Column
+    private String storeType;
 
     @Column
     private String description;
@@ -59,8 +65,15 @@ public class DtxArtifactStore
     @Column
     private Map<String, String> extras;
 
-    public String getPackageType()
-    {
+    public String getTypeKey() { return typeKey; }
+
+    public void setTypeKey( String typeKey ) { this.typeKey = typeKey; }
+
+    public Integer getNameHashPrefix() { return nameHashPrefix; }
+
+    public void setNameHashPrefix( Integer nameHashPrefix ) { this.nameHashPrefix = nameHashPrefix; }
+
+    public String getPackageType() {
         return packageType;
     }
 
@@ -202,10 +215,11 @@ public class DtxArtifactStore
     @Override
     public String toString()
     {
-        return "DtxArtifactStore{" + "packageType='" + packageType + '\'' + ", storeType='" + storeType + '\''
-                        + ", name='" + name + '\'' + ", description='" + description + '\'' + ", transientMetadata="
-                        + transientMetadata + ", metadata=" + metadata + ", disabled=" + disabled + ", disableTimeout="
-                        + disableTimeout + ", pathStyle='" + pathStyle + '\'' + ", pathMaskPatterns=" + pathMaskPatterns
+        return "DtxArtifactStore{" + "typeKey='" + typeKey + '\'' + ", nameHashPrefix=" + nameHashPrefix + ", name='"
+                        + name + '\'' + ", packageType='" + packageType + '\'' + ", storeType='" + storeType + '\''
+                        + ", description='" + description + '\'' + ", transientMetadata=" + transientMetadata
+                        + ", metadata=" + metadata + ", disabled=" + disabled + ", disableTimeout=" + disableTimeout
+                        + ", pathStyle='" + pathStyle + '\'' + ", pathMaskPatterns=" + pathMaskPatterns
                         + ", authoritativeIndex=" + authoritativeIndex + ", createTime='" + createTime + '\''
                         + ", rescanInProgress=" + rescanInProgress + ", extras=" + extras + '}';
     }
