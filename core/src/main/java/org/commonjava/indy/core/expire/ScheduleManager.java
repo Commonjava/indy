@@ -3,6 +3,7 @@ package org.commonjava.indy.core.expire;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.subsys.infinispan.CacheKeyMatcher;
 
 public interface ScheduleManager
 {
@@ -27,5 +28,7 @@ public interface ScheduleManager
     Expiration findSingleExpiration( final StoreKey key, final String jobType );
 
     ExpirationSet findMatchingExpirations( final String jobType );
+
+    ExpirationSet findMatchingExpirations( final CacheKeyMatcher<ScheduleKey> matcher );
 
 }

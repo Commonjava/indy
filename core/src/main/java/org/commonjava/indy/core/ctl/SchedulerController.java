@@ -21,13 +21,23 @@ import org.commonjava.indy.core.expire.Expiration;
 import org.commonjava.indy.core.expire.ExpirationSet;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.ScheduleManagerUtils;
+import org.commonjava.indy.core.expire.ScheduleValue;
+import org.commonjava.indy.core.expire.StoreKeyMatcher;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.infinispan.commons.api.BasicCache;
+import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @ApplicationScoped
 public class SchedulerController
@@ -80,7 +90,17 @@ public class SchedulerController
         {
 
             // This key matcher will compare with the cache key group to see if the group ends with the "Disable-Timeout"(jobtype)
-            ExpirationSet expirations = scheduleManager.findMatchingExpirations( StoreEnablementManager.DISABLE_TIMEOUT );
+            ExpirationSet expirations = scheduleManager.findMatchingExpirations(
+                    cacheHandle -> {
+                        QueryFactory queryFactory = Search.getQueryFactory( cacheHandle.getCache() );
+                        Query q = queryFactory.from( ScheduleValue.class ).having( "key.type" ).eq( StoreEnablementManager.DISABLE_TIMEOUT ).build();
+                        List<ScheduleValue> list = q.list();
+                        return list.stream().map( ScheduleValue::getKey ).collect( Collectors.toSet());
+//                        cacheHandle.execute( BasicCache::keySet )
+//                                   .stream()
+//                                   .filter( key -> key.getType().equals( StoreEnablementManager.DISABLE_TIMEOUT ) )
+//                                   .collect( Collectors.toSet() );
+                    } );
 
             // TODO: This seems REALLY inefficient...
             storeDataManager.getAllArtifactStores().forEach( (store)->{
