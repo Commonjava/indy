@@ -286,8 +286,7 @@ public class ScheduleManager
         {
             //            logger.info( "[PROXY TIMEOUT SET] {}/{}; {}", repo.getKey(), path, new Date( System.currentTimeMillis()
             //                + timeout ) );
-            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
-
+            removeCache( new ScheduleKey( key, CONTENT_JOB_TYPE, path ) );
             scheduleContentExpiration( key, path, timeout );
         }
     }
@@ -708,10 +707,7 @@ public class ScheduleManager
 
     private void removeCache( final ScheduleKey cacheKey )
     {
-        if ( scheduleCache.containsKey( cacheKey ) )
-        {
-            scheduleCache.remove( cacheKey );
-        }
+        scheduleCache.remove( cacheKey );
     }
 
     @CacheEntryCreated
