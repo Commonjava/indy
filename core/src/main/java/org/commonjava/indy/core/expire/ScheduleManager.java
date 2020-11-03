@@ -126,10 +126,11 @@ public class ScheduleManager
 
     @Inject
     @ScheduleCache
-    private CacheHandle<ScheduleKey, Map> scheduleCache;
+    private CacheHandle<ScheduleKey, ScheduleValue> scheduleCache;
 
     @Inject
     @ScheduleEventLockCache
+    @Deprecated
     private CacheHandle<ScheduleKey, IndyNode> scheduleEventLockCache;
 
     @Inject
@@ -185,7 +186,7 @@ public class ScheduleManager
             for ( final ScheduleKey key : canceled )
             {
                 final String path = key.getName();
-                final StoreKey sk = storeKeyFrom( key.groupName() );
+                final StoreKey sk = storeKeyFrom( key.getGroupName() );
 
                 scheduleContentExpiration( sk, path, timeout );
             }
@@ -218,7 +219,7 @@ public class ScheduleManager
             for ( final ScheduleKey key : canceled )
             {
                 final String path = key.getName();
-                final StoreKey sk = storeKeyFrom( key.groupName() );
+                final StoreKey sk = storeKeyFrom( key.getGroupName() );
 
                 scheduleContentExpiration( sk, path, timeout );
             }
@@ -286,8 +287,7 @@ public class ScheduleManager
         {
             //            logger.info( "[PROXY TIMEOUT SET] {}/{}; {}", repo.getKey(), path, new Date( System.currentTimeMillis()
             //                + timeout ) );
-            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
-
+            removeCache( new ScheduleKey( key, CONTENT_JOB_TYPE, path ) );
             scheduleContentExpiration( key, path, timeout );
         }
     }
@@ -317,7 +317,7 @@ public class ScheduleManager
 
         final ScheduleKey cacheKey = new ScheduleKey( key, jobType, jobName );
 
-        scheduleCache.execute( cache -> cache.put( cacheKey, dataMap, startSeconds, TimeUnit.SECONDS ) );
+        scheduleCache.execute( cache -> cache.put( cacheKey, new ScheduleValue( cacheKey, dataMap ), startSeconds, TimeUnit.SECONDS ) );
         logger.debug( "Scheduled for the key {} with timeout: {} seconds", cacheKey, startSeconds );
     }
 
@@ -586,19 +586,20 @@ public class ScheduleManager
 
     private Expiration toExpiration( final ScheduleKey cacheKey )
     {
-        return new Expiration( cacheKey.groupName(), cacheKey.getName(), getNextExpireTime( cacheKey ) );
+        return new Expiration( cacheKey.getGroupName(), cacheKey.getName(), getNextExpireTime( cacheKey ) );
     }
 
     private Date getNextExpireTime( final ScheduleKey cacheKey )
     {
 
         return scheduleCache.executeCache( cache -> {
-            final CacheEntry entry = cache.getAdvancedCache().getCacheEntry( cacheKey );
+            final CacheEntry<ScheduleKey, ScheduleValue> entry =
+                    cache.getAdvancedCache().getCacheEntry( cacheKey );
             if ( entry != null )
             {
                 final Metadata metadata = entry.getMetadata();
                 long expire = metadata.lifespan();
-                final long startTimeInMillis = (Long)scheduleCache.get( cacheKey ).get( SCHEDULE_TIME );
+                final long startTimeInMillis = (Long)scheduleCache.get( cacheKey ).getDataPayload().get( SCHEDULE_TIME );
                 return calculateNextExpireTime( expire, startTimeInMillis );
             }
             return null;
@@ -708,14 +709,11 @@ public class ScheduleManager
 
     private void removeCache( final ScheduleKey cacheKey )
     {
-        if ( scheduleCache.containsKey( cacheKey ) )
-        {
-            scheduleCache.remove( cacheKey );
-        }
+        scheduleCache.remove( cacheKey );
     }
 
     @CacheEntryCreated
-    public void scheduled( final CacheEntryCreatedEvent<ScheduleKey, Map> e )
+    public void scheduled( final CacheEntryCreatedEvent<ScheduleKey, ScheduleValue> e )
     {
         if ( e == null )
         {
@@ -726,7 +724,7 @@ public class ScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
-            final Map expiredContent = e.getValue();
+            final Map<String, Object> expiredContent = e.getValue().getDataPayload();
             if ( expiredKey != null && expiredContent != null )
             {
                 logger.debug( "Expiration Created: {}", expiredKey );
@@ -738,7 +736,7 @@ public class ScheduleManager
     }
 
     @CacheEntryExpired
-    public void expired( CacheEntryExpiredEvent<ScheduleKey, Map> e )
+    public void expired( CacheEntryExpiredEvent<ScheduleKey, ScheduleValue> e )
     {
         if ( e == null )
         {
@@ -757,7 +755,7 @@ public class ScheduleManager
                 return;
             }
 */
-            final Map expiredContent = e.getValue();
+            final Map<String, Object> expiredContent = e.getValue().getDataPayload();
             if ( expiredKey != null && expiredContent != null )
             {
                 logger.debug( "EXPIRED: {}", expiredKey );
@@ -790,7 +788,7 @@ public class ScheduleManager
     }
 
     @CacheEntryRemoved
-    public void cancelled( CacheEntryRemovedEvent<ScheduleKey, Map> e )
+    public void cancelled( CacheEntryRemovedEvent<ScheduleKey, ScheduleValue> e )
     {
         if ( e == null )
         {

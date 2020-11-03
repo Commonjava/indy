@@ -15,21 +15,21 @@
  */
 package org.commonjava.indy.httprox.util;
 
-import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
+import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
 import org.slf4j.Logger;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 
 import java.net.SocketAddress;
 
 import static java.lang.Integer.parseInt;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_METHOD;
-import static org.commonjava.indy.metrics.RequestContextHelper.HTTP_STATUS;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_LATENCY_NS;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_END;
-import static org.commonjava.indy.metrics.RequestContextHelper.getContext;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
-import static org.commonjava.indy.metrics.TrafficClassifierConstants.FN_CONTENT_GENERIC;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_METHOD;
+import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_LATENCY_NS;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE_END;
+import static org.commonjava.indy.util.RequestContextHelper.getContext;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_GENERIC;
 
 public class ProxyMeter
 {
@@ -41,13 +41,13 @@ public class ProxyMeter
 
     private final long startNanos;
 
-    private final GoldenSignalsMetricSet sliMetricSet;
+    private final IndyGoldenSignalsMetricSet sliMetricSet;
 
     private final Logger restLogger;
 
     private final SocketAddress peerAddress;
 
-    public ProxyMeter( final String method, final String requestLine, final long startNanos, final GoldenSignalsMetricSet sliMetricSet, final Logger restLogger,
+    public ProxyMeter( final String method, final String requestLine, final long startNanos, final IndyGoldenSignalsMetricSet sliMetricSet, final Logger restLogger,
                        final SocketAddress peerAddress )
     {
         this.method = method;

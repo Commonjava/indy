@@ -16,6 +16,7 @@
 package org.commonjava.indy.boot.jaxrs;
 
 import io.undertow.Undertow;
+import io.undertow.UndertowOptions;
 import io.undertow.predicate.Predicate;
 import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpServerExchange;
@@ -136,8 +137,10 @@ public class IndyDeployer
     private Undertow buildAndStartUndertow( DeploymentManager dm, Integer port, String bind, RestConfig restConfig )
             throws Exception
     {
-        Undertow.Builder builder =
-                Undertow.builder().setHandler( getGzipEncodeHandler( dm ) ).addHttpListener( port, bind );
+        Undertow.Builder builder = Undertow.builder()
+                                           .setServerOption( UndertowOptions.ENABLE_HTTP2, true )
+                                           .setHandler( getGzipEncodeHandler( dm ) )
+                                           .addHttpListener( port, bind );
         restConfig.configureBuilder( builder );
         Undertow t = builder.build();
         t.start();

@@ -15,12 +15,11 @@
  */
 package org.commonjava.indy.filer.def;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
+import org.commonjava.o11yphant.metrics.api.Meter;
 
 import java.io.IOException;
 import java.util.function.BiConsumer;

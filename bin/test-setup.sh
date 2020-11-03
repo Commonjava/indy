@@ -56,6 +56,8 @@ else
   cat > $ETC_BASE/conf.d/default.conf <<-EOF
 [default]
 standalone=true
+[_internal]
+store.validation.enabled=false
 [ssl]
 remote.ssl.required=false
 EOF

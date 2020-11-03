@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-models-parent</artifactId>
-    <version>2.5.0</version>
+    <version>2.5.1</version>
   </parent>
   
   <artifactId>indy-model-core-java</artifactId>
@@ -51,6 +51,10 @@
     <dependency>
       <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-relationships-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>

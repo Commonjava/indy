@@ -15,24 +15,20 @@
  */
 package org.commonjava.indy.httprox.handler;
 
-import com.codahale.metrics.MetricRegistry;
-
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.bind.jaxrs.MDCManager;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.AccessChannel;
-import org.commonjava.indy.sli.metrics.GoldenSignalsMetricSet;
+import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.o11yphant.metrics.MetricsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -44,10 +40,10 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 import javax.inject.Inject;
 import java.io.IOException;
 
-import static org.commonjava.indy.metrics.RequestContextHelper.PACKAGE_TYPE;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE;
-import static org.commonjava.indy.metrics.RequestContextHelper.REQUEST_PHASE_START;
-import static org.commonjava.indy.metrics.RequestContextHelper.setContext;
+import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE;
+import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.util.RequestContextHelper.setContext;
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_METRIC_LOGGER;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 
@@ -83,7 +79,7 @@ public class ProxyAcceptHandler
     private MDCManager mdcManager;
 
     @Inject
-    MetricRegistry metricRegistry;
+    private MetricsManager metricsManager;
 
     @Inject
     private IndyMetricsConfig metricsConfig;
@@ -92,7 +88,7 @@ public class ProxyAcceptHandler
     private CacheProducer cacheProducer;
 
     @Inject
-    private GoldenSignalsMetricSet sliMetricSet;
+    private IndyGoldenSignalsMetricSet sliMetricSet;
 
     @Inject
     private ProxyTransfersExecutor proxyExecutor;
@@ -104,7 +100,7 @@ public class ProxyAcceptHandler
     public ProxyAcceptHandler( HttproxConfig config, StoreDataManager storeManager, ContentController contentController,
                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
                                ScriptEngine scriptEngine, MDCManager mdcManager,
-                               IndyMetricsConfig metricsConfig, MetricRegistry metricRegistry,
+                               IndyMetricsConfig metricsConfig, MetricsManager metricsManager,
                                CacheProducer cacheProducer, ProxyTransfersExecutor executor )
     {
         this.config = config;
@@ -115,7 +111,7 @@ public class ProxyAcceptHandler
         this.scriptEngine = scriptEngine;
         this.mdcManager = mdcManager;
         this.metricsConfig = metricsConfig;
-        this.metricRegistry = metricRegistry;
+        this.metricsManager = metricsManager;
         this.cacheProducer = cacheProducer;
         this.proxyExecutor = executor;
     }
@@ -179,7 +175,7 @@ public class ProxyAcceptHandler
         final ProxyResponseWriter writer =
                         new ProxyResponseWriter( config, storeManager, contentController, proxyAuthenticator,
                                                  cacheProvider, mdcManager, creator, accepted,
-                                                 metricsConfig, metricRegistry, sliMetricSet, cacheProducer, start,
+                                                 metricsConfig, metricsManager, sliMetricSet, cacheProducer, start,
                                                  proxyExecutor.getExecutor() );
 
         logger.debug( "Setting writer: {}", writer );

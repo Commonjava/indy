@@ -15,22 +15,21 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.util;
 
-import com.codahale.metrics.Meter;
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 
 public class TransferCountingInputStream
         extends IdempotentCloseInputStream
@@ -38,7 +37,7 @@ public class TransferCountingInputStream
 
     private static final String TRANSFER_UPLOAD_METRIC_NAME = "indy.transferred.content.upload";
 
-    private IndyMetricsManager metricsManager;
+    private DefaultMetricsManager metricsManager;
 
     private IndyMetricsConfig metricsConfig;
 
@@ -49,7 +48,7 @@ public class TransferCountingInputStream
         super( new CountingInputStream( stream ) );
     }
 
-    public TransferCountingInputStream( final InputStream stream, final IndyMetricsManager metricsManager,
+    public TransferCountingInputStream( final InputStream stream, final DefaultMetricsManager metricsManager,
                                         final IndyMetricsConfig metricsConfig )
     {
         this( stream );

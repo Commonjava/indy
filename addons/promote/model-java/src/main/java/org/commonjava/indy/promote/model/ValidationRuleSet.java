@@ -21,6 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 
 /**
  * Created by jdcasey on 9/11/15.
@@ -38,6 +41,9 @@ public class ValidationRuleSet
 
     @ApiModelProperty( "Key-value mapping of extra parameters that MAY be required for certain validation rules" )
     private Map<String, String> validationParameters;
+
+    private transient Pattern versionPattern;
+    private transient Pattern scopedVersionPattern;
 
     public ValidationRuleSet(){}
 
@@ -137,5 +143,29 @@ public class ValidationRuleSet
     public String getValidationParameter( String key )
     {
         return validationParameters == null ? null : validationParameters.get( key );
+    }
+
+    public Pattern getVersionPattern( String key )
+    {
+        if ( versionPattern == null )
+        {
+            versionPattern = getPropertyAsPattern ( key );
+        }
+        return versionPattern;
+    }
+
+    public Pattern getScopedVersionPattern( String key )
+    {
+        if ( scopedVersionPattern == null )
+        {
+            scopedVersionPattern = getPropertyAsPattern ( key );
+        }
+        return scopedVersionPattern;
+    }
+
+    private Pattern getPropertyAsPattern ( String key )
+    {
+        String value = validationParameters.get( key );
+        return value == null ? null : Pattern.compile( value );
     }
 }
