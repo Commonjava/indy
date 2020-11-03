@@ -17,6 +17,7 @@ package org.commonjava.indy.core.expire.cache;
 
 import org.commonjava.indy.cluster.IndyNode;
 import org.commonjava.indy.core.expire.ScheduleKey;
+import org.commonjava.indy.core.expire.ScheduleValue;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.slf4j.Logger;
@@ -48,7 +49,7 @@ public class ScheduleCacheProducer
     @ScheduleCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<ScheduleKey, Map> scheduleExpireCache()
+    public CacheHandle<ScheduleKey, ScheduleValue> scheduleExpireCache()
     {
         return cacheProducer.getCache( SCHEDULE_EXPIRE );
     }

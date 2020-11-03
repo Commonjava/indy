@@ -62,8 +62,8 @@
 
   <logger name="org.commonjava.indy.model.core.StoreKey" level="INFO" />
   <logger name="org.commonjava.indy.pkg.npm.content.NPMStoragePathCalculator" level="INFO" />
-  <logger name="org.commonjava.indy.metrics" level="INFO" />
-  <logger name="org.commonjava.indy.subsys.honeycomb" level="INFO" />
+  <logger name="org.commonjava.indy.subsys.metrics" level="INFO" />
+  <logger name="org.commonjava.o11yphant.metrics" level="INFO" />
 
   <root level="DEBUG">
     <appender-ref ref="STDOUT" />

@@ -15,15 +15,9 @@
  */
 package org.commonjava.indy.bind.jaxrs.metrics;
 
-import com.codahale.metrics.servlets.HealthCheckServlet;
-import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.DeploymentInfo;
-import io.undertow.servlet.api.ServletInfo;
 import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.commonjava.o11yphant.metrics.jaxrs.HealthCheckDeploymentProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -33,33 +27,12 @@ import javax.ws.rs.core.Application;
 public class IndyHealthCheckDeploymentProvider
                 extends IndyDeploymentProvider
 {
-    private final Logger logger = LoggerFactory.getLogger( getClass() );
-
     @Inject
-    private IndyMetricsConfig config;
-
-    @Inject
-    private IndyMetricsManager metricsManager;
+    private HealthCheckDeploymentProvider healthCheckDeploymentProvider;
 
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
-        if ( !config.isMetricsEnabled() )
-        {
-            return null;
-        }
-
-        final ServletInfo servlet =
-                        Servlets.servlet( "healthcheck", HealthCheckServlet.class ).addMapping( "/healthcheck" ).addMapping( "/healthchecks" );
-
-        final DeploymentInfo di = new DeploymentInfo().addListener(
-                        Servlets.listener( IndyHealthCheckServletContextListener.class ) )
-                                                      .setContextPath( contextRoot )
-                                                      .addServlet( servlet )
-                                                      .setDeploymentName( "HealthCheck Deployment" )
-                                                      .setClassLoader( ClassLoader.getSystemClassLoader() );
-
-        logger.info( "Returning deployment info for health check" );
-        return di;
+        return healthCheckDeploymentProvider.getDeploymentInfo( contextRoot );
     }
 }
