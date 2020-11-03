@@ -81,19 +81,19 @@
     <honeycombVersion>1.1.0</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>1.8-SNAPSHOT</pathmappedStorageVersion>
-    <o11yphantVersion>1.0-SNAPSHOT</o11yphantVersion>
+    <pathmappedStorageVersion>1.8</pathmappedStorageVersion>
+    <o11yphantVersion>1.0</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.5-SNAPSHOT</galleyVersion>
+    <galleyVersion>1.5</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
-    <kojijiVersion>2.13-SNAPSHOT</kojijiVersion>
+    <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.11</jhttpcVersion>
-    <weftVersion>1.18-SNAPSHOT</weftVersion>
+    <weftVersion>1.18</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
