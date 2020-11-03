@@ -35,6 +35,9 @@ public class MigrationOptions
     @Option( name = "-t", aliases = { "--data-type" }, usage = "Data type ('json' or 'object')" )
     private DataType dataType;
 
+    @Option( name = "-b", aliases = {"--batch-size"}, usage = "Batch size (Default 1000)" )
+    private Integer batchSize;
+
     @Argument( index = 0, metaVar = "action", required = false, usage = "Migration command to execute ('dump' or 'load')")
     private MigrationCommand migrationCommand;
 
@@ -97,6 +100,16 @@ public class MigrationOptions
     public DataType getDataType() { return dataType; }
 
     public void setDataType( final DataType dataType ) { this.dataType = dataType; }
+
+    public Integer getBatchSize()
+    {
+        return batchSize;
+    }
+
+    public void setBatchSize( Integer batchSize )
+    {
+        this.batchSize = batchSize;
+    }
 
     public boolean parseArgs( final String[] args )
             throws BootException
