@@ -37,6 +37,10 @@ public class ScheduleValue
     @Field( index = Index.NO, analyze = Analyze.NO )
     private Map<String, Object> dataPayload;
 
+    public ScheduleValue()
+    {
+    }
+
     public ScheduleValue( ScheduleKey key, Map<String, Object> dataPayload )
     {
         this.key = key;
