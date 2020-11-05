@@ -224,6 +224,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-metrics-core</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
     </dependency>

@@ -20,11 +20,13 @@ import org.commonjava.o11yphant.metrics.conf.ConsoleConfig;
 import org.commonjava.o11yphant.metrics.conf.ELKConfig;
 import org.commonjava.o11yphant.metrics.conf.GraphiteConfig;
 import org.commonjava.o11yphant.metrics.conf.MetricsConfig;
+import org.commonjava.o11yphant.metrics.conf.PrometheusConfig;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig.SECTION;
 
@@ -83,6 +85,8 @@ public class IndyMetricsConfig
 
     private final static String PATH_DB_OPERATIONS = "pathdb.operations";
 
+    private final static String PROMETHEUS_EXPRESSED_METRICS = "prometheus.expressed.metrics";
+
     private static final int DEFAULT_METER_RATIO = 1;
 
     private boolean ispnMetricsEnabled;
@@ -132,6 +136,8 @@ public class IndyMetricsConfig
     private String nodePrefix;
 
     private Integer meterRatio;
+
+    private String prometheusExpressedMetrics;
 
     public boolean isMeasureTransport()
     {
@@ -368,6 +374,17 @@ public class IndyMetricsConfig
         return ret;
     }
 
+    public PrometheusConfig getPrometheusConfig()
+    {
+        PrometheusConfig ret = new PrometheusConfig();
+        if ( prometheusExpressedMetrics != null )
+        {
+            ret.setExpressedMetrics( Arrays.asList( prometheusExpressedMetrics.split( "\\s*,\\s*" ) ) );
+        }
+
+        return ret;
+    }
+
     public String getDefaultConfigFileName()
     {
         return "conf.d/metrics.conf";
@@ -378,4 +395,14 @@ public class IndyMetricsConfig
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-metrics.conf" );
     }
 
+    public String getPrometheusExpressedMetrics()
+    {
+        return prometheusExpressedMetrics;
+    }
+
+    @ConfigName( PROMETHEUS_EXPRESSED_METRICS )
+    public void setPrometheusExpressedMetrics( String prometheusExpressedMetrics )
+    {
+        this.prometheusExpressedMetrics = prometheusExpressedMetrics;
+    }
 }
