@@ -192,12 +192,16 @@ public class DefaultGalleyStorageProvider
 
         if ( indyConfiguration.isStandalone() )
         {
+            logger.info( "We're in standalone content-storage mode. Cassandra path-mapping database will NOT be used" );
+
             // Only work for local debug mode.
             ScheduledExecutorService debugDeleteExecutor = Executors.newScheduledThreadPool( 5, new NamedThreadFactory(
                     "debug-galley-delete-executor", new ThreadGroup( "debug-galley-delete-executor" ), true, 2 ) );
             cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, debugDeleteExecutor );
             return;
         }
+
+        logger.info( "Initializing Cassandra-based path-mapping database for content storage." );
 
         PathDB pathDB = null;
         PathMappedStorageConfig pathMappedStorageConfig = getPathMappedStorageConfig();

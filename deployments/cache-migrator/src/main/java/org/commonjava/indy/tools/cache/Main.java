@@ -17,6 +17,7 @@ package org.commonjava.indy.tools.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.collect.Iterables;
 import org.apache.commons.io.FileUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.folo.model.TrackedContent;
@@ -29,19 +30,29 @@ import org.slf4j.LoggerFactory;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import static org.apache.commons.io.IOUtils.copy;
+import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.SEALED;
 import static org.commonjava.propulsor.boot.BootStatus.ERR_INIT;
 import static org.commonjava.propulsor.boot.BootStatus.ERR_PARSE_ARGS;
 
@@ -139,9 +150,13 @@ public class Main
                 {
                     dumpJsonFile( cache,  options );
                 }
-                else
+                else if ( DataType.object == options.getDataType() )
                 {
                     dumpObjectFile( cache, options );
+                }
+                else
+                {
+                    dumpZipFiles( cache, options );
                 }
 
             }
@@ -369,5 +384,82 @@ public class Main
         {
             throw new BootException( "Failed to write data to file: " + options.getDataFile(), error.get() );
         }
+    }
+
+    private void dumpZipFiles( CacheHandle<Object, Object> cache,  MigrationOptions options ) throws BootException
+    {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        cache.executeCache( ( c ) -> {
+            if ( error.get() == null )
+            {
+                int count = 0;
+                int batchSize = options.getBatchSize() != null ? options.getBatchSize() : 1000;
+                Iterable<List<Object>> subLists = Iterables.partition( c.keySet(), batchSize );
+                logger.info( "Handle the cache in batch size:{}", batchSize );
+                for ( List<Object> subList : subLists )
+                {
+                    if ( error.get() == null )
+                    {
+                        Set<TrackedContent> sealed = new HashSet<>();
+                        File out = new File( options.getDataFile().getParent() + "/folo-" + count + ".zip" );
+                        if ( error.get() == null )
+                        {
+                            for ( Object key : subList )
+                            {
+                                sealed.add( (TrackedContent) c.get( key ) );
+                            }
+                            try
+                            {
+                                zipTrackedContent( out, sealed );
+                            }
+                            catch ( IOException e )
+                            {
+                                logger.error( "Failed to zip entries : " + subList.toString(), e );
+                                error.set( e );
+                            }
+                        }
+                        count++;
+                    }
+                }
+            }
+            return true;
+        });
+
+        if ( error.get() != null )
+        {
+            throw new BootException( "Failed to write data to zip.", error.get() );
+        }
+    }
+
+    /**
+     * Write sealed records to a zip file.
+     */
+    public void zipTrackedContent( File out, Set<TrackedContent> sealed ) throws IOException
+    {
+        logger.info( "Writing sealed zip to: '{}'", out.getAbsolutePath() );
+
+        try (ZipOutputStream zip = new ZipOutputStream( new FileOutputStream( out ) ))
+        {
+            for ( TrackedContent f : sealed )
+            {
+                String name = SEALED.getValue() + "/" + f.getKey().getId();
+
+                logger.trace( "Adding {} to zip", name );
+                zip.putNextEntry( new ZipEntry( name ) );
+                copy( toInputStream( f ), zip );
+            }
+        }
+    }
+
+    public InputStream toInputStream( TrackedContent f ) throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        ObjectOutputStream oos = new ObjectOutputStream( baos );
+        oos.writeObject( f );
+        oos.flush();
+        oos.close();
+
+        return new ByteArrayInputStream( baos.toByteArray() );
     }
 }
