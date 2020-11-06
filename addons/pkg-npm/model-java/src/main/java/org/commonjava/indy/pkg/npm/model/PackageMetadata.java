@@ -28,9 +28,7 @@ import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,17 +54,17 @@ public class PackageMetadata
     @JsonProperty( "dist-tags" )
     private DistTag distTags = new DistTag();
 
-    private Map<String, VersionMetadata> versions = new LinkedHashMap<String, VersionMetadata>();
+    private Map<String, VersionMetadata> versions = new LinkedHashMap<>();
 
     private List<UserInfo> maintainers = new ArrayList<>();
 
-    private Map<String, String> time = new LinkedHashMap<String, String>();
+    private Map<String, String> time = new LinkedHashMap<>();
 
     private UserInfo author;
 
-    private Map<String, Boolean> users = new LinkedHashMap<String, Boolean>();
+    private Map<String, Boolean> users = new LinkedHashMap<>();
 
-    @ApiModelProperty( required = false, dataType = "Repository", value = "Specify the place where your code lives." )
+    @ApiModelProperty( dataType = "Repository", value = "Specify the place where your code lives." )
     private Repository repository;
 
     private String readme;
@@ -77,7 +75,7 @@ public class PackageMetadata
 
     private List<String> keywords = new ArrayList<>();
 
-    @ApiModelProperty( required = false, dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
+    @ApiModelProperty( dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
     private Bugs bugs;
 
     private License license;
@@ -309,10 +307,8 @@ public class PackageMetadata
         }
 
         // merge maintainers list
-        Iterator maintainer = source.getMaintainers().iterator();
-        while ( maintainer.hasNext() )
+        for ( UserInfo m : source.getMaintainers() )
         {
-            UserInfo m = (UserInfo) maintainer.next();
             if ( m.getName() != null && !maintainers.contains( m ) )
             {
                 this.addMaintainers( new UserInfo( m.getName(), m.getEmail(), m.getUrl() ) );
@@ -321,10 +317,8 @@ public class PackageMetadata
         }
 
         // merge keywords list
-        Iterator keyword = source.getKeywords().iterator();
-        while ( keyword.hasNext() )
+        for ( String key : source.getKeywords() )
         {
-            String key = (String) keyword.next();
             if ( !keywords.contains( key ) )
             {
                 this.addKeywords( key );
@@ -368,7 +362,7 @@ public class PackageMetadata
         for ( final String key : sourceTimes.keySet() )
         {
             String value = sourceTimes.get( key );
-            Date date = null;
+            Date date;
             try
             {
                 date = sdf.parse( value );
@@ -376,7 +370,9 @@ public class PackageMetadata
             catch ( ParseException e )
             {
                 logger.error( String.format( "Cannot parse date: %s. Reason: %s", value, e ) );
+                continue;
             }
+
             // if source's version update time is more recent(sort as the letter order), will update it into the original map.
             if ( clone.containsKey( key ) && date.compareTo( clone.get( key ) ) <= 0 )
             {
@@ -393,7 +389,7 @@ public class PackageMetadata
             // sort as the time value in map
             List<Map.Entry<String, Date>> timeList = new ArrayList<>( clone.entrySet() );
             // sort the time as value (update time) asc
-            Collections.sort( timeList, ( o1, o2 ) -> o1.getValue().compareTo( o2.getValue() ) );
+            timeList.sort( Map.Entry.comparingByValue() );
 
             Map<String, String> result = new LinkedHashMap<>();
             // make the 'modified' and 'created' value as the first two keys in final map
