@@ -140,6 +140,20 @@
       </persistence>
     </local-cache>
 
+    <local-cache name="schedule-expire-cache-v2" configuration="local-template">
+      <expiration interval="300" />
+      <persistence>
+        <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.core.expire.ScheduleCacheKey2StringMapper">
+          <jdbc:data-source jndi-url="java:/comp/env/jdbc/infinispan" />
+          <jdbc:string-keyed-table drop-on-exit="false" create-on-start="true" prefix="indy_cache">
+            <jdbc:id-column name="id_column" type="TEXT" />
+            <jdbc:data-column name="data_column" type="BYTEA" />
+            <jdbc:timestamp-column name="timestamp_column" type="BIGINT" />
+          </jdbc:string-keyed-table>
+        </jdbc:string-keyed-jdbc-store>
+      </persistence>
+    </local-cache>
+
     <local-cache name="nfc" configuration="local-template">
       <!--
         Expires in 72 hours and run expiration every 15 minutes.
