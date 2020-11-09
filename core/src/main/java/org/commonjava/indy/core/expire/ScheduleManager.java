@@ -724,7 +724,13 @@ public class ScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
-            final Map<String, Object> expiredContent = e.getValue().getDataPayload();
+            final ScheduleValue value = e.getValue();
+            if ( value == null )
+            {
+                logger.warn( "The cache value for ISPN creation event of schedule expiration is null, key is {} .", expiredKey );
+                return;
+            }
+            final Map<String, Object> expiredContent = value.getDataPayload();
             if ( expiredKey != null && expiredContent != null )
             {
                 logger.debug( "Expiration Created: {}", expiredKey );
@@ -747,15 +753,13 @@ public class ScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
-/*
-            if ( scheduleEventLockCache.containsKey( expiredKey ) )
+            final ScheduleValue value = e.getValue();
+            if ( value == null )
             {
-                logger.info( "Another instance {} is still handling expiration event for {}", expiredKey,
-                             scheduleEventLockCache.containsKey( expiredKey ) );
+                logger.warn( "The cache value for ISPN expired event of schedule expiration is null, key is {} .", expiredKey );
                 return;
             }
-*/
-            final Map<String, Object> expiredContent = e.getValue().getDataPayload();
+            final Map<String, Object> expiredContent = value.getDataPayload();
             if ( expiredKey != null && expiredContent != null )
             {
                 logger.debug( "EXPIRED: {}", expiredKey );

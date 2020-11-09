@@ -42,7 +42,7 @@ public class ScheduleCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
-    private static final String SCHEDULE_EXPIRE = "schedule-expire-cache";
+    private static final String SCHEDULE_EXPIRE = "schedule-expire-cache-v2";
 
     private static final String SCHEDULE_EVENT_LOCK = "schedule-event-lock-cache";
 
