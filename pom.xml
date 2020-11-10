@@ -79,7 +79,6 @@
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
     <honeycombVersion>1.1.0</honeycombVersion>
-    <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>1.8</pathmappedStorageVersion>
     <o11yphantVersion>1.2</o11yphantVersion>
@@ -1171,11 +1170,6 @@
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-cache-path-mapped</artifactId>
         <version>${galleyVersion}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.cassandraunit</groupId>
-        <artifactId>cassandra-unit</artifactId>
-        <version>${cassandraUnitVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
