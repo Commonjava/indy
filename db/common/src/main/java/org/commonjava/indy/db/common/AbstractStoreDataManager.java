@@ -595,5 +595,4 @@ public abstract class AbstractStoreDataManager
         String filter = indyConfiguration.getAffectedGroupsExcludeFilter();
         return isNotBlank( filter ) && group.getName().matches( filter );
     }
-
 }

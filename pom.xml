@@ -237,6 +237,11 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-db-cassandra</artifactId>
+        <version>2.5.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-bindings-jaxrs</artifactId>
         <version>2.5.3-SNAPSHOT</version>
       </dependency>
