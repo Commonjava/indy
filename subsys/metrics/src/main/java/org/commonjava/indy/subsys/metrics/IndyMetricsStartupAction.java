@@ -13,33 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb;
+package org.commonjava.indy.subsys.metrics;
 
-import com.datastax.driver.core.Session;
-import org.commonjava.indy.subsys.cassandra.CassandraClient;
-import org.commonjava.o11yphant.honeycomb.impl.CassandraConnectionRootSpanFields;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.StartupAction;
+import org.commonjava.o11yphant.metrics.reporter.ReporterInitializer;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.Collections;
-import java.util.Map;
 
 @ApplicationScoped
-public class IndyCassandraConnectionRootSpanFields
-                extends CassandraConnectionRootSpanFields
+public class IndyMetricsStartupAction implements StartupAction
 {
-
-    private final Map<String, Session> sessions;
-
     @Inject
-    public IndyCassandraConnectionRootSpanFields( CassandraClient cassandraClient )
+    private ReporterInitializer reporterInitializer;
+
+    @Override
+    public void start() throws IndyLifecycleException
     {
-        this.sessions = Collections.unmodifiableMap( cassandraClient.getSessions() );
+        try
+        {
+            reporterInitializer.init();
+        }
+        catch ( Exception e )
+        {
+            throw new IndyLifecycleException( "Failed to setup metrics!", e );
+        }
     }
 
     @Override
-    protected Map<String, Session> getSessions()
+    public int getStartupPriority()
     {
-        return sessions;
+        return 10;
+    }
+
+    @Override
+    public String getId()
+    {
+        return "Indy metrics initialization";
     }
 }

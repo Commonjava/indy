@@ -47,6 +47,7 @@ import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -63,8 +64,8 @@ public class PackageMetadataGenerator
                 extends AbstractMergedContentGenerator
 {
 
-    @Inject
-    private TypeMapper typeMapper;
+//    @Inject
+//    private TypeMapper typeMapper;
 
     @Inject
     private PackageMetadataMerger merger;
@@ -92,7 +93,7 @@ public class PackageMetadataGenerator
     {
         super( fileManager, storeManager, mergeHelper, nfc, mergedContentActions );
         this.downloadManager = downloadManager;
-        this.typeMapper = typeMapper;
+//        this.typeMapper = typeMapper;
         this.pathGenerator = pathGenerator;
         this.merger = merger;
         this.storagePathCalculator = storagePathCalculator;
@@ -328,6 +329,7 @@ public class PackageMetadataGenerator
             packageMetadata.setKeywords( keywords );
         }
 
+        versions = sortVersions( versions );
         packageMetadata.setVersions( versions );
         packageMetadata.setDistTags( distTags );
 
@@ -336,7 +338,7 @@ public class PackageMetadataGenerator
         {
             String output = mapper.writeValueAsString( packageMetadata );
             stream = metadataFile.openOutputStream( TransferOperation.GENERATE, true, eventMetadata );
-            stream.write( output.getBytes( "UTF-8" ) );
+            stream.write( output.getBytes( StandardCharsets.UTF_8 ) );
         }
         catch ( IOException e )
         {
@@ -349,6 +351,13 @@ public class PackageMetadataGenerator
 
         logger.debug( "writePackageMetadata, DONE, store: {}", store.getKey() );
         return true;
+    }
+
+    private Map<String, VersionMetadata> sortVersions( Map<String, VersionMetadata> versions )
+    {
+        final Map<String, VersionMetadata> sorted = new LinkedHashMap<>( versions.size() );
+        new ArrayList<>( versions.keySet() ).stream().sorted().forEach( k -> sorted.put( k, versions.get( k ) ) );
+        return sorted;
     }
 
     private Transfer extractMetaFileFromTarballAndStore( ArtifactStore store, String versionPath, Transfer tar )

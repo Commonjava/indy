@@ -76,7 +76,7 @@ public class KojiRemovePemMigrationAction
         List<RemoteRepository> repos;
         try
         {
-            repos = storeDataManager.query().packageType( PackageTypeConstants.PKG_TYPE_MAVEN ).getAllRemoteRepositories();
+            repos = storeDataManager.query().noPackageType().getAllRemoteRepositories();
         }
         catch ( IndyDataException e )
         {
@@ -86,7 +86,7 @@ public class KojiRemovePemMigrationAction
 
         List<RemoteRepository> toStore = new ArrayList<>();
         repos.forEach( repo -> {
-            if ( repo.getDescription() != null && repo.getDescription().contains( "Koji build" ) && repo.getServerCertPem() != null )
+            if ( repo.getName().contains( "koji-" ) && repo.getServerCertPem() != null )
             {
                 repo.setServerCertPem( null );
                 toStore.add( repo );

@@ -69,6 +69,13 @@
       </persistence>
     </local-cache>
 
+    <local-cache name="schedule-expire-cache-v2" configuration="local-template">
+      <expiration interval="300" />
+      <persistence passivation="true">
+        <file-store shared="false" preload="false" fetch-state="false" path="${indy.data}/scheduler"/>
+      </persistence>
+    </local-cache>
+
     <local-cache name="nfc" configuration="local-template">
       <!--
         Expires in 72 hours and run expiration every 15 minutes.
