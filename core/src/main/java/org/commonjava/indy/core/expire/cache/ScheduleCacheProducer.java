@@ -17,6 +17,7 @@ package org.commonjava.indy.core.expire.cache;
 
 import org.commonjava.indy.cluster.IndyNode;
 import org.commonjava.indy.core.expire.ScheduleKey;
+import org.commonjava.indy.core.expire.ScheduleValue;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.slf4j.Logger;
@@ -41,14 +42,14 @@ public class ScheduleCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
-    private static final String SCHEDULE_EXPIRE = "schedule-expire-cache";
+    private static final String SCHEDULE_EXPIRE = "schedule-expire-cache-v2";
 
     private static final String SCHEDULE_EVENT_LOCK = "schedule-event-lock-cache";
 
     @ScheduleCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<ScheduleKey, Map> scheduleExpireCache()
+    public CacheHandle<ScheduleKey, ScheduleValue> scheduleExpireCache()
     {
         return cacheProducer.getCache( SCHEDULE_EXPIRE );
     }

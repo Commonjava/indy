@@ -18,8 +18,12 @@ package org.commonjava.indy.core.expire;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheKeyMatcher;
-import org.infinispan.commons.api.BasicCache;
+import org.infinispan.query.Search;
+import org.infinispan.query.dsl.Query;
+import org.infinispan.query.dsl.QueryFactory;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -33,22 +37,23 @@ public class StoreKeyMatcher
 
     //TODO: will have a thought to replace this type of matcher with a ISPN query API in the future to get better performance.
 
-    private final StoreKey storeKey;
-
-    private final String eventType;
+    private final String groupName;
 
     public StoreKeyMatcher( final StoreKey key, final String eventType )
     {
-        this.storeKey = key;
-        this.eventType = eventType;
+        this.groupName = ScheduleManager.groupName( key, eventType );
     }
 
     @Override
     public Set<ScheduleKey> matches( CacheHandle<ScheduleKey, ?> cacheHandle )
     {
-        return cacheHandle.execute( BasicCache::keySet )
-                          .stream()
-                          .filter( key -> key != null && key.exists() && key.groupName().equals( ScheduleManager.groupName( storeKey, eventType ) ) )
-                          .collect( Collectors.toSet() );
+        QueryFactory queryFactory = Search.getQueryFactory( cacheHandle.getCache() );
+        Query q = queryFactory.from( ScheduleValue.class ).having( "key.groupName" ).eq( groupName ).build();
+        List<ScheduleValue> list = q.list();
+        return list.stream().map( ScheduleValue::getKey ).collect( Collectors.toSet());
+//        return cacheHandle.execute( BasicCache::keySet )
+//                          .stream()
+//                          .filter( key -> key != null && key.exists() && key.groupName().equals( groupName ) )
+//                          .collect( Collectors.toSet() );
     }
 }
