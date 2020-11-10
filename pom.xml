@@ -962,12 +962,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-schedule-common</artifactId>
-        <version>2.5.1-SNAPSHOT</version>
+        <version>2.5.3-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-schedule-model-java</artifactId>
-        <version>2.5.1-SNAPSHOT</version>
+        <version>2.5.3-SNAPSHOT</version>
       </dependency>
 
       <!-- DO NOT REMOVE: append::depMgmt -->

@@ -33,6 +33,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -131,6 +132,7 @@ public class DefaultScheduleManager
 
     @Inject
     @ScheduleEventLockCache
+    @Deprecated
     private CacheHandle<ScheduleKey, IndyNode> scheduleEventLockCache;
 
     @Inject
@@ -164,7 +166,7 @@ public class DefaultScheduleManager
     }
 
     public void rescheduleSnapshotTimeouts( final HostedRepository deploy )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -181,12 +183,12 @@ public class DefaultScheduleManager
         if ( timeout > 0 )
         {
             final Set<ScheduleKey> canceled =
-                    cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
+                            cancelAllBefore( new StoreKeyMatcher( deploy.getKey(), CONTENT_JOB_TYPE ), timeout );
 
             for ( final ScheduleKey key : canceled )
             {
                 final String path = key.getName();
-                final StoreKey sk = ScheduleManagerUtils.storeKeyFrom( key.getGroupName() );
+                final StoreKey sk = storeKeyFrom( key.getGroupName() );
 
                 scheduleContentExpiration( sk, path, timeout );
             }
@@ -194,7 +196,7 @@ public class DefaultScheduleManager
     }
 
     public void rescheduleProxyTimeouts( final RemoteRepository repo )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -215,11 +217,11 @@ public class DefaultScheduleManager
         if ( timeout > 0 )
         {
             final Set<ScheduleKey> canceled =
-                    cancelAllBefore( new StoreKeyMatcher( repo.getKey(), CONTENT_JOB_TYPE ), timeout );
+                            cancelAllBefore( new StoreKeyMatcher( repo.getKey(), CONTENT_JOB_TYPE ), timeout );
             for ( final ScheduleKey key : canceled )
             {
                 final String path = key.getName();
-                final StoreKey sk = ScheduleManagerUtils.storeKeyFrom( key.getGroupName() );
+                final StoreKey sk = storeKeyFrom( key.getGroupName() );
 
                 scheduleContentExpiration( sk, path, timeout );
             }
@@ -227,7 +229,7 @@ public class DefaultScheduleManager
     }
 
     public void setProxyTimeouts( final StoreKey key, final String path )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -287,15 +289,14 @@ public class DefaultScheduleManager
         {
             //            logger.info( "[PROXY TIMEOUT SET] {}/{}; {}", repo.getKey(), path, new Date( System.currentTimeMillis()
             //                + timeout ) );
-            cancel( new StoreKeyMatcher( key, CONTENT_JOB_TYPE ), path );
-
+            removeCache( new ScheduleKey( key, CONTENT_JOB_TYPE, path ) );
             scheduleContentExpiration( key, path, timeout );
         }
     }
 
     public void scheduleForStore( final StoreKey key, final String jobType, final String jobName,
-                                               final Object payload, final int startSeconds )
-            throws IndySchedulerException
+                                  final Object payload, final int startSeconds )
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -323,8 +324,8 @@ public class DefaultScheduleManager
     }
 
     public void scheduleContentExpiration( final StoreKey key, final String path,
-                                                        final int timeoutSeconds )
-            throws IndySchedulerException
+                                           final int timeoutSeconds )
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -339,7 +340,7 @@ public class DefaultScheduleManager
     }
 
     public void setSnapshotTimeouts( final StoreKey key, final String path )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -378,7 +379,7 @@ public class DefaultScheduleManager
         }
 
         final ContentAdvisor advisor = StreamSupport.stream(
-                Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
+                        Spliterators.spliteratorUnknownSize( contentAdvisor.iterator(), Spliterator.ORDERED ), false )
                                                     .filter( Objects::nonNull )
                                                     .findFirst()
                                                     .orElse( null );
@@ -400,7 +401,7 @@ public class DefaultScheduleManager
     }
 
     public void rescheduleDisableTimeout( final StoreKey key )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -431,10 +432,10 @@ public class DefaultScheduleManager
         }
 
         // No need to cancel as the job will be cancelled immediately after the re-enable in StoreEnablementManager
-//        final Set<ScheduleKey> canceled =
-//                cancelAllBefore( new StoreKeyMatcher( store.getKey(), DISABLE_TIMEOUT ),
-//                                 timeout );
-//        logger.info( "Cancel disable timeout for stores:{}", canceled );
+        //        final Set<ScheduleKey> canceled =
+        //                cancelAllBefore( new StoreKeyMatcher( store.getKey(), DISABLE_TIMEOUT ),
+        //                                 timeout );
+        //        logger.info( "Cancel disable timeout for stores:{}", canceled );
 
         if ( timeout > TIMEOUT_USE_DEFAULT && store.isDisabled() )
         {
@@ -446,7 +447,7 @@ public class DefaultScheduleManager
     }
 
     private HostedRepository findDeployPoint( final Group group )
-            throws IndyDataException
+                    throws IndyDataException
     {
         for ( final StoreKey key : group.getConstituents() )
         {
@@ -469,8 +470,8 @@ public class DefaultScheduleManager
     }
 
     public Set<ScheduleKey> cancelAllBefore( final CacheKeyMatcher<ScheduleKey> matcher,
-                                                          final long timeout )
-            throws IndySchedulerException
+                                             final long timeout )
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -497,13 +498,13 @@ public class DefaultScheduleManager
     }
 
     public Set<ScheduleKey> cancelAll( final CacheKeyMatcher<ScheduleKey> matcher )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         return cancel( matcher, ANY );
     }
 
     public Set<ScheduleKey> cancel( final CacheKeyMatcher<ScheduleKey> matcher, final String name )
-            throws IndySchedulerException
+                    throws IndySchedulerException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -575,10 +576,10 @@ public class DefaultScheduleManager
     {
         return findMatchingExpirations(
                         cacheHandle -> cacheHandle.execute( BasicCache::keySet )
-                                  .stream()
-                                  .filter( key -> key.getType()
-                                                     .equals( jobType ) )
-                                  .collect( Collectors.toSet() ));
+                                                  .stream()
+                                                  .filter( key -> key.getType()
+                                                                     .equals( jobType ) )
+                                                  .collect( Collectors.toSet() ));
     }
 
     public ExpirationSet findMatchingExpirations( final CacheKeyMatcher<ScheduleKey> matcher )
@@ -604,7 +605,7 @@ public class DefaultScheduleManager
 
     private Expiration toExpiration( final ScheduleKey cacheKey )
     {
-        return new Expiration( cacheKey.getGroupName()  , cacheKey.getName(), getNextExpireTime( cacheKey ) );
+        return new Expiration( cacheKey.getGroupName(), cacheKey.getName(), getNextExpireTime( cacheKey ) );
     }
 
     private Date getNextExpireTime( final ScheduleKey cacheKey )
@@ -634,7 +635,7 @@ public class DefaultScheduleManager
             {
                 final long nextTimeInMillis = expire - duration + System.currentTimeMillis();
                 final LocalDateTime time =
-                        Instant.ofEpochMilli( nextTimeInMillis ).atZone( ZoneId.systemDefault() ).toLocalDateTime();
+                                Instant.ofEpochMilli( nextTimeInMillis ).atZone( ZoneId.systemDefault() ).toLocalDateTime();
                 return Date.from( time.atZone( ZoneId.systemDefault() ).toInstant() );
             }
         }
@@ -658,6 +659,48 @@ public class DefaultScheduleManager
         return null;
     }
 
+    public static String groupName( final StoreKey key, final String jobType )
+    {
+        return key.toString() + groupNameSuffix( jobType );
+    }
+
+    public static String groupNameSuffix( final String jobType )
+    {
+        return "#" + jobType;
+    }
+
+    public static StoreKey storeKeyFrom( final String group )
+    {
+        final String[] parts = group.split( "#" );
+        if ( parts.length > 1 )
+        {
+            final Logger logger = LoggerFactory.getLogger( ScheduleManager.class );
+            StoreKey storeKey = null;
+            try
+            {
+                storeKey = StoreKey.fromString( parts[0] );
+            }
+            catch ( IllegalArgumentException e )
+            {
+                logger.warn( "Not a store key for string: {}", parts[0] );
+            }
+
+            //TODO this part of code may be obsolete, will need further check then remove
+            if ( storeKey == null )
+            {
+                logger.info( "Not a store key for string: {}, will parse as store type", parts[0] );
+                final StoreType type = StoreType.get( parts[0] );
+                if ( type != null )
+                {
+                    storeKey = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, type, parts[1] );
+                }
+            }
+            return storeKey;
+        }
+
+        return null;
+    }
+
     @Override
     public String getId()
     {
@@ -672,7 +715,7 @@ public class DefaultScheduleManager
 
     @Override
     public void stop()
-            throws IndyLifecycleException
+                    throws IndyLifecycleException
     {
         if ( !schedulerConfig.isEnabled() )
         {
@@ -685,10 +728,7 @@ public class DefaultScheduleManager
 
     private void removeCache( final ScheduleKey cacheKey )
     {
-        if ( scheduleCache.containsKey( cacheKey ) )
-        {
-            scheduleCache.remove( cacheKey );
-        }
+        scheduleCache.remove( cacheKey );
     }
 
     @CacheEntryCreated
@@ -703,7 +743,13 @@ public class DefaultScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
-            final Map<String, Object> expiredContent = e.getValue().getDataPayload();
+            final ScheduleValue value = e.getValue();
+            if ( value == null )
+            {
+                logger.warn( "The cache value for ISPN creation event of schedule expiration is null, key is {} .", expiredKey );
+                return;
+            }
+            final Map<String, Object> expiredContent = value.getDataPayload();
             if ( expiredKey != null && expiredContent != null )
             {
                 logger.debug( "Expiration Created: {}", expiredKey );
@@ -726,21 +772,19 @@ public class DefaultScheduleManager
         if ( !e.isPre() )
         {
             final ScheduleKey expiredKey = e.getKey();
-/*
-            if ( scheduleEventLockCache.containsKey( expiredKey ) )
+            final ScheduleValue value = e.getValue();
+            if ( value == null )
             {
-                logger.info( "Another instance {} is still handling expiration event for {}", expiredKey,
-                             scheduleEventLockCache.containsKey( expiredKey ) );
+                logger.warn( "The cache value for ISPN expired event of schedule expiration is null, key is {} .", expiredKey );
                 return;
             }
-*/
-            final Map<String, Object> expiredContent = e.getValue().getDataPayload();
+            final Map<String, Object> expiredContent = value.getDataPayload();
             if ( expiredKey != null && expiredContent != null )
             {
                 logger.debug( "EXPIRED: {}", expiredKey );
-                final String type = (String) expiredContent.get( JOB_TYPE );
-                final String data = (String) expiredContent.get( PAYLOAD );
-                if ( logger.isInfoEnabled() && CONTENT_JOB_TYPE.equals( type ) )
+                final String type = (String) expiredContent.get( DefaultScheduleManager.JOB_TYPE );
+                final String data = (String) expiredContent.get( DefaultScheduleManager.PAYLOAD );
+                if ( logger.isInfoEnabled() && DefaultScheduleManager.CONTENT_JOB_TYPE.equals( type ) )
                 {
                     ContentExpiration expiration;
                     try
@@ -749,7 +793,7 @@ public class DefaultScheduleManager
                         final StoreKey key = expiration.getKey();
                         final String path = expiration.getPath();
                         logger.info( "Expiring: {} in: {} at: {}.", path, key,
-                                      new Date( System.currentTimeMillis() ) );
+                                     new Date( System.currentTimeMillis() ) );
                     }
                     catch ( final IOException ioe )
                     {
