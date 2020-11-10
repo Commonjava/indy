@@ -92,7 +92,7 @@ public class ResponseHelper
     public Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto,
                                                          final Consumer<ResponseBuilder> builderModifier )
     {
-        ResponseBuilder builder = null;
+        ResponseBuilder builder;
         if ( dto == null )
         {
             builder = Response.noContent();
@@ -285,11 +285,10 @@ public class ResponseHelper
         // 500-level error; use 502 response.
         Logger logger = LoggerFactory.getLogger( ResponseHelper.class );
         logger.info( "Formatting response with code: {}", code );
-        ResponseBuilder builder = null;
+        ResponseBuilder builder;
         if ( code / 100 == 5 )
         {
             setContext( HTTP_STATUS, String.valueOf( 502 ) );
-            builder = Response.status( 502 );
         }
 
         setContext( HTTP_STATUS, String.valueOf( code ) );
@@ -461,7 +460,7 @@ public class ResponseHelper
             LOGGER.debug( "Sending response: {} {}\n{}", code.getStatusCode(), code.getReasonPhrase(), msg );
         }
 
-        setContext( HTTP_STATUS, code == null ? "000" : String.valueOf( code.getStatusCode() ) );
+        setContext( HTTP_STATUS, String.valueOf( code.getStatusCode() ) );
 
         ResponseBuilder builder = Response.status( code ).type( MediaType.TEXT_PLAIN ).entity( msg );
 
