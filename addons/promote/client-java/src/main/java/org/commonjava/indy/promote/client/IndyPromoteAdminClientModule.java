@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 
@@ -68,28 +69,29 @@ public class IndyPromoteAdminClientModule
     public boolean reloadRules()
             throws IndyClientException
     {
-        return http.put( VALIDATION_RELOAD_RULES_PATH, null, HttpStatus.SC_OK );
+        return http.put( VALIDATION_RELOAD_RULES_PATH, "", HttpStatus.SC_OK );
 
     }
 
     public boolean reloadRuleSets()
             throws IndyClientException
     {
-        return http.put( VALIDATION_RELOAD_RULESETS_PATH, null, HttpStatus.SC_OK );
+        return http.put( VALIDATION_RELOAD_RULESETS_PATH, "", HttpStatus.SC_OK );
 
     }
 
     public boolean reloadRuleBundles()
             throws IndyClientException
     {
-        return http.put( VALIDATION_RELOAD_ALL_PATH, null, HttpStatus.SC_OK );
+        return http.put( VALIDATION_RELOAD_ALL_PATH, "", HttpStatus.SC_OK );
 
     }
 
-    public List<?> getAllRules()
+    public List<String> getAllRules()
             throws IndyClientException
     {
-        return http.get( VALIDATION_RULES_GET_ALL_PATH, List.class );
+        List<?> rules = http.get( VALIDATION_RULES_GET_ALL_PATH, List.class );
+        return rules.stream().map( Object::toString ).collect( Collectors.toList() );
     }
 
     public ValidationRuleDTO getRuleByName( final String name )
@@ -98,10 +100,11 @@ public class IndyPromoteAdminClientModule
         return http.get( buildUrl( VALIDATION_RULES_GET_BY_NAME_PATH, name ), ValidationRuleDTO.class );
     }
 
-    public List<?> getAllRuleSets()
+    public List<String> getAllRuleSets()
             throws IndyClientException
     {
-        return http.get( VALIDATION_RULESET_GET_ALL_PATH, List.class );
+        List<?> rules = http.get( VALIDATION_RULESET_GET_ALL_PATH, List.class );
+        return rules.stream().map( Object::toString ).collect( Collectors.toList() );
     }
 
     public ValidationRuleSet getRuleSetByName( final String name )

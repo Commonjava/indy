@@ -46,6 +46,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -86,7 +89,7 @@ public class PromoteAdminResource
             try
             {
                 validationsManager.parseRules();
-                return Response.ok().build();
+                return Response.ok( new ArrayList<>( validationsManager.toDTO().getRules().keySet() ) ).build();
             }
             catch ( PromotionException e )
             {
@@ -108,7 +111,7 @@ public class PromoteAdminResource
             try
             {
                 validationsManager.parseRuleSets();
-                return Response.ok().build();
+                return Response.ok( new ArrayList<>( validationsManager.toDTO().getRuleSets().keySet() ) ).build();
             }
             catch ( PromotionException e )
             {
@@ -130,7 +133,10 @@ public class PromoteAdminResource
             try
             {
                 validationsManager.parseRuleBundles();
-                return Response.ok().build();
+                Map<String, List<String>> bundles = new HashMap<>( 2 );
+                bundles.put( "rules", new ArrayList<>( validationsManager.toDTO().getRules().keySet() ) );
+                bundles.put( "rule-sets", new ArrayList<>( validationsManager.toDTO().getRuleSets().keySet() ) );
+                return Response.ok(bundles).build();
             }
             catch ( PromotionException e )
             {
@@ -147,19 +153,18 @@ public class PromoteAdminResource
     @Path( "/validation/rules/all" )
     @GET
     @Consumes( ApplicationContent.application_json )
-    public Response getAllRules( final @PathParam( "name" ) String ruleName,
-                                 final @Context HttpServletRequest servletRequest,
+    public Response getAllRules( final @Context HttpServletRequest servletRequest,
                                  final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
     {
         return checkEnabledAnd( () -> {
             Map<String, ValidationRuleDTO> rules = validationsManager.toDTO().getRules();
-            if ( rules.isEmpty() )
+            if ( !rules.isEmpty() )
             {
                 return Response.ok( new ArrayList<>( rules.keySet() ) ).build();
             }
             else
             {
-                return Response.status( Response.Status.NOT_FOUND ).build();
+                return Response.status( Response.Status.NOT_FOUND ).entity( Collections.emptyList() ).build();
             }
         } );
     }
@@ -195,19 +200,18 @@ public class PromoteAdminResource
     @Path( "/validation/rulesets/all" )
     @GET
     @Consumes( ApplicationContent.application_json )
-    public Response getAllRuleSets( final @PathParam( "storeKey" ) String storeKey,
-                                    final @Context HttpServletRequest servletRequest,
+    public Response getAllRuleSets( final @Context HttpServletRequest servletRequest,
                                     final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
     {
         return checkEnabledAnd( () -> {
             Map<String, ValidationRuleSet> ruleSets = validationsManager.toDTO().getRuleSets();
-            if ( ruleSets.isEmpty() )
+            if ( !ruleSets.isEmpty() )
             {
                 return Response.ok( new ArrayList<>( ruleSets.keySet() ) ).build();
             }
             else
             {
-                return Response.status( Response.Status.NOT_FOUND ).build();
+                return Response.status( Response.Status.NOT_FOUND ).entity( Collections.emptyList() ).build();
             }
         } );
     }
