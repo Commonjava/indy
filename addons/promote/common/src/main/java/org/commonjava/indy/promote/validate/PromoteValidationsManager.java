@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
@@ -251,9 +252,26 @@ public class PromoteValidationsManager
         return mapping == null ? null : mapping.getRule();
     }
 
-    public ValidationRuleDTO getNamedRuleAsDTO( final String name )
+    public Optional<ValidationRuleDTO> getNamedRuleAsDTO( final String name )
     {
-        return toDTO().getRules().get( name );
+        final Map<String, ValidationRuleDTO> rules = toDTO().getRules();
+        ValidationRuleDTO dto = rules.get( name );
+        if ( dto == null )
+        {
+            dto = rules.get( name + ".groovy" );
+        }
+        return dto == null ? Optional.empty() : Optional.of( dto );
+    }
+
+    public Optional<ValidationRuleSet> getNamedRuleSet( final String name )
+    {
+        final Map<String, ValidationRuleSet> ruleSets = toDTO().getRuleSets();
+        ValidationRuleSet ruleSet = ruleSets.get( name );
+        if ( ruleSet == null )
+        {
+            ruleSet = ruleSets.get( name + ".json" );
+        }
+        return ruleSet == null ? Optional.empty() : Optional.of( ruleSet );
     }
 
     public synchronized ValidationRuleMapping removeRuleNamed( final String name, final ChangeSummary changelog )

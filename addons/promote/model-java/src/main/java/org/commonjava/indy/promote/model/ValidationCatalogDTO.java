@@ -43,7 +43,7 @@ public class ValidationCatalogDTO
 
     public Map<String, ValidationRuleDTO> getRules()
     {
-        return rules == null ? Collections.<String, ValidationRuleDTO>emptyMap() : rules;
+        return rules == null ? Collections.emptyMap() : rules;
     }
 
     public void setRules( final Map<String, ValidationRuleDTO> rules )

@@ -17,16 +17,15 @@ package org.commonjava.indy.promote.bind.jaxrs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.data.PromotionException;
-import org.commonjava.indy.promote.model.GroupPromoteResult;
 import org.commonjava.indy.promote.model.ValidationRuleDTO;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.PromoteValidationsManager;
@@ -46,6 +45,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
@@ -71,113 +74,208 @@ public class PromoteAdminResource
     @Inject
     private ResponseHelper responseHelper;
 
-    @ApiOperation( "Promote a source repository into the membership of a target group (subject to validation)." )
-    @ApiResponse( code = 200, message = "Promotion operation finished (consult response content for success/failure).",
-                  response = Response.class )
-    @ApiImplicitParam( name = "body", paramType = "body",
-                       value = "JSON request specifying source and target, with other configuration options",
-                       required = true, dataType = "org.commonjava.indy.promote.model.GroupPromoteRequest" )
+    @ApiOperation( "Reload all rules for promotion validation" )
+    @ApiResponse( code = 200, message = "", response = Response.class )
     @Path( "/validation/reload/rules" )
     @PUT
     @Consumes( ApplicationContent.application_json )
     public Response reloadRules( final @Context HttpServletRequest servletRequest,
                                  final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
     {
-        Response response;
-        if ( !validationsManager.isEnabled() )
-        {
-            response = responseHelper.formatBadRequestResponse(
-                    "Content promotion is disabled. Please check your indy configuration for more info." );
-        }
-        else
-        {
+        return checkEnabledAnd( () -> {
             try
             {
                 validationsManager.parseRules();
-                response = Response.ok().build();
+                return Response.ok().build();
             }
             catch ( PromotionException e )
             {
                 logger.error( e.getMessage(), e );
-                response = responseHelper.formatResponse( e );
+                return responseHelper.formatResponse( e );
             }
-        }
-        return response;
+        } );
     }
 
-    @ApiOperation( "" )
-    @ApiResponse( code = 200, message = "Promotion operation finished (consult response content for success/failure).",
-                  response = Response.class )
-    @ApiImplicitParam( name = "body", paramType = "body",
-                       value = "JSON request specifying source and target, with other configuration options",
-                       allowMultiple = false, required = true,
-                       dataType = "org.commonjava.indy.promote.model.GroupPromoteRequest" )
+    @ApiOperation( "Reload all rule-sets for promotion validation" )
+    @ApiResponse( code = 200, message = "", response = Response.class )
     @Path( "/validation/reload/rulesets" )
     @PUT
     @Consumes( ApplicationContent.application_json )
     public Response reloadRuleSets( final @Context HttpServletRequest servletRequest,
                                     final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
     {
-        Response response;
-        if ( !validationsManager.isEnabled() )
-        {
-            response = responseHelper.formatBadRequestResponse(
-                    "Content promotion is disabled. Please check your indy configuration for more info." );
-        }
-        else
-        {
+        return checkEnabledAnd( () -> {
             try
             {
                 validationsManager.parseRuleSets();
-                response = Response.ok().build();
+                return Response.ok().build();
             }
             catch ( PromotionException e )
             {
                 logger.error( e.getMessage(), e );
-                response = responseHelper.formatResponse( e );
+                return responseHelper.formatResponse( e );
             }
-        }
-        return response;
+        } );
     }
 
-    @ApiOperation( "" )
-    @ApiResponse( code = 200, message = "Promotion operation finished (consult response content for success/failure).",
-                  response = GroupPromoteResult.class )
-    @ApiImplicitParam( name = "body", paramType = "body", value = "", required = true,
-                       dataType = "org.commonjava.indy.promote.model.GroupPromoteRequest" )
-    @Path( "/validation/rules/{name}" )
+    @ApiOperation( "Reload all rules & rule-sets for promotion validation" )
+    @ApiResponse( code = 200, message = "", response = Response.class )
+    @Path( "/validation/reload/all" )
+    @PUT
+    @Consumes( ApplicationContent.application_json )
+    public Response reloadAll( final @Context HttpServletRequest servletRequest,
+                               final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    {
+        return checkEnabledAnd( () -> {
+            try
+            {
+                validationsManager.parseRuleBundles();
+                return Response.ok().build();
+            }
+            catch ( PromotionException e )
+            {
+                logger.error( e.getMessage(), e );
+                return responseHelper.formatResponse( e );
+            }
+        } );
+    }
+
+    @ApiOperation( "Get all rules' names" )
+    @ApiResponses( { @ApiResponse( code = 200, response = Response.class,
+                                   message = "All promotion validation rules' definition" ),
+                           @ApiResponse( code = 404, message = "No rules are defined" ) } )
+    @Path( "/validation/rules/all" )
+    @GET
+    @Consumes( ApplicationContent.application_json )
+    public Response getAllRules( final @PathParam( "name" ) String ruleName,
+                                 final @Context HttpServletRequest servletRequest,
+                                 final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    {
+        return checkEnabledAnd( () -> {
+            Map<String, ValidationRuleDTO> rules = validationsManager.toDTO().getRules();
+            if ( rules.isEmpty() )
+            {
+                return Response.ok( new ArrayList<>( rules.keySet() ) ).build();
+            }
+            else
+            {
+                return Response.status( Response.Status.NOT_FOUND ).build();
+            }
+        } );
+    }
+
+    @ApiOperation( "Get promotion rule by rule name" )
+    @ApiResponses( { @ApiResponse( code = 200, response = Response.class,
+                                   message = "The promotion validation rule definition" ),
+                           @ApiResponse( code = 404, message = "The rule doesn't exist" ) } )
+    @Path( "/validation/rules/named/{name}" )
     @GET
     @Consumes( ApplicationContent.application_json )
     public Response getRule( final @PathParam( "name" ) String ruleName,
                              final @Context HttpServletRequest servletRequest,
                              final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
     {
-        if ( validationsManager.isEnabled() )
-        {
-            return Response.ok( validationsManager.getNamedRuleAsDTO( ruleName ) ).build();
-        }
-        else
-        {
-            return responseHelper.formatBadRequestResponse(
-                    "Content promotion is disabled. Please check your indy configuration for more info." );
-        }
+        return checkEnabledAnd( () -> {
+            Optional<ValidationRuleDTO> dto = validationsManager.getNamedRuleAsDTO( ruleName );
+            if ( dto.isPresent() )
+            {
+                return Response.ok( dto.get() ).build();
+            }
+            else
+            {
+                return Response.status( Response.Status.NOT_FOUND ).build();
+            }
+        } );
     }
 
-    @ApiOperation( "" )
-    @ApiResponse( code = 200, message = "Promotion operation finished (consult response content for success/failure).",
-                  response = Response.class )
-    @ApiImplicitParam( name = "body", paramType = "body", value = "", required = true,
-                       dataType = "org.commonjava.indy.promote.model.GroupPromoteRequest" )
-    @Path( "/validation/rulesets/{storeKey}" )
+    @ApiOperation( "Get promotion rule-set by store key" )
+    @ApiResponses( { @ApiResponse( code = 200, response = Response.class,
+                                   message = "The promotion validation rule-set definition" ),
+                           @ApiResponse( code = 404, message = "The rule-set doesn't exist" ) } )
+    @Path( "/validation/rulesets/all" )
     @GET
     @Consumes( ApplicationContent.application_json )
-    public Response getRuleSet( final @PathParam( "storeKey" ) StoreKey storeKey,
-                                final @Context HttpServletRequest servletRequest,
-                                final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    public Response getAllRuleSets( final @PathParam( "storeKey" ) String storeKey,
+                                    final @Context HttpServletRequest servletRequest,
+                                    final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    {
+        return checkEnabledAnd( () -> {
+            Map<String, ValidationRuleSet> ruleSets = validationsManager.toDTO().getRuleSets();
+            if ( ruleSets.isEmpty() )
+            {
+                return Response.ok( new ArrayList<>( ruleSets.keySet() ) ).build();
+            }
+            else
+            {
+                return Response.status( Response.Status.NOT_FOUND ).build();
+            }
+        } );
+    }
+
+    @ApiOperation( "Get promotion rule-set by store key" )
+    @ApiResponses( { @ApiResponse( code = 200, response = Response.class,
+                                   message = "The promotion validation rule-set definition" ),
+                           @ApiResponse( code = 404, message = "The rule-set doesn't exist" ) } )
+    @Path( "/validation/rulesets/storekey/{storeKey}" )
+    @GET
+    @Consumes( ApplicationContent.application_json )
+    public Response getRuleSetByStoreKey( final @PathParam( "storeKey" ) String storeKey,
+                                          final @Context HttpServletRequest servletRequest,
+                                          final @Context SecurityContext securityContext,
+                                          final @Context UriInfo uriInfo )
+    {
+        return checkEnabledAnd( () -> {
+            final StoreKey storekey;
+            try
+            {
+                storekey = StoreKey.fromString( storeKey );
+            }
+            catch ( Exception e )
+            {
+                return responseHelper.formatBadRequestResponse( e.getMessage() );
+            }
+            ValidationRuleSet ruleSet = validationsManager.getRuleSetMatching( storekey );
+            if ( ruleSet != null )
+            {
+                return Response.ok( ruleSet ).build();
+            }
+            else
+            {
+                return Response.status( Response.Status.NOT_FOUND ).build();
+            }
+        } );
+    }
+
+    @ApiOperation( "Get promotion rule-set by name" )
+    @ApiResponses( { @ApiResponse( code = 200, response = Response.class,
+                                   message = "The promotion validation rule-set definition" ),
+                           @ApiResponse( code = 404, message = "The rule-set doesn't exist" ) } )
+    @Path( "/validation/rulesets/named/{name}" )
+    @GET
+    @Consumes( ApplicationContent.application_json )
+    public Response getRuleSetByName( final @PathParam( "name" ) String name,
+                                      final @Context HttpServletRequest servletRequest,
+                                      final @Context SecurityContext securityContext, final @Context UriInfo uriInfo )
+    {
+        return checkEnabledAnd( () -> {
+            final StoreKey storekey;
+            Optional<ValidationRuleSet> ruleSet = validationsManager.getNamedRuleSet( name );
+            if ( ruleSet.isPresent() )
+            {
+                return Response.ok( ruleSet.get() ).build();
+            }
+            else
+            {
+                return Response.status( Response.Status.NOT_FOUND ).build();
+            }
+        } );
+    }
+
+    private Response checkEnabledAnd( Supplier<Response> responseSupplier )
     {
         if ( validationsManager.isEnabled() )
         {
-            return Response.ok( validationsManager.getRuleSetMatching( storeKey ) ).build();
+            return responseSupplier.get();
         }
         else
         {
