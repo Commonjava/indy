@@ -16,15 +16,11 @@
 package org.commonjava.indy.core.expire;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import jnr.ffi.annotations.In;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
-import org.commonjava.indy.cluster.IndyNode;
 import org.commonjava.indy.cluster.LocalIndyNodeProvider;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndySchedulerConfig;
-import org.commonjava.indy.core.expire.cache.ScheduleCache;
-import org.commonjava.indy.core.expire.cache.ScheduleEventLockCache;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -36,28 +32,14 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.schedule.ScheduleDB;
-import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.spi.pkg.ContentAdvisor;
 import org.commonjava.indy.spi.pkg.ContentQuality;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.indy.subsys.infinispan.CacheKeyMatcher;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
-import org.infinispan.container.entries.CacheEntry;
-import org.infinispan.metadata.Metadata;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
-import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
-import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
-import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
-import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,24 +49,19 @@ import javax.enterprise.event.Event;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.StreamSupport;
 
-import static org.commonjava.indy.change.EventUtils.fireEvent;
 import static org.commonjava.indy.core.change.StoreEnablementManager.DISABLE_TIMEOUT;
 import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE_DEFAULT;
 
@@ -94,9 +71,10 @@ import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE
  * type of function.
  */
 @SuppressWarnings( "RedundantThrows" )
-//@ApplicationScoped
+@ApplicationScoped
+@ClusterScheduleManager
 public class ScheduleDBManager
-        implements ShutdownAction
+        implements ScheduleManager, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -479,6 +457,28 @@ public class ScheduleDBManager
         }
 
         return null;
+    }
+
+    @Override
+    public ExpirationSet findMatchingExpirations( String jobType )
+    {
+        if ( !schedulerConfig.isEnabled() )
+        {
+            logger.debug( "Scheduler disabled." );
+            return null;
+        }
+
+        final Collection<DtxSchedule> schedules = scheduleDB.querySchedulesByJobType( jobType );
+        Set<Expiration> expirations = new HashSet<>( schedules.size() );
+        if ( !schedules.isEmpty() )
+        {
+            for ( DtxSchedule schedule : schedules )
+            {
+                expirations.add( toExpiration( schedule ) );
+            }
+        }
+
+        return new ExpirationSet( expirations );
     }
 
     public ExpirationSet findMatchingExpirations( final StoreKey key, final String jobType )

@@ -90,17 +90,7 @@ public class SchedulerController
         {
 
             // This key matcher will compare with the cache key group to see if the group ends with the "Disable-Timeout"(jobtype)
-            ExpirationSet expirations = scheduleManager.findMatchingExpirations(
-                    cacheHandle -> {
-                        QueryFactory queryFactory = Search.getQueryFactory( cacheHandle.getCache() );
-                        Query q = queryFactory.from( ScheduleValue.class ).having( "key.type" ).eq( StoreEnablementManager.DISABLE_TIMEOUT ).build();
-                        List<ScheduleValue> list = q.list();
-                        return list.stream().map( ScheduleValue::getKey ).collect( Collectors.toSet());
-//                        cacheHandle.execute( BasicCache::keySet )
-//                                   .stream()
-//                                   .filter( key -> key.getType().equals( StoreEnablementManager.DISABLE_TIMEOUT ) )
-//                                   .collect( Collectors.toSet() );
-                    } );
+            ExpirationSet expirations = scheduleManager.findMatchingExpirations( StoreEnablementManager.DISABLE_TIMEOUT );
 
             // TODO: This seems REALLY inefficient...
             storeDataManager.getAllArtifactStores().forEach( (store)->{

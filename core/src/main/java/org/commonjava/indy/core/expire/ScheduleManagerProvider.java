@@ -15,21 +15,18 @@
  */
 package org.commonjava.indy.core.expire;
 
-import org.commonjava.indy.action.BootupAction;
-import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.core.conf.IndyDurableStateConfig;
-import org.commonjava.indy.core.conf.IndySchedulerConfig;
-import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class ScheduleManagerBooter
-        implements BootupAction
+public class ScheduleManagerProvider
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -40,37 +37,19 @@ public class ScheduleManagerBooter
     @Inject
     private IndyDurableStateConfig durableConfig;
 
-    @Override
-    public void init()
-            throws IndyLifecycleException
+    @Produces
+    @Default
+    public ScheduleManager getScheduleManager( @StandaloneScheduleManager DefaultScheduleManager defaultScheduleManager,
+                                               @ClusterScheduleManager ScheduleManager clusterScheduleManager )
     {
-
-        for ( ScheduleManager scheduleManager : scheduleManagers )
+        if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_CASSANDRA ) )
         {
-            if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_CASSANDRA )
-                            && scheduleManager instanceof ScheduleDBManager )
-            {
-                scheduleManagers.get().init();
-            }
-            else if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_INFINISPAN )
-                            && scheduleManager instanceof DefaultScheduleManager )
-            {
-                scheduleManagers.get().init();
-            }
-
+            return clusterScheduleManager;
         }
-
-    }
-
-    @Override
-    public int getBootPriority()
-    {
-        return 10;
-    }
-
-    @Override
-    public String getId()
-    {
-        return "Schedule Manager";
+        else if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_INFINISPAN ) )
+        {
+            return defaultScheduleManager;
+        }
+        return null;
     }
 }

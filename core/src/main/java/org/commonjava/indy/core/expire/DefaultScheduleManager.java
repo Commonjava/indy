@@ -91,7 +91,8 @@ import static org.commonjava.indy.core.change.StoreEnablementManager.TIMEOUT_USE
  * info through CDI event for the real actor to do the expiration work.
  */
 @SuppressWarnings( "RedundantThrows" )
-//@ApplicationScoped
+@ApplicationScoped
+@StandaloneScheduleManager
 @Listener(clustered = true)
 public class DefaultScheduleManager
         implements ScheduleManager, ShutdownAction
