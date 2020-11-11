@@ -53,7 +53,7 @@ public class ScheduleKey implements Externalizable, Serializable
         this.storeKey = storeKey;
         this.type = type;
         this.name = name;
-        this.groupName = ScheduleManager.groupName( this.storeKey, this.type );
+        this.groupName = ScheduleManagerUtils.groupName( this.storeKey, this.type );
     }
 
     public StoreKey getStoreKey()
@@ -147,6 +147,6 @@ public class ScheduleKey implements Externalizable, Serializable
         final String nameStr = (String) in.readObject();
         name = "".equals( nameStr ) ? null : nameStr;
 
-        groupName = ScheduleManager.groupName( storeKey, type );
+        groupName = ScheduleManagerUtils.groupName( storeKey, type );
     }
 }

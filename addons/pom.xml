@@ -49,6 +49,7 @@
     <module>sli</module>
     <module>path-mapped</module>
     <module>repo-proxy</module>
+    <module>schedule</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>

@@ -294,9 +294,10 @@ public abstract class AbstractIndyFunctionalTest
 
         if ( isSchedulerEnabled() )
         {
-            writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
+            writeConfigFile( "conf.d/scheduledb.conf", readTestResource( "default-test-scheduledb.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
             writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
+            writeConfigFile( "conf.d/durable-state.conf", readTestResource( "default-durable-state.conf" ) );
         }
         else
         {
