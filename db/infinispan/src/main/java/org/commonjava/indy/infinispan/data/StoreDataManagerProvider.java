@@ -46,6 +46,10 @@ public class StoreDataManagerProvider
         {
             return clusterStoreDataManager;
         }
-        return null;
+        else
+        {
+            throw new RuntimeException(
+                            "Invalid configuration for store manager:" + durableStateConfig.getStoreStorage() );
+        }
     }
 }
