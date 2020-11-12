@@ -15,42 +15,41 @@
  */
 package org.commonjava.indy.infinispan.data;
 
-import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.cassandra.data.ClusterStoreDataManager;
+import org.commonjava.indy.core.conf.IndyDurableStateConfig;
 import org.commonjava.indy.data.StandaloneStoreDataManager;
 import org.commonjava.indy.data.StoreDataManager;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 @ApplicationScoped
-public class StoreDataManagerProvider {
+public class StoreDataManagerProvider
+{
 
     @Inject
-    @StandaloneStoreDataManager
-    InfinispanStoreDataManager infinispanStoreDataManager;
-
-    @Inject
-    IndyConfiguration indyConfiguration;
-
-    private StoreDataManager storeDataManager;
-
-    private boolean isStandaloneMode;
-
-    @PostConstruct
-    public void init()
-    {
-        isStandaloneMode = indyConfiguration.isStoreManagerStandalone();
-    }
+    IndyDurableStateConfig durableStateConfig;
 
     @Produces
     @Default
-    public StoreDataManager getStoreDataManager()
+    public StoreDataManager getStoreDataManager(
+                    @StandaloneStoreDataManager InfinispanStoreDataManager ispnStoreDataManager,
+                    @ClusterStoreDataManager StoreDataManager clusterStoreDataManager )
     {
-        // If isStandaloneMode is false, return CassandraStoreDataManager instantiation
-        storeDataManager = isStandaloneMode ? infinispanStoreDataManager : infinispanStoreDataManager;
-        return storeDataManager;
+        if ( durableStateConfig.getStoreStorage().equals( IndyDurableStateConfig.STORAGE_INFINISPAN ) )
+        {
+            return ispnStoreDataManager;
+        }
+        else if ( durableStateConfig.getStoreStorage().equals( IndyDurableStateConfig.STORAGE_CASSANDRA ) )
+        {
+            return clusterStoreDataManager;
+        }
+        else
+        {
+            throw new RuntimeException(
+                            "Invalid configuration for store manager:" + durableStateConfig.getStoreStorage() );
+        }
     }
 }

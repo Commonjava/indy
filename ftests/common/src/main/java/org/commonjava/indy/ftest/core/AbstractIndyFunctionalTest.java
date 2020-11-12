@@ -291,6 +291,10 @@ public abstract class AbstractIndyFunctionalTest
                         + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
 
         writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+        writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
+                        + "folo.storage=infinispan\n"
+                        + "store.storage=infinispan\n"
+                        + "schedule.storage=infinispan");
 
         if ( isSchedulerEnabled() )
         {
