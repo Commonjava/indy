@@ -13,6 +13,7 @@ import org.commonjava.indy.model.core.StoreKey;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Table(name = "records" )
 public class DtxTrackingRecord {
@@ -59,6 +60,9 @@ public class DtxTrackingRecord {
     @Column(name = "size")
     Long size;
 
+    @Column(name = "started") // started timestamp *
+    Long started;
+
     @Column(name = "timestamps")
     Set<Long> timestamps;
 
@@ -68,7 +72,7 @@ public class DtxTrackingRecord {
 
     public DtxTrackingRecord(String trackingKey, Boolean state, String storeKey, String accessChannel,
                              String path, String originUrl, String localUrl, String storeEffect, String md5,
-                             String sha256, String sha1, Long size, Set<Long> timestamps) {
+                             String sha256, String sha1, Long size, Long started ,Set<Long> timestamps) {
         this.trackingKey = trackingKey;
         this.state = state;
         this.storeKey = storeKey;
@@ -81,6 +85,7 @@ public class DtxTrackingRecord {
         this.sha256 = sha256;
         this.sha1 = sha1;
         this.size = size;
+        this.started =  started;  // started timestamp *
         this.timestamps = timestamps;
     }
 
@@ -97,7 +102,10 @@ public class DtxTrackingRecord {
         this.sha256 = entry.getSha256();
         this.sha1 = entry.getSha1();
         this.size = entry.getSize();
-        this.timestamps = entry.getTimestamps()==null ? new HashSet<>() : entry.getTimestamps();
+        this.started = System.currentTimeMillis();  // started timestamp *
+        this.timestamps =
+                ((entry.getTimestamps()==null) || entry.getTimestamps().isEmpty())
+                        ? new HashSet<>() : entry.getTimestamps();
     }
 
     public static DtxTrackingRecord fromTrackedContentEntry(TrackedContentEntry entry,Boolean sealed) {
@@ -117,6 +125,7 @@ public class DtxTrackingRecord {
         dtxTrackingRecord.setPath(entry.getPath());
         dtxTrackingRecord.setSize(entry.getSize());
         dtxTrackingRecord.setStoreEffect(entry.getEffect().toString());
+        dtxTrackingRecord.setStarted(System.currentTimeMillis()); // started timestamp *
         dtxTrackingRecord.setTimestamps(entry.getTimestamps()==null ? new HashSet<>() : entry.getTimestamps());
         dtxTrackingRecord.setStoreKey(entry.getStoreKey().toString());
         return dtxTrackingRecord;
@@ -161,6 +170,7 @@ public class DtxTrackingRecord {
         dtxTrackingRecord.setSize(row.getLong("size"));
         dtxTrackingRecord.setStoreKey(row.getString("store_key"));
         dtxTrackingRecord.setAccessChannel(row.getString("access_channel"));
+        dtxTrackingRecord.setStarted(row.getLong("started")); // started timestamp *
 
         return dtxTrackingRecord;
     }
@@ -259,6 +269,14 @@ public class DtxTrackingRecord {
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public Long getStarted() {
+        return started;
+    }
+
+    public void setStarted(Long started) {
+        this.started = started;
     }
 
     public Set<Long> getTimestamps() {

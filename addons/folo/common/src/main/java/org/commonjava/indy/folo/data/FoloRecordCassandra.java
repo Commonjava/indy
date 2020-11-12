@@ -87,6 +87,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
                 + "sha256 text,"
                 + "sha1 text,"
                 + "size bigint,"
+                + "started bigint," // started timestamp *
                 + "timestamps set<bigint>,"
                 + "PRIMARY KEY ((tracking_key),path)"
                 + ");";
