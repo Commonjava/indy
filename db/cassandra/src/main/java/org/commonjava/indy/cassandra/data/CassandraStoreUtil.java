@@ -23,6 +23,10 @@ public class CassandraStoreUtil
     public static final String AUTHORITATIVE_INDEX = "authoritativeIndex";
     public static final String EXTRAS = "extras";
 
+    // the attributes of abstract repository
+    public static final String ALLOW_SNAPSHOTS = "allowSnapshots";
+    public static final String ALLOW_RELEASES = "allowReleases";
+
     // the attributes of remote repository
     public static final String URL = "url";
     public static final String HOST = "host";

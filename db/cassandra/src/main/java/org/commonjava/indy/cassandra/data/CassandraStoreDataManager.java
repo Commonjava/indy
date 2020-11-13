@@ -5,6 +5,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -176,6 +177,12 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     private Map<String, String> toExtra( ArtifactStore store )
     {
         Map<String, String> extras = new HashMap<>(  );
+        if ( store instanceof AbstractRepository )
+        {
+            AbstractRepository repository = (AbstractRepository) store;
+            putValueIntoExtra( CassandraStoreUtil.ALLOW_SNAPSHOTS, repository.isAllowSnapshots(), extras );
+            putValueIntoExtra( CassandraStoreUtil.ALLOW_RELEASES, repository.isAllowReleases(), extras );
+        }
         if ( store instanceof HostedRepository )
         {
             HostedRepository hostedRepository = (HostedRepository) store;
@@ -270,6 +277,16 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                     ( (HostedRepository) store ).setSnapshotTimeoutSeconds( snapshotTimeoutseconds.intValue() );
                 }
                 ( (HostedRepository) store ).setStorage( readStrValueFromExtra( CassandraStoreUtil.STORAGE, extras ) );
+                Boolean allowReleases = readValueFromExtra( CassandraStoreUtil.ALLOW_RELEASES, Boolean.class, extras );
+                if ( allowReleases != null )
+                {
+                    ( (HostedRepository) store ).setAllowReleases( allowReleases );
+                }
+                Boolean allowSnapshots = readValueFromExtra( CassandraStoreUtil.ALLOW_SNAPSHOTS, Boolean.class, extras );
+                if ( allowSnapshots != null )
+                {
+                    ( (HostedRepository) store ).setAllowSnapshots( allowSnapshots );
+                }
             }
             else if ( dtxArtifactStore.getStoreType().equals( StoreType.remote.name() ) )
             {
@@ -335,6 +352,16 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                 if ( ignoreHostnameVerification != null )
                 {
                     ( (RemoteRepository) store ).setIgnoreHostnameVerification( ignoreHostnameVerification );
+                }
+                Boolean allowReleases = readValueFromExtra( CassandraStoreUtil.ALLOW_RELEASES, Boolean.class, extras );
+                if ( allowReleases != null )
+                {
+                    ( (RemoteRepository) store ).setAllowReleases( allowReleases );
+                }
+                Boolean allowSnapshots = readValueFromExtra( CassandraStoreUtil.ALLOW_SNAPSHOTS, Boolean.class, extras );
+                if ( allowSnapshots != null )
+                {
+                    ( (RemoteRepository) store ).setAllowSnapshots( allowSnapshots );
                 }
             }
             else if ( dtxArtifactStore.getStoreType().equals( StoreType.group.name() ) )
