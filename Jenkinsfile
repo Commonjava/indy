@@ -17,7 +17,10 @@ pipeline {
         }
         stage('Build') {
             steps {
-                sh 'mvn -B -V clean verify -DskipNpmConfig=false'
+                sh '''
+                  echo "This is a test"
+                  mvn -B -V clean verify -DskipNpmConfig=true
+                '''
             }
         }
         stage('Function Test') {
