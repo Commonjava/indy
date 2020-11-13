@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
@@ -76,7 +77,7 @@ public class PromoteValidationsManager
         this.ffManager = ffManager;
         this.config = config;
         this.ruleParser = ruleParser;
-        parseRules();
+        parseRuleBundles();
     }
 
     @PostConstruct
@@ -84,7 +85,7 @@ public class PromoteValidationsManager
     {
         try
         {
-            parseRules();
+            parseRuleBundles();
         }
         catch ( final PromotionValidationException e )
         {
@@ -92,8 +93,8 @@ public class PromoteValidationsManager
         }
     }
 
-    public synchronized void parseRules()
-        throws PromotionValidationException
+    public synchronized void parseRuleBundles()
+            throws PromotionValidationException
     {
         if ( !config.isEnabled() )
         {
@@ -103,22 +104,27 @@ public class PromoteValidationsManager
             logger.info( "Promotion is disabled." );
             return;
         }
+        parseRules();
+        parseRuleSets();
 
+        this.enabled = true;
+    }
 
+    public synchronized void parseRules()
+            throws PromotionValidationException
+    {
         final Map<String, ValidationRuleMapping> ruleMappings = new HashMap<>();
 
         DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
         logger.info( "Scanning {} for promotion validation rules...", dataDir );
         if ( dataDir.exists() )
         {
-            final DataFile[] scripts = dataDir.listFiles( (pathname) ->
-            {
-                    logger.debug( "Checking for promote validation rule script in: {}", pathname );
-                    return pathname.getName()
-                                   .endsWith( ".groovy" );
+            final DataFile[] scripts = dataDir.listFiles( ( pathname ) -> {
+                logger.debug( "Checking for promote validation rule script in: {}", pathname );
+                return pathname.getName().endsWith( ".groovy" );
             } );
 
-            if ( scripts != null && scripts.length > 0 )
+            if ( scripts.length > 0 )
             {
                 for ( final DataFile script : scripts )
                 {
@@ -142,21 +148,23 @@ public class PromoteValidationsManager
         }
 
         this.ruleMappings = ruleMappings;
+    }
 
+    public synchronized void parseRuleSets()
+            throws PromotionValidationException
+    {
         Map<String, ValidationRuleSet> ruleSets = new HashMap<>();
 
-        dataDir = ffManager.getDataFile( config.getBasedir(), RULES_SETS_DIR );
+        DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_SETS_DIR );
         logger.info( "Scanning {} for promotion validation rule-set mappings...", dataDir );
         if ( dataDir.exists() )
         {
-            final DataFile[] scripts = dataDir.listFiles( (pathname) ->
-                                                          {
-                                                              logger.debug( "Checking for promotion rule-set in: {}", pathname );
-                                                              return pathname.getName()
-                                                                             .endsWith( ".json" );
-                                                          } );
+            final DataFile[] scripts = dataDir.listFiles( ( pathname ) -> {
+                logger.debug( "Checking for promotion rule-set in: {}", pathname );
+                return pathname.getName().endsWith( ".json" );
+            } );
 
-            if ( scripts != null && scripts.length > 0 )
+            if ( scripts.length > 0 )
             {
 
                 for ( final DataFile script : scripts )
@@ -174,12 +182,13 @@ public class PromoteValidationsManager
                 logger.warn( "No rule-set json file was defined for promotion: no json file found in {} directory",
                              RULES_SETS_DIR );
             }
-        } else {
+        }
+        else
+        {
             logger.warn( "No rule-set json file was defined for promotion: {} directory not exists", RULES_SETS_DIR );
         }
 
         this.ruleSets = ruleSets;
-        this.enabled = true;
     }
 
     public ValidationCatalogDTO toDTO()
@@ -241,6 +250,28 @@ public class PromoteValidationsManager
     {
         final ValidationRuleMapping mapping = getRuleMappingNamed( name );
         return mapping == null ? null : mapping.getRule();
+    }
+
+    public Optional<ValidationRuleDTO> getNamedRuleAsDTO( final String name )
+    {
+        final Map<String, ValidationRuleDTO> rules = toDTO().getRules();
+        ValidationRuleDTO dto = rules.get( name );
+        if ( dto == null )
+        {
+            dto = rules.get( name + ".groovy" );
+        }
+        return dto == null ? Optional.empty() : Optional.of( dto );
+    }
+
+    public Optional<ValidationRuleSet> getNamedRuleSet( final String name )
+    {
+        final Map<String, ValidationRuleSet> ruleSets = toDTO().getRuleSets();
+        ValidationRuleSet ruleSet = ruleSets.get( name );
+        if ( ruleSet == null )
+        {
+            ruleSet = ruleSets.get( name + ".json" );
+        }
+        return ruleSet == null ? Optional.empty() : Optional.of( ruleSet );
     }
 
     public synchronized ValidationRuleMapping removeRuleNamed( final String name, final ChangeSummary changelog )
