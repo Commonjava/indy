@@ -147,7 +147,64 @@ public class PromoteValidationsManager
             logger.warn( "No rule script file was defined for promotion: {} directory not exists", RULES_DIR );
         }
 
+        checkRuleMappings( ruleMappings );
+
         this.ruleMappings = ruleMappings;
+    }
+
+    private void checkRuleMappings( final Map<String, ValidationRuleMapping> ruleMappings )
+    {
+        checkMappings( this.ruleMappings, ruleMappings, false, ( n, r, c ) -> {
+            if ( !n.isEmpty() )
+            {
+                logger.info( "New added rules: {}", n );
+            }
+            if ( !r.isEmpty() )
+            {
+                logger.info( "Removed rules: {}", r );
+            }
+            //TODO: need to think about how to track changed rules for logging
+        } );
+    }
+
+    private <T> void checkMappings( final Map<String, T> original, Map<String, T> loaded, final boolean checkChanges,
+                                    final LoggingConsumer loggingConsumer )
+    {
+        if ( original != null && !original.isEmpty() )
+        {
+            Set<String> existedElems = original.keySet();
+            Set<String> loadedElems = loaded.keySet();
+            Set<String> newElems = new HashSet<>( loadedElems.size() );
+            Set<String> removedElems = new HashSet<>( existedElems.size() );
+            Set<String> changedElems = new HashSet<>( existedElems.size() );
+            for ( String key : loaded.keySet() )
+            {
+                if ( !original.containsKey( key ) )
+                {
+                    newElems.add( key );
+                }
+                else if ( checkChanges && original.get( key ).equals( loaded.get( key ) ) )
+                {
+                    // Here directly used equals method to check if the value changed. It works for RuleSet
+                    // but not works for Rule, so need to think about how to check Rule's changing
+                    changedElems.add( key );
+                }
+            }
+            for ( String key : original.keySet() )
+            {
+                if ( !loaded.containsKey( key ) )
+                {
+                    removedElems.add( key );
+                }
+            }
+            loggingConsumer.logging( newElems, removedElems, changedElems );
+        }
+    }
+
+    @FunctionalInterface
+    private interface LoggingConsumer
+    {
+        void logging( Set<String> added, Set<String> removed, Set<String> changed );
     }
 
     public synchronized void parseRuleSets()
@@ -188,7 +245,27 @@ public class PromoteValidationsManager
             logger.warn( "No rule-set json file was defined for promotion: {} directory not exists", RULES_SETS_DIR );
         }
 
+        checkRuleSetMappings( ruleSets );
+
         this.ruleSets = ruleSets;
+    }
+
+    private void checkRuleSetMappings( Map<String, ValidationRuleSet> ruleSetMappings )
+    {
+        checkMappings( this.ruleSets, ruleSetMappings, true, ( n, r, c ) -> {
+            if ( !n.isEmpty() )
+            {
+                logger.info( "New added rule-sets: {}", n );
+            }
+            if ( !r.isEmpty() )
+            {
+                logger.info( "Removed rule-sets: {}", r );
+            }
+            if ( !c.isEmpty() )
+            {
+                logger.info( "Changed rule-sets: {}", r );
+            }
+        } );
     }
 
     public ValidationCatalogDTO toDTO()
