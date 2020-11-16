@@ -18,20 +18,11 @@ package org.commonjava.indy.promote.client;
 import org.apache.http.HttpStatus;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
-import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.promote.model.GroupPromoteRequest;
-import org.commonjava.indy.promote.model.GroupPromoteResult;
-import org.commonjava.indy.promote.model.PathsPromoteRequest;
-import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.model.ValidationRuleDTO;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 
-import javax.xml.ws.Response;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
