@@ -16,9 +16,6 @@ pipeline {
             }
         }
         stage('Build') {
-            environment{
-                JAVA_HOME=/usr/lib/jvm/java-11-openjdk
-            }
             steps {
                 sh 'mvn -B -V clean verify -DskipNpmConfig=false'
             }
