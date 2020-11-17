@@ -17,9 +17,11 @@ pipeline {
         }
         stage('Build') {
             steps {
-                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk']){
-                    sh 'mvn -B -V clean verify -DskipNpmConfig=false'
+                sh 'mvn -B -V clean verify -DskipNpmConfig=false'
+                withEnv(['FOOBAR_HOME=/tmp']){
+                    sh "echo: using FOOBAR_HOME $FOOBAR_HOME"
                 }
+                sh "echo: again using FOOBAR_HOME $FOOBAR_HOME"
             }
         }
         stage('Function Test') {
@@ -27,9 +29,7 @@ pipeline {
                 expression { env.CHANGE_ID != null } // Pull request
             }
             steps {
-                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk']){
-                    sh 'mvn -B -V verify -Prun-its -Pci -DskipNpmConfig=false'
-                }
+                sh 'mvn -B -V verify -Prun-its -Pci -DskipNpmConfig=false'
             }
         }
         stage('Load OCP Mappings') {
@@ -83,9 +83,7 @@ pipeline {
             }
             steps {
                 echo "Deploy"
-                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk']){
-                    sh 'mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e'
-                }
+                sh 'mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e'
             }
         }
         stage('Archive') {
