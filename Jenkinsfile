@@ -20,11 +20,6 @@ pipeline {
                 withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk']){
                     sh 'mvn -B -V clean verify -DskipNpmConfig=false'
                 }
-                
-                withEnv(['FOOBAR_HOME=/tmp']){
-                    sh "echo: using FOOBAR_HOME $FOOBAR_HOME"
-                }
-                sh "echo: again using FOOBAR_HOME $FOOBAR_HOME"
             }
         }
         stage('Function Test') {
