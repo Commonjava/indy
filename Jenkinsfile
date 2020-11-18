@@ -9,11 +9,13 @@ def my_bc = null
 
 pipeline {
     agent { label 'maven' }
+    environment {
+        JAVA_HOME="/usr/lib/jvm/java-11-openjdk"
+    }
     stages {
         stage('Prepare') {
             steps {
                 sh 'printenv'
-                sh 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk'
             }
         }
         stage('Build') {
