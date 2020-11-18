@@ -122,4 +122,22 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
             throws IndyDataException;
 
     ArtifactStoreQuery<T> noPackageType();
+
+    List<RemoteRepository> getAllRemoteRepositories( String packageType )
+                    throws IndyDataException;
+
+    List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled )
+                    throws IndyDataException;
+
+    List<HostedRepository> getAllHostedRepositories( String packageType )
+                    throws IndyDataException;
+
+    List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled )
+                    throws IndyDataException;
+
+    List<Group> getAllGroups( String packageType )
+                    throws IndyDataException;
+
+    List<Group> getAllGroups( String packageType, Boolean enabled )
+                    throws IndyDataException;
 }

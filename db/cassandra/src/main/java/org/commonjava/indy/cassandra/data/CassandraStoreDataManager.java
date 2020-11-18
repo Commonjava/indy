@@ -117,6 +117,17 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     }
 
     @Override
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type )
+    {
+        Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
+        Set<ArtifactStore> storeSet = new HashSet<>(  );
+        dtxArtifactStoreSet.forEach( dtxArtifactStore -> {
+            storeSet.add( toArtifactStore( dtxArtifactStore ) );
+        } );
+        return storeSet;
+    }
+
+    @Override
     public boolean hasArtifactStore( StoreKey key )
     {
         ArtifactStore artifactStore = getArtifactStoreInternal( key );

@@ -252,4 +252,40 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         delegate.noPackageType();
         return this;
     }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType ) throws IndyDataException
+    {
+        return delegate.getAllRemoteRepositories( packageType );
+    }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        return delegate.getAllRemoteRepositories( packageType, enabled );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType ) throws IndyDataException
+    {
+        return delegate.getAllHostedRepositories( packageType );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        return delegate.getAllHostedRepositories( packageType, enabled );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType ) throws IndyDataException
+    {
+        return delegate.getAllGroups( packageType );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        return delegate.getAllGroups( packageType, enabled );
+    }
 }

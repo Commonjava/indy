@@ -679,4 +679,160 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
         query.noPackageType();
         return this;
     }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType ) throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<RemoteRepository> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getAllRemoteRepositories( packageType );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getAllRemoteRepositories" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<RemoteRepository> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getAllRemoteRepositories( packageType, enabled );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getAllRemoteRepositories" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType ) throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<HostedRepository> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getAllHostedRepositories( packageType );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getAllHostedRepositories" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<HostedRepository> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getAllHostedRepositories( packageType, enabled );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getAllHostedRepositories" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType ) throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<Group> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getAllGroups( packageType );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getAllGroups" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<Group> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getAllGroups( packageType, enabled );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getAllGroups" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
 }

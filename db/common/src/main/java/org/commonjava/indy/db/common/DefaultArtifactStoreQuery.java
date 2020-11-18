@@ -519,6 +519,54 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType )
+    {
+        return getAllRemoteRepositories( packageType, Boolean.TRUE );
+    }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled )
+    {
+        return dataManager.getArtifactStoresByPkgAndType( packageType, StoreType.remote )
+                          .stream()
+                          .filter( item -> enabled.equals( !item.isDisabled() ) )
+                          .map( item -> (RemoteRepository) item )
+                          .collect( Collectors.toList() );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType )
+    {
+        return getAllHostedRepositories( packageType, Boolean.TRUE );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled )
+    {
+        return dataManager.getArtifactStoresByPkgAndType( packageType, StoreType.hosted )
+                          .stream()
+                          .filter( item -> enabled.equals( !item.isDisabled() ) )
+                          .map( item -> (HostedRepository) item )
+                          .collect( Collectors.toList() );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType )
+    {
+        return getAllGroups( packageType, Boolean.TRUE );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType, Boolean enabled )
+    {
+        return dataManager.getArtifactStoresByPkgAndType( packageType, group )
+                          .stream()
+                          .filter( item -> enabled.equals( !item.isDisabled() ) )
+                          .map( item -> (Group) item )
+                          .collect( Collectors.toList() );
+    }
+
     private List<ArtifactStore> getGroupOrdering( final String groupName,
                                                   final boolean includeGroups, final boolean recurseGroups )
             throws IndyDataException

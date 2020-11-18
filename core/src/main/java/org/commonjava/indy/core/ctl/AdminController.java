@@ -123,13 +123,15 @@ public class AdminController
     {
         try
         {
-            ArtifactStoreQuery<ArtifactStore> query = storeManager.query().storeTypes( type );
             if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
             {
-                return query.packageType( packageType ).getAll();
+                return storeManager.getArtifactStoresByPkgAndType( packageType, type )
+                                   .stream()
+                                   .collect( Collectors.toList() );
             }
             else
             {
+                ArtifactStoreQuery<ArtifactStore> query = storeManager.query().storeTypes( type );
                 return query.getAllByDefaultPackageTypes();
             }
         }
