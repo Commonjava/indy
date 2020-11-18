@@ -26,6 +26,7 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.data.FoloFiler;
+import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
@@ -86,7 +87,7 @@ public class FoloAdminController
     private FoloConfig config;
 
     @Inject
-    private FoloRecordCache recordManager;
+    private FoloRecord recordManager;
 
     @Inject
     private FoloFiler filer;
@@ -354,6 +355,8 @@ public class FoloAdminController
                                       .map( TrackingKey::getId )
                                       .collect( Collectors.toSet() );
         }
+
+
         Set<String> sealed = null;
         if ( types.contains( FoloConstants.TRACKING_TYPE.SEALED ) )
         {
@@ -362,6 +365,8 @@ public class FoloAdminController
                                   .map( TrackingKey::getId )
                                   .collect( Collectors.toSet() );
         }
+
+
         if ( ( inProgress != null && !inProgress.isEmpty() ) || ( sealed != null && !sealed.isEmpty() ) )
         {
             return new TrackingIdsDTO( inProgress, sealed );

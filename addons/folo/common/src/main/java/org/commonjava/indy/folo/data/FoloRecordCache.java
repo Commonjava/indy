@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
@@ -43,8 +44,8 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-public class FoloRecordCache
-{
+@FoloStoretoInfinispan
+public class FoloRecordCache implements FoloRecord {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -93,8 +94,9 @@ public class FoloRecordCache
      * @param entry The TrackedContentEntry which will be cached
      * @return True if a new record was stored, otherwise false
      */
+    @Override
     @Measure
-    public synchronized boolean recordArtifact( final TrackedContentEntry entry )
+    public synchronized boolean recordArtifact(final TrackedContentEntry entry)
             throws FoloContentException,IndyWorkflowException
     {
         if ( sealedRecordCache.containsKey( entry.getTrackingKey() ) )
@@ -120,8 +122,9 @@ public class FoloRecordCache
         } );
     }
 
+    @Override
     @Measure
-    public synchronized void delete( final TrackingKey key )
+    public synchronized void delete(final TrackingKey key)
     {
         sealedRecordCache.remove( key );
         inProgressByTrackingKey( key, (qb, ch)->{
@@ -130,34 +133,40 @@ public class FoloRecordCache
         } );
     }
 
-    public synchronized void replaceTrackingRecord( final TrackedContent record )
+    @Override
+    public synchronized void replaceTrackingRecord(final TrackedContent record)
     {
         sealedRecordCache.put( record.getKey(), record );
     }
 
-    public synchronized boolean hasRecord( final TrackingKey key )
+    @Override
+    public synchronized boolean hasRecord(final TrackingKey key)
     {
         return hasSealedRecord( key ) || hasInProgressRecord( key );
     }
 
-    public synchronized boolean hasSealedRecord( final TrackingKey key )
+//    @Override
+    public synchronized boolean hasSealedRecord(final TrackingKey key)
     {
         return sealedRecordCache.containsKey( key );
     }
 
+//    @Override
     @Measure
-    public synchronized boolean hasInProgressRecord( final TrackingKey key )
+    public synchronized boolean hasInProgressRecord(final TrackingKey key)
     {
         return !sealedRecordCache.containsKey( key ) && inProgressByTrackingKey( key, (qb, cacheHandle)->qb.build().getResultSize() > 0);
     }
 
-    public synchronized TrackedContent get( final TrackingKey key )
+    @Override
+    public synchronized TrackedContent get(final TrackingKey key)
     {
         return sealedRecordCache.get( key );
     }
 
+    @Override
     @Measure
-    public TrackedContent seal( final TrackingKey trackingKey )
+    public TrackedContent seal(final TrackingKey trackingKey)
     {
         TrackedContent record = sealedRecordCache.get( trackingKey );
 
@@ -199,6 +208,7 @@ public class FoloRecordCache
         });
     }
 
+    @Override
     public Set<TrackingKey> getInProgressTrackingKey()
     {
         return inProgressRecordCache.execute( BasicCache::keySet )
@@ -207,11 +217,13 @@ public class FoloRecordCache
                                     .collect( Collectors.toSet() );
     }
 
+    @Override
     public Set<TrackingKey> getSealedTrackingKey()
     {
         return sealedRecordCache.execute( BasicCache::keySet );
     }
 
+    @Override
     public Set<TrackedContent> getSealed()
     {
         return sealedRecordCache.execute( BasicCache::entrySet ).stream().map( (et) -> et.getValue() ).collect( Collectors.toSet() );
@@ -232,7 +244,8 @@ public class FoloRecordCache
         } );
     }
 
-    public void addSealedRecord( TrackedContent record )
+    @Override
+    public void addSealedRecord(TrackedContent record)
     {
         sealedRecordCache.put( record.getKey(), record );
     }

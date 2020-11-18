@@ -24,6 +24,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.junit.Test;
 
@@ -72,5 +73,16 @@ public class SwaggerExportTest
                 fail( "failed to retrieve swagger." + ext );
             }
         } );
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture ) throws IOException
+    {
+        // delete unnecessary config file which requires extra initiation
+        File f = new File( etcDir, "conf.d/folo.conf" );
+        if ( f.exists() )
+        {
+            f.delete();
+        }
     }
 }
