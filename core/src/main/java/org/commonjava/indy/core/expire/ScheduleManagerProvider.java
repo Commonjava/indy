@@ -42,14 +42,18 @@ public class ScheduleManagerProvider
     public ScheduleManager getScheduleManager( @StandaloneScheduleManager DefaultScheduleManager defaultScheduleManager,
                                                @ClusterScheduleManager ScheduleManager clusterScheduleManager )
     {
-        if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_CASSANDRA ) )
+        if ( IndyDurableStateConfig.STORAGE_CASSANDRA.equals( durableConfig.getScheduleStorage()) )
         {
             return clusterScheduleManager;
         }
-        else if ( durableConfig.getScheduleStorage().equals( IndyDurableStateConfig.STORAGE_INFINISPAN ) )
+        else if ( IndyDurableStateConfig.STORAGE_INFINISPAN.equals( durableConfig.getScheduleStorage()) )
         {
             return defaultScheduleManager;
         }
-        return null;
+        else
+        {
+            throw new RuntimeException(
+                            "Invalid configuration for schedule:" + durableConfig.getScheduleStorage() );
+        }
     }
 }
