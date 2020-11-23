@@ -503,11 +503,11 @@
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
       </plugin>
-<!--       <plugin>
+      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cassandra-maven-plugin</artifactId>
       </plugin>
- -->    </plugins>
+    </plugins>
   </build>
   
   <profiles>
