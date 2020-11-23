@@ -17,20 +17,19 @@ package org.commonjava.indy.ftest.core;
 
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.Module;
+import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.maven.galley.spi.cache.CacheProvider;
+import org.commonjava.propulsor.boot.BootStatus;
+import org.commonjava.propulsor.boot.BootException;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
-import org.commonjava.maven.galley.spi.cache.CacheProvider;
-import org.commonjava.propulsor.boot.BootException;
-import org.commonjava.propulsor.boot.BootStatus;
-import org.commonjava.propulsor.boot.PortFinder;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
@@ -46,7 +45,8 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -58,10 +58,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.apache.commons.lang3.StringUtils.replace;
-import static org.cassandraunit.utils.EmbeddedCassandraServerHelper.DEFAULT_STARTUP_TIMEOUT;
-import static org.cassandraunit.utils.EmbeddedCassandraServerHelper.getNativeTransportPort;
-import static org.cassandraunit.utils.EmbeddedCassandraServerHelper.startEmbeddedCassandra;
 import static org.junit.Assert.fail;
 
 public abstract class AbstractIndyFunctionalTest
@@ -97,8 +93,6 @@ public abstract class AbstractIndyFunctionalTest
 
     protected CacheProvider cacheProvider;
 
-    private int cassandraPort;
-
     @SuppressWarnings( "resource" )
     @Before
     public void start()
@@ -106,8 +100,6 @@ public abstract class AbstractIndyFunctionalTest
     {
         try
         {
-            setupCassandra();
-
             final long start = System.currentTimeMillis();
             TimerTask task = new TimerTask()
             {
@@ -142,27 +134,6 @@ public abstract class AbstractIndyFunctionalTest
             logger.error( "Error initializing test", t );
             throw t;
         }
-    }
-
-    protected void setupCassandra() throws Throwable
-    {
-        String testName = getClass().getSimpleName();
-        File testDir = new File( "target/embeddedCassandra-" + testName );
-        testDir.mkdirs();
-
-        File configFile = new File( testDir, "cassandra.yaml" );
-
-        try (InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream( "test-cassandra.yaml" ))
-        {
-            String config = IOUtils.toString( resourceAsStream );
-            config = replace( config, "$$testName$$", testName );
-            cassandraPort = PortFinder.findOpenPort( 5 );
-
-            config = replace( config, "$$transportPort$$", String.valueOf( cassandraPort ) );
-            FileUtils.write( configFile, config );
-        }
-
-        startEmbeddedCassandra( configFile, testDir.getPath(), DEFAULT_STARTUP_TIMEOUT );
     }
 
     // Override this if your test do not access storage
@@ -226,12 +197,8 @@ public abstract class AbstractIndyFunctionalTest
             throws IndyLifecycleException
     {
         CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
-
         dropKeyspace( "cache_" , cassandraClient);
         dropKeyspace( "storage_", cassandraClient );
-        dropKeyspace( "schedule_", cassandraClient );
-        dropKeyspace( "store_", cassandraClient );
-
         cassandraClient.close();
         closeCacheProvider();
         closeQuietly( fixture );
@@ -323,15 +290,7 @@ public abstract class AbstractIndyFunctionalTest
                         + "storage.gc.batchsize=0\n"
                         + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
 
-        writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true\ncassandra.port=" + cassandraPort );
-
-        writeConfigFile( "conf.d/store-manager.conf", "[store-manager]\n"
-                    + "store.manager.keyspace=" + getKeyspace("store_") + "_stores\nstore.manager.replica=1");
-
-        writeConfigFile( "conf.d/scheduledb.conf", "[scheduledb]\nschedule.keyspace=" + getKeyspace("schedule_" )
-                        + "_scheduler\nschedule.keyspace.replica=1\n"
-                        + "schedule.partition.range=3600000\nschedule.rate.period=3" );
-
+        writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
         writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
                         + "folo.storage=infinispan\n"
                         + "store.storage=infinispan\n"
