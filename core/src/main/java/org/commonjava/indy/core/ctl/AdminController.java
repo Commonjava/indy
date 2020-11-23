@@ -161,7 +161,7 @@ public class AdminController
     {
         try
         {
-            return storeManager.query().packageType( packageType ).getRemoteRepositoryByUrl( url );
+            return storeManager.query().getRemoteRepositoryByUrl( packageType, url );
         }
         catch ( IndyDataException e )
         {

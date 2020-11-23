@@ -170,10 +170,17 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<RemoteRepository> getRemoteRepositoryByUrl( final String url )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType, final String url )
             throws IndyDataException
     {
-        return delegate.getRemoteRepositoryByUrl( url );
+        return delegate.getRemoteRepositoryByUrl( packageType, url );
+    }
+
+    @Override
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType,final String url, final Boolean enabled )
+                    throws IndyDataException
+    {
+        return delegate.getRemoteRepositoryByUrl( packageType, url, enabled );
     }
 
     @Override

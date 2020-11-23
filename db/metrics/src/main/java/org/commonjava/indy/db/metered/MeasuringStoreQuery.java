@@ -369,14 +369,41 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<RemoteRepository> getRemoteRepositoryByUrl( final String url )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType, final String url )
             throws IndyDataException
     {
         AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
         List<RemoteRepository> result = metricsManager.wrapWithStandardMetrics( ()->{
             try
             {
-                return query.getRemoteRepositoryByUrl( url );
+                return query.getRemoteRepositoryByUrl( packageType, url );
+            }
+            catch ( IndyDataException e )
+            {
+                errorRef.set( e );
+            }
+
+            return null;
+        }, ()-> "getRemoteRepositoryByUrl" );
+
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
+        }
+
+        return result;
+    }
+
+    @Override
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType, final String url, final Boolean enabled )
+                    throws IndyDataException
+    {
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+        List<RemoteRepository> result = metricsManager.wrapWithStandardMetrics( ()->{
+            try
+            {
+                return query.getRemoteRepositoryByUrl( packageType, url, enabled );
             }
             catch ( IndyDataException e )
             {

@@ -267,7 +267,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     @Measure
-    public List<RemoteRepository> getRemoteRepositoryByUrl( String url )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url )
+                    throws IndyDataException
+    {
+        return getRemoteRepositoryByUrl( packageType, url, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url, Boolean enabled )
             throws IndyDataException
     {
         /*
@@ -290,90 +298,83 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         final UrlInfo urlInfo = temp;
 
         // first try to find the remote repo by urlWithNoSchemeAndLastSlash
-        /* @formatter:off */
-        result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
-                store -> {
-                    if ( ( StoreType.remote == store.getType() ) )
-                    {
-                        final String targetUrl = ( (RemoteRepository) store ).getUrl();
-                        UrlInfo targetUrlInfo;
-                        try
-                        {
-                            targetUrlInfo = new UrlInfo( targetUrl );
-                        }
-                        catch ( Exception error )
-                        {
-                            logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
-                            return false;
-                        }
+        final List<RemoteRepository> remoteRepos = getAllRemoteRepositories( packageType, enabled );
+        result = remoteRepos.stream().filter( store -> {
 
-                        if (  targetUrlInfo != null )
-                        {
-                            if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
-                                        .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
-                                            && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ))
-                            {
-                                logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
-                                              store.getKey() );
-                                return true;
-                            }
-                        }
-                    }
+            final String targetUrl = store.getUrl();
+            UrlInfo targetUrlInfo;
+            try
+            {
+                targetUrlInfo = new UrlInfo( targetUrl );
+            }
+            catch ( Exception error )
+            {
+                logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl,
+                             error.getMessage() );
+                return false;
+            }
 
-                    return false;
-                } ).collect( Collectors.toList() );
-        /* @formatter:on */
+            if ( targetUrlInfo != null )
+            {
+                if ( urlInfo.getUrlWithNoSchemeAndLastSlash().equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
+                                && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ) )
+                {
+                    logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                                  store.getKey() );
+                    return true;
+                }
+            }
 
+            return false;
+        } ).collect( Collectors.toList() );
 
         if ( result.isEmpty() )
         {
             // ...if not found by hostname try to search by IP
             /* @formatter:off */
-            result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
-                    store -> {
-                        if ( ( StoreType.remote == store.getType() ) )
+            result = remoteRepos.stream().filter( store -> {
+
+                final String targetUrl = store.getUrl();
+                UrlInfo targetUrlInfo;
+                try
+                {
+                    targetUrlInfo = new UrlInfo( targetUrl );
+                }
+                catch ( Exception error )
+                {
+                    logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
+                    return false;
+                }
+
+                if (  targetUrlInfo != null )
+                {
+                    String ipForUrl = null;
+                    String ipForTargetUrl = null;
+                    try
+                    {
+                        ipForUrl = urlInfo.getIpForUrl();
+                        ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                        if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
+                                && urlInfo.getPort() == targetUrlInfo.getPort()
+                                && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
                         {
-                            final String targetUrl = ( (RemoteRepository) store ).getUrl();
-                            UrlInfo targetUrlInfo;
-                            try
-                            {
-                                targetUrlInfo = new UrlInfo( targetUrl );
-                            }
-                            catch ( Exception error )
-                            {
-                                logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
-                                return false;
-                            }
-
-                            if (  targetUrlInfo != null )
-                            {
-                                String ipForUrl = null;
-                                String ipForTargetUrl = null;
-                                try
-                                {
-                                    ipForUrl = urlInfo.getIpForUrl();
-                                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
-                                    if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
-                                            && urlInfo.getPort() == targetUrlInfo.getPort()
-                                            && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
-                                    {
-                                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
-                                                      store.getKey() );
-                                        return true;
-                                    }
-                                }
-                                catch ( UnknownHostException ue )
-                                {
-                                    logger.warn( "Failed to filter remote: ip fetch error.", ue );
-                                }
-
-                                logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
-                                              store.getKey(), ipForTargetUrl );
-                            }
+                            logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                          store.getKey() );
+                            return true;
                         }
+                    }
+                    catch ( UnknownHostException ue )
+                    {
+                        logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                    }
 
-                        return false;
-                    } ).collect(Collectors.toList());
+                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                                  store.getKey(), ipForTargetUrl );
+                }
+
+
+            return false;
+        } ).collect(Collectors.toList());
             /* @formatter:on */
         }
 

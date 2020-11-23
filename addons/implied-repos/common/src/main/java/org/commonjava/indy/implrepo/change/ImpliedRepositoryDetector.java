@@ -392,7 +392,7 @@ public class ImpliedRepositoryDetector
                 List<RemoteRepository> rrs = null;
                 try
                 {
-                    rrs = storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepositoryByUrl( repo.getUrl() );
+                    rrs = storeManager.query().getRemoteRepositoryByUrl( MAVEN_PKG_KEY, repo.getUrl() );
                 }
                 catch ( IndyDataException e )
                 {
