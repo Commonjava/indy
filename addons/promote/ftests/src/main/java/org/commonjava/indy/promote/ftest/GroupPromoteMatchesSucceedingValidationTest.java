@@ -77,8 +77,9 @@ public class GroupPromoteMatchesSucceedingValidationTest
     protected void initTestData( CoreServerFixture fixture )
             throws IOException
     {
-        writeDataFile( "promote/rules/fail.groovy", readTestResource( getClass().getSimpleName() + "/fail.groovy" ) );
-        writeDataFile( "promote/rule-sets/fail.json", readTestResource( getClass().getSimpleName() + "/fail.json" ) );
-        writeDataFile( "promote/rule-sets/succeed.json", readTestResource( getClass().getSimpleName() + "/succeed.json" ) );
+        super.initTestData( fixture );
+        writePromoteDataFile( "rules/fail.groovy", readTestResource( getClass().getSimpleName() + "/fail.groovy" ) );
+        writePromoteDataFile( "rule-sets/fail.json", readTestResource( getClass().getSimpleName() + "/fail.json" ) );
+        writePromoteDataFile( "rule-sets/succeed.json", readTestResource( getClass().getSimpleName() + "/succeed.json" ) );
     }
 }

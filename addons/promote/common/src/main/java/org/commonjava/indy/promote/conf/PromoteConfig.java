@@ -20,6 +20,7 @@ import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.io.File;
 import java.io.InputStream;
 
 @SectionName( PromoteConfig.SECTION )
@@ -29,7 +30,7 @@ public class PromoteConfig
 {
     public static final String SECTION = "promote";
 
-    public static final String DEFAULT_DIR = "promote";
+    public static final File DEFAULT_DIR = new File( System.getProperty( "indy.home", "/var/lib/indy" ), "data/promote" );
 
     public static final String BASEDIR_PARAM = "basedir";
 
@@ -45,7 +46,7 @@ public class PromoteConfig
 
     public static final boolean DEFAULT_ENABLED = true;
 
-    private String basedir;
+    private File basedir;
 
     private Boolean enabled;
 
@@ -55,12 +56,6 @@ public class PromoteConfig
 
     public PromoteConfig()
     {
-    }
-
-    public PromoteConfig( final String basedir, final boolean enabled )
-    {
-        this.basedir = basedir;
-        this.enabled = enabled;
     }
 
     public boolean isAutoLockHostedRepos()
@@ -80,12 +75,12 @@ public class PromoteConfig
     }
 
     @ConfigName( PromoteConfig.BASEDIR_PARAM)
-    public void setBasedir( final String basedir )
+    public void setBasedir( final File basedir )
     {
         this.basedir = basedir;
     }
 
-    public String getBasedir()
+    public File getBasedir()
     {
         return basedir == null ? DEFAULT_DIR : basedir;
     }

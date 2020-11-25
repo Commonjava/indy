@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.promote.client.IndyPromoteAdminClientModule;
+import org.commonjava.indy.promote.ftest.AbstractPromotionFunctionalTest;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 
@@ -29,7 +30,7 @@ import java.util.Collections;
 import java.util.Map;
 
 public abstract class AbstractAdminValidationTest
-        extends AbstractIndyFunctionalTest
+        extends AbstractPromotionFunctionalTest
 {
     protected IndyPromoteAdminClientModule module;
 
@@ -45,6 +46,8 @@ public abstract class AbstractAdminValidationTest
     protected void initTestData( CoreServerFixture fixture )
             throws IOException
     {
+        super.initTestData( fixture );
+
         getRuleScriptFiles().forEach( ( k, v ) -> {
             try
             {
@@ -72,16 +75,16 @@ public abstract class AbstractAdminValidationTest
 
         }
 
-        super.initTestData( fixture );
+
     }
 
     protected void deployRule( String ruleName, String ruleContent )
             throws IOException
     {
         String fileName = ruleName.endsWith( ".groovy" ) ? ruleName : ruleName + ".groovy";
-        String rulePath = "promote/rules/" + fileName;
+        String rulePath = "rules/" + fileName;
         deleteRule( fileName );
-        writeDataFile( rulePath, ruleContent );
+        writePromoteDataFile( rulePath, ruleContent );
     }
 
     protected void deployRuleSet( String fileName,  ValidationRuleSet ruleSet )
@@ -89,21 +92,21 @@ public abstract class AbstractAdminValidationTest
     {
         String json = new ObjectMapper().writeValueAsString( ruleSet );
         String ruleSetFileName = fileName.endsWith( ".json" ) ? fileName : fileName + ".json";
-        String rulesetPath = "promote/rule-sets/" + ruleSetFileName;
+        String rulesetPath = "rule-sets/" + ruleSetFileName;
         deleteRuleSet( ruleSetFileName );
-        writeDataFile( rulesetPath, json );
+        writePromoteDataFile( rulesetPath, json );
     }
 
     protected boolean deleteRule( String ruleName )
     {
         String fileName = ruleName.endsWith( ".groovy" ) ? ruleName : ruleName + ".groovy";
-        return new File( dataDir, "promote/rules/" + fileName ).delete();
+        return new File( promoteDataDir, "rules/" + fileName ).delete();
     }
 
     protected boolean deleteRuleSet( String ruleSetFileName )
     {
         String fileName = ruleSetFileName.endsWith( ".json" ) ? ruleSetFileName : ruleSetFileName + ".json";
-        return new File( dataDir, "promote/rule-sets/" + fileName ).delete();
+        return new File( promoteDataDir, "rule-sets/" + fileName ).delete();
     }
 
     protected abstract Map<String, String> getRuleScriptFiles()
