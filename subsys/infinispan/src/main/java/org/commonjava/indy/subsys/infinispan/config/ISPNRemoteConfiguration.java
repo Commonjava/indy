@@ -43,6 +43,8 @@ public class ISPNRemoteConfiguration
 
     private String remotePatterns;
 
+    private String hotrodClientConfigPath;
+
     public ISPNRemoteConfiguration()
     {
     }
@@ -89,6 +91,17 @@ public class ISPNRemoteConfiguration
     public void setRemotePatterns( String remotePatterns )
     {
         this.remotePatterns = remotePatterns;
+    }
+
+    public String getHotrodClientConfigPath()
+    {
+        return hotrodClientConfigPath;
+    }
+
+    @ConfigName( "hotrod.client.config" )
+    public void setHotrodClientConfigPath( String hotrodClientConfigPath )
+    {
+        this.hotrodClientConfigPath = hotrodClientConfigPath;
     }
 
     // utils

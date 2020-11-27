@@ -31,6 +31,7 @@ import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.commons.configuration.XMLStringConfiguration;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
@@ -47,12 +48,15 @@ import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -122,8 +126,20 @@ public class CacheProducer
         }
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.addServer().host( remoteConfiguration.getRemoteServer() ).port( remoteConfiguration.getHotrodPort() );
-        remoteCacheManager = new RemoteCacheManager( builder.build() );
+        Properties props = new Properties();
+        try( Reader config = new FileReader( remoteConfiguration.getHotrodClientConfigPath()) )
+        {
+            props.load( config );
+            builder.withProperties( props );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Load hotrod client properties failure.", e );
+        }
+
+        remoteCacheManager = new RemoteCacheManager(builder.build());
+        remoteCacheManager.start();
+
         logger.info( "Infinispan remote cache manager started." );
     }
 
@@ -223,7 +239,26 @@ public class CacheProducer
                 RemoteCache<K, V> cache = null;
                 try
                 {
-                    cache = remoteCacheManager.getCache( k );
+                    // For infinispan 9.x, it needs to load the specific cache configuration to create it
+                    // For infinispan 11.x, there is no need to load this configuration here, instead, declaring it
+                    // in hotrod-client.properties and get the cache by remoteCacheManager.getCache( "cacheName" )
+                    File confDir = indyConfiguration.getIndyConfDir();
+                    File cacheConf = new File( confDir, "cache-" + named + ".xml" );
+                    if ( cacheConf.exists() )
+                    {
+                        logger.warn( "Invalid conf path, name: {}, path: {}", named, cacheConf );
+                        return null;
+                    }
+                    String confStr;
+                    try (InputStream confStream = FileUtils.openInputStream( cacheConf ))
+                    {
+                        confStr = interpolateStrFromStream( confStream, cacheConf.getPath() );
+                    }
+                    catch ( IOException e )
+                    {
+                        throw new RuntimeException( "Cannot read cache configuration from file: " + cacheConf, e );
+                    }
+                    cache = remoteCacheManager.administration().getOrCreateCache( named, new XMLStringConfiguration( confStr ) );
                     if ( cache == null )
                     {
                         logger.warn( "Can not get remote cache, name: {}", k );
