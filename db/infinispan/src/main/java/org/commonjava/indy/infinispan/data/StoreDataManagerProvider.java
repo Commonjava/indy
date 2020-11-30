@@ -38,11 +38,11 @@ public class StoreDataManagerProvider
                     @StandaloneStoreDataManager InfinispanStoreDataManager ispnStoreDataManager,
                     @ClusterStoreDataManager StoreDataManager clusterStoreDataManager )
     {
-        if ( durableStateConfig.getStoreStorage().equals( IndyDurableStateConfig.STORAGE_INFINISPAN ) )
+        if ( IndyDurableStateConfig.STORAGE_INFINISPAN.equals( durableStateConfig.getStoreStorage() ) )
         {
             return ispnStoreDataManager;
         }
-        else if ( durableStateConfig.getStoreStorage().equals( IndyDurableStateConfig.STORAGE_CASSANDRA ) )
+        else if ( IndyDurableStateConfig.STORAGE_CASSANDRA.equals( durableStateConfig.getStoreStorage()) )
         {
             return clusterStoreDataManager;
         }
