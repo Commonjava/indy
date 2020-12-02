@@ -234,7 +234,7 @@ public class CacheProducer
     public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named )
     {
         BasicCacheHandle handle = caches.computeIfAbsent( named, ( k ) -> {
-            if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( k ) )
+            if ( remoteConfiguration.isEnabled() )
             {
                 RemoteCache<K, V> cache = null;
                 try
@@ -242,7 +242,7 @@ public class CacheProducer
                     // For infinispan 9.x, it needs to load the specific cache configuration to create it
                     // For infinispan 11.x, there is no need to load this configuration here, instead, declaring it
                     // in hotrod-client.properties and get the cache by remoteCacheManager.getCache( "cacheName" )
-                    File confDir = indyConfiguration.getIndyConfDir();
+                    /*File confDir = indyConfiguration.getIndyConfDir();
                     File cacheConf = new File( confDir, "cache-" + named + ".xml" );
                     if ( cacheConf.exists() )
                     {
@@ -258,7 +258,8 @@ public class CacheProducer
                     {
                         throw new RuntimeException( "Cannot read cache configuration from file: " + cacheConf, e );
                     }
-                    cache = remoteCacheManager.administration().getOrCreateCache( named, new XMLStringConfiguration( confStr ) );
+                    cache = remoteCacheManager.administration().getOrCreateCache( named, new XMLStringConfiguration( confStr ) );*/
+                    cache = remoteCacheManager.getCache( named );
                     if ( cache == null )
                     {
                         logger.warn( "Can not get remote cache, name: {}", k );
