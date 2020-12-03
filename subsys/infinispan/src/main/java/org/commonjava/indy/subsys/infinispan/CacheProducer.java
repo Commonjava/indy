@@ -31,6 +31,7 @@ import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.commons.configuration.XMLStringConfiguration;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
@@ -39,6 +40,8 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.annotations.ProtoSchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +65,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
+import static org.infinispan.query.remote.client.ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME;
 
 /**
  * Created by jdcasey on 3/8/16.
@@ -282,6 +286,32 @@ public class CacheProducer
         }
 
         return handle;
+    }
+
+    public synchronized <K> void registerProtoSchema( Class<K> kClass, String packageName, String fileName )
+    {
+        SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
+        // Use ProtoSchemaBuilder to define a Protobuf schema on the client
+        ProtoSchemaBuilder protoSchemaBuilder = new ProtoSchemaBuilder();
+        String protoFile;
+        try
+        {
+            protoFile = protoSchemaBuilder
+                            .fileName(fileName)
+                            .addClass(kClass)
+                            .packageName(packageName)
+                            .build(ctx);
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException(" Register proto schema error, schema: " + fileName, e );
+        }
+
+        // Retrieve metadata cache and register the new schema on the infinispan server too
+        RemoteCache<String, String> metadataCache =
+                        remoteCacheManager.getCache(PROTOBUF_METADATA_CACHE_NAME);
+
+        metadataCache.put(fileName, protoFile);
     }
 
     /**

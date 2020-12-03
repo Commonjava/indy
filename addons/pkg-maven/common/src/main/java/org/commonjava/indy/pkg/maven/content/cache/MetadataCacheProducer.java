@@ -21,8 +21,10 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKeyTransformer;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.commonjava.maven.galley.model.Transfer;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
@@ -51,12 +53,20 @@ public class MetadataCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
+    @Inject
+    private ISPNRemoteConfiguration remoteConfiguration;
+
     @MavenMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<MetadataKey, MetadataInfo> mavenMetadataCacheCfg()
+    public BasicCacheHandle<MetadataKey, MetadataInfo> mavenMetadataCacheCfg()
     {
-        return cacheProducer.getCache( METADATA_CACHE );
+        /* TODO need to add @ProtoField annotation later for the key and value of the cache
+        if ( remoteConfiguration.isEnabled() )
+        {
+            cacheProducer.registerProtoSchema( MetadataKey.class, "maven.metadata", "metadata.proto" );
+        }*/
+        return cacheProducer.getBasicCache( METADATA_CACHE );
     }
 
     @MavenMetadataKeyCache
