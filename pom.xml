@@ -1045,6 +1045,12 @@
       </dependency>
       <dependency>
         <groupId>org.infinispan.protostream</groupId>
+        <artifactId>protostream</artifactId>
+        <version>${protostreamVersion}</version>
+        <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan.protostream</groupId>
         <artifactId>protostream-processor</artifactId>
         <version>${protostreamVersion}</version>
       </dependency>
