@@ -21,6 +21,13 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKeyTransformer;
+import org.commonjava.indy.pkg.maven.content.marshaller.MetadataInfoMarshaller;
+import org.commonjava.indy.pkg.maven.content.marshaller.MetadataKeyMarshaller;
+import org.commonjava.indy.pkg.maven.content.marshaller.MetadataMarshaller;
+import org.commonjava.indy.pkg.maven.content.marshaller.SnapshotMarshaller;
+import org.commonjava.indy.pkg.maven.content.marshaller.SnapshotVersionMarshaller;
+import org.commonjava.indy.pkg.maven.content.marshaller.StoreKeyMarshaller;
+import org.commonjava.indy.pkg.maven.content.marshaller.VersioningMarshaller;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -29,6 +36,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
+import org.infinispan.protostream.MessageMarshaller;
 import org.infinispan.query.Search;
 import org.infinispan.query.spi.SearchManagerImplementor;
 import org.slf4j.Logger;
@@ -39,6 +47,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @ApplicationScoped
 public class MetadataCacheProducer
@@ -61,19 +71,37 @@ public class MetadataCacheProducer
     @ApplicationScoped
     public BasicCacheHandle<MetadataKey, MetadataInfo> mavenMetadataCacheCfg()
     {
-        /* TODO need to add @ProtoField annotation later for the key and value of the cache
         if ( remoteConfiguration.isEnabled() )
         {
-            cacheProducer.registerProtoSchema( MetadataKey.class, "maven.metadata", "metadata.proto" );
-        }*/
-        return cacheProducer.getBasicCache( METADATA_CACHE );
+            List<MessageMarshaller> infoMarshallers = new ArrayList<>();
+            infoMarshallers.add( new MetadataInfoMarshaller() );
+            infoMarshallers.add( new MetadataMarshaller() );
+            infoMarshallers.add( new VersioningMarshaller() );
+            infoMarshallers.add( new SnapshotMarshaller() );
+            infoMarshallers.add( new SnapshotVersionMarshaller() );
+            infoMarshallers.add( new VersioningMarshaller() );
+            cacheProducer.registerProtoAndMarshallers( "metadata_info.proto", infoMarshallers );
+
+            List<MessageMarshaller> keyMarshallers = new ArrayList<>();
+            keyMarshallers.add( new MetadataKeyMarshaller() );
+            keyMarshallers.add( new StoreKeyMarshaller() );
+            cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
+        }
+        return cacheProducer.getCache( METADATA_CACHE );
     }
 
     @MavenMetadataKeyCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<MetadataKey, MetadataKey> mavenMetadataKeyCacheCfg()
+    public BasicCacheHandle<MetadataKey, MetadataKey> mavenMetadataKeyCacheCfg()
     {
+        if ( remoteConfiguration.isEnabled() )
+        {
+            List<MessageMarshaller> keyMarshallers = new ArrayList<>();
+            keyMarshallers.add( new MetadataKeyMarshaller() );
+            keyMarshallers.add( new StoreKeyMarshaller() );
+            cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
+        }
         return cacheProducer.getCache( METADATA_KEY_CACHE );
     }
 

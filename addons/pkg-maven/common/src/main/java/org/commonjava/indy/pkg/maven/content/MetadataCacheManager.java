@@ -18,6 +18,7 @@ package org.commonjava.indy.pkg.maven.content;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataKeyCache;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Query;
@@ -39,11 +40,11 @@ public class MetadataCacheManager
 
     @Inject
     @MavenMetadataCache
-    private CacheHandle<MetadataKey, MetadataInfo> metadataCache;
+    private BasicCacheHandle<MetadataKey, MetadataInfo> metadataCache;
 
     @Inject
     @MavenMetadataKeyCache
-    private CacheHandle<MetadataKey, MetadataKey> metadataKeyCache;
+    private BasicCacheHandle<MetadataKey, MetadataKey> metadataKeyCache;
 
     private QueryFactory queryFactory;
 

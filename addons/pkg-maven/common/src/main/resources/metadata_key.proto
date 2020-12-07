@@ -1,0 +1,20 @@
+package metadata_key;
+
+message MetadataKey
+{
+    StoreKey storeKey = 1;
+    string path = 2;
+}
+
+message StoreKey
+{
+    string packageType = 1;
+
+    enum StoreType {
+        group = 1;
+        remote = 2;
+        hosted = 3;
+    }
+
+    string name = 3;
+}

@@ -40,6 +40,9 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.FileDescriptorSource;
+import org.infinispan.protostream.MessageMarshaller;
 import org.infinispan.protostream.SerializationContext;
 import org.infinispan.protostream.annotations.ProtoSchemaBuilder;
 import org.slf4j.Logger;
@@ -56,8 +59,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -238,7 +243,7 @@ public class CacheProducer
     public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named )
     {
         BasicCacheHandle handle = caches.computeIfAbsent( named, ( k ) -> {
-            if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( k ) )
+            if ( remoteConfiguration.isEnabled() )
             {
                 RemoteCache<K, V> cache = null;
                 try
@@ -312,6 +317,38 @@ public class CacheProducer
                         remoteCacheManager.getCache(PROTOBUF_METADATA_CACHE_NAME);
 
         metadataCache.put(fileName, protoFile);
+    }
+
+    public synchronized void registerProtoAndMarshallers( String protofile, List<MessageMarshaller> marshallers )
+    {
+        SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
+        try
+        {
+            ctx.registerProtoFiles( FileDescriptorSource.fromResources( protofile ) );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException("Register proto files error, protofile: " + protofile, e);
+        }
+
+        for ( MessageMarshaller marshaller : marshallers )
+        {
+            try
+            {
+                ctx.registerMarshaller( marshaller );
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException("Register the marshallers error.", e);
+            }
+        }
+
+        // Retrieve metadata cache and register the new schema on the infinispan server too
+        RemoteCache<String, String> metadataCache =
+                        remoteCacheManager.getCache(PROTOBUF_METADATA_CACHE_NAME);
+
+        metadataCache.put( protofile, FileDescriptorSource.getResourceAsString( getClass(), "/" + protofile ));
+
     }
 
     /**
