@@ -18,13 +18,13 @@ package org.commonjava.indy.promote.validate;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.conf.PromoteDataFileManager;
 import org.commonjava.indy.promote.model.ValidationCatalogDTO;
 import org.commonjava.indy.promote.model.ValidationRuleDTO;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.model.ValidationRule;
 import org.commonjava.indy.promote.validate.model.ValidationRuleMapping;
 import org.commonjava.indy.subsys.datafile.DataFile;
-import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +52,7 @@ public class PromoteValidationsManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private DataFileManager ffManager;
+    private PromoteDataFileManager dataFileManager;
 
     @Inject
     private PromoteConfig config;
@@ -70,11 +70,11 @@ public class PromoteValidationsManager
     {
     }
 
-    public PromoteValidationsManager( final DataFileManager ffManager, final PromoteConfig config,
+    public PromoteValidationsManager( final PromoteDataFileManager dataFileManager, final PromoteConfig config,
                                       final ValidationRuleParser ruleParser )
         throws PromotionValidationException
     {
-        this.ffManager = ffManager;
+        this.dataFileManager = dataFileManager;
         this.config = config;
         this.ruleParser = ruleParser;
         parseRuleBundles();
@@ -115,7 +115,7 @@ public class PromoteValidationsManager
     {
         final Map<String, ValidationRuleMapping> ruleMappings = new HashMap<>();
 
-        DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
+        DataFile dataDir = dataFileManager.getDataFile( RULES_DIR );
         logger.info( "Scanning {} for promotion validation rules...", dataDir );
         if ( dataDir.exists() )
         {
@@ -212,7 +212,7 @@ public class PromoteValidationsManager
     {
         Map<String, ValidationRuleSet> ruleSets = new HashMap<>();
 
-        DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_SETS_DIR );
+        DataFile dataDir = dataFileManager.getDataFile( RULES_SETS_DIR );
         logger.info( "Scanning {} for promotion validation rule-set mappings...", dataDir );
         if ( dataDir.exists() )
         {
@@ -360,7 +360,7 @@ public class PromoteValidationsManager
             return null;
         }
 
-        final DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
+        final DataFile dataDir = dataFileManager.getDataFile( RULES_DIR );
         if ( !dataDir.exists() )
         {
             // this would be a very strange error...implying addition of a rule without writing it to disk.
@@ -392,7 +392,7 @@ public class PromoteValidationsManager
         final ValidationRuleMapping mapping = ruleParser.parseRule( spec, name );
         ruleMappings.put( mapping.getName(), mapping );
 
-        final DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
+        final DataFile dataDir = dataFileManager.getDataFile( RULES_DIR );
         if ( !dataDir.exists() )
         {
             dataDir.mkdirs();

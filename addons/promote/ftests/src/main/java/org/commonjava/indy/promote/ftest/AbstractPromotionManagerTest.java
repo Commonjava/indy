@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.commonjava.indy.client.core.IndyClientModule;
-import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
@@ -28,7 +27,7 @@ import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.junit.Before;
 
 public class AbstractPromotionManagerTest
-    extends AbstractIndyFunctionalTest
+        extends AbstractPromotionFunctionalTest
 {
 
     protected final String first = "/first/path";

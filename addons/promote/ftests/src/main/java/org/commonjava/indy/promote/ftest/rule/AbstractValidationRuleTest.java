@@ -16,6 +16,7 @@
 package org.commonjava.indy.promote.ftest.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
@@ -26,10 +27,12 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.promote.client.IndyPromoteClientModule;
+import org.commonjava.indy.promote.ftest.AbstractPromotionFunctionalTest;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
@@ -38,7 +41,7 @@ import java.util.Collections;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.junit.Assert.fail;
 
-public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extends AbstractIndyFunctionalTest
+public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extends AbstractPromotionFunctionalTest
 {
     private static final String TARGET_NAME = "target";
 
@@ -141,18 +144,20 @@ public abstract class AbstractValidationRuleTest<T extends ArtifactStore> extend
     protected void initTestData( CoreServerFixture fixture )
             throws IOException
     {
-        writeDataFile( "promote/rules/" + getRuleScriptFile(), getRuleScriptContent() );
+        super.initTestData( fixture );
+
+        writePromoteDataFile( "rules/" + getRuleScriptFile(), getRuleScriptContent() );
 
         ValidationRuleSet rs = getRuleSet();
         String json = new ObjectMapper().writeValueAsString( rs );
 
-        String rulesetPath = "promote/rule-sets/" + name.getMethodName() + ".json";
+        String rulesetPath = "rule-sets/" + name.getMethodName() + ".json";
 
         logger.info( "Writing rule-set to: {}\nContents:\n\n{}\n\n", rulesetPath, json );
-        writeDataFile( rulesetPath, json );
-
-        super.initTestData( fixture );
+        writePromoteDataFile( rulesetPath, json );
     }
+
+
 
     protected ValidationRuleSet getRuleSet()
     {

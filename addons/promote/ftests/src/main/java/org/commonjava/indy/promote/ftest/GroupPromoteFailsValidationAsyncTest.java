@@ -31,7 +31,6 @@ import java.util.Map;
 import static org.commonjava.indy.promote.model.AbstractPromoteResult.ACCEPTED;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -87,9 +86,10 @@ public class GroupPromoteFailsValidationAsyncTest
     protected void initTestData( CoreServerFixture fixture )
             throws IOException
     {
+        super.initTestData( fixture );
         String clsName = getClass().getSimpleName().replaceFirst( "Async", "" );
 
-        writeDataFile( "promote/rules/fail-all.groovy", readTestResource( clsName + "/fail-all.groovy" ) );
-        writeDataFile( "promote/rule-sets/fail-all.json", readTestResource( clsName + "/fail-all.json" ) );
+        writePromoteDataFile( "rules/fail-all.groovy", readTestResource( clsName + "/fail-all.groovy" ) );
+        writePromoteDataFile( "rule-sets/fail-all.json", readTestResource( clsName + "/fail-all.json" ) );
     }
 }

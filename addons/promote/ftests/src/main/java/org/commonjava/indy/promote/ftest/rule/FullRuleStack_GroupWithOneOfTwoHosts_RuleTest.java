@@ -17,7 +17,6 @@ package org.commonjava.indy.promote.ftest.rule;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.category.EventDependent;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -32,13 +31,12 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -93,24 +91,22 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
     {
         List<String> deploy = Arrays.asList( "org/foo/valid/1.1.0-redhat-1/valid-1.1.0-redhat-1.pom", "org/foo/valid/1.1.0-redhat-1/valid-1.1.0-redhat-1.jar", "org/foo/valid/1.1.0-redhat-1/valid-1.1.0-redhat-1-sources.jar", "org/foo/valid/1.1.0-redhat-1/valid-1.1.0-redhat-1-javadoc.jar" );
 
-        Stream.of( hostTarget1, hostTarget2 ).forEach( (repo)->{
-            deploy.forEach( (path)->{
-                try
+        Stream.of( hostTarget1, hostTarget2 ).forEach( (repo)-> deploy.forEach( ( path)->{
+            try
+            {
+                deployResource( repo.getKey(), path, PREFIX + "valid.pom.xml" );
+                try (InputStream stream = client.content().get( repo.getKey(), path ))
                 {
-                    deployResource( repo.getKey(), path, PREFIX + "valid.pom.xml" );
-                    try (InputStream stream = client.content().get( repo.getKey(), path ))
-                    {
-                        String retrieved = IOUtils.toString( stream );
-                        assertThat( path + " invalid from: " + repo.getKey(), retrieved,
-                                    equalTo( resourceToString( PREFIX + "valid.pom.xml" ) ) );
-                    }
+                    String retrieved = IOUtils.toString( stream );
+                    assertThat( path + " invalid from: " + repo.getKey(), retrieved,
+                                equalTo( resourceToString( PREFIX + "valid.pom.xml" ) ) );
                 }
-                catch ( Exception e )
-                {
-                    fail( "Failed to deploy: " + path + " to: " + repo );
-                }
-            } );
-        } );
+            }
+            catch ( Exception e )
+            {
+                fail( "Failed to deploy: " + path + " to: " + repo );
+            }
+        } ) );
 
 //        GroupPromoteRequest request = new GroupPromoteRequest( hostTarget1.getKey(), target.getName() );
 //        GroupPromoteResult result = module.promoteToGroup( request );
@@ -139,7 +135,7 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
 
         waitForEventPropagation();
 
-        GroupPromoteRequest request = new GroupPromoteRequest( hostTarget2.getKey(), target.getName() );
+        GroupPromoteRequest request = new GroupPromoteRequest( hostTarget2.getKey(), target.getKey() );
         GroupPromoteResult result = module.promoteToGroup( request );
         assertThat( result, notNullValue() );
 
@@ -183,11 +179,11 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
     {
         super.start();
 
-        hostTarget1 = new HostedRepository( "hostTarget1" );
+        hostTarget1 = new HostedRepository( PKG_TYPE_MAVEN,"hostTarget1" );
         hostTarget1 =
                 client.stores().create( hostTarget1, "Creating first host target", HostedRepository.class );
 
-        hostTarget2 = new HostedRepository( "hostTarget2" );
+        hostTarget2 = new HostedRepository( PKG_TYPE_MAVEN, "hostTarget2" );
         hostTarget2 =
                 client.stores().create( hostTarget2, "Creating secondary host target", HostedRepository.class );
 
@@ -197,15 +193,16 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
     protected void initTestData( final CoreServerFixture fixture )
             throws IOException
     {
-        writeDataFile( "promote/rules/" + getRuleScriptFile(), getRuleScriptContent() );
+        super.initTestData( fixture );
+        writePromoteDataFile( "rules/" + getRuleScriptFile(), getRuleScriptContent() );
 
         String json = new ObjectMapper().writeValueAsString( getRuleSet() );
-        writeDataFile( "promote/rule-sets/" + name.getMethodName() + ".json", json );
+        writePromoteDataFile( "rule-sets/" + name.getMethodName() + ".json", json );
 
         Stream.of( RULES ).forEach( ( rule ) -> {
             try
             {
-                writeDataFile( "promote/rule-sets/" + rule, readTestResource( "promote/rules/" + rule ) );
+                writePromoteDataFile( "rule-sets/" + rule, readTestResource( "promote/rules/" + rule ) );
             }
             catch ( IOException e )
             {
@@ -213,7 +210,7 @@ public class FullRuleStack_GroupWithOneOfTwoHosts_RuleTest
             }
         } );
 
-        super.initTestData( fixture );
+
     }
 
     @Override

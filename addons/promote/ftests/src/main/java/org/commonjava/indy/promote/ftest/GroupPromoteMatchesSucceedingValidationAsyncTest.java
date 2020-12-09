@@ -81,9 +81,10 @@ public class GroupPromoteMatchesSucceedingValidationAsyncTest
     protected void initTestData( CoreServerFixture fixture )
             throws IOException
     {
+        super.initTestData( fixture );
         String clsName = getClass().getSimpleName().replaceFirst( "Async", "" );
-        writeDataFile( "promote/rules/fail.groovy", readTestResource( clsName + "/fail.groovy" ) );
-        writeDataFile( "promote/rule-sets/fail.json", readTestResource( clsName + "/fail.json" ) );
-        writeDataFile( "promote/rule-sets/succeed.json", readTestResource( clsName + "/succeed.json" ) );
+        writePromoteDataFile( "rules/fail.groovy", readTestResource( clsName + "/fail.groovy" ) );
+        writePromoteDataFile( "rule-sets/fail.json", readTestResource( clsName + "/fail.json" ) );
+        writePromoteDataFile( "rule-sets/succeed.json", readTestResource( clsName + "/succeed.json" ) );
     }
 }
