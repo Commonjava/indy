@@ -33,6 +33,8 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.commonjava.maven.galley.model.Transfer;
+import org.infinispan.Cache;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
@@ -124,7 +126,14 @@ public class MetadataCacheProducer
             } );
         }
 
-        handler.getCache().addListener( cacheListener );
+        if ( handler.getCache() instanceof RemoteCache )
+        {
+            ((RemoteCache)handler.getCache()).addClientListener( cacheListener );
+        }
+        else
+        {
+            ((Cache)handler.getCache()).addListener( cacheListener );
+        }
     }
 
 }
