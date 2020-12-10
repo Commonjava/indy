@@ -1,0 +1,6 @@
+<infinispan>
+    <cache-container>
+        <distributed-cache name="example">
+        </distributed-cache>
+    </cache-container>
+</infinispan>
