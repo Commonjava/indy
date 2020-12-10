@@ -253,7 +253,7 @@ public class CacheProducer
                     // in hotrod-client.properties and get the cache by remoteCacheManager.getCache( "cacheName" )
                     File confDir = indyConfiguration.getIndyConfDir();
                     File cacheConf = new File( confDir, "cache-" + named + ".xml" );
-                    if ( cacheConf.exists() )
+                    if ( !cacheConf.exists() )
                     {
                         logger.warn( "Invalid conf path, name: {}, path: {}", named, cacheConf );
                         return null;

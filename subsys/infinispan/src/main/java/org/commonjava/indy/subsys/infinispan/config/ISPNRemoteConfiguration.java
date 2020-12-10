@@ -18,13 +18,10 @@ package org.commonjava.indy.subsys.infinispan.config;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
-import org.infinispan.client.hotrod.impl.ConfigurationProperties;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @SectionName( "infinispan-remote" )
 @ApplicationScoped
@@ -36,12 +33,6 @@ public class ISPNRemoteConfiguration
     private static final Boolean DEFAULT_ENABLED = Boolean.FALSE;
 
     private Boolean enabled;
-
-    private String remoteServer;
-
-    private Integer hotrodPort;
-
-    private String remotePatterns;
 
     private String hotrodClientConfigPath;
 
@@ -60,39 +51,6 @@ public class ISPNRemoteConfiguration
         this.enabled = enabled;
     }
 
-    public String getRemoteServer()
-    {
-        return remoteServer == null ? DEFAULT_REMOTE_SERVER : remoteServer;
-    }
-
-    @ConfigName( "remote.server" )
-    public void setRemoteServer( String remoteServer )
-    {
-        this.remoteServer = remoteServer;
-    }
-
-    public Integer getHotrodPort()
-    {
-        return hotrodPort == null ? ConfigurationProperties.DEFAULT_HOTROD_PORT : hotrodPort;
-    }
-
-    @ConfigName( "hotrod.port" )
-    public void setHotrodPort( Integer hotrodPort )
-    {
-        this.hotrodPort = hotrodPort;
-    }
-
-    public String getRemotePatterns()
-    {
-        return remotePatterns;
-    }
-
-    @ConfigName( "remote.patterns" )
-    public void setRemotePatterns( String remotePatterns )
-    {
-        this.remotePatterns = remotePatterns;
-    }
-
     public String getHotrodClientConfigPath()
     {
         return hotrodClientConfigPath;
@@ -102,30 +60,6 @@ public class ISPNRemoteConfiguration
     public void setHotrodClientConfigPath( String hotrodClientConfigPath )
     {
         this.hotrodClientConfigPath = hotrodClientConfigPath;
-    }
-
-    // utils
-
-    public boolean isRemoteCache( String cacheName )
-    {
-        if ( remotePatterns == null )
-        {
-            return false;
-        }
-
-        String[] patterns = remotePatterns.split( "," );
-        for ( String pattern : patterns )
-        {
-            if ( isNotBlank( pattern ) )
-            {
-                if ( cacheName.matches( pattern ) || cacheName.equals( pattern ) )
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     @Override
