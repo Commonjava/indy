@@ -20,7 +20,7 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.core.io.ModuleSet;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.slf4j.Logger;
@@ -34,7 +34,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
 import static org.commonjava.indy.conf.DefaultIndyConfiguration.CASSANDRA_NFC_PROVIDER;
-import static org.commonjava.indy.conf.DefaultIndyConfiguration.ISPN_NFC_PROVIDER;
 
 @ApplicationScoped
 public class CoreProvider
@@ -52,7 +51,7 @@ public class CoreProvider
 
     @Inject
     @NfcCache
-    private CacheHandle<String, NfcConcreteResourceWrapper> nfcCache;
+    private BasicCacheHandle<String, NfcConcreteResourceWrapper> nfcCache;
 
     @Inject
     private Instance<Module> objectMapperModules;

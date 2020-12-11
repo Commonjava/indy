@@ -76,7 +76,7 @@ public class IspnNotFoundCache
     {
     }
 
-    public IspnNotFoundCache( final IndyConfiguration config, CacheHandle<String, NfcConcreteResourceWrapper> nfcCache )
+    public IspnNotFoundCache( final IndyConfiguration config, BasicCacheHandle<String, NfcConcreteResourceWrapper> nfcCache )
     {
         this.config = config;
         this.nfcCache = nfcCache;
