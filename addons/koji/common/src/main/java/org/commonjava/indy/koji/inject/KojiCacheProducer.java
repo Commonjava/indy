@@ -16,15 +16,20 @@
 package org.commonjava.indy.koji.inject;
 
 import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.commonjava.indy.pkg.maven.content.marshaller.MetadataMarshaller;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
+import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
+import org.infinispan.protostream.MessageMarshaller;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Create ISPN caches necessary to support Koji metadata provider functions.
@@ -35,11 +40,21 @@ public class KojiCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
+    @Inject
+    private ISPNRemoteConfiguration remoteConfiguration;
+
     @KojiMavenVersionMetadataCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<ProjectRef, Metadata> versionMetadataCache()
+    public BasicCacheHandle<ProjectRef, Metadata> versionMetadataCache()
     {
-        return cacheProducer.getCache( "koji-maven-version-metadata" );
+        if ( remoteConfiguration.isEnabled() )
+        {
+            List<MessageMarshaller> marshallers = new ArrayList<>();
+            marshallers.add( new MetadataMarshaller() );
+            marshallers.add( new ProjectRefMashaller() );
+            cacheProducer.registerProtoAndMarshallers( "koji_metadata.proto", marshallers );
+        }
+        return cacheProducer.getBasicCache( "koji-maven-version-metadata" );
     }
 }
