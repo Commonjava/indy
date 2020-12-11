@@ -21,6 +21,9 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.maven.galley.model.Transfer;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
+import org.infinispan.client.hotrod.annotation.ClientListener;
+import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
@@ -33,6 +36,7 @@ import java.io.IOException;
 
 @ApplicationScoped
 @Listener
+@ClientListener
 public class MavenMetadataCacheListener
 {
 
@@ -42,9 +46,19 @@ public class MavenMetadataCacheListener
     @CacheEntryExpired
     public void metadataExpired( CacheEntryExpiredEvent<MetadataKey, MetadataInfo> event )
     {
+        handleMetadataExpired( event.getKey() );
+    }
+
+    @ClientCacheEntryExpired
+    public void metadataExpired( ClientCacheEntryExpiredEvent<MetadataKey> event )
+    {
+        MetadataKey key = event.getKey();
+    }
+
+    private void handleMetadataExpired( MetadataKey key )
+    {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        MetadataKey key = event.getKey();
         StoreKey storeKey = key.getStoreKey();
         String path = key.getPath();
 

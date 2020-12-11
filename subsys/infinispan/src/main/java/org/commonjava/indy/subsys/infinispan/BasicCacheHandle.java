@@ -71,7 +71,7 @@ public class BasicCacheHandle<K,V>
         return name;
     }
 
-    public Cache<K,V> getCache() { return (Cache<K, V>) this.cache; }
+    public BasicCache<K,V> getCache() { return this.cache; }
 
     public <R> R execute( Function<BasicCache<K, V>, R> operation )
     {
