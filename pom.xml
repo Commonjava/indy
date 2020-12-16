@@ -70,7 +70,7 @@
     <xnioVersion>3.8.0.Final</xnioVersion>
     <keycloakVersion>7.0.1</keycloakVersion>
     <bouncycastleVersion>1.64</bouncycastleVersion>
-    <bytemanVersion>3.0.6</bytemanVersion>
+    <bytemanVersion>4.0.13</bytemanVersion>
     <kafkaVersion>1.1.0</kafkaVersion>
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
