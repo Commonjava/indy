@@ -1,6 +1,7 @@
 package org.commonjava.indy.folo.data;
 
 import com.datastax.driver.core.*;
+import com.datastax.driver.core.exceptions.DriverException;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.IndyWorkflowException;
@@ -114,6 +115,10 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         String foloCassandraKeyspace = config.getFoloCassandraKeyspace();
 
         session = cassandraClient.getSession(foloCassandraKeyspace);
+        if (session == null)
+        {
+            throw new DriverException("Session establishment failed.");
+        }
         session.execute(createFoloKeyspace(foloCassandraKeyspace));
         session.execute(createFoloRecordsTable(foloCassandraKeyspace));
         session.execute(createFoloSealedIdx(foloCassandraKeyspace));

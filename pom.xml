@@ -1818,6 +1818,23 @@
           </dependencies>
         </plugin>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>3.0.0</version>
+          <goals>
+            <goal>toolchain</goal>
+          </goals>
+          <configuration>
+            <toolchains>
+              <jdk>
+                <version>11</version>
+                <vendor>OpenJDK</vendor>
+              </jdk>
+            </toolchains>
+          </configuration>
+        </plugin>
+
+        <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <configuration>
             <source>${javaVersion}</source>
@@ -2016,7 +2033,6 @@
             </execution>
           </executions>
         </plugin>
-
 
         <!-- <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
