@@ -26,6 +26,7 @@ import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
@@ -158,8 +159,9 @@ public class StoreAdminHandler
 
         Response response = null;
         String json = null;
-        try {
-            json = IOUtils.toString(request.getInputStream());
+        try
+        {
+            json = IOUtils.toString( request.getInputStream() );
 
 //            logger.warn("=> JSON: " + json);
 

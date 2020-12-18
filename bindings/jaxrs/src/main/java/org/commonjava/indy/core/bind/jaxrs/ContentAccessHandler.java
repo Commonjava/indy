@@ -145,6 +145,7 @@ public class ContentAccessHandler
         {
             TransferCountingInputStream streamingInputStream =
                     new TransferCountingInputStream( request.getInputStream(), metricsManager, metricsConfig );
+
             transfer = contentController.store( sk, path, streamingInputStream, eventMetadata );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );

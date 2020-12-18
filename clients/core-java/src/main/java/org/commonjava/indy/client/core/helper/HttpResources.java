@@ -29,6 +29,7 @@ import org.apache.http.StatusLine;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -93,6 +94,10 @@ public class HttpResources
 
         if ( request != null )
         {
+            if ( request instanceof HttpEntityEnclosingRequestBase )
+            {
+                EntityUtils.consumeQuietly( ((HttpEntityEnclosingRequestBase) request ).getEntity() );
+            }
             if ( request instanceof AbstractExecutionAwareRequest )
             {
                 ( (AbstractExecutionAwareRequest) request ).reset();

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Set;
@@ -67,7 +68,10 @@ public class FoloUtils
         {
             String name = f.getKey().getId();
             logger.trace( "Adding {} to {}", name, dir );
-            copy( toInputStream( f ), new FileOutputStream( new File( dir, name ) ) );
+            try ( OutputStream out = new FileOutputStream( new File( dir, name ) ) )
+            {
+                copy( toInputStream( f ), out );
+            }
         }
     }
 
