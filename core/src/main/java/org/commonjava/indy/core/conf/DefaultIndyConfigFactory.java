@@ -174,44 +174,50 @@ public class DefaultIndyConfigFactory
     {
         String sectionName = ConfigUtils.getSectionName( section.getClass() );
         logger.info( "Attempting to write default configuration for section: {}", sectionName );
-        final InputStream configStream = section.getDefaultConfig();
-        if ( configStream != null )
+        try ( InputStream configStream = section.getDefaultConfig() )
         {
-            final String fname = section.getDefaultConfigFileName();
-            if ( fname == null )
+            if ( configStream != null )
             {
-                logger.info( "NOT writing default configuration for: {}. No defaults available.", sectionName );
-                return;
-            }
+                final String fname = section.getDefaultConfigFileName();
+                if ( fname == null )
+                {
+                    logger.info( "NOT writing default configuration for: {}. No defaults available.", sectionName );
+                    return;
+                }
 
-            final File file = new File( dir, fname );
-            if ( !"main.conf".equals( fname ) && file.exists() )
-            {
-                logger.info( "NOT writing default configuration to: {}. That file already exists.", file );
-                return;
-            }
+                final File file = new File( dir, fname );
+                if ( !"main.conf".equals( fname ) && file.exists() )
+                {
+                    logger.info( "NOT writing default configuration to: {}. That file already exists.", file );
+                    return;
+                }
 
-            file.getParentFile()
-                .mkdirs();
+                file.getParentFile()
+                    .mkdirs();
 
-            logger.info( "Writing defaults for: {} to: {}", sectionName, file );
-            FileOutputStream out = null;
-            try
-            {
-                // if the filename is 'main.conf', then APPEND the config.
-                out = new FileOutputStream( file, fname.equals( "main.conf" ) );
-                IOUtils.copy( configStream, out );
+                logger.info( "Writing defaults for: {} to: {}", sectionName, file );
+                FileOutputStream out = null;
+                try
+                {
+                    // if the filename is 'main.conf', then APPEND the config.
+                    out = new FileOutputStream( file, fname.equals( "main.conf" ) );
+                    IOUtils.copy( configStream, out );
+                }
+                catch ( final IOException e )
+                {
+                    throw new ConfigurationException( "Failed to write default configuration to: %s. Reason: %s", e, file,
+                                                      e.getMessage() );
+                }
+                finally
+                {
+                    closeQuietly( out );
+                }
             }
-            catch ( final IOException e )
-            {
-                throw new ConfigurationException( "Failed to write default configuration to: %s. Reason: %s", e, file,
-                                                  e.getMessage() );
-            }
-            finally
-            {
-                closeQuietly( out );
-                closeQuietly( configStream );
-            }
+        }
+        catch ( IOException ioe )
+        {
+            throw new ConfigurationException( "Failed to write default configuration to: %s/%s. Reason: %s", dir.getName(),
+                    section.getDefaultConfigFileName(), ioe.getMessage() );
         }
     }
 

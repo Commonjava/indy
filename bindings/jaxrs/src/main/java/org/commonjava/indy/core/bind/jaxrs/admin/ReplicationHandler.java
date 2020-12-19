@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +85,7 @@ public class ReplicationHandler
         {
             String user = securityManager.getUser( securityContext, request );
 
-            final ReplicationDTO dto = serializer.readValue( request.getInputStream(), ReplicationDTO.class );
+            ReplicationDTO dto = serializer.readValue( request.getInputStream(), ReplicationDTO.class );
             final Set<StoreKey> replicated = controller.replicate( dto, user );
 
             final Map<String, Object> params = new LinkedHashMap<String, Object>();

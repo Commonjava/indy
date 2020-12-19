@@ -121,10 +121,9 @@ public class PathMappedResource
                             final @Context HttpServletRequest request,
                             final @Context SecurityContext securityContext )
     {
-        try
+        try ( InputStream inputStream = controller.get( packageType, type, name, path ) )
         {
             logger.debug( "Get, packageType:{}, type:{}, name:{}, path:{}", packageType, type, name, path );
-            InputStream inputStream = controller.get( packageType, type, name, path );
             return Response.ok( inputStream )
                            .header( ApplicationHeader.content_disposition.key(),
                                     "attachment" )
