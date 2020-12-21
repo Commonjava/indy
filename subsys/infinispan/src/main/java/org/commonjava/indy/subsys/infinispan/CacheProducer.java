@@ -252,7 +252,7 @@ public class CacheProducer
                     // For infinispan 11.x, there is no need to load this configuration here, instead, declaring it
                     // in hotrod-client.properties and get the cache by remoteCacheManager.getCache( "cacheName" )
                     File confDir = indyConfiguration.getIndyConfDir();
-                    File cacheConf = new File( confDir, "cache-" + named + ".xml" );
+                    File cacheConf = new File( confDir, "caches/cache-" + named + ".xml" );
                     if ( !cacheConf.exists() )
                     {
                         logger.warn( "Invalid conf path, name: {}, path: {}", named, cacheConf );

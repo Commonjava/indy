@@ -44,6 +44,7 @@ import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -58,6 +59,11 @@ import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.infinispan.Cache;
+import org.infinispan.client.hotrod.RemoteCache;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
+import org.infinispan.client.hotrod.annotation.ClientListener;
+import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
 import org.infinispan.commons.util.concurrent.ConcurrentHashSet;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.notifications.Listener;
@@ -97,6 +103,7 @@ import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.ME
  */
 @ApplicationScoped
 @Listener( clustered = true )
+@ClientListener
 public class KojiMavenMetadataProvider
         implements MavenMetadataProvider
 {
@@ -120,7 +127,7 @@ public class KojiMavenMetadataProvider
 
     @Inject
     @KojiMavenVersionMetadataCache
-    private CacheHandle<ProjectRef, Metadata> versionMetadata;
+    private BasicCacheHandle<ProjectRef, Metadata> versionMetadata;
 
     @Inject
     private IndyKojiContentProvider kojiContentProvider;
@@ -155,14 +162,29 @@ public class KojiMavenMetadataProvider
     @PostConstruct
     public void start()
     {
-        versionMetadata.executeCache( c -> {
-            c.addListener( KojiMavenMetadataProvider.this );
-            return null;
-        } );
+        if ( versionMetadata.getCache() instanceof RemoteCache )
+        {
+            ((RemoteCache)versionMetadata.getCache()).addClientListener( KojiMavenMetadataProvider.this );
+        }
+        else
+        {
+            (( Cache )versionMetadata.getCache()).addListener( KojiMavenMetadataProvider.this );
+        }
     }
 
     @CacheEntryExpired
     public void expired( CacheEntryExpiredEvent<ProjectRef, Metadata> e )
+    {
+        handleExpired( e.getKey() );
+    }
+
+    @ClientCacheEntryExpired
+    public void expired( ClientCacheEntryExpiredEvent<ProjectRef> e )
+    {
+        handleExpired( e.getKey() );
+    }
+
+    private void handleExpired( ProjectRef key )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -172,16 +194,16 @@ public class KojiMavenMetadataProvider
             return;
         }
 
-        logger.info( "Koji metadata expired for GA: {}", e.getKey() );
+        logger.info( "Koji metadata expired for GA: {}", key );
         try
         {
             Set<Group> affected = storeDataManager.query()
-                                                           .getAll(
-                                                                   s -> group == s.getType() && kojiConfig.isEnabledFor(
-                                                                           s.getName() ) )
-                                                           .stream()
-                                                           .map( s -> (Group) s )
-                                                           .collect( Collectors.toSet() );
+                                                  .getAll(
+                                                                  s -> group == s.getType() && kojiConfig.isEnabledFor(
+                                                                                  s.getName() ) )
+                                                  .stream()
+                                                  .map( s -> (Group) s )
+                                                  .collect( Collectors.toSet() );
 
             if ( storeDataManager instanceof AbstractStoreDataManager )
             {
@@ -190,19 +212,19 @@ public class KojiMavenMetadataProvider
 
             if ( !affected.isEmpty() )
             {
-                logger.info( "Triggering metadata cleanup from Koji metadata expiration, for GA: {} in groups: {}", e.getKey(), affected );
-                String path = ArtifactPathUtils.formatMetadataPath( e.getKey(), METADATA_NAME );
+                logger.info( "Triggering metadata cleanup from Koji metadata expiration, for GA: {} in groups: {}", key, affected );
+                String path = ArtifactPathUtils.formatMetadataPath( key, METADATA_NAME );
                 clearPaths( affected, path );
             }
 
         }
         catch ( IndyDataException ex )
         {
-            logger.error( "Failed to clear group metadata for expired Koji metadata: " + e.getKey(), ex );
+            logger.error( "Failed to clear group metadata for expired Koji metadata: " + key, ex );
         }
         catch ( TransferException ex )
         {
-            logger.error( "Failed to format metadata path for: " + e.getKey(), ex );
+            logger.error( "Failed to format metadata path for: " + key, ex );
         }
     }
 

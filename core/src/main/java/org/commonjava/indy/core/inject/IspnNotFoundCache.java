@@ -16,12 +16,15 @@
 package org.commonjava.indy.core.inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
+import org.infinispan.Cache;
+import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.query.Search;
 import org.infinispan.query.dsl.Expression;
 import org.infinispan.query.dsl.Query;
@@ -58,7 +61,7 @@ public class IspnNotFoundCache
 
     @Inject
     @NfcCache
-    private CacheHandle<String, NfcConcreteResourceWrapper> nfcCache;
+    private BasicCacheHandle<String, NfcConcreteResourceWrapper> nfcCache;
 
     private QueryFactory queryFactory;
 
@@ -73,7 +76,7 @@ public class IspnNotFoundCache
     {
     }
 
-    public IspnNotFoundCache( final IndyConfiguration config, CacheHandle<String, NfcConcreteResourceWrapper> nfcCache )
+    public IspnNotFoundCache( final IndyConfiguration config, BasicCacheHandle<String, NfcConcreteResourceWrapper> nfcCache )
     {
         this.config = config;
         this.nfcCache = nfcCache;
@@ -83,11 +86,15 @@ public class IspnNotFoundCache
     @PostConstruct
     public void start()
     {
-        nfcCache.executeCache( (cache) -> {
-            queryFactory = Search.getQueryFactory( cache ); // Obtain a query factory for the cache
-            maxResultSetSize = config.getNfcMaxResultSetSize();
-            return null;
-        } );
+        if ( nfcCache.getCache() instanceof RemoteCache )
+        {
+            queryFactory = org.infinispan.client.hotrod.Search.getQueryFactory( (RemoteCache)nfcCache.getCache() );
+        }
+        else
+        {
+            queryFactory = Search.getQueryFactory( (Cache) nfcCache.getCache() );
+        }
+        maxResultSetSize = config.getNfcMaxResultSetSize();
     }
 
     @Override

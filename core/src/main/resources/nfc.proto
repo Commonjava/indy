@@ -1,0 +1,8 @@
+package nfc;
+
+message ConcreteResourceWrapper
+{
+    optional string location = 1;
+    optional string path = 2;
+    optional int64 timeout = 3;
+}
