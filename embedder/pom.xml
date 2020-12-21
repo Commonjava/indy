@@ -431,6 +431,43 @@
         </plugin>
 
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>3.0.0</version>
+          <executions>
+            <execution>
+              <id>default-pre-integration-test</id>
+              <phase>pre-integration-test</phase>
+              <goals>
+                <goal>toolchain</goal>
+              </goals>
+              <configuration>
+                <toolchains>
+                  <jdk>
+                    <version>1.8</version>
+                    <vendor>OpenJDK</vendor>
+                  </jdk>
+                </toolchains>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-integration-test</id>
+              <goals>
+                <goal>toolchain</goal>
+              </goals>
+              <configuration>
+                <toolchains>
+                  <jdk>
+                    <version>11</version>
+                    <vendor>OpenJDK</vendor>
+                  </jdk>
+                </toolchains>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>cassandra-maven-plugin</artifactId>
           <version>3.6</version>
@@ -467,6 +504,7 @@
               <dependency>org.commonjava.indy:indy-ftests-changelog</dependency>
               <dependency>org.commonjava.indy:indy-ftests-repo-proxy</dependency>
             </dependenciesToScan>
+            <jvm>${JAVA_11_HOME}/bin/java</jvm>
           </configuration>
           <executions>
             <execution>
@@ -478,6 +516,7 @@
               <configuration>
                 <skip>${skipMainFTests}</skip>
                 <excludedGroups>org.commonjava.indy.ftest.core.category.TimingDependent, org.commonjava.indy.ftest.core.category.BytemanTest</excludedGroups>
+                <jdkToolchain>default-integration-test</jdkToolchain>
               </configuration>
             </execution>
             <execution>
@@ -490,6 +529,7 @@
                 <skip>${skipTimingFTests}</skip>
                 <forkCount>1</forkCount>
                 <groups>org.commonjava.indy.ftest.core.category.TimingDependent, org.commonjava.indy.ftest.core.category.BytemanTest</groups>
+                <toolchain>default-integration-test</toolchain>
               </configuration>
             </execution>
           </executions>
@@ -502,6 +542,10 @@
       </plugin>
       <plugin>
         <artifactId>maven-failsafe-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-toolchains-plugin</artifactId>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
