@@ -84,16 +84,6 @@ public class FoloConfig
         return trackGroupContent;
     }
 
-
-    public Boolean getStoreToCassandra() {
-        return storeToCassandra == null ? DEFAULT_DISABLED : storeToCassandra;
-    }
-
-    @ConfigName("folo.cassandra")
-    public void setStoreToCassandra(Boolean storage) {
-        this.storeToCassandra = storage;
-    }
-
     public String getFoloCassandraKeyspace() {
         return foloCassandraKeyspace == null ?  DEFAULT_FOLO_CASSANDRA_KEYSPACE : foloCassandraKeyspace;
     }
