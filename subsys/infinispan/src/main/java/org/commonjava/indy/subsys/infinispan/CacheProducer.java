@@ -30,6 +30,7 @@ import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.commons.configuration.XMLStringConfiguration;
@@ -38,6 +39,11 @@ import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
+import org.infinispan.counter.api.CounterConfiguration;
+import org.infinispan.counter.api.CounterManager;
+import org.infinispan.counter.api.CounterType;
+import org.infinispan.counter.api.Storage;
+import org.infinispan.counter.api.StrongCounter;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.protostream.BaseMarshaller;
@@ -102,6 +108,8 @@ public class CacheProducer
     private ISPNClusterConfiguration clusterConfiguration;
 
     private Map<String, BasicCacheHandle> caches = new ConcurrentHashMap<>(); // hold embedded and remote caches
+
+    private Map<String, StrongCounter> counters = new ConcurrentHashMap<>();
 
     protected CacheProducer()
     {
@@ -554,5 +562,26 @@ public class CacheProducer
     public EmbeddedCacheManager getCacheManager()
     {
         return cacheManager;
+    }
+
+    public synchronized StrongCounter getStrongCounter( String counter )
+    {
+        if ( remoteConfiguration == null || !remoteConfiguration.isEnabled() )
+        {
+            return null;
+        }
+        return counters.computeIfAbsent( counter, ( k )->{
+            CounterManager cm = RemoteCounterManagerFactory.asCounterManager( remoteCacheManager );
+            if ( !cm.isDefined( k ) )
+            {
+                cm.defineCounter( k, CounterConfiguration.builder( CounterType.BOUNDED_STRONG )
+                                                               .initialValue( 1 )
+                                                               .lowerBound( 0 )
+                                                               .storage( Storage.VOLATILE )
+                                                               .build() );
+            }
+            return cm.getStrongCounter( k );
+        } );
+
     }
 }
