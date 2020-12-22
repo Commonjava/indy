@@ -289,15 +289,13 @@ public class ProxyMITMSSLServer implements Runnable
         logger.debug( "Requesting remote URL: {}", remoteUrl.toString() );
 
         ArtifactStore store = proxyResponseHelper.getArtifactStore( trackingId, remoteUrl );
-        try (BufferedOutputStream out = new BufferedOutputStream( socket.getOutputStream() ))
+        try (BufferedOutputStream out = new BufferedOutputStream( socket.getOutputStream() );
+            HttpConduitWrapper http = new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
+                    cacheProvider ))
         {
-            HttpConduitWrapper http =
-                            new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
-                                                    cacheProvider );
             proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ),
                                           proxyUserPass, meter );
             out.flush();
-            http.close();
         }
     }
 
