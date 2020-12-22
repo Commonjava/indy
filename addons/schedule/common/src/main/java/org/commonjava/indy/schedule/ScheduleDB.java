@@ -73,10 +73,11 @@ public class ScheduleDB
 
     public ScheduleDB() {}
 
-    public ScheduleDB( ScheduleDBConfig config, CassandraClient client )
+    public ScheduleDB( ScheduleDBConfig config, CassandraClient client, CacheProducer cacheProducer )
     {
         this.config = config;
         this.client = client;
+        this.cacheProducer = cacheProducer;
         init();
     }
 
