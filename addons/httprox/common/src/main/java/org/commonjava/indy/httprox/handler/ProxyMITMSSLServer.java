@@ -43,6 +43,7 @@ import java.io.BufferedOutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
@@ -262,6 +263,11 @@ public class ProxyMITMSSLServer implements Runnable
                             logger.debug( "MITM server failed to get request from client" );
                         }
                     }
+                }
+                catch ( SocketTimeoutException ste )
+                {
+                    logger.error( "Socket read timeout with client hostname: {}, on port: {}.", host, port );
+                    throw ste;
                 }
             }
             logger.debug( "MITM server closed" );
