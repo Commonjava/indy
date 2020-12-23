@@ -12,6 +12,8 @@ import org.commonjava.indy.schedule.datastax.model.DtxExpiration;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.schedule.event.ScheduleTriggerEvent;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.infinispan.counter.api.StrongCounter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +27,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 @ApplicationScoped
 public class ScheduleDB
@@ -38,6 +42,9 @@ public class ScheduleDB
 
     @Inject
     ScheduleDBConfig config;
+
+    @Inject
+    private CacheProducer cacheProducer;
 
     @Inject
     Event<ScheduleTriggerEvent> eventDispatcher;
@@ -66,10 +73,11 @@ public class ScheduleDB
 
     public ScheduleDB() {}
 
-    public ScheduleDB( ScheduleDBConfig config, CassandraClient client )
+    public ScheduleDB( ScheduleDBConfig config, CassandraClient client, CacheProducer cacheProducer )
     {
         this.config = config;
         this.client = client;
+        this.cacheProducer = cacheProducer;
         init();
     }
 
@@ -118,7 +126,40 @@ public class ScheduleDB
                                         + keyspace + "." + ScheduleDBUtil.TABLE_SCHEDULE
                                         + " WHERE storekey = ? " );
 
+        StrongCounter remoteCounter = cacheProducer.getStrongCounter( "scheduleCounter" );
+        AtomicLong localCounter = new AtomicLong( 0 );
+        if ( remoteCounter != null )
+        {
+            try
+            {
+                localCounter.set( remoteCounter.getValue().get() );
+            }
+            catch ( InterruptedException | ExecutionException e )
+            {
+                logger.warn( " Get the value of the counter error. ", e );
+            }
+        }
+
         service.scheduleAtFixedRate( () -> {
+            if ( remoteCounter != null )
+            {
+                try
+                {
+                    long expect = localCounter.get();
+                    long update = localCounter.incrementAndGet();
+                    // The compare-and-swap of StrongCounter is successful if the return value is the same as the expected,
+                    // otherwise we think that other indy nodes had executed the schedule checking during this period.
+                    if ( remoteCounter.compareAndSwap( expect, update ).get() != expect )
+                    {
+                        localCounter.set( remoteCounter.getValue().get() );
+                        return;
+                    }
+                }
+                catch ( InterruptedException | ExecutionException e )
+                {
+                    logger.warn( "Checking the counter error. ", e );
+                }
+            }
             // When the hour shift, the service need to check the remaining jobs expired in the last minutes of the last hour.
             LocalDateTime localDateTime = LocalDateTime.now();
             if ( localDateTime.getMinute() <= config.getScheduleRatePeriod() / 60 )
