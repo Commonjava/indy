@@ -2,7 +2,7 @@ package metadata_info;
 
 message MetadataInfo
 {
-    optional metadata metadata = 1;
+    optional Metadata metadata = 1;
     optional string metadataMergeInfo = 2;
 }
 
