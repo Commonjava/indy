@@ -32,6 +32,6 @@ public class MetadataKeyMarshaller implements MessageMarshaller<MetadataKey>
     @Override
     public String getTypeName()
     {
-        return "maven.MetadataKey";
+        return "metadata_key.MetadataKey";
     }
 }

@@ -42,6 +42,6 @@ public class VersioningMarshaller implements MessageMarshaller<Versioning>
     @Override
     public String getTypeName()
     {
-        return "maven.Versioning";
+        return "metadata_info.Versioning";
     }
 }

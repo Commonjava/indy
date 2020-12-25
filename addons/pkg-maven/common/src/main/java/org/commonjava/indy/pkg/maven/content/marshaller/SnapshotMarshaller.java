@@ -34,6 +34,6 @@ public class SnapshotMarshaller implements MessageMarshaller<Snapshot>
     @Override
     public String getTypeName()
     {
-        return "maven.Snapshot";
+        return "metadata_info.Snapshot";
     }
 }

@@ -36,6 +36,6 @@ public class SnapshotVersionMarshaller implements MessageMarshaller<SnapshotVers
     @Override
     public String getTypeName()
     {
-        return "maven.SnapshotVersion";
+        return "metadata_info.SnapshotVersion";
     }
 }
