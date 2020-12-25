@@ -34,6 +34,6 @@ public class PluginMarshaller implements MessageMarshaller<Plugin>
     @Override
     public String getTypeName()
     {
-        return "maven.Plugin";
+        return "metadata_info.Plugin";
     }
 }

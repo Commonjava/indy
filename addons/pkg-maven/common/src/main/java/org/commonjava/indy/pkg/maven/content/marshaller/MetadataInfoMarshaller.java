@@ -32,6 +32,6 @@ public class MetadataInfoMarshaller implements MessageMarshaller<MetadataInfo>
     @Override
     public String getTypeName()
     {
-        return "maven.MetadataInfo";
+        return "metadata_info.MetadataInfo";
     }
 }

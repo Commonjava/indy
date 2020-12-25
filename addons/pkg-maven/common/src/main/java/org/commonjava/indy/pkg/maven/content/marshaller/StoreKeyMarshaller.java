@@ -34,6 +34,6 @@ public class StoreKeyMarshaller implements MessageMarshaller<StoreKey>
     @Override
     public String getTypeName()
     {
-        return "maven.StoreKey";
+        return "metadata_key.StoreKey";
     }
 }
