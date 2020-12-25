@@ -83,8 +83,8 @@ pipeline {
             }
             steps {
                 echo "Deploy"
-                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk']){
-                    sh 'mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e'
+                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk', 'JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk']){
+                    sh 'mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e --global-toolchains toolchains.xml'
                 }
             }
         }
