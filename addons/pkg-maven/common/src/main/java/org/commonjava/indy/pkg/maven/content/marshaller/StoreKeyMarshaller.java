@@ -12,7 +12,7 @@ public class StoreKeyMarshaller implements MessageMarshaller<StoreKey>
     public StoreKey readFrom( ProtoStreamReader reader ) throws IOException
     {
         String packageType = reader.readString( "packageType" );
-        StoreType storeType = reader.readEnum( "storeType", StoreType.class );
+        StoreType storeType = reader.readEnum( "type", StoreType.class );
         String name = reader.readString( "name" );
         return new StoreKey( packageType, storeType, name );
     }
@@ -22,7 +22,7 @@ public class StoreKeyMarshaller implements MessageMarshaller<StoreKey>
     {
         writer.writeString( "name", storeKey.getName() );
         writer.writeString( "packageType", storeKey.getPackageType() );
-        writer.writeEnum( "storeType", storeKey.getType());
+        writer.writeEnum( "type", storeKey.getType());
     }
 
     @Override
