@@ -48,22 +48,6 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     @Context
     UriInfo uriInfo;
 
-    @FoloInprogressCache
-    @Inject
-    private CacheHandle<TrackedContentEntry, TrackedContentEntry> inProgressRecords;
-
-    @FoloSealedCache
-    @Inject
-    private CacheHandle<TrackingKey, TrackedContent> sealedRecords;
-
-    @Inject
-    private FoloBackupListener foloBackupListener;
-
-    @Inject
-    private FoloExpirationWarningListener expirationWarningListener;
-
-
-
     private Session session;
     private Mapper<DtxTrackingRecord> trackingMapper;
 
