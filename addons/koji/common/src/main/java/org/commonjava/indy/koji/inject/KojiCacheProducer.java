@@ -22,6 +22,7 @@ import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
+import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.MessageMarshaller;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -50,7 +51,7 @@ public class KojiCacheProducer
     {
         if ( remoteConfiguration.isEnabled() )
         {
-            List<MessageMarshaller> marshallers = new ArrayList<>();
+            List<BaseMarshaller> marshallers = new ArrayList<>();
             marshallers.add( new MetadataMarshaller() );
             marshallers.add( new ProjectRefMashaller() );
             cacheProducer.registerProtoAndMarshallers( "koji_metadata.proto", marshallers );

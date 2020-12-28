@@ -19,6 +19,7 @@ import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
+import org.infinispan.protostream.BaseMarshaller;
 import org.infinispan.protostream.MessageMarshaller;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -49,7 +50,7 @@ public class NfcCacheProducer
     {
         if ( remoteConfiguration.isEnabled() )
         {
-            List<MessageMarshaller> marshallerList = new ArrayList<>();
+            List<BaseMarshaller> marshallerList = new ArrayList<>();
             marshallerList.add( new NfcConcreteResourceMarshaller() );
             cacheProducer.registerProtoAndMarshallers( "nfc.proto", marshallerList );
         }
