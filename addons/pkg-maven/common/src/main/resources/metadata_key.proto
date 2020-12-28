@@ -2,13 +2,13 @@ package metadata_key;
 
 message MetadataKey
 {
-    required StoreKey storeKey = 1;
+    optional StoreKey storeKey = 1;
     optional string path = 2;
 }
 
 message StoreKey
 {
-    required string packageType = 1;
+    optional string packageType = 1;
 
     enum StoreType {
         group = 0;
@@ -16,7 +16,7 @@ message StoreKey
         hosted = 2;
     }
 
-    required StoreType type = 2;
+    optional StoreType type = 2;
 
     optional string name = 3;
 }

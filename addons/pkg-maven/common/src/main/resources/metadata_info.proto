@@ -9,9 +9,9 @@ message MetadataInfo
 message Metadata
 {
     optional string modelVersion = 1;
-    required string groupId = 2;
-    required string artifactId = 3;
-    required string version = 4;
+    optional string groupId = 2;
+    optional string artifactId = 3;
+    optional string version = 4;
     optional Versioning versioning = 5;
     repeated Plugin plugins = 6;
     optional string modelEncoding = 7;

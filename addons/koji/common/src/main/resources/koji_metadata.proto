@@ -2,6 +2,6 @@ package koji;
 
 message SimpleProjectRef
 {
-    required string groupId = 1;
-    required string artifactId = 2;
+    optional string groupId = 1;
+    optional string artifactId = 2;
 }
