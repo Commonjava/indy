@@ -327,7 +327,7 @@ public class CacheProducer
         metadataCache.put(fileName, protoFile);
     }
 
-    public synchronized void registerProtoAndMarshallers( String protofile, List<MessageMarshaller> marshallers )
+    public synchronized void registerProtoAndMarshallers( String protofile, List<BaseMarshaller> marshallers )
     {
         SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
         try
@@ -339,7 +339,7 @@ public class CacheProducer
             throw new RuntimeException("Register proto files error, protofile: " + protofile, e);
         }
 
-        for ( MessageMarshaller marshaller : marshallers )
+        for ( BaseMarshaller marshaller : marshallers )
         {
             try
             {

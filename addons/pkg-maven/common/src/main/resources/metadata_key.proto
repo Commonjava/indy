@@ -11,9 +11,9 @@ message StoreKey
     required string packageType = 1;
 
     enum StoreType {
-        group = 1;
-        remote = 2;
-        hosted = 3;
+        group = 0;
+        remote = 1;
+        hosted = 2;
     }
 
     required StoreType type = 2;
