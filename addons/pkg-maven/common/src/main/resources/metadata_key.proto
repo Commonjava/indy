@@ -1,8 +1,14 @@
 package metadata_key;
 
+/*
+  @Indexed
+*/
 message MetadataKey
 {
+    /* @IndexedField(index=true) */
     optional StoreKey storeKey = 1;
+
+    /* @IndexedField(index=false) */
     optional string path = 2;
 }
 
