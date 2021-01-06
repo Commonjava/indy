@@ -18,9 +18,9 @@ package org.commonjava.indy.subsys.cassandra.util;
 public class SchemaUtils
 {
 
-    public static String getSchemaCreateKeyspace( String keyspace )
+    public static String getSchemaCreateKeyspace( String keyspace, int replica )
     {
         return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
-                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1};";
+                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':" + replica + "};";
     }
 }

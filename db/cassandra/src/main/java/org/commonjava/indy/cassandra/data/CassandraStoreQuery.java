@@ -7,9 +7,11 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.cassandra.util.SchemaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,9 @@ public class CassandraStoreQuery
     @Inject
     IndyStoreManagerConfig config;
 
+    @Inject
+    IndyConfiguration indyConfig;
+
     private Mapper<DtxArtifactStore> storeMapper;
 
     private Session session;
@@ -49,10 +54,11 @@ public class CassandraStoreQuery
 
     public CassandraStoreQuery() {}
 
-    public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config )
+    public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config, IndyConfiguration indyConfig )
     {
         this.client = client;
         this.config = config;
+        this.indyConfig = indyConfig;
         init();
     }
 
@@ -64,7 +70,7 @@ public class CassandraStoreQuery
 
         session = client.getSession( keySpace );
 
-        session.execute( CassandraStoreUtil.getSchemaCreateKeyspace( keySpace, config ) );
+        session.execute( SchemaUtils.getSchemaCreateKeyspace( keySpace, indyConfig.getKeyspacesReplica() ));
         session.execute( CassandraStoreUtil.getSchemaCreateTableStore( keySpace ) );
         session.execute( CassandraStoreUtil.getSchemaCreateIndex4Store( keySpace ) );
 

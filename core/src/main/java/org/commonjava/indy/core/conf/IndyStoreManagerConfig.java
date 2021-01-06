@@ -35,17 +35,6 @@ public class IndyStoreManagerConfig implements IndyConfigInfo
         this.keyspace = keyspace;
     }
 
-    public int getReplicationFactor()
-    {
-        return replicationFactor;
-    }
-
-    @ConfigName( "store.manager.replica" )
-    public void setReplicationFactor( int replicationFactor )
-    {
-        this.replicationFactor = replicationFactor;
-    }
-
     @Override
     public String getDefaultConfigFileName()
     {

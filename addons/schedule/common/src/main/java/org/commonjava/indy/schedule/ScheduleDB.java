@@ -7,11 +7,13 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.model.DtxExpiration;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.schedule.event.ScheduleTriggerEvent;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.cassandra.util.SchemaUtils;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.infinispan.counter.api.StrongCounter;
 import org.slf4j.Logger;
@@ -44,6 +46,9 @@ public class ScheduleDB
     ScheduleDBConfig config;
 
     @Inject
+    IndyConfiguration indyConfig;
+
+    @Inject
     private CacheProducer cacheProducer;
 
     @Inject
@@ -73,8 +78,9 @@ public class ScheduleDB
 
     public ScheduleDB() {}
 
-    public ScheduleDB( ScheduleDBConfig config, CassandraClient client, CacheProducer cacheProducer )
+    public ScheduleDB( IndyConfiguration indyConfig, ScheduleDBConfig config, CassandraClient client, CacheProducer cacheProducer )
     {
+        this.indyConfig = indyConfig;
         this.config = config;
         this.client = client;
         this.cacheProducer = cacheProducer;
@@ -89,7 +95,7 @@ public class ScheduleDB
 
         session = client.getSession( keyspace );
 
-        session.execute( ScheduleDBUtil.getSchemaCreateKeyspace( config, keyspace ) );
+        session.execute( SchemaUtils.getSchemaCreateKeyspace( keyspace, indyConfig.getKeyspacesReplica() ));
         session.execute( ScheduleDBUtil.getSchemaCreateTableSchedule( keyspace ) );
         session.execute( ScheduleDBUtil.getSchemaCreateTypeIndex4Schedule( keyspace ) );
         session.execute( ScheduleDBUtil.getSchemaCreateTableExpiration( keyspace ) );

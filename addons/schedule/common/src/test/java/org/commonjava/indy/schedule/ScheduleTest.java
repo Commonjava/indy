@@ -3,6 +3,7 @@ package org.commonjava.indy.schedule;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
@@ -45,8 +46,11 @@ public class ScheduleTest
         ScheduleDBConfig scheduleDBConfig =
                         new ScheduleDBConfig( SCHEDULE_KEYSPACE, 1, 60 * 60 * 1000, 3 );
 
+        DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
+        indyConfig.setKeyspacesReplica( 1 );
+
         DefaultCacheManager cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
-        scheduleDB = new ScheduleDB( scheduleDBConfig, client, new CacheProducer( null, cacheManager, null ) );
+        scheduleDB = new ScheduleDB( indyConfig, scheduleDBConfig, client, new CacheProducer( null, cacheManager, null ) );
     }
 
     @After

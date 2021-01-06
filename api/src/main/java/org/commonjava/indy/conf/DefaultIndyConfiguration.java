@@ -64,6 +64,8 @@ public class DefaultIndyConfiguration
 
     public static final String DEFAULT_DISPOSABLE_STORE_PATTERN = ".*test.*";
 
+    public static final int DEFAULT_CASSANDRA_KEYSPACE_REPLICA = 1;
+
     private Integer passthroughTimeoutSeconds;
 
     private Integer notFoundCacheTimeoutSeconds;
@@ -105,6 +107,8 @@ public class DefaultIndyConfiguration
     private String gaCacheStorePattern;
 
     private String disposableStorePattern;
+
+    private Integer keyspacesReplica;
 
     public DefaultIndyConfiguration()
     {
@@ -405,6 +409,17 @@ public class DefaultIndyConfiguration
     public void setStoreManagerStandalone( Boolean storeManagerStandalone )
     {
         this.storeManagerStandalone = storeManagerStandalone;
+    }
+
+    public int getKeyspacesReplica()
+    {
+        return this.keyspacesReplica == null ? DEFAULT_CASSANDRA_KEYSPACE_REPLICA : keyspacesReplica ;
+    }
+
+    @ConfigName( "cassandra.keyspaces.replica" )
+    public void setKeyspacesReplica( final int keyspacesReplica )
+    {
+        this.keyspacesReplica = keyspacesReplica;
     }
 
     @Override

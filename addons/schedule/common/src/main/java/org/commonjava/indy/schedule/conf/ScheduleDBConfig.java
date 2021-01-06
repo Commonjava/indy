@@ -47,17 +47,6 @@ public class ScheduleDBConfig implements IndyConfigInfo
         this.scheduleKeyspace = scheduleKeyspace;
     }
 
-    public int getReplicationFactor()
-    {
-        return replicationFactor;
-    }
-
-    @ConfigName( "schedule.keyspace.replica" )
-    public void setReplicationFactor( int replicationFactor )
-    {
-        this.replicationFactor = replicationFactor;
-    }
-
     public long getPartitionKeyRange()
     {
         return partitionKeyRange;

@@ -6,6 +6,7 @@ import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.folo.change.FoloBackupListener;
 import org.commonjava.indy.folo.change.FoloExpirationWarningListener;
 import org.commonjava.indy.folo.conf.FoloConfig;
@@ -14,6 +15,7 @@ import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
+import org.commonjava.indy.subsys.cassandra.util.SchemaUtils;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
@@ -44,6 +46,9 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Inject
     FoloConfig config;
+
+    @Inject
+    IndyConfiguration indyConfig;
 
     @Context
     UriInfo uriInfo;
@@ -77,13 +82,6 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
                 + ");";
     }
 
-    private static String createFoloKeyspace( String keyspace)
-    {
-        return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
-                + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':1 };";
-    }
-
-
     private static String createFoloSealedIdx(String  keyspace) {
         return "CREATE INDEX IF NOT EXISTS sealed_idx ON " + keyspace + ".records (sealed);";
     }
@@ -98,7 +96,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         String foloCassandraKeyspace = config.getFoloCassandraKeyspace();
 
         session = cassandraClient.getSession(foloCassandraKeyspace);
-        session.execute(createFoloKeyspace(foloCassandraKeyspace));
+        session.execute( SchemaUtils.getSchemaCreateKeyspace( foloCassandraKeyspace, indyConfig.getKeyspacesReplica() ));
         session.execute(createFoloRecordsTable(foloCassandraKeyspace));
         session.execute(createFoloSealedIdx(foloCassandraKeyspace));
 

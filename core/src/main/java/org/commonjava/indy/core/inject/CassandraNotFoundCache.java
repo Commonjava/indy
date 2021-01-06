@@ -128,7 +128,7 @@ public class CassandraNotFoundCache
             return;
         }
 
-        session.execute( getSchemaCreateKeyspace( keyspace ) );
+        session.execute( getSchemaCreateKeyspace( keyspace, config.getKeyspacesReplica() ) );
         session.execute( getSchemaCreateTable( keyspace ) );
 
         preparedExistQuery =
