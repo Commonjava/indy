@@ -34,11 +34,12 @@ public class ScheduleDBUtil
     {
         return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_EXPIRATION + " ("
                         + "expirationpid bigint,"
+                        + "schedulekey varchar,"
                         + "scheduleuid uuid,"
                         + "expirationtime timestamp,"
                         + "storekey varchar,"
                         + "jobname varchar,"
-                        + "PRIMARY KEY (expirationpid, scheduleuid)"
+                        + "PRIMARY KEY (expirationpid, schedulekey)"
                         + ");";
     }
 
