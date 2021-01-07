@@ -149,17 +149,17 @@ public final class StoreKey
         StoreType type = null;
 
         // FIXME: We need to get to a point where it's safe for this to be an error and not default to maven.
-        if ( parts.length < 3 || isBlank(parts[0]) )
-        {
-            packageType = MAVEN_PKG_KEY;
-            type = StoreType.get(parts[0]);
-            name = parts[1];
-        }
-        else if ( parts.length < 2 )
+        if ( parts.length < 2 )
         {
             packageType = MAVEN_PKG_KEY;
             type = StoreType.remote;
             name = id;
+        }
+        else if ( parts.length < 3 || isBlank( parts[0] ) )
+        {
+            packageType = MAVEN_PKG_KEY;
+            type = StoreType.get( parts[0] );
+            name = parts[1];
         }
         else
         {
