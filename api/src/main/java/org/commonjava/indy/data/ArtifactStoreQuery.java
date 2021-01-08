@@ -45,9 +45,6 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
 {
     ArtifactStoreQuery<T> rewrap( StoreDataManager manager );
 
-    ArtifactStoreQuery<T> packageType( String packageType )
-            throws IndyDataException;
-
     <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( Class<C> storeCls );
 
     ArtifactStoreQuery<T> storeTypes( StoreType... types );
@@ -88,17 +85,26 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
     Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException;
 
+    Set<Group> getGroupsContaining( StoreKey storeKey, Boolean enabled )
+                    throws IndyDataException;
+
     List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url )
             throws IndyDataException;
 
     List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url, Boolean enabled )
                     throws IndyDataException;
 
-    List<ArtifactStore> getOrderedConcreteStoresInGroup( String groupName )
+    List<ArtifactStore> getOrderedConcreteStoresInGroup( String packageType, String groupName )
             throws IndyDataException;
 
-    List<ArtifactStore> getOrderedStoresInGroup( String groupName )
+    List<ArtifactStore> getOrderedConcreteStoresInGroup( String packageType, String groupName, Boolean enabled )
+                    throws IndyDataException;
+
+    List<ArtifactStore> getOrderedStoresInGroup( String packageType, String groupName )
             throws IndyDataException;
+
+    List<ArtifactStore> getOrderedStoresInGroup( String packageType, String groupName, Boolean enabled )
+                    throws IndyDataException;
 
     Set<Group> getGroupsAffectedBy( StoreKey... keys )
             throws IndyDataException;
@@ -106,22 +112,13 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
     Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException;
 
-    List<RemoteRepository> getAllRemoteRepositories()
+    RemoteRepository getRemoteRepository( String packageType, String name )
             throws IndyDataException;
 
-    List<HostedRepository> getAllHostedRepositories()
+    HostedRepository getHostedRepository( String packageType, String name )
             throws IndyDataException;
 
-    List<Group> getAllGroups()
-            throws IndyDataException;
-
-    RemoteRepository getRemoteRepository( String name )
-            throws IndyDataException;
-
-    HostedRepository getHostedRepository( String name )
-            throws IndyDataException;
-
-    Group getGroup( String name )
+    Group getGroup( String packageType, String name )
             throws IndyDataException;
 
     ArtifactStoreQuery<T> noPackageType();

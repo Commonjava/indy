@@ -225,7 +225,7 @@ public class ConcurrencyTest
                 logger.debug( "Grabbing all artifact stores" );
                 try
                 {
-                    dataManager.query().packageType( MAVEN_PKG_KEY ).getAllGroups();
+                    dataManager.query().getAllGroups( MAVEN_PKG_KEY );
                     return null;
                 }
                 catch ( IndyDataException e )

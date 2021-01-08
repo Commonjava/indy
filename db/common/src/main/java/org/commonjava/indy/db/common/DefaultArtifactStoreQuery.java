@@ -102,20 +102,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public DefaultArtifactStoreQuery<T> packageType( String packageType )
-            throws IndyDataException
-    {
-        if ( !PackageTypes.contains( packageType ) )
-        {
-            throw new IndyDataException( "Invalid package type: %s. Supported values are: %s", packageType,
-                                         PackageTypes.getPackageTypes() );
-        }
-
-        this.packageType = packageType;
-        return this;
-    }
-
-    @Override
     public <C extends ArtifactStore> DefaultArtifactStoreQuery<C> storeType( Class<C> storeCls )
     {
         if ( RemoteRepository.class.equals( storeCls ) )
@@ -262,7 +248,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException
     {
-        return getAllGroups().stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
+        return getGroupsContaining( storeKey, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public Set<Group> getGroupsContaining( StoreKey storeKey, Boolean enabled )
+                    throws IndyDataException
+    {
+        return getAllGroups( storeKey.getPackageType(), enabled ).stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
 
     @Override
@@ -383,13 +377,21 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     @Measure
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName )
+                    throws IndyDataException
+    {
+        return getOrderedConcreteStoresInGroup( packageType, groupName, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
             throws IndyDataException
     {
         logger.trace( "START: default store-query ordered-concrete-stores-in-group" );
         try
         {
-            return getGroupOrdering( groupName, false, true );
+            return getGroupOrdering( packageType, groupName, enabled, false, true );
         }
         finally
         {
@@ -399,10 +401,18 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     @Measure
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName )
+                    throws IndyDataException
+    {
+        return getOrderedStoresInGroup( packageType, groupName, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, true, false );
+        return getGroupOrdering( packageType, groupName, enabled, true, false );
     }
 
     @Override
@@ -448,66 +458,21 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
-    public List<RemoteRepository> getAllRemoteRepositories()
-            throws IndyDataException
-    {
-        return getAllOfType( RemoteRepository.class );
-    }
-
-    @Override
-    @Measure
-    public List<HostedRepository> getAllHostedRepositories()
-            throws IndyDataException
-    {
-        return getAllOfType( HostedRepository.class );
-    }
-
-    @Override
-    @Measure
-    public List<Group> getAllGroups()
-            throws IndyDataException
-    {
-        return getAllOfType( Group.class );
-    }
-
-    private <T extends ArtifactStore> List<T> getAllOfType(Class<T> type)
-            throws IndyDataException
-    {
-        List<StoreKey> keys = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, type ).keyStream()
-                                                                                                        .collect(
-                                                                                                                Collectors
-                                                                                                                        .toList() );
-
-        List<T> stores = new ArrayList<>();
-        for ( StoreKey key : keys )
-        {
-            T store = (T) dataManager.getArtifactStore( key );
-            if ( store != null && ( enabled == null || store.isDisabled() == !enabled ) )
-            {
-                stores.add( store );
-            }
-        }
-
-        return stores;
-    }
-
-    @Override
-    public RemoteRepository getRemoteRepository( final String name )
+    public RemoteRepository getRemoteRepository( final String packageType, final String name )
             throws IndyDataException
     {
         return (RemoteRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.remote, name ) );
     }
 
     @Override
-    public HostedRepository getHostedRepository( final String name )
+    public HostedRepository getHostedRepository( final String packageType, final String name )
             throws IndyDataException
     {
         return (HostedRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.hosted, name ) );
     }
 
     @Override
-    public Group getGroup( final String name )
+    public Group getGroup( final String packageType, final String name )
             throws IndyDataException
     {
         return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
@@ -568,7 +533,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                           .collect( Collectors.toList() );
     }
 
-    private List<ArtifactStore> getGroupOrdering( final String groupName,
+    private List<ArtifactStore> getGroupOrdering( final String packageType, final String groupName, final Boolean enabled,
                                                   final boolean includeGroups, final boolean recurseGroups )
             throws IndyDataException
     {
@@ -594,7 +559,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         {
             Group next = toCheck.removeFirst();
 
-            if ( next == null || next.isDisabled() && Boolean.TRUE.equals( enabled ) )
+            if ( next == null || next.isDisabled() && Boolean.TRUE.equals( this.enabled ) )
             {
                 continue;
             }
@@ -622,7 +587,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                          else
                                          {
                                              final ArtifactStore store = dataManager.getArtifactStore( key );
-                                             if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( enabled ) ) )
+                                             if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( this.enabled ) ) )
                                              {
                                                  result.add( store );
                                              }

@@ -141,7 +141,7 @@ public class NfcController
             List<ArtifactStore> stores;
             try
             {
-                stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
+                stores = storeManager.query().getOrderedConcreteStoresInGroup( key.getPackageType(), key.getName() );
             }
             catch ( final IndyDataException e )
             {
@@ -231,7 +231,7 @@ public class NfcController
             {
                 case group:
                 {
-                    final List<ArtifactStore> stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
+                    final List<ArtifactStore> stores = storeManager.query().getOrderedConcreteStoresInGroup( key.getPackageType(), key.getName() );
                     for ( final ArtifactStore store : stores )
                     {
                         clear( store, path );
@@ -293,8 +293,7 @@ public class NfcController
                 {
                     //Warn: This is very expensive if group holds thousands of repositories
                     final List<StoreKey> stores = storeManager.query()
-                                                              .packageType( key.getPackageType() )
-                                                              .getOrderedConcreteStoresInGroup( key.getName() )
+                                                              .getOrderedConcreteStoresInGroup( key.getPackageType(), key.getName() )
                                                               .stream()
                                                               .map( artifactStore -> artifactStore.getKey() )
                                                               .collect( Collectors.toList() );
