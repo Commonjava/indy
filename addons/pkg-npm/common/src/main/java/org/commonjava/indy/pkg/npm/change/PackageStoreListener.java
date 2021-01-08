@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -88,7 +89,7 @@ public class PackageStoreListener
         {
             if ( hosted == storeKey.getType() )
             {
-                HostedRepository hosted = dataManager.query().packageType( PackageTypeConstants.PKG_TYPE_NPM ).getHostedRepository( storeKey.getName() );
+                HostedRepository hosted = dataManager.query().getHostedRepository( PKG_TYPE_NPM, storeKey.getName() );
                 try
                 {
                     doClear( hosted, pkgMetadataPath );
@@ -100,7 +101,7 @@ public class PackageStoreListener
                                     hosted, e.getMessage() ), e );
                 }
 
-                final Set<Group> groups = dataManager.query().packageType( PackageTypeConstants.PKG_TYPE_NPM ).getGroupsAffectedBy( storeKey );
+                final Set<Group> groups = dataManager.query().getGroupsAffectedBy( storeKey );
                 if ( groups != null )
                 {
                     for ( final Group group : groups )

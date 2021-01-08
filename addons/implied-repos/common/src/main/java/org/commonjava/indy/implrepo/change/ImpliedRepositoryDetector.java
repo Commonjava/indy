@@ -270,7 +270,7 @@ public class ImpliedRepositoryDetector
         boolean anyChanged = false;
         try
         {
-            final Set<Group> groups = storeManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( key );
+            final Set<Group> groups = storeManager.query().getGroupsContaining( key );
             if ( groups != null )
             {
                 logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );

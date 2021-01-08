@@ -88,7 +88,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final Group result = manager.query().packageType( MAVEN_PKG_KEY ).storeType( Group.class ).getByName( grp.getName() );
+        final Group result = manager.query().getGroup( MAVEN_PKG_KEY, grp.getName() );
 
         assertThat( result, notNullValue() );
         assertThat( result.getName(), equalTo( grp.getName() ) );
@@ -136,7 +136,7 @@ public abstract class GroupDataManagerTCK
 
         manager.deleteArtifactStore( grp.getKey(), summary, new EventMetadata() );
 
-        final Group result = manager.query().packageType( MAVEN_PKG_KEY ).storeType( Group.class ).getByName( grp.getName() );
+        final Group result = manager.query().getGroup( MAVEN_PKG_KEY, grp.getName() );
 
         assertThat( result, nullValue() );
     }
@@ -152,7 +152,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final Group result = manager.query().packageType( MAVEN_PKG_KEY ).storeType( Group.class ).getByName( grp.getName() );
+        final Group result = manager.query().getGroup( MAVEN_PKG_KEY, grp.getName() );
 
         assertThat( result, notNullValue() );
         assertThat( result.getName(), equalTo( grp.getName() ) );
@@ -176,7 +176,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final List<ArtifactStore> repos = manager.query().packageType( MAVEN_PKG_KEY ).getOrderedConcreteStoresInGroup( grp.getName() );
+        final List<ArtifactStore> repos = manager.query().getOrderedConcreteStoresInGroup( MAVEN_PKG_KEY, grp.getName() );
 
         assertThat( repos, notNullValue() );
         assertThat( repos.size(), equalTo( 2 ) );
@@ -198,7 +198,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp );
 
-        final List<ArtifactStore> result = manager.query().packageType( MAVEN_PKG_KEY ).getOrderedConcreteStoresInGroup( grp.getName() );
+        final List<ArtifactStore> result = manager.query().getOrderedConcreteStoresInGroup( MAVEN_PKG_KEY, grp.getName() );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );
@@ -222,7 +222,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp, grp );
 
-        final List<Group> result = manager.query().packageType( MAVEN_PKG_KEY ).storeType( Group.class ).getAll();
+        final List<Group> result = manager.query().getAllGroups( MAVEN_PKG_KEY );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );
@@ -239,7 +239,7 @@ public abstract class GroupDataManagerTCK
 
         store( grp, grp2 );
 
-        final List<Group> result = manager.query().packageType( MAVEN_PKG_KEY ).storeType( Group.class ).getAll();
+        final List<Group> result = manager.query().getAllGroups( MAVEN_PKG_KEY );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 2 ) );

@@ -240,11 +240,12 @@ public class NfcController
                 }
                 default:
                 {
-                    storeManager.query()
-                                .packageType( key.getPackageType() )
-                                .concreteStores()
-                                .stream( s -> s.getName().equals( key.getName() ) )
-                                .forEach( store -> clear( store, path ) );
+                    List<ArtifactStore> stores = new ArrayList<>();
+                    stores.addAll( storeManager.query().getAllRemoteRepositories( key.getPackageType() ) );
+                    stores.addAll( storeManager.query().getAllHostedRepositories( key.getPackageType() ) );
+                    stores.stream()
+                          .filter( s -> s.getName().equals( key.getName() ) )
+                          .forEach( store -> clear( store, path ) );
                     break;
                 }
             }

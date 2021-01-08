@@ -117,7 +117,7 @@ public class ContentIndexWarmer
 
                             try
                             {
-                                List<ArtifactStore> stores = storeDataManager.query().getOrderedConcreteStoresInGroup( g.getName() );
+                                List<ArtifactStore> stores = storeDataManager.query().getOrderedConcreteStoresInGroup( g.getPackageType(), g.getName() );
 
                                 stores.forEach( s -> {
                                     List<Transfer> txfrs = transferMap.get( s.getKey() );

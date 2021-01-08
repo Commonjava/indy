@@ -180,7 +180,7 @@ public class ConcurrencyTest
                     logger.debug( "Grabbing groups containing: {}", repo.getKey() );
                     try
                     {
-                        if (!dataManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( repo.getKey() ).isEmpty())
+                        if (!dataManager.query().getGroupsContaining( repo.getKey() ).isEmpty())
                         {
                             return null;
                         }

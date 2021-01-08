@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.dotmaven.store.sub;
 
+import io.undertow.util.HeaderValues;
 import net.sf.webdav.StoredObject;
 import net.sf.webdav.exceptions.WebdavException;
 import net.sf.webdav.spi.ITransaction;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -347,13 +349,21 @@ public class ArtifactStoreSubStore
             final StoreType type = matcher.getStoreType();
             try
             {
-                List<String> noms = indy.query()
-                           .packageType( packageType )
-                           .storeTypes( type )
-                           .stream()
-                           .map( ArtifactStore::getName )
-                           .collect( Collectors.toList() );
+                List<? extends ArtifactStore> stores = new ArrayList<>();
+                if ( StoreType.group.equals( type ) )
+                {
+                    stores = indy.query().getAllGroups( packageType );
+                }
+                else if ( StoreType.hosted.equals( type ) )
+                {
+                    stores = indy.query().getAllHostedRepositories( packageType );
+                }
+                else if ( StoreType.remote.equals( type ) )
+                {
+                    stores = indy.query().getAllRemoteRepositories( packageType );
+                }
 
+                List<String> noms = stores.stream().map( ArtifactStore::getName ).collect( Collectors.toList());
                 names = noms.toArray( new String[noms.size()] );
             }
             catch ( final IndyDataException e )

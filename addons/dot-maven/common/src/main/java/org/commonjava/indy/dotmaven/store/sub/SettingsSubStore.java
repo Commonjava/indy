@@ -20,6 +20,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -130,10 +131,21 @@ public class SettingsSubStore
         {
             final StoreType type = matcher.getStoreType();
 
-            List<? extends ArtifactStore> all;
+            List<? extends ArtifactStore> all = new ArrayList<>();
             try
             {
-                all = indy.query().packageType( MAVEN_PKG_KEY ).storeTypes( type ).getAll();
+                if ( StoreType.group.equals( type ) )
+                {
+                    all = indy.query().getAllGroups( MAVEN_PKG_KEY );
+                }
+                else if ( StoreType.hosted.equals( type ) )
+                {
+                    all = indy.query().getAllHostedRepositories( MAVEN_PKG_KEY );
+                }
+                else if ( StoreType.remote.equals( type ) )
+                {
+                    all = indy.query().getAllRemoteRepositories( MAVEN_PKG_KEY );
+                }
             }
             catch ( final IndyDataException e )
             {
