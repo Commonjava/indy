@@ -145,13 +145,13 @@ public class ImpliedRepositoryDetectorTest
     private RemoteRepository getRemote()
             throws IndyDataException
     {
-        return storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepository( REMOTE_NAME );
+        return storeManager.query().getRemoteRepository( MAVEN_PKG_KEY, REMOTE_NAME );
     }
 
     private Group getGroup()
             throws IndyDataException
     {
-        return storeManager.query().packageType( MAVEN_PKG_KEY ).getGroup( GROUP_NAME );
+        return storeManager.query().getGroup( MAVEN_PKG_KEY, GROUP_NAME );
     }
 
     //    @Test
@@ -183,7 +183,7 @@ public class ImpliedRepositoryDetectorTest
             detector.wait();
         }
 
-        assertThat( storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepository( "i-repo-one" ), notNullValue() );
+        assertThat( storeManager.query().getRemoteRepository( MAVEN_PKG_KEY, "i-repo-one" ), notNullValue() );
 
         assertThat( getGroup().getConstituents().contains( new StoreKey( MAVEN_PKG_KEY, StoreType.remote, "i-repo-one" ) ),
                     equalTo( true ) );
@@ -204,7 +204,7 @@ public class ImpliedRepositoryDetectorTest
             detector.wait();
         }
 
-        assertThat( storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepository( "i-repo-one" ), notNullValue() );
+        assertThat( storeManager.query().getRemoteRepository( MAVEN_PKG_KEY, "i-repo-one" ), notNullValue() );
 
         assertThat( getGroup().getConstituents().contains( new StoreKey( StoreType.remote, "i-repo-one" ) ),
                     equalTo( true ) );

@@ -141,7 +141,7 @@ public class NfcController
             List<ArtifactStore> stores;
             try
             {
-                stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
+                stores = storeManager.query().getOrderedConcreteStoresInGroup( key.getPackageType(), key.getName() );
             }
             catch ( final IndyDataException e )
             {
@@ -231,7 +231,7 @@ public class NfcController
             {
                 case group:
                 {
-                    final List<ArtifactStore> stores = storeManager.query().packageType( key.getPackageType() ).getOrderedConcreteStoresInGroup( key.getName() );
+                    final List<ArtifactStore> stores = storeManager.query().getOrderedConcreteStoresInGroup( key.getPackageType(), key.getName() );
                     for ( final ArtifactStore store : stores )
                     {
                         clear( store, path );
@@ -240,11 +240,12 @@ public class NfcController
                 }
                 default:
                 {
-                    storeManager.query()
-                                .packageType( key.getPackageType() )
-                                .concreteStores()
-                                .stream( s -> s.getName().equals( key.getName() ) )
-                                .forEach( store -> clear( store, path ) );
+                    List<ArtifactStore> stores = new ArrayList<>();
+                    stores.addAll( storeManager.query().getAllRemoteRepositories( key.getPackageType() ) );
+                    stores.addAll( storeManager.query().getAllHostedRepositories( key.getPackageType() ) );
+                    stores.stream()
+                          .filter( s -> s.getName().equals( key.getName() ) )
+                          .forEach( store -> clear( store, path ) );
                     break;
                 }
             }
@@ -293,8 +294,7 @@ public class NfcController
                 {
                     //Warn: This is very expensive if group holds thousands of repositories
                     final List<StoreKey> stores = storeManager.query()
-                                                              .packageType( key.getPackageType() )
-                                                              .getOrderedConcreteStoresInGroup( key.getName() )
+                                                              .getOrderedConcreteStoresInGroup( key.getPackageType(), key.getName() )
                                                               .stream()
                                                               .map( artifactStore -> artifactStore.getKey() )
                                                               .collect( Collectors.toList() );

@@ -267,9 +267,7 @@ public class PathMappedMavenGACache
 
     private Set<String> getMatchedStores() throws IndyDataException
     {
-        Set<String> matched = storeDataManager.query()
-                                              .packageType( PKG_TYPE_MAVEN )
-                                              .getAllHostedRepositories()
+        Set<String> matched = storeDataManager.query().getAllHostedRepositories( PKG_TYPE_MAVEN )
                                               .stream()
                                               .filter( hosted -> hosted.getName().matches( gaStorePattern ) )
                                               .map( hostedRepository -> hostedRepository.getKey().getName() )

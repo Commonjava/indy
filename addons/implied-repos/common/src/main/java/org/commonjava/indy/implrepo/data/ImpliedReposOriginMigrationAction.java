@@ -32,6 +32,7 @@ import java.util.List;
 
 import static org.commonjava.indy.implrepo.data.ImpliedReposStoreDataManagerDecorator.IMPLIED_REPO_ORIGIN;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_ORIGIN;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
 /**
  * Created by jdcasey on 9/19/16.
@@ -58,7 +59,7 @@ public class ImpliedReposOriginMigrationAction
         List<RemoteRepository> remoteRepositories;
         try
         {
-            remoteRepositories = storeDataManager.query().getAllRemoteRepositories();
+            remoteRepositories = storeDataManager.query().getAllRemoteRepositories( PKG_TYPE_MAVEN );
         }
         catch ( IndyDataException e )
         {

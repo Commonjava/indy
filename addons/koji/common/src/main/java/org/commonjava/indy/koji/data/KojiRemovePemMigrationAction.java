@@ -21,6 +21,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -30,6 +31,9 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
 public class KojiRemovePemMigrationAction
                 implements MigrationAction
@@ -73,10 +77,14 @@ public class KojiRemovePemMigrationAction
     private boolean doMigrate() throws IndyLifecycleException
     {
 
-        List<RemoteRepository> repos;
+        List<RemoteRepository> repos = new ArrayList<>();
         try
         {
-            repos = storeDataManager.query().noPackageType().getAllRemoteRepositories();
+            Set<String> defaults = PackageTypes.getPackageTypes();
+            for ( String packageType : defaults )
+            {
+                repos.addAll( storeDataManager.query().getAllRemoteRepositories( packageType ));
+            }
         }
         catch ( IndyDataException e )
         {

@@ -60,7 +60,7 @@ public class MaintenanceController
 
     public Set<StoreKey> getTombstoneStores( String packageType ) throws IndyDataException
     {
-        List<HostedRepository> stores = storeDataManager.query().packageType( packageType ).getAllHostedRepositories();
+        List<HostedRepository> stores = storeDataManager.query().getAllHostedRepositories( packageType );
         Set<StoreKey> tombstoneStores = new HashSet<>();
         for ( HostedRepository hosted : stores )
         {

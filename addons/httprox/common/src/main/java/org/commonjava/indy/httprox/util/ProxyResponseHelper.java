@@ -144,9 +144,9 @@ public class ProxyResponseHelper
             String groupName = repoCreator.formatId( url.getHost(), port, 0, trackingId, StoreType.group );
 
             ArtifactStoreQuery<Group> query =
-                            storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( Group.class );
+                            storeManager.query().storeType( Group.class );
 
-            Group group = query.getGroup( groupName );
+            Group group = query.getGroup( GENERIC_PKG_KEY, groupName );
             logger.debug( "Get httproxy group, group: {}", group );
 
             if ( group == null )
@@ -164,9 +164,10 @@ public class ProxyResponseHelper
             final String baseUrl = getBaseUrl( url, false );
 
             ArtifactStoreQuery<RemoteRepository> query =
-                            storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
+                            storeManager.query().storeType( RemoteRepository.class );
 
-            remote = query.stream()
+            remote = query.getAllRemoteRepositories( GENERIC_PKG_KEY )
+                          .stream()
                           .filter( store -> store.getUrl().equals( baseUrl )
                                           && store.getMetadata( TRACKING_ID ) == null )
                           .findFirst()
@@ -248,10 +249,9 @@ public class ProxyResponseHelper
         }
 
         Predicate<ArtifactStore> filter = abstractProxyRepositoryCreator.getNameFilter( name );
-        List<String> l = storeManager.query()
-                                     .packageType( GENERIC_PKG_KEY )
-                                     .storeType( RemoteRepository.class )
-                                     .stream( filter )
+        List<String> l = storeManager.query().getAllRemoteRepositories( GENERIC_PKG_KEY )
+                                     .stream()
+                                     .filter( filter )
                                      .map( repository -> repository.getName() )
                                      .collect( Collectors.toList() );
 

@@ -280,6 +280,16 @@ public class InfinispanStoreDataManager
     }
 
     @Override
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType )
+    {
+        return stores.executeCache( c -> c.values()
+                                          .stream()
+                                          .filter( item -> packageType.equals( item.getPackageType() )
+                                                          && storeType.equals( item.getType() ) ) )
+                     .collect( Collectors.toSet() );
+    }
+
+    @Override
     protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
     {
         if ( store == null )

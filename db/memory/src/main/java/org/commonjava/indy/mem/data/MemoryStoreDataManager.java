@@ -23,6 +23,7 @@ import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @ApplicationScoped
@@ -141,6 +143,16 @@ public class MemoryStoreDataManager
     public Stream<StoreKey> streamArtifactStoreKeys()
     {
         return stores.keySet().stream();
+    }
+
+    @Override
+    public Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType )
+    {
+        return stores.values()
+                     .stream()
+                     .filter( item -> packageType.equals( item.getPackageType() ) && storeType.equals(
+                                     item.getType() ) )
+                     .collect( Collectors.toSet() );
     }
 
     @Override

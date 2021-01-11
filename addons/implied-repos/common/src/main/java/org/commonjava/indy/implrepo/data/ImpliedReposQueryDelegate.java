@@ -56,13 +56,13 @@ public class ImpliedReposQueryDelegate
     }
 
     @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( String packageType, String groupName )
             throws IndyDataException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.trace( "Retrieving ordered concrete (recursive) members for group: {}", groupName );
 
-        List<ArtifactStore> result = delegate().getOrderedConcreteStoresInGroup( groupName );
+        List<ArtifactStore> result = delegate().getOrderedConcreteStoresInGroup( packageType, groupName );
         if ( logger.isTraceEnabled() )
         {
             logger.trace( "Raw ordered concrete membership for group: {} is:\n  {}", groupName,
@@ -80,10 +80,10 @@ public class ImpliedReposQueryDelegate
     }
 
     @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( String packageType, String groupName )
             throws IndyDataException
     {
-        List<ArtifactStore> delegateResult = delegate().getOrderedStoresInGroup( groupName );
+        List<ArtifactStore> delegateResult = delegate().getOrderedStoresInGroup( packageType, groupName );
 
         return maybeFilter( groupName, delegateResult );
     }

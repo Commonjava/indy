@@ -125,7 +125,7 @@ public abstract class AbstractMergedContentGenerator
         try
         {
             groups.addAll(
-                    storeManager.query().packageType( store.getPackageType() ).getGroupsAffectedBy( store.getKey() ) );
+                    storeManager.query().getGroupsAffectedBy( store.getKey() ) );
         }
         catch ( IndyDataException e )
         {
