@@ -1,19 +1,10 @@
 package org.commonjava.indy.schedule;
 
-import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
-
 public class ScheduleDBUtil
 {
 
     public static final String TABLE_SCHEDULE = "schedule";
     public static final String TABLE_EXPIRATION = "expiration";
-
-    public static String getSchemaCreateKeyspace( ScheduleDBConfig config, String keyspace )
-    {
-        return "CREATE KEYSPACE IF NOT EXISTS " + keyspace
-                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':"
-                        + config.getReplicationFactor() + "};";
-    }
 
     public static String getSchemaCreateTableSchedule( String keyspace )
     {

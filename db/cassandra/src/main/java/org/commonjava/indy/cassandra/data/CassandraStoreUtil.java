@@ -61,12 +61,6 @@ public class CassandraStoreUtil
 
     public static final int MODULO_VALUE = 10;
 
-    public static String getSchemaCreateKeyspace( String keySpace, IndyStoreManagerConfig config )
-    {
-        return "CREATE KEYSPACE IF NOT EXISTS " + keySpace
-                        + " WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor':" + config.getReplicationFactor() + "};";
-    }
-
     public static String getSchemaCreateTableStore( String keySpace )
     {
         return "CREATE TABLE IF NOT EXISTS " + keySpace + "." + TABLE_STORE + " ("

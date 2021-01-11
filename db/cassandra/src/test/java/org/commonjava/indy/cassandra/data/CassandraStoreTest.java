@@ -2,6 +2,7 @@ package org.commonjava.indy.cassandra.data;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
+import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.PackageTypeConstants;
@@ -37,7 +38,10 @@ public class CassandraStoreTest
         client = new CassandraClient( config );
         IndyStoreManagerConfig storeConfig = new IndyStoreManagerConfig( "noncontent", 1);
 
-        storeQuery = new CassandraStoreQuery( client, storeConfig );
+        DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
+        indyConfig.setKeyspaceReplicas( 1 );
+
+        storeQuery = new CassandraStoreQuery( client, storeConfig, indyConfig );
 
     }
 

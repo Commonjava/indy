@@ -118,4 +118,13 @@ public interface IndyConfiguration
      * @since 2.1.0
      */
     int getFileSystemContainingBatchSize();
+
+    /**
+     *
+     * The replication factor of cassandra keyspaces
+     *
+     * @return
+     * @sinces 2.5.4
+     */
+    int getKeyspaceReplicas();
 }
