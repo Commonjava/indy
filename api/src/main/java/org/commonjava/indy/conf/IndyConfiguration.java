@@ -126,5 +126,5 @@ public interface IndyConfiguration
      * @return
      * @sinces 2.5.4
      */
-    int getKeyspacesReplica();
+    int getKeyspaceReplicas();
 }

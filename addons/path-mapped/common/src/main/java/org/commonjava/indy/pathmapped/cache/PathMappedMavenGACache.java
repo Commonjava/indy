@@ -157,7 +157,7 @@ public class PathMappedMavenGACache
 
         inMemoryCache = cacheProducer.getCache( "ga-in-memory-cache" );
 
-        session.execute( getSchemaCreateKeyspace( keyspace, config.getKeyspacesReplica() ) );
+        session.execute( getSchemaCreateKeyspace( keyspace, config.getKeyspaceReplicas() ) );
         session.execute( getSchemaCreateTable( keyspace ) );
 
         preparedQueryByGA = session.prepare( "SELECT stores FROM " + keyspace + ".ga WHERE ga=?;" );

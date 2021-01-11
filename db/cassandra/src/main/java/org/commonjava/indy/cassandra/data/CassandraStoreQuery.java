@@ -70,7 +70,7 @@ public class CassandraStoreQuery
 
         session = client.getSession( keySpace );
 
-        session.execute( SchemaUtils.getSchemaCreateKeyspace( keySpace, indyConfig.getKeyspacesReplica() ));
+        session.execute( SchemaUtils.getSchemaCreateKeyspace( keySpace, indyConfig.getKeyspaceReplicas() ));
         session.execute( CassandraStoreUtil.getSchemaCreateTableStore( keySpace ) );
         session.execute( CassandraStoreUtil.getSchemaCreateIndex4Store( keySpace ) );
 

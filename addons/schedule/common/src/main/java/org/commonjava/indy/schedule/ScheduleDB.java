@@ -95,7 +95,7 @@ public class ScheduleDB
 
         session = client.getSession( keyspace );
 
-        session.execute( SchemaUtils.getSchemaCreateKeyspace( keyspace, indyConfig.getKeyspacesReplica() ));
+        session.execute( SchemaUtils.getSchemaCreateKeyspace( keyspace, indyConfig.getKeyspaceReplicas() ));
         session.execute( ScheduleDBUtil.getSchemaCreateTableSchedule( keyspace ) );
         session.execute( ScheduleDBUtil.getSchemaCreateTypeIndex4Schedule( keyspace ) );
         session.execute( ScheduleDBUtil.getSchemaCreateTableExpiration( keyspace ) );

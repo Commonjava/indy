@@ -47,7 +47,7 @@ public class ScheduleTest
                         new ScheduleDBConfig( SCHEDULE_KEYSPACE, 1, 60 * 60 * 1000, 3 );
 
         DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
-        indyConfig.setKeyspacesReplica( 1 );
+        indyConfig.setKeyspaceReplicas( 1 );
 
         DefaultCacheManager cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
         scheduleDB = new ScheduleDB( indyConfig, scheduleDBConfig, client, new CacheProducer( null, cacheManager, null ) );

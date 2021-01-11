@@ -96,7 +96,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         String foloCassandraKeyspace = config.getFoloCassandraKeyspace();
 
         session = cassandraClient.getSession(foloCassandraKeyspace);
-        session.execute( SchemaUtils.getSchemaCreateKeyspace( foloCassandraKeyspace, indyConfig.getKeyspacesReplica() ));
+        session.execute( SchemaUtils.getSchemaCreateKeyspace( foloCassandraKeyspace, indyConfig.getKeyspaceReplicas() ));
         session.execute(createFoloRecordsTable(foloCassandraKeyspace));
         session.execute(createFoloSealedIdx(foloCassandraKeyspace));
 

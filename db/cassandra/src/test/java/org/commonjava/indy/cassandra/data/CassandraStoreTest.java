@@ -39,7 +39,7 @@ public class CassandraStoreTest
         IndyStoreManagerConfig storeConfig = new IndyStoreManagerConfig( "noncontent", 1);
 
         DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
-        indyConfig.setKeyspacesReplica( 1 );
+        indyConfig.setKeyspaceReplicas( 1 );
 
         storeQuery = new CassandraStoreQuery( client, storeConfig, indyConfig );
 
