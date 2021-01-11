@@ -15,17 +15,17 @@ public class DtxExpiration
     @PartitionKey
     private Long expirationPID;
 
-    @ClusteringColumn
+    @ClusteringColumn(0)
+    private String storekey;
+
+    @ClusteringColumn(1)
+    private String jobName;
+
+    @Column
     private UUID scheduleUID;
 
     @Column
     private Date expirationTime;
-
-    @Column
-    private String jobName;
-
-    @Column
-    private String storekey;
 
     public DtxExpiration() {}
 
@@ -91,7 +91,7 @@ public class DtxExpiration
     @Override
     public String toString()
     {
-        return "DtxExpiration{" + "expirationPID=" + expirationPID + ", scheduleUID=" + scheduleUID + ", jobName='"
-                        + jobName + '\'' + ", storekey='" + storekey + '\'' + '}';
+        return "DtxExpiration{" + "expirationPID=" + expirationPID + ", jobName='" + jobName + '\'' + ", storekey='"
+                        + storekey + '\'' + ", scheduleUID=" + scheduleUID + ", expirationTime=" + expirationTime + '}';
     }
 }

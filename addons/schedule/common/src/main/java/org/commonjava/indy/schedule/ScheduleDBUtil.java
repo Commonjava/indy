@@ -38,7 +38,7 @@ public class ScheduleDBUtil
                         + "expirationtime timestamp,"
                         + "storekey varchar,"
                         + "jobname varchar,"
-                        + "PRIMARY KEY (expirationpid, scheduleuid)"
+                        + "PRIMARY KEY (expirationpid, storekey, jobname)"
                         + ");";
     }
 
