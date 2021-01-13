@@ -87,6 +87,8 @@ public class IndyMetricsConfig
 
     private final static String PROMETHEUS_EXPRESSED_METRICS = "prometheus.expressed.metrics";
 
+    private static final String PROMETHEUS_NODE_LABEL = "prometheus.node.label";
+
     private static final int DEFAULT_METER_RATIO = 1;
 
     private boolean ispnMetricsEnabled;
@@ -138,6 +140,8 @@ public class IndyMetricsConfig
     private Integer meterRatio;
 
     private String prometheusExpressedMetrics;
+
+    private String prometheusNodeLabel;
 
     public boolean isMeasureTransport()
     {
@@ -377,6 +381,7 @@ public class IndyMetricsConfig
     public PrometheusConfig getPrometheusConfig()
     {
         PrometheusConfig ret = new PrometheusConfig();
+        ret.setNodeLabel( prometheusNodeLabel );
         if ( prometheusExpressedMetrics != null )
         {
             ret.setExpressedMetrics( Arrays.asList( prometheusExpressedMetrics.split( "\\s*,\\s*" ) ) );
@@ -404,5 +409,16 @@ public class IndyMetricsConfig
     public void setPrometheusExpressedMetrics( String prometheusExpressedMetrics )
     {
         this.prometheusExpressedMetrics = prometheusExpressedMetrics;
+    }
+
+    public String getPrometheusNodeLabel()
+    {
+        return prometheusNodeLabel;
+    }
+
+    @ConfigName( PROMETHEUS_NODE_LABEL )
+    public void setPrometheusNodeLabel( String prometheusNodeLabel )
+    {
+        this.prometheusNodeLabel = prometheusNodeLabel;
     }
 }
