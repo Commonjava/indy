@@ -50,6 +50,9 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     protected ArtifactStore getArtifactStoreInternal( StoreKey key )
     {
+
+        logger.trace( "Get artifact store: {}", key.toString() );
+
         DtxArtifactStore dtxArtifactStore = storeQuery.getArtifactStore( key.getPackageType(), key.getType(), key.getName() );
 
         return toArtifactStore( dtxArtifactStore );
@@ -58,6 +61,9 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
+
+        logger.trace( "Remove artifact store: {}", key.toString() );
+
         DtxArtifactStore dtxArtifactStore = storeQuery.removeArtifactStore( key.getPackageType(), key.getType(), key.getName() );
         return toArtifactStore( dtxArtifactStore );
     }
@@ -108,6 +114,9 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Measure
     public Set<StoreKey> getStoreKeysByPkgAndType( final String pkg, final StoreType type )
     {
+
+        logger.trace( "Get storeKeys: {}/{}", pkg, type );
+
         Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
         Set<StoreKey> storeKeySet = new HashSet<>(  );
         dtxArtifactStoreSet.forEach( dtxArtifactStore -> {
@@ -119,6 +128,9 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     public Set<ArtifactStore> getArtifactStoresByPkgAndType( final String pkg, final StoreType type )
     {
+
+        logger.trace( "Get stores: {}/{}", pkg, type );
+
         Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
         Set<ArtifactStore> storeSet = new HashSet<>(  );
         dtxArtifactStoreSet.forEach( dtxArtifactStore -> {
