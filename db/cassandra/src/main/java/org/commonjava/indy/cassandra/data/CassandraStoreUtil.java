@@ -6,6 +6,7 @@ public class CassandraStoreUtil
 {
 
     public static final String TABLE_STORE = "artifactstore";
+    public static final String TABLE_AFFECTED_STORE = "affected_store";
 
     public static final String PACKAGE_TYPE = "packageType";
     public static final String STORE_TYPE = "storeType";
@@ -59,6 +60,9 @@ public class CassandraStoreUtil
     public static final String CONSTITUENTS = "constituents";
     public static final String PREPEND_CONSTITUENT = "prependConstituent";
 
+    public static final String KEY = "key";
+    public static final String AFFECTED_STORES = "affectedStores";
+
     public static final int MODULO_VALUE = 10;
 
     public static String getSchemaCreateTableStore( String keySpace )
@@ -81,6 +85,15 @@ public class CassandraStoreUtil
                         + "rescaninprogress boolean,"
                         + "extras map<text, text>,"
                         + "PRIMARY KEY (( typekey, namehashprefix ), name )"
+                        + ");";
+    }
+
+    public static String getSchemaCreateTableAffectedStore( String keyspace )
+    {
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_AFFECTED_STORE + " ("
+                        + "key varchar,"
+                        + "affectedStores set<text>,"
+                        + "PRIMARY KEY ( key )"
                         + ");";
     }
 

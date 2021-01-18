@@ -5,6 +5,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.db.common.StoreUpdateAction;
 import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -13,20 +14,27 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
+import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
+import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
 @ClusterStoreDataManager
@@ -158,6 +166,11 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         return storeQuery.isEmpty();
     }
 
+    public boolean isAffectedEmpty()
+    {
+        return storeQuery.isAffectedEmpty();
+    }
+
     @Override
     public Stream<StoreKey> streamArtifactStoreKeys()
     {
@@ -171,6 +184,140 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         storeQuery.createDtxArtifactStore( dtxArtifactStore );
 
         return toArtifactStore( dtxArtifactStore );
+    }
+
+    @Override
+    public Set<Group> affectedBy( Collection<StoreKey> keys ) throws IndyDataException
+    {
+
+        final Set<Group> result = new HashSet<>();
+
+        // use these to avoid recursion
+        final Set<StoreKey> processed = new HashSet<>();
+        final LinkedList<StoreKey> toProcess = new LinkedList<>( keys );
+
+        while ( !toProcess.isEmpty() )
+        {
+            StoreKey key = toProcess.removeFirst();
+            if ( key == null )
+            {
+                continue;
+            }
+
+            if ( processed.add( key ) )
+            {
+                DtxAffectedStore affectedStore = storeQuery.getAffectedStore( key );
+                Set<StoreKey> affected = affectedStore.getAffectedStoreKeys();
+                if ( affected != null )
+                {
+                    logger.debug( "Get affectedByStores, key: {}, affected: {}", key, affected );
+                    affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
+                    for ( StoreKey gKey : affected )
+                    {
+                        // avoid loading the ArtifactStore instance again and again
+                        if ( !processed.contains( gKey ) && !toProcess.contains( gKey ) )
+                        {
+                            ArtifactStore store = getArtifactStoreInternal( gKey );
+
+                            // if this group is disabled, we don't want to keep loading it again and again.
+                            if ( store.isDisabled() )
+                            {
+                                processed.add( gKey );
+                            }
+                            else
+                            {
+                                // add the group to the toProcess list so we can find any result that might include it in their own membership
+                                toProcess.addLast( gKey );
+                                result.add( (Group) store );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Groups affected by {} are: {}", keys,
+                          result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+        }
+        return filterAffectedGroups( result );
+    }
+
+    @Override
+    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
+    {
+        if ( store == null )
+        {
+            return;
+        }
+
+        if ( store instanceof Group && isExcludedGroup( (Group) store ) )
+        {
+            logger.info( "Skip affectedBy calculation of group: {}", store.getName() );
+            return;
+        }
+
+        if ( action == DELETE )
+        {
+            if ( store instanceof Group )
+            {
+                Group grp = (Group) store;
+                new HashSet<>( grp.getConstituents() ).forEach(
+                                ( key ) -> storeQuery.removeAffectedStore( key, store.getKey() ) );
+
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), grp.getConstituents().size() );
+            }
+        }
+        else if ( action == STORE )
+        {
+            // NOTE: Only group membership changes can affect our affectedBy cache, unless the update is a store deletion.
+            if ( store instanceof Group )
+            {
+                final Set<StoreKey> updatedConstituents = new HashSet<>( ((Group)store).getConstituents() );
+                final Set<StoreKey> originalConstituents;
+                if ( original != null )
+                {
+                    originalConstituents = new HashSet<>( ((Group)original).getConstituents() );
+                }
+                else
+                {
+                    originalConstituents = new HashSet<>();
+                }
+
+                final Set<StoreKey> added = new HashSet<>();
+                final Set<StoreKey> removed = new HashSet<>();
+                for ( StoreKey updKey : updatedConstituents )
+                {
+                    if ( !originalConstituents.contains( updKey ) )
+                    {
+                        added.add( updKey );
+                    }
+                }
+
+                for ( StoreKey oriKey : originalConstituents )
+                {
+                    if ( !updatedConstituents.contains( oriKey ) )
+                    {
+                        removed.add( oriKey );
+                    }
+                }
+
+                removed.forEach( ( key ) -> storeQuery.removeAffectedStore( key, store.getKey() ) );
+
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), removed.size() );
+
+                added.forEach( ( key ) -> storeQuery.addAffectedStore( key, store.getKey() ) );
+
+                logger.info( "Added affected-by reverse mapping for: {} in {} member stores", store.getKey(), added.size() );
+            }
+        }
+    }
+
+    public void initAffectedBy()
+    {
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+        allStores.stream().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
     }
 
     private DtxArtifactStore toDtxArtifactStore( StoreKey storeKey, ArtifactStore store )
