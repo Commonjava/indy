@@ -22,7 +22,7 @@ import javax.enterprise.context.ApplicationScoped;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.o11yphant.honeycomb.util.TraceIdUtils.getUUIDTraceId;
-import static org.commonjava.o11yphant.metrics.RequestContextHelper.TRACE_ID;
+import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRACE_ID;
 
 @ApplicationScoped
 public class IndyCustomTraceIdProvider implements CustomTraceIdProvider

@@ -1555,7 +1555,12 @@
       <!-- o11yphant dependencies -->
       <dependency>
         <groupId>org.commonjava.util</groupId>
-        <artifactId>o11yphant-honeycomb</artifactId>
+        <artifactId>o11yphant-honeycomb-api</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-honeycomb-core</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>
