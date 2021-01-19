@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -188,7 +189,9 @@ public class IndyLifecycleManager
 
         if ( bootupActions != null )
         {
-            logger.info( "Running bootup actions..." );
+            logger.info( "Running bootup actions in the following order:\n\n{}",
+                         bootupActions.stream().map( a -> a.getId() ).collect( Collectors.toList() ) );
+
             for ( final BootupAction action : bootupActions )
             {
                 logger.info( "Running bootup action: '{}'", action.getId() );
@@ -212,7 +215,9 @@ public class IndyLifecycleManager
         boolean changed = false;
         if ( migrationActions != null )
         {
-            logger.info( "Running migration actions..." );
+            logger.info( "Running migration actions in the following order:\n\n{}",
+                         migrationActions.stream().map( a -> a.getId() ).collect( Collectors.toList() ) );
+
             for ( final MigrationAction action : migrationActions )
             {
                 logger.info( "Running migration action: '{}'", action.getId() );
@@ -235,7 +240,9 @@ public class IndyLifecycleManager
 
         if ( startupActions != null )
         {
-            logger.info( "Running startup actions..." );
+            logger.info( "Running startup actions in the following order:\n\n{}",
+                         startupActions.stream().map( a -> a.getId() ).collect( Collectors.toList() ) );
+
             for ( final StartupAction action : startupActions )
             {
                 logger.info( "Running startup action: '{}'", action.getId() );
@@ -258,7 +265,9 @@ public class IndyLifecycleManager
 
         if ( shutdownActions != null )
         {
-            logger.info( "Running shutdown actions..." );
+            logger.info( "Running shutdown actions in the following order:\n\n{}",
+                         shutdownActions.stream().map( a -> a.getId() ).collect( Collectors.toList() ) );
+
             for ( final ShutdownAction action : shutdownActions )
             {
                 logger.info( "Running shutdown action: '{}'", action.getId() );

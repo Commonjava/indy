@@ -18,12 +18,17 @@ package org.commonjava.indy.pkg.npm.content;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.model.DistTag;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
+import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.maven.galley.model.Location;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -46,15 +51,19 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class NPMMetadataTimeoutTest
-                extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     private static final String REPO = "A";
 
-    private static final String PATH = "jquery";
+    private static final String PATH_JQUERY = "jquery";
+
+    private static final String PATH_BABEL_PARSER = "@babel/parser";
 
     @Test
-    public void test() throws Exception
+    @Category( TimingDependent.class )
+    public void test()
+            throws Exception
     {
         IndyObjectMapper mapper = new IndyObjectMapper( true );
 
@@ -63,20 +72,17 @@ public class NPMMetadataTimeoutTest
         dts.setBeta( "1" );
         src.setDistTags( dts );
 
-        server.expect( "GET", server.formatUrl( REPO, PATH ), (req, resp)->{
+        server.expect( "GET", server.formatUrl( REPO, PATH_JQUERY ), ( req, resp ) -> {
             resp.setStatus( 200 );
             mapper.writeValue( resp.getWriter(), src );
             resp.getWriter().flush();
         } );
 
-        //FIXME: After using galley-0.16.8, I'm not sure the second retrieval of npm metadata will get path of
-        //       "A/jquery/package.json" while the first retrieval is "A/jquery". So I add a new expectation here
-        //       to let the second retrieval can work. Need further checking.
-//        server.expect( "GET", server.formatUrl( REPO, PATH+"/package.json" ), (req, resp)->{
-//            resp.setStatus( 200 );
-//            mapper.writeValue( resp.getWriter(), src );
-//            resp.getWriter().flush();
-//        } );
+        server.expect( "GET", server.formatUrl( REPO, PATH_BABEL_PARSER ), ( req, resp ) -> {
+            resp.setStatus( 200 );
+            mapper.writeValue( resp.getWriter(), src );
+            resp.getWriter().flush();
+        } );
 
         final RemoteRepository repo = new RemoteRepository( NPM_PKG_KEY, REPO, server.formatUrl( REPO ) );
         repo.setMetadataTimeoutSeconds( 1 );
@@ -84,24 +90,45 @@ public class NPMMetadataTimeoutTest
         client.stores().create( repo, "adding npm remote repo", RemoteRepository.class );
 
         // First retrieval
-        verifyMetadataBetaTag( "1", repo );
+        verifyMetadataBetaTag( "1", PATH_JQUERY, repo );
+        assertThat( "Metadata not retrieved!", client.content().exists( repo.getKey(), PATH_JQUERY, true ),
+                    equalTo( true ) );
+        assertThat( "Metadata not retrieved!",
+                    client.content().exists( repo.getKey(), PATH_JQUERY + "/package.json", true ), equalTo( true ) );
+
+        verifyMetadataBetaTag( "1", PATH_BABEL_PARSER, repo );
+        assertThat( "Metadata not retrieved!", client.content().exists( repo.getKey(), PATH_BABEL_PARSER, true ),
+                    equalTo( true ) );
+        assertThat( "Metadata not retrieved!",
+                    client.content().exists( repo.getKey(), PATH_BABEL_PARSER + "/package.json", true ),
+                    equalTo( true ) );
 
         // wait for repo metadata timeout
-        Thread.sleep( 2000 );
+        Thread.sleep( 3000 );
 
-        assertThat( "Metadata not cleaned up!", client.content().exists( repo.getKey(), PATH + "/package.json", true ), equalTo( false ) );
+        assertThat( "Metadata not cleaned up!", client.content().exists( repo.getKey(), PATH_JQUERY, true ),
+                    equalTo( false ) );
+        assertThat( "Metadata not cleaned up!",
+                    client.content().exists( repo.getKey(), PATH_JQUERY + "/package.json", true ), equalTo( false ) );
+
+        assertThat( "Metadata not cleaned up!", client.content().exists( repo.getKey(), PATH_BABEL_PARSER, true ),
+                    equalTo( false ) );
+        assertThat( "Metadata not cleaned up!",
+                    client.content().exists( repo.getKey(), PATH_BABEL_PARSER + "/package.json", true ),
+                    equalTo( false ) );
 
         logger.info( "\n\n\n\nRE-REQUEST STARTS HERE\n\n\n\n" );
 
         // Second retrieval
         dts.setBeta( "2" );
-        verifyMetadataBetaTag( "2", repo );
+        verifyMetadataBetaTag( "2", PATH_JQUERY, repo );
+        verifyMetadataBetaTag( "2", PATH_BABEL_PARSER, repo );
     }
 
-    private void verifyMetadataBetaTag( final String betaTag, RemoteRepository repo )
+    private void verifyMetadataBetaTag( final String betaTag, final String path, RemoteRepository repo )
             throws IndyClientException, IOException
     {
-        try(InputStream remote = client.content().get( repo.getKey(), PATH ))
+        try (InputStream remote = client.content().get( repo.getKey(), path ))
         {
             assertThat( remote, notNullValue() );
 

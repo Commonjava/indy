@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>2.5.1-SNAPSHOT</version>
+    <version>2.5.2</version>
   </parent>
   
   <groupId>org.commonjava.indy.embed</groupId>
@@ -60,15 +60,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-reporter</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-prometheus</artifactId>
+      <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -232,6 +224,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-metrics-core</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
     </dependency>
@@ -319,10 +316,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-pkg-npm</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-metrics</artifactId>
     </dependency>
 
     <dependency>
@@ -464,7 +457,6 @@
               <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
               <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-metrics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>
               <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>

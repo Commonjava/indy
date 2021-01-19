@@ -25,14 +25,13 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.commonjava.indy.metrics.RequestContextHelper;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.pkg.npm.inject.NPMContentHandler;
 import org.commonjava.indy.pkg.npm.jaxrs.NPMContentAccessHandler;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.commonjava.indy.metrics.RequestContextHelper;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
@@ -49,7 +48,7 @@ import javax.ws.rs.core.UriInfo;
 import java.nio.file.Paths;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.metrics.RequestContextHelper.CONTENT_TRACKING_ID;
+import static org.commonjava.indy.util.RequestContextHelper.CONTENT_TRACKING_ID;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;

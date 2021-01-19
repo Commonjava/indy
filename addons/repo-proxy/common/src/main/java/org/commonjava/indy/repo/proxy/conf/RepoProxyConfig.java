@@ -46,6 +46,8 @@ public class RepoProxyConfig
 
     private static final String ENABLED_PARAM = "enabled";
 
+    private static final String CONTENT_LIMITER_ENABLED = "content.limiter.enabled";
+
     private static final String API_PATTERNS_PARAM = "api.url.patterns";
 
     private static final String API_METHODS_PARAM = "api.methods";
@@ -74,6 +76,8 @@ public class RepoProxyConfig
 
     private static final Boolean DEFAULT_CONTENT_BROWSE_REWRITE_ENABLE = Boolean.TRUE;
 
+    private static final Boolean DEFAULT_CONTENT_LIMITER_ENABLE = Boolean.TRUE;
+
     private static final Integer DEFAULT_REMOTE_INDY_REQUEST_TIMEOUT = 60;
 
     private String repoCreatorRuleBaseDir;
@@ -89,6 +93,8 @@ public class RepoProxyConfig
     private Boolean npmMetaRewriteEnabled;
 
     private Boolean contentBrowseRewriteEnabled;
+
+    private Boolean contentLimiterEnabled;
 
     private String defaultRemoteIndyUrl;
 
@@ -122,6 +128,12 @@ public class RepoProxyConfig
         return this.contentBrowseRewriteEnabled == null ?
                 DEFAULT_CONTENT_BROWSE_REWRITE_ENABLE :
                 this.contentBrowseRewriteEnabled;
+    }
+
+    public Boolean isContentLimiterEnabled()
+    {
+        return this.contentLimiterEnabled == null ? DEFAULT_CONTENT_LIMITER_ENABLE :
+                        this.contentLimiterEnabled;
     }
 
     public Set<String> getApiPatterns()
@@ -219,6 +231,9 @@ public class RepoProxyConfig
                 break;
             case REMOTE_INDY_REQUEST_TIMEOUT:
                 this.remoteIndyRequestTimeout = Integer.parseInt( value.trim() );
+                break;
+            case CONTENT_LIMITER_ENABLED:
+                this.contentLimiterEnabled = Boolean.valueOf( value.trim() );
                 break;
             default:
                 break;
