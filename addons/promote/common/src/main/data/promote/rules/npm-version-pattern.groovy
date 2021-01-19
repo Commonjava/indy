@@ -1,5 +1,6 @@
 package org.commonjava.indy.promote.rules
 
+import java.util.regex.Pattern
 import org.apache.commons.lang.StringUtils
 import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.promote.validate.model.ValidationRequest
@@ -8,8 +9,8 @@ import org.slf4j.LoggerFactory
 
 class NPMVersionPattern implements ValidationRule {
     String validate(ValidationRequest request) throws Exception {
-        def versionPattern = request.getValidationParameter("versionPattern")
-        def scopedVersionPattern = request.getValidationParameter("scopedVersionPattern")
+        def versionPattern = request.getVersionPattern()
+        def scopedVersionPattern = request.getScopedVersionPattern()
         def validScope = request.getValidationParameter("validScope")
         def errors = Collections.synchronizedList(new ArrayList())
         def logger = LoggerFactory.getLogger(getClass())
@@ -28,21 +29,24 @@ class NPMVersionPattern implements ValidationRule {
                         if (versionPattern != null) {
                             def vs = pkgPath.version
                             logger.info("Start to do version match for path {} with version {}", pkgPath, vs)
-                            if (!vs.matches(versionPattern)) {
+
+                            def matcher = versionPattern.matcher(vs)
+                            if (!matcher.matches()) {
                                 errors.add(String.format("%s is not %s scoped and does not match version pattern: '%s' (version was: '%s')",
-                                        it, validScope, versionPattern, vs))
+                                        it, validScope, versionPattern.pattern(), vs))
                             } else {
-                                logger.info("path {} with version {} matches with version pattern {}", pkgPath, vs, versionPattern)
+                                logger.info("path {} with version {} matches with version pattern {}", pkgPath, vs, versionPattern.pattern())
                             }
                         }
                     } else if (scopedVersionPattern != null) {
                         def vs = pkgPath.version
                         logger.info("Start to do version match for path {} with version {}", pkgPath, vs)
-                        if (!vs.matches(scopedVersionPattern)) {
+                        def matcher = scopedVersionPattern.matcher(vs)
+                        if (!matcher.matches()) {
                             errors.add(String.format("%s is %s scoped and does not match scoped version pattern: '%s' (version was: '%s')",
-                                    it, validScope, scopedVersionPattern, vs))
+                                    it, validScope, scopedVersionPattern.pattern(), vs))
                         } else {
-                            logger.info("path {} with version {} matches with version pattern {}", pkgPath, vs, scopedVersionPattern)
+                            logger.info("path {} with version {} matches with version pattern {}", pkgPath, vs, scopedVersionPattern.pattern())
                         }
                     }
                 }

@@ -15,14 +15,12 @@
  */
 package org.commonjava.indy.bind.jaxrs.util;
 
-import com.codahale.metrics.Meter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.output.CountingOutputStream;
-import org.commonjava.indy.measure.annotation.Measure;
-import org.commonjava.indy.measure.annotation.MetricNamed;
-import org.commonjava.indy.metrics.IndyMetricsManager;
-import org.commonjava.indy.metrics.conf.IndyMetricsConfig;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +30,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.commonjava.indy.measure.annotation.MetricNamed.DEFAULT;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.METER;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getDefaultName;
-import static org.commonjava.indy.metrics.IndyMetricsConstants.getName;
+import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 
 public class DTOStreamingOutput
         implements StreamingOutput
@@ -48,11 +45,11 @@ public class DTOStreamingOutput
 
     private final Object dto;
 
-    private final IndyMetricsManager metricsManager;
+    private final DefaultMetricsManager metricsManager;
 
     private final IndyMetricsConfig metricsConfig;
 
-    public DTOStreamingOutput( final ObjectMapper mapper, final Object dto, final IndyMetricsManager metricsManager,
+    public DTOStreamingOutput( final ObjectMapper mapper, final Object dto, final DefaultMetricsManager metricsManager,
                                final IndyMetricsConfig metricsConfig )
     {
         this.mapper = mapper;
@@ -98,7 +95,7 @@ public class DTOStreamingOutput
                 logger.trace( "Wrote: {} bytes", cout.getByteCount() );
 
                 String name = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME,
-                                       getDefaultName( dto.getClass().getSimpleName(), "write" ), METER );
+                                       getDefaultName( dto.getClass(), "write" ), METER );
 
                 long end = System.nanoTime();
                 double elapsed = (end-start)/NANOS_PER_SEC;

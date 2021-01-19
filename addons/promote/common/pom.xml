@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-promote</artifactId>
-    <version>2.5.1-SNAPSHOT</version>
+    <version>2.5.3-SNAPSHOT</version>
   </parent>
   <artifactId>indy-promote-common</artifactId>
   <name>Indy :: Add-Ons :: Artifact Promotion :: Common</name>
@@ -71,7 +71,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-metrics-reporter</artifactId>
+      <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
   </dependencies>
 

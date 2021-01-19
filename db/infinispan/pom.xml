@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db</artifactId>
-        <version>2.5.1-SNAPSHOT</version>
+        <version>2.5.3-SNAPSHOT</version>
     </parent>
 
     <artifactId>indy-db-infinispan</artifactId>
@@ -35,7 +35,7 @@
         </dependency>
         <dependency>
             <groupId>org.commonjava.indy</groupId>
-            <artifactId>indy-subsys-metrics-core</artifactId>
+            <artifactId>indy-subsys-metrics</artifactId>
         </dependency>
         <dependency>
             <groupId>org.commonjava.indy</groupId>

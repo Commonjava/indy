@@ -127,4 +127,9 @@ public class CassandraClient
             closed = true;
         }
     }
+
+    public Map<String, Session> getSessions()
+    {
+        return sessions;
+    }
 }

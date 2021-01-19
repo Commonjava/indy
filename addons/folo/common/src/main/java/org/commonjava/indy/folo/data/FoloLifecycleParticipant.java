@@ -29,6 +29,7 @@ import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 
 @Named
+@Deprecated
 public class FoloLifecycleParticipant
     implements StartupAction
 {
@@ -69,7 +70,7 @@ public class FoloLifecycleParticipant
         {
             final DataFile dataFile = dataFileManager.getDataFile( ".gitignore" );
             final List<String> lines = dataFile.exists() ? dataFile.readLines() : new ArrayList<String>();
-            if ( !lines.contains( FOLO_DIRECTORY_IGNORE ) )
+            if ( dataFile.exists() && !lines.contains( FOLO_DIRECTORY_IGNORE ) )
             {
                 lines.add( FOLO_DIRECTORY_IGNORE );
 
