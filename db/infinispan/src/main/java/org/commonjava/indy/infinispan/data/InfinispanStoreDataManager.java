@@ -21,18 +21,16 @@ import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StandaloneStoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
-import org.commonjava.indy.db.common.StoreUpdateAction;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Collection;
@@ -45,7 +43,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.AFFECTED_BY_STORE_CACHE;
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_BY_PKG_CACHE;
@@ -290,80 +287,21 @@ public class InfinispanStoreDataManager
     }
 
     @Override
-    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
+    protected void removeAffectedStore( StoreKey key )
     {
-        if ( store == null )
-        {
-            return;
-        }
+        affectedByStores.remove( key );
+    }
 
-        if ( store instanceof Group && isExcludedGroup( (Group) store ) )
-        {
-            logger.info( "Skip affectedBy calculation of group: {}", store.getName() );
-            return;
-        }
+    @Override
+    protected void removeAffectedBy( StoreKey key, StoreKey affected )
+    {
+        affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).remove( affected );
+    }
 
-        if ( action == DELETE )
-        {
-            if ( store instanceof Group )
-            {
-                Group grp = (Group) store;
-                new HashSet<>( grp.getConstituents() ).forEach(
-                        ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
-                                                   .remove( store.getKey() ) );
-
-                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), grp.getConstituents().size() );
-            }
-            else
-            {
-                affectedByStores.remove( store.getKey() );
-            }
-        }
-        else if ( action == STORE )
-        {
-            // NOTE: Only group membership changes can affect our affectedBy cache, unless the update is a store deletion.
-            if ( store instanceof Group )
-            {
-                final Set<StoreKey> updatedConstituents = new HashSet<>( ((Group)store).getConstituents() );
-                final Set<StoreKey> originalConstituents;
-                if ( original != null )
-                {
-                    originalConstituents = new HashSet<>( ((Group)original).getConstituents() );
-                }
-                else
-                {
-                    originalConstituents = new HashSet<>();
-                }
-
-                final Set<StoreKey> added = new HashSet<>();
-                final Set<StoreKey> removed = new HashSet<>();
-                for ( StoreKey updKey : updatedConstituents )
-                {
-                    if ( !originalConstituents.contains( updKey ) )
-                    {
-                        added.add( updKey );
-                    }
-                }
-
-                for ( StoreKey oriKey : originalConstituents )
-                {
-                    if ( !updatedConstituents.contains( oriKey ) )
-                    {
-                        removed.add( oriKey );
-                    }
-                }
-
-                removed.forEach( ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
-                                                            .remove( store.getKey() ) );
-
-                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), removed.size() );
-
-                added.forEach( ( key ) -> affectedByStores.computeIfAbsent( key, k -> new HashSet<>() )
-                                                          .add( store.getKey() ) );
-
-                logger.info( "Added affected-by reverse mapping for: {} in {} member stores", store.getKey(), added.size() );
-            }
-        }
+    @Override
+    protected void addAffectedBy( StoreKey key, StoreKey affected )
+    {
+        affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).add( affected );
     }
 
     public void initAffectedBy()

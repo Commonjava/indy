@@ -84,6 +84,24 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    protected void removeAffectedBy( StoreKey key, StoreKey affected )
+    {
+
+    }
+
+    @Override
+    protected void addAffectedBy( StoreKey key, StoreKey affected )
+    {
+
+    }
+
+    @Override
+    protected void removeAffectedStore( StoreKey key )
+    {
+
+    }
+
+    @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
         return stores.remove( key );

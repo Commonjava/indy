@@ -9,6 +9,7 @@ import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.util.SchemaUtils;
@@ -21,6 +22,7 @@ import javax.inject.Inject;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_AFFECTED_STORE;
 import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_STORE;
 
 @ApplicationScoped
@@ -52,6 +54,16 @@ public class CassandraStoreQuery
 
     private PreparedStatement preparedArtifactStoresQueryByKeys;
 
+    private PreparedStatement preparedAffectedStoresQuery;
+
+    private PreparedStatement preparedAffectedStoresIncrement;
+
+    private PreparedStatement preparedAffectedStoresReduction;
+
+    private PreparedStatement preparedAffectedStoreExistedQuery;
+
+    private PreparedStatement preparedAffectedStoreDel;
+
     public CassandraStoreQuery() {}
 
     public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config, IndyConfiguration indyConfig )
@@ -73,6 +85,7 @@ public class CassandraStoreQuery
         session.execute( SchemaUtils.getSchemaCreateKeyspace( keySpace, indyConfig.getKeyspaceReplicas() ));
         session.execute( CassandraStoreUtil.getSchemaCreateTableStore( keySpace ) );
         session.execute( CassandraStoreUtil.getSchemaCreateIndex4Store( keySpace ) );
+        session.execute( CassandraStoreUtil.getSchemaCreateTableAffectedStore( keySpace ) );
 
         MappingManager manager = new MappingManager( session );
 
@@ -93,6 +106,18 @@ public class CassandraStoreQuery
         preparedArtifactStoreExistedQuery = session.prepare( "SELECT name FROM " + keySpace + "." + TABLE_STORE + " LIMIT 1");
 
         preparedArtifactStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_STORE + " WHERE typekey=? AND namehashprefix=? AND name=? IF EXISTS" );
+
+        preparedAffectedStoresQuery = session.prepare( "SELECT key, affectedStores FROM " + keySpace + "." + TABLE_AFFECTED_STORE + " WHERE key=? ");
+
+        preparedAffectedStoresIncrement =
+                        session.prepare( "UPDATE " + keySpace + "." + TABLE_AFFECTED_STORE + " SET affectedStores = affectedStores + ? WHERE key=?" );
+
+        preparedAffectedStoresReduction =
+                        session.prepare( "UPDATE " + keySpace + "." + TABLE_AFFECTED_STORE + " SET affectedStores = affectedStores - ? WHERE key=?" );
+
+        preparedAffectedStoreExistedQuery = session.prepare( "SELECT key FROM " + keySpace + "." + TABLE_AFFECTED_STORE + " LIMIT 1");
+
+        preparedAffectedStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_AFFECTED_STORE + " WHERE key=? " );
     }
 
     public DtxArtifactStore getArtifactStore( String packageType, StoreType type, String name )
@@ -137,7 +162,7 @@ public class CassandraStoreQuery
     {
         BoundStatement bound = preparedArtifactStoresQuery.bind();
         ResultSet result = session.execute( bound );
-        return result.one() != null;
+        return result.one() == null;
     }
 
     public DtxArtifactStore removeArtifactStore( String packageType, StoreType type, String name )
@@ -179,5 +204,65 @@ public class CassandraStoreQuery
     public void createDtxArtifactStore( DtxArtifactStore dtxArtifactStore )
     {
         storeMapper.save( dtxArtifactStore );
+    }
+
+    public DtxAffectedStore getAffectedStore( StoreKey key )
+    {
+        BoundStatement bound = preparedAffectedStoresQuery.bind(key.toString());
+        ResultSet result = session.execute( bound );
+        return toDtxAffectedStore( result.one() );
+    }
+
+    private DtxAffectedStore toDtxAffectedStore( Row row )
+    {
+        if ( row == null )
+        {
+            return null;
+        }
+
+        DtxAffectedStore store = new DtxAffectedStore();
+        store.setKey( row.getString( CassandraStoreUtil.KEY ) );
+        store.setAffectedStores( row.getSet( CassandraStoreUtil.AFFECTED_STORES, String.class ) );
+
+        return store;
+    }
+
+    public void addAffectedBy( StoreKey storeKey, StoreKey affected )
+    {
+        BoundStatement bound = preparedAffectedStoresIncrement.bind();
+
+        Set<String> increment = new HashSet();
+        increment.add( affected.toString() );
+        bound.setSet( 0, increment );
+        bound.setString( 1, storeKey.toString() );
+        session.execute( bound );
+    }
+
+    public void removeAffectedBy( StoreKey storeKey, StoreKey affected )
+    {
+        BoundStatement bound = preparedAffectedStoresReduction.bind();
+
+        Set<String> reduction = new HashSet();
+        reduction.add( affected.toString() );
+        bound.setSet( 0, reduction );
+        bound.setString( 1, storeKey.toString() );
+        session.execute( bound );
+    }
+
+    public Boolean isAffectedEmpty()
+    {
+        BoundStatement bound = preparedAffectedStoreExistedQuery.bind();
+        ResultSet result = session.execute( bound );
+        return result.one() == null;
+    }
+
+    public void removeAffectedStore( StoreKey key )
+    {
+        DtxAffectedStore affectedStore = getAffectedStore( key );
+        if ( affectedStore != null )
+        {
+            BoundStatement bound = preparedAffectedStoreDel.bind( key.toString() );
+            session.execute( bound );
+        }
     }
 }

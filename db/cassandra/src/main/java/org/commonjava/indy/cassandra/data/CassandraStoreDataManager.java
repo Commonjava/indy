@@ -19,14 +19,19 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
+import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
 @ClusterStoreDataManager
@@ -158,6 +163,11 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         return storeQuery.isEmpty();
     }
 
+    public boolean isAffectedEmpty()
+    {
+        return storeQuery.isAffectedEmpty();
+    }
+
     @Override
     public Stream<StoreKey> streamArtifactStoreKeys()
     {
@@ -171,6 +181,94 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         storeQuery.createDtxArtifactStore( dtxArtifactStore );
 
         return toArtifactStore( dtxArtifactStore );
+    }
+
+    @Override
+    @Measure
+    public Set<Group> affectedBy( Collection<StoreKey> keys ) throws IndyDataException
+    {
+
+        final Set<Group> result = new HashSet<>();
+
+        // use these to avoid recursion
+        final Set<StoreKey> processed = new HashSet<>();
+        final LinkedList<StoreKey> toProcess = new LinkedList<>( keys );
+
+        while ( !toProcess.isEmpty() )
+        {
+            StoreKey key = toProcess.removeFirst();
+            if ( key == null )
+            {
+                continue;
+            }
+
+            if ( processed.add( key ) )
+            {
+                DtxAffectedStore affectedStore = storeQuery.getAffectedStore( key );
+                if ( affectedStore == null )
+                {
+                    processed.add( key );
+                    continue;
+                }
+                Set<StoreKey> affected = affectedStore.getAffectedStoreKeys();
+                if ( affected != null )
+                {
+                    logger.debug( "Get affectedByStores, key: {}, affected: {}", key, affected );
+                    affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
+                    for ( StoreKey gKey : affected )
+                    {
+                        // avoid loading the ArtifactStore instance again and again
+                        if ( !processed.contains( gKey ) && !toProcess.contains( gKey ) )
+                        {
+                            ArtifactStore store = getArtifactStoreInternal( gKey );
+
+                            // if this group is disabled, we don't want to keep loading it again and again.
+                            if ( store.isDisabled() )
+                            {
+                                processed.add( gKey );
+                            }
+                            else
+                            {
+                                // add the group to the toProcess list so we can find any result that might include it in their own membership
+                                toProcess.addLast( gKey );
+                                result.add( (Group) store );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if ( logger.isTraceEnabled() )
+        {
+            logger.trace( "Groups affected by {} are: {}", keys,
+                          result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() ) );
+        }
+        return filterAffectedGroups( result );
+    }
+
+    @Override
+    protected void removeAffectedStore( StoreKey key )
+    {
+        storeQuery.removeAffectedStore( key );
+    }
+
+    @Override
+    protected void removeAffectedBy( StoreKey key, StoreKey affected )
+    {
+        storeQuery.removeAffectedBy( key, affected );
+    }
+
+    @Override
+    protected void addAffectedBy( StoreKey key, StoreKey affected )
+    {
+        storeQuery.addAffectedBy( key, affected );
+    }
+
+    public void initAffectedBy()
+    {
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+        allStores.stream().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
     }
 
     private DtxArtifactStore toDtxArtifactStore( StoreKey storeKey, ArtifactStore store )

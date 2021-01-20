@@ -73,11 +73,11 @@ public class CassandraStoreTest
     public void testIsEmpty()
     {
 
-        assertThat( storeQuery.isEmpty(), equalTo( Boolean.FALSE ));
+        assertThat( storeQuery.isEmpty(), equalTo( Boolean.TRUE ));
 
         createTestStore( PackageTypeConstants.PKG_TYPE_MAVEN, StoreType.hosted.name() );
 
-        assertThat( storeQuery.isEmpty(), equalTo( Boolean.TRUE ));
+        assertThat( storeQuery.isEmpty(), equalTo( Boolean.FALSE ));
     }
 
     @Test
