@@ -62,6 +62,8 @@ public class CassandraStoreQuery
 
     private PreparedStatement preparedAffectedStoreExistedQuery;
 
+    private PreparedStatement preparedAffectedStoreDel;
+
     public CassandraStoreQuery() {}
 
     public CassandraStoreQuery( CassandraClient client, IndyStoreManagerConfig config, IndyConfiguration indyConfig )
@@ -114,6 +116,8 @@ public class CassandraStoreQuery
                         session.prepare( "UPDATE " + keySpace + "." + TABLE_AFFECTED_STORE + " SET affectedStores = affectedStores - ? WHERE key=?" );
 
         preparedAffectedStoreExistedQuery = session.prepare( "SELECT key FROM " + keySpace + "." + TABLE_AFFECTED_STORE + " LIMIT 1");
+
+        preparedAffectedStoreDel = session.prepare( "DELETE FROM " + keySpace + "." + TABLE_AFFECTED_STORE + " WHERE key=? " );
     }
 
     public DtxArtifactStore getArtifactStore( String packageType, StoreType type, String name )
@@ -223,7 +227,7 @@ public class CassandraStoreQuery
         return store;
     }
 
-    public void addAffectedStore( StoreKey storeKey, StoreKey affected )
+    public void addAffectedBy( StoreKey storeKey, StoreKey affected )
     {
         BoundStatement bound = preparedAffectedStoresIncrement.bind();
 
@@ -234,7 +238,7 @@ public class CassandraStoreQuery
         session.execute( bound );
     }
 
-    public void removeAffectedStore( StoreKey storeKey, StoreKey affected )
+    public void removeAffectedBy( StoreKey storeKey, StoreKey affected )
     {
         BoundStatement bound = preparedAffectedStoresReduction.bind();
 
@@ -250,5 +254,15 @@ public class CassandraStoreQuery
         BoundStatement bound = preparedAffectedStoreExistedQuery.bind();
         ResultSet result = session.execute( bound );
         return result.one() == null;
+    }
+
+    public void removeAffectedStore( StoreKey key )
+    {
+        DtxAffectedStore affectedStore = getAffectedStore( key );
+        if ( affectedStore != null )
+        {
+            BoundStatement bound = preparedAffectedStoreDel.bind( key.toString() );
+            session.execute( bound );
+        }
     }
 }

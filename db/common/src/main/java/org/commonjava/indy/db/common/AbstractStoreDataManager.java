@@ -211,11 +211,85 @@ public abstract class AbstractStoreDataManager
         refreshAffectedBy( store, null, DELETE );
     }
 
+    @Measure
     protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
-            throws IndyDataException
     {
-        //do nothing by default
+        if ( store == null )
+        {
+            return;
+        }
+
+        if ( store instanceof Group && isExcludedGroup( (Group) store ) )
+        {
+            logger.info( "Skip affectedBy calculation of group: {}", store.getName() );
+            return;
+        }
+
+        if ( action == DELETE )
+        {
+            if ( store instanceof Group )
+            {
+                Group grp = (Group) store;
+                
+                new HashSet<>( grp.getConstituents() ).forEach( (key) -> removeAffectedBy( key, store.getKey() ) );
+
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), grp.getConstituents().size() );
+            }
+            else
+            {
+                removeAffectedStore( store.getKey() );
+            }
+        }
+        else if ( action == STORE )
+        {
+            // NOTE: Only group membership changes can affect our affectedBy, unless the update is a store deletion.
+            if ( store instanceof Group )
+            {
+                final Set<StoreKey> updatedConstituents = new HashSet<>( ((Group)store).getConstituents() );
+                final Set<StoreKey> originalConstituents;
+                if ( original != null )
+                {
+                    originalConstituents = new HashSet<>( ((Group)original).getConstituents() );
+                }
+                else
+                {
+                    originalConstituents = new HashSet<>();
+                }
+
+                final Set<StoreKey> added = new HashSet<>();
+                final Set<StoreKey> removed = new HashSet<>();
+                for ( StoreKey updKey : updatedConstituents )
+                {
+                    if ( !originalConstituents.contains( updKey ) )
+                    {
+                        added.add( updKey );
+                    }
+                }
+
+                for ( StoreKey oriKey : originalConstituents )
+                {
+                    if ( !updatedConstituents.contains( oriKey ) )
+                    {
+                        removed.add( oriKey );
+                    }
+                }
+
+                removed.forEach( (key) -> removeAffectedBy( key, store.getKey() ) );
+
+                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), removed.size() );
+
+                added.forEach( (key) -> addAffectedBy( key, store.getKey() ) );
+
+                logger.info( "Added affected-by reverse mapping for: {} in {} member stores", store.getKey(), added.size() );
+            }
+        }
     }
+
+    protected abstract void removeAffectedBy( StoreKey key, StoreKey affected );
+
+    protected abstract void addAffectedBy( StoreKey key, StoreKey affected );
+
+    protected abstract void removeAffectedStore( StoreKey key );
 
     protected abstract ArtifactStore removeArtifactStoreInternal( StoreKey key );
 

@@ -5,7 +5,6 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
-import org.commonjava.indy.db.common.StoreUpdateAction;
 import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -14,7 +13,6 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +30,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.commonjava.indy.db.common.StoreUpdateAction.DELETE;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
 
@@ -187,6 +184,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     }
 
     @Override
+    @Measure
     public Set<Group> affectedBy( Collection<StoreKey> keys ) throws IndyDataException
     {
 
@@ -245,73 +243,21 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     }
 
     @Override
-    protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
+    protected void removeAffectedStore( StoreKey key )
     {
-        if ( store == null )
-        {
-            return;
-        }
+        storeQuery.removeAffectedStore( key );
+    }
 
-        if ( store instanceof Group && isExcludedGroup( (Group) store ) )
-        {
-            logger.info( "Skip affectedBy calculation of group: {}", store.getName() );
-            return;
-        }
+    @Override
+    protected void removeAffectedBy( StoreKey key, StoreKey affected )
+    {
+        storeQuery.removeAffectedBy( key, affected );
+    }
 
-        if ( action == DELETE )
-        {
-            if ( store instanceof Group )
-            {
-                Group grp = (Group) store;
-                new HashSet<>( grp.getConstituents() ).forEach(
-                                ( key ) -> storeQuery.removeAffectedStore( key, store.getKey() ) );
-
-                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), grp.getConstituents().size() );
-            }
-        }
-        else if ( action == STORE )
-        {
-            // NOTE: Only group membership changes can affect our affectedBy cache, unless the update is a store deletion.
-            if ( store instanceof Group )
-            {
-                final Set<StoreKey> updatedConstituents = new HashSet<>( ((Group)store).getConstituents() );
-                final Set<StoreKey> originalConstituents;
-                if ( original != null )
-                {
-                    originalConstituents = new HashSet<>( ((Group)original).getConstituents() );
-                }
-                else
-                {
-                    originalConstituents = new HashSet<>();
-                }
-
-                final Set<StoreKey> added = new HashSet<>();
-                final Set<StoreKey> removed = new HashSet<>();
-                for ( StoreKey updKey : updatedConstituents )
-                {
-                    if ( !originalConstituents.contains( updKey ) )
-                    {
-                        added.add( updKey );
-                    }
-                }
-
-                for ( StoreKey oriKey : originalConstituents )
-                {
-                    if ( !updatedConstituents.contains( oriKey ) )
-                    {
-                        removed.add( oriKey );
-                    }
-                }
-
-                removed.forEach( ( key ) -> storeQuery.removeAffectedStore( key, store.getKey() ) );
-
-                logger.info( "Removed affected-by reverse mapping for: {} in {} member stores", store.getKey(), removed.size() );
-
-                added.forEach( ( key ) -> storeQuery.addAffectedStore( key, store.getKey() ) );
-
-                logger.info( "Added affected-by reverse mapping for: {} in {} member stores", store.getKey(), added.size() );
-            }
-        }
+    @Override
+    protected void addAffectedBy( StoreKey key, StoreKey affected )
+    {
+        storeQuery.addAffectedBy( key, affected );
     }
 
     public void initAffectedBy()
