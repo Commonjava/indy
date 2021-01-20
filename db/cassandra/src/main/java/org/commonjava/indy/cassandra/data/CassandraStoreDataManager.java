@@ -205,6 +205,11 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
             if ( processed.add( key ) )
             {
                 DtxAffectedStore affectedStore = storeQuery.getAffectedStore( key );
+                if ( affectedStore == null )
+                {
+                    processed.add( key );
+                    continue;
+                }
                 Set<StoreKey> affected = affectedStore.getAffectedStoreKeys();
                 if ( affected != null )
                 {
