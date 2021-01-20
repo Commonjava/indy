@@ -666,6 +666,10 @@ public abstract class AbstractStoreDataManager
 
     public boolean isExcludedGroup( Group group )
     {
+        if ( indyConfiguration == null )
+        {
+            return false;
+        }
         String filter = indyConfiguration.getAffectedGroupsExcludeFilter();
         return isNotBlank( filter ) && group.getName().matches( filter );
     }
