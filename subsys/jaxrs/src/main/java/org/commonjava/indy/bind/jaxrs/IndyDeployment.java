@@ -20,7 +20,9 @@ import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.FilterInfo;
 import io.undertow.servlet.api.ServletInfo;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+
 import org.commonjava.indy.bind.jaxrs.jackson.CDIJacksonProvider;
+import org.commonjava.indy.bind.jaxrs.metrics.FlightRecorderFilter;
 import org.commonjava.indy.bind.jaxrs.ui.UIServlet;
 import org.commonjava.indy.bind.jaxrs.util.CdiInjectorFactoryImpl;
 import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
@@ -264,6 +266,7 @@ public class IndyDeployment
             di.addServlet( uiServlet );
         }
 
+
         return di;
     }
 
@@ -274,7 +277,9 @@ public class IndyDeployment
         classes.addAll( resourceClasses );
         deploymentProviders.forEach( di -> classes.addAll( di.getAdditionalClasses() ) );
         classes.add( CDIJacksonProvider.class );
-        classes.add( UnhandledIOExceptionHandler.class );
+        classes.add( UnhandledWebApplicationExceptionHandler.class );
+        classes.add( UnhandledThrowableHandler.class );
+        classes.add( FlightRecorderFilter.class );
         return classes;
     }
 
