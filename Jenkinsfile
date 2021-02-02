@@ -17,9 +17,7 @@ pipeline {
         }
         stage('Build') {
             steps {
-                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk']){
-                    sh 'mvn -B -V clean verify -DskipNpmConfig=false --global-toolchains toolchains.xml'
-                }
+                sh 'mvn -B -V clean verify -DskipNpmConfig=false'
             }
         }
         stage('Function Test') {
@@ -27,9 +25,7 @@ pipeline {
                 expression { env.CHANGE_ID != null } // Pull request
             }
             steps {
-                withEnv(['JAVA_HOME=/usr/lib/jvm/java-11-openjdk', 'JAVA_11_HOME=/usr/lib/jvm/java-11-openjdk']){
-                    sh 'mvn -B -V verify -Prun-its -Pci -DskipNpmConfig=false --global-toolchains toolchains.xml'
-                }
+                sh 'mvn -B -V verify -Prun-its -Pci -DskipNpmConfig=false'
             }
         }
         stage('Load OCP Mappings') {
