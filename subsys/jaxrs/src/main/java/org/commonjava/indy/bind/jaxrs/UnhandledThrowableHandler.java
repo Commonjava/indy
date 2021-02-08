@@ -15,25 +15,25 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
+
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by jdcasey on 1/3/17.
  * Based on: http://stackoverflow.com/questions/13857638/global-custom-exception-handler-in-resteasy
+ * This default mapper allows any exception to be captured ensuring a ResponseContextFilter is always called.
  */
 @Provider
-public class UnhandledRuntimeExceptionHandler
-        implements ExceptionMapper<RuntimeException>//, RestProvider
+public class UnhandledThrowableHandler
+        implements ExceptionMapper<Throwable>//, RestProvider
 {
-    public Response toResponse( RuntimeException exception )
+    public Response toResponse( Throwable exception )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.error( "Unhandled exception: " + exception.getMessage(), exception );
