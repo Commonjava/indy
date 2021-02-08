@@ -117,7 +117,6 @@ public class IndyTrafficClassifier
                 {
                     result = singletonList( CLIENT_PROMOTE );
                 }
-                return result;
             }
 
             if ( "promotion".equals( classifierParts[0] ) && "promote".equals( classifierParts[2] ) )
