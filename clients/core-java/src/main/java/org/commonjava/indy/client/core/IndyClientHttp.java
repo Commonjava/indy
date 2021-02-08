@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Supplier;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -71,6 +72,8 @@ import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResour
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_API_VERSION;
+import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CLIENT_API;
+import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_TRACE_ID;
 
 public class IndyClientHttp
         implements Closeable
@@ -109,6 +112,8 @@ public class IndyClientHttp
         baseUrl = location.getUri();
         this.mdcCopyMappings = mdcCopyMappings;
         checkBaseUrl( baseUrl );
+        addClientAPIHeader();
+        addTraceHeader();
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
@@ -123,6 +128,8 @@ public class IndyClientHttp
         this.location = location;
         baseUrl = location.getUri();
         checkBaseUrl( baseUrl );
+        addClientAPIHeader();
+        addTraceHeader();
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
@@ -137,6 +144,16 @@ public class IndyClientHttp
         String indyVersion = new IndyVersioningProvider().getVersioningInstance().getVersion();
 
         addDefaultHeader( "User-Agent", String.format("Indy/%s (api: %s) via %s", indyVersion, apiVersion, hcUserAgent ) );
+    }
+
+    private void addClientAPIHeader()
+    {
+        addDefaultHeader( HEADER_INDY_CLIENT_API, String.valueOf( true ) );
+    }
+
+    private void addTraceHeader()
+    {
+        addDefaultHeader( HEADER_INDY_TRACE_ID, UUID.randomUUID().toString() );
     }
 
     private void addApiVersionHeader( String apiVersion )
