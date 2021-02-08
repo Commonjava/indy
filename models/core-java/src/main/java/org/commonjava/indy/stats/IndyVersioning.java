@@ -15,19 +15,17 @@
  */
 package org.commonjava.indy.stats;
 
-import javax.enterprise.inject.Alternative;
-import javax.inject.Named;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Properties;
+import javax.enterprise.inject.Alternative;
+import javax.inject.Named;
 
 @Alternative
 @Named
 public class IndyVersioning
 {
+    public final static String HEADER_INDY_CLIENT_API = "Indy-Client-API";
 
     public final static String HEADER_INDY_API_VERSION = "Indy-API-Version"; // the API version for the requester
 
