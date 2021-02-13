@@ -203,7 +203,7 @@ public class HttpConduitWrapper
                 writeHeader( ApplicationHeader.last_modified, lastMod );
             }
 
-            String contentType = metadata.getContentType();
+            String contentType = metadata != null ? metadata.getContentType() : null;
             writeHeader( ApplicationHeader.content_type,
                          contentType != null ? contentType : contentController.getContentType( path ) );
 
