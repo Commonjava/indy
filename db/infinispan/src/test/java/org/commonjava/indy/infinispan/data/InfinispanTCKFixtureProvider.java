@@ -45,7 +45,6 @@ public class InfinispanTCKFixtureProvider
         Cache<String, Map<StoreType, Set<StoreKey>>> storesByPkgCache = cacheManager.getCache( STORE_BY_PKG_CACHE, true );
         Cache<StoreKey, Set<StoreKey>> affected = cacheManager.getCache( AFFECTED_BY_STORE_CACHE, true );
         dataManager = new InfinispanStoreDataManager( storeCache, storesByPkgCache, affected );
-        dataManager.init();
     }
 
     @Override

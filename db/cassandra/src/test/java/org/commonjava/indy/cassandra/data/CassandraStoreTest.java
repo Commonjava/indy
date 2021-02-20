@@ -49,6 +49,7 @@ public class CassandraStoreTest
     public void stop()
     {
         client.close();
+        EmbeddedCassandraServerHelper.getSession();
         EmbeddedCassandraServerHelper.cleanEmbeddedCassandra();
     }
 

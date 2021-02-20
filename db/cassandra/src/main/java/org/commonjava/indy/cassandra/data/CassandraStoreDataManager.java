@@ -46,6 +46,16 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Inject
     IndyObjectMapper objectMapper;
 
+    protected CassandraStoreDataManager()
+    {
+    }
+
+    CassandraStoreDataManager( final CassandraStoreQuery storeQuery, final IndyObjectMapper objectMapper )
+    {
+        this.storeQuery = storeQuery;
+        this.objectMapper = objectMapper;
+    }
+
     @Override
     protected StoreEventDispatcher getStoreEventDispatcher()
     {
@@ -97,9 +107,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     {
         Map<StoreKey, ArtifactStore> ret = new HashMap<>();
         Set<ArtifactStore> artifactStoreSet = getAllArtifactStores();
-        artifactStoreSet.forEach( store -> {
-            ret.put( store.getKey(), store );
-        } );
+        artifactStoreSet.forEach( store -> ret.put( store.getKey(), store ) );
         return ret;
     }
 
@@ -124,9 +132,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
 
         Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
         Set<StoreKey> storeKeySet = new HashSet<>(  );
-        dtxArtifactStoreSet.forEach( dtxArtifactStore -> {
-            storeKeySet.add( new StoreKey( pkg, type, dtxArtifactStore.getName() ) );
-        } );
+        dtxArtifactStoreSet.forEach( dtxArtifactStore -> storeKeySet.add( new StoreKey( pkg, type, dtxArtifactStore.getName() ) ) );
         return storeKeySet;
     }
 
@@ -138,9 +144,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
 
         Set<DtxArtifactStore> dtxArtifactStoreSet = storeQuery.getArtifactStoresByPkgAndType( pkg, type );
         Set<ArtifactStore> storeSet = new HashSet<>(  );
-        dtxArtifactStoreSet.forEach( dtxArtifactStore -> {
-            storeSet.add( toArtifactStore( dtxArtifactStore ) );
-        } );
+        dtxArtifactStoreSet.forEach( dtxArtifactStore -> storeSet.add( toArtifactStore( dtxArtifactStore ) ) );
         return storeSet;
     }
 
@@ -395,7 +399,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                 Integer snapshotTimeoutseconds = readIntValueFromExtra( CassandraStoreUtil.SNAPSHOT_TIMEOUT_SECONDS, extras );
                 if ( snapshotTimeoutseconds != null )
                 {
-                    ( (HostedRepository) store ).setSnapshotTimeoutSeconds( snapshotTimeoutseconds.intValue() );
+                    ( (HostedRepository) store ).setSnapshotTimeoutSeconds( snapshotTimeoutseconds );
                 }
                 ( (HostedRepository) store ).setStorage( readStrValueFromExtra( CassandraStoreUtil.STORAGE, extras ) );
                 Boolean allowReleases = readValueFromExtra( CassandraStoreUtil.ALLOW_RELEASES, Boolean.class, extras );
@@ -427,37 +431,37 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                 Integer timeoutSeconds = readIntValueFromExtra( CassandraStoreUtil.TIMEOUT_SECONDS, extras);
                 if ( timeoutSeconds != null )
                 {
-                    ( (RemoteRepository) store ).setTimeoutSeconds( timeoutSeconds.intValue() );
+                    ( (RemoteRepository) store ).setTimeoutSeconds( timeoutSeconds );
                 }
                 Integer metadataTimeoutSeconds = readIntValueFromExtra( CassandraStoreUtil.METADATA_TIMEOUT_SECONDS, extras );
                 if ( metadataTimeoutSeconds != null )
                 {
-                    ( (RemoteRepository) store ).setMetadataTimeoutSeconds( metadataTimeoutSeconds.intValue() );
+                    ( (RemoteRepository) store ).setMetadataTimeoutSeconds( metadataTimeoutSeconds );
                 }
                 Integer cacheTimeoutSeconds = readIntValueFromExtra( CassandraStoreUtil.CACHE_TIMEOUT_SECONDS, extras );
                 if ( cacheTimeoutSeconds != null )
                 {
-                    ( (RemoteRepository) store ).setCacheTimeoutSeconds( cacheTimeoutSeconds.intValue() );
+                    ( (RemoteRepository) store ).setCacheTimeoutSeconds( cacheTimeoutSeconds );
                 }
                 Integer nfcTimeoutSeconds = readIntValueFromExtra( CassandraStoreUtil.NFC_TIMEOUT_SECONDS, extras );
                 if ( nfcTimeoutSeconds != null )
                 {
-                    ( (RemoteRepository) store ).setNfcTimeoutSeconds( nfcTimeoutSeconds.intValue() );
+                    ( (RemoteRepository) store ).setNfcTimeoutSeconds( nfcTimeoutSeconds );
                 }
                 Integer maxConnections = readIntValueFromExtra( CassandraStoreUtil.MAX_CONNECTIONS, extras );
                 if ( maxConnections != null )
                 {
-                    ( (RemoteRepository) store ).setMaxConnections( maxConnections.intValue() );
+                    ( (RemoteRepository) store ).setMaxConnections( maxConnections );
                 }
                 Integer port = readIntValueFromExtra( CassandraStoreUtil.PORT, extras );
                 if ( port != null )
                 {
-                    ( (RemoteRepository) store ).setPort( port.intValue() );
+                    ( (RemoteRepository) store ).setPort( port );
                 }
                 Integer proxyPort = readIntValueFromExtra( CassandraStoreUtil.PROXY_PORT, extras );
                 if ( proxyPort != null )
                 {
-                    ( (RemoteRepository) store ).setProxyPort( proxyPort.intValue() );
+                    ( (RemoteRepository) store ).setProxyPort( proxyPort );
                 }
                 Boolean prefetchRescan = readValueFromExtra( CassandraStoreUtil.PREFETCH_RESCAN, Boolean.class, extras );
                 if ( prefetchRescan != null )
@@ -488,7 +492,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
             else if ( dtxArtifactStore.getStoreType().equals( StoreType.group.name() ) )
             {
                 List<String> constituentStrList = readValueFromExtra( CassandraStoreUtil.CONSTITUENTS, List.class, extras );
-                List<StoreKey> constituentList = constituentStrList.stream().map( item -> StoreKey.fromString( item ) ).collect( Collectors.toList() );
+                List<StoreKey> constituentList = constituentStrList.stream().map( StoreKey::fromString ).collect( Collectors.toList() );
                 store = new Group( dtxArtifactStore.getPackageType(), dtxArtifactStore.getName(), constituentList );
 
                 Boolean prependConstituent = readValueFromExtra( CassandraStoreUtil.PREPEND_CONSTITUENT, Boolean.class, extras );
