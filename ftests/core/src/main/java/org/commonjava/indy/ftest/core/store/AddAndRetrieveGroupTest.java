@@ -19,19 +19,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.indy.model.core.Group;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore( "This test can be fully covered by AddAndDeleteGroupTest" )
+@Deprecated
 public class AddAndRetrieveGroupTest
-    extends AbstractStoreManagementTest
+        extends AbstractStoreManagementTest
 {
 
     @Test
     public void addMinimalGroupAndRetrieveIt()
-        throws Exception
+            throws Exception
     {
         final Group repo = new Group( newName() );
-        final Group result = client.stores()
-                                   .create( repo, name.getMethodName(), Group.class );
+        final Group result = client.stores().create( repo, name.getMethodName(), Group.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.equals( repo ), equalTo( true ) );
