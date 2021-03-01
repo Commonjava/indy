@@ -39,6 +39,8 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_LISTING;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_MAVEN;
