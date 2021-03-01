@@ -91,7 +91,10 @@ public class ClientMetricManager {
         logger.debug( "Client honey register: {}", request.getURI().getPath() );
         honeycombManager.init();
         rootSpan = honeycombManager.startRootTracer( getEndpointName( request.getMethod(), request.getURI().getPath() ) );
-        request.setHeader( HEADER_INDY_CLIENT_SPAN_ID, rootSpan.getSpanId() );
+        if ( rootSpan != null )
+        {
+            request.setHeader( HEADER_INDY_CLIENT_SPAN_ID, rootSpan.getSpanId() );
+        }
         return this;
     }
 
