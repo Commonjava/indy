@@ -30,6 +30,8 @@ public class ClientHoneycombConfiguration
 
     private String dataset;
 
+    private Integer baseSampleRate;
+
     @Override
     public boolean isEnabled() {
         return enabled;
@@ -68,7 +70,12 @@ public class ClientHoneycombConfiguration
     }
 
     @Override
-    public Integer getBaseSampleRate() {
-        return DEFAULT_BASE_SAMPLE_RATE;
+    public Integer getBaseSampleRate()
+    {
+        return baseSampleRate == null ? DEFAULT_BASE_SAMPLE_RATE : baseSampleRate;
+    }
+
+    public void setBaseSampleRate( Integer baseSampleRate ) {
+        this.baseSampleRate = baseSampleRate;
     }
 }
