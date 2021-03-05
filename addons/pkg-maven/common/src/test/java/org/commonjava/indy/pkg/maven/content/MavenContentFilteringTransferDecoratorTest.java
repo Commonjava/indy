@@ -154,7 +154,7 @@ public class MavenContentFilteringTransferDecoratorTest
         assertThat( transfer.exists(), equalTo( false ) );
 
         HttpDownload dl = new HttpDownload( url, location, transfer, new HashMap<>(), new EventMetadata(),
-                                            fixture.getHttp().getHttp(), new ObjectMapper(), metricRegistry, metricConfig, null );
+                                            fixture.getHttp().getHttp(), new ObjectMapper(), true, metricRegistry, metricConfig );
 
         return dl.call().getTransfer();
     }

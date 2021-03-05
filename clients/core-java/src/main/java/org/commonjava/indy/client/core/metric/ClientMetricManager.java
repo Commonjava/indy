@@ -20,9 +20,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.commonjava.indy.client.core.IndyClientTrafficClassifier;
 import org.commonjava.indy.client.core.inject.ClientMetricSet;
-import org.commonjava.o11yphant.honeycomb.DefaultHoneycombManager;
-import org.commonjava.o11yphant.honeycomb.DefaultTraceSampler;
-import org.commonjava.o11yphant.honeycomb.impl.GoldenSignalsRootSpanFields;
 import org.commonjava.o11yphant.metrics.RequestContextHelper;
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
 import org.commonjava.util.jhttpc.model.SiteConfig;
@@ -31,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CLIENT_SPAN_ID;
@@ -47,9 +43,9 @@ public class ClientMetricManager {
 
     private ClientHoneycombConfiguration configuration;
 
-    private DefaultTraceSampler traceSampler;
+    private ClientTraceSampler traceSampler;
 
-    private DefaultHoneycombManager honeycombManager;
+    private ClientHoneycombManager honeycombManager;
 
     private final IndyClientTrafficClassifier classifier = new IndyClientTrafficClassifier();
 
@@ -74,8 +70,8 @@ public class ClientMetricManager {
     public ClientMetricManager( SiteConfig siteConfig )
     {
         this.configuration = buildConfig( siteConfig );
-        this.traceSampler = new DefaultTraceSampler( new IndyClientTrafficClassifier(), configuration );
-        this.honeycombManager = new DefaultHoneycombManager( configuration, traceSampler );
+        this.traceSampler = new ClientTraceSampler( new IndyClientTrafficClassifier(), configuration );
+        this.honeycombManager = new ClientHoneycombManager( configuration, traceSampler );
     }
 
     public ClientMetricManager trace( String traceId )
@@ -136,12 +132,13 @@ public class ClientMetricManager {
         String pathInfo = request.getURI().getPath();
         logger.debug( "Client honey process START: {}", pathInfo );
 
-        GoldenSignalsRootSpanFields fields = new GoldenSignalsRootSpanFields( metricSet );
-        honeycombManager.addSpanFields( Collections.singletonList( fields ) );
+        ClientGoldenSignalsRootSpanFields fields = new ClientGoldenSignalsRootSpanFields( metricSet );
+        honeycombManager.registerRootSpanFields( fields );
 
         if ( rootSpan != null ) {
             rootSpan.addField( "path_info", pathInfo );
-            rootSpan.addField( "client-trace-id", traceId );
+            rootSpan.addField( "trace-id", traceId );
+            rootSpan.addField( "service", configuration.getServiceName() );
             rootSpan.addField( "status_code", response.getStatusLine().getStatusCode() );
             honeycombManager.addFields( rootSpan );
 
@@ -157,6 +154,7 @@ public class ClientMetricManager {
         config.setEnabled( siteConfig.isMetricEnabled() );
         config.setDataset( siteConfig.getHoneycombDataset() );
         config.setWriteKey( siteConfig.getHoneycombWriteKey() );
+        config.setBaseSampleRate( siteConfig.getBaseSampleRate() );
         return config;
     }
 
