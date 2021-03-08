@@ -38,6 +38,11 @@
             <groupId>org.commonjava.indy</groupId>
             <artifactId>indy-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-test-db</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 
