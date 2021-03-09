@@ -98,8 +98,6 @@ public class IndyClientHttp
 
     private ClientMetricManager metricManager;
 
-    private String traceId;
-
     /**
      *
      * @param authenticator
@@ -118,12 +116,11 @@ public class IndyClientHttp
         baseUrl = location.getUri();
         this.mdcCopyMappings = mdcCopyMappings;
         checkBaseUrl( baseUrl );
-        addClientTraceHeader();
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
         factory = new HttpFactory( authenticator );
-        metricManager = new ClientMetricManager( location ).trace( traceId );
+        metricManager = new ClientMetricManager( location ).trace( addClientTraceHeader() );
     }
 
     public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
@@ -134,12 +131,11 @@ public class IndyClientHttp
         this.location = location;
         baseUrl = location.getUri();
         checkBaseUrl( baseUrl );
-        addClientTraceHeader();
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
         factory = new HttpFactory( passwordManager );
-        metricManager = new ClientMetricManager( location ).trace( traceId );
+        metricManager = new ClientMetricManager( location ).trace( addClientTraceHeader() );
     }
 
     private void initUserAgent( final String apiVersion )
@@ -152,12 +148,12 @@ public class IndyClientHttp
         addDefaultHeader( "User-Agent", String.format("Indy/%s (api: %s) via %s", indyVersion, apiVersion, hcUserAgent ) );
     }
 
-    private void addClientTraceHeader()
+    private String addClientTraceHeader()
     {
-        addDefaultHeader( HEADER_INDY_CLIENT_API, String.valueOf( true ) );
         String traceId = UUID.randomUUID().toString();
         addDefaultHeader( HEADER_INDY_CLIENT_TRACE_ID, traceId );
-        this.traceId = traceId;
+        addDefaultHeader( HEADER_INDY_CLIENT_API, String.valueOf( true ) );
+        return traceId;
     }
 
     private void addApiVersionHeader( String apiVersion )

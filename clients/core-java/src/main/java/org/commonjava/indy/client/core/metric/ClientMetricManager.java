@@ -34,12 +34,12 @@ import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADE
 import static org.commonjava.o11yphant.metrics.MetricsConstants.NANOS_PER_MILLISECOND;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_MILLIS;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_NS;
+import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_PHASE;
+import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_PHASE_START;
 
 public class ClientMetricManager {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    private String traceId;
 
     private ClientHoneycombConfiguration configuration;
 
@@ -51,6 +51,8 @@ public class ClientMetricManager {
 
     @ClientMetricSet
     private final ClientGoldenSignalsMetricSet metricSet = new ClientGoldenSignalsMetricSet();
+
+    private String traceId;
 
     private HttpUriRequest request;
 
@@ -85,6 +87,7 @@ public class ClientMetricManager {
         this.request = request;
         functions = classifier.calculateClassifiers( request );
         logger.debug( "Client honey register: {}", request.getURI().getPath() );
+        RequestContextHelper.setContext( REQUEST_PHASE, REQUEST_PHASE_START );
         honeycombManager.init();
         rootSpan = honeycombManager.startRootTracer( getEndpointName( request.getMethod(), request.getURI().getPath() ) );
         if ( rootSpan != null )
@@ -176,7 +179,8 @@ public class ClientMetricManager {
     }
 
     private void defaultTraceMetrics() {
-        metricSet.reset();
+        RequestContextHelper.clearContext( REQUEST_PHASE );
+        metricSet.clear();
         functions = new ArrayList<>();
         start = 0l;
         end = 0l;

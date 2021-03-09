@@ -37,7 +37,7 @@ public class ClientGoldenSignalsMetricSet
         return Arrays.asList( CLIENT_FUNCTIONS );
     }
 
-    public void reset()
+    public void clear()
     {
         getFunctionMetrics().clear();
         getFunctions().forEach( function -> {
