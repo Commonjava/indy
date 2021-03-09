@@ -15,33 +15,18 @@
  */
 package org.commonjava.indy.client.core.metric;
 
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import io.honeycomb.beeline.tracing.Span;
-import io.honeycomb.libhoney.EventPostProcessor;
 import org.commonjava.cdi.util.weft.ThreadContext;
-import org.commonjava.o11yphant.honeycomb.CustomTraceIdProvider;
 import org.commonjava.o11yphant.honeycomb.HoneycombManager;
-import org.commonjava.o11yphant.honeycomb.RootSpanFields;
-import org.commonjava.o11yphant.honeycomb.SpanContext;
 import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
-import static org.commonjava.o11yphant.metrics.MetricsConstants.AVERAGE_TIME_MS;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.CUMULATIVE_COUNT;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.CUMULATIVE_TIMINGS;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.MAX_TIME_MS;
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_PHASE_START;
 import static org.commonjava.o11yphant.metrics.RequestContextHelper.getContext;
-import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
 
 public class ClientHoneycombManager
                 extends HoneycombManager
