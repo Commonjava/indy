@@ -22,12 +22,6 @@ import org.commonjava.o11yphant.metrics.TrafficClassifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 public class ClientTraceSampler
                 implements TraceSampler<String>
 {

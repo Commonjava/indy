@@ -20,10 +20,7 @@ import org.commonjava.o11yphant.metrics.api.Gauge;
 import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.api.Metric;
 import org.commonjava.o11yphant.metrics.api.Timer;
-import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 

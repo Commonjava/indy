@@ -20,7 +20,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.commonjava.indy.client.core.inject.ClientMetricSet;
 import org.commonjava.o11yphant.metrics.RequestContextHelper;
-
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.slf4j.Logger;
