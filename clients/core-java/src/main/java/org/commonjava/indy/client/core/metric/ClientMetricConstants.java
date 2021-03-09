@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.client.core.metric;
 
-public class ClientTrafficClassifierConstants {
+public class ClientMetricConstants {
 
     public static final String CLIENT_FOLO_ADMIN = "client.folo.admin";
 
@@ -27,9 +27,15 @@ public class ClientTrafficClassifierConstants {
 
     public static final String CLIENT_PROMOTE = "client.promote";
 
-    public static final String[] CLINET_FUNCTIONS =
+    public final static String HEADER_INDY_CLIENT_API = "Indy-Client-API";
+
+    public final static String HEADER_INDY_CLIENT_TRACE_ID = "Indy-Client-Trace-Id";
+
+    public final static String HEADER_INDY_CLIENT_SPAN_ID = "Indy-Client-Span-Id";
+
+    public static final String[] CLIENT_FUNCTIONS =
             { CLIENT_FOLO_ADMIN, CLIENT_FOLO_CONTENT, CLIENT_REPO_MGMT, CLIENT_CONTENT, CLIENT_PROMOTE };
 
-    private ClientTrafficClassifierConstants() {
+    private ClientMetricConstants() {
     }
 }

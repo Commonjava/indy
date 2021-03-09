@@ -18,9 +18,9 @@ package org.commonjava.indy.client.core.metric;
 import io.honeycomb.beeline.tracing.Span;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
-import org.commonjava.indy.client.core.IndyClientTrafficClassifier;
 import org.commonjava.indy.client.core.inject.ClientMetricSet;
 import org.commonjava.o11yphant.metrics.RequestContextHelper;
+
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CLIENT_SPAN_ID;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_INDY_CLIENT_SPAN_ID;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.NANOS_PER_MILLISECOND;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_MILLIS;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_NS;
@@ -47,7 +47,7 @@ public class ClientMetricManager {
 
     private ClientHoneycombManager honeycombManager;
 
-    private final IndyClientTrafficClassifier classifier = new IndyClientTrafficClassifier();
+    private final ClientTrafficClassifier classifier = new ClientTrafficClassifier();
 
     @ClientMetricSet
     private final ClientGoldenSignalsMetricSet metricSet = new ClientGoldenSignalsMetricSet();
@@ -70,7 +70,7 @@ public class ClientMetricManager {
     public ClientMetricManager( SiteConfig siteConfig )
     {
         this.configuration = buildConfig( siteConfig );
-        this.traceSampler = new ClientTraceSampler( new IndyClientTrafficClassifier(), configuration );
+        this.traceSampler = new ClientTraceSampler( classifier, configuration );
         this.honeycombManager = new ClientHoneycombManager( configuration, traceSampler );
     }
 

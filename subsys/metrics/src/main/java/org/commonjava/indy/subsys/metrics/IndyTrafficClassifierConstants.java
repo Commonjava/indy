@@ -47,22 +47,10 @@ public final class IndyTrafficClassifierConstants
 
     public static final String FN_NPM_DOWNLOAD = "npm.download";
 
-    public static final String CLIENT_FOLO_ADMIN = "client.folo.admin";
-
-    public static final String CLIENT_FOLO_CONTENT = "client.folo.content";
-
-    public static final String CLIENT_REPO_MGMT = "client.repo.mgmt";
-
-    public static final String CLIENT_CONTENT = "client.content";
-
-    public static final String CLIENT_PROMOTE = "client.promote";
-
-
     public static final String[] FUNCTIONS =
                     { FN_CONTENT, FN_CONTENT_MAVEN, FN_CONTENT_NPM, FN_CONTENT_GENERIC, FN_METADATA, FN_METADATA_MAVEN,
                                     FN_METADATA_NPM, FN_PROMOTION, FN_TRACKING_RECORD, FN_CONTENT_LISTING, FN_REPO_MGMT,
-                                    FN_MAVEN_UPLOAD, FN_MAVEN_DOWNLOAD, FN_NPM_UPLOAD, FN_NPM_DOWNLOAD,
-                                    CLIENT_FOLO_ADMIN, CLIENT_FOLO_CONTENT, CLIENT_REPO_MGMT, CLIENT_CONTENT, CLIENT_PROMOTE};
+                                    FN_MAVEN_UPLOAD, FN_MAVEN_DOWNLOAD, FN_NPM_UPLOAD, FN_NPM_DOWNLOAD };
 
     private IndyTrafficClassifierConstants()
     {

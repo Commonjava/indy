@@ -71,10 +71,11 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_INDY_CLIENT_API;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_INDY_CLIENT_TRACE_ID;
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_API_VERSION;
-import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CLIENT_API;
-import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CLIENT_TRACE_ID;
+
 
 public class IndyClientHttp
         implements Closeable
