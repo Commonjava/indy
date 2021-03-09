@@ -29,7 +29,7 @@
   <dependencies>
     <dependency>
       <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-metrics-core</artifactId>
+      <artifactId>o11yphant-metrics-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

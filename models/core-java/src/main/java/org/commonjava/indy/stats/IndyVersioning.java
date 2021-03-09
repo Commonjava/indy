@@ -28,11 +28,6 @@ import java.util.Properties;
 @Named
 public class IndyVersioning
 {
-    public final static String HEADER_INDY_CLIENT_API = "Indy-Client-API";
-
-    public final static String HEADER_INDY_CLIENT_TRACE_ID = "Indy-Client-Trace-Id";
-
-    public final static String HEADER_INDY_CLIENT_SPAN_ID = "Indy-Client-Span-Id";
 
     public final static String HEADER_INDY_API_VERSION = "Indy-API-Version"; // the API version for the requester
 

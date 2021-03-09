@@ -22,7 +22,7 @@ import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
 import java.util.Arrays;
 import java.util.Collection;
 
-import static org.commonjava.indy.client.core.metric.ClientTrafficClassifierConstants.CLINET_FUNCTIONS;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.CLIENT_FUNCTIONS;
 
 @ClientMetricSet
 public class ClientGoldenSignalsMetricSet
@@ -34,7 +34,7 @@ public class ClientGoldenSignalsMetricSet
 
     @Override
     protected Collection<String> getFunctions() {
-        return Arrays.asList( CLINET_FUNCTIONS );
+        return Arrays.asList( CLIENT_FUNCTIONS );
     }
 
     public void reset()

@@ -1570,7 +1570,7 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>
-        <artifactId>o11yphant-metrics-core</artifactId>
+        <artifactId>o11yphant-metrics-common</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
 

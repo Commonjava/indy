@@ -59,25 +59,6 @@ public class ClientTraceSampler
             logger.debug( "Including span via override (span: {})", input );
             return 1;
         }
-
-        Optional<List<String>> functionClassifiers = classifier.getCachedFunctionClassifiers();
-        Integer rate = configuration.getSampleRate( input );
-
-        if ( Objects.equals( rate, configuration.getBaseSampleRate() ) && functionClassifiers.isPresent() )
-        {
-            Optional<Integer> mostAggressive = functionClassifiers.get()
-                                                                  .stream()
-                                                                  .map( classifier -> configuration.getSampleRate(
-                                                                                  classifier ) )
-                                                                  .filter( theRate -> theRate > 0 )
-                                                                  .min( ( one, two ) -> two - one );
-
-            if ( mostAggressive.isPresent() )
-            {
-                rate = mostAggressive.get();
-            }
-        }
-
-        return rate;
+        return configuration.getSampleRate( input );
     }
 }
