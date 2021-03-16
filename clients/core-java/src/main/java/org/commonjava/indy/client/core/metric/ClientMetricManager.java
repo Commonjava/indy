@@ -16,6 +16,7 @@
 package org.commonjava.indy.client.core.metric;
 
 import io.honeycomb.beeline.tracing.Span;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.commonjava.indy.client.core.inject.ClientMetricSet;
@@ -27,14 +28,17 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_INDY_CLIENT_SPAN_ID;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_CLIENT_SPAN_ID;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.NANOS_PER_MILLISECOND;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_MILLIS;
+
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_NS;
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_PHASE;
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_PHASE_START;
+import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRACE_ID;
+import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRAFFIC_TYPE;
 
 public class ClientMetricManager {
 
@@ -51,47 +55,42 @@ public class ClientMetricManager {
     @ClientMetricSet
     private final ClientGoldenSignalsMetricSet metricSet = new ClientGoldenSignalsMetricSet();
 
-    private String traceId;
-
     private HttpUriRequest request;
 
     private HttpResponse response;
 
-    private Collection<String> functions;
+    private Span rootSpan;
+
+    private Collection<String> functions = new ArrayList<>();
 
     private long start = 0l;
 
     private long end = 0l;
 
-    private Span rootSpan;
-
     public ClientMetricManager() {
     }
 
-    public ClientMetricManager( SiteConfig siteConfig )
+    public ClientMetricManager( SiteConfig siteConfig, String traceId )
     {
         this.configuration = buildConfig( siteConfig );
         this.traceSampler = new ClientTraceSampler( classifier, configuration );
         this.honeycombManager = new ClientHoneycombManager( configuration, traceSampler );
-    }
-
-    public ClientMetricManager trace( String traceId )
-    {
-        this.traceId = traceId;
-        return this;
+        RequestContextHelper.setContext( TRACE_ID, traceId );
     }
 
     public ClientMetricManager register( HttpUriRequest request ) {
+        logger.debug( "Client honey register: {}", request.getURI().getPath() );
         defaultTraceMetrics();
+
         this.request = request;
         functions = classifier.calculateClassifiers( request );
-        logger.debug( "Client honey register: {}", request.getURI().getPath() );
-        RequestContextHelper.setContext( REQUEST_PHASE, REQUEST_PHASE_START );
+        addTrafficField();
+
         honeycombManager.init();
         rootSpan = honeycombManager.startRootTracer( getEndpointName( request.getMethod(), request.getURI().getPath() ) );
         if ( rootSpan != null )
         {
-            request.setHeader( HEADER_INDY_CLIENT_SPAN_ID, rootSpan.getSpanId() );
+            request.setHeader( HEADER_CLIENT_SPAN_ID, rootSpan.getSpanId() );
         }
         return this;
     }
@@ -139,11 +138,8 @@ public class ClientMetricManager {
 
         if ( rootSpan != null ) {
             rootSpan.addField( "path_info", pathInfo );
-            rootSpan.addField( "trace-id", traceId );
-            rootSpan.addField( "service", configuration.getServiceName() );
             rootSpan.addField( "status_code", response.getStatusLine().getStatusCode() );
             honeycombManager.addFields( rootSpan );
-
             rootSpan.close();
         }
         honeycombManager.endTrace();
@@ -158,6 +154,19 @@ public class ClientMetricManager {
         config.setWriteKey( siteConfig.getHoneycombWriteKey() );
         config.setBaseSampleRate( siteConfig.getBaseSampleRate() );
         return config;
+    }
+
+    private void addTrafficField()
+    {
+        Set<String> classifierTokens = new LinkedHashSet<>();
+        functions.forEach( function -> {
+            String[] parts = function.split( "\\." );
+            for ( int i = 0; i < parts.length - 1; i++ )
+            {
+                classifierTokens.add( parts[i] );
+            }
+        } );
+        RequestContextHelper.setContext( TRAFFIC_TYPE, StringUtils.join( classifierTokens, "," ));
     }
 
     private String getEndpointName( String method, String pathInfo ) {
@@ -178,7 +187,6 @@ public class ClientMetricManager {
     }
 
     private void defaultTraceMetrics() {
-        RequestContextHelper.clearContext( REQUEST_PHASE );
         metricSet.clear();
         functions = new ArrayList<>();
         start = 0l;
