@@ -71,8 +71,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
-import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_INDY_CLIENT_API;
-import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_INDY_CLIENT_TRACE_ID;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_CLIENT_API;
+import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_CLIENT_TRACE_ID;
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_API_VERSION;
 
@@ -120,7 +120,7 @@ public class IndyClientHttp
         initUserAgent( apiVersion );
 
         factory = new HttpFactory( authenticator );
-        metricManager = new ClientMetricManager( location ).trace( addClientTraceHeader() );
+        metricManager = new ClientMetricManager( location, addClientTraceHeader() );
     }
 
     public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
@@ -135,7 +135,7 @@ public class IndyClientHttp
         initUserAgent( apiVersion );
 
         factory = new HttpFactory( passwordManager );
-        metricManager = new ClientMetricManager( location ).trace( addClientTraceHeader() );
+        metricManager = new ClientMetricManager( location, addClientTraceHeader() );
     }
 
     private void initUserAgent( final String apiVersion )
@@ -151,8 +151,8 @@ public class IndyClientHttp
     private String addClientTraceHeader()
     {
         String traceId = UUID.randomUUID().toString();
-        addDefaultHeader( HEADER_INDY_CLIENT_TRACE_ID, traceId );
-        addDefaultHeader( HEADER_INDY_CLIENT_API, String.valueOf( true ) );
+        addDefaultHeader( HEADER_CLIENT_TRACE_ID, traceId );
+        addDefaultHeader( HEADER_CLIENT_API, String.valueOf( true ) );
         return traceId;
     }
 
