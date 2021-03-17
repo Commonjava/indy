@@ -28,6 +28,7 @@ import java.util.Properties;
 @Named
 public class IndyVersioning
 {
+
     public final static String HEADER_INDY_API_VERSION = "Indy-API-Version"; // the API version for the requester
 
     public final static String HEADER_INDY_CUR_API_VERSION = "Indy-Cur-API-Version"; // the current API version for the server

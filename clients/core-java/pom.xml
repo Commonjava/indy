@@ -29,6 +29,14 @@
   
   <dependencies>
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-honeycomb-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-metrics-common</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-model-core-java</artifactId>
     </dependency>
