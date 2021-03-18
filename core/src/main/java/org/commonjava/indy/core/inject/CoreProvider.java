@@ -69,6 +69,19 @@ public class CoreProvider
     public void init()
     {
         this.objectMapper = new IndyObjectMapper( objectMapperModules, objectMapperModuleSets );
+
+        String nfcProvider = indyConfiguration.getNfcProvider();
+        logger.info( "Apply nfc provider: {}", nfcProvider );
+        if ( CASSANDRA_NFC_PROVIDER.equals( nfcProvider ) )
+        {
+            notFoundCache = new CassandraNotFoundCache( indyConfiguration, cacheProducer,
+                                                        cassandraClient );
+        }
+        else
+        {
+            notFoundCache = new IspnNotFoundCache( indyConfiguration, nfcCache ); // default
+        }
+
     }
 
     @Produces
@@ -83,23 +96,6 @@ public class CoreProvider
 
     @Produces
     @Default
-    public NotFoundCache getNotFoundCache()
-    {
-        if ( notFoundCache == null )
-        {
-            String nfcProvider = indyConfiguration.getNfcProvider();
-            logger.info( "Apply nfc provider: {}", nfcProvider );
-            if ( CASSANDRA_NFC_PROVIDER.equals( nfcProvider ) )
-            {
-                notFoundCache = new CassandraNotFoundCache( indyConfiguration, cacheProducer,
-                                                            cassandraClient );
-            }
-            else
-            {
-                notFoundCache = new IspnNotFoundCache( indyConfiguration, nfcCache ); // default
-            }
-        }
-        return notFoundCache;
-    }
+    public NotFoundCache getNotFoundCache() { return notFoundCache; }
 
 }
