@@ -112,6 +112,8 @@ public class DefaultStorageProviderConfiguration
 
     private String cassandraKeyspace = DEFAULT_STORAGE_KEYSPACE;
 
+    private Integer cassandraReplicationFactor;
+
     private int gcBatchSize = 100;
 
     private int gcGracePeriodInHours = 24;
@@ -131,6 +133,17 @@ public class DefaultStorageProviderConfiguration
     public String getCassandraKeyspace()
     {
         return cassandraKeyspace;
+    }
+
+    @ConfigName( "storage.cassandra.replica" )
+    public void setCassandraReplicationFactor( int cassandraReplicationFactor )
+    {
+        this.cassandraReplicationFactor = cassandraReplicationFactor;
+    }
+
+    public Integer getCassandraReplicationFactor()
+    {
+        return cassandraReplicationFactor;
     }
 
     @ConfigName( "storage.gc.batchsize" )
