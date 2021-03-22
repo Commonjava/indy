@@ -212,7 +212,7 @@ public class DefaultGalleyStorageProvider
             if ( session != null )
             {
                 logger.info( "Create pathDB, keyspace: {}", keyspace );
-                pathDB = new CassandraPathDB( pathMappedStorageConfig, session, keyspace );
+                pathDB = new CassandraPathDB( pathMappedStorageConfig, session, keyspace, getReplicationFactor() );
             }
         }
 
@@ -253,6 +253,7 @@ public class DefaultGalleyStorageProvider
         cassandraProps.put( PROP_CASSANDRA_USER, cassandraConfig.getCassandraUser() );
         cassandraProps.put( PROP_CASSANDRA_PASS, cassandraConfig.getCassandraPass() );
         cassandraProps.put( PROP_CASSANDRA_KEYSPACE, config.getCassandraKeyspace() );
+        cassandraProps.put( PROP_CASSANDRA_REPLICATION_FACTOR, getReplicationFactor() );
 
         DefaultPathMappedStorageConfig ret = new DefaultPathMappedStorageConfig( cassandraProps );
         ret.setFileChecksumAlgorithm( config.getFileChecksumAlgorithm() );
@@ -262,6 +263,16 @@ public class DefaultGalleyStorageProvider
         ret.setDeduplicatePattern( config.getDeduplicatePattern() );
 
         return ret;
+    }
+
+    private int getReplicationFactor()
+    {
+        Integer replica = config.getCassandraReplicationFactor();
+        if ( replica == null )
+        {
+            replica = indyConfiguration.getKeyspaceReplicas();
+        }
+        return replica;
     }
 
     /**
