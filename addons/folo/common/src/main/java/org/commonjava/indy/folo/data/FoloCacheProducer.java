@@ -16,7 +16,6 @@
 package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.folo.data.idxmodel.StoreKeyFieldBridge;
-import org.commonjava.indy.folo.data.idxmodel.TrackedContentEntryTransformer;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
@@ -26,8 +25,6 @@ import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Factory;
 import org.hibernate.search.cfg.SearchMapping;
-import org.infinispan.query.Search;
-import org.infinispan.query.spi.SearchManagerImplementor;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -53,12 +50,6 @@ public class FoloCacheProducer
     @Inject
     private DataFileConfiguration dataConfig;
 
-    @PostConstruct
-    public void initIndexing()
-    {
-        registerTransformer();
-    }
-
     @Factory
     public SearchMapping getSearchMapping()
     {
@@ -79,19 +70,6 @@ public class FoloCacheProducer
                     .property( "id", ElementType.METHOD ).field().analyze( Analyze.NO );
 
         return entryMapping;
-    }
-
-    private void registerTransformer(){
-        final CacheHandle<TrackedContentEntry, TrackedContentEntry> handler =
-                        cacheProducer.getCache( IN_PROGRESS_NAME );
-
-        handler.executeCache( cache->{
-            SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
-
-            searchManager.registerKeyTransformer( TrackedContentEntry.class, TrackedContentEntryTransformer.class );
-
-            return null;
-        } );
     }
 
     @FoloInprogressCache

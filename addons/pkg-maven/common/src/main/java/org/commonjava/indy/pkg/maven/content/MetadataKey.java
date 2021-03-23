@@ -21,11 +21,13 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.infinispan.query.Transformable;
 
 import java.io.Serializable;
 import java.util.Objects;
 
 @Indexed
+@Transformable(transformer = MetadataKeyTransformer.class)
 public final class MetadataKey
                 implements Serializable
 {

@@ -108,27 +108,7 @@ public class MetadataCacheProducer
             keyMarshallers.add( new StoreTypeMarshaller() );
             cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
         }
-        return cacheProducer.getBasicCache( METADATA_KEY_CACHE );
-    }
-
-    @PostConstruct
-    public void initIndexing()
-    {
-        registerTransformer();
-    }
-
-    private void registerTransformer()
-    {
         BasicCacheHandle<MetadataKey, MetadataKey> handler = cacheProducer.getBasicCache( METADATA_KEY_CACHE );
-        // for embedded mode
-        if ( handler instanceof CacheHandle )
-        {
-            ((CacheHandle<MetadataKey, MetadataKey>) handler).executeCache( cache -> {
-                SearchManagerImplementor searchManager = (SearchManagerImplementor) Search.getSearchManager( cache );
-                searchManager.registerKeyTransformer( MetadataKey.class, MetadataKeyTransformer.class );
-                return null;
-            } );
-        }
 
         if ( handler.getCache() instanceof RemoteCache )
         {
@@ -138,6 +118,7 @@ public class MetadataCacheProducer
         {
             ((Cache)handler.getCache()).addListener( cacheListener );
         }
+        return handler;
     }
 
 }

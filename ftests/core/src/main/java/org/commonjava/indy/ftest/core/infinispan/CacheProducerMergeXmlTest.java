@@ -54,7 +54,7 @@ public class CacheProducerMergeXmlTest
     public void setup()
     {
         manager = new DefaultCacheManager(
-                new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build() );
+                new GlobalConfigurationBuilder().jmx().build() );
         producer = new CacheProducer( new DefaultIndyConfiguration(), manager, null );
         producer.start();
         manager = producer.getCacheManager();
@@ -64,12 +64,6 @@ public class CacheProducerMergeXmlTest
     public void testMerge()
             throws Exception
     {
-        assertThat( manager.getCacheConfiguration( "local" ).memory().addressCount(), equalTo( 1048576 ) );
-        assertThat( manager.getCacheConfiguration( "koji-maven-version-metadata" ).memory().addressCount(), equalTo( 1048576 ) );
-        assertThat( manager.getCacheConfiguration( "folo-in-progress" ).memory().addressCount(), equalTo( 1048576 ) );
-        assertThat( manager.getCacheConfiguration( "folo-sealed" ).persistence().passivation(), equalTo( false ) );
-        assertThat( manager.getCacheConfiguration( "content-index" ).memory().addressCount(), equalTo( 1048576 ) );
-        assertThat( manager.getCacheConfiguration( "indy-nfs-owner-cache" ).memory().addressCount(), equalTo( 1048576 ) );
         assertThat( manager.getCacheConfiguration( "nfc" ), notNullValue() );
         assertThat( manager.getCacheConfiguration( "schedule-expire-cache" ), notNullValue() );
         assertThat( manager.getCacheConfiguration( "maven-metadata-cache" ), notNullValue() );

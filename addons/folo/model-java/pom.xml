@@ -39,5 +39,9 @@
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.infinispan</groupId>
+      <artifactId>infinispan-query</artifactId>
+    </dependency>
   </dependencies>
 </project>

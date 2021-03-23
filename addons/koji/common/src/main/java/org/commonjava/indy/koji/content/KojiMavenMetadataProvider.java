@@ -64,7 +64,6 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
-import org.infinispan.commons.util.concurrent.ConcurrentHashSet;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
@@ -82,6 +81,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -383,7 +383,7 @@ public class KojiMavenMetadataProvider
         List<KojiArchiveInfo> archives = kojiContentProvider.listArchivesMatching( ga, null );
 
         Map<Integer, KojiBuildArchiveCollection> seenBuildArchives = new ConcurrentHashMap<>();
-        Set<Integer> seenBuilds = new ConcurrentHashSet<>();
+        Set<Integer> seenBuilds = new HashSet<>();
 
         DrainingExecutorCompletionService<SingleVersion> svc = new DrainingExecutorCompletionService<>( kojiMDService );
 
@@ -394,7 +394,7 @@ public class KojiMavenMetadataProvider
             }
         });
 
-        Set<SingleVersion> versions = new ConcurrentHashSet<>();
+        Set<SingleVersion> versions = new HashSet<>();
         try
         {
             svc.drain( v -> {

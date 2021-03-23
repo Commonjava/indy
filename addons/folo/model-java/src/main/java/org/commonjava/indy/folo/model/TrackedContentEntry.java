@@ -18,6 +18,7 @@ package org.commonjava.indy.folo.model;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.infinispan.query.Transformable;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import static org.commonjava.indy.model.core.AccessChannel.GENERIC_PROXY;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
+@Transformable( transformer = TrackedContentEntryTransformer.class )
 public class TrackedContentEntry
         implements Comparable<TrackedContentEntry>,Externalizable
 {

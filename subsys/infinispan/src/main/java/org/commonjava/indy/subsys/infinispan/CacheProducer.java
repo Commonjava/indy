@@ -32,6 +32,7 @@ import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.marshall.MarshallerUtil;
 import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
 import org.infinispan.commons.configuration.XMLStringConfiguration;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
@@ -303,7 +304,7 @@ public class CacheProducer
 
     public synchronized <K> void registerProtoSchema( Class<K> kClass, String packageName, String fileName )
     {
-        SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
+        SerializationContext ctx = MarshallerUtil.getSerializationContext( remoteCacheManager );
         // Use ProtoSchemaBuilder to define a Protobuf schema on the client
         ProtoSchemaBuilder protoSchemaBuilder = new ProtoSchemaBuilder();
         String protoFile;
@@ -329,7 +330,7 @@ public class CacheProducer
 
     public synchronized void registerProtoAndMarshallers( String protofile, List<BaseMarshaller> marshallers )
     {
-        SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
+        SerializationContext ctx = MarshallerUtil.getSerializationContext( remoteCacheManager );
         try
         {
             ctx.registerProtoFiles( FileDescriptorSource.fromResources( protofile ) );
@@ -542,7 +543,7 @@ public class CacheProducer
             }
         }
 
-        final ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( IOUtils.toInputStream( config ) );
+        final ConfigurationBuilderHolder holder = ( new ParserRegistry() ).parse( config );
         final ConfigurationManager manager = new ConfigurationManager( holder );
 
         final Set<String> definedCaches = mgr.getCacheNames();

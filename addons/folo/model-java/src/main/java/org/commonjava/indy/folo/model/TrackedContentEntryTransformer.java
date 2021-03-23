@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.folo.data.idxmodel;
+package org.commonjava.indy.folo.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
