@@ -1,8 +1,6 @@
 package org.commonjava.indy.schedule;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
@@ -10,15 +8,13 @@ import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
+import org.infinispan.manager.EmbeddedCacheManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -49,7 +45,7 @@ public class ScheduleTest
         DefaultIndyConfiguration indyConfig = new DefaultIndyConfiguration();
         indyConfig.setKeyspaceReplicas( 1 );
 
-        DefaultCacheManager cacheManager = new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+        EmbeddedCacheManager cacheManager = new DefaultCacheManager();
         scheduleDB = new ScheduleDB( indyConfig, scheduleDBConfig, client, new CacheProducer( null, cacheManager, null ) );
     }
 
