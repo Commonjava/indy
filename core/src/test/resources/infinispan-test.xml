@@ -17,5 +17,7 @@
 
     <local-cache name="local" configuration="local-template"/>
 
+    <local-cache name="content-metadata" configuration="local-template"/>
+
   </cache-container>
 </infinispan>

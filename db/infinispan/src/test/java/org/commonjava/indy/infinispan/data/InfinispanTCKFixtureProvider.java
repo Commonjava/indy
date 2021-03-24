@@ -24,6 +24,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,10 +38,11 @@ public class InfinispanTCKFixtureProvider
 {
     private InfinispanStoreDataManager dataManager;
 
-    protected void init()
+    protected void init() throws IOException
     {
-        DefaultCacheManager cacheManager =
-                new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+        DefaultCacheManager cacheManager = new DefaultCacheManager(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "infinispan-test.xml" ) );
+
         Cache<StoreKey, ArtifactStore> storeCache = cacheManager.getCache( STORE_DATA_CACHE, true );
         Cache<String, Map<StoreType, Set<StoreKey>>> storesByPkgCache = cacheManager.getCache( STORE_BY_PKG_CACHE, true );
         Cache<StoreKey, Set<StoreKey>> affected = cacheManager.getCache( AFFECTED_BY_STORE_CACHE, true );

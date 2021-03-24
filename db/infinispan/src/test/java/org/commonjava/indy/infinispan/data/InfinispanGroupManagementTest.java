@@ -19,13 +19,15 @@ import org.commonjava.indy.core.data.GroupDataManagerTCK;
 import org.commonjava.indy.core.data.TCKFixtureProvider;
 import org.junit.Before;
 
+import java.io.IOException;
+
 public class InfinispanGroupManagementTest
         extends GroupDataManagerTCK
 {
     private InfinispanTCKFixtureProvider provider;
 
     @Override
-    public void doSetup()
+    public void doSetup() throws IOException
     {
         provider = new InfinispanTCKFixtureProvider();
         provider.init();

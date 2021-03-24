@@ -17,16 +17,9 @@ package org.commonjava.indy.content.index;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.infinispan.commons.util.Base64;
 import org.infinispan.persistence.keymappers.TwoWayKey2StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 
 public class ISPFieldStringKey2StringMapper
         implements TwoWayKey2StringMapper

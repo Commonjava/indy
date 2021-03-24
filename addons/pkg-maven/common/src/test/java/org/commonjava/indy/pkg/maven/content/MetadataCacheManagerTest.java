@@ -40,8 +40,9 @@ public class MetadataCacheManagerTest
     @Before
     public void setup() throws Exception
     {
-        DefaultCacheManager cacheManager =
-                        new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+        DefaultCacheManager cacheManager = new DefaultCacheManager(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "infinispan-test.xml" ) );
+
         cacheProducer = new CacheProducer( null, cacheManager, null );
         CacheHandle<MetadataKey, MetadataKey> metadataKeyCache = cacheProducer.getCache( "maven-metadata-key-cache" );
         CacheHandle<MetadataKey, MetadataInfo> metadataCache = cacheProducer.getCache( "maven-metadata-cache" );

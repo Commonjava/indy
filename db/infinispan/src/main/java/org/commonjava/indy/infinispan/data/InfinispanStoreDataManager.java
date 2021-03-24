@@ -295,13 +295,30 @@ public class InfinispanStoreDataManager
     @Override
     protected void removeAffectedBy( StoreKey key, StoreKey affected )
     {
-        affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).remove( affected );
+        Set<StoreKey> set = affectedByStores.get( key );
+        if ( set != null )
+        {
+            set.remove( affected );
+        }
+        else
+        {
+            set = new HashSet<>();
+        }
+        affectedByStores.put( key, set );
+        //affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).remove( affected );
     }
 
     @Override
     protected void addAffectedBy( StoreKey key, StoreKey affected )
     {
-        affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).add( affected );
+        Set<StoreKey> set = affectedByStores.get( key );
+        if ( set == null )
+        {
+            set = new HashSet<>();
+        }
+        set.add( affected );
+        affectedByStores.put( key, set );
+        //affectedByStores.computeIfAbsent( key, k -> new HashSet<>() ).add( affected );
     }
 
     public void initAffectedBy()

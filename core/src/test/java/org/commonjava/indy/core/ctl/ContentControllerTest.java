@@ -79,7 +79,7 @@ public class ContentControllerTest
     public static void setupClass()
     {
         GlobalConfiguration globalConfiguration =
-                new GlobalConfigurationBuilder().globalJmxStatistics().allowDuplicateDomains( true ).build();
+                new GlobalConfigurationBuilder().defaultCacheName("content-metadata").jmx().build();
         cacheManager =
                 new DefaultCacheManager( globalConfiguration, new ConfigurationBuilder().simpleCache( true ).build() );
 
