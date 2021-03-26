@@ -18,10 +18,10 @@
 -->
 <infinispan
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:infinispan:config:9.4 http://www.infinispan.org/schemas/infinispan-config-9.4.xsd
-                        urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
-    xmlns="urn:infinispan:config:9.4"
-    xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
+    xsi:schemaLocation="urn:infinispan:config:11.0 http://www.infinispan.org/schemas/infinispan-config-11.0.xsd
+                        urn:infinispan:config:store:jdbc:11.0 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-11.0.xsd"
+    xmlns="urn:infinispan:config:11.0"
+    xmlns:jdbc="urn:infinispan:config:store:jdbc:11.0">
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
@@ -65,13 +65,13 @@
         <object size="250000" strategy="REMOVE" />
       </memory>
 
-      <indexing index="LOCAL">
+      <indexing>
         <property name="default.indexmanager">near-real-time</property>
         <property name="default.directory_provider">local-heap</property>
       </indexing>
     </local-cache>
 
-    <local-cache name="maven-metadata-cache" deadlock-detection-spin="10000" configuration="local-template">
+    <local-cache name="maven-metadata-cache" configuration="local-template">
       <expiration lifespan="345600000" max-idle="345600000" interval="900000" /> <!-- expire in 4 days -->
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
@@ -86,7 +86,7 @@
       </persistence>
     </local-cache>
 
-    <local-cache name="maven-metadata-key-cache" deadlock-detection-spin="10000" configuration="local-template">
+    <local-cache name="maven-metadata-key-cache" configuration="local-template">
       <expiration lifespan="345600000" max-idle="345600000" interval="900000" /> <!-- expire in 4 days -->
       <persistence>
         <jdbc:string-keyed-jdbc-store fetch-state="false" read-only="false" purge="false" preload="true" key-to-string-mapper="org.commonjava.indy.pkg.maven.content.MetadataKey2StringMapper">
@@ -99,7 +99,7 @@
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
       </persistence>
-      <indexing index="LOCAL" auto-config="true"/>
+      <indexing />
     </local-cache>
 
     <local-cache name="schedule-expire-cache" configuration="local-template">
@@ -122,7 +122,7 @@
         Expires in 3 hours and run expiration every 15 minutes.
       -->
       <expiration lifespan="10800000" max-idle="10800000" interval="900000" />
-      <indexing index="LOCAL">
+      <indexing>
         <property name="default.indexmanager">near-real-time</property>
         <property name="default.directory_provider">infinispan</property>
       </indexing>
@@ -133,7 +133,7 @@
       <memory>
         <object size="999999999" strategy="NONE" />
       </memory>
-      <indexing index="LOCAL">
+      <indexing>
         <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
         <property name="default.directory_provider">local-heap</property>
         <!-- <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property> -->
@@ -170,7 +170,7 @@
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
       </persistence>
-      <indexing index="NONE" />
+      <indexing/>
     </local-cache>
 
     <local-cache name="store-data" configuration="local-template">
