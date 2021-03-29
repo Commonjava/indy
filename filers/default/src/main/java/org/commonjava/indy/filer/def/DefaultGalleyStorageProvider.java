@@ -237,7 +237,8 @@ public class DefaultGalleyStorageProvider
             }
         }
 
-        PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot );
+        File legacyBaseDir = config.getLegacyStorageBasedir();
+        PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot, legacyBaseDir );
 
         logger.info( "Create cacheProviderFactory, pathDB: {}, physicalStore: {}", pathDB, physicalStore );
         cacheProviderFactory =
