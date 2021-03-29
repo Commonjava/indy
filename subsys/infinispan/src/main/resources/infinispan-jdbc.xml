@@ -110,11 +110,11 @@
           </jdbc:string-keyed-table>
         </jdbc:string-keyed-jdbc-store>
       </persistence>
-      <indexing auto-config="true"/>
+      <indexing/>
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" configuration="local-template">
-      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
+      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.EmbeddedTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
 

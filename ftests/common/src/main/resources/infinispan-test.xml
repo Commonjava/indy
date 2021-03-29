@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:infinispan:config:9.4 http://www.infinispan.org/schemas/infinispan-config-9.4.xsd
-                                urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
-            xmlns="urn:infinispan:config:9.4"
-            xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
+            xsi:schemaLocation="urn:infinispan:config:11.0 http://www.infinispan.org/schemas/infinispan-config-11.0.xsd
+                                urn:infinispan:config:store:jdbc:11.0 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-11.0.xsd"
+            xmlns="urn:infinispan:config:11.0"
+            xmlns:jdbc="urn:infinispan:config:store:jdbc:11.0">
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
-    <jmx duplicate-domains="true"/>
+    <jmx/>
     <local-cache-configuration name="local-template" statistics="true">
       <!-- eviction is DEPRECATED, use memory element instead -->
       <memory>
         <!-- minimum size is 8M (must be larger than 8388624 to store configured address count of 1048576) -->
-        <off-heap size="20971520" eviction="MEMORY" address-count="1048576"/><!-- 20M -->
+        <off-heap size="20971520" eviction="MEMORY"/><!-- 20M -->
       </memory>
     </local-cache-configuration>
 
@@ -21,7 +21,7 @@
     </local-cache>
 
     <local-cache name="folo-in-progress" configuration="local-template">
-      <indexing index="LOCAL">
+      <indexing>
         <property name="hibernate.search.model_mapping">org.commonjava.indy.folo.data.FoloCacheProducer</property>
         <property name="default.directory_provider">ram</property>
         <!-- <property name="hibernate.search.default.indexBase">${indy.data}/folo/search</property> -->
@@ -37,8 +37,8 @@
     <local-cache name="content-index">
     </local-cache>
 
-    <local-cache name="indy-nfs-owner-cache" deadlock-detection-spin="10000">
-      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
+    <local-cache name="indy-nfs-owner-cache">
+      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.EmbeddedTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
 

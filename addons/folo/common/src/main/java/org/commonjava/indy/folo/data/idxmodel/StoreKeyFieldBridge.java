@@ -36,10 +36,7 @@ public class StoreKeyFieldBridge
     @Inject
     private ObjectMapper objMapper;
 
-    public StoreKeyFieldBridge()
-    {
-        initMapper();
-    }
+    public StoreKeyFieldBridge() { }
 
     private void initMapper()
     {
@@ -61,6 +58,7 @@ public class StoreKeyFieldBridge
         {
             try
             {
+                initMapper();
                 return objMapper.readValue( stringValue, TrackedContentEntry.class );
             }
             catch ( IOException e )
@@ -77,6 +75,7 @@ public class StoreKeyFieldBridge
         {
             try
             {
+                initMapper();
                 return objMapper.writeValueAsString( object );
             }
             catch ( JsonProcessingException e )

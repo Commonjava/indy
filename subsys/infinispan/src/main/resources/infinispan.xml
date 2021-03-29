@@ -43,6 +43,8 @@
 
     <local-cache name="maven-metadata-cache" configuration="local-template"/>
 
+    <local-cache name="ga-in-memory-cache" configuration="local-template"/>
+
     <local-cache name="maven-metadata-key-cache" configuration="local-template">
       <indexing>
         <property name="default.directory_provider">ram</property>
@@ -50,7 +52,7 @@
     </local-cache>
 
     <local-cache name="indy-nfs-owner-cache" configuration="local-template">
-      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.DummyTransactionManagerLookup"
+      <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.EmbeddedTransactionManagerLookup"
                    locking="PESSIMISTIC"/>
     </local-cache>
 
