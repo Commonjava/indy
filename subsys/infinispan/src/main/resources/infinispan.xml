@@ -36,7 +36,7 @@
         <object size="1000" strategy="REMOVE" />
       </memory>
     </local-cache>
-
+    
     <local-cache name="content-index" configuration="local-template" />
 
     <local-cache name="content-metadata" configuration="local-template"/>
@@ -152,6 +152,9 @@
       <clustered-locks:clustered-lock name="store-data-manager" />
     </clustered-locks:clustered-locks>
 -->
+    <local-cache name="httproxy-auth-cache" configuration="local-template" />
+    <local-cache name="repo-change" configuration="local-template" />
+    <local-cache name="promote-callback-job" configuration="local-template" />
 
-  </cache-container>
-</infinispan>
+   </cache-container>
+ </infinispan>
