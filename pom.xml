@@ -65,7 +65,7 @@
     <protostreamVersion>4.3.5.Final</protostreamVersion>
     <gsonVersion>2.8.2</gsonVersion>
     <!--<luceneVersion>7.3.0</luceneVersion>-->
-    <hibernateVersion>5.8.1.Final</hibernateVersion>
+    <hibernateVersion>5.10.7.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.1.0.Final</undertowVersion>
     <xnioVersion>3.8.0.Final</xnioVersion>
