@@ -94,6 +94,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
@@ -137,12 +138,11 @@ public class HttpProxyTest
     private static Cache<String, TransferMetadata> contentMetadata;
 
     @BeforeClass
-    public static void setupClass()
+    public static void setupClass() throws IOException
     {
-        GlobalConfiguration globalConfiguration =
-                        new GlobalConfigurationBuilder().defaultCacheName( "content-metadata" ).jmx().build();
 
-        cacheManager = new DefaultCacheManager( globalConfiguration, new ConfigurationBuilder().simpleCache( true ).build() );
+        cacheManager = new DefaultCacheManager(
+                        Thread.currentThread().getContextClassLoader().getResourceAsStream( "infinispan-test.xml" ) );
 
         contentMetadata = cacheManager.getCache( "content-metadata", true );
 
@@ -232,7 +232,6 @@ public class HttpProxyTest
     }
 
     @Test
-    @Ignore
     public void proxySimplePomAndAutoCreateRemoteRepo()
             throws Exception
     {
@@ -269,7 +268,6 @@ public class HttpProxyTest
     }
 
     @Test
-    @Ignore
     public void proxy404()
             throws Exception
     {

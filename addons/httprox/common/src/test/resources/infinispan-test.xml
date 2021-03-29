@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan xmlns="urn:infinispan:config:11.0">
+  <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
+    <serialization marshaller="org.infinispan.commons.marshall.JavaSerializationMarshaller">
+      <white-list>
+        <regex>java.util.*</regex>
+      </white-list>
+    </serialization>
+    <local-cache-configuration name="local-template" statistics="true">
+      <memory>
+        <off-heap size="20971520" eviction="MEMORY"/><!-- 20M -->
+      </memory>
+    </local-cache-configuration>
+
+    <local-cache name="local" configuration="local-template"/>
+
+    <local-cache name="httproxy-auth-cache" configuration="local-template"/>
+
+    <local-cache name="content-metadata" configuration="local-template"/>
+
+  </cache-container>
+</infinispan>
