@@ -42,6 +42,7 @@ import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
 import org.infinispan.container.entries.CacheEntry;
 import org.infinispan.metadata.Metadata;
@@ -828,6 +829,27 @@ public class DefaultScheduleManager
     {
         logger.debug( "Schedule cache cluster members changed, old members: {}; new members: {}", event.getOldMembers(),
                       event.getNewMembers() );
+    }
+
+    @Override
+    public String exportScheduler() throws Exception
+    {
+        Set<ScheduleValue> scheduleValueSet = new HashSet<>();
+        scheduleCache.executeCache( cache -> {
+            cache.getAdvancedCache().cacheEntrySet().forEach( cacheEntry -> {
+                ScheduleValue sv = cacheEntry.getValue();
+                sv.getDataPayload().put( "lifespan", cacheEntry.getMetadata().lifespan() );
+                scheduleValueSet.add( sv );
+            } );
+            return null;
+        } );
+        return objectMapper.writeValueAsString( new ScheduleValueDTO( scheduleValueSet ) );
+    }
+
+    @Override
+    public void importScheduler( Set<ScheduleValue> inputStream ) throws Exception
+    {
+        //
     }
 
 }

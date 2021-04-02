@@ -56,6 +56,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.Spliterator;
@@ -481,6 +482,40 @@ public class ScheduleDBManager
         return new ExpirationSet( expirations );
     }
 
+    @Override
+    public String exportScheduler()
+    {
+        return null;
+    }
+
+    @Override
+    public void importScheduler( Set<ScheduleValue> scheduleValues ) throws Exception
+    {
+        for ( ScheduleValue scheduleValue : scheduleValues )
+        {
+            logger.info( "=================================" );
+            logger.info( scheduleValue.getKey().toString() );
+            logger.info( scheduleValue.getDataPayload().toString() );
+
+            ScheduleKey key = scheduleValue.getKey();
+            Map<String, Object> dataPayload = scheduleValue.getDataPayload();
+            Long lifespan = (Long)dataPayload.get( "lifespan" );
+
+            if ( lifespan != null && lifespan > 0 )
+            {
+                final long duration = System.currentTimeMillis() - (long)dataPayload.get( DefaultScheduleManager.SCHEDULE_TIME );
+                if ( duration < lifespan )
+                {
+                    long timeout = lifespan - duration;
+                    scheduleDB.createSchedule( scheduleValue.getKey().toString(),
+                                               (String) dataPayload.get( DefaultScheduleManager.JOB_TYPE ), key.getName(),
+                                               (String) dataPayload.get( DefaultScheduleManager.PAYLOAD ),
+                                               timeout / 1000 );
+                }
+            }
+        }
+    }
+
     public ExpirationSet findMatchingExpirations( final StoreKey key, final String jobType )
     {
         if ( !schedulerConfig.isEnabled() )
@@ -516,7 +551,7 @@ public class ScheduleDBManager
         {
             Long lifespan = dtxSchedule.getLifespan();
             final long startTimeInMillis = dtxSchedule.getScheduleTime().getTime();
-            return calculateNextExpireTime( lifespan.longValue(), startTimeInMillis );
+            return calculateNextExpireTime( lifespan.longValue() * 1000, startTimeInMillis );
         }
 
         return null;

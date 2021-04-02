@@ -45,6 +45,7 @@ import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.bind.jaxrs.util.MaintenanceController;
 import org.commonjava.indy.core.ctl.ContentController;
 import org.commonjava.indy.core.ctl.IspnCacheController;
+import org.commonjava.indy.core.ctl.SchedulerController;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.BatchDeleteRequest;
 import org.commonjava.indy.model.core.Group;
@@ -86,6 +87,9 @@ public class MaintenanceHandler
 
     @Inject
     private ResponseHelper responseHelper;
+
+    @Inject
+    private SchedulerController schedulerController;
 
 
     @ApiOperation( "[Deprecated] Rescan all content in the specified repository to re-initialize metadata, capture missing index keys, etc." )
@@ -332,6 +336,45 @@ public class MaintenanceHandler
         catch ( IOException e )
         {
             responseHelper.throwError( new IndyWorkflowException( "IO error", e ) );
+        }
+
+        return Response.created( uriInfo.getRequestUri() ).build();
+    }
+
+    @ApiOperation( "Export the scheduler." )
+    @ApiResponse( code = 200, message = "Export complete." )
+    @Produces( "application/json" )
+    @Path( "/scheduler/export" )
+    @GET
+    public Response exportScheduler()
+    {
+        Response response;
+        try
+        {
+            String json = schedulerController.exportScheduler();
+            response = Response.ok( json ).build();
+        }
+        catch ( final Exception e )
+        {
+            logger.error( String.format( "Failed to export scheduler. Reason: %s", e.getMessage() ), e );
+            response = responseHelper.formatResponse( e );
+        }
+        return response;
+    }
+
+    @ApiOperation( "Import the scheduler from a JSON file." )
+    @ApiResponses( { @ApiResponse( code = 201, message = "Import JSON content" ) } )
+    @Path( "/scheduler/import" )
+    @PUT
+    public Response importScheduler( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    {
+        try
+        {
+            schedulerController.importScheduler( request.getInputStream() );
+        }
+        catch ( Exception e )
+        {
+            responseHelper.throwError( new IndyWorkflowException( "Import scheduler error", e ) );
         }
 
         return Response.created( uriInfo.getRequestUri() ).build();

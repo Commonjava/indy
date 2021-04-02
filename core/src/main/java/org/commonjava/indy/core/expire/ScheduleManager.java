@@ -4,6 +4,8 @@ import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 
+import java.util.Set;
+
 public interface ScheduleManager
 {
 
@@ -28,4 +30,7 @@ public interface ScheduleManager
 
     ExpirationSet findMatchingExpirations( final String jobType );
 
+    String exportScheduler() throws Exception;
+
+    void importScheduler( Set<ScheduleValue> inputStream ) throws Exception;
 }

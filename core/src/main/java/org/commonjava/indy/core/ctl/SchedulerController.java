@@ -21,23 +21,18 @@ import org.commonjava.indy.core.expire.Expiration;
 import org.commonjava.indy.core.expire.ExpirationSet;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.ScheduleManagerUtils;
-import org.commonjava.indy.core.expire.ScheduleValue;
-import org.commonjava.indy.core.expire.StoreKeyMatcher;
+import org.commonjava.indy.core.expire.ScheduleValueDTO;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.infinispan.commons.api.BasicCache;
-import org.infinispan.query.Search;
-import org.infinispan.query.dsl.Query;
-import org.infinispan.query.dsl.QueryFactory;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.List;
-import java.util.stream.Collectors;
+import javax.servlet.ServletInputStream;
 
 @ApplicationScoped
 public class SchedulerController
@@ -47,6 +42,11 @@ public class SchedulerController
 
     @Inject
     private StoreDataManager storeDataManager;
+
+    @Inject
+    private IndyObjectMapper objectMapper;
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     protected SchedulerController()
     {
@@ -113,4 +113,15 @@ public class SchedulerController
         return new Expiration( ScheduleManagerUtils.groupName( store.getKey(), StoreEnablementManager.DISABLE_TIMEOUT ), StoreEnablementManager.DISABLE_TIMEOUT );
     }
 
+    public String exportScheduler() throws Exception
+    {
+        return scheduleManager.exportScheduler();
+    }
+
+    public void importScheduler( ServletInputStream inputStream ) throws Exception
+    {
+        ScheduleValueDTO dto = objectMapper.readValue( inputStream, ScheduleValueDTO.class );
+        logger.info( "Import schedulers, size: {}", dto.getItems().size() );
+        scheduleManager.importScheduler( dto.getItems() );
+    }
 }
