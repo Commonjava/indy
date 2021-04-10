@@ -17,7 +17,8 @@ package org.commonjava.indy.subsys.honeycomb.config;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
+import org.commonjava.o11yphant.otel.OtelConfiguration;
+import org.commonjava.o11yphant.trace.TracerConfiguration;
 import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
@@ -36,7 +37,7 @@ import java.util.Set;
 @ApplicationScoped
 public class IndyHoneycombConfiguration
                 extends MapSectionListener
-                implements IndyConfigInfo, HoneycombConfiguration
+                implements IndyConfigInfo, TracerConfiguration, OtelConfiguration
 {
     @Inject
     private IndyConfiguration indyConfiguration;
@@ -99,11 +100,11 @@ public class IndyHoneycombConfiguration
         return enabled;
     }
 
-    @Override
-    public boolean isConsoleTransport()
-    {
-        return consoleTransport;
-    }
+//    @Override
+//    public boolean isConsoleTransport()
+//    {
+//        return consoleTransport;
+//    }
 
     @Override
     public String getServiceName()
@@ -155,17 +156,17 @@ public class IndyHoneycombConfiguration
         }
     }
 
-    @Override
-    public String getWriteKey()
-    {
-        return writeKey;
-    }
-
-    @Override
-    public String getDataset()
-    {
-        return dataset;
-    }
+//    @Override
+//    public String getWriteKey()
+//    {
+//        return writeKey;
+//    }
+//
+//    @Override
+//    public String getDataset()
+//    {
+//        return dataset;
+//    }
 
     @Override
     public String getDefaultConfigFileName()

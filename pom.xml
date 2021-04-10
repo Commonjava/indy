@@ -1588,12 +1588,17 @@
       <!-- o11yphant dependencies -->
       <dependency>
         <groupId>org.commonjava.util</groupId>
-        <artifactId>o11yphant-honeycomb-api</artifactId>
+        <artifactId>o11yphant-trace-api</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>
-        <artifactId>o11yphant-honeycomb-core</artifactId>
+        <artifactId>o11yphant-trace-core</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-otel</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>
