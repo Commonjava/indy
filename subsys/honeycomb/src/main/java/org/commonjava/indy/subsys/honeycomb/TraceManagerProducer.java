@@ -1,10 +1,10 @@
 package org.commonjava.indy.subsys.honeycomb;
 
-import org.commonjava.indy.subsys.honeycomb.config.IndyHoneycombConfiguration;
+import org.commonjava.indy.subsys.honeycomb.config.IndyTraceConfiguration;
 import org.commonjava.o11yphant.otel.OtelTracePlugin;
-import org.commonjava.o11yphant.trace.RootSpanDecorator;
+import org.commonjava.o11yphant.trace.SpanFieldsDecorator;
 import org.commonjava.o11yphant.trace.TraceManager;
-import org.commonjava.o11yphant.trace.spi.RootSpanFields;
+import org.commonjava.o11yphant.trace.spi.SpanFieldsInjector;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -21,15 +21,15 @@ public class TraceManagerProducer
     private TraceManager traceManager;
 
     @Inject
-    private IndyHoneycombConfiguration config;
+    private IndyTraceConfiguration config;
 
     @Inject
-    private Instance<RootSpanFields> rsfInstance;
+    private Instance<SpanFieldsInjector> rsfInstance;
 
     @PostConstruct
     public void init()
     {
-        traceManager = new TraceManager( new OtelTracePlugin( config ), new RootSpanDecorator( getRootSpanFields() ) );
+        traceManager = new TraceManager( new OtelTracePlugin( config, config ), new SpanFieldsDecorator( getRootSpanFields() ), config );
     }
 
     @Produces
@@ -39,9 +39,9 @@ public class TraceManagerProducer
         return traceManager;
     }
 
-    private List<RootSpanFields> getRootSpanFields()
+    private List<SpanFieldsInjector> getRootSpanFields()
     {
-        List<RootSpanFields> result = new ArrayList<>();
+        List<SpanFieldsInjector> result = new ArrayList<>();
         if ( !rsfInstance.isUnsatisfied() )
         {
             rsfInstance.forEach( rsf -> result.add( rsf ) );

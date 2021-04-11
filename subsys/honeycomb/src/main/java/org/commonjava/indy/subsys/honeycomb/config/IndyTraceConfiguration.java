@@ -35,7 +35,7 @@ import java.util.Set;
 
 @SectionName( "honeycomb" )
 @ApplicationScoped
-public class IndyHoneycombConfiguration
+public class IndyTraceConfiguration
                 extends MapSectionListener
                 implements IndyConfigInfo, TracerConfiguration, OtelConfiguration
 {
@@ -84,7 +84,7 @@ public class IndyHoneycombConfiguration
 
     private String cpNames;
 
-    public IndyHoneycombConfiguration()
+    public IndyTraceConfiguration()
     {
     }
 

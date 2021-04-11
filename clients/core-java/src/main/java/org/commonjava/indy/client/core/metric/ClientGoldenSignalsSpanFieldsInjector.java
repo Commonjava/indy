@@ -15,21 +15,21 @@
  */
 package org.commonjava.indy.client.core.metric;
 
-import org.commonjava.o11yphant.honeycomb.RootSpanFields;
 import org.commonjava.o11yphant.metrics.api.Gauge;
 import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.api.Metric;
 import org.commonjava.o11yphant.metrics.api.Timer;
+import org.commonjava.o11yphant.trace.spi.SpanFieldsInjector;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class ClientGoldenSignalsRootSpanFields
-                implements RootSpanFields
+public class ClientGoldenSignalsSpanFieldsInjector
+                implements SpanFieldsInjector
 {
     private ClientGoldenSignalsMetricSet goldenSignalsMetricSet;
 
-    public ClientGoldenSignalsRootSpanFields( ClientGoldenSignalsMetricSet goldenSignalsMetricSet )
+    public ClientGoldenSignalsSpanFieldsInjector( ClientGoldenSignalsMetricSet goldenSignalsMetricSet )
     {
         this.goldenSignalsMetricSet = goldenSignalsMetricSet;
     }
