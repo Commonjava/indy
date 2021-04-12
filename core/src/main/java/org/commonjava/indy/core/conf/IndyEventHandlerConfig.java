@@ -9,8 +9,10 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.InputStream;
 
+import static org.commonjava.indy.core.conf.IndyEventHandlerConfig.SECTION_NAME;
+
 @ApplicationScoped
-@SectionName(IndyDurableStateConfig.SECTION_NAME)
+@SectionName(SECTION_NAME)
 public class IndyEventHandlerConfig
                 extends MapSectionListener
                 implements IndyConfigInfo
