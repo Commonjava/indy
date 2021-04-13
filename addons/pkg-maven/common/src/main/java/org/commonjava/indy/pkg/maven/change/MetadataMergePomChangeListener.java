@@ -18,6 +18,7 @@ package org.commonjava.indy.pkg.maven.change;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
+import org.commonjava.indy.core.conf.IndyEventHandlerConfig;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -64,6 +65,9 @@ public class MetadataMergePomChangeListener
     @Inject
     private MetadataCacheManager cacheManager;
 
+    @Inject
+    private IndyEventHandlerConfig handlerConfig;
+
     /**
      * this listener observes {@link org.commonjava.maven.galley.event.FileStorageEvent}
      * for a pom file, which means maven-metadata.xml will be cleared
@@ -86,6 +90,14 @@ public class MetadataMergePomChangeListener
 
     private void metaClear( final FileEvent event, final String eventOps )
     {
+
+        // Skip this if the kafka handler is enabled
+        if ( IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler()) )
+        {
+            logger.info( "{} handler enabled, skip this.", IndyEventHandlerConfig.HANDLER_KAFKA );
+            return;
+        }
+
         final String path = event.getTransfer().getPath();
 
         if ( !path.endsWith( ".pom" ) )
