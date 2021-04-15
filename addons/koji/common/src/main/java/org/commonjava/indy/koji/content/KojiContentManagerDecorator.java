@@ -21,6 +21,8 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiBuildState;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
+import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
+import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -31,20 +33,18 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.util.KojiUtils;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.LocationUtils;
-import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
-import org.commonjava.atlas.maven.ident.util.ArtifactPathInfo;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +63,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
 import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN_BINARY;
 import static org.commonjava.indy.model.core.StoreType.group;
-import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMetadataPath;
 
 /**
  * {@link ContentManager} decorator that watches the retrieve() methods. If the result is going to be a null {@link Transfer}
@@ -95,11 +94,13 @@ import static org.commonjava.maven.galley.maven.util.ArtifactPathUtils.formatMet
 public abstract class KojiContentManagerDecorator
         implements ContentManager
 {
-    private Logger logger = LoggerFactory.getLogger( KojiContentManagerDecorator.class.getName() );
+    private final Logger logger = LoggerFactory.getLogger( KojiContentManagerDecorator.class.getName() );
 
     public static final String CREATION_TRIGGER_GAV = "creation-trigger-GAV";
 
     private static final String NVR = "koji-NVR";
+
+    private static final String KOJI_PULL = "koji-pull";
 
     @Delegate
     @Inject
@@ -260,25 +261,11 @@ public abstract class KojiContentManagerDecorator
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {
-        if ( !config.getEnabled() )
+        if ( !isKojiPullingEnabled( (Group) store, path ) )
         {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "Koji content-manager decorator is disabled." );
-            logger.debug("When koji addon is disenabled , path:{},config instance is {}",path,config.toString());
             return defValue;
         }
 
-        Group group = (Group) store;
-
-        if ( !config.isEnabledFor( group.getName() ) )
-        {
-            Logger logger = LoggerFactory.getLogger( getClass() );
-            logger.debug( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
-            logger.debug("When the group is disenabled , path:{},config instance is {}",path,config.toString());
-            return defValue;
-        }
-
-        Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug("When the koji is enabled , path:{},config instance is {}",path,config.toString());
 
         // TODO: This won't work for maven-metadata.xml files! We need to hit a POM or jar or something first.
@@ -299,6 +286,35 @@ public abstract class KojiContentManagerDecorator
         return defValue;
     }
 
+    private boolean isKojiPullingEnabled( final Group store, final String path )
+    {
+        if ( !config.getEnabled() )
+        {
+            logger.debug( "Koji content-manager decorator is disabled." );
+            logger.debug( "When koji addon is disabled , path:{},config instance is {}", path, config.toString() );
+            return false;
+        }
+
+        if ( !config.isEnabledFor( store.getName() ) )
+        {
+            logger.debug( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
+            logger.debug( "When the group is disabled , path:{},config instance is {}", path, config.toString() );
+            return false;
+        }
+
+        // MMENG-1262: Check if group enabled the koji pulling in its metadata
+        final String kojiPullVal = store.getMetadata( KOJI_PULL );
+        if ( kojiPullVal != null && ( "false".equalsIgnoreCase( kojiPullVal.trim() ) || "no".equalsIgnoreCase(
+                kojiPullVal.trim() ) ) )
+        {
+            logger.debug( "Group {} has disabled koji pulling for artifacts.", store.getKey() );
+            logger.debug( "When koji pulling is disabled, path:{}, config instance is {}", path, config.toString() );
+            return false;
+        }
+
+        return true;
+    }
+
     private <T> T proxyKojiBuild( final StoreKey inStore, final ArtifactRef artifactRef, final String path,
                                   EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
             throws IndyWorkflowException
@@ -311,8 +327,7 @@ public abstract class KojiContentManagerDecorator
 
                 List<KojiBuildInfo> builds = kojiContentProvider.listBuildsContaining( artifactRef, session );
 
-                Collections.sort( builds, ( build1, build2 ) -> build2.getCreationTime()
-                                                                      .compareTo( build1.getCreationTime() ) );
+                builds.sort( ( build1, build2 ) -> build2.getCreationTime().compareTo( build1.getCreationTime() ) );
 
                 logger.debug( "Got {} builds from koji. Looking for best match.", builds.size() );
 
@@ -322,28 +337,28 @@ public abstract class KojiContentManagerDecorator
                 {
                     if ( build.getBuildState() != KojiBuildState.COMPLETE )
                     {
-                        logger.debug( "Build: {} is not completed. The state is {}. Skipping.",
-                                      build.getNvr(), build.getBuildState() );
+                        logger.debug( "Build: {} is not completed. The state is {}. Skipping.", build.getNvr(),
+                                      build.getBuildState() );
                         continue;
                     }
 
                     boolean buildAllowed = false;
-                    if ( kojiUtils.isBinaryBuild(build) )
+                    if ( kojiUtils.isBinaryBuild( build ) )
                     {
                         // This is not a real build, it's a binary import.
                         if ( config.isProxyBinaryBuilds() )
                         {
-                            logger.info("Trying binary build: {} with id: {}", build.getNvr(), build.getId());
+                            logger.info( "Trying binary build: {} with id: {}", build.getNvr(), build.getId() );
                             buildAllowed = true;
                         }
                         else
                         {
-                            logger.debug("Skipping binary build: {} with id: {}", build.getNvr(), build.getId());
+                            logger.debug( "Skipping binary build: {} with id: {}", build.getNvr(), build.getId() );
                         }
                     }
                     else
                     {
-                        logger.info("Trying build: {} with id: {}", build.getNvr(), build.getId());
+                        logger.info( "Trying build: {} with id: {}", build.getNvr(), build.getId() );
                         if ( !config.isTagPatternsEnabled() )
                         {
                             buildAllowed = true;
@@ -357,27 +372,35 @@ public abstract class KojiContentManagerDecorator
                                 logTagsForBuild( build.getId(), tags );
                             }
 
-                            for (KojiTagInfo tag : tags) {
+                            for ( KojiTagInfo tag : tags )
+                            {
                                 // If the tags match patterns configured in whitelist, construct a new remote repo.
-                                if (config.isTagAllowed(tag.getName())) {
-                                    logger.info("Koji tag is on whitelist: {}", tag.getName());
+                                if ( config.isTagAllowed( tag.getName() ) )
+                                {
+                                    logger.info( "Koji tag is on whitelist: {}", tag.getName() );
                                     buildAllowed = true;
                                     break;
-                                } else {
-                                    logger.debug("Tag: {} is not in the whitelist.", tag.getName());
+                                }
+                                else
+                                {
+                                    logger.debug( "Tag: {} is not in the whitelist.", tag.getName() );
                                 }
                             }
                         }
                     }
 
-                    if (buildAllowed) {
+                    if ( buildAllowed )
+                    {
                         // If the authoritative store is not configured, one or both systems is missing MD5 information,
                         // or the artifact matches the one in the authoritative store, go ahead.
-                        if (buildAuthority.isAuthorized(path, eventMetadata, artifactRef, build, session)) {
-                            return consumer.execute(inStore, artifactRef, build, session);
+                        if ( buildAuthority.isAuthorized( path, eventMetadata, artifactRef, build, session ) )
+                        {
+                            return consumer.execute( inStore, artifactRef, build, session );
                         }
-                    } else {
-                        logger.debug("No whitelisted tags found for: {}", build.getNvr());
+                    }
+                    else
+                    {
+                        logger.debug( "No whitelisted tags found for: {}", build.getNvr() );
                     }
                 }
 
@@ -416,7 +439,7 @@ public abstract class KojiContentManagerDecorator
             }
             return kojiContentProvider.listTags( buildIds, session );
         }
-        return Collections.EMPTY_MAP;
+        return Collections.emptyMap();
     }
 
     private RemoteRepository createRemoteRepository( StoreKey inStore, ArtifactRef artifactRef, final KojiBuildInfo build,
@@ -542,7 +565,7 @@ public abstract class KojiContentManagerDecorator
         AtomicReference<IndyWorkflowException> wfEx = new AtomicReference<>();
 
         Group result = groupMembershipLocker.lockAnd( targetKey, config.getLockTimeoutSeconds(), k->{
-            Group targetGroup = null;
+            Group targetGroup;
             try
             {
                 targetGroup = (Group) storeDataManager.getArtifactStore( tk );
@@ -579,9 +602,7 @@ public abstract class KojiContentManagerDecorator
             logger.info( "Retrieving GAV: {} from: {}", buildRepo.getMetadata( CREATION_TRIGGER_GAV ), buildRepo );
 
             return targetGroup;
-        }, (k, lock)->{
-            return false;
-        } );
+        }, (k, lock)-> false );
 
         IndyWorkflowException ex = wfEx.get();
         if ( ex != null )
