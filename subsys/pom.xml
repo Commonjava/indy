@@ -43,8 +43,6 @@
     <module>prefetch</module>
     <module>kafka</module>
     <module>cpool</module>
-    <module>cassandra</module>
-    <module>trace</module>
   </modules>
   
 </project>

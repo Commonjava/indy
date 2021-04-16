@@ -16,7 +16,6 @@
 package org.commonjava.indy.subsys.metrics;
 
 import org.commonjava.indy.IndyRequestConstants;
-import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
