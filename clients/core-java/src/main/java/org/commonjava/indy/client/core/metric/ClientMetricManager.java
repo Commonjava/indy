@@ -15,34 +15,20 @@
  */
 package org.commonjava.indy.client.core.metric;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.commonjava.indy.client.core.inject.ClientMetricSet;
-import org.commonjava.o11yphant.metrics.RequestContextHelper;
-import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
-import org.commonjava.o11yphant.otel.OtelTracePlugin;
+import org.commonjava.o11yphant.honeycomb.HoneycombTracePlugin;
 import org.commonjava.o11yphant.trace.SpanFieldsDecorator;
 import org.commonjava.o11yphant.trace.TraceManager;
-import org.commonjava.o11yphant.trace.spi.adapter.SpanAdapter;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADER_CLIENT_SPAN_ID;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.NANOS_PER_MILLISECOND;
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_MILLIS;
-
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_NS;
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRAFFIC_TYPE;
 
 public class ClientMetricManager {
 
@@ -50,7 +36,7 @@ public class ClientMetricManager {
 
     private ClientTracerConfiguration configuration;
 
-    private TraceManager traceManager;
+    private Optional<TraceManager> traceManager;
 
     private final ClientTrafficClassifier classifier = new ClientTrafficClassifier();
 
@@ -63,21 +49,25 @@ public class ClientMetricManager {
     public ClientMetricManager( SiteConfig siteConfig )
     {
         this.configuration = buildConfig( siteConfig );
-        this.traceManager = new TraceManager( new OtelTracePlugin( configuration, configuration ), new SpanFieldsDecorator(
-                        Arrays.asList( new ClientGoldenSignalsSpanFieldsInjector( metricSet ) ) ), configuration );
+        if ( this.configuration.isEnabled() )
+        {
+            this.traceManager = Optional.of( new TraceManager(
+                            new HoneycombTracePlugin( configuration, configuration, Optional.of( classifier ) ),
+                            new SpanFieldsDecorator(
+                                            Arrays.asList( new ClientGoldenSignalsSpanFieldsInjector( metricSet ) ) ),
+                            configuration ) );
+        }
+        else
+        {
+            this.traceManager = Optional.empty();
+        }
     }
 
     public ClientMetrics register( HttpUriRequest request ) {
         logger.debug( "Client honey register: {}", request.getURI().getPath() );
         List<String> functions = classifier.calculateClassifiers( request );
 
-        SpanAdapter clientSpan = traceManager.startClientRequestSpan( getEndpointName( request.getMethod(), request.getURI().getPath() ), request );
-        if ( clientSpan != null )
-        {
-            request.setHeader( HEADER_CLIENT_SPAN_ID, clientSpan.getSpanId() );
-        }
-
-        return new ClientMetrics( configuration.isEnabled(), request, clientSpan, functions, metricSet );
+        return new ClientMetrics( configuration.isEnabled(), request, functions, metricSet );
     }
 
     private ClientTracerConfiguration buildConfig( SiteConfig siteConfig ) {
@@ -104,4 +94,8 @@ public class ClientMetricManager {
         return sb.toString();
     }
 
+    public Optional<TraceManager> getTraceManager()
+    {
+        return traceManager;
+    }
 }

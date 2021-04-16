@@ -28,6 +28,8 @@ import org.apache.http.impl.io.SessionInputBufferImpl;
 import org.apache.http.message.BasicLineParser;
 import org.apache.http.message.LineParser;
 import org.commonjava.indy.util.ApplicationHeader;
+import org.commonjava.o11yphant.trace.TraceManager;
+import org.commonjava.o11yphant.trace.spi.adapter.SpanAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -44,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public final class ProxyRequestReader
@@ -67,14 +70,17 @@ public final class ProxyRequestReader
 
     private final ConduitStreamSinkChannel sinkChannel;
 
+    private Optional<TraceManager> traceManager;
+
     private ProxySSLTunnel sslTunnel;
 
     private List<Character> lastFour = new ArrayList<>();
 
-    public ProxyRequestReader( final ProxyResponseWriter writer, final ConduitStreamSinkChannel sinkChannel )
+    public ProxyRequestReader( final ProxyResponseWriter writer, final ConduitStreamSinkChannel sinkChannel, final Optional<TraceManager> traceManager )
     {
         this.writer = writer;
         this.sinkChannel = sinkChannel;
+        this.traceManager = traceManager;
     }
 
     // TODO: May need to tune this to preserve request body.
@@ -120,10 +126,17 @@ public final class ProxyRequestReader
                 {
                     logger.debug( "Passing parsed http request off to response writer." );
                     HttpRequest request = requestParser.parse();
+                    Optional<SpanAdapter> span;
+                    if ( traceManager.isPresent() )
+                        span = traceManager.get().startRootSpan( "httprox-get", request );
+                    else
+                        span = Optional.empty();
+
                     logger.debug( "Request contains {} header: '{}'", ApplicationHeader.authorization.key(),
                                   request.getHeaders( ApplicationHeader.authorization.key() ) );
 
                     writer.setHttpRequest( request );
+                    writer.setSpan( span );
                     sendResponse = true;
                 }
                 catch ( ConnectionClosedException e )

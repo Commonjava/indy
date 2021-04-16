@@ -125,7 +125,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-honeycomb</artifactId>
+      <artifactId>indy-subsys-trace</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>

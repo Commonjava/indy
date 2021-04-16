@@ -23,7 +23,10 @@ import org.commonjava.indy.subsys.http.util.IndySiteConfigLookup;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
+import org.commonjava.o11yphant.jhttpc.SpanningHttpFactory;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.commonjava.util.jhttpc.HttpFactory;
+import org.commonjava.util.jhttpc.HttpFactoryIfc;
 import org.commonjava.util.jhttpc.INTERNAL.util.HttpUtils;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.commonjava.util.jhttpc.auth.AttributePasswordManager;
@@ -34,17 +37,21 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Optional;
 
 @ApplicationScoped
 public class IndyHttpProvider
 {
 
-    private HttpFactory httpFactory;
+    private HttpFactoryIfc httpFactory;
 
     private Http http;
 
     @Inject
     private IndySiteConfigLookup siteConfigLookup;
+
+    @Inject
+    private TraceManager traceManager;
 
     private PasswordManager passwordManager;
 
@@ -62,9 +69,10 @@ public class IndyHttpProvider
     public void setup()
     {
         passwordManager = new org.commonjava.maven.galley.auth.AttributePasswordManager();
-        http = new HttpImpl( passwordManager );
+        Optional<TraceManager> traceManagerOptional = traceManager == null ? Optional.empty() : Optional.of( traceManager );
+        http = new HttpImpl( passwordManager, traceManagerOptional );
 
-        httpFactory = new HttpFactory( new AttributePasswordManager( siteConfigLookup ) );
+        httpFactory = new SpanningHttpFactory( new HttpFactory( new AttributePasswordManager( siteConfigLookup ) ), traceManagerOptional );
     }
 
     @Produces
@@ -81,6 +89,14 @@ public class IndyHttpProvider
     public Http getHttp()
     {
         return http;
+    }
+
+    @Produces
+    @Default
+    @Singleton
+    public HttpFactoryIfc getHttpFactory()
+    {
+        return httpFactory;
     }
 
     /**

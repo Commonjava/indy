@@ -42,6 +42,7 @@ import java.util.concurrent.Future;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 /**
  * Created by jdcasey on 5/2/16.
@@ -82,6 +83,10 @@ public class DefaultDirectContentAccess
                 logger.trace( "Requesting retrieval of {} in {}", path, store );
 
                 Future<Transfer> future = contentAccessService.submit( () -> {
+                    addFieldToActiveSpan( "storekey", store.getKey().toString() );
+                    addFieldToActiveSpan( "path", path );
+                    addFieldToActiveSpan( "activity", "retrieveAllRaw" );
+
                     logger.trace( "Retrieving {} in {}", path, store );
                     Transfer txfr = retrieveRaw( store, path, eventMetadata );
                     logger.trace( "Transfer {} in {} retrieved", path, store );
@@ -219,6 +224,10 @@ public class DefaultDirectContentAccess
             {
                 logger.trace( "Requesting listing of {} in {}", path, store );
                 svc.submit( ()->{
+                    addFieldToActiveSpan( "storekey", store.getKey().toString() );
+                    addFieldToActiveSpan( "path", path );
+                    addFieldToActiveSpan( "activity", "listRaw" );
+
                     logger.trace( "Starting listing of {} in {}", path, store );
                     List<StoreResource> listRaw = listRaw( store, path, eventMetadata );
                     logger.trace( "Listing of {} in {} finished", path, store );

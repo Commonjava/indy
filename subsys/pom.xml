@@ -42,7 +42,7 @@
     <module>kafka</module>
     <module>cpool</module>
     <module>cassandra</module>
-    <module>honeycomb</module>
+    <module>trace</module>
   </modules>
   
 </project>

@@ -46,7 +46,9 @@ import org.commonjava.indy.client.core.metric.ClientMetrics;
 import org.commonjava.indy.inject.IndyVersioningProvider;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.o11yphant.jhttpc.SpanningHttpFactory;
 import org.commonjava.util.jhttpc.HttpFactory;
+import org.commonjava.util.jhttpc.HttpFactoryIfc;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
@@ -89,7 +91,7 @@ public class IndyClientHttp
 
     private final SiteConfig location;
 
-    private final HttpFactory factory;
+    private final HttpFactoryIfc factory;
 
     private final String baseUrl;
 
@@ -120,8 +122,8 @@ public class IndyClientHttp
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
-        factory = new HttpFactory( authenticator );
         metricManager = new ClientMetricManager( location );
+        factory = new SpanningHttpFactory( new HttpFactory( authenticator ), metricManager.getTraceManager() );
     }
 
     public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
@@ -135,8 +137,8 @@ public class IndyClientHttp
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
-        factory = new HttpFactory( passwordManager );
         metricManager = new ClientMetricManager( location );
+        factory = new SpanningHttpFactory( new HttpFactory( passwordManager ), metricManager.getTraceManager() );
     }
 
     private void initUserAgent( final String apiVersion )

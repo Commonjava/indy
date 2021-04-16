@@ -16,21 +16,61 @@
 package org.commonjava.indy.client.core.metric;
 
 import org.commonjava.indy.client.core.inject.ClientMetricConfig;
+import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
 import org.commonjava.o11yphant.otel.OtelConfiguration;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
 
 @ClientMetricConfig
 public class ClientTracerConfiguration
-        implements TracerConfiguration, OtelConfiguration
+        implements TracerConfiguration, OtelConfiguration, HoneycombConfiguration
 {
 
     private boolean enabled;
 
     private Integer baseSampleRate;
 
+    private boolean consoleTransport;
+
+    private String dataset;
+
+    private String writeKey;
+
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public boolean isConsoleTransport()
+    {
+        return consoleTransport;
+    }
+
+    @Override
+    public String getWriteKey()
+    {
+        return writeKey;
+    }
+
+    @Override
+    public String getDataset()
+    {
+        return dataset;
+    }
+
+    public void setDataset( String dataset )
+    {
+        this.dataset = dataset;
+    }
+
+    public void setWriteKey( String writeKey )
+    {
+        this.writeKey = writeKey;
+    }
+
+    public void setConsoleTransport( boolean consoleTransport )
+    {
+        this.consoleTransport = consoleTransport;
     }
 
     public void setEnabled( boolean enabled ) {
