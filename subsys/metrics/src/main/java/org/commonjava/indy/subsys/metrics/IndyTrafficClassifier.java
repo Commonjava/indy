@@ -16,7 +16,6 @@
 package org.commonjava.indy.subsys.metrics;
 
 import org.commonjava.indy.IndyRequestConstants;
-import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -27,6 +26,7 @@ import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -74,7 +74,8 @@ public class IndyTrafficClassifier
         this.specialPathManager = specialPathManager;
     }
 
-    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method, Map<String, String> headers )
+    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method,
+                                                               Map<String, String> headers )
     {
         List<String> result = new ArrayList<>();
 
