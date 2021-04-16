@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
+import static org.commonjava.o11yphant.trace.httpclient.HttpClientTools.contextExtractor;
+
 public final class ProxyRequestReader
         implements ChannelListener<ConduitStreamSourceChannel>
 {
@@ -128,7 +130,7 @@ public final class ProxyRequestReader
                     HttpRequest request = requestParser.parse();
                     Optional<SpanAdapter> span;
                     if ( traceManager.isPresent() )
-                        span = traceManager.get().startRootSpan( "httprox-get", request );
+                        span = traceManager.get().startServiceRootSpan( "httprox-get", contextExtractor( request ) );
                     else
                         span = Optional.empty();
 

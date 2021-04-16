@@ -1610,7 +1610,17 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-helper-servlet</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
         <artifactId>o11yphant-trace-helper-jhttpc</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-helper-httpclient</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>
