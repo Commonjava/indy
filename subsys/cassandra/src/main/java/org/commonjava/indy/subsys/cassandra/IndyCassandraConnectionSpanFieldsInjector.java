@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb;
+package org.commonjava.indy.subsys.cassandra;
 
 import com.datastax.driver.core.Session;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;

@@ -30,9 +30,11 @@
   <name>Indy :: Subsystems :: Parent</name>
   
   <modules>
+    <module>cassandra</module>
     <module>flatfile</module>
     <module>git</module>
     <module>groovy</module>
+    <module>trace</module>
     <module>http</module>
     <module>keycloak</module>
     <module>jaxrs</module>
@@ -41,8 +43,6 @@
     <module>prefetch</module>
     <module>kafka</module>
     <module>cpool</module>
-    <module>cassandra</module>
-    <module>trace</module>
   </modules>
   
 </project>

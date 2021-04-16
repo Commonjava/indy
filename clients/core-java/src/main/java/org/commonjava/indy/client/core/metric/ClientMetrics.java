@@ -95,7 +95,7 @@ public class ClientMetrics
 
     public void registerEnd( HttpResponse response )
     {
-        if ( !enabled )
+        if ( !enabled || response == null )
         {
             return;
         }
