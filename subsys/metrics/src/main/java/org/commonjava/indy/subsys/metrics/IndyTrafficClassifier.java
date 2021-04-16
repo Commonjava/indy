@@ -16,7 +16,7 @@
 package org.commonjava.indy.subsys.metrics;
 
 import org.commonjava.indy.IndyRequestConstants;
-import org.commonjava.o11yphant.metrics.DefaultTrafficClassifier;
+import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -60,7 +60,7 @@ import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 
 @ApplicationScoped
 public class IndyTrafficClassifier
-                extends DefaultTrafficClassifier
+                extends AbstractTrafficClassifier
 {
     private static final Set<String> FOLO_RECORD_ENDPOINTS = new HashSet<>( asList( "record", "report" ) );
 

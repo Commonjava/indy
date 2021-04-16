@@ -27,7 +27,7 @@ import org.commonjava.indy.promote.model.CallbackTarget;
 import org.commonjava.indy.subsys.http.util.IndySiteConfigLookup;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
-import org.commonjava.util.jhttpc.HttpFactory;
+import org.commonjava.util.jhttpc.HttpFactoryIfc;
 import org.commonjava.util.jhttpc.auth.ClientAuthenticator;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +74,8 @@ public class PromotionCallbackHelper
 
     private SiteConfig config;
 
-    private HttpFactory httpFactory;
+    @Inject
+    private HttpFactoryIfc httpFactory;
 
     private CacheHandle<String, CallbackJob> retryCache;
 
@@ -95,7 +95,7 @@ public class PromotionCallbackHelper
     {
         this.config = siteConfigLookup.lookup( PROMOTION_CALLBACK_SITE_ID );
         ClientAuthenticator authenticator = null;
-        this.httpFactory = new HttpFactory( authenticator );
+//        this.httpFactory = new HttpFactory( authenticator );
         this.retryCache = cacheProducer.getCache( PROMOTE_CALLBACK_JOB );
         this.retryCache.executeCache( (cache) -> {
             cache.addListener( new ExpireListener() );

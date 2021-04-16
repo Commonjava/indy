@@ -176,12 +176,12 @@ public class TestProvider
         return userLifecycleManager;
     }
 
-    @Produces
-    public TracerConfiguration getTracerConfiguration()
-    {
-        return null;
-    }
-
+//    @Produces
+//    public TracerConfiguration getTracerConfiguration()
+//    {
+//        return null;
+//    }
+//
     @Produces
     public GoldenSignalsMetricSet getGoldenSignalsMetricSet()
     {

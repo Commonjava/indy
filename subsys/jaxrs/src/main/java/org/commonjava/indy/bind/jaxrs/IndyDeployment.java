@@ -172,7 +172,7 @@ public class IndyDeployment
                                  new ImmediateInstanceFactory<>(
                                          this.slashTolerationFilter ) );
 
-        final FilterInfo honeycombFilter =
+        final FilterInfo traceFilter =
                         Servlets.filter( "O11yphant-Trace", TraceFilter.class,
                                  new ImmediateInstanceFactory<>(
                                          this.traceFilter ) );
@@ -211,8 +211,8 @@ public class IndyDeployment
                                                       .addFilterUrlMapping( threadContextFilter.getName(),
                                                                             "/api/*", DispatcherType.REQUEST )
 
-                                                      .addFilter( honeycombFilter )
-                                                      .addFilterUrlMapping( honeycombFilter.getName(), "/api/*",
+                                                      .addFilter( traceFilter )
+                                                      .addFilterUrlMapping( traceFilter.getName(), "/api/*",
                                                                             DispatcherType.REQUEST )
 
                                                       .addFilter( goldenSignalsFilter )

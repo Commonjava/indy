@@ -5,7 +5,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.commonjava.o11yphant.metrics.RequestContextHelper;
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
-import org.commonjava.o11yphant.trace.spi.adapter.SpanAdapter;
 import org.slf4j.Logger;
 
 import java.io.Closeable;
@@ -17,6 +16,7 @@ import static org.commonjava.o11yphant.metrics.MetricsConstants.NANOS_PER_MILLIS
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_MILLIS;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.REQUEST_LATENCY_NS;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRAFFIC_TYPE;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class ClientMetrics
@@ -27,8 +27,6 @@ public class ClientMetrics
     private boolean enabled;
 
     private final HttpUriRequest request;
-
-    private final SpanAdapter span;
 
     private Collection<String> functions;
 
@@ -42,12 +40,11 @@ public class ClientMetrics
 
     private long end;
 
-    public ClientMetrics( boolean enabled, HttpUriRequest request, SpanAdapter span, Collection<String> functions,
+    public ClientMetrics( boolean enabled, HttpUriRequest request, Collection<String> functions,
                           ClientGoldenSignalsMetricSet metricSet )
     {
         this.enabled = enabled;
         this.request = request;
-        this.span = span;
         this.functions = functions;
         this.metricSet = metricSet;
         this.start = System.nanoTime();
@@ -65,7 +62,11 @@ public class ClientMetrics
                     classifierTokens.add( parts[i] );
                 }
             } );
-            RequestContextHelper.setContext( TRAFFIC_TYPE, StringUtils.join( classifierTokens, "," ) );
+
+            String classification = StringUtils.join( classifierTokens, "," );
+
+            RequestContextHelper.setContext( TRAFFIC_TYPE, classification );
+            addFieldToActiveSpan( TRAFFIC_TYPE, classification );
         }
     }
 
@@ -82,11 +83,11 @@ public class ClientMetrics
             sb.append( error.getClass().getSimpleName() );
             sb.append( ": " );
             sb.append( ( (Throwable) error ).getMessage() );
-            span.addField( ERROR, sb );
+            addFieldToActiveSpan( ERROR, sb );
         }
         else
         {
-            span.addField( ERROR, error );
+            addFieldToActiveSpan( ERROR, error );
         }
         functions.forEach( function -> metricSet.function( function )
                                                 .ifPresent( GoldenSignalsFunctionMetrics::error ) );
@@ -132,10 +133,6 @@ public class ClientMetrics
         }
         String pathInfo = request.getURI().getPath();
 
-        if ( span != null ) {
-            span.addField( "path_info", pathInfo );
-            span.addField( "status_code", response.getStatusLine().getStatusCode() );
-            span.close();
-        }
+        addFieldToActiveSpan( "path_info", pathInfo );
     }
 }

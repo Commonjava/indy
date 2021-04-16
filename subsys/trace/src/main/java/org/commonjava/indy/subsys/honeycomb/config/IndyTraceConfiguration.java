@@ -17,6 +17,8 @@ package org.commonjava.indy.subsys.honeycomb.config;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.subsys.honeycomb.TracerPlugin;
+import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
 import org.commonjava.o11yphant.otel.OtelConfiguration;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
 import org.commonjava.propulsor.config.ConfigurationException;
@@ -33,22 +35,28 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-@SectionName( "honeycomb" )
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
+@SectionName( "trace" )
 @ApplicationScoped
 public class IndyTraceConfiguration
                 extends MapSectionListener
-                implements IndyConfigInfo, TracerConfiguration, OtelConfiguration
+                implements IndyConfigInfo, TracerConfiguration, OtelConfiguration, HoneycombConfiguration
 {
+    private static final TracerPlugin DEFAULT_TRACER = TracerPlugin.honeycomb;
+
     @Inject
     private IndyConfiguration indyConfiguration;
 
     private static final String ENABLED = "enabled";
 
+    private static final String TRACER = "tracer";
+
     private static final String CONSOLE_TRANSPORT = "console.transport";
 
-    private static final String WRITE_KEY = "write.key";
+    private static final String WRITE_KEY = "honeycomb.write.key";
 
-    private static final String DATASET = "dataset";
+    private static final String DATASET = "honeycomb.dataset";
 
     private static final String FIELDS = "fields";
 
@@ -64,6 +72,8 @@ public class IndyTraceConfiguration
 
     private boolean enabled;
 
+    private TracerPlugin tracer;
+
     private boolean consoleTransport;
 
     private String writeKey;
@@ -73,10 +83,6 @@ public class IndyTraceConfiguration
     private Integer baseSampleRate;
 
     private Map<String, Integer> spanRates = new HashMap<>();
-
-    private Set<String> spansIncluded = Collections.emptySet();
-
-    private Set<String> spansExcluded = Collections.emptySet();
 
     private Set<String> fields;
 
@@ -100,11 +106,11 @@ public class IndyTraceConfiguration
         return enabled;
     }
 
-//    @Override
-//    public boolean isConsoleTransport()
-//    {
-//        return consoleTransport;
-//    }
+    @Override
+    public boolean isConsoleTransport()
+    {
+        return consoleTransport;
+    }
 
     @Override
     public String getServiceName()
@@ -125,6 +131,9 @@ public class IndyTraceConfiguration
         {
             case ENABLED:
                 this.enabled = Boolean.TRUE.equals( Boolean.parseBoolean( value.trim() ) );
+                break;
+            case TRACER:
+                this.tracer = TracerPlugin.valueOf( value.trim().toLowerCase() );
                 break;
             case WRITE_KEY:
                 this.writeKey = value.trim();
@@ -156,28 +165,33 @@ public class IndyTraceConfiguration
         }
     }
 
-//    @Override
-//    public String getWriteKey()
-//    {
-//        return writeKey;
-//    }
-//
-//    @Override
-//    public String getDataset()
-//    {
-//        return dataset;
-//    }
+    public TracerPlugin getTracer()
+    {
+        return tracer == null ? DEFAULT_TRACER : tracer;
+    }
+
+    @Override
+    public String getWriteKey()
+    {
+        return writeKey;
+    }
+
+    @Override
+    public String getDataset()
+    {
+        return dataset;
+    }
 
     @Override
     public String getDefaultConfigFileName()
     {
-        return "honeycomb.conf";
+        return "trace.conf";
     }
 
     @Override
     public InputStream getDefaultConfig()
     {
-        return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-honeycomb.conf" );
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-trace.conf" );
     }
 
     @Override
@@ -208,6 +222,26 @@ public class IndyTraceConfiguration
     public String getNodeId()
     {
         return indyConfiguration.getNodeId();
+    }
+
+    public void validateForHoneycomb() throws ConfigurationException
+    {
+        Set<String> ret = new HashSet<>();
+        if ( isEmpty( writeKey ) )
+        {
+            ret.add( WRITE_KEY );
+        }
+
+        if ( isEmpty( dataset ) )
+        {
+            ret.add( DATASET );
+        }
+
+        if ( !ret.isEmpty() )
+        {
+            throw new ConfigurationException( "Cannot initialize Honeycomb tracer. Missing configuration fields: {}",
+                                              ret );
+        }
     }
 
 }

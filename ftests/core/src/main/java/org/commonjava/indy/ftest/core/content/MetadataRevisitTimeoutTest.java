@@ -87,6 +87,6 @@ public class MetadataRevisitTimeoutTest
             throws IOException
     {
         super.initTestConfig( fixture );
-        writeConfigFile( "conf.d/honeycomb.conf", "[honeycomb]\nenabled=false" );
+        writeConfigFile( "conf.d/trace.conf", "[honeycomb]\nenabled=false" );
     }
 }

@@ -24,8 +24,8 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>indy-subsys-honeycomb</artifactId>
-  <name>Indy :: Subsystems :: Honeycomb</name>
+  <artifactId>indy-subsys-trace</artifactId>
+  <name>Indy :: Subsystems :: Trace</name>
 
   <dependencies>
     <dependency>
@@ -39,6 +39,18 @@
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>o11yphant-trace-otel</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-trace-honeycomb</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-netty</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
