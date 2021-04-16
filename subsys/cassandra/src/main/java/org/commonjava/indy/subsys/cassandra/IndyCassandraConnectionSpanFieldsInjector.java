@@ -16,7 +16,6 @@
 package org.commonjava.indy.subsys.cassandra;
 
 import com.datastax.driver.core.Session;
-import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.o11yphant.trace.impl.CassandraConnectionSpanFieldsInjector;
 
 import javax.enterprise.context.ApplicationScoped;
