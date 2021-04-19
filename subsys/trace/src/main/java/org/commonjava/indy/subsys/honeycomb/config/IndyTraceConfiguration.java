@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -57,6 +58,10 @@ public class IndyTraceConfiguration
     private static final String WRITE_KEY = "honeycomb.write.key";
 
     private static final String DATASET = "honeycomb.dataset";
+
+    private static final String OTEL_GRPC_URI = "otel.grpc.uri";
+
+    private static final String OTEL_GRPC_HEADERS = "otel.grpc.headers";
 
     private static final String FIELDS = "fields";
 
@@ -89,6 +94,10 @@ public class IndyTraceConfiguration
     private String environmentMappings;
 
     private String cpNames;
+
+    private String grpcUri;
+
+    private Map<String, String> grpcHeaders = new HashMap<>();
 
     public IndyTraceConfiguration()
     {
@@ -157,6 +166,16 @@ public class IndyTraceConfiguration
             case CONSOLE_TRANSPORT:
                 this.consoleTransport = Boolean.parseBoolean( value.trim() );
                 break;
+            case OTEL_GRPC_URI:
+                this.grpcUri = value.trim();
+                break;
+            case OTEL_GRPC_HEADERS:
+                String[] kvs = value.trim().split( "\\s*,\\s*" );
+                Stream.of( kvs )
+                      .map( kv -> kv.split( "\\s*=\\s*" ) )
+                      .filter( kv -> kv.length > 1 )
+                      .forEach( kv -> grpcHeaders.put( kv[0], kv[1] ) );
+                break;
             default:
                 if ( name.startsWith( SAMPLE_PREFIX ) && name.length() > SAMPLE_PREFIX.length() )
                 {
@@ -222,6 +241,18 @@ public class IndyTraceConfiguration
     public String getNodeId()
     {
         return indyConfiguration.getNodeId();
+    }
+
+    @Override
+    public Map<String, String> getGrpcHeaders()
+    {
+        return grpcHeaders;
+    }
+
+    @Override
+    public String getGrpcEndpointUri()
+    {
+        return grpcUri == null ? DEFAULT_GRPC_URI : grpcUri;
     }
 
     public void validateForHoneycomb() throws ConfigurationException
