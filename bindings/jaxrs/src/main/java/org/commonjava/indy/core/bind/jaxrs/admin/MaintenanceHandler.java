@@ -336,5 +336,4 @@ public class MaintenanceHandler
 
         return Response.created( uriInfo.getRequestUri() ).build();
     }
-
 }
