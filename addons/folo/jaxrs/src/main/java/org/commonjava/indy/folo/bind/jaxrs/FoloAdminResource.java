@@ -27,6 +27,7 @@ import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.bind.jaxrs.ContentAccessHandler;
 import org.commonjava.indy.core.ctl.ContentController;
+import org.commonjava.indy.folo.action.FoloISPN2CassandraMigrationAction;
 import org.commonjava.indy.folo.ctl.FoloAdminController;
 import org.commonjava.indy.folo.ctl.FoloConstants;
 import org.commonjava.indy.folo.data.FoloContentException;
@@ -404,5 +405,17 @@ public class FoloAdminResource
         return handler.doDelete( request, new EventMetadata(  ) );
     }
 
+    @Inject
+    private FoloISPN2CassandraMigrationAction foloISPN2CassandraMigrationAction;
+
+    @ApiOperation( "Import folo from ISPN cache to Cassandra." )
+    @ApiResponses( { @ApiResponse( code = 201, message = "Import folo from ISPN cache to Cassandra." ) } )
+    @Path( "/importToCassandra" )
+    @PUT
+    public Response importFoloToCassandra( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    {
+        new Thread( () -> foloISPN2CassandraMigrationAction.migrate() ).start(); // run it on backend
+        return Response.created( uriInfo.getRequestUri() ).build();
+    }
 
 }
