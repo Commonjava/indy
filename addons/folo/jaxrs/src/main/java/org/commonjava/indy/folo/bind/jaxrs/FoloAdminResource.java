@@ -410,7 +410,7 @@ public class FoloAdminResource
 
     @ApiOperation( "Import folo from ISPN cache to Cassandra." )
     @ApiResponses( { @ApiResponse( code = 201, message = "Import folo from ISPN cache to Cassandra." ) } )
-    @Path( "/importToCassandra" )
+    @Path( "/report/importToCassandra" )
     @PUT
     public Response importFoloToCassandra( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
     {
