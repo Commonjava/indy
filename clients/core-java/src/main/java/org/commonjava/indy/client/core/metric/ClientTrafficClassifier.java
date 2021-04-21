@@ -19,6 +19,7 @@ import org.apache.http.Header;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.commonjava.o11yphant.metrics.TrafficClassifier;
 
+import javax.enterprise.inject.Alternative;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import static org.commonjava.indy.client.core.metric.ClientMetricConstants.CLIEN
 import static org.commonjava.indy.client.core.metric.ClientMetricConstants.CLIENT_REPO_MGMT;
 
 
+@Alternative
 public class ClientTrafficClassifier
         implements TrafficClassifier
 {
