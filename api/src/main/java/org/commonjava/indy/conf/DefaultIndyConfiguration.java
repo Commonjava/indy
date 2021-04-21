@@ -124,7 +124,12 @@ public class DefaultIndyConfiguration
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        String nodeId = System.getenv( "HOSTNAME" );
+        String nodeId = System.getenv( "POD_NAME" );
+        if ( isBlank( nodeId ) )
+        {
+            nodeId = System.getenv( "HOSTNAME" );
+        }
+
         if ( isBlank( nodeId ) )
         {
             nodeId = System.getenv( "HOST" );

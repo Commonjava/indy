@@ -15,13 +15,13 @@
  */
 package org.commonjava.indy.subsys.honeycomb;
 
+import io.honeycomb.beeline.tracing.ids.W3CTraceIdProvider;
 import org.commonjava.o11yphant.honeycomb.CustomTraceIdProvider;
 import org.commonjava.o11yphant.metrics.RequestContextHelper;
 
 import javax.enterprise.context.ApplicationScoped;
 
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.commonjava.o11yphant.honeycomb.util.TraceIdUtils.getUUIDTraceId;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRACE_ID;
 
 @ApplicationScoped
@@ -30,11 +30,24 @@ public class IndyCustomTraceIdProvider implements CustomTraceIdProvider
     @Override
     public String generateId()
     {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String generateTraceId()
+    {
         String traceId = RequestContextHelper.getContext( TRACE_ID );
         if ( isNotBlank(traceId ))
         {
             return traceId;
         }
-        return getUUIDTraceId();
+
+        return W3CTraceIdProvider.getInstance().generateTraceId();
+    }
+
+    @Override
+    public String generateSpanId()
+    {
+        return W3CTraceIdProvider.getInstance().generateSpanId();
     }
 }
