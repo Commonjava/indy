@@ -16,6 +16,7 @@
 package org.commonjava.indy.util;
 
 import org.commonjava.cdi.util.weft.ThreadContext;
+import org.commonjava.o11yphant.trace.TraceManager;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -23,6 +24,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 /**
  * The scope annotations (Thread, Header, MDC) tell where the constant is available/used. The static methods are used
@@ -34,6 +36,7 @@ public class RequestContextHelper
     {
         org.slf4j.MDC.put( key, String.valueOf( value ) );
         ThreadContext.getContext( true ).computeIfAbsent( key, k -> value );
+        addFieldToActiveSpan( key, value );
     }
 
     public static <T> T getContext( final String key )

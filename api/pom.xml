@@ -64,6 +64,10 @@
       <groupId>javax.activation</groupId>
       <artifactId>javax.activation-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-trace-api</artifactId>
+    </dependency>
   </dependencies>
   
 </project>

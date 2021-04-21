@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb;
+package org.commonjava.indy.subsys.cassandra;
 
 import com.datastax.driver.core.Session;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
-import org.commonjava.o11yphant.honeycomb.impl.CassandraConnectionRootSpanFields;
+import org.commonjava.o11yphant.trace.impl.CassandraConnectionSpanFieldsInjector;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -25,14 +25,14 @@ import java.util.Collections;
 import java.util.Map;
 
 @ApplicationScoped
-public class IndyCassandraConnectionRootSpanFields
-                extends CassandraConnectionRootSpanFields
+public class IndyCassandraConnectionSpanFieldsInjector
+                extends CassandraConnectionSpanFieldsInjector
 {
 
     private final Map<String, Session> sessions;
 
     @Inject
-    public IndyCassandraConnectionRootSpanFields( CassandraClient cassandraClient )
+    public IndyCassandraConnectionSpanFieldsInjector( CassandraClient cassandraClient )
     {
         this.sessions = Collections.unmodifiableMap( cassandraClient.getSessions() );
     }

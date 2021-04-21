@@ -42,10 +42,13 @@ import org.apache.http.util.VersionInfo;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.helper.HttpResources;
 import org.commonjava.indy.client.core.metric.ClientMetricManager;
+import org.commonjava.indy.client.core.metric.ClientMetrics;
 import org.commonjava.indy.inject.IndyVersioningProvider;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.o11yphant.jhttpc.SpanningHttpFactory;
 import org.commonjava.util.jhttpc.HttpFactory;
+import org.commonjava.util.jhttpc.HttpFactoryIfc;
 import org.commonjava.util.jhttpc.JHttpCException;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
@@ -88,7 +91,7 @@ public class IndyClientHttp
 
     private final SiteConfig location;
 
-    private final HttpFactory factory;
+    private final HttpFactoryIfc factory;
 
     private final String baseUrl;
 
@@ -119,8 +122,8 @@ public class IndyClientHttp
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
-        factory = new HttpFactory( authenticator );
-        metricManager = new ClientMetricManager( location, addClientTraceHeader() );
+        metricManager = new ClientMetricManager( location );
+        factory = new SpanningHttpFactory( new HttpFactory( authenticator ), metricManager.getTraceManager() );
     }
 
     public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
@@ -134,8 +137,8 @@ public class IndyClientHttp
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
 
-        factory = new HttpFactory( passwordManager );
-        metricManager = new ClientMetricManager( location, addClientTraceHeader() );
+        metricManager = new ClientMetricManager( location );
+        factory = new SpanningHttpFactory( new HttpFactory( passwordManager ), metricManager.getTraceManager() );
     }
 
     private void initUserAgent( final String apiVersion )
@@ -205,12 +208,11 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpHead request = newJsonHead( buildUrl( baseUrl, path ) );
-        metricManager.register( request );
-        metricManager.registerStart();
 
         connect();
         CloseableHttpResponse response = null;
         CloseableHttpClient client = null;
+        ClientMetrics metrics = metricManager.register( request );
         try
         {
             addLoggingMDCToHeaders(request);
@@ -224,7 +226,7 @@ public class IndyClientHttp
                 {
                     return null;
                 }
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error executing HEAD: %s. Status was: %d %s (%s)",
                                                path, sl.getStatusCode(), sl.getReasonPhrase(),
                                                sl.getProtocolVersion() );
@@ -245,14 +247,13 @@ public class IndyClientHttp
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( request, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( request, response, client, metrics );
         }
     }
 
@@ -260,8 +261,8 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpGet request = newJsonGet( buildUrl( baseUrl, path ) );
-        metricManager.register( request );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( request );
+        
 
         connect();
 
@@ -281,7 +282,7 @@ public class IndyClientHttp
                 {
                     return null;
                 }
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
                                                type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
             }
@@ -296,14 +297,13 @@ public class IndyClientHttp
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( request, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( request, response, client, metrics );
         }
     }
 
@@ -311,8 +311,8 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpGet request = newJsonGet( buildUrl( baseUrl, path ) );
-        metricManager.register( request );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( request );
+        
 
         connect();
         CloseableHttpResponse response = null;
@@ -329,7 +329,7 @@ public class IndyClientHttp
                 {
                     return null;
                 }
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
                                                typeRef.getType(), path, new IndyResponseErrorDetails( response ) );
             }
@@ -340,22 +340,20 @@ public class IndyClientHttp
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( request, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( request, response, client, metrics );
         }
     }
 
     public HttpResources getRaw( final HttpGet req )
             throws IndyClientException
     {
-        metricManager.register( req );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( req );
 
         connect();
 
@@ -366,17 +364,16 @@ public class IndyClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( req, newContext() );
-            return new HttpResources( req, response, client );
+            return new HttpResources( req, response, client, metrics );
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            metricManager.process();
+            metrics.registerEnd( response );
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }
@@ -392,8 +389,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         final HttpGet req = newRawGet( buildUrl( baseUrl, path ) );
-        metricManager.register( req );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( req );
 
         connect();
 
@@ -408,17 +404,17 @@ public class IndyClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( req, newContext() );
-            return new HttpResources( req, response, client );
+            return new HttpResources( req, response, client, metrics );
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            metricManager.process();
+            metrics.registerEnd( response );
+//            metrics.close();
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }
@@ -434,8 +430,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         final HttpPut put = newRawPut( buildUrl( baseUrl, path ) );
-        metricManager.register( put );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( put );
 
         connect();
 
@@ -450,7 +445,7 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new ClientProtocolException(
                         new IndyClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
                                                  new IndyResponseErrorDetails( response ) ) );
@@ -460,7 +455,7 @@ public class IndyClientHttp
         catch ( final ClientProtocolException e )
         {
             final Throwable cause = e.getCause();
-            metricManager.registerErr();
+            metrics.registerErr( cause );
             if ( cause instanceof IndyClientException )
             {
                 throw (IndyClientException) cause;
@@ -469,14 +464,13 @@ public class IndyClientHttp
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( put, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( put, response, client, metrics );
         }
     }
 
@@ -490,8 +484,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpPut put = newJsonPut( buildUrl( baseUrl, path ) );
-        metricManager.register( put );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( put );
 
         checkRequestValue( value );
         connect();
@@ -509,21 +502,20 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error in response from: %s.\n%s", path,
                                                new IndyResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( put, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( put, response, client, metrics );
         }
 
         return true;
@@ -532,8 +524,7 @@ public class IndyClientHttp
     public HttpResources execute( HttpRequestBase request )
             throws IndyClientException
     {
-        metricManager.register( request );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( request );
 
         connect();
 
@@ -544,17 +535,16 @@ public class IndyClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( request, newContext() );
-            return new HttpResources( request, response, client );
+            return new HttpResources( request, response, client, metrics );
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            metricManager.process();
+            metrics.registerEnd( response );
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }
@@ -570,8 +560,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         final HttpPost req = newRawPost( buildUrl( baseUrl, path ) );
-        metricManager.register( req );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( req );
 
         checkRequestValue( value );
         connect();
@@ -593,17 +582,16 @@ public class IndyClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( req, newContext() );
-            return new HttpResources( req, response, client );
+            return new HttpResources( req, response, client, metrics );
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            metricManager.process();
+            metrics.registerEnd( response );
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }
@@ -629,8 +617,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpPost post = newJsonPost( buildUrl( baseUrl, path ) );
-        metricManager.register( post );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( post );
 
         checkRequestValue( value );
 
@@ -650,7 +637,7 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error POSTING with %s result from: %s.\n%s",
                                                type.getSimpleName(), path, new IndyResponseErrorDetails( response ) );
             }
@@ -660,14 +647,13 @@ public class IndyClientHttp
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( post, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( post, response, client, metrics );
         }
     }
 
@@ -694,8 +680,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpPost post = newJsonPost( buildUrl( baseUrl, path ) );
-        metricManager.register( post );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( post );
 
         checkRequestValue( value );
 
@@ -715,7 +700,7 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error retrieving %s from: %s.\n%s",
                                                typeRef.getType(), path, new IndyResponseErrorDetails( response ) );
             }
@@ -725,14 +710,13 @@ public class IndyClientHttp
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( post, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( post, response, client, metrics );
         }
     }
 
@@ -762,8 +746,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpDelete delete = newDelete( buildUrl( baseUrl, path ) );
-        metricManager.register( delete );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( delete );
 
         connect();
 
@@ -778,21 +761,20 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error deleting: %s.\n%s", path,
                                                new IndyResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( delete, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( delete, response, client, metrics );
         }
     }
 
@@ -806,8 +788,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpDelete delete = newDelete( buildUrl( baseUrl, path ) );
-        metricManager.register( delete );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( delete );
 
         connect();
 
@@ -823,21 +804,20 @@ public class IndyClientHttp
             final StatusLine sl = response.getStatusLine();
             if ( !validResponseCode( sl.getStatusCode(), responseCodes ) )
             {
-                metricManager.registerErr();
+                metrics.registerErr( sl );
                 throw new IndyClientException( sl.getStatusCode(), "Error deleting: %s.\n%s", path,
                                                new IndyResponseErrorDetails( response ) );
             }
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( delete, response, client );
-            metricManager.process();
+            metrics.registerEnd( response );
+            cleanupResources( delete, response, client, metrics );
         }
     }
 
@@ -863,8 +843,7 @@ public class IndyClientHttp
             throws IndyClientException
     {
         HttpHead request = newJsonHead( buildUrl( baseUrl, querySupplier, path ) );
-        metricManager.register( request );
-        metricManager.registerStart();
+        ClientMetrics metrics = metricManager.register( request );
 
         connect();
 
@@ -886,27 +865,25 @@ public class IndyClientHttp
                 return false;
             }
 
-            metricManager.registerErr();
+            metrics.registerErr( sl );
             throw new IndyClientException( sl.getStatusCode(), "Error checking existence of: %s.\n%s", path,
                                            new IndyResponseErrorDetails( response ) );
         }
         catch ( final IOException e )
         {
-            metricManager.registerErr();
+            metrics.registerErr( e );
             throw new IndyClientException( "Indy request failed: %s", e, e.getMessage() );
         }
         finally
         {
-            metricManager.registerEnd( response );
-            cleanupResources( request, response, client );
-            metricManager.process();
-
+            metrics.registerEnd( response );
+            cleanupResources( request, response, client, metrics );
         }
     }
 
     public void cleanup( final HttpRequest request, final HttpResponse response, final CloseableHttpClient client )
     {
-        cleanupResources( request, response, client );
+        cleanupResources( request, response, client, null );
     }
 
     public String toIndyUrl( final String... path )

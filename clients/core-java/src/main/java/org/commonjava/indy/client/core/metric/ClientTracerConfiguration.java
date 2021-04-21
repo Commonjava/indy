@@ -16,25 +16,61 @@
 package org.commonjava.indy.client.core.metric;
 
 import org.commonjava.indy.client.core.inject.ClientMetricConfig;
-import org.commonjava.o11yphant.honeycomb.config.HoneycombConfiguration;
+import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
+import org.commonjava.o11yphant.otel.OtelConfiguration;
+import org.commonjava.o11yphant.trace.TracerConfiguration;
 
 @ClientMetricConfig
-public class ClientHoneycombConfiguration
-        implements HoneycombConfiguration {
-
-    private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
+public class ClientTracerConfiguration
+        implements TracerConfiguration, OtelConfiguration, HoneycombConfiguration
+{
 
     private boolean enabled;
 
-    private String writeKey;
+    private Integer baseSampleRate;
+
+    private boolean consoleTransport;
 
     private String dataset;
 
-    private Integer baseSampleRate;
+    private String writeKey;
 
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public boolean isConsoleTransport()
+    {
+        return consoleTransport;
+    }
+
+    @Override
+    public String getWriteKey()
+    {
+        return writeKey;
+    }
+
+    @Override
+    public String getDataset()
+    {
+        return dataset;
+    }
+
+    public void setDataset( String dataset )
+    {
+        this.dataset = dataset;
+    }
+
+    public void setWriteKey( String writeKey )
+    {
+        this.writeKey = writeKey;
+    }
+
+    public void setConsoleTransport( boolean consoleTransport )
+    {
+        this.consoleTransport = consoleTransport;
     }
 
     public void setEnabled( boolean enabled ) {
@@ -44,24 +80,6 @@ public class ClientHoneycombConfiguration
     @Override
     public String getServiceName() {
         return "indy-client";
-    }
-
-    @Override
-    public String getWriteKey() {
-        return writeKey;
-    }
-
-    public void setWriteKey( String writeKey ) {
-        this.writeKey = writeKey;
-    }
-
-    @Override
-    public String getDataset() {
-        return dataset;
-    }
-
-    public void setDataset( String dataset ) {
-        this.dataset = dataset;
     }
 
     @Override

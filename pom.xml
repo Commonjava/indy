@@ -65,6 +65,8 @@
     <protostreamVersion>4.3.0.Final</protostreamVersion>
     <gsonVersion>2.8.2</gsonVersion>
     <!--<luceneVersion>7.3.0</luceneVersion>-->
+    <protostreamVersion>4.3.0.Final</protostreamVersion>
+    <gsonVersion>2.8.2</gsonVersion>
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.1.0.Final</undertowVersion>
@@ -95,7 +97,7 @@
     <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.12-SNAPSHOT</jhttpcVersion>
-    <weftVersion>1.18</weftVersion>
+    <weftVersion>1.19-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
@@ -401,13 +403,13 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-honeycomb</artifactId>
-        <version>2.6.0-SNAPSHOT</version>
+        <artifactId>indy-subsys-trace</artifactId>
+        <version>2.5.5-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-honeycomb</artifactId>
-        <version>2.6.0-SNAPSHOT</version>
+        <artifactId>indy-subsys-trace</artifactId>
+        <version>2.5.5-SNAPSHOT</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -1588,12 +1590,37 @@
       <!-- o11yphant dependencies -->
       <dependency>
         <groupId>org.commonjava.util</groupId>
-        <artifactId>o11yphant-honeycomb-api</artifactId>
+        <artifactId>o11yphant-trace-api</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.util</groupId>
-        <artifactId>o11yphant-honeycomb-core</artifactId>
+        <artifactId>o11yphant-trace-core</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-otel</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-honeycomb</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-helper-servlet</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-helper-jhttpc</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-trace-helper-httpclient</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
       <dependency>
@@ -1672,6 +1699,18 @@
         <artifactId>cassandra-driver-mapping</artifactId>
         <version>${datastaxVersion}</version>
       </dependency>
+
+      <dependency>
+          <groupId>io.grpc</groupId>
+          <artifactId>grpc-netty</artifactId>
+          <version>1.35.0</version>
+      </dependency>
+      <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>23.6-jre</version>
+      </dependency>
+
       <dependency>
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>

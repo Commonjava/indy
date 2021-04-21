@@ -50,5 +50,13 @@
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-trace-helper-jhttpc</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-trace</artifactId>
+    </dependency>
   </dependencies>
 </project>

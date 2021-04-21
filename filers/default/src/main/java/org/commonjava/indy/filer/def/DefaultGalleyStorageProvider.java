@@ -403,6 +403,7 @@ public class DefaultGalleyStorageProvider
             catch ( GalleyInitException e )
             {
                 logger.error( "[Indy] Can not create CacheProvider for some error.", e );
+                throw new RuntimeException( "Cannot create CacheProvider", e );
             }
         }
 
