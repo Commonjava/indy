@@ -50,11 +50,11 @@ public class HttpResources
 
     private final AbstractExecutionAwareRequest request;
 
-    private CloseableHttpResponse response;
+    private final CloseableHttpResponse response;
 
     private final CloseableHttpClient client;
 
-    private ClientMetrics metrics;
+    private final ClientMetrics metrics;
 
     private InputStream responseEntityStream;
 
@@ -63,12 +63,8 @@ public class HttpResources
     {
         this.request = request;
         this.client = client;
-        this.metrics = metrics;
-    }
-
-    public void setResponse( final CloseableHttpResponse response )
-    {
         this.response = response;
+        this.metrics = metrics;
     }
 
     public static void cleanupResources( final HttpRequest request, final HttpResponse response,
@@ -171,7 +167,7 @@ public class HttpResources
 
     public int getStatusCode()
     {
-        return response.getStatusLine()
+        return response == null ? -1 : response.getStatusLine()
                        .getStatusCode();
     }
 
@@ -183,7 +179,7 @@ public class HttpResources
     public InputStream getResponseEntityContent()
         throws IOException
     {
-        if ( responseEntityStream == null )
+        if ( responseEntityStream == null && response != null )
         {
             responseEntityStream = response.getEntity()
                                            .getContent();
