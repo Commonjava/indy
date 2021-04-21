@@ -77,6 +77,62 @@
     <build>
       <plugins>
         <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-toolchains-plugin</artifactId>
+          <version>3.0.0</version>
+          <executions>
+            <execution>
+              <id>default-pre-integration-test</id>
+              <phase>pre-integration-test</phase>
+              <goals>
+                <goal>toolchain</goal>
+              </goals>
+              <configuration>
+                <toolchains>
+                  <jdk>
+                    <version>1.8</version>
+                    <vendor>OpenJDK</vendor>
+                  </jdk>
+                </toolchains>
+              </configuration>
+            </execution>
+            <execution>
+              <id>default-integration-test</id>
+              <goals>
+                <goal>toolchain</goal>
+              </goals>
+              <configuration>
+                <toolchains>
+                  <jdk>
+                    <version>11</version>
+                    <vendor>OpenJDK</vendor>
+                  </jdk>
+                </toolchains>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>cassandra-maven-plugin</artifactId>
+          <version>3.6</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>start</goal>
+                <goal>stop</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <skip>${skipITs}</skip>
+            <startNativeTransport>true</startNativeTransport>
+            <cqlVersion>3.4.4</cqlVersion>
+            <maxMemory>2048</maxMemory>
+          </configuration>
+        </plugin>
+        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <skip>false</skip>
