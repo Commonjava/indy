@@ -393,7 +393,6 @@ public class IndyClientHttp
 
         connect();
 
-        CloseableHttpResponse response = null;
         try
         {
             addLoggingMDCToHeaders(req);
@@ -403,7 +402,8 @@ public class IndyClientHttp
             }
             final CloseableHttpClient client = newClient();
 
-            response = client.execute( req, newContext() );
+            CloseableHttpResponse response = client.execute( req, newContext() );
+            metrics.registerEnd( response );
             return new HttpResources( req, response, client, metrics );
         }
         catch ( final IOException e )
@@ -413,7 +413,6 @@ public class IndyClientHttp
         }
         finally
         {
-            metrics.registerEnd( response );
 //            metrics.close();
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
@@ -535,6 +534,7 @@ public class IndyClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( request, newContext() );
+            metrics.registerEnd( response );
             return new HttpResources( request, response, client, metrics );
         }
         catch ( final IOException e )
@@ -544,7 +544,6 @@ public class IndyClientHttp
         }
         finally
         {
-            metrics.registerEnd( response );
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }
@@ -582,6 +581,7 @@ public class IndyClientHttp
             final CloseableHttpClient client = newClient();
 
             response = client.execute( req, newContext() );
+            metrics.registerEnd( response );
             return new HttpResources( req, response, client, metrics );
         }
         catch ( final IOException e )
@@ -591,7 +591,6 @@ public class IndyClientHttp
         }
         finally
         {
-            metrics.registerEnd( response );
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }

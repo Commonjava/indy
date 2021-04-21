@@ -106,7 +106,6 @@ public class ClientMetrics
         boolean error = ( response != null && response.getStatusLine() != null ) && ( response.getStatusLine().getStatusCode() > 499 );
 
         functions.forEach( function -> metricSet.function( function ).ifPresent( functionMetrics -> {
-            functionMetrics.latency( end - start ).call();
             if ( error ) {
                 functionMetrics.error();
             }
@@ -131,6 +130,11 @@ public class ClientMetrics
             logger.trace( "Client trace metricSet is empty: {}", request.getURI().getPath() );
             return;
         }
+
+        functions.forEach( function -> metricSet.function( function ).ifPresent( functionMetrics -> {
+            functionMetrics.latency( end - start ).call();
+        } ) );
+
         String pathInfo = request.getURI().getPath();
 
         addFieldToActiveSpan( "path_info", pathInfo );

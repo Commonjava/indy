@@ -71,7 +71,16 @@ public class ApiVersioningTest
         // try the OFF version and get 410
         headers.put( HEADER_INDY_API_VERSION, "0.5" );
         ret = m.getRaw( INFO_BASE, headers );
-        assertEquals( GONE.code(), ret.getStatusCode() );
+        System.out.println( "Return from getting Indy version is: " + ret );
+        try
+        {
+            assertEquals( GONE.code(), ret.getStatusCode() );
+        }
+        catch ( NullPointerException npe )
+        {
+            npe.printStackTrace();
+            throw npe;
+        }
 
         // try the deprecated version
         headers.put( HEADER_INDY_API_VERSION, "0.6" );
