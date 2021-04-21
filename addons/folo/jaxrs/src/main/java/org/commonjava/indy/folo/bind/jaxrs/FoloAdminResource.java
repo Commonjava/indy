@@ -414,7 +414,10 @@ public class FoloAdminResource
     @PUT
     public Response importFoloToCassandra( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
     {
-        new Thread( () -> foloISPN2CassandraMigrationAction.migrate() ).start(); // run it on backend
+        // run it on backend
+        Thread t = new Thread( () -> foloISPN2CassandraMigrationAction.migrate() );
+        t.setPriority( Thread.MAX_PRIORITY );
+        t.start();
         return Response.created( uriInfo.getRequestUri() ).build();
     }
 
