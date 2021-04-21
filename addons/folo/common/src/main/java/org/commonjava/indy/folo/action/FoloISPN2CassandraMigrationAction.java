@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,32 +56,41 @@ public class FoloISPN2CassandraMigrationAction
         started = true;
 
         AtomicInteger count = new AtomicInteger( 0 );
+        Map failed = new HashMap();
+
         Set<TrackingKey> keySet = cacheRecord.getSealedTrackingKey();
 
         logger.info( "Get folo records size: {}", keySet.size() );
-        keySet.forEach( key -> {
-            TrackedContent item = cacheRecord.get( key );
-            dbRecord.addSealedRecord( item );
-            int index = count.incrementAndGet();
-            if ( index % 10 == 0 )
-            {
-                logger.info( "{}", index ); // print some log to show the progress
-            }
-        } );
+        keySet.forEach( key -> migrateForKey( key, count, failed ) );
         logger.info( "{}", count.get() );
-/*
- * This can not work if the entries are too many. It will hang Indy.
- *
-        cacheRecord.getSealed().forEach( item -> {
-            dbRecord.addSealedRecord( item );
-            int index = count.incrementAndGet();
-            if ( index % 10 == 0 )
-            {
-                logger.info( "{}", index ); // print some log to show the progress
-            }
-        } );
-*/
-        logger.info( "Migrate folo records from ISPN to cassandra done." );
+        logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}\n{}", failed.size(), failed );
         return true;
+    }
+
+    private void migrateForKey( TrackingKey key, AtomicInteger count, Map failed )
+    {
+        try
+        {
+            TrackedContent item = cacheRecord.get( key );
+            if ( item != null )
+            {
+                dbRecord.addSealedRecord( item );
+                int index = count.incrementAndGet();
+                if ( index % 10 == 0 )
+                {
+                    logger.info( "{}", index ); // print some log to show the progress
+                }
+            }
+            else
+            {
+                logger.warn( "Folo content missing, key: {}", key );
+                failed.put( key, "content missing" );
+            }
+        }
+        catch ( Exception e )
+        {
+            logger.error( "Folo content migrate failed, key: " + key, e );
+            failed.put( key, e.toString() );
+        }
     }
 }
