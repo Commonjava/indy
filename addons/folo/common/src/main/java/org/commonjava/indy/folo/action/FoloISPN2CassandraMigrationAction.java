@@ -4,11 +4,14 @@ import org.commonjava.indy.core.conf.IndyDurableStateConfig;
 import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloStoreToCassandra;
 import org.commonjava.indy.folo.data.FoloStoretoInfinispan;
+import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackingKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.commonjava.indy.core.conf.IndyDurableStateConfig.STORAGE_CASSANDRA;
@@ -47,10 +50,26 @@ public class FoloISPN2CassandraMigrationAction
             return true;
         }
 
+        logger.info( "Migrate folo records from ISPN to cassandra start" );
         started = true;
 
         AtomicInteger count = new AtomicInteger( 0 );
-        logger.info( "Migrate folo records from ISPN to cassandra, size: {}", cacheRecord.getSealedTrackingKey().size() );
+        Set<TrackingKey> keySet = cacheRecord.getSealedTrackingKey();
+
+        logger.info( "Get folo records size: {}", keySet.size() );
+        keySet.forEach( key -> {
+            TrackedContent item = cacheRecord.get( key );
+            dbRecord.addSealedRecord( item );
+            int index = count.incrementAndGet();
+            if ( index % 10 == 0 )
+            {
+                logger.info( "{}", index ); // print some log to show the progress
+            }
+        } );
+        logger.info( "{}", count.get() );
+/*
+ * This can not work if the entries are too many. It will hang Indy.
+ *
         cacheRecord.getSealed().forEach( item -> {
             dbRecord.addSealedRecord( item );
             int index = count.incrementAndGet();
@@ -59,6 +78,7 @@ public class FoloISPN2CassandraMigrationAction
                 logger.info( "{}", index ); // print some log to show the progress
             }
         } );
+*/
         logger.info( "Migrate folo records from ISPN to cassandra done." );
         return true;
     }
