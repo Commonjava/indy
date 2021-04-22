@@ -100,8 +100,6 @@ public abstract class KojiContentManagerDecorator
 
     private static final String NVR = "koji-NVR";
 
-    private static final String KOJI_PULL = "koji-pull";
-
     @Delegate
     @Inject
     private ContentManager delegate;
@@ -261,8 +259,19 @@ public abstract class KojiContentManagerDecorator
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {
-        if ( !isKojiPullingEnabled( (Group) store, path ) )
+        if ( !config.getEnabled() )
         {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Koji content-manager decorator is disabled." );
+            logger.debug("When koji addon is disenabled , path:{},config instance is {}",path,config.toString());
+            return defValue;
+        }
+
+        if ( !config.isEnabledFor( store ) )
+        {
+            Logger logger = LoggerFactory.getLogger( getClass() );
+            logger.debug( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
+            logger.debug("When the group is disenabled , path:{},config instance is {}",path,config.toString());
             return defValue;
         }
 
@@ -286,34 +295,6 @@ public abstract class KojiContentManagerDecorator
         return defValue;
     }
 
-    private boolean isKojiPullingEnabled( final Group store, final String path )
-    {
-        if ( !config.getEnabled() )
-        {
-            logger.debug( "Koji content-manager decorator is disabled." );
-            logger.debug( "When koji addon is disabled , path:{},config instance is {}", path, config.toString() );
-            return false;
-        }
-
-        if ( !config.isEnabledFor( store.getName() ) )
-        {
-            logger.debug( "Koji content-manager decorator not enabled for: {}.", store.getKey() );
-            logger.debug( "When the group is disabled , path:{},config instance is {}", path, config.toString() );
-            return false;
-        }
-
-        // MMENG-1262: Check if group enabled the koji pulling in its metadata
-        final String kojiPullVal = store.getMetadata( KOJI_PULL );
-        if ( kojiPullVal != null && ( "false".equalsIgnoreCase( kojiPullVal.trim() ) || "no".equalsIgnoreCase(
-                kojiPullVal.trim() ) ) )
-        {
-            logger.debug( "Group {} has disabled koji pulling for artifacts.", store.getKey() );
-            logger.debug( "When koji pulling is disabled, path:{}, config instance is {}", path, config.toString() );
-            return false;
-        }
-
-        return true;
-    }
 
     private <T> T proxyKojiBuild( final StoreKey inStore, final ArtifactRef artifactRef, final String path,
                                   EventMetadata eventMetadata, T defValue, KojiBuildAction<T> consumer )
