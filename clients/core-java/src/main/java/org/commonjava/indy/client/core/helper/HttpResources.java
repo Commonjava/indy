@@ -63,6 +63,7 @@ public class HttpResources
                           final CloseableHttpClient client, ClientMetrics metrics )
     {
         this.request = request;
+        this.response = response;
         this.client = client;
         this.metrics = metrics;
     }
