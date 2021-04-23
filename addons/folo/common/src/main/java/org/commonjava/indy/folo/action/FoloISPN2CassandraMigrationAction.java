@@ -1,30 +1,40 @@
 package org.commonjava.indy.folo.action;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.core.conf.IndyDurableStateConfig;
 import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloStoreToCassandra;
 import org.commonjava.indy.folo.data.FoloStoretoInfinispan;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackingKey;
+import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.commons.io.IOUtils.LINE_SEPARATOR;
 import static org.commonjava.indy.core.conf.IndyDurableStateConfig.STORAGE_CASSANDRA;
 
-/**
- * This has problems when the dat is big and cluster will reboot indy if it takes too long.
- * I change it to call from MaintenanceHandler directly via REST.  Henry, 2021 Apr 19.
- */
 public class FoloISPN2CassandraMigrationAction
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private final static String COMPLETED_FILE = "folo/completed.out";
+
+    private final static String FAILED_FILE = "folo/failed.out";
 
     @Inject
     @FoloStoreToCassandra
@@ -37,7 +47,10 @@ public class FoloISPN2CassandraMigrationAction
     @Inject
     IndyDurableStateConfig durableConfig;
 
-    private boolean started;
+    @Inject
+    DataFileConfiguration dataFileConfiguration;
+
+    private volatile boolean started; // only allow one thread to run
 
     public boolean migrate()
     {
@@ -53,21 +66,85 @@ public class FoloISPN2CassandraMigrationAction
         }
 
         logger.info( "Migrate folo records from ISPN to cassandra start" );
-        started = true;
 
         AtomicInteger count = new AtomicInteger( 0 );
-        Map failed = new HashMap();
+        Map<String, String> failed = new HashMap();
+        Set<String> completed = new HashSet<>(); // to hold completed keys
 
-        Set<TrackingKey> keySet = cacheRecord.getSealedTrackingKey();
+        try
+        {
+            started = true;
+            Set<String> prevCompleted = loadPrevCompleted();
 
-        logger.info( "Get folo records size: {}", keySet.size() );
-        keySet.forEach( key -> migrateForKey( key, count, failed ) );
-        logger.info( "{}", count.get() );
-        logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}\n{}", failed.size(), failed );
+            Set<TrackingKey> keySet = cacheRecord.getSealedTrackingKey();
+            logger.info( "Get total records size: {}", keySet.size() );
+            keySet.forEach( key -> {
+                if ( !prevCompleted.contains( key.getId() ) )
+                {
+                    migrateForKey( key, count, completed, failed );
+                }
+            } );
+            logger.info( "{}", count.get() );
+            logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}\n{}", failed.size(), failed );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Migration failed", e );
+        }
+        finally
+        {
+            started = false;
+            dumpResult( completed, failed );
+        }
+
         return true;
     }
 
-    private void migrateForKey( TrackingKey key, AtomicInteger count, Map failed )
+    private Set<String> loadPrevCompleted() throws IOException
+    {
+        Set<String> ret = new HashSet<>();
+        File prevCompleted = getDataFile( COMPLETED_FILE );
+        if ( prevCompleted.exists() )
+        {
+            try (InputStream is = new FileInputStream( prevCompleted ))
+            {
+                ret.addAll( IOUtils.readLines( is ) );
+            }
+        }
+        logger.info( "Load prev completed, size: {}", ret.size() );
+        return ret;
+    }
+
+    private void dumpResult( Set<String> completed, Map<String, String> failed )
+    {
+        // append
+        try (OutputStream os = new FileOutputStream( getDataFile( COMPLETED_FILE ), true ))
+        {
+            IOUtils.writeLines( completed, LINE_SEPARATOR, os );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Failed to dump completed", e );
+        }
+
+        // override
+        try (OutputStream os = new FileOutputStream( getDataFile( FAILED_FILE ) ))
+        {
+            IOUtils.writeLines( failed.keySet(), LINE_SEPARATOR, os );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Failed to dump failed", e );
+        }
+    }
+
+    private File getDataFile( String path )
+    {
+        return new File( dataFileConfiguration.getDataBasedir(), path );
+    }
+
+    private void migrateForKey( TrackingKey key, AtomicInteger count, Set<String> completed,
+                                Map<String, String> failed )
     {
         try
         {
@@ -80,17 +157,18 @@ public class FoloISPN2CassandraMigrationAction
                 {
                     logger.info( "{}", index ); // print some log to show the progress
                 }
+                completed.add( key.getId() );
             }
             else
             {
                 logger.warn( "Folo content missing, key: {}", key );
-                failed.put( key, "content missing" );
+                failed.put( key.getId(), "content missing" );
             }
         }
         catch ( Exception e )
         {
             logger.error( "Folo content migrate failed, key: " + key, e );
-            failed.put( key, e.toString() );
+            failed.put( key.getId(), e.toString() );
         }
     }
 }
