@@ -50,6 +50,7 @@
     <module>path-mapped</module>
     <module>repo-proxy</module>
     <module>schedule</module>
+    <module>event-publisher</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>

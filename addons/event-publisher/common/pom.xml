@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>indy-parent</artifactId>
+        <groupId>org.commonjava.indy</groupId>
+        <version>2.6.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>indy-event-publisher-common</artifactId>
+    <name>Indy :: Add-Ons :: Event Publisher :: Common</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.commonjava.indy.service</groupId>
+            <artifactId>indy-event-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-folo-model-java</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>
