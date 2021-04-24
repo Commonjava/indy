@@ -78,11 +78,10 @@ public class SwaggerExportTest
     @Override
     protected void initTestConfig( CoreServerFixture fixture ) throws IOException
     {
-        // delete unnecessary config file which requires extra initiation
-        File f = new File( etcDir, "conf.d/folo.conf" );
-        if ( f.exists() )
-        {
-            f.delete();
-        }
+        writeConfigFile( "main.conf", "standalone=true\n"
+                        + "[durable-state]\n"
+                        + "folo.storage=infinispan\n"
+                        + "store.storage=infinispan\n" );
     }
+
 }
