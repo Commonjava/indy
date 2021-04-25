@@ -58,7 +58,7 @@ public class DefaultIndyConfiguration
 
     public static final String DEFAULT_NFC_PROVIDER = ISPN_NFC_PROVIDER;
 
-    public static final Boolean DEFAULT_STANDALONE = true;
+    public static final Boolean DEFAULT_STANDALONE = false;
 
     public static final Boolean DEFAULT_STORE_MANAGER_STANDALONE = false;
 
