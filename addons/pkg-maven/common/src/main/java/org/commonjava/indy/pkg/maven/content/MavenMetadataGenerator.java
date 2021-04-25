@@ -369,6 +369,18 @@ public class MavenMetadataGenerator
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        final Transfer rawTarget = fileManager.getTransfer( group, path );
+        // First we check the metadata and all of its siblings metadata files
+        if ( canProcess( path ) && exists( rawTarget ) )
+        {
+            // Means there is no metadata change if this transfer exists, so directly return it.
+            logger.trace( "Raw metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(),
+                          path );
+            eventMetadata.set( GROUP_METADATA_EXISTS, true );
+            return rawTarget;
+        }
+
+        // Then changed back to the metadata itself whatever the path is
         String toMergePath = path;
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {
@@ -379,7 +391,8 @@ public class MavenMetadataGenerator
         if ( exists( target ) )
         {
             // Means there is no metadata change if this transfer exists, so directly return it.
-            logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
+            logger.trace( "Merged metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(),
+                          toMergePath );
             eventMetadata.set( GROUP_METADATA_EXISTS, true );
             return target;
         }
