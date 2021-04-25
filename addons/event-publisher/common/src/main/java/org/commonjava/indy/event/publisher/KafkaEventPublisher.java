@@ -15,6 +15,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileAccessEvent;
+import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
@@ -45,14 +46,14 @@ public class KafkaEventPublisher
     @Inject
     ContentDigester contentDigester;
 
-    public void onFileAccess( @Observes final FileAccessEvent event )
+    public void onFileDelete( @Observes final FileDeletionEvent event )
     {
 
         if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ))
         {
             return;
         }
-        FileEvent fileEvent = new FileEvent( FileEventType.ACCESS );
+        FileEvent fileEvent = new FileEvent( FileEventType.DELETE );
         transformFileEvent( event, fileEvent );
         publishFileEvent( fileEvent );
 
