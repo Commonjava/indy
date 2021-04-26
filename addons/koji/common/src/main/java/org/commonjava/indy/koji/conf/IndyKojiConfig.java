@@ -691,7 +691,7 @@ public class IndyKojiConfig
         return null;
     }
 
-    private boolean isEnabledFor( String name )
+    private boolean isEnabledByName( String name )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         if ( targetGroups == null )
@@ -722,18 +722,19 @@ public class IndyKojiConfig
         if ( kojiPullVal != null )
         {
             final String pullVal = kojiPullVal.trim();
+            final Logger logger = LoggerFactory.getLogger( this.getClass() );
             if ( FALSE.equals( parseBoolean( pullVal ) ) || "no".equalsIgnoreCase( pullVal ) )
             {
-                final Logger logger = LoggerFactory.getLogger( this.getClass() );
-                logger.debug( "Group {} has disabled koji pulling for artifacts with metadata tag.", store.getKey() );
+                logger.trace( "Group {} has disabled koji pulling for artifacts with metadata tag.", store.getKey() );
                 return false;
             }
             if ( TRUE.equals( parseBoolean( pullVal ) ) || "yes".equalsIgnoreCase( pullVal ) )
             {
+                logger.trace( "Group {} has enabled koji pulling for artifacts with metadata tag.", store.getKey() );
                 return true;
             }
         }
-        return isEnabledFor( store.getName() );
+        return isEnabledByName( store.getName() );
     }
 
 
