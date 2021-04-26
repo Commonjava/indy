@@ -44,7 +44,7 @@ import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataCache;
 import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataCacheManager;
@@ -58,6 +58,7 @@ import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.infinispan.commons.util.concurrent.ConcurrentHashSet;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.notifications.Listener;
@@ -178,7 +179,7 @@ public class KojiMavenMetadataProvider
             Set<Group> affected = storeDataManager.query()
                                                            .getAll(
                                                                    s -> group == s.getType() && kojiConfig.isEnabledFor(
-                                                                           s.getName() ) )
+                                                                           s ) )
                                                            .stream()
                                                            .map( s -> (Group) s )
                                                            .collect( Collectors.toSet() );
@@ -263,10 +264,19 @@ public class KojiMavenMetadataProvider
             return null;
         }
 
-        if ( !kojiConfig.isEnabledFor( targetKey.getName() ) )
+        try
         {
-            logger.debug( "Koji integration is not enabled for group: {}", targetKey );
-            return null;
+            ArtifactStore target = storeDataManager.getArtifactStore( targetKey );
+
+            if ( !kojiConfig.isEnabledFor( target ) )
+            {
+                logger.debug( "Koji integration is not enabled for group: {}", targetKey );
+                return null;
+            }
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "Failed to get metadata for path {} in store {}: {}", path, targetKey, e.getMessage() );
         }
 
         File mdFile = new File( path );
