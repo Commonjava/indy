@@ -7,17 +7,12 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.folo.change.FoloBackupListener;
-import org.commonjava.indy.folo.change.FoloExpirationWarningListener;
 import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.util.SchemaUtils;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.maven.galley.util.UrlUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +21,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import java.net.MalformedURLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -57,7 +51,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private Mapper<DtxTrackingRecord> trackingMapper;
 
     private PreparedStatement getTrackingRecordByBuildIdAndPath;
-    private PreparedStatement getTrackingRecordBySealed;
+    private PreparedStatement getTrackingKeysBySealed;
     private PreparedStatement getTrackingRecordsByTrackingKey;
 
 
@@ -91,7 +85,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     @PostConstruct
     public void initialize() {
 
-        logger.warn("-- Creating Cassandra Folo Records Keyspace and Tables  ---");
+        logger.info("-- Creating Cassandra Folo Records Keyspace and Tables");
 
         String foloCassandraKeyspace = config.getFoloCassandraKeyspace();
 
@@ -105,13 +99,13 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
         getTrackingRecordByBuildIdAndPath =
                 session.prepare("SELECT * FROM " + foloCassandraKeyspace + ".records WHERE tracking_key=? AND path=?;");
-        getTrackingRecordBySealed =
-                session.prepare("SELECT * FROM " +  foloCassandraKeyspace + ".records WHERE sealed=?;");
+        getTrackingKeysBySealed =
+                session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + ".records;");
 
         getTrackingRecordsByTrackingKey =
                 session.prepare("SELECT * FROM "  + foloCassandraKeyspace + ".records WHERE tracking_key=?;");
 
-        logger.warn("-- Cassandra Folo Records Keyspace and Tables created  ---");
+        logger.info("-- Cassandra Folo Records Keyspace and Tables created");
 
     }
 
@@ -261,12 +255,12 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Override
     public Set<TrackingKey> getInProgressTrackingKey() {
-        return getTrackingKeys(false);
+        throw new UnsupportedOperationException( "Getting in-progress tracking keys are not supported by Cassandra Folo" );
     }
 
     @Override
     public Set<TrackingKey> getSealedTrackingKey() {
-        return getTrackingKeys(true);
+        return getTrackingKeys();
     }
 
 
@@ -385,11 +379,11 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         }
     }
 
-    private Set<TrackingKey> getTrackingKeys(Boolean sealed) {
-        BoundStatement inProgress = getTrackingRecordBySealed.bind(sealed);
-        ResultSet getInProgressRecords = session.execute(inProgress);
-        List<Row> allInProgress = getInProgressRecords.all();
-        Iterator<Row> iterator = allInProgress.iterator();
+    private Set<TrackingKey> getTrackingKeys() {
+        BoundStatement statement = getTrackingKeysBySealed.bind();
+        ResultSet resultSet = session.execute(statement);
+        List<Row> all = resultSet.all();
+        Iterator<Row> iterator = all.iterator();
 
         Set<TrackingKey> trackingKeys = new HashSet<>();
         while (iterator.hasNext()) {
@@ -397,6 +391,6 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             String tracking_key = next.getString("tracking_key");
             trackingKeys.add(new TrackingKey(tracking_key));
         }
-        return trackingKeys.stream().distinct().collect(Collectors.toSet());
+        return trackingKeys.stream().collect(Collectors.toSet());
     }
 }
