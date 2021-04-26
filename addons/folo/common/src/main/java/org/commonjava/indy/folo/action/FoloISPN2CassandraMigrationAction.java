@@ -6,6 +6,7 @@ import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloStoreToCassandra;
 import org.commonjava.indy.folo.data.FoloStoretoInfinispan;
 import org.commonjava.indy.folo.model.TrackedContent;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.subsys.datafile.conf.DataFileConfiguration;
 import org.slf4j.Logger;
@@ -151,6 +152,9 @@ public class FoloISPN2CassandraMigrationAction
             TrackedContent item = cacheRecord.get( key );
             if ( item != null )
             {
+                // some (318) entries missing TrackingKey in download/upload TrackedContentEntry due to se/deserialization problem.
+                amendTrackingKey( item );
+
                 dbRecord.addSealedRecord( item );
                 int index = count.incrementAndGet();
                 if ( index % 10 == 0 )
@@ -169,6 +173,31 @@ public class FoloISPN2CassandraMigrationAction
         {
             logger.error( "Folo content migrate failed, key: " + key, e );
             failed.put( key.getId(), e.toString() );
+        }
+    }
+
+    private void amendTrackingKey( TrackedContent item )
+    {
+        TrackingKey key = item.getKey();
+        Set<TrackedContentEntry> uploads = item.getUploads();
+        if ( uploads != null )
+        {
+            uploads.forEach( up -> {
+                if ( up.getTrackingKey() == null )
+                {
+                    up.setTrackingKey( key );
+                }
+            } );
+        }
+        Set<TrackedContentEntry> downloads = item.getDownloads();
+        if ( downloads != null )
+        {
+            downloads.forEach( down -> {
+                if ( down.getTrackingKey() == null )
+                {
+                    down.setTrackingKey( key );
+                }
+            } );
         }
     }
 }
