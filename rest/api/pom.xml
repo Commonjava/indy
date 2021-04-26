@@ -77,25 +77,6 @@
     <build>
       <plugins>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>cassandra-maven-plugin</artifactId>
-          <version>3.6</version>
-          <executions>
-            <execution>
-              <goals>
-                <goal>start</goal>
-                <goal>stop</goal>
-              </goals>
-            </execution>
-          </executions>
-          <configuration>
-            <skip>${skipITs}</skip>
-            <startNativeTransport>true</startNativeTransport>
-            <cqlVersion>3.4.4</cqlVersion>
-            <maxMemory>2048</maxMemory>
-          </configuration>
-        </plugin>
-        <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
             <skip>false</skip>

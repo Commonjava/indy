@@ -78,6 +78,9 @@ public class SwaggerExportTest
     @Override
     protected void initTestConfig( CoreServerFixture fixture ) throws IOException
     {
-        writeConfigFile( "main.conf", "standalone=true\n" );
+        writeConfigFile( "main.conf", "standalone=true\n"
+                        + "[durable-state]\n"
+                        + "folo.storage=infinispan\n"
+                        + "store.storage=infinispan\n" );
     }
 }
