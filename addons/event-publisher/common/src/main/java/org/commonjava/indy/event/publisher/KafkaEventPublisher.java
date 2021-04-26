@@ -14,7 +14,6 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
@@ -74,14 +73,6 @@ public class KafkaEventPublisher
 
     private void transformFileEvent( org.commonjava.maven.galley.event.FileEvent event, FileEvent fileEvent )
     {
-        EventMetadata metadata = event.getEventMetadata();
-        final TrackingKey trackingKey = (TrackingKey) metadata.get( "tracking-id" );
-        if ( trackingKey == null )
-        {
-            logger.trace( "No tracking key." );
-            return;
-        }
-
         Transfer transfer = event.getTransfer();
         if ( transfer == null )
         {
@@ -105,7 +96,13 @@ public class KafkaEventPublisher
 
             fileEvent.setTargetPath( path );
             fileEvent.setNodeId( indyConfig.getNodeId() );
-            fileEvent.setSessionId( trackingKey.getId() );
+
+            EventMetadata metadata = event.getEventMetadata();
+            final TrackingKey trackingKey = (TrackingKey) metadata.get( "tracking-id" );
+            if ( trackingKey != null )
+            {
+                fileEvent.setSessionId( trackingKey.getId() );
+            }
             fileEvent.setTimestamp( new Date() );
 
             TransferMetadata artifactData = contentDigester.digest( affectedStore, path, metadata );
