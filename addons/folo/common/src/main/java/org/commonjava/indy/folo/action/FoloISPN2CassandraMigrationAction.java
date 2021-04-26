@@ -165,7 +165,7 @@ public class FoloISPN2CassandraMigrationAction
                 failed.put( key.getId(), "content missing" );
             }
         }
-        catch ( Exception e )
+        catch ( Throwable e )
         {
             logger.error( "Folo content migrate failed, key: " + key, e );
             failed.put( key.getId(), e.toString() );
