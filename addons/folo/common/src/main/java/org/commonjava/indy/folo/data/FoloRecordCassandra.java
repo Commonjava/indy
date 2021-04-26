@@ -51,8 +51,9 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private Mapper<DtxTrackingRecord> trackingMapper;
 
     private PreparedStatement getTrackingRecordByBuildIdAndPath;
-    private PreparedStatement getTrackingKeysBySealed;
+    private PreparedStatement getTrackingKeys;
     private PreparedStatement getTrackingRecordsByTrackingKey;
+    private PreparedStatement isTrackingRecordExist;
 
 
     private static String createFoloRecordsTable( String keyspace )
@@ -76,12 +77,6 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
                 + ");";
     }
 
-    private static String createFoloSealedIdx(String  keyspace) {
-        return "CREATE INDEX IF NOT EXISTS sealed_idx ON " + keyspace + ".records (sealed);";
-    }
-
-
-
     @PostConstruct
     public void initialize() {
 
@@ -92,21 +87,22 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         session = cassandraClient.getSession(foloCassandraKeyspace);
         session.execute( SchemaUtils.getSchemaCreateKeyspace( foloCassandraKeyspace, indyConfig.getKeyspaceReplicas() ));
         session.execute(createFoloRecordsTable(foloCassandraKeyspace));
-        session.execute(createFoloSealedIdx(foloCassandraKeyspace));
 
         MappingManager mappingManager = new MappingManager(session);
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
 
         getTrackingRecordByBuildIdAndPath =
                 session.prepare("SELECT * FROM " + foloCassandraKeyspace + ".records WHERE tracking_key=? AND path=?;");
-        getTrackingKeysBySealed =
+        getTrackingKeys =
                 session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + ".records;");
 
         getTrackingRecordsByTrackingKey =
                 session.prepare("SELECT * FROM "  + foloCassandraKeyspace + ".records WHERE tracking_key=?;");
 
-        logger.info("-- Cassandra Folo Records Keyspace and Tables created");
+        isTrackingRecordExist =
+                session.prepare("SELECT count(*) FROM "  + foloCassandraKeyspace + ".records WHERE tracking_key=?;");
 
+        logger.info("-- Cassandra Folo Records Keyspace and Tables created");
     }
 
     @Override
@@ -146,83 +142,31 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
             return true;
         }
-
-
     }
 
     @Override
     public void delete(TrackingKey key) {
-
-        // Without delete logic because we need to keep all records in cassandra for auditing
-
-        // get  records from DB
-//        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key.getId());
-//        ResultSet trackingRecord = session.execute(bind);
-//        List<Row> all = trackingRecord.all();
-
-        // transform from row to  dtxTrackingRecord
-//        List<DtxTrackingRecord> records =  new ArrayList<>();
-//        for (Row row :  all) {
-//            DtxTrackingRecord record = fromCassandraRow(row);
-//            records.add(record);
-//        }
-
-        // check if they are  temporary builds  maven:hosted:temporary-builds
-//        boolean b =
-//                records.stream()
-//                    .map(dtxRec -> StoreKey.fromString(dtxRec.getStoreKey()))
-//                    .allMatch(storeKey -> storeKey.getType().singularEndpointName().equalsIgnoreCase(TEMP_BUILDS));
-
-        // if they  are delete them
-//        if(b) {
-//            for (DtxTrackingRecord record : records) {
-//                trackingMapper.deleteAsync(record);
-//            }
-//        }
+        throw new UnsupportedOperationException( "Deleting tracking record is not supported by Cassandra Folo" );
     }
 
     @Override
     public void replaceTrackingRecord(TrackedContent record) {
-
         saveTrackedContentRecords(record);
-
     }
 
     @Override
     public boolean hasRecord(TrackingKey key) {
-        return hasSealedRecord(key) || hasInProgressRecord(key);
-    }
-
-    public boolean hasSealedRecord(TrackingKey key) {
-        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
-        ResultSet execute = session.execute(bind);
-        Row one = execute.one();
-        if(one != null) {
-            Boolean sealed = one.getBool("sealed");
-            if(sealed) {
-                return true;
-            } else {
-                return false;
-            }
-        }else {
-            return false;
+        BoundStatement bind = isTrackingRecordExist.bind(key);
+        ResultSet result = session.execute(bind);
+        Row row = result.one();
+        boolean exists = false;
+        if ( row != null )
+        {
+            long count = row.get( 0, Long.class );
+            exists = count > 0;
         }
-    }
-
-    public boolean hasInProgressRecord(TrackingKey key) {
-        BoundStatement bind = getTrackingRecordsByTrackingKey.bind(key);
-        ResultSet execute = session.execute(bind);
-        Row one = execute.one();
-        if(one != null) {
-            Boolean sealed = one.getBool("sealed");
-            if(!sealed) {
-                return true;
-            } else {
-                return false;
-            }
-        }else {
-            return false;
-        }
+        logger.trace( "{} {}", key, ( exists ? "exists" : "not exists" ) );
+        return exists;
     }
 
     @Override
@@ -263,9 +207,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         return getTrackingKeys();
     }
 
-
-
-
+    // This may fail given a huge dataset (oom). Only used for test purpose !
     @Override
     public Set<TrackedContent> getSealed() {
 
@@ -285,14 +227,12 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Override
     public void addSealedRecord(TrackedContent record) {
-
         saveTrackedContentRecords(record);
-
     }
 
     @Override
     public void start() throws IndyLifecycleException {
-        logger.warn("--- FoloRecordsCassandra starting up ---");
+        logger.info("--- FoloRecordsCassandra starting up");
     }
 
     @Override
@@ -380,7 +320,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     }
 
     private Set<TrackingKey> getTrackingKeys() {
-        BoundStatement statement = getTrackingKeysBySealed.bind();
+        BoundStatement statement = getTrackingKeys.bind();
         ResultSet resultSet = session.execute(statement);
         List<Row> all = resultSet.all();
         Iterator<Row> iterator = all.iterator();
