@@ -33,9 +33,13 @@ public class KafkaConfig extends MapSectionListener
 
     private static final boolean DEFAULT_ENABLED = false;
 
+    private static final long DEFALUT_TIMEOUTMILLIS = 60000;
+
     private Boolean enabled;
 
     private String fileEventTopic;
+
+    private Long timeoutMillis;
 
     public KafkaConfig()
     {
@@ -65,6 +69,17 @@ public class KafkaConfig extends MapSectionListener
         {
             this.enabled = Boolean.parseBoolean( s );
         }
+    }
+
+    public Long getTimeoutMillis()
+    {
+        return timeoutMillis == null ? DEFALUT_TIMEOUTMILLIS : timeoutMillis ;
+    }
+
+    @ConfigName( "timeout_in_mills" )
+    public void setTimeoutMillis( Long timeoutMillis )
+    {
+        this.timeoutMillis = timeoutMillis;
     }
 
     @Override

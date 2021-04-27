@@ -146,7 +146,8 @@ public class KafkaEventPublisher
     {
         try
         {
-            kafkaProducer.send( kafkaConfig.getFileEventTopic(), objectMapper.writeValueAsString( fileEvent ), 60000 );
+            kafkaProducer.send( kafkaConfig.getFileEventTopic(), objectMapper.writeValueAsString( fileEvent ),
+                                kafkaConfig.getTimeoutMillis() );
         }
         catch ( Throwable e )
         {
