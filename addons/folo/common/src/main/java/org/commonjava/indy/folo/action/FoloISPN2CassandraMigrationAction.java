@@ -5,6 +5,7 @@ import org.commonjava.indy.core.conf.IndyDurableStateConfig;
 import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloStoreToCassandra;
 import org.commonjava.indy.folo.data.FoloStoretoInfinispan;
+import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContent;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
@@ -152,8 +153,8 @@ public class FoloISPN2CassandraMigrationAction
             TrackedContent item = cacheRecord.get( key );
             if ( item != null )
             {
-                // some (318) entries missing TrackingKey in download/upload TrackedContentEntry due to se/deserialization problem.
-                amendTrackingKey( item );
+                // some (318) entries missing TrackingKey and StoreEffect in download/upload TrackedContentEntry due to se/deserialization problem.
+                amendTrackingKeyAndEffect( item );
 
                 dbRecord.addSealedRecord( item );
                 int index = count.incrementAndGet();
@@ -176,7 +177,7 @@ public class FoloISPN2CassandraMigrationAction
         }
     }
 
-    private void amendTrackingKey( TrackedContent item )
+    private void amendTrackingKeyAndEffect( TrackedContent item )
     {
         TrackingKey key = item.getKey();
         Set<TrackedContentEntry> uploads = item.getUploads();
@@ -187,6 +188,10 @@ public class FoloISPN2CassandraMigrationAction
                 {
                     up.setTrackingKey( key );
                 }
+                if ( up.getEffect() == null )
+                {
+                    up.setEffect( StoreEffect.UPLOAD );
+                }
             } );
         }
         Set<TrackedContentEntry> downloads = item.getDownloads();
@@ -196,6 +201,10 @@ public class FoloISPN2CassandraMigrationAction
                 if ( down.getTrackingKey() == null )
                 {
                     down.setTrackingKey( key );
+                }
+                if ( down.getEffect() == null )
+                {
+                    down.setEffect( StoreEffect.DOWNLOAD );
                 }
             } );
         }
