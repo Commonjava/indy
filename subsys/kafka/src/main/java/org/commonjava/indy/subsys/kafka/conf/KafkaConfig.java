@@ -17,6 +17,7 @@ package org.commonjava.indy.subsys.kafka.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
 
@@ -34,6 +35,8 @@ public class KafkaConfig extends MapSectionListener
 
     private Boolean enabled;
 
+    private String fileEventTopic;
+
     public KafkaConfig()
     {
     }
@@ -41,6 +44,17 @@ public class KafkaConfig extends MapSectionListener
     public boolean isEnabled()
     {
         return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    public String getFileEventTopic()
+    {
+        return fileEventTopic;
+    }
+
+    @ConfigName( "topic.file_event" )
+    public void setFileEventTopic( String fileEventTopic )
+    {
+        this.fileEventTopic = fileEventTopic;
     }
 
     @Override

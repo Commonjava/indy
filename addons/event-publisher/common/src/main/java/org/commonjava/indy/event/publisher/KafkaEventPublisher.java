@@ -12,7 +12,10 @@ import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.subsys.kafka.IndyKafkaProducer;
+import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -44,6 +47,15 @@ public class KafkaEventPublisher
 
     @Inject
     ContentDigester contentDigester;
+
+    @Inject
+    IndyKafkaProducer kafkaProducer;
+
+    @Inject
+    KafkaConfig kafkaConfig;
+
+    @Inject
+    IndyObjectMapper objectMapper;
 
     public void onFileDelete( @Observes final FileDeletionEvent event )
     {
@@ -129,10 +141,16 @@ public class KafkaEventPublisher
         }
     }
 
-
     @Override
     public void publishFileEvent( FileEvent fileEvent )
     {
-        // TODO Kafka publisher
+        try
+        {
+            kafkaProducer.send( kafkaConfig.getFileEventTopic(), objectMapper.writeValueAsString( fileEvent ), 60000 );
+        }
+        catch ( Throwable e )
+        {
+            logger.error( "Send file event to Kafka error, {}", e.getMessage(), e );
+        }
     }
 }
