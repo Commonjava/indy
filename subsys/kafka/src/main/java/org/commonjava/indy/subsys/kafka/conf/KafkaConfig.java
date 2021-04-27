@@ -52,6 +52,8 @@ public class KafkaConfig
 
     private Integer recordsPerPartition;
 
+    private String fileEventTopic;
+
     public KafkaConfig()
     {
     }
@@ -117,6 +119,17 @@ public class KafkaConfig
     {
         this.recordsPerPartition = recordsPerPartition;
     }
+    public String getFileEventTopic()
+    {
+        return fileEventTopic;
+    }
+
+    @ConfigName( "topic.file_event" )
+    public void setFileEventTopic( String fileEventTopic )
+    {
+        this.fileEventTopic = fileEventTopic;
+    }
+
 
     @Override
     public String getDefaultConfigFileName()

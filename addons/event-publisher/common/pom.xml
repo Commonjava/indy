@@ -25,6 +25,10 @@
             <groupId>org.commonjava.indy</groupId>
             <artifactId>indy-folo-model-java</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.commonjava.indy</groupId>
+            <artifactId>indy-subsys-kafka</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
