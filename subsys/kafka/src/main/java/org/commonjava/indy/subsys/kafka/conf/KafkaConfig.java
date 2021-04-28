@@ -17,6 +17,7 @@ package org.commonjava.indy.subsys.kafka.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
 
@@ -32,7 +33,13 @@ public class KafkaConfig extends MapSectionListener
 
     private static final boolean DEFAULT_ENABLED = false;
 
+    private static final long DEFALUT_TIMEOUTMILLIS = 60000;
+
     private Boolean enabled;
+
+    private String fileEventTopic;
+
+    private Long timeoutMillis;
 
     public KafkaConfig()
     {
@@ -43,6 +50,17 @@ public class KafkaConfig extends MapSectionListener
         return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
+    public String getFileEventTopic()
+    {
+        return fileEventTopic;
+    }
+
+    @ConfigName( "topic.file_event" )
+    public void setFileEventTopic( String fileEventTopic )
+    {
+        this.fileEventTopic = fileEventTopic;
+    }
+
     @Override
     public void sectionComplete(String name) throws ConfigurationException
     {
@@ -51,6 +69,17 @@ public class KafkaConfig extends MapSectionListener
         {
             this.enabled = Boolean.parseBoolean( s );
         }
+    }
+
+    public Long getTimeoutMillis()
+    {
+        return timeoutMillis == null ? DEFALUT_TIMEOUTMILLIS : timeoutMillis ;
+    }
+
+    @ConfigName( "timeout_in_mills" )
+    public void setTimeoutMillis( Long timeoutMillis )
+    {
+        this.timeoutMillis = timeoutMillis;
     }
 
     @Override
