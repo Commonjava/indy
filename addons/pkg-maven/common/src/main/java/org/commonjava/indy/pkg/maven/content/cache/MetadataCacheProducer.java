@@ -108,18 +108,16 @@ public class MetadataCacheProducer
             keyMarshallers.add( new StoreTypeMarshaller() );
             cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
         }
-        return cacheProducer.getBasicCache( METADATA_KEY_CACHE );
-    }
 
-    @PostConstruct
-    public void initIndexing()
-    {
-        registerTransformer();
-    }
-
-    private void registerTransformer()
-    {
         BasicCacheHandle<MetadataKey, MetadataKey> handler = cacheProducer.getBasicCache( METADATA_KEY_CACHE );
+
+        registerTransformer( handler );
+
+        return handler;
+    }
+
+    private void registerTransformer( BasicCacheHandle handler )
+    {
         // for embedded mode
         if ( handler instanceof CacheHandle )
         {
