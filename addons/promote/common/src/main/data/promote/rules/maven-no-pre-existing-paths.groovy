@@ -21,7 +21,7 @@ class MavenNoPreExistingPaths implements ValidationRule {
                     if (tools.exists(verifyStoreKey, it)
                             && !(tools.digest(verifyStoreKey, it, MavenPackageTypeDescriptor.MAVEN_PKG_KEY).get(ContentDigest.SHA_256)
                             .equals(tools.digest(request.getPromoteRequest().getSource(), it, MavenPackageTypeDescriptor.MAVEN_PKG_KEY).get(ContentDigest.SHA_256)))) {
-                        errors.add(String.format("%s is already available in: %s", it, verifyStoreKey))
+                        errors.add(String.format("%s is already available with different checksum in: %s", it, verifyStoreKey))
                     }
                 })
             }
