@@ -30,10 +30,10 @@
   <interceptors>
     <class>org.commonjava.indy.bind.jaxrs.util.RestInterceptor</class>
     <class>org.commonjava.o11yphant.metrics.interceptor.DefaultMetricsInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.flat.FlatHoneycombMeasureInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.flat.FlatHoneycombWrapperInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.flat.FlatHoneycombWrapperStartInterceptor</class>
-    <class>org.commonjava.o11yphant.honeycomb.interceptor.flat.FlatHoneycombWrapperEndInterceptor</class>
+    <class>org.commonjava.o11yphant.trace.interceptor.FlatTraceMeasureInterceptor</class>
+    <class>org.commonjava.o11yphant.trace.interceptor.FlatTraceWrapperInterceptor</class>
+    <class>org.commonjava.o11yphant.trace.interceptor.FlatTraceWrapperStartInterceptor</class>
+    <class>org.commonjava.o11yphant.trace.interceptor.FlatTraceWrapperEndInterceptor</class>
   </interceptors>
 
   <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->

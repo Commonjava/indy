@@ -24,6 +24,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
+import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.junit.Test;
 
@@ -72,5 +73,14 @@ public class SwaggerExportTest
                 fail( "failed to retrieve swagger." + ext );
             }
         } );
+    }
+
+    @Override
+    protected void initTestConfig( CoreServerFixture fixture ) throws IOException
+    {
+        writeConfigFile( "main.conf", "standalone=true\n"
+                        + "[durable-state]\n"
+                        + "folo.storage=infinispan\n"
+                        + "store.storage=infinispan\n" );
     }
 }

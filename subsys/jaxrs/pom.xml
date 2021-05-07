@@ -99,7 +99,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-honeycomb</artifactId>
+      <artifactId>indy-subsys-trace</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-trace-helper-servlet</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

@@ -31,6 +31,7 @@ import org.apache.http.client.methods.AbstractExecutionAwareRequest;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.commonjava.indy.client.core.metric.ClientMetrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,33 +50,31 @@ public class HttpResources
 
     private final AbstractExecutionAwareRequest request;
 
-    private CloseableHttpResponse response;
+    private final CloseableHttpResponse response;
 
     private final CloseableHttpClient client;
 
+    private final ClientMetrics metrics;
+
     private InputStream responseEntityStream;
 
-    public HttpResources( final AbstractExecutionAwareRequest request, final CloseableHttpResponse response,
-                          final CloseableHttpClient client )
-    {
-        this.client = client;
-        this.request = request;
-        this.response = response;
-    }
-
-    public HttpResources( final AbstractExecutionAwareRequest request, final CloseableHttpClient client )
+    public HttpResources( final AbstractExecutionAwareRequest request, CloseableHttpResponse response,
+                          final CloseableHttpClient client, ClientMetrics metrics )
     {
         this.request = request;
         this.client = client;
-    }
-
-    public void setResponse( final CloseableHttpResponse response )
-    {
         this.response = response;
+        this.metrics = metrics;
     }
 
     public static void cleanupResources( final HttpRequest request, final HttpResponse response,
                                          final CloseableHttpClient client )
+    {
+        cleanupResources( request, response, client, null );
+    }
+
+    public static void cleanupResources( final HttpRequest request, final HttpResponse response,
+                                         final CloseableHttpClient client, ClientMetrics metrics )
     {
         final Logger logger = LoggerFactory.getLogger( HttpResources.class );
         logger.info( "CLEANING UP RESOURCES via: {}", Thread.currentThread()
@@ -102,6 +101,11 @@ public class HttpResources
         if ( client != null )
         {
             closeQuietly( client );
+        }
+
+        if ( metrics != null )
+        {
+            closeQuietly( metrics );
         }
 
         logger.info( "DONE: CLEANING UP RESOURCES" );
@@ -158,12 +162,12 @@ public class HttpResources
             IOUtils.closeQuietly( responseEntityStream );
         }
 
-        cleanupResources( request, response, client );
+        cleanupResources( request, response, client, metrics );
     }
 
     public int getStatusCode()
     {
-        return response.getStatusLine()
+        return response == null ? -1 : response.getStatusLine()
                        .getStatusCode();
     }
 
@@ -175,7 +179,7 @@ public class HttpResources
     public InputStream getResponseEntityContent()
         throws IOException
     {
-        if ( responseEntityStream == null )
+        if ( responseEntityStream == null && response != null )
         {
             responseEntityStream = response.getEntity()
                                            .getContent();

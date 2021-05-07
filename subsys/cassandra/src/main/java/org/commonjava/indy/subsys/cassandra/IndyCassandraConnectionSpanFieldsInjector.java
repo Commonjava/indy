@@ -13,28 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb;
+package org.commonjava.indy.subsys.cassandra;
 
-import org.commonjava.o11yphant.honeycomb.CustomTraceIdProvider;
-import org.commonjava.o11yphant.metrics.RequestContextHelper;
+import com.datastax.driver.core.Session;
+import org.commonjava.o11yphant.trace.impl.CassandraConnectionSpanFieldsInjector;
 
 import javax.enterprise.context.ApplicationScoped;
-
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.commonjava.o11yphant.honeycomb.util.TraceIdUtils.getUUIDTraceId;
-import static org.commonjava.o11yphant.metrics.RequestContextConstants.TRACE_ID;
+import javax.inject.Inject;
+import java.util.Collections;
+import java.util.Map;
 
 @ApplicationScoped
-public class IndyCustomTraceIdProvider implements CustomTraceIdProvider
+public class IndyCassandraConnectionSpanFieldsInjector
+                extends CassandraConnectionSpanFieldsInjector
 {
-    @Override
-    public String generateId()
+
+    private final Map<String, Session> sessions;
+
+    @Inject
+    public IndyCassandraConnectionSpanFieldsInjector( CassandraClient cassandraClient )
     {
-        String traceId = RequestContextHelper.getContext( TRACE_ID );
-        if ( isNotBlank(traceId ))
-        {
-            return traceId;
-        }
-        return getUUIDTraceId();
+        this.sessions = Collections.unmodifiableMap( cassandraClient.getSessions() );
+    }
+
+    @Override
+    protected Map<String, Session> getSessions()
+    {
+        return sessions;
     }
 }

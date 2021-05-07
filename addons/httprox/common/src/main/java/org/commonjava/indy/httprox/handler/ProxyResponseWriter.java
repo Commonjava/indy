@@ -43,6 +43,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.o11yphant.metrics.api.Timer;
 import org.commonjava.o11yphant.metrics.MetricsManager;
+import org.commonjava.o11yphant.trace.spi.adapter.SpanAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -54,6 +55,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import org.commonjava.cdi.util.weft.WeftExecutorService;
@@ -125,6 +127,8 @@ public final class ProxyResponseWriter
     private final WeftExecutorService tunnelAndMITMExecutor;
 
     private boolean summaryReported;
+
+    private Optional<SpanAdapter> span;
 
     // run short-living tunnels and MITM servers
 
@@ -415,6 +419,7 @@ public final class ProxyResponseWriter
         finally
         {
             meter.reportResponseSummary();
+            span.ifPresent( SpanAdapter::close );
         }
     }
 
@@ -458,5 +463,10 @@ public final class ProxyResponseWriter
     public void setHttpRequest( final HttpRequest request )
     {
         this.httpRequest = request;
+    }
+
+    public void setSpan( Optional<SpanAdapter> span )
+    {
+        this.span = span;
     }
 }

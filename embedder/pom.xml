@@ -35,6 +35,14 @@
   
   <dependencies>
     <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-netty</artifactId>
+    </dependency>
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
@@ -72,7 +80,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-honeycomb</artifactId>
+      <artifactId>indy-subsys-trace</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -225,7 +233,7 @@
 
     <dependency>
       <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-metrics-core</artifactId>
+      <artifactId>o11yphant-metrics-common</artifactId>
     </dependency>
 
     <dependency>

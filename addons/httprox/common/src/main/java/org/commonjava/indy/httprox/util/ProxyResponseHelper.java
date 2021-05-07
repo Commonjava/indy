@@ -45,6 +45,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.o11yphant.metrics.api.Timer;
 import org.commonjava.o11yphant.metrics.MetricsManager;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,7 @@ import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 /**
  * Created by ruhan on 9/20/18.
@@ -130,6 +132,12 @@ public class ProxyResponseHelper
 
         setContext( PACKAGE_TYPE, store.getKey().getPackageType() );
         setContext( CONTENT_ENTRY_POINT, store.getKey().toString() );
+
+        addFieldToActiveSpan( "proxy.target.url", url );
+        if ( trackingId != null )
+        {
+            addFieldToActiveSpan( TRACKING_ID, trackingId );
+        }
 
         return store;
     }

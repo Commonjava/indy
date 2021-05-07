@@ -45,6 +45,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 public class DefaultStoreValidator implements StoreValidator {
 
@@ -163,6 +164,9 @@ public class DefaultStoreValidator implements StoreValidator {
     private Future<Integer> executeGetHttp(HttpGet httpGetTask , CountDownLatch countDownLatch) {
         countDownLatch.countDown();
         return executorService.submit(() -> {
+            addFieldToActiveSpan( "http-target", httpGetTask.getURI().toASCIIString() );
+            addFieldToActiveSpan( "activity", "executeGetHttp" );
+
             CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
 
             try (CloseableHttpResponse response = closeableHttpClient.execute(httpGetTask)) {
@@ -181,6 +185,9 @@ public class DefaultStoreValidator implements StoreValidator {
     private Future<Integer> executeHeadHttp(HttpHead httpHeadTask , CountDownLatch countDownLatch) {
         countDownLatch.countDown();
         return executorService.submit(() -> {
+            addFieldToActiveSpan( "http-target", httpHeadTask.getURI().toASCIIString() );
+            addFieldToActiveSpan( "activity", "executeHeadHttp" );
+
             CloseableHttpClient closeableHttpClient = HttpClientBuilder.create().build();
             try (CloseableHttpResponse response = closeableHttpClient.execute(httpHeadTask)) {
                 LOGGER.warn("=> Check HTTP HEAD Response code: " + response.getStatusLine().getStatusCode());

@@ -80,6 +80,10 @@
       <artifactId>galley-test-harness-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-trace-helper-httpclient</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
     </dependency>

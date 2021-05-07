@@ -29,6 +29,7 @@ import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.o11yphant.metrics.MetricsManager;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xnio.ChannelListener;
@@ -39,6 +40,7 @@ import org.xnio.conduits.ConduitStreamSourceChannel;
 
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Optional;
 
 import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE;
@@ -82,6 +84,9 @@ public class ProxyAcceptHandler
     private MetricsManager metricsManager;
 
     @Inject
+    private TraceManager traceManager;
+
+    @Inject
     private IndyMetricsConfig metricsConfig;
 
     @Inject
@@ -101,7 +106,7 @@ public class ProxyAcceptHandler
                                KeycloakProxyAuthenticator proxyAuthenticator, CacheProvider cacheProvider,
                                ScriptEngine scriptEngine, MDCManager mdcManager,
                                IndyMetricsConfig metricsConfig, MetricsManager metricsManager,
-                               CacheProducer cacheProducer, ProxyTransfersExecutor executor )
+                               CacheProducer cacheProducer, ProxyTransfersExecutor executor, TraceManager traceManager )
     {
         this.config = config;
         this.storeManager = storeManager;
@@ -114,6 +119,7 @@ public class ProxyAcceptHandler
         this.metricsManager = metricsManager;
         this.cacheProducer = cacheProducer;
         this.proxyExecutor = executor;
+        this.traceManager = traceManager;
     }
 
     public ProxyRepositoryCreator createRepoCreator()
@@ -181,7 +187,9 @@ public class ProxyAcceptHandler
         logger.debug( "Setting writer: {}", writer );
         sink.getWriteSetter().set( writer );
 
-        final ProxyRequestReader reader = new ProxyRequestReader( writer, sink );
+        final ProxyRequestReader reader = new ProxyRequestReader( writer, sink, traceManager == null ?
+                        Optional.empty() :
+                        Optional.of( traceManager ) );
         writer.setProxyRequestReader( reader );
 
         logger.debug( "Setting reader: {}", reader );
