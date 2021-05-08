@@ -5,7 +5,8 @@ import org.infinispan.protostream.MessageMarshaller;
 
 import java.io.IOException;
 
-public class ProjectRefMashaller implements MessageMarshaller<SimpleProjectRef>
+public class ProjectRefMarshaller
+                implements MessageMarshaller<SimpleProjectRef>
 {
     @Override
     public SimpleProjectRef readFrom( ProtoStreamReader reader ) throws IOException
