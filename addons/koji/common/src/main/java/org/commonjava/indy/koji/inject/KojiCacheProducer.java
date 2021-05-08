@@ -19,18 +19,15 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.commonjava.indy.pkg.maven.content.marshaller.MetadataMarshaller;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.protostream.BaseMarshaller;
-import org.infinispan.protostream.MessageMarshaller;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -54,7 +51,7 @@ public class KojiCacheProducer
         {
             List<BaseMarshaller> marshallers = new ArrayList<>();
             marshallers.add( new MetadataMarshaller() );
-            marshallers.add( new ProjectRefMashaller() );
+            marshallers.add( new ProjectRefMarshaller() );
             cacheProducer.registerProtoAndMarshallers( "koji_metadata.proto", marshallers );
         }
         return cacheProducer.getBasicCache( "koji-maven-version-metadata" );
