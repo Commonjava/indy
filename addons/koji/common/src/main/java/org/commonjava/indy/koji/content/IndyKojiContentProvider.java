@@ -23,6 +23,8 @@ import com.redhat.red.build.koji.model.xmlrpc.KojiBuildInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiSessionInfo;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
+import org.commonjava.indy.koji.inject.KojiTagInfoCache;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.atlas.maven.ident.ref.ArtifactRef;
@@ -84,6 +86,10 @@ public class IndyKojiContentProvider
     @Inject
     private IndyKojiConfig kojiConfig;
 
+    @Inject
+    @KojiTagInfoCache
+    private BasicCacheHandle<Integer, List<KojiTagInfo>> kojiTagsCache;
+
     public IndyKojiContentProvider()
     {
     }
@@ -123,13 +129,11 @@ public class IndyKojiContentProvider
             return kojiClient.listTags( buildIds, session );
         }
 
-        CacheHandle<Integer, List> cache = cacheProducer.getCache( KOJI_TAGS );
-
         Map<Integer, List<KojiTagInfo>> map = new HashMap<>();
         List<Integer> missed = new ArrayList<>();
         for ( Integer buildId : buildIds )
         {
-            List ret = cache.get( buildId );
+            List ret = kojiTagsCache.get( buildId );
             if ( ret != null )
             {
                 map.put( buildId, ret );
@@ -143,7 +147,7 @@ public class IndyKojiContentProvider
         {
             Map<Integer, List<KojiTagInfo>> retrieved = kojiClient.listTags( missed, session );
             map.putAll( retrieved );
-            retrieved.forEach( ( k, v ) -> cache.put( k, v ) );
+            retrieved.forEach( ( k, v ) -> kojiTagsCache.put( k, v ) );
         }
         return map;
     }
