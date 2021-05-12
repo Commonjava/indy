@@ -30,6 +30,7 @@ import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -38,10 +39,30 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_CLIENT_API;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
-import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.*;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.CLIENT_CONTENT;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.CLIENT_FOLO_ADMIN;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.CLIENT_FOLO_CONTENT;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.CLIENT_PROMOTE;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.CLIENT_REPO_MGMT;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_LISTING;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_MAVEN;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_NPM;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_MAVEN_DOWNLOAD;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_MAVEN_UPLOAD;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_METADATA;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_METADATA_MAVEN;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_METADATA_NPM;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_NPM_DOWNLOAD;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_NPM_UPLOAD;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_PROMOTION;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_REPO_MGMT;
+import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_TRACKING_RECORD;
 
 @ApplicationScoped
 public class IndyTrafficClassifier
@@ -60,8 +81,7 @@ public class IndyTrafficClassifier
         this.specialPathManager = specialPathManager;
     }
 
-    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method,
-                                                               Map<String, String> headers )
+    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method, Map<String, String> headers )
     {
         List<String> result = new ArrayList<>();
 
@@ -72,6 +92,33 @@ public class IndyTrafficClassifier
             System.arraycopy( pathParts, 1, classifierParts, 0, classifierParts.length );
 
             String restPrefix = join( classifierParts, '/' );
+
+            boolean isClientAPI = isNotBlank(headers.get( HEADER_INDY_CLIENT_API )) ? true : false;
+            if ( isClientAPI )
+            {
+                if ( restPrefix.startsWith( "folo/admin/" ) && FOLO_RECORD_ENDPOINTS.contains( classifierParts[3] ) )
+                {
+                    result = singletonList( CLIENT_FOLO_ADMIN );
+                }
+                else if ( restPrefix.startsWith( "folo/track/" ) && classifierParts.length > 6 )
+                {
+                    result = singletonList( CLIENT_FOLO_CONTENT );
+                }
+                else if ( "admin".equals( classifierParts[0] ) && "stores".equals( classifierParts[1] )
+                        && classifierParts.length > 2 )
+                {
+                    result = singletonList( CLIENT_REPO_MGMT );
+                }
+                else if ( ( "content".equals( classifierParts[0] ) && classifierParts.length > 5 ) )
+                {
+                    result = singletonList( CLIENT_CONTENT );
+                }
+                else if ( restPrefix.startsWith( "promotion/paths/" ) )
+                {
+                    result = singletonList( CLIENT_PROMOTE );
+                }
+                return result;
+            }
 
             if ( "promotion".equals( classifierParts[0] ) && "promote".equals( classifierParts[2] ) )
             {
