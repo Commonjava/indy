@@ -203,7 +203,7 @@ public class IndyDeployment
 
                                                       .addFilter( slashTolerationFilter )
                                                       .addFilterUrlMapping( slashTolerationFilter.getName(),
-                                                                            "/api/*", DispatcherType.REQUEST )
+                                                                            "*", DispatcherType.REQUEST )
 
                                                       .addServlet( resteasyServlet )
 
