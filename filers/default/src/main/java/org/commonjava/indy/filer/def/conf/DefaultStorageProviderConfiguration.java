@@ -23,6 +23,8 @@ import org.commonjava.propulsor.config.annotation.SectionName;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 @SectionName( "storage-default" )
@@ -33,7 +35,10 @@ public class DefaultStorageProviderConfiguration
 
     public static final File DEFAULT_BASEDIR = new File( "/var/lib/indy/storage" );
 
+    public static final Integer DEFAULT_CHANGE_TRACKING_ROLL_SIZE = 2000;
+
     // NOTE: Providing a default value negates the detection of whether the NFS CacheProvider should be used or not, in DefaultGalleyStorageProvider.
+
 //    public static final File DEFAULT_NFS_BASEDIR = new File("/mnt/nfs/var/lib/indy/storage");
 
     public static final String STORAGE_DIR = "indy.storage.dir";
@@ -43,6 +48,10 @@ public class DefaultStorageProviderConfiguration
     private File storageBasedir;
 
     private File nfsStoreBasedir;
+
+    private String changeTrackingDirectory;
+
+    private Integer changeTrackingRollSize;
 
     public DefaultStorageProviderConfiguration()
     {
@@ -186,5 +195,31 @@ public class DefaultStorageProviderConfiguration
     public String getDeduplicatePattern()
     {
         return deduplicatePattern;
+    }
+
+    public String getChangeTrackingDirectory()
+    {
+        return changeTrackingDirectory == null ?
+                        Paths.get( getStorageRootDirectory().getAbsolutePath(), ".changes" )
+                             .toAbsolutePath()
+                             .toString() :
+                        changeTrackingDirectory;
+    }
+
+    @ConfigName( "change.tracking.dir" )
+    public void setChangeTrackingDirectory( String changeTrackingDirectory )
+    {
+        this.changeTrackingDirectory = changeTrackingDirectory;
+    }
+
+    public Integer getChangeTrackingRollSize()
+    {
+        return changeTrackingRollSize == null ? DEFAULT_CHANGE_TRACKING_ROLL_SIZE : changeTrackingRollSize;
+    }
+
+    @ConfigName( "change.tracking.roll.size" )
+    public void setDefaultChangeTrackingRollSize( Integer changeTrackingRollSize )
+    {
+        this.changeTrackingRollSize = changeTrackingRollSize;
     }
 }
