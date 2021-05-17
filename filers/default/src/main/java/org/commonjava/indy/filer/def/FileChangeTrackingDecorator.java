@@ -40,25 +40,6 @@ public class FileChangeTrackingDecorator
         resetTrackingFile();
     }
 
-    private void resetTrackingFile()
-    {
-        Date currentDate = new Date();
-        Calendar c = Calendar.getInstance();
-        c.setTime( currentDate );
-        c.set(Calendar.DATE, c.get( Calendar.DATE ) + 1);
-        c.set( Calendar.HOUR, 0 );
-        c.set( Calendar.MINUTE, 0 );
-        c.set( Calendar.SECOND, 0 );
-        c.set( Calendar.MILLISECOND, 0 );
-        this.nextRollDate = c.getTime().getTime();
-        this.currentFile = Paths.get( config.getChangeTrackingDirectory() )
-                     .resolve( new SimpleDateFormat( "yyyy-MM-dd'/'hh'.'mm'.'ss'.'SSS'.lst'" ).format( currentDate ) )
-                     .toFile();
-
-        this.currentFile.getParentFile().mkdirs();
-        this.changeCounter = 0;
-    }
-
     @Override
     public OutputStream decorateWrite( OutputStream stream, Transfer transfer, TransferOperation op,
                                        EventMetadata metadata ) throws IOException
@@ -70,7 +51,7 @@ public class FileChangeTrackingDecorator
     public void decorateCopyFrom( Transfer from, Transfer transfer, EventMetadata metadata ) throws IOException
     {
         super.decorateCopyFrom( from, transfer, metadata );
-        logger.info( "Logging copy-from to changed-file: {}", transfer.getPath() );
+//        logger.info( "Logging copy-from to changed-file: {}", transfer.getPath() );
         writeChangedPath( transfer );
     }
 
@@ -78,7 +59,7 @@ public class FileChangeTrackingDecorator
     public void decorateDelete( Transfer transfer, EventMetadata metadata ) throws IOException
     {
         super.decorateDelete( transfer, metadata );
-        logger.info( "Logging delete to changed-file: {}", transfer.getPath() );
+//        logger.info( "Logging delete to changed-file: {}", transfer.getPath() );
         writeChangedPath( transfer );
     }
 
@@ -86,7 +67,7 @@ public class FileChangeTrackingDecorator
     public void decorateCreateFile( Transfer transfer, EventMetadata metadata ) throws IOException
     {
         super.decorateCreateFile( transfer, metadata );
-        logger.info( "Logging create-file to changed-file: {}", transfer.getPath() );
+//        logger.info( "Logging create-file to changed-file: {}", transfer.getPath() );
         writeChangedPath( transfer );
     }
 
@@ -98,7 +79,7 @@ public class FileChangeTrackingDecorator
         {
             try ( FileWriter fw = new FileWriter( getCurrentListFile(), true ) )
             {
-                logger.info( "Change counter: {}", changeCounter );
+//                logger.info( "Change counter: {}", changeCounter );
                 if ( changeCounter > 1 )
                 {
                     fw.write( "\n" );
@@ -131,6 +112,25 @@ public class FileChangeTrackingDecorator
         return currentFile;
     }
 
+    private void resetTrackingFile()
+    {
+        Date currentDate = new Date();
+        Calendar c = Calendar.getInstance();
+        c.setTime( currentDate );
+        c.set(Calendar.DATE, c.get( Calendar.DATE ) + 1);
+        c.set( Calendar.HOUR, 0 );
+        c.set( Calendar.MINUTE, 0 );
+        c.set( Calendar.SECOND, 0 );
+        c.set( Calendar.MILLISECOND, 0 );
+        this.nextRollDate = c.getTime().getTime();
+        this.currentFile = Paths.get( config.getChangeTrackingDirectory() )
+                                .resolve( new SimpleDateFormat( "yyyy-MM-dd'/'hh'.'mm'.'ss'.'SSS'.lst'" ).format( currentDate ) )
+                                .toFile();
+
+        this.currentFile.getParentFile().mkdirs();
+        this.changeCounter = 0;
+    }
+
     private class ChangeTrackingOutputStream
                     extends FilterOutputStream
     {
@@ -146,7 +146,7 @@ public class FileChangeTrackingDecorator
         public void close() throws IOException
         {
             super.close();
-            logger.info( "Logging write to changed-file: {}", transfer.getPath() );
+//            logger.info( "Logging write to changed-file: {}", transfer.getPath() );
             writeChangedPath( transfer );
         }
     }
