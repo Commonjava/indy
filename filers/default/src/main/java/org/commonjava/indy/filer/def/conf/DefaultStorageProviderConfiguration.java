@@ -80,7 +80,6 @@ public class DefaultStorageProviderConfiguration
     }
 
     @ConfigName( "storage.dir" )
-    @Deprecated
     public void setStorageRootDirectory( final File storageBasedir )
     {
         this.storageBasedir = storageBasedir;
@@ -218,7 +217,7 @@ public class DefaultStorageProviderConfiguration
     }
 
     @ConfigName( "change.tracking.roll.size" )
-    public void setDefaultChangeTrackingRollSize( Integer changeTrackingRollSize )
+    public void setChangeTrackingRollSize( Integer changeTrackingRollSize )
     {
         this.changeTrackingRollSize = changeTrackingRollSize;
     }
