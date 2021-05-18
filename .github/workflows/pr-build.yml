@@ -29,6 +29,13 @@ jobs:
         jdk: openjdk@1.11.0
         javaHomeEnvironmentVariable: J11_TOOLCHAIN_JDK
 
+    - name: Install Toolchain JDK
+      if: ${{ !contains(github.base_ref, 'maint') }}
+      uses: battila7/jdk-via-jabba@v1
+      with:
+        jdk: adopt@11
+        javaHomeEnvironmentVariable: J11_TOOLCHAIN_JDK
+
     - name: Set up Toolchain
       if: ${{ !contains(github.base_ref, 'maint') }}
       shell: bash
@@ -54,15 +61,15 @@ jobs:
       if: ${{ contains(github.base_ref, 'maint') }}
       uses: actions/setup-java@v2
       with:
-        java-version: '1.8.0'
-        distribution: 'openjdk'
+        java-version: '8'
+        distribution: 'adopt'
 
     - name: Set up JDK
       if: ${{ !contains(github.base_ref, 'maint') }}
       uses: actions/setup-java@v2
       with:
-        java-version: '1.11.0'
-        distribution: 'openjdk'
+        java-version: '11'
+        distribution: 'adopt'
 
     - name: maven-settings-xml-action
       uses: whelk-io/maven-settings-xml-action@v14
