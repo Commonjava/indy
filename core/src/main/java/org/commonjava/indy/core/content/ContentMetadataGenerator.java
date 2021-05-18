@@ -63,6 +63,9 @@ public class ContentMetadataGenerator
     {
         if ( !canProcess( path ) || ( store.getType() != StoreType.hosted ) ) // only generate for hosted checksum
         {
+            logger.debug(
+                    "Can not generate content metadata as path not valid or store is not hosted. Path: {}, store type: {}",
+                    path, store.getType() );
             return null;
         }
 
@@ -82,6 +85,8 @@ public class ContentMetadataGenerator
             logger.debug( "Content metadata generated, path: {}", path );
             return transfer;
         }
+
+        logger.debug( "Content metadata generation failed. Path: {}, Store: {}", path, store.getKey() );
 
         return null;
     }
