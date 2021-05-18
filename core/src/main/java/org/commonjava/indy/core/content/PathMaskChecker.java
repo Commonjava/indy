@@ -58,7 +58,7 @@ public class PathMaskChecker
             }
         }
 
-        logger.info( "Path {} not available in path mask {} of repo {}", path, maskPatterns, repo );
+        logger.debug( "Path {} not available in path mask {} of repo {}", path, maskPatterns, repo );
 
         return false;
     }
