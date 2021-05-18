@@ -7,30 +7,61 @@ on: [pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Echo github context
-      env:
-        GITHUB_CONTEXT: ${{ toJSON(github) }}
-      run: echo "$GITHUB_CONTEXT"
+    - name: Set up cache for ~./m2/repository
+      uses: actions/cache@v2.1.1
+      with:
+        path: ~/.m2/repository
+        key: maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-
+
+
+    - name: Install Toolchain JDK
+      if: ${{ !contains(github.base_ref, 'maint') }}
+      uses: battila7/jdk-via-jabba@v1
+      with:
+        jdk: openjdk@1.11.0
+        javaHomeEnvironmentVariable: J11_TOOLCHAIN_JDK
+
+    - name: Set up Toolchain
+      if: ${{ !contains(github.base_ref, 'maint') }}
+      shell: bash
+      run: |
+        mkdir -p $HOME/.m2 \
+        && cat << EOF > $HOME/.m2/toolchains.xml
+        <?xml version="1.0" encoding="UTF8"?>
+        <toolchains>
+          <toolchain>
+            <type>jdk</type>
+              <provides>
+                <version>1.8</version>
+                <vendor>OpenJDK</vendor>
+              </provides>
+              <configuration>
+                <jdkHome>${{ env.J11_TOOLCHAIN_JDK }}</jdkHome>
+              </configuration>
+          </toolchain>
+        </toolchains>
+        EOF
 
     - name: Set up JDK
       if: ${{ contains(github.base_ref, 'maint') }}
       uses: actions/setup-java@v2
       with:
-        java-version: '8'
-        distribution: 'adopt'
+        java-version: '1.8.0'
+        distribution: 'openjdk'
 
     - name: Set up JDK
       if: ${{ !contains(github.base_ref, 'maint') }}
       uses: actions/setup-java@v2
       with:
-        java-version: '11'
-        distribution: 'adopt'
+        java-version: '1.11.0'
+        distribution: 'openjdk'
 
     - name: maven-settings-xml-action
       uses: whelk-io/maven-settings-xml-action@v14
