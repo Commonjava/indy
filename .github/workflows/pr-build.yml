@@ -13,6 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Echo github context
+      run: echo ${{ github }}
+
     - name: Set up JDK
       if: ${{ github.base_ref == 'maint' }}
       uses: actions/setup-java@v2
