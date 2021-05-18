@@ -33,9 +33,22 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private Boolean storeValidation;
 
+    private Boolean fileChangeTracking;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
+    }
+
+    public Boolean getFileChangeTracking()
+    {
+        return fileChangeTracking == null ? Boolean.FALSE : fileChangeTracking;
+    }
+
+    @ConfigName( "file.change.tracking.enabled" )
+    public void setFileChangeTracking( Boolean fileChangeTracking )
+    {
+        this.fileChangeTracking = fileChangeTracking;
     }
 
     public Boolean getStoreValidation() {
