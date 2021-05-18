@@ -26,14 +26,7 @@ jobs:
       if: ${{ !contains(github.base_ref, 'maint') }}
       uses: battila7/jdk-via-jabba@v1
       with:
-        jdk: openjdk@1.11.0
-        javaHomeEnvironmentVariable: J11_TOOLCHAIN_JDK
-
-    - name: Install Toolchain JDK
-      if: ${{ !contains(github.base_ref, 'maint') }}
-      uses: battila7/jdk-via-jabba@v1
-      with:
-        jdk: 11
+        jdk: openjdk@1.8.0
         javaHomeEnvironmentVariable: TOOLCHAIN_JDK
 
     - name: Set up Toolchain

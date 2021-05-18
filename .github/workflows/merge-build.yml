@@ -30,7 +30,7 @@ jobs:
       if: ${{ !contains(github.base_ref, 'maint') }}
       uses: battila7/jdk-via-jabba@v1
       with:
-        jdk: 11
+        jdk: openjdk@1.8.0
         javaHomeEnvironmentVariable: TOOLCHAIN_JDK
 
     - name: Set up Toolchain
