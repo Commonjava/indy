@@ -23,14 +23,14 @@ jobs:
       run: echo "$GITHUB_CONTEXT"
 
     - name: Set up JDK
-      if: ${{ github.base_ref == 'maint' }}
+      if: ${{ contains(github.base_ref, 'maint') }}
       uses: actions/setup-java@v2
       with:
         java-version: '8'
         distribution: 'adopt'
 
     - name: Set up JDK
-      if: ${{ github.base_ref == 'maint' }}
+      if: ${{ !contains(github.base_ref, 'maint') }}
       uses: actions/setup-java@v2
       with:
         java-version: '11'
