@@ -14,7 +14,9 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Echo github context
-      run: echo ${{ github.base_ref }}
+      env:
+        GITHUB_CONTEXT: ${{ toJSON(github) }}
+      run: echo "$GITHUB_CONTEXT"
 
     - name: Set up JDK
       if: ${{ github.base_ref == 'maint' }}
