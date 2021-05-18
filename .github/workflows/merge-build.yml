@@ -26,12 +26,19 @@ jobs:
           maven-
 
 
-    - name: Install Toolchain JDK
+    - name: Install Toolchain JDK 1.8
       if: ${{ !contains(github.base_ref, 'maint') }}
       uses: battila7/jdk-via-jabba@v1
       with:
-        jdk: openjdk@1.8.0
-        javaHomeEnvironmentVariable: TOOLCHAIN_JDK
+        jdk: 'adopt@1.8.0-292'
+        javaHomeEnvironmentVariable: J8_TOOLCHAIN_JDK
+
+    - name: Install Toolchain JDK 11
+      if: ${{ !contains(github.base_ref, 'maint') }}
+      uses: battila7/jdk-via-jabba@v1
+      with:
+        jdk: 'openjdk@1.11.0'
+        javaHomeEnvironmentVariable: J11_TOOLCHAIN_JDK
 
     - name: Set up Toolchain
       if: ${{ !contains(github.base_ref, 'maint') }}
@@ -48,7 +55,17 @@ jobs:
                 <vendor>OpenJDK</vendor>
               </provides>
               <configuration>
-                <jdkHome>${{ env.TOOLCHAIN_JDK }}</jdkHome>
+                <jdkHome>${{ env.J8_TOOLCHAIN_JDK }}</jdkHome>
+              </configuration>
+          </toolchain>
+          <toolchain>
+            <type>jdk</type>
+              <provides>
+                <version>11</version>
+                <vendor>OpenJDK</vendor>
+              </provides>
+              <configuration>
+                <jdkHome>${{ env.J11_TOOLCHAIN_JDK }}</jdkHome>
               </configuration>
           </toolchain>
         </toolchains>
