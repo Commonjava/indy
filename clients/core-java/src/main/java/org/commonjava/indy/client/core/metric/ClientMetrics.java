@@ -38,8 +38,6 @@ public class ClientMetrics
 
     private HttpResponse response;
 
-    private long end;
-
     public ClientMetrics( boolean enabled, HttpUriRequest request, Collection<String> functions,
                           ClientGoldenSignalsMetricSet metricSet )
     {
@@ -106,7 +104,6 @@ public class ClientMetrics
         boolean error = ( response != null && response.getStatusLine() != null ) && ( response.getStatusLine().getStatusCode() > 499 );
 
         functions.forEach( function -> metricSet.function( function ).ifPresent( functionMetrics -> {
-            functionMetrics.latency( end - start ).call();
             if ( error ) {
                 functionMetrics.error();
             }
@@ -123,9 +120,13 @@ public class ClientMetrics
 
         logger.trace( "Client trace closing: {}", request.getURI().getPath() );
 
-        this.end = RequestContextHelper.getRequestEndNanos() - RequestContextHelper.getRawIoWriteNanos();
+        long end = RequestContextHelper.getRequestEndNanos() - RequestContextHelper.getRawIoWriteNanos();
         RequestContextHelper.setContext( REQUEST_LATENCY_NS, String.valueOf( end - start ) );
         RequestContextHelper.setContext( REQUEST_LATENCY_MILLIS, ( end - start ) / NANOS_PER_MILLISECOND );
+
+        functions.forEach( function -> metricSet.function( function ).ifPresent( functionMetrics -> {
+            functionMetrics.latency( end - start ).call();
+        } ) );
 
         if ( metricSet.getFunctionMetrics().isEmpty() ) {
             logger.trace( "Client trace metricSet is empty: {}", request.getURI().getPath() );
