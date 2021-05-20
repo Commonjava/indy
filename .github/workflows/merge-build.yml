@@ -28,7 +28,7 @@ jobs:
 
     - name: Install Toolchain JDK 1.8
       if: ${{ !contains(github.base_ref, 'maint') }}
-      uses: jdcasey/jdk-via-jabba@master
+      uses: battila7/jdk-via-jabba@v1
       with:
         jdk: 'adopt@1.8.0-292'
         addBinDirectoryToPath: false
@@ -36,7 +36,7 @@ jobs:
 
     - name: Install Toolchain JDK 11
       if: ${{ !contains(github.base_ref, 'maint') }}
-      uses: jdcasey/jdk-via-jabba@master
+      uses: battila7/jdk-via-jabba@v1
       with:
         jdk: 'adopt@1.11.0-11'
         addBinDirectoryToPath: false
