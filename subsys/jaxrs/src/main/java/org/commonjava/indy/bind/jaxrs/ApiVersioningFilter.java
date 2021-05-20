@@ -98,6 +98,8 @@ public class ApiVersioningFilter
     public void doFilter( final ServletRequest request, final ServletResponse response, final FilterChain chain )
                     throws IOException, ServletException
     {
+        logger.info( "\n\n\nAPI Versioning Filter\n\n\n" );
+
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
@@ -108,6 +110,7 @@ public class ApiVersioningFilter
         httpServletResponse.addHeader( HEADER_INDY_CUR_API_VERSION, indyVersioning.getApiVersion() );
         httpServletResponse.addHeader( HEADER_INDY_MIN_API_VERSION, indyDeprecatedApis.getMinApiVersion() );
 
+        logger.trace( "Request requires API version: {}", reqApiVersion );
         Optional<IndyDeprecatedApis.DeprecatedApiEntry>
                 deprecatedApiEntry = indyDeprecatedApis.getDeprecated( reqApiVersion );
 
@@ -117,6 +120,7 @@ public class ApiVersioningFilter
         {
             if ( deprecatedApiEntry.get().isOff() )
             {
+                logger.trace( "API version: {} is disabled", reqApiVersion );
                 httpServletResponse.setStatus( GONE ); // Return 410
                 return;
             }
@@ -125,9 +129,15 @@ public class ApiVersioningFilter
                 deprecatedApiVersion = deprecatedApiEntry.get().getValue();
             }
         }
+        else
+        {
+            logger.trace( "No deprecation information found!" );
+        }
 
         VersioningRequest versioningRequest =
                         new VersioningRequest( httpServletRequest, reqApiVersion, deprecatedApiVersion );
+
+        logger.trace( "Passing through HTTP request with versioning info: {}", deprecatedApiVersion );
         chain.doFilter( versioningRequest, response );
     }
 
@@ -189,13 +199,13 @@ public class ApiVersioningFilter
                     String[] kv = tok.split( "/" );
                     values.add( APPLICATION + "/indy-v" + deprecatedApiVersion + "+" + kv[1] + ";q=" + priority );
                     values.add( tok + ";q=" + getNextPriority( priority ) ); // keep the original value
+
                 }
                 else
                 {
                     values.add( tok );
                 }
             }
-
             logger.trace( "Adjust complete, new values: {}", values );
             return Collections.enumeration( values );
         }

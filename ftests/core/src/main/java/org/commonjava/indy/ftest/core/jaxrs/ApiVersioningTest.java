@@ -51,7 +51,9 @@ public class ApiVersioningTest
     private static final String ANOTHER_BASE = "/test/another";
 
     static {
-        System.setProperty( "ENV_DEPRECATED_API_FILE", "deprecated-apis-test.properties" );
+        Properties properties = System.getProperties();
+        properties.setProperty( "ENV_DEPRECATED_API_FILE", "deprecated-apis-test.properties" );
+        System.setProperties( properties );
     }
 
     @Test
