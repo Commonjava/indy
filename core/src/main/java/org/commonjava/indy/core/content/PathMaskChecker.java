@@ -37,10 +37,13 @@ public class PathMaskChecker
             return true;
         }
 
+        logger.info("Original path:{}", path);
         String pathForCheck = path.startsWith( "/" ) ? path.substring( 1 ) : path;
+        logger.info( "Path for check:{}", pathForCheck );
 
         for ( String pattern : maskPatterns )
         {
+            logger.info( "Pattern: {}", pattern );
             // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
             if ( isRegexPattern( pattern ) )
             {
