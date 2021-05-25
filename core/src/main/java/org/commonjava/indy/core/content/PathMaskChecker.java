@@ -37,21 +37,19 @@ public class PathMaskChecker
             return true;
         }
 
-        String pathForCheck = path.startsWith( "/" ) ? path.substring( 1 ) : path;
-
         for ( String pattern : maskPatterns )
         {
             // adding allPlaintext to the condition to reduce the number of isRegexPattern() calls
             if ( isRegexPattern( pattern ) )
             {
                 final String realRegex = pattern.substring( 2, pattern.length() - 1 );
-                if ( pathForCheck.matches( realRegex ) )
+                if ( path.matches( realRegex ) )
                 {
                     logger.trace( "Checking mask in: {}, pattern with regex: {} - MATCH", repo.getName(), realRegex );
                     return true;
                 }
             }
-            else if ( pathForCheck.startsWith( pattern ) )
+            else if ( path.startsWith( pattern ) )
             {
                 logger.trace( "Checking mask in: {}, pattern: {} - MATCH", repo.getName(), pattern );
                 return true;
