@@ -6,6 +6,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.slf4j.Logger;
 
+import javax.annotation.Priority;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class ResultBufferingGroupRepoFilter
     @Override
     public int getPriority()
     {
-        return 0;
+        return 1;
     }
 
     @Override

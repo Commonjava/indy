@@ -57,7 +57,7 @@ public class PathMappedMavenGACacheGroupRepositoryFilter
     @Override
     public int getPriority()
     {
-        return 1;
+        return 2;
     }
 
     @Override
