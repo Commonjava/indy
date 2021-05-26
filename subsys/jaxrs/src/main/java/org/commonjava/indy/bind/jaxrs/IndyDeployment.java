@@ -203,15 +203,21 @@ public class IndyDeployment
                                                       .addServletContextAttribute( ResteasyDeployment.class.getName(),
                                                                                    deployment )
 
-                                                      .addFilter( slashTolerationFilter )
-                                                      .addFilterUrlMapping( slashTolerationFilter.getName(),
-                                                                            "*", DispatcherType.REQUEST )
-
                                                       .addServlet( resteasyServlet )
 
+                                                      .addFilter( apiVersioningFilter )
+                                                      .addFilterServletNameMapping( apiVersioningFilter.getName(),
+                                                                                    resteasyServlet.getName(),
+                                                                                    DispatcherType.REQUEST )
+
+                                                      .addFilter( slashTolerationFilter )
+                                                      .addFilterServletNameMapping( slashTolerationFilter.getName(),
+                                                                                    resteasyServlet.getName(),
+                                                                                    DispatcherType.REQUEST )
+
                                                       .addFilter( threadContextFilter )
-                                                      .addFilterUrlMapping( threadContextFilter.getName(),
-                                                                            "/api/*", DispatcherType.REQUEST )
+                                                      .addFilterUrlMapping( threadContextFilter.getName(), "/api/*",
+                                                                            DispatcherType.REQUEST )
 
                                                       .addFilter( traceFilter )
                                                       .addFilterUrlMapping( traceFilter.getName(), "/api/*",
@@ -239,10 +245,6 @@ public class IndyDeployment
                                                       .addFilter( resourceManagementFilter )
                                                       .addFilterUrlMapping( resourceManagementFilter.getName(),
                                                                             "/api/*", DispatcherType.REQUEST )
-
-                                                      .addFilter( apiVersioningFilter )
-                                                      .addFilterUrlMapping( apiVersioningFilter.getName(), "/*",
-                                                                            DispatcherType.REQUEST )
 
                                                       .setDeploymentName( "Indy" )
                                                       .setClassLoader( ClassLoader.getSystemClassLoader() );

@@ -106,7 +106,7 @@ public class ScheduleTest
         scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName + "-02", payload, Long.valueOf( 60 ) );
         scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName + "-03", payload, Long.valueOf( 20 ) );
 
-        Thread.sleep( 10 * 1000 );
+        Thread.sleep( 11 * 1000 );
 
         final DtxSchedule schedule_01 = scheduleDB.querySchedule( storeKey, jobName + "-01" );
 

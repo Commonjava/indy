@@ -147,12 +147,14 @@ public class GroupRepositoryFilterManager
             long begin = System.currentTimeMillis();
             if ( repositoryFilter.canProcess( path, group ) )
             {
+                List<ArtifactStore> preRet = new ArrayList<>( ret );
                 ret = repositoryFilter.filter( path, group, ret );
                 if ( logger.isDebugEnabled() )
                 {
-                    logger.debug( "Filter processed, filter: {}, elapse: {}, ret: {}",
+                    preRet.removeAll( ret );
+                    logger.debug( "Filter processed, filter: {}, elapse: {}, ret: {}, removed: {}",
                                   repositoryFilter.getClass().getSimpleName(), ( System.currentTimeMillis() - begin ),
-                                  format( ret ) );
+                                  format( ret ), format( preRet ) );
                 }
             }
             else

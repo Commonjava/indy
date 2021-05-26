@@ -20,6 +20,7 @@ import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
@@ -96,6 +97,9 @@ public class DefaultGalleyStorageProvider
 
     @Inject
     private IndyConfiguration indyConfiguration;
+
+    @Inject
+    private InternalFeatureConfig featureConfig;
 
     @Inject
     private FileEventManager fileEventManager;
@@ -290,6 +294,11 @@ public class DefaultGalleyStorageProvider
             decorators.add( decorator );
         }
         decorators.add( getChecksummingTransferDecorator() );
+
+        if ( featureConfig.getFileChangeTracking() )
+        {
+            decorators.add( new FileChangeTrackingDecorator( config ) );
+        }
         transferDecorator = new TransferDecoratorManager( decorators );
     }
 
