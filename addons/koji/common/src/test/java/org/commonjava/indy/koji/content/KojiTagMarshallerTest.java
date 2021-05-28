@@ -3,7 +3,6 @@ package org.commonjava.indy.koji.content;
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.commonjava.indy.koji.inject.KojiTagInfoEntryMarshaller;
 import org.commonjava.indy.koji.inject.KojiTagInfoMarshaller;
-import org.infinispan.commons.marshall.JavaSerializationMarshaller;
 import org.infinispan.protostream.FileDescriptorSource;
 import org.infinispan.protostream.ProtobufUtil;
 import org.infinispan.protostream.SerializationContext;
@@ -38,7 +37,8 @@ public class KojiTagMarshallerTest
         Object out = ProtobufUtil.fromWrappedByteArray(ctx, bytes);
 
         assertTrue( out instanceof KojiTagInfoEntry );
-        assertTrue( ((KojiTagInfoEntry) out).getTagInfos().contains("x86") );
+        assertTrue( !((KojiTagInfoEntry) out).getTagInfos().isEmpty() );
+        assertTrue( ((KojiTagInfoEntry) out).getTagInfos().get(0).getArches().contains("x86_64") );
 
     }
 
