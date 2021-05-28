@@ -1,5 +1,10 @@
 package koji;
 
+message KojiTagInfoEntry
+{
+   repeated KojiTagInfo tagInfos = 1;
+}
+
 message KojiTagInfo
 {
     optional int32 id = 1;

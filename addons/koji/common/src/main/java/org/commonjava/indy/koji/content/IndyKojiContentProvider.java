@@ -88,7 +88,7 @@ public class IndyKojiContentProvider
 
     @Inject
     @KojiTagInfoCache
-    private BasicCacheHandle<Integer, List<KojiTagInfo>> kojiTagsCache;
+    private BasicCacheHandle<Integer, KojiTagInfoEntry> kojiTagsCache;
 
     public IndyKojiContentProvider()
     {
@@ -133,10 +133,10 @@ public class IndyKojiContentProvider
         List<Integer> missed = new ArrayList<>();
         for ( Integer buildId : buildIds )
         {
-            List ret = kojiTagsCache.get( buildId );
+            KojiTagInfoEntry ret = kojiTagsCache.get( buildId );
             if ( ret != null )
             {
-                map.put( buildId, ret );
+                map.put( buildId, ret.getTagInfos() );
             }
             else
             {
@@ -147,7 +147,7 @@ public class IndyKojiContentProvider
         {
             Map<Integer, List<KojiTagInfo>> retrieved = kojiClient.listTags( missed, session );
             map.putAll( retrieved );
-            retrieved.forEach( ( k, v ) -> kojiTagsCache.put( k, v ) );
+            retrieved.forEach( ( k, v ) -> kojiTagsCache.put( k, new KojiTagInfoEntry(v) ) );
         }
         return map;
     }
