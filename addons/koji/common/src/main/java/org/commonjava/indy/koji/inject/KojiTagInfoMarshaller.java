@@ -16,7 +16,7 @@ public class KojiTagInfoMarshaller implements MessageMarshaller<KojiTagInfo>
         tagInfo.setName( reader.readString( "name" ) );
         tagInfo.setPermission( reader.readString( "permission" ) );
         tagInfo.setPermissionId( reader.readInt( "permissionId" ) );
-        tagInfo.setArches( reader.readCollection( "arches", new ArrayList<>(), String.class ) );
+        tagInfo.setArches( reader.readCollection( "arches", new ArrayList<String>(), String.class ) );
         tagInfo.setLocked( reader.readBoolean( "locked" ) );
         tagInfo.setMavenSupport( reader.readBoolean( "mavenSupport" ) );
         tagInfo.setMavenIncludeAll( reader.readBoolean( "mavenIncludeAll" ) );
