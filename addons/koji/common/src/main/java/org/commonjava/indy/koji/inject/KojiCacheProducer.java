@@ -17,6 +17,7 @@ package org.commonjava.indy.koji.inject;
 
 import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 import org.apache.maven.artifact.repository.metadata.Metadata;
+import org.commonjava.indy.koji.content.KojiTagInfoEntry;
 import org.commonjava.indy.pkg.maven.content.marshaller.MetadataMarshaller;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -60,12 +61,13 @@ public class KojiCacheProducer
     @KojiTagInfoCache
     @Produces
     @ApplicationScoped
-    public BasicCacheHandle<Integer, List<KojiTagInfo>> kojiTagInfoCache()
+    public BasicCacheHandle<Integer, KojiTagInfoEntry> kojiTagInfoCache()
     {
         if ( remoteConfiguration.isEnabled() )
         {
             List<BaseMarshaller> marshallers = new ArrayList<>();
             marshallers.add( new KojiTagInfoMarshaller() );
+            marshallers.add( new KojiTagInfoEntryMarshaller() );
             cacheProducer.registerProtoAndMarshallers( "koji_taginfo.proto", marshallers );
         }
         return cacheProducer.getBasicCache( "koji-tags" );
