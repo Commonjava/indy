@@ -81,7 +81,7 @@
     <jacksonVersion>2.10.1</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
-    <httpclientVersion>4.5.9</httpclientVersion>
+    <httpclientVersion>4.5.13</httpclientVersion>
     <honeycombVersion>1.5.1</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
