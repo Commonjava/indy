@@ -52,7 +52,7 @@ public class MavenMetadataCacheListener
     @ClientCacheEntryExpired
     public void metadataExpired( ClientCacheEntryExpiredEvent<MetadataKey> event )
     {
-        MetadataKey key = event.getKey();
+        handleMetadataExpired( event.getKey() );
     }
 
     private void handleMetadataExpired( MetadataKey key )
