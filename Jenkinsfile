@@ -8,7 +8,74 @@ def bc_section = 'build-configs'
 def my_bc = null
 
 pipeline {
-    agent { label 'maven-jdk11' }
+    agent {
+        kubernetes {
+            cloud params.JENKINS_AGENT_CLOUD_NAME
+            label "maven-36-jdk11-${UUID.randomUUID().toString()}"
+            serviceAccount "jenkins"
+            defaultContainer 'jnlp'
+            yaml """
+            apiVersion: v1
+            kind: Pod
+            metadata:
+                labels:
+                  app: "jenkins-${env.JOB_BASE_NAME}"
+                  indy-pipeline-build-number: "${env.BUILD_NUMBER}"
+            spec:
+                containers:
+                - name: jnlp
+                  image: quay.io/factory2/jenkins-agent:maven-36-rhel7-latest
+                  imagePullPolicy: Always
+                  tty: true
+                  env:
+                  - name: NPMREGISTRY
+                    value: 'https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org'
+                  - name: JAVA_TOOL_OPTIONS
+                    value: '-XX:+UnlockExperimentalVMOptions -Dsun.zip.disableMemoryMapping=true -Xms1g -Xmx4g'
+                  - name: MAVEN_OPTS
+                    value: '-Xmx8g -Xms1g -XX:MaxPermSize=512m -Xss8m'
+                  - name: USER
+                    value: 'jenkins-k8s-config'
+                  - name: IMG_BUILD_HOOKS
+                    valueFrom:
+                      secretKeyRef:
+                        key: img-build-hooks.json
+                        name: img-build-hooks-secrets
+                  - name: JAVA_HOME
+                    value: /usr/lib/jvm/java-11-openjdk
+                  - name: HOME
+                    value: /home/jenkins
+                  resources:
+                    requests:
+                      memory: 4Gi
+                      cpu: 2000m
+                    limits:
+                      memory: 8Gi
+                      cpu: 4000m
+                  volumeMounts:
+                  - mountPath: /home/jenkins/sonatype
+                    name: volume-0
+                  - mountPath: /home/jenkins/.m2
+                    name: volume-1
+                  - mountPath: /mnt/ocp
+                    name: volume-2
+                  workingDir: /home/jenkins
+                volumes:
+                - name: volume-0
+                  secret:
+                    defaultMode: 420
+                    secretName: sonatype-secrets
+                - name: volume-1
+                  secret:
+                    defaultMode: 420
+                    secretName: maven-secrets
+                - name: volume-2
+                  configMap:
+                    defaultMode: 420
+                    name: jenkins-openshift-mappings
+            """
+        }
+    }
     stages {
         stage('Prepare') {
             steps {
