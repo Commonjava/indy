@@ -20,6 +20,7 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
+import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
@@ -33,6 +34,8 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
+
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 
 @ApplicationScoped
 @Listener
@@ -68,7 +71,8 @@ public class MavenMetadataCacheListener
 
             if ( target != null && target.exists() )
             {
-                target.delete();
+                EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
+                target.delete( true, eventMetadata );
             }
         }
         catch ( IndyWorkflowException | IOException e )
