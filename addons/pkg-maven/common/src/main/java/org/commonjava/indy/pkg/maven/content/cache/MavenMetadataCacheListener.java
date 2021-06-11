@@ -16,12 +16,13 @@
 package org.commonjava.indy.pkg.maven.content.cache;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.maven.galley.model.Transfer;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
 import org.infinispan.client.hotrod.annotation.ClientListener;
 import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
@@ -33,7 +34,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.IOException;
 
 import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 
@@ -44,7 +44,10 @@ public class MavenMetadataCacheListener
 {
 
     @Inject
-    private DirectContentAccess fileManager;
+    private DownloadManager downloadManager;
+
+    @Inject
+    private StoreDataManager storeDataManager;
 
     @CacheEntryExpired
     public void metadataExpired( CacheEntryExpiredEvent<MetadataKey, MetadataInfo> event )
@@ -67,15 +70,10 @@ public class MavenMetadataCacheListener
 
         try
         {
-            Transfer target = fileManager.getTransfer( storeKey, path );
-
-            if ( target != null && target.exists() )
-            {
-                EventMetadata eventMetadata = new EventMetadata().set( IGNORE_READONLY, true );
-                target.delete( true, eventMetadata );
-            }
+            downloadManager.delete( storeDataManager.getArtifactStore( storeKey ), path,
+                                    new EventMetadata().set( IGNORE_READONLY, true ) );
         }
-        catch ( IndyWorkflowException | IOException e )
+        catch (IndyWorkflowException | IndyDataException e )
         {
             logger.warn( "On cache expiration, metadata file deletion failed for: " + path + " in store: " + storeKey, e );
         }
