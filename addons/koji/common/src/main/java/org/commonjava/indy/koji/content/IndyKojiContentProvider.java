@@ -262,7 +262,7 @@ public class IndyKojiContentProvider
             return supplier.getKojiContent();
         }
 
-        CacheHandle<K, V> cache = cacheProducer.getCache( name );
+        BasicCacheHandle<K, V> cache = cacheProducer.getBasicCache( name );
         V ret = cache.get( key );
         if ( ret == null )
         {
