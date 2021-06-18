@@ -1031,23 +1031,24 @@ public class DefaultDownloadManager
         try
         {
             Location loc = item.getLocation();
-            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
-            try
+            ConcreteResource resource;
+            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) );
+            if ( resetReadonly )
             {
-                if ( resetReadonly )
+                resource = new ConcreteResource( loc, item.getPath() )
                 {
-                    ( (CacheOnlyLocation) loc ).setReadonly( false );
-                }
-                final ConcreteResource resource = new ConcreteResource( loc, item.getPath() );
-                transfers.delete( resource, eventMetadata );
+                    @Override
+                    public boolean allowsDeletion()
+                    {
+                        return true;
+                    }
+                };
             }
-            finally
+            else
             {
-                if ( resetReadonly )
-                {
-                    ( (CacheOnlyLocation) loc ).setReadonly( true );
-                }
+                resource = new ConcreteResource( loc, item.getPath() );
             }
+            transfers.delete( resource, eventMetadata );
         }
         catch ( final TransferException e )
         {

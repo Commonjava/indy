@@ -949,17 +949,16 @@ public class PromotionManager
             {
                 if ( target != null && target.exists() )
                 {
-                    contentManager.delete( tgt,path, eventMetadata );
-//                    target.delete( true );
+                    contentManager.delete( tgt, path, eventMetadata );
                 }
                 result.skipped = true;
                 logger.info( "Metadata, mark as skipped and remove it if exists, target: {}", target );
             }
             catch ( IndyWorkflowException e )
             {
-                String msg = String.format( "Failed to promote: %s. Target: %s. Failed to remove metadata.",
-                                            transfer, request.getTarget() );
-                logger.info( msg );
+                String msg = String.format( "Failed to promote metadata: %s. Target: %s. Error: %s", transfer,
+                                            request.getTarget(), e.getMessage() );
+                logger.error( msg, e );
                 result.error = msg;
             }
 
