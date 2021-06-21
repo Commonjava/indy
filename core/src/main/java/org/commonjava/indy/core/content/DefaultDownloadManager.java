@@ -625,26 +625,27 @@ public class DefaultDownloadManager
         try
         {
             KeyedLocation loc = LocationUtils.toLocation( store );
-            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) && loc instanceof CacheOnlyLocation );
-            try
+            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) );
+            ConcreteResource resource;
+            if ( resetReadonly )
             {
-                if ( resetReadonly )
+                resource = new ConcreteResource( loc, path )
                 {
-                    ( (CacheOnlyLocation) loc ).setReadonly( false );
-                }
-                final ConcreteResource resource = new ConcreteResource( loc, path );
+                    @Override
+                    public boolean allowsStoring()
+                    {
+                        return true;
+                    }
+                };
+            }
+            else
+            {
+                resource = new ConcreteResource( loc, path );
+            }
 
-                Transfer txfr = transfers.store( resource, stream, eventMetadata );
-                nfc.clearMissing( resource );
-                return txfr;
-            }
-            finally
-            {
-                if ( resetReadonly )
-                {
-                    ( (CacheOnlyLocation) loc ).setReadonly( true );
-                }
-            }
+            Transfer txfr = transfers.store( resource, stream, eventMetadata );
+            nfc.clearMissing( resource );
+            return txfr;
         }
         catch ( final BadGatewayException e )
         {
