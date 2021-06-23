@@ -114,8 +114,8 @@ public class IndyKojiContentProvider
 
     public List<KojiTagInfo> listTags( Integer buildId, KojiSessionInfo session ) throws KojiClientException
     {
-        return computeIfAbsent( KOJI_TAGS, Integer.class, List.class, buildId,
-                                () -> kojiClient.listTags( buildId, session ) );
+        return computeIfAbsent( KOJI_TAGS, Integer.class, KojiTagInfoEntry.class, buildId,
+                                () -> new KojiTagInfoEntry(kojiClient.listTags( buildId, session ))).getTagInfos();
     }
 
     public Map<Integer, List<KojiTagInfo>> listTags( List<Integer> buildIds, KojiSessionInfo session )
