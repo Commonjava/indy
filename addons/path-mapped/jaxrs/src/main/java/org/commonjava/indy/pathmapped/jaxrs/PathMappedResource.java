@@ -28,6 +28,8 @@ import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.pathmapped.common.PathMappedController;
 import org.commonjava.indy.pathmapped.model.PathMappedDeleteResult;
 import org.commonjava.indy.pathmapped.model.PathMappedListResult;
+import org.commonjava.indy.util.ApplicationHeader;
+import org.commonjava.indy.util.MimeTyper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,6 +74,9 @@ public class PathMappedResource
 
     @Inject
     private ResponseHelper responseHelper;
+
+    @Inject
+    private MimeTyper mimeTyper;
 
     @ApiOperation( "List root." )
     @ApiResponse( code = 200, message = "Operation finished.", response = PathMappedListResult.class )
@@ -127,7 +132,7 @@ public class PathMappedResource
             InputStream inputStream = controller.get( packageType, type, name, path );
             Response.ResponseBuilder builder =
                             Response.ok( (StreamingOutput) outputStream -> IOUtils.copy( inputStream, outputStream ) );
-            return builder.build();
+            return builder.header( ApplicationHeader.content_type.key(), mimeTyper.getContentType( path ) ).build();
         }
         catch ( Exception e )
         {
