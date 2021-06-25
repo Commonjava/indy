@@ -34,12 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.redhat.red.build.koji.model.xmlrpc.messages.Constants.GET_BUILD;
@@ -114,8 +109,21 @@ public class IndyKojiContentProvider
 
     public List<KojiTagInfo> listTags( Integer buildId, KojiSessionInfo session ) throws KojiClientException
     {
-        return computeIfAbsent( KOJI_TAGS, Integer.class, KojiTagInfoEntry.class, buildId,
-                                () -> new KojiTagInfoEntry(kojiClient.listTags( buildId, session ))).getTagInfos();
+
+        if ( !kojiConfig.isQueryCacheEnabled() )
+        {
+            logger.trace( "Cache not enabled, run direct kojiClient.listTags" );
+            return kojiClient.listTags( buildId, session );
+        }
+
+        KojiTagInfoEntry ret = kojiTagsCache.get( buildId );
+        if ( ret == null )
+        {
+            ret = new KojiTagInfoEntry( kojiClient.listTags( buildId, session ) );
+            kojiTagsCache.put( buildId, ret );
+        }
+
+        return ret.getTagInfos();
     }
 
     public Map<Integer, List<KojiTagInfo>> listTags( List<Integer> buildIds, KojiSessionInfo session )
