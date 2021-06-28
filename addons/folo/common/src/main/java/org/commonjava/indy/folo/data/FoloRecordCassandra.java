@@ -146,7 +146,11 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Override
     public void delete(TrackingKey key) {
-        throw new UnsupportedOperationException( "Deleting tracking record is not supported by Cassandra Folo" );
+        // We should not need delete logic because we need to keep all records in cassandra for auditing. But instead of
+        // throwing an exception, we only need an error message here to avoid following error.
+
+        //        throw new UnsupportedOperationException( "Deleting tracking record is not supported by Cassandra Folo" );
+        logger.error( "Deleting tracking record is not supported by Cassandra Folo" );
     }
 
     @Override
