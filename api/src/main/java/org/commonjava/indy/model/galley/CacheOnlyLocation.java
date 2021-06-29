@@ -19,8 +19,6 @@ import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,6 +51,14 @@ public class CacheOnlyLocation
         this.isReadOnly = isReadOnly;
     }
 
+    public static CacheOnlyLocation copyOf( final CacheOnlyLocation location )
+    {
+        CacheOnlyLocation ret = new CacheOnlyLocation( location.getKey(), location.isHosted, location.isAllowReleases,
+                                                       location.isAllowSnapshots, location.isReadOnly );
+        ret.attributes.putAll( location.attributes );
+        return ret;
+    }
+
     public CacheOnlyLocation( final HostedRepository repo )
     {
         this.isHosted = true;
@@ -68,13 +74,22 @@ public class CacheOnlyLocation
         this.key = repo.getKey();
     }
 
+    public CacheOnlyLocation( final StoreKey key, final boolean isHosted, final boolean isAllowReleases,
+                              final boolean isAllowSnapshots, final boolean isReadOnly )
+    {
+        this.isHosted = isHosted;
+        this.isAllowReleases = isAllowReleases;
+        this.isAllowSnapshots = isAllowSnapshots;
+        this.isReadOnly = isReadOnly;
+        this.key = key;
+    }
+
     public CacheOnlyLocation( final StoreKey key )
     {
         this.isHosted = false;
         this.isAllowReleases = true;
         this.isAllowSnapshots = false;
         this.isReadOnly = true;
-
         this.key = key;
     }
 
