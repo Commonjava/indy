@@ -624,24 +624,13 @@ public class DefaultDownloadManager
 
         try
         {
-            KeyedLocation loc = LocationUtils.toLocation( store );
+            Location loc = LocationUtils.toLocation( store );
             boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) );
-            ConcreteResource resource;
             if ( resetReadonly )
             {
-                resource = new ConcreteResource( loc, path )
-                {
-                    @Override
-                    public boolean allowsStoring()
-                    {
-                        return true;
-                    }
-                };
+                loc = LocationUtils.getNonReadonlyLocation( loc );
             }
-            else
-            {
-                resource = new ConcreteResource( loc, path );
-            }
+            ConcreteResource resource = new ConcreteResource( loc, path );
 
             Transfer txfr = transfers.store( resource, stream, eventMetadata );
             nfc.clearMissing( resource );
@@ -1032,23 +1021,12 @@ public class DefaultDownloadManager
         try
         {
             Location loc = item.getLocation();
-            ConcreteResource resource;
-            boolean resetReadonly = ( !loc.allowsStoring() && isIgnoreReadonly( eventMetadata ) );
+            boolean resetReadonly = ( !loc.allowsDeletion() && isIgnoreReadonly( eventMetadata ) );
             if ( resetReadonly )
             {
-                resource = new ConcreteResource( loc, item.getPath() )
-                {
-                    @Override
-                    public boolean allowsDeletion()
-                    {
-                        return true;
-                    }
-                };
+                loc = LocationUtils.getNonReadonlyLocation( loc );
             }
-            else
-            {
-                resource = new ConcreteResource( loc, item.getPath() );
-            }
+            ConcreteResource resource = new ConcreteResource( loc, item.getPath() );
             transfers.delete( resource, eventMetadata );
         }
         catch ( final TransferException e )

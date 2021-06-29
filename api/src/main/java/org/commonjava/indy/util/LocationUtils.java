@@ -45,6 +45,17 @@ public final class LocationUtils
     {
     }
 
+    public static Location getNonReadonlyLocation( final Location location )
+    {
+        if ( location instanceof CacheOnlyLocation )
+        {
+            CacheOnlyLocation ret = CacheOnlyLocation.copyOf( (CacheOnlyLocation) location );
+            ret.setReadonly( false );
+            return ret;
+        }
+        return location;
+    }
+
     public static KeyedLocation toLocation( final ArtifactStore store )
     {
         if ( store == null )
