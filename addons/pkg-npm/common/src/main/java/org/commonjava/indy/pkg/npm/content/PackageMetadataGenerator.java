@@ -31,6 +31,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
+import org.commonjava.indy.pkg.npm.model.Dist;
 import org.commonjava.indy.pkg.npm.model.DistTag;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
 import org.commonjava.indy.pkg.npm.model.VersionMetadata;
@@ -316,6 +317,14 @@ public class PackageMetadataGenerator
                     packageMetadata.setRepository( versionMetadata.getRepository() );
                     packageMetadata.setBugs( versionMetadata.getBugs() );
                     distTags.setLatest( versionMetadata.getVersion() );
+                }
+
+                // Generate tarball url if missing. Otherwise it results in incorrect download url for scoped packages
+                if ( versionMetadata.getDist() == null && packagePath.isScoped() )
+                {
+                    String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
+                    //logger.debug( "Generate dist tarball: {}", tarball );
+                    versionMetadata.setDist( new Dist( null, tarball ) );
                 }
             }
             catch ( IOException e )

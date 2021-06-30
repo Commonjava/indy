@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -33,6 +34,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.indy.pkg.npm.model.PackageMetadata;
+import org.commonjava.indy.pkg.npm.model.VersionMetadata;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.GalleyCore;
 import org.commonjava.maven.galley.GalleyCoreBuilder;
@@ -52,6 +54,7 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -256,6 +259,7 @@ public class PackageMetadataGeneratorTest
         // Check the package metadata after generation.
         Transfer after = fileManager.retrieve( hostedRepository, babelCoreMetadataPath );
         assertNotNull(after);
+        // System.out.println( ">>>>\n" + IOUtils.toString( after.openInputStream() ) );
 
         // Cached the extracted metadata file in the path <PACKAGE_NAME>/<VERSION>
         metafile = fileManager.retrieve( hostedRepository, "@babel/core/7.7.5" );
@@ -271,8 +275,17 @@ public class PackageMetadataGeneratorTest
             PackageMetadata packageMetadata = mapper.readValue( input, PackageMetadata.class );
             assertNotNull( packageMetadata );
             assertEquals( 2, packageMetadata.getVersions().size());
-            assertEquals("Unexpected package name.", "@babel/core", packageMetadata.getName());
-            assertEquals( "Unexpected latest version.","7.7.7", packageMetadata.getDistTags().getLatest() );
+            assertEquals( "Unexpected package name.", "@babel/core", packageMetadata.getName() );
+            assertEquals( "Unexpected latest version.", "7.7.7", packageMetadata.getDistTags().getLatest() );
+
+            // for scoped, verify tarball not null
+            if ( packageMetadata.getName().startsWith( "@" ) )
+            {
+                for ( VersionMetadata versionMetadata : packageMetadata.getVersions().values() )
+                {
+                    assertNotNull( versionMetadata.getDist().getTarball() );
+                }
+            }
         }
 
     }
