@@ -24,6 +24,7 @@ import org.commonjava.indy.httprox.handler.ProxyAcceptHandler;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.GenericPackageTypeDescriptor;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -32,8 +33,10 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 
 /**
  * Created by jdcasey on 9/19/16.
@@ -56,10 +59,14 @@ public class HttProxOriginMigrationAction
     private boolean doMigrate()
             throws IndyLifecycleException
     {
-        List<RemoteRepository> repos;
+        List<RemoteRepository> repos = new ArrayList<>();
         try
         {
-            repos = storeDataManager.query().noPackageType().getAllRemoteRepositories();
+            Set<String> defaults = PackageTypes.getPackageTypes();
+            for ( String packageType : defaults )
+            {
+                repos.addAll( storeDataManager.query().getAllRemoteRepositories( packageType ));
+            }
         }
         catch ( IndyDataException e )
         {

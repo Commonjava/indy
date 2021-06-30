@@ -169,6 +169,8 @@ public interface StoreDataManager
      */
     void asyncGroupAffectedBy( ContextualTask contextualTask );
 
+    Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType );
+
     class ContextualTask
     {
         private String threadName;

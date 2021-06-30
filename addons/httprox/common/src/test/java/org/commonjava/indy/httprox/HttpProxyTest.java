@@ -56,6 +56,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.datafile.change.DataFileEventManager;
+import org.commonjava.indy.subsys.honeycomb.config.IndyTraceConfiguration;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
@@ -76,6 +77,9 @@ import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
 import org.commonjava.maven.galley.transport.htcli.util.HttpUtil;
+import org.commonjava.o11yphant.otel.OtelTracePlugin;
+import org.commonjava.o11yphant.trace.SpanFieldsDecorator;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.commonjava.propulsor.boot.BootOptions;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.infinispan.Cache;
@@ -209,11 +213,15 @@ public class HttpProxyTest
               new PoolWeftExecutorService( "test-mitm-transfers", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
         ProxyTransfersExecutor handler = new ProxyTransfersExecutor( transferService );
 
+        IndyTraceConfiguration itc = new IndyTraceConfiguration();
+        TraceManager tm = new TraceManager( new OtelTracePlugin( itc, itc ),
+                                            new SpanFieldsDecorator( Collections.emptyList() ), itc );
+
         proxy = new HttpProxy( config, bootOpts,
                                new ProxyAcceptHandler( config, storeManager, contentController, auth, core.getCache(),
                                                        scriptEngine, new MDCManager(), null, null,
                                                        new CacheProducer( null, cacheManager, null ),
-                                                       handler ) );
+                                                       handler, tm ) );
         proxy.start();
     }
 

@@ -17,7 +17,6 @@ package org.commonjava.indy.ftest.core;
 
 import com.datastax.driver.core.Session;
 import com.fasterxml.jackson.databind.Module;
-import com.google.common.io.Files;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -45,7 +44,6 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.Instant;
@@ -199,6 +197,9 @@ public abstract class AbstractIndyFunctionalTest
         CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
         dropKeyspace( "cache_" , cassandraClient);
         dropKeyspace( "storage_", cassandraClient );
+        dropKeyspace( "schedule_", cassandraClient );
+        dropKeyspace( "store_", cassandraClient );
+
         cassandraClient.close();
         closeCacheProvider();
         closeQuietly( fixture );
@@ -291,12 +292,27 @@ public abstract class AbstractIndyFunctionalTest
                         + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
 
         writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+        writeConfigFile( "conf.d/store-manager.conf", "[store-manager]\n"
+                    + "store.manager.keyspace=" + getKeyspace("store_") + "_stores\nstore.manager.replica=1");
+
+        writeConfigFile( "conf.d/scheduledb.conf", "[scheduledb]\nschedule.keyspace=" + getKeyspace("schedule_" )
+                        + "_scheduler\nschedule.keyspace.replica=1\n"
+                        + "schedule.partition.range=3600000\nschedule.rate.period=3" );
+
+
+        writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
+                        + "folo.storage=infinispan\n"
+                        + "store.storage=infinispan\n"
+                        + "schedule.storage=infinispan");
+
+        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo");
 
         if ( isSchedulerEnabled() )
         {
-            writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-test-scheduler.conf" ) );
+            writeConfigFile( "conf.d/scheduledb.conf", readTestResource( "default-test-scheduledb.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
             writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
+            writeConfigFile( "conf.d/durable-state.conf", readTestResource( "default-durable-state.conf" ) );
         }
         else
         {

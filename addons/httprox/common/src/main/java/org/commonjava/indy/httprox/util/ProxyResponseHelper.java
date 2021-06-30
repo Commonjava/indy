@@ -45,6 +45,7 @@ import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.o11yphant.metrics.api.Timer;
 import org.commonjava.o11yphant.metrics.MetricsManager;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,7 @@ import static org.commonjava.indy.model.core.ArtifactStore.TRACKING_ID;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 /**
  * Created by ruhan on 9/20/18.
@@ -131,6 +133,12 @@ public class ProxyResponseHelper
         setContext( PACKAGE_TYPE, store.getKey().getPackageType() );
         setContext( CONTENT_ENTRY_POINT, store.getKey().toString() );
 
+        addFieldToActiveSpan( "proxy.target.url", url );
+        if ( trackingId != null )
+        {
+            addFieldToActiveSpan( TRACKING_ID, trackingId );
+        }
+
         return store;
     }
 
@@ -144,9 +152,9 @@ public class ProxyResponseHelper
             String groupName = repoCreator.formatId( url.getHost(), port, 0, trackingId, StoreType.group );
 
             ArtifactStoreQuery<Group> query =
-                            storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( Group.class );
+                            storeManager.query().storeType( Group.class );
 
-            Group group = query.getGroup( groupName );
+            Group group = query.getGroup( GENERIC_PKG_KEY, groupName );
             logger.debug( "Get httproxy group, group: {}", group );
 
             if ( group == null )
@@ -164,9 +172,10 @@ public class ProxyResponseHelper
             final String baseUrl = getBaseUrl( url, false );
 
             ArtifactStoreQuery<RemoteRepository> query =
-                            storeManager.query().packageType( GENERIC_PKG_KEY ).storeType( RemoteRepository.class );
+                            storeManager.query().storeType( RemoteRepository.class );
 
-            remote = query.stream()
+            remote = query.getAllRemoteRepositories( GENERIC_PKG_KEY )
+                          .stream()
                           .filter( store -> store.getUrl().equals( baseUrl )
                                           && store.getMetadata( TRACKING_ID ) == null )
                           .findFirst()
@@ -248,10 +257,9 @@ public class ProxyResponseHelper
         }
 
         Predicate<ArtifactStore> filter = abstractProxyRepositoryCreator.getNameFilter( name );
-        List<String> l = storeManager.query()
-                                     .packageType( GENERIC_PKG_KEY )
-                                     .storeType( RemoteRepository.class )
-                                     .stream( filter )
+        List<String> l = storeManager.query().getAllRemoteRepositories( GENERIC_PKG_KEY )
+                                     .stream()
+                                     .filter( filter )
                                      .map( repository -> repository.getName() )
                                      .collect( Collectors.toList() );
 

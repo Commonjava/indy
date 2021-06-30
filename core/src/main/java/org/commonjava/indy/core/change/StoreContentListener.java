@@ -144,7 +144,6 @@ public class StoreContentListener
         try
         {
             groups.addAll( storeDataManager.query()
-                                           .packageType( group.getPackageType() )
                                            .getGroupsAffectedBy( group.getKey() ) );
         }
         catch ( IndyDataException e )
@@ -258,7 +257,7 @@ public class StoreContentListener
             {
                 try
                 {
-                    affected = ( storeDataManager.query().packageType( key.getPackageType() ).getGroupsAffectedBy( key ) );
+                    affected = ( storeDataManager.query().getGroupsAffectedBy( key ) );
                 }
                 catch ( IndyDataException e )
                 {

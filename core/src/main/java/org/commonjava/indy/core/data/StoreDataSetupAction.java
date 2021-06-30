@@ -61,10 +61,7 @@ public class StoreDataSetupAction
             logger.info( "Verfiying that Indy basic stores are installed..." );
             storeManager.install();
 
-            if ( !storeManager.query()
-                              .packageType( MAVEN_PKG_KEY )
-                              .storeType( RemoteRepository.class )
-                              .containsByName( "central" ) )
+            if ( storeManager.query().getRemoteRepository( MAVEN_PKG_KEY, "central" ) == null )
             {
                 final RemoteRepository central =
                         new RemoteRepository( MAVEN_PKG_KEY, "central", "https://repo.maven.apache.org/maven2/" );
@@ -76,10 +73,7 @@ public class StoreDataSetupAction
                 
             }
 
-            if ( !storeManager.query()
-                              .packageType( MAVEN_PKG_KEY )
-                              .storeType( HostedRepository.class )
-                              .containsByName( "local-deployments" ) )
+            if ( storeManager.query().getHostedRepository( MAVEN_PKG_KEY, "local-deployments"  ) == null )
             {
                 final HostedRepository local = new HostedRepository( MAVEN_PKG_KEY, "local-deployments" );
                 local.setAllowReleases( true );
@@ -91,10 +85,7 @@ public class StoreDataSetupAction
                                                                           DEFAULT_SETUP ) );
             }
 
-            if ( !storeManager.query()
-                              .packageType( MAVEN_PKG_KEY )
-                              .storeType( Group.class )
-                              .containsByName( "public" ) )
+            if ( storeManager.query().getGroup( MAVEN_PKG_KEY, "public" ) == null )
             {
                 final Group pub = new Group( MAVEN_PKG_KEY, "public" );
                 pub.addConstituent( new StoreKey( MAVEN_PKG_KEY, StoreType.remote, "central" ) );

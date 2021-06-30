@@ -1,0 +1,51 @@
+package metadata_info;
+
+message MetadataInfo
+{
+    optional Metadata metadata = 1;
+    optional string metadataMergeInfo = 2;
+}
+
+message Metadata
+{
+    optional string modelVersion = 1;
+    optional string groupId = 2;
+    optional string artifactId = 3;
+    optional string version = 4;
+    optional Versioning versioning = 5;
+    repeated Plugin plugins = 6;
+    optional string modelEncoding = 7;
+}
+
+message Versioning
+{
+    optional string latest = 1;
+    optional string release = 2;
+    optional Snapshot snapshot = 3;
+    repeated string versions = 4;
+    optional string lastUpdated = 5;
+    repeated SnapshotVersion snapshotVersions = 6;
+}
+
+message Plugin
+{
+    optional string artifactId = 1;
+    optional string name = 2;
+    optional string prefix = 3;
+}
+
+message Snapshot
+{
+    optional string timestamp = 1;
+    optional int32 buildNumber = 2;
+    optional bool localCopy = 3;
+}
+
+message SnapshotVersion
+{
+    optional string classifier = 1;
+    optional string extension = 2;
+    optional string version = 3;
+    optional string updated = 4;
+}
+

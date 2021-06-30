@@ -17,6 +17,7 @@ package org.commonjava.indy.koji.conf;
 
 import com.redhat.red.build.koji.config.KojiConfig;
 import org.commonjava.indy.conf.IndyConfigInfo;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
@@ -36,6 +37,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
+import static java.lang.Boolean.parseBoolean;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_CONNECTION_POOL_TIMEOUT_SECONDS;
 import static org.commonjava.util.jhttpc.model.SiteConfig.DEFAULT_MAX_CONNECTIONS;
@@ -136,6 +140,8 @@ public class IndyKojiConfig
     private Integer connectionPoolTimeoutSeconds;
 
     private String versionFilter;
+
+    private static final String KOJI_PULL = "koji-pull";
 
     @Override
     public SiteConfig getKojiSiteConfig()
@@ -685,7 +691,7 @@ public class IndyKojiConfig
         return null;
     }
 
-    public boolean isEnabledFor( String name )
+    private boolean isEnabledByName( String name )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         if ( targetGroups == null )
@@ -707,6 +713,31 @@ public class IndyKojiConfig
         logger.warn( "No target group found for: {}", name );
         return false;
     }
+
+
+    public boolean isEnabledFor( ArtifactStore store )
+    {
+        // MMENG-1262: Check if group enabled the koji pulling in its metadata
+        final String kojiPullVal = store.getMetadata( KOJI_PULL );
+        if ( kojiPullVal != null )
+        {
+            final String pullVal = kojiPullVal.trim();
+            final Logger logger = LoggerFactory.getLogger( this.getClass() );
+            if ( FALSE.equals( parseBoolean( pullVal ) ) || "no".equalsIgnoreCase( pullVal ) )
+            {
+                logger.trace( "Group {} has disabled koji pulling for artifacts with metadata tag.", store.getKey() );
+                return false;
+            }
+            if ( TRUE.equals( parseBoolean( pullVal ) ) || "yes".equalsIgnoreCase( pullVal ) )
+            {
+                logger.trace( "Group {} has enabled koji pulling for artifacts with metadata tag.", store.getKey() );
+                return true;
+            }
+        }
+        return isEnabledByName( store.getName() );
+    }
+
+
 
     public Long getLockTimeoutSeconds()
     {

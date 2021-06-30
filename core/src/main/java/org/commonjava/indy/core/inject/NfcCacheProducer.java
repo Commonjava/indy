@@ -15,12 +15,18 @@
  */
 package org.commonjava.indy.core.inject;
 
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
+import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.MessageMarshaller;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Produces ISPN Cache instances (wrapped in {@link CacheHandle} to help with shutdown blocking) for use in core class
@@ -34,11 +40,20 @@ public class NfcCacheProducer
     @Inject
     private CacheProducer cacheProducer;
 
+    @Inject
+    private ISPNRemoteConfiguration remoteConfiguration;
+
     @NfcCache
     @Produces
     @ApplicationScoped
-    public CacheHandle<String, NfcConcreteResourceWrapper> nfcCache()
+    public BasicCacheHandle<String, NfcConcreteResourceWrapper> nfcCache()
     {
-        return cacheProducer.getCache( NFC );
+        if ( remoteConfiguration.isEnabled() )
+        {
+            List<BaseMarshaller> marshallerList = new ArrayList<>();
+            marshallerList.add( new NfcConcreteResourceMarshaller() );
+            cacheProducer.registerProtoAndMarshallers( "nfc.proto", marshallerList );
+        }
+        return cacheProducer.getBasicCache( NFC );
     }
 }

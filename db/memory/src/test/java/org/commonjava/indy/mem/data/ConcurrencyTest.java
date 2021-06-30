@@ -180,7 +180,7 @@ public class ConcurrencyTest
                     logger.debug( "Grabbing groups containing: {}", repo.getKey() );
                     try
                     {
-                        if (!dataManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( repo.getKey() ).isEmpty())
+                        if (!dataManager.query().getGroupsContaining( repo.getKey() ).isEmpty())
                         {
                             return null;
                         }
@@ -225,7 +225,7 @@ public class ConcurrencyTest
                 logger.debug( "Grabbing all artifact stores" );
                 try
                 {
-                    dataManager.query().packageType( MAVEN_PKG_KEY ).getAllGroups();
+                    dataManager.query().getAllGroups( MAVEN_PKG_KEY );
                     return null;
                 }
                 catch ( IndyDataException e )

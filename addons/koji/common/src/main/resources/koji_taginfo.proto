@@ -1,0 +1,18 @@
+package koji;
+
+message KojiTagInfoEntry
+{
+   repeated KojiTagInfo tagInfos = 1;
+}
+
+message KojiTagInfo
+{
+    optional int32 id = 1;
+    optional string name = 2;
+    optional string permission = 3;
+    optional int32 permissionId = 4;
+    repeated string arches = 5;
+    optional bool locked = 6;
+    optional bool mavenSupport = 7;
+    optional bool mavenIncludeAll = 8;
+}

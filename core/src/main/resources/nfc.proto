@@ -1,0 +1,16 @@
+package nfc;
+
+/*
+  @Indexed
+*/
+message ConcreteResourceWrapper
+{
+    /* @IndexedField(index=true) */
+    optional string location = 1;
+
+    /* @IndexedField(index=true) */
+    optional string path = 2;
+
+    /* @IndexedField(index=false) */
+    optional int64 timeout = 3;
+}

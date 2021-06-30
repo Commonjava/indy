@@ -23,6 +23,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.folo.conf.FoloConfig;
 import org.commonjava.indy.folo.ctl.FoloConstants;
 import org.commonjava.indy.folo.data.FoloContentException;
+import org.commonjava.indy.folo.data.FoloRecord;
 import org.commonjava.indy.folo.data.FoloRecordCache;
 import org.commonjava.indy.folo.model.StoreEffect;
 import org.commonjava.indy.folo.model.TrackedContentEntry;
@@ -62,7 +63,7 @@ public class FoloTrackingListener
     private FoloConfig foloConfig;
 
     @Inject
-    private FoloRecordCache recordManager;
+    private FoloRecord recordManager;
 
     @Inject
     private StoreDataManager storeManager;
@@ -139,6 +140,9 @@ public class FoloTrackingListener
         }
 
         EventMetadata metadata = event.getEventMetadata();
+
+        logger.warn(">>> Metadata: " + metadata);
+
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {

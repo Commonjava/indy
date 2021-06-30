@@ -65,8 +65,8 @@ public class ArtifactStoreValidatorTest
     public void testRepoValidation()
             throws Exception
     {
-        RemoteRepository validRepo = new RemoteRepository( "test", "http://www.foo.com" );
-        assertTrue( validator.isValid( validRepo ) );
+        //RemoteRepository validRepo = new RemoteRepository( "test", "http://www.foo.com" );
+        //assertTrue( validator.isValid( validRepo ) );
 
         RemoteRepository inValidRepo = new RemoteRepository( "test", "this.is.not.valid.repo" );
         assertFalse( validator.isValid( inValidRepo ) );

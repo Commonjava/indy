@@ -57,9 +57,8 @@ public class StorageAdvisor
                 try
                 {
                     constituents = dataManager.query()
-                                              .packageType( MAVEN_PKG_KEY )
                                               .enabledState( true )
-                                              .getOrderedConcreteStoresInGroup( store.getName() );
+                                              .getOrderedConcreteStoresInGroup( MAVEN_PKG_KEY, store.getName() );
                 }
                 catch ( final IndyDataException e )
                 {

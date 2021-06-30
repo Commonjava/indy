@@ -102,20 +102,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public DefaultArtifactStoreQuery<T> packageType( String packageType )
-            throws IndyDataException
-    {
-        if ( !PackageTypes.contains( packageType ) )
-        {
-            throw new IndyDataException( "Invalid package type: %s. Supported values are: %s", packageType,
-                                         PackageTypes.getPackageTypes() );
-        }
-
-        this.packageType = packageType;
-        return this;
-    }
-
-    @Override
     public <C extends ArtifactStore> DefaultArtifactStoreQuery<C> storeType( Class<C> storeCls )
     {
         if ( RemoteRepository.class.equals( storeCls ) )
@@ -262,12 +248,28 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException
     {
-        return getAllGroups().stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
+        return getGroupsContaining( storeKey, Boolean.TRUE );
     }
 
     @Override
     @Measure
-    public List<RemoteRepository> getRemoteRepositoryByUrl( String url )
+    public Set<Group> getGroupsContaining( StoreKey storeKey, Boolean enabled )
+                    throws IndyDataException
+    {
+        return getAllGroups( storeKey.getPackageType(), enabled ).stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
+    }
+
+    @Override
+    @Measure
+    public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url )
+                    throws IndyDataException
+    {
+        return getRemoteRepositoryByUrl( packageType, url, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url, Boolean enabled )
             throws IndyDataException
     {
         /*
@@ -290,90 +292,83 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         final UrlInfo urlInfo = temp;
 
         // first try to find the remote repo by urlWithNoSchemeAndLastSlash
-        /* @formatter:off */
-        result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
-                store -> {
-                    if ( ( StoreType.remote == store.getType() ) )
-                    {
-                        final String targetUrl = ( (RemoteRepository) store ).getUrl();
-                        UrlInfo targetUrlInfo;
-                        try
-                        {
-                            targetUrlInfo = new UrlInfo( targetUrl );
-                        }
-                        catch ( Exception error )
-                        {
-                            logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
-                            return false;
-                        }
+        final List<RemoteRepository> remoteRepos = getAllRemoteRepositories( packageType, enabled );
+        result = remoteRepos.stream().filter( store -> {
 
-                        if (  targetUrlInfo != null )
-                        {
-                            if ( urlInfo.getUrlWithNoSchemeAndLastSlash()
-                                        .equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
-                                            && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ))
-                            {
-                                logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
-                                              store.getKey() );
-                                return true;
-                            }
-                        }
-                    }
+            final String targetUrl = store.getUrl();
+            UrlInfo targetUrlInfo;
+            try
+            {
+                targetUrlInfo = new UrlInfo( targetUrl );
+            }
+            catch ( Exception error )
+            {
+                logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl,
+                             error.getMessage() );
+                return false;
+            }
 
-                    return false;
-                } ).collect( Collectors.toList() );
-        /* @formatter:on */
+            if ( targetUrlInfo != null )
+            {
+                if ( urlInfo.getUrlWithNoSchemeAndLastSlash().equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
+                                && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ) )
+                {
+                    logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                                  store.getKey() );
+                    return true;
+                }
+            }
 
+            return false;
+        } ).collect( Collectors.toList() );
 
         if ( result.isEmpty() )
         {
             // ...if not found by hostname try to search by IP
             /* @formatter:off */
-            result = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, RemoteRepository.class ).stream(
-                    store -> {
-                        if ( ( StoreType.remote == store.getType() ) )
+            result = remoteRepos.stream().filter( store -> {
+
+                final String targetUrl = store.getUrl();
+                UrlInfo targetUrlInfo;
+                try
+                {
+                    targetUrlInfo = new UrlInfo( targetUrl );
+                }
+                catch ( Exception error )
+                {
+                    logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
+                    return false;
+                }
+
+                if (  targetUrlInfo != null )
+                {
+                    String ipForUrl = null;
+                    String ipForTargetUrl = null;
+                    try
+                    {
+                        ipForUrl = urlInfo.getIpForUrl();
+                        ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                        if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
+                                && urlInfo.getPort() == targetUrlInfo.getPort()
+                                && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
                         {
-                            final String targetUrl = ( (RemoteRepository) store ).getUrl();
-                            UrlInfo targetUrlInfo;
-                            try
-                            {
-                                targetUrlInfo = new UrlInfo( targetUrl );
-                            }
-                            catch ( Exception error )
-                            {
-                                logger.warn( "Invalid repository, store: {}, url: '{}'. Reason: {}", store.getKey(), targetUrl, error.getMessage() );
-                                return false;
-                            }
-
-                            if (  targetUrlInfo != null )
-                            {
-                                String ipForUrl = null;
-                                String ipForTargetUrl = null;
-                                try
-                                {
-                                    ipForUrl = urlInfo.getIpForUrl();
-                                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
-                                    if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
-                                            && urlInfo.getPort() == targetUrlInfo.getPort()
-                                            && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
-                                    {
-                                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
-                                                      store.getKey() );
-                                        return true;
-                                    }
-                                }
-                                catch ( UnknownHostException ue )
-                                {
-                                    logger.warn( "Failed to filter remote: ip fetch error.", ue );
-                                }
-
-                                logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
-                                              store.getKey(), ipForTargetUrl );
-                            }
+                            logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                          store.getKey() );
+                            return true;
                         }
+                    }
+                    catch ( UnknownHostException ue )
+                    {
+                        logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                    }
 
-                        return false;
-                    } ).collect(Collectors.toList());
+                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                                  store.getKey(), ipForTargetUrl );
+                }
+
+
+            return false;
+        } ).collect(Collectors.toList());
             /* @formatter:on */
         }
 
@@ -382,13 +377,21 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     @Measure
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName )
+                    throws IndyDataException
+    {
+        return getOrderedConcreteStoresInGroup( packageType, groupName, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
             throws IndyDataException
     {
         logger.trace( "START: default store-query ordered-concrete-stores-in-group" );
         try
         {
-            return getGroupOrdering( groupName, false, true );
+            return getGroupOrdering( packageType, groupName, enabled, false, true );
         }
         finally
         {
@@ -398,10 +401,18 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     @Measure
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName )
+                    throws IndyDataException
+    {
+        return getOrderedStoresInGroup( packageType, groupName, Boolean.TRUE );
+    }
+
+    @Override
+    @Measure
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
             throws IndyDataException
     {
-        return getGroupOrdering( groupName, true, false );
+        return getGroupOrdering( packageType, groupName, enabled, true, false );
     }
 
     @Override
@@ -447,66 +458,21 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
-    public List<RemoteRepository> getAllRemoteRepositories()
-            throws IndyDataException
-    {
-        return getAllOfType( RemoteRepository.class );
-    }
-
-    @Override
-    @Measure
-    public List<HostedRepository> getAllHostedRepositories()
-            throws IndyDataException
-    {
-        return getAllOfType( HostedRepository.class );
-    }
-
-    @Override
-    @Measure
-    public List<Group> getAllGroups()
-            throws IndyDataException
-    {
-        return getAllOfType( Group.class );
-    }
-
-    private <T extends ArtifactStore> List<T> getAllOfType(Class<T> type)
-            throws IndyDataException
-    {
-        List<StoreKey> keys = new DefaultArtifactStoreQuery<>( dataManager, packageType, enabled, type ).keyStream()
-                                                                                                        .collect(
-                                                                                                                Collectors
-                                                                                                                        .toList() );
-
-        List<T> stores = new ArrayList<>();
-        for ( StoreKey key : keys )
-        {
-            T store = (T) dataManager.getArtifactStore( key );
-            if ( store != null && ( enabled == null || store.isDisabled() == !enabled ) )
-            {
-                stores.add( store );
-            }
-        }
-
-        return stores;
-    }
-
-    @Override
-    public RemoteRepository getRemoteRepository( final String name )
+    public RemoteRepository getRemoteRepository( final String packageType, final String name )
             throws IndyDataException
     {
         return (RemoteRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.remote, name ) );
     }
 
     @Override
-    public HostedRepository getHostedRepository( final String name )
+    public HostedRepository getHostedRepository( final String packageType, final String name )
             throws IndyDataException
     {
         return (HostedRepository) dataManager.getArtifactStore( new StoreKey( packageType, StoreType.hosted, name ) );
     }
 
     @Override
-    public Group getGroup( final String name )
+    public Group getGroup( final String packageType, final String name )
             throws IndyDataException
     {
         return (Group) dataManager.getArtifactStore( new StoreKey( packageType, group, name ) );
@@ -519,7 +485,55 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    private List<ArtifactStore> getGroupOrdering( final String groupName,
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType )
+    {
+        return getAllRemoteRepositories( packageType, Boolean.TRUE );
+    }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled )
+    {
+        return dataManager.getArtifactStoresByPkgAndType( packageType, StoreType.remote )
+                          .stream()
+                          .filter( item -> enabled.equals( !item.isDisabled() ) )
+                          .map( item -> (RemoteRepository) item )
+                          .collect( Collectors.toList() );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType )
+    {
+        return getAllHostedRepositories( packageType, Boolean.TRUE );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled )
+    {
+        return dataManager.getArtifactStoresByPkgAndType( packageType, StoreType.hosted )
+                          .stream()
+                          .filter( item -> enabled.equals( !item.isDisabled() ) )
+                          .map( item -> (HostedRepository) item )
+                          .collect( Collectors.toList() );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType )
+    {
+        return getAllGroups( packageType, Boolean.TRUE );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType, Boolean enabled )
+    {
+        return dataManager.getArtifactStoresByPkgAndType( packageType, group )
+                          .stream()
+                          .filter( item -> enabled.equals( !item.isDisabled() ) )
+                          .map( item -> (Group) item )
+                          .collect( Collectors.toList() );
+    }
+
+    private List<ArtifactStore> getGroupOrdering( final String packageType, final String groupName, final Boolean enabled,
                                                   final boolean includeGroups, final boolean recurseGroups )
             throws IndyDataException
     {
@@ -545,7 +559,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         {
             Group next = toCheck.removeFirst();
 
-            if ( next == null || next.isDisabled() && Boolean.TRUE.equals( enabled ) )
+            if ( next == null || next.isDisabled() && Boolean.TRUE.equals( this.enabled ) )
             {
                 continue;
             }
@@ -573,7 +587,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                          else
                                          {
                                              final ArtifactStore store = dataManager.getArtifactStore( key );
-                                             if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( enabled ) ) )
+                                             if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( this.enabled ) ) )
                                              {
                                                  result.add( store );
                                              }

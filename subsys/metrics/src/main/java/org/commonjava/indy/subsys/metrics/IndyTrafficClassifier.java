@@ -16,7 +16,6 @@
 package org.commonjava.indy.subsys.metrics;
 
 import org.commonjava.indy.IndyRequestConstants;
-import org.commonjava.o11yphant.metrics.TrafficClassifier;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -27,18 +26,22 @@ import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
+import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.join;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_LISTING;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_CONTENT_MAVEN;
@@ -53,12 +56,10 @@ import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_PROMOTION;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_REPO_MGMT;
 import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.FN_TRACKING_RECORD;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
-import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 
 @ApplicationScoped
 public class IndyTrafficClassifier
-                extends TrafficClassifier
+                extends AbstractTrafficClassifier
 {
     private static final Set<String> FOLO_RECORD_ENDPOINTS = new HashSet<>( asList( "record", "report" ) );
 
@@ -73,7 +74,8 @@ public class IndyTrafficClassifier
         this.specialPathManager = specialPathManager;
     }
 
-    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method )
+    protected List<String> calculateCachedFunctionClassifiers( String restPath, String method,
+                                                               Map<String, String> headers )
     {
         List<String> result = new ArrayList<>();
 

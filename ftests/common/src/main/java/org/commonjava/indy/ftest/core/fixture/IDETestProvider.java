@@ -24,7 +24,6 @@ import org.commonjava.indy.subsys.datafile.DataFileManager;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
@@ -55,7 +54,7 @@ public class IDETestProvider
     }
 
     @Produces
-    @Default
+    @TestStoreDataManager
     public StoreDataManager getStoreDataManager()
     {
         return storeDataManager;

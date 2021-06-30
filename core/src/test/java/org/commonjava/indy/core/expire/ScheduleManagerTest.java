@@ -17,6 +17,7 @@ package org.commonjava.indy.core.expire;
 
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.schedule.datastax.JobType;
 import org.junit.Test;
 
 import java.text.DateFormat;
@@ -51,8 +52,8 @@ public class ScheduleManagerTest
     public void testStoreKeyFrom()
     {
         StoreKey k = new StoreKey( "maven", StoreType.remote, "repo1" );
-        ScheduleKey key = new ScheduleKey(k, ScheduleManager.CONTENT_JOB_TYPE, "/abc");
-        final StoreKey sk = ScheduleManager.storeKeyFrom( key.getGroupName() );
+        ScheduleKey key = new ScheduleKey(k, DefaultScheduleManager.CONTENT_JOB_TYPE, "/abc");
+        final StoreKey sk = ScheduleManagerUtils.storeKeyFrom( key.getGroupName() );
         System.out.println(">>> " + sk);
         assertNotNull( sk );
         assertEquals( sk, k );
@@ -71,7 +72,7 @@ public class ScheduleManagerTest
         {
             Thread.sleep( timeGone );
         }
-        final Date nextTime = ScheduleManager.calculateNextExpireTime( expire, start );
+        final Date nextTime = DefaultScheduleManager.calculateNextExpireTime( expire, start );
 
         if ( nullable )
         {

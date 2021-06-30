@@ -18,13 +18,13 @@ package org.commonjava.indy.promote.validate;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.conf.PromoteDataFileManager;
 import org.commonjava.indy.promote.model.ValidationCatalogDTO;
 import org.commonjava.indy.promote.model.ValidationRuleDTO;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.promote.validate.model.ValidationRule;
 import org.commonjava.indy.promote.validate.model.ValidationRuleMapping;
 import org.commonjava.indy.subsys.datafile.DataFile;
-import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @ApplicationScoped
@@ -51,7 +52,7 @@ public class PromoteValidationsManager
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private DataFileManager ffManager;
+    private PromoteDataFileManager dataFileManager;
 
     @Inject
     private PromoteConfig config;
@@ -69,14 +70,14 @@ public class PromoteValidationsManager
     {
     }
 
-    public PromoteValidationsManager( final DataFileManager ffManager, final PromoteConfig config,
+    public PromoteValidationsManager( final PromoteDataFileManager dataFileManager, final PromoteConfig config,
                                       final ValidationRuleParser ruleParser )
         throws PromotionValidationException
     {
-        this.ffManager = ffManager;
+        this.dataFileManager = dataFileManager;
         this.config = config;
         this.ruleParser = ruleParser;
-        parseRules();
+        parseRuleBundles();
     }
 
     @PostConstruct
@@ -84,7 +85,7 @@ public class PromoteValidationsManager
     {
         try
         {
-            parseRules();
+            parseRuleBundles();
         }
         catch ( final PromotionValidationException e )
         {
@@ -92,8 +93,8 @@ public class PromoteValidationsManager
         }
     }
 
-    public synchronized void parseRules()
-        throws PromotionValidationException
+    public synchronized void parseRuleBundles()
+            throws PromotionValidationException
     {
         if ( !config.isEnabled() )
         {
@@ -103,22 +104,27 @@ public class PromoteValidationsManager
             logger.info( "Promotion is disabled." );
             return;
         }
+        parseRules();
+        parseRuleSets();
 
+        this.enabled = true;
+    }
 
+    public synchronized void parseRules()
+            throws PromotionValidationException
+    {
         final Map<String, ValidationRuleMapping> ruleMappings = new HashMap<>();
 
-        DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
+        DataFile dataDir = dataFileManager.getDataFile( RULES_DIR );
         logger.info( "Scanning {} for promotion validation rules...", dataDir );
         if ( dataDir.exists() )
         {
-            final DataFile[] scripts = dataDir.listFiles( (pathname) ->
-            {
-                    logger.debug( "Checking for promote validation rule script in: {}", pathname );
-                    return pathname.getName()
-                                   .endsWith( ".groovy" );
+            final DataFile[] scripts = dataDir.listFiles( ( pathname ) -> {
+                logger.debug( "Checking for promote validation rule script in: {}", pathname );
+                return pathname.getName().endsWith( ".groovy" );
             } );
 
-            if ( scripts != null && scripts.length > 0 )
+            if ( scripts.length > 0 )
             {
                 for ( final DataFile script : scripts )
                 {
@@ -141,22 +147,81 @@ public class PromoteValidationsManager
             logger.warn( "No rule script file was defined for promotion: {} directory not exists", RULES_DIR );
         }
 
-        this.ruleMappings = ruleMappings;
+        checkRuleMappings( ruleMappings );
 
+        this.ruleMappings = ruleMappings;
+    }
+
+    private void checkRuleMappings( final Map<String, ValidationRuleMapping> ruleMappings )
+    {
+        checkMappings( this.ruleMappings, ruleMappings, false, ( n, r, c ) -> {
+            if ( !n.isEmpty() )
+            {
+                logger.info( "New added rules: {}", n );
+            }
+            if ( !r.isEmpty() )
+            {
+                logger.info( "Removed rules: {}", r );
+            }
+            //TODO: need to think about how to track changed rules for logging
+        } );
+    }
+
+    private <T> void checkMappings( final Map<String, T> original, Map<String, T> loaded, final boolean checkChanges,
+                                    final LoggingConsumer loggingConsumer )
+    {
+        if ( original != null && !original.isEmpty() )
+        {
+            Set<String> existedElems = original.keySet();
+            Set<String> loadedElems = loaded.keySet();
+            Set<String> newElems = new HashSet<>( loadedElems.size() );
+            Set<String> removedElems = new HashSet<>( existedElems.size() );
+            Set<String> changedElems = new HashSet<>( existedElems.size() );
+            for ( String key : loaded.keySet() )
+            {
+                if ( !original.containsKey( key ) )
+                {
+                    newElems.add( key );
+                }
+                else if ( checkChanges && original.get( key ).equals( loaded.get( key ) ) )
+                {
+                    // Here directly used equals method to check if the value changed. It works for RuleSet
+                    // but not works for Rule, so need to think about how to check Rule's changing
+                    changedElems.add( key );
+                }
+            }
+            for ( String key : original.keySet() )
+            {
+                if ( !loaded.containsKey( key ) )
+                {
+                    removedElems.add( key );
+                }
+            }
+            loggingConsumer.logging( newElems, removedElems, changedElems );
+        }
+    }
+
+    @FunctionalInterface
+    private interface LoggingConsumer
+    {
+        void logging( Set<String> added, Set<String> removed, Set<String> changed );
+    }
+
+    public synchronized void parseRuleSets()
+            throws PromotionValidationException
+    {
         Map<String, ValidationRuleSet> ruleSets = new HashMap<>();
 
-        dataDir = ffManager.getDataFile( config.getBasedir(), RULES_SETS_DIR );
+        DataFile dataDir = dataFileManager.getDataFile( RULES_SETS_DIR );
         logger.info( "Scanning {} for promotion validation rule-set mappings...", dataDir );
         if ( dataDir.exists() )
         {
-            final DataFile[] scripts = dataDir.listFiles( (pathname) ->
-                                                          {
-                                                              logger.debug( "Checking for promotion rule-set in: {}", pathname );
-                                                              return pathname.getName()
-                                                                             .endsWith( ".json" );
-                                                          } );
+            final DataFile[] scripts = dataDir.listFiles( ( pathname ) -> {
+                logger.debug( "Checking for promotion rule-set in: {}", pathname );
+                return pathname.getName().endsWith( ".json" );
+            } );
 
-            if ( scripts != null && scripts.length > 0 )
+            if ( scripts.length > 0 )
             {
 
                 for ( final DataFile script : scripts )
@@ -174,12 +239,33 @@ public class PromoteValidationsManager
                 logger.warn( "No rule-set json file was defined for promotion: no json file found in {} directory",
                              RULES_SETS_DIR );
             }
-        } else {
+        }
+        else
+        {
             logger.warn( "No rule-set json file was defined for promotion: {} directory not exists", RULES_SETS_DIR );
         }
 
+        checkRuleSetMappings( ruleSets );
+
         this.ruleSets = ruleSets;
-        this.enabled = true;
+    }
+
+    private void checkRuleSetMappings( Map<String, ValidationRuleSet> ruleSetMappings )
+    {
+        checkMappings( this.ruleSets, ruleSetMappings, true, ( n, r, c ) -> {
+            if ( !n.isEmpty() )
+            {
+                logger.info( "New added rule-sets: {}", n );
+            }
+            if ( !r.isEmpty() )
+            {
+                logger.info( "Removed rule-sets: {}", r );
+            }
+            if ( !c.isEmpty() )
+            {
+                logger.info( "Changed rule-sets: {}", r );
+            }
+        } );
     }
 
     public ValidationCatalogDTO toDTO()
@@ -243,6 +329,28 @@ public class PromoteValidationsManager
         return mapping == null ? null : mapping.getRule();
     }
 
+    public Optional<ValidationRuleDTO> getNamedRuleAsDTO( final String name )
+    {
+        final Map<String, ValidationRuleDTO> rules = toDTO().getRules();
+        ValidationRuleDTO dto = rules.get( name );
+        if ( dto == null )
+        {
+            dto = rules.get( name + ".groovy" );
+        }
+        return dto == null ? Optional.empty() : Optional.of( dto );
+    }
+
+    public Optional<ValidationRuleSet> getNamedRuleSet( final String name )
+    {
+        final Map<String, ValidationRuleSet> ruleSets = toDTO().getRuleSets();
+        ValidationRuleSet ruleSet = ruleSets.get( name );
+        if ( ruleSet == null )
+        {
+            ruleSet = ruleSets.get( name + ".json" );
+        }
+        return ruleSet == null ? Optional.empty() : Optional.of( ruleSet );
+    }
+
     public synchronized ValidationRuleMapping removeRuleNamed( final String name, final ChangeSummary changelog )
         throws PromotionValidationException
     {
@@ -252,7 +360,7 @@ public class PromoteValidationsManager
             return null;
         }
 
-        final DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
+        final DataFile dataDir = dataFileManager.getDataFile( RULES_DIR );
         if ( !dataDir.exists() )
         {
             // this would be a very strange error...implying addition of a rule without writing it to disk.
@@ -284,7 +392,7 @@ public class PromoteValidationsManager
         final ValidationRuleMapping mapping = ruleParser.parseRule( spec, name );
         ruleMappings.put( mapping.getName(), mapping );
 
-        final DataFile dataDir = ffManager.getDataFile( config.getBasedir(), RULES_DIR );
+        final DataFile dataDir = dataFileManager.getDataFile( RULES_DIR );
         if ( !dataDir.exists() )
         {
             dataDir.mkdirs();

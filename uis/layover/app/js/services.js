@@ -69,17 +69,17 @@ indyServices.factory('ControlSvc', ['ngDialog', function(ngDialog){
       }
     },
 
-    addControlHrefs: function(scope, packageType, storeType, storeName, mode, location){
+    addControlHrefs: function(scope, storeType, packageType, storeName, mode, location){
       scope.back = function(){
-        location.path('/' + packageType + '/' + storeType);
+        location.path('/' + storeType + '/' + packageType);
       }
 
       scope.edit = function(){
-        location.path('/' + packageType + '/' + storeType + '/edit/' + storeName);
+        location.path('/' + storeType + '/' + packageType + '/edit/' + storeName);
       }
 
       scope.createNew = function(){
-        location.path('/' + packageType + '/' + storeType + '/new');
+        location.path('/' + storeType + '/' + packageType + '/new');
       }
     },
 

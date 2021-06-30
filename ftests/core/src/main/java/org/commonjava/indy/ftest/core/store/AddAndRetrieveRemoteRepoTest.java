@@ -19,19 +19,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.indy.model.core.RemoteRepository;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore( "This test can be fully covered by AddAndDeleteRemoteRepoTest" )
+@Deprecated
 public class AddAndRetrieveRemoteRepoTest
-    extends AbstractStoreManagementTest
+        extends AbstractStoreManagementTest
 {
 
     @Test
     public void addMinimalRemoteRepositoryAndRetrieveIt()
-        throws Exception
+            throws Exception
     {
         final RemoteRepository rr = new RemoteRepository( newName(), "http://www.foo.com" );
-        final RemoteRepository result = client.stores()
-                                              .create( rr, name.getMethodName(), RemoteRepository.class );
+        final RemoteRepository result = client.stores().create( rr, name.getMethodName(), RemoteRepository.class );
 
         assertThat( result.getName(), equalTo( rr.getName() ) );
         assertThat( result.getUrl(), equalTo( rr.getUrl() ) );

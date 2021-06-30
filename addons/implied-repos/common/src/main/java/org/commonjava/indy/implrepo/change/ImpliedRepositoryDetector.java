@@ -270,7 +270,7 @@ public class ImpliedRepositoryDetector
         boolean anyChanged = false;
         try
         {
-            final Set<Group> groups = storeManager.query().packageType( MAVEN_PKG_KEY ).getGroupsContaining( key );
+            final Set<Group> groups = storeManager.query().getGroupsContaining( key );
             if ( groups != null )
             {
                 logger.debug( "{} groups contain: {}\n  {}", groups.size(), key, new JoinString( "\n  ", groups ) );
@@ -392,7 +392,7 @@ public class ImpliedRepositoryDetector
                 List<RemoteRepository> rrs = null;
                 try
                 {
-                    rrs = storeManager.query().packageType( MAVEN_PKG_KEY ).getRemoteRepositoryByUrl( repo.getUrl() );
+                    rrs = storeManager.query().getRemoteRepositoryByUrl( MAVEN_PKG_KEY, repo.getUrl() );
                 }
                 catch ( IndyDataException e )
                 {

@@ -16,11 +16,16 @@
 package org.commonjava.indy.pkg.maven.content.cache;
 
 import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.DirectContentAccess;
+import org.commonjava.indy.content.DownloadManager;
+import org.commonjava.indy.data.IndyDataException;
+import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
-import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.event.EventMetadata;
+import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
+import org.infinispan.client.hotrod.annotation.ClientListener;
+import org.infinispan.client.hotrod.event.ClientCacheEntryExpiredEvent;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
 import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
@@ -29,35 +34,46 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.IOException;
+
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 
 @ApplicationScoped
 @Listener
+@ClientListener
 public class MavenMetadataCacheListener
 {
 
     @Inject
-    private DirectContentAccess fileManager;
+    private DownloadManager downloadManager;
+
+    @Inject
+    private StoreDataManager storeDataManager;
 
     @CacheEntryExpired
     public void metadataExpired( CacheEntryExpiredEvent<MetadataKey, MetadataInfo> event )
     {
+        handleMetadataExpired( event.getKey() );
+    }
+
+    @ClientCacheEntryExpired
+    public void metadataExpired( ClientCacheEntryExpiredEvent<MetadataKey> event )
+    {
+        handleMetadataExpired( event.getKey() );
+    }
+
+    private void handleMetadataExpired( MetadataKey key )
+    {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        MetadataKey key = event.getKey();
         StoreKey storeKey = key.getStoreKey();
         String path = key.getPath();
 
         try
         {
-            Transfer target = fileManager.getTransfer( storeKey, path );
-
-            if ( target != null && target.exists() )
-            {
-                target.delete();
-            }
+            downloadManager.delete( storeDataManager.getArtifactStore( storeKey ), path,
+                                    new EventMetadata().set( IGNORE_READONLY, true ) );
         }
-        catch ( IndyWorkflowException | IOException e )
+        catch (IndyWorkflowException | IndyDataException e )
         {
             logger.warn( "On cache expiration, metadata file deletion failed for: " + path + " in store: " + storeKey, e );
         }

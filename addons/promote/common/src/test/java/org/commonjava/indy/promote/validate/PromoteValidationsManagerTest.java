@@ -20,6 +20,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.conf.PromoteDataFileManager;
 import org.commonjava.indy.promote.model.ValidationRuleSet;
 import org.commonjava.indy.subsys.datafile.DataFile;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
@@ -29,6 +30,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import java.io.File;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -44,7 +47,7 @@ public class PromoteValidationsManagerTest
 
     private ValidationRuleParser parser;
 
-    private DataFileManager fileManager;
+    private PromoteDataFileManager promoteFileManager;
 
     private PromoteValidationsManager promoteValidations;
 
@@ -54,23 +57,28 @@ public class PromoteValidationsManagerTest
     public void setUp()
             throws Exception
     {
-        fileManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
-        parser = new ValidationRuleParser( new ScriptEngine( fileManager ), new ObjectMapper() );
+        File tempData = temp.newFolder( "data" );
         config = new PromoteConfig();
         config.setEnabled( true );
+        config.setBasedir( temp.newFolder("data", "promote") );
+
+        promoteFileManager = new PromoteDataFileManager( config, new DataFileEventManager() );
+        parser = new ValidationRuleParser(
+                new ScriptEngine( new DataFileManager( tempData, new DataFileEventManager() ) ), new ObjectMapper() );
+
     }
 
     @Test
     public void testRuleSetParseAndMatchOnStoreKey()
             throws Exception
     {
-        DataFile dataFile = fileManager.getDataFile( "promote/rule-sets/test.json" );
+        DataFile dataFile = promoteFileManager.getDataFile( "rule-sets/test.json" );
         dataFile.writeString( "{\"name\":\"test\",\"storeKeyPattern\":\".*\"}",
                               new ChangeSummary( ChangeSummary.SYSTEM_USER, "writing test data" ) );
 
-        promoteValidations = new PromoteValidationsManager( fileManager, config, parser );
+        promoteValidations = new PromoteValidationsManager( promoteFileManager, config, parser );
 
-        ValidationRuleSet ruleSet = promoteValidations.getRuleSetMatching( new StoreKey( StoreType.hosted, "repo" ) );
+        ValidationRuleSet ruleSet = promoteValidations.getRuleSetMatching( StoreKey.fromString( "maven:hosted:repo" ) );
 
         assertThat( ruleSet, notNullValue() );
         assertThat( ruleSet.matchesKey( "hosted:repo" ), equalTo( true ) );

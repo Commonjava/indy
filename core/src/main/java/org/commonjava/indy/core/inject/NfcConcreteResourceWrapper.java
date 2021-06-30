@@ -37,6 +37,8 @@ public class NfcConcreteResourceWrapper
     @Field
     private long timeout;
 
+    public NfcConcreteResourceWrapper() {}
+
     public NfcConcreteResourceWrapper( ConcreteResource resource, long timeout )
     {
         this.location = ( (KeyedLocation) resource.getLocation() ).getKey().toString();
@@ -57,5 +59,20 @@ public class NfcConcreteResourceWrapper
     public long getTimeout()
     {
         return timeout;
+    }
+
+    public void setLocation( String location )
+    {
+        this.location = location;
+    }
+
+    public void setPath( String path )
+    {
+        this.path = path;
+    }
+
+    public void setTimeout( long timeout )
+    {
+        this.timeout = timeout;
     }
 }

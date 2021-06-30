@@ -42,8 +42,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
-
 @Alternative
 @Named
 public class IndyObjectMapper
@@ -74,7 +72,7 @@ public class IndyObjectMapper
 
     public IndyObjectMapper( final boolean unused, final Module... additionalModules )
     {
-        final Set<Module> mods = new HashSet<Module>();
+        final Set<Module> mods = new HashSet<>();
         mods.add( ApiSerializerModule.INSTANCE );
         mods.add( ProjectVersionRefSerializerModule.INSTANCE );
         mods.add( ProjectRelationshipSerializerModule.INSTANCE );
@@ -87,7 +85,7 @@ public class IndyObjectMapper
 
     public IndyObjectMapper( final Iterable<Module> modules )
     {
-        final Set<Module> mods = new HashSet<Module>();
+        final Set<Module> mods = new HashSet<>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
         mods.add( new ProjectRelationshipSerializerModule() );
@@ -103,7 +101,7 @@ public class IndyObjectMapper
 
     public IndyObjectMapper( Instance<Module> modules, Instance<ModuleSet> moduleSets )
     {
-        final Set<Module> mods = new HashSet<Module>();
+        final Set<Module> mods = new HashSet<>();
         mods.add( new ApiSerializerModule() );
         mods.add( new ProjectVersionRefSerializerModule() );
         mods.add( new ProjectRelationshipSerializerModule() );
@@ -159,10 +157,7 @@ public class IndyObjectMapper
                 Set<Module> set = moduleSet.getModules();
                 if ( set != null )
                 {
-                    for ( Module module : set )
-                    {
-                        injected.add( module );
-                    }
+                    injected.addAll( set );
                 }
             }
         }
@@ -194,7 +189,7 @@ public class IndyObjectMapper
     }
 
     public String patchLegacyStoreJson( final String json )
-        throws JsonProcessingException, IOException
+        throws IOException
     {
         final JsonNode tree = readTree( json );
         logger.debug( "Patching JSON tree: {}", tree );
@@ -213,11 +208,7 @@ public class IndyObjectMapper
         }
 
         boolean changed = false;
-        if ( key == null )
-        {
-            throw new IndySerializationException( "Cannot patch store JSON. No StoreKey 'key' attribute found!", null );
-        }
-        else if ( !keyNode.textValue().equals( key.toString() ) )
+        if ( !keyNode.textValue().equals( key.toString() ) )
         {
             logger.trace( "Patching key field in JSON for: {}", key );
             ( (ObjectNode) tree ).put( ArtifactStore.KEY_ATTR, key.toString() );

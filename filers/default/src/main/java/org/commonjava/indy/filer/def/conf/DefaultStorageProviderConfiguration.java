@@ -42,6 +42,8 @@ public class DefaultStorageProviderConfiguration
 
     private File storageBasedir;
 
+    private File legacyStorageBasedir;
+
     private File nfsStoreBasedir;
 
     public DefaultStorageProviderConfiguration()
@@ -71,7 +73,6 @@ public class DefaultStorageProviderConfiguration
     }
 
     @ConfigName( "storage.dir" )
-    @Deprecated
     public void setStorageRootDirectory( final File storageBasedir )
     {
         this.storageBasedir = storageBasedir;
@@ -112,6 +113,8 @@ public class DefaultStorageProviderConfiguration
 
     private String cassandraKeyspace = DEFAULT_STORAGE_KEYSPACE;
 
+    private Integer cassandraReplicationFactor;
+
     private int gcBatchSize = 100;
 
     private int gcGracePeriodInHours = 24;
@@ -131,6 +134,17 @@ public class DefaultStorageProviderConfiguration
     public String getCassandraKeyspace()
     {
         return cassandraKeyspace;
+    }
+
+    @ConfigName( "storage.cassandra.replica" )
+    public void setCassandraReplicationFactor( int cassandraReplicationFactor )
+    {
+        this.cassandraReplicationFactor = cassandraReplicationFactor;
+    }
+
+    public Integer getCassandraReplicationFactor()
+    {
+        return cassandraReplicationFactor;
     }
 
     @ConfigName( "storage.gc.batchsize" )
@@ -186,5 +200,19 @@ public class DefaultStorageProviderConfiguration
     public String getDeduplicatePattern()
     {
         return deduplicatePattern;
+    }
+
+    /**
+     * After switching to pathmap storage, we take the old storage dir as legacy. Files in the legacy dir are read-only.
+     */
+    public File getLegacyStorageBasedir()
+    {
+        return legacyStorageBasedir;
+    }
+
+    @ConfigName( "storage.legacy.dir" )
+    public void setLegacyStorageBasedir( File legacyStorageBasedir )
+    {
+        this.legacyStorageBasedir = legacyStorageBasedir;
     }
 }

@@ -1,0 +1,28 @@
+package metadata_key;
+
+/*
+  @Indexed
+*/
+message MetadataKey
+{
+    /* @IndexedField(index=true) */
+    optional StoreKey storeKey = 1;
+
+    /* @IndexedField(index=false) */
+    optional string path = 2;
+}
+
+message StoreKey
+{
+    optional string packageType = 1;
+
+    enum StoreType {
+        group = 0;
+        remote = 1;
+        hosted = 2;
+    }
+
+    optional StoreType type = 2;
+
+    optional string name = 3;
+}

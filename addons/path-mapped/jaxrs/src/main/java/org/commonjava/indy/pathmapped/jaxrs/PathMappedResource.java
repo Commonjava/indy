@@ -20,6 +20,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
@@ -28,6 +29,7 @@ import org.commonjava.indy.pathmapped.common.PathMappedController;
 import org.commonjava.indy.pathmapped.model.PathMappedDeleteResult;
 import org.commonjava.indy.pathmapped.model.PathMappedListResult;
 import org.commonjava.indy.util.ApplicationHeader;
+import org.commonjava.indy.util.MimeTyper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
 
 import java.io.InputStream;
 
@@ -71,6 +74,9 @@ public class PathMappedResource
 
     @Inject
     private ResponseHelper responseHelper;
+
+    @Inject
+    private MimeTyper mimeTyper;
 
     @ApiOperation( "List root." )
     @ApiResponse( code = 200, message = "Operation finished.", response = PathMappedListResult.class )
@@ -123,16 +129,18 @@ public class PathMappedResource
     {
         try
         {
-            logger.debug( "Get, packageType:{}, type:{}, name:{}, path:{}", packageType, type, name, path );
             InputStream inputStream = controller.get( packageType, type, name, path );
-            return Response.ok( inputStream )
-                           .header( ApplicationHeader.content_disposition.key(),
-                                    "attachment" )
-                           .build();
+            Response.ResponseBuilder builder =
+                            Response.ok( (StreamingOutput) outputStream -> IOUtils.copy( inputStream, outputStream ) );
+            return builder.header( ApplicationHeader.content_type.key(), mimeTyper.getContentType( path ) ).build();
         }
         catch ( Exception e )
         {
-            logger.error( e.getMessage(), e );
+            logger.warn( e.getMessage(), e );
+            if ( e.getMessage().contains( "not exist" ) )
+            {
+                return Response.status( Response.Status.NOT_FOUND ).build();
+            }
             responseHelper.throwError( e );
         }
         return null;

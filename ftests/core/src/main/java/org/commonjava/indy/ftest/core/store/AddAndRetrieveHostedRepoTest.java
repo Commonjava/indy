@@ -19,19 +19,21 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.commonjava.indy.model.core.HostedRepository;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore( " This test can be fully covered by AddAndDeleteHostedRepoTest" )
+@Deprecated
 public class AddAndRetrieveHostedRepoTest
-    extends AbstractStoreManagementTest
+        extends AbstractStoreManagementTest
 {
 
     @Test
     public void addMinimalHostedRepositoryAndRetrieveIt()
-        throws Exception
+            throws Exception
     {
         final HostedRepository repo = new HostedRepository( newName() );
-        final HostedRepository result = client.stores()
-                                              .create( repo, name.getMethodName(), HostedRepository.class );
+        final HostedRepository result = client.stores().create( repo, name.getMethodName(), HostedRepository.class );
 
         assertThat( result.getName(), equalTo( repo.getName() ) );
         assertThat( result.equals( repo ), equalTo( true ) );

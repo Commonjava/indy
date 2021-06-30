@@ -36,7 +36,6 @@ public class UrlInfoTest
         assertThat( urlInfo.getPort(), equalTo( 80 ) );
         assertThat( urlInfo.getFileWithNoLastSlash(), equalTo( "" ) );
         assertThat( urlInfo.getUrlWithNoSchemeAndLastSlash(), equalTo( "repo.maven.apache.org:80" ) );
-        assertThat( IP_REGEX.matcher( urlInfo.getIpForUrl() ).matches(), equalTo( true ) );
 
         urlInfo = new UrlInfo( "https://repo.maven.apache.org/" );
         assertThat( urlInfo.getHost(), equalTo( "repo.maven.apache.org" ) );
@@ -57,13 +56,11 @@ public class UrlInfoTest
         assertThat( urlInfo.getPort(), equalTo( 8080 ) );
         assertThat( urlInfo.getFileWithNoLastSlash(), equalTo( "/org/commonjava/indy" ) );
         assertThat( urlInfo.getUrlWithNoSchemeAndLastSlash(), equalTo( "repo.maven.apache.org:8080/org/commonjava/indy" ) );
-        assertThat( IP_REGEX.matcher( urlInfo.getIpForUrl() ).matches(), equalTo( true ) );
 
         urlInfo = new UrlInfo( "http://repo.maven.apache.org:8080/org/commonjava/indy/a.html?klj=skljdflkf" );
         assertThat( urlInfo.getHost(), equalTo( "repo.maven.apache.org" ) );
         assertThat( urlInfo.getPort(), equalTo( 8080 ) );
         assertThat( urlInfo.getFileWithNoLastSlash(), equalTo( "/org/commonjava/indy/a.html?klj=skljdflkf" ) );
         assertThat( urlInfo.getUrlWithNoSchemeAndLastSlash(), equalTo( "repo.maven.apache.org:8080/org/commonjava/indy/a.html?klj=skljdflkf" ) );
-        assertThat( IP_REGEX.matcher( urlInfo.getIpForUrl() ).matches(), equalTo( true ) );
     }
 }

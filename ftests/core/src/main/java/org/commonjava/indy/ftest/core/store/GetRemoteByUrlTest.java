@@ -66,7 +66,7 @@ public class GetRemoteByUrlTest
         assertThat( client.stores().create( remote2, name.getMethodName(), RemoteRepository.class ), notNullValue() );
 
         final RemoteRepository remote3 = new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, newName(), server.formatUrl("another test") );
-        assertThat( client.stores().create( remote2, name.getMethodName(), RemoteRepository.class ), notNullValue() );
+        assertThat( client.stores().create( remote3, name.getMethodName(), RemoteRepository.class ), notNullValue() );
 
         server.expect( url, 200, "" );
         final StoreListingDTO<RemoteRepository> remotes =

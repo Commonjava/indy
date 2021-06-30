@@ -84,14 +84,14 @@ public abstract class RepositoryDataManagerTCK
         storeRemoteRepository( repo, true );
 
         List<RemoteRepository> result =
-                manager.query().packageType( MAVEN_PKG_KEY ).storeType( RemoteRepository.class ).getAll();
+                manager.query().getAllRemoteRepositories( MAVEN_PKG_KEY );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );
 
         storeRemoteRepository( repo, true );
 
-        result = manager.query().packageType( MAVEN_PKG_KEY ).storeType( RemoteRepository.class ).getAll();
+        result = manager.query().getAllRemoteRepositories( MAVEN_PKG_KEY );
 
         assertThat( result, notNullValue() );
         assertThat( result.size(), equalTo( 1 ) );
@@ -109,9 +109,7 @@ public abstract class RepositoryDataManagerTCK
         manager.deleteArtifactStore( repo.getKey(), summary, new EventMetadata() );
 
         final ArtifactStore result = manager.query()
-                                            .packageType( MAVEN_PKG_KEY )
-                                            .storeType( RemoteRepository.class )
-                                            .getByName( repo.getName() );
+                                            .getRemoteRepository( MAVEN_PKG_KEY, repo.getName() );
 
         assertThat( result, nullValue() );
     }
@@ -129,7 +127,7 @@ public abstract class RepositoryDataManagerTCK
         storeRemoteRepository( repo2 );
 
         final List<RemoteRepository> repositories =
-        manager.query().packageType( MAVEN_PKG_KEY ).storeType( RemoteRepository.class ).getAll();
+        manager.query().getAllRemoteRepositories( MAVEN_PKG_KEY );
 
         assertThat( repositories, notNullValue() );
         assertThat( repositories.size(), equalTo( 2 ) );

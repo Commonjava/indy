@@ -59,6 +59,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -97,6 +98,7 @@ import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 public class MavenMetadataGenerator
     extends AbstractMergedContentGenerator
@@ -367,6 +369,18 @@ public class MavenMetadataGenerator
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
+        final Transfer rawTarget = fileManager.getTransfer( group, path );
+        // First we check the metadata and all of its siblings metadata files
+        if ( canProcess( path ) && exists( rawTarget ) )
+        {
+            // Means there is no metadata change if this transfer exists, so directly return it.
+            logger.trace( "Raw metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(),
+                          path );
+            eventMetadata.set( GROUP_METADATA_EXISTS, true );
+            return rawTarget;
+        }
+
+        // Then changed back to the metadata itself whatever the path is
         String toMergePath = path;
         if ( !path.endsWith( MavenMetadataMerger.METADATA_NAME ) )
         {
@@ -377,7 +391,8 @@ public class MavenMetadataGenerator
         if ( exists( target ) )
         {
             // Means there is no metadata change if this transfer exists, so directly return it.
-            logger.trace( "Metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(), path );
+            logger.trace( "Merged metadata file exists for group {} of path {}, no need to regenerate.", group.getKey(),
+                          toMergePath );
             eventMetadata.set( GROUP_METADATA_EXISTS, true );
             return target;
         }
@@ -612,6 +627,10 @@ public class MavenMetadataGenerator
     private Callable<MetadataResult> generateMissing( ArtifactStore store, String toMergePath )
     {
         return ()->{
+            addFieldToActiveSpan( "storekey", store.getKey().toString() );
+            addFieldToActiveSpan( "path", toMergePath );
+            addFieldToActiveSpan( "activity", "generateMissing" );
+
             try
             {
                 logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath );
@@ -634,6 +653,9 @@ public class MavenMetadataGenerator
             }
             catch ( final Exception e )
             {
+                addFieldToActiveSpan( "error", e.getClass().getSimpleName() );
+                addFieldToActiveSpan( "error.message", e.getMessage() );
+
                 String msg = String.format( "EXCLUDING Failed generated metadata: %s:%s. Reason: %s", store.getKey(),
                                             toMergePath, e.getMessage() );
                 logger.error( msg, e );
@@ -668,6 +690,10 @@ public class MavenMetadataGenerator
     private Callable<MetadataResult> retrieveCached( final ArtifactStore store, final String toMergePath )
     {
         return ()->{
+            addFieldToActiveSpan( "storekey", store.getKey().toString() );
+            addFieldToActiveSpan( "path", toMergePath );
+            addFieldToActiveSpan( "activity", "retrieveCached" );
+
             Metadata memberMeta;
             memberMeta = getMetaFromCache( store.getKey(), toMergePath );
 
@@ -808,6 +834,9 @@ public class MavenMetadataGenerator
     private Callable<MetadataResult> downloadMissing( ArtifactStore store, String toMergePath )
     {
         return () -> {
+            addFieldToActiveSpan( "storekey", store.getKey().toString() );
+            addFieldToActiveSpan( "path", toMergePath );
+            addFieldToActiveSpan( "activity", "downloadMissing" );
             try
             {
                 logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );

@@ -23,7 +23,6 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.content.ContentDigester;
-import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
@@ -40,6 +39,7 @@ import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.conf.PromoteDataFileManager;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.validate.PromoteValidationsManager;
@@ -73,9 +73,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -108,7 +108,7 @@ public class PromotionManagerTest
 
     private PromotionManager manager;
 
-    private DataFileManager dataManager;
+    private PromoteDataFileManager promoteDataManager;
 
     private PromoteValidationsManager validationsManager;
 
@@ -160,7 +160,7 @@ public class PromotionManagerTest
         DirectContentAccess dca =
                 new DefaultDirectContentAccess( downloadManager, contentAccessService );
 
-        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<String, TransferMetadata>(
+        ContentDigester contentDigester = new DefaultContentDigester( dca, new CacheHandle<>(
                 "content-metadata", contentMetadata ) );
 
         specialPathManager = new SpecialPathManagerImpl();
@@ -169,9 +169,13 @@ public class PromotionManagerTest
                                                     specialPathManager, new MemoryNotFoundCache(),
                                                     contentDigester, new ContentGeneratorManager() );
 
-        dataManager = new DataFileManager( temp.newFolder( "data" ), new DataFileEventManager() );
-        validationsManager = new PromoteValidationsManager( dataManager, new PromoteConfig(),
-                                                            new ValidationRuleParser( new ScriptEngine( dataManager ),
+        File tempData = temp.newFolder( "data" );
+        promoteDataManager =
+                new PromoteDataFileManager( temp.newFolder( "data", "promote" ), new DataFileEventManager() );
+        validationsManager = new PromoteValidationsManager( promoteDataManager, new PromoteConfig(),
+                                                            new ValidationRuleParser( new ScriptEngine(
+                                                                    new DataFileManager( tempData,
+                                                                                         new DataFileEventManager() ) ),
                                                                                       new IndyObjectMapper( true ) ) );
 
         WeftExecutorService validateService =
@@ -397,8 +401,8 @@ public class PromotionManagerTest
                                         try (InputStream sourceIn = sourceRef.openInputStream();
                                              InputStream targetIn = targetRef.openInputStream())
                                         {
-                                            int s = -1, t = -1;
-                                            while ( ( s = sourceIn.read() ) == ( t = targetIn.read() ) )
+                                            int s, t;
+                                            while ( ( s = sourceIn.read() ) == targetIn.read()  )
                                             {
                                                 if ( s == -1 )
                                                 {
@@ -406,7 +410,7 @@ public class PromotionManagerTest
                                                 }
                                             }
 
-                                            if ( s != -1 && s != t )
+                                            if ( s != -1 )
                                             {
                                                 Assert.fail(
                                                         path + " doesn't match between source: " + src + " and target: "

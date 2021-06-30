@@ -83,7 +83,8 @@ public class GroupPromoteFailsValidationTest
     protected void initTestData( CoreServerFixture fixture )
             throws IOException
     {
-        writeDataFile( "promote/rules/fail-all.groovy", readTestResource( getClass().getSimpleName() + "/fail-all.groovy" ) );
-        writeDataFile( "promote/rule-sets/fail-all.json", readTestResource( getClass().getSimpleName() + "/fail-all.json" ) );
+        super.initTestData( fixture );
+        writePromoteDataFile( "rules/fail-all.groovy", readTestResource( getClass().getSimpleName() + "/fail-all.groovy" ) );
+        writePromoteDataFile( "rule-sets/fail-all.json", readTestResource( getClass().getSimpleName() + "/fail-all.json" ) );
     }
 }

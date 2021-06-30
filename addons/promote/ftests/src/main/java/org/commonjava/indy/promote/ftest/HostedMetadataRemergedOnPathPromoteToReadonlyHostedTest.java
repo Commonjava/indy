@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.promote.ftest;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
@@ -152,6 +153,10 @@ public class HostedMetadataRemergedOnPathPromoteToReadonlyHostedTest
         client.content()
               .store( a.getKey(), PATH, new ByteArrayInputStream(
                               aPreContent.getBytes() ) );
+
+        // Add this to test the metadata and its siblings clean-up during the promotion
+        String md5 = DigestUtils.md5Hex( aPreContent );
+        client.content().store( a.getKey(), PATH + ".md5", new ByteArrayInputStream( md5.getBytes() ) );
 
         //
         bPomPath = POM_PATH_TEMPLATE.replaceAll( "%version%", B_VERSION );

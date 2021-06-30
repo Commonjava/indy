@@ -267,9 +267,8 @@ public class DefaultContentManager
         try
         {
             members = storeManager.query()
-                                  .packageType( group.getPackageType() )
                                   .enabledState( true )
-                                  .getOrderedConcreteStoresInGroup( group.getName() );
+                                  .getOrderedConcreteStoresInGroup( group.getPackageType(), group.getName() );
         }
         catch ( final IndyDataException e )
         {
@@ -343,9 +342,8 @@ public class DefaultContentManager
             try
             {
                 final List<ArtifactStore> allMembers = storeManager.query()
-                                      .packageType( store.getPackageType() )
                                       .enabledState( true )
-                                      .getOrderedConcreteStoresInGroup( store.getName() );
+                                      .getOrderedConcreteStoresInGroup( store.getPackageType(), store.getName() );
 
                 final Transfer txfr = store( allMembers, store.getKey(), path, stream, op, eventMetadata );
                 logger.debug( "Stored: {} for group: {} in: {}", path, store.getKey(), txfr );

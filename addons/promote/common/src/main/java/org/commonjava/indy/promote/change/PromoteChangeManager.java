@@ -15,10 +15,11 @@
  */
 package org.commonjava.indy.promote.change;
 
+import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.conf.PromoteDataFileManager;
 import org.commonjava.indy.promote.data.PromotionException;
 import org.commonjava.indy.subsys.datafile.DataFile;
-import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.commonjava.indy.subsys.template.ScriptEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ public class PromoteChangeManager
     private final static String FORMATTER_SCRIPT = "change/tracking-id-formatter.groovy";
 
     @Inject
-    private DataFileManager ffManager;
+    private PromoteDataFileManager dataFileManager;
 
     @Inject
     private PromoteConfig config;
@@ -55,10 +56,10 @@ public class PromoteChangeManager
     {
     }
 
-    public PromoteChangeManager( final DataFileManager ffManager, final PromoteConfig config )
+    public PromoteChangeManager( final PromoteDataFileManager dataFileManager, final PromoteConfig config )
                     throws PromotionException
     {
-        this.ffManager = ffManager;
+        this.dataFileManager = dataFileManager;
         this.config = config;
         this.formatter = parseTrackingIdFormatter();
     }
@@ -78,7 +79,7 @@ public class PromoteChangeManager
 
     public TrackingIdFormatter parseTrackingIdFormatter() throws PromotionException
     {
-        DataFile dataFile = ffManager.getDataFile( config.getBasedir(), FORMATTER_SCRIPT );
+        DataFile dataFile = dataFileManager.getDataFile(  FORMATTER_SCRIPT );
         if ( dataFile.exists() )
         {
             try
@@ -96,7 +97,7 @@ public class PromoteChangeManager
             }
         }
         logger.debug( "No tracking-id-formatter.groovy was defined for promotion, use default formatter." );
-        return storeKey -> storeKey.getName();
+        return StoreKey::getName;
     }
 
 }

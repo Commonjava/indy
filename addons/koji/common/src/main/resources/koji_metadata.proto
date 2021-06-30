@@ -1,0 +1,7 @@
+package koji;
+
+message SimpleProjectRef
+{
+    optional string groupId = 1;
+    optional string artifactId = 2;
+}

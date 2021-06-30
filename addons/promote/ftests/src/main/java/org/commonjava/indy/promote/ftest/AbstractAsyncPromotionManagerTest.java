@@ -20,6 +20,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.promote.model.AbstractPromoteRequest;
 import org.commonjava.indy.promote.model.AbstractPromoteResult;
 import org.commonjava.indy.promote.model.CallbackTarget;
+import org.commonjava.indy.promote.model.PromoteRequest;
 import org.commonjava.test.http.expect.ExpectationHandler;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
@@ -37,7 +38,7 @@ import java.util.Map;
 /**
  * Created by ruhan on 12/18/18.
  */
-public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest, R extends AbstractPromoteResult>
+public class AbstractAsyncPromotionManagerTest<T extends PromoteRequest, R extends AbstractPromoteResult>
                 extends AbstractPromotionManagerTest
 {
     @Rule
@@ -62,7 +63,7 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
         server.expect( "POST", callbackUrl, handler );
     }
 
-    protected T getAsyncRequest( AbstractPromoteRequest request )
+    protected T getAsyncRequest( AbstractPromoteRequest<T> request )
     {
         request.setAsync( true );
         Map<String, String> headers = new HashMap<>(  );
@@ -104,7 +105,7 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
             return jsonBody;
         }
 
-        public <T> T getPromoteResult( Class<T> resultClass ) throws IOException
+        public <K> K getPromoteResult( Class<K> resultClass ) throws IOException
         {
             if ( jsonBody == null )
             {
@@ -133,7 +134,7 @@ public class AbstractAsyncPromotionManagerTest<T extends AbstractPromoteRequest,
             }
             catch ( InterruptedException e )
             {
-                ;
+                // Do nothing
             }
         }
 

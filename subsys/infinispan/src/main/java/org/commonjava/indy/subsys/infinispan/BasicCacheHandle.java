@@ -16,6 +16,7 @@
 package org.commonjava.indy.subsys.infinispan;
 
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,6 +70,8 @@ public class BasicCacheHandle<K,V>
     {
         return name;
     }
+
+    public BasicCache<K,V> getCache() { return this.cache; }
 
     public <R> R execute( Function<BasicCache<K, V>, R> operation )
     {

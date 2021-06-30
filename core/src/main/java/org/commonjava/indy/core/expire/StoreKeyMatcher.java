@@ -41,7 +41,7 @@ public class StoreKeyMatcher
 
     public StoreKeyMatcher( final StoreKey key, final String eventType )
     {
-        this.groupName = ScheduleManager.groupName( key, eventType );
+        this.groupName = ScheduleManagerUtils.groupName( key, eventType );
     }
 
     @Override

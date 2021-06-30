@@ -58,14 +58,6 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public ArtifactStoreQuery<T> packageType( final String packageType )
-            throws IndyDataException
-    {
-        delegate.packageType( packageType );
-        return this;
-    }
-
-    @Override
     public <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( final Class<C> storeCls )
     {
         delegate.storeType( storeCls );
@@ -170,24 +162,52 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<RemoteRepository> getRemoteRepositoryByUrl( final String url )
-            throws IndyDataException
+    public Set<Group> getGroupsContaining( final StoreKey storeKey, final Boolean enabled )
+                    throws IndyDataException
     {
-        return delegate.getRemoteRepositoryByUrl( url );
+        return delegate.getGroupsContaining( storeKey, enabled );
     }
 
     @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String groupName )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType, final String url )
             throws IndyDataException
     {
-        return delegate.getOrderedConcreteStoresInGroup( groupName );
+        return delegate.getRemoteRepositoryByUrl( packageType, url );
     }
 
     @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String groupName )
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType,final String url, final Boolean enabled )
+                    throws IndyDataException
+    {
+        return delegate.getRemoteRepositoryByUrl( packageType, url, enabled );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName )
             throws IndyDataException
     {
-        return delegate.getOrderedStoresInGroup( groupName );
+        return delegate.getOrderedConcreteStoresInGroup( packageType, groupName );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
+                    throws IndyDataException
+    {
+        return delegate.getOrderedConcreteStoresInGroup( packageType, groupName, enabled );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName )
+            throws IndyDataException
+    {
+        return delegate.getOrderedStoresInGroup( packageType, groupName );
+    }
+
+    @Override
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
+                    throws IndyDataException
+    {
+        return delegate.getOrderedStoresInGroup( packageType, groupName, enabled );
     }
 
     @Override
@@ -205,45 +225,24 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<RemoteRepository> getAllRemoteRepositories()
+    public RemoteRepository getRemoteRepository( final String packageType, final String name )
             throws IndyDataException
     {
-        return delegate.getAllRemoteRepositories();
+        return delegate.getRemoteRepository( packageType, name );
     }
 
     @Override
-    public List<HostedRepository> getAllHostedRepositories()
+    public HostedRepository getHostedRepository( final String packageType, final String name )
             throws IndyDataException
     {
-        return delegate.getAllHostedRepositories();
+        return delegate.getHostedRepository( packageType, name );
     }
 
     @Override
-    public List<Group> getAllGroups()
+    public Group getGroup( final String packageType, final String name )
             throws IndyDataException
     {
-        return delegate.getAllGroups();
-    }
-
-    @Override
-    public RemoteRepository getRemoteRepository( final String name )
-            throws IndyDataException
-    {
-        return delegate.getRemoteRepository( name );
-    }
-
-    @Override
-    public HostedRepository getHostedRepository( final String name )
-            throws IndyDataException
-    {
-        return delegate.getHostedRepository( name );
-    }
-
-    @Override
-    public Group getGroup( final String name )
-            throws IndyDataException
-    {
-        return delegate.getGroup( name );
+        return delegate.getGroup( packageType, name );
     }
 
     @Override
@@ -251,5 +250,41 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     {
         delegate.noPackageType();
         return this;
+    }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType ) throws IndyDataException
+    {
+        return delegate.getAllRemoteRepositories( packageType );
+    }
+
+    @Override
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        return delegate.getAllRemoteRepositories( packageType, enabled );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType ) throws IndyDataException
+    {
+        return delegate.getAllHostedRepositories( packageType );
+    }
+
+    @Override
+    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        return delegate.getAllHostedRepositories( packageType, enabled );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType ) throws IndyDataException
+    {
+        return delegate.getAllGroups( packageType );
+    }
+
+    @Override
+    public List<Group> getAllGroups( String packageType, Boolean enabled ) throws IndyDataException
+    {
+        return delegate.getAllGroups( packageType, enabled );
     }
 }

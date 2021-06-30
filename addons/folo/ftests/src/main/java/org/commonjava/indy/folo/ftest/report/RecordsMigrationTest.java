@@ -67,6 +67,7 @@ public class RecordsMigrationTest
         assertNotNull( idsDTO );
 
         List<String> expectedIds = Arrays.asList( "Mg4NV207", "qC8c1cZB" );
-        checkIdsDTO( idsDTO, expectedIds, adminClientModule );
+        //**/ Disabled behawior  because it is  affeecting  auditing  for folo records
+//        checkIdsDTO( idsDTO, expectedIds, adminClientModule );
     }
 }

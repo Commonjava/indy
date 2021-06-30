@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -374,7 +375,7 @@ public class PackageMetadataGenerator
             {
                 if ( currentEntry.isFile() && currentEntry.getName().equals( "package/package.json" ) )
                 {
-                    metaFile = downloadManager.store( store, versionPath, tarIn, TransferOperation.UPLOAD );
+                    metaFile = downloadManager.store( store, versionPath, tarIn, TransferOperation.UPLOAD, new EventMetadata().set( IGNORE_READONLY, Boolean.TRUE ) );
                     break;
                 }
                 currentEntry = tarIn.getNextTarEntry();

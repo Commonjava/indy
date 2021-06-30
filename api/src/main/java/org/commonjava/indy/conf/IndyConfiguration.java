@@ -100,6 +100,13 @@ public interface IndyConfiguration
      */
     Boolean isStandalone();
 
+    /**
+     * Decide storeDataManager to run as standalone mode or cassandra mode
+     * @return
+     * @since 2.5.0
+     */
+    Boolean isStoreManagerStandalone();
+
     boolean isRepositoryFilterEnabled();
 
     String getGACacheStorePattern();
@@ -111,4 +118,13 @@ public interface IndyConfiguration
      * @since 2.1.0
      */
     int getFileSystemContainingBatchSize();
+
+    /**
+     *
+     * The replication factor of cassandra keyspaces
+     *
+     * @return
+     * @sinces 2.5.4
+     */
+    int getKeyspaceReplicas();
 }

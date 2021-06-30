@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static org.commonjava.indy.client.core.helper.HttpResources.cleanupResources;
 import static org.commonjava.indy.client.core.helper.HttpResources.entityToString;
@@ -61,36 +62,39 @@ public class IndyHostedByArchiveClientModule
         try
         {
             postRequest.setHeader( "Content-Type", CONTENT_TYPE_ZIP.getMimeType() );
-            InputStreamEntity entity = new InputStreamEntity( new FileInputStream( zipFile ), CONTENT_TYPE_ZIP );
-            postRequest.setEntity( entity );
-
-            resources = http.execute( postRequest );
-
-            if ( resources != null )
+            try ( InputStream in = new FileInputStream( zipFile ) )
             {
-                HttpResponse response = resources.getResponse();
-                final StatusLine sl = response.getStatusLine();
+                InputStreamEntity entity = new InputStreamEntity( in, CONTENT_TYPE_ZIP );
+                postRequest.setEntity( entity );
 
-                if ( sl.getStatusCode() != SC_OK && sl.getStatusCode() != SC_CREATED )
+                resources = http.execute( postRequest );
+
+                if ( resources != null )
                 {
-                    if ( sl.getStatusCode() == SC_NOT_FOUND )
+                    HttpResponse response = resources.getResponse();
+                    final StatusLine sl = response.getStatusLine();
+
+                    if ( sl.getStatusCode() != SC_OK && sl.getStatusCode() != SC_CREATED )
                     {
-                        return null;
+                        if ( sl.getStatusCode() == SC_NOT_FOUND )
+                        {
+                            return null;
+                        }
+
+                        throw new IndyClientException( sl.getStatusCode(), "Error create %s with file: %s", repoName,
+                                                       zipFile.getName() );
                     }
 
-                    throw new IndyClientException( sl.getStatusCode(), "Error create %s with file: %s", repoName,
-                                                   zipFile.getName() );
+                    final String json = entityToString( response );
+                    logger.debug( "Got JSON:\n\n{}\n\n", json );
+                    final HostedRepository value = http.getObjectMapper().readValue( json, HostedRepository.class );
+
+                    logger.debug( "Got result object: {}", value );
+
+                    return value;
                 }
-
-                final String json = entityToString( response );
-                logger.debug( "Got JSON:\n\n{}\n\n", json );
-                final HostedRepository value = http.getObjectMapper().readValue( json, HostedRepository.class );
-
-                logger.debug( "Got result object: {}", value );
-
-                return value;
+                return null;
             }
-            return null;
         }
         catch ( IOException e )
         {

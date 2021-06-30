@@ -60,7 +60,11 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_STANDALONE = false;
 
+    public static final Boolean DEFAULT_STORE_MANAGER_STANDALONE = false;
+
     public static final String DEFAULT_DISPOSABLE_STORE_PATTERN = ".*test.*";
+
+    public static final int DEFAULT_CASSANDRA_KEYSPACE_REPLICAS = 1;
 
     private Integer passthroughTimeoutSeconds;
 
@@ -96,11 +100,15 @@ public class DefaultIndyConfiguration
 
     private Boolean standalone;
 
+    private Boolean storeManagerStandalone;
+
     private boolean repositoryFilterEnabled;
 
     private String gaCacheStorePattern;
 
     private String disposableStorePattern;
+
+    private Integer keyspaceReplicas;
 
     public DefaultIndyConfiguration()
     {
@@ -116,7 +124,12 @@ public class DefaultIndyConfiguration
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
-        String nodeId = System.getenv( "HOSTNAME" );
+        String nodeId = System.getenv( "POD_NAME" );
+        if ( isBlank( nodeId ) )
+        {
+            nodeId = System.getenv( "HOSTNAME" );
+        }
+
         if ( isBlank( nodeId ) )
         {
             nodeId = System.getenv( "HOST" );
@@ -361,6 +374,12 @@ public class DefaultIndyConfiguration
         return this.standalone == null ? DEFAULT_STANDALONE : this.standalone;
     }
 
+    @Override
+    public Boolean isStoreManagerStandalone()
+    {
+        return this.storeManagerStandalone == null ? DEFAULT_STORE_MANAGER_STANDALONE : this.storeManagerStandalone;
+    }
+
     @ConfigName( "repository.filter.enabled" )
     public void setRepositoryFilterEnabled( boolean repositoryFilterEnabled )
     {
@@ -389,6 +408,23 @@ public class DefaultIndyConfiguration
     public void setStandalone( Boolean standalone )
     {
         this.standalone = standalone;
+    }
+
+    @ConfigName( "store.manager.standalone" )
+    public void setStoreManagerStandalone( Boolean storeManagerStandalone )
+    {
+        this.storeManagerStandalone = storeManagerStandalone;
+    }
+
+    public int getKeyspaceReplicas()
+    {
+        return this.keyspaceReplicas == null ? DEFAULT_CASSANDRA_KEYSPACE_REPLICAS : keyspaceReplicas;
+    }
+
+    @ConfigName( "cassandra.keyspace.replicas" )
+    public void setKeyspaceReplicas( final int keyspaceReplicas )
+    {
+        this.keyspaceReplicas = keyspaceReplicas;
     }
 
     @Override

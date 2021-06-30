@@ -15,14 +15,12 @@
  */
 package org.commonjava.indy.promote.action;
 
-import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.MigrationAction;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.promote.conf.PromoteConfig;
+import org.commonjava.indy.promote.conf.PromoteDataFileManager;
 import org.commonjava.indy.promote.validate.PromoteValidationsManager;
-import org.commonjava.indy.promote.validate.model.ValidationRuleMapping;
 import org.commonjava.indy.subsys.datafile.DataFile;
-import org.commonjava.indy.subsys.datafile.DataFileManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,14 +34,13 @@ public class PromotionRuleAproxMigrationAction
         implements MigrationAction
 {
     @Inject
-    private DataFileManager ffManager;
+    private PromoteDataFileManager dataFileManager;
 
     @Inject
     private PromoteConfig config;
 
     @Override
     public boolean migrate()
-            throws IndyLifecycleException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Disabled." );
@@ -51,9 +48,8 @@ public class PromotionRuleAproxMigrationAction
     }
 
     private boolean doMigrate()
-            throws IndyLifecycleException
     {
-        DataFile dataDir = ffManager.getDataFile( config.getBasedir(), PromoteValidationsManager.RULES_DIR );
+        DataFile dataDir = dataFileManager.getDataFile( PromoteValidationsManager.RULES_DIR );
 
         Logger logger = LoggerFactory.getLogger( getClass() );
         logger.debug( "Scanning {} for promotion validation rules...", dataDir );

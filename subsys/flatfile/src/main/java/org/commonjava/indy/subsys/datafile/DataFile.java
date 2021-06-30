@@ -31,7 +31,7 @@ public final class DataFile
 
     private final DataFileEventManager events;
 
-    DataFile( final File file, final DataFileEventManager events )
+    public DataFile( final File file, final DataFileEventManager events )
     {
         this.file = file;
         this.events = events;

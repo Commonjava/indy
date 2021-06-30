@@ -30,14 +30,27 @@ import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
+import org.infinispan.client.hotrod.RemoteCounterManagerFactory;
 import org.infinispan.client.hotrod.configuration.ConfigurationBuilder;
+import org.infinispan.client.hotrod.marshall.ProtoStreamMarshaller;
+import org.infinispan.commons.configuration.XMLStringConfiguration;
 import org.infinispan.commons.marshall.MarshallableTypeHints;
 import org.infinispan.configuration.ConfigurationManager;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
+import org.infinispan.counter.api.CounterConfiguration;
+import org.infinispan.counter.api.CounterManager;
+import org.infinispan.counter.api.CounterType;
+import org.infinispan.counter.api.Storage;
+import org.infinispan.counter.api.StrongCounter;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.protostream.BaseMarshaller;
+import org.infinispan.protostream.FileDescriptorSource;
+import org.infinispan.protostream.MessageMarshaller;
+import org.infinispan.protostream.SerializationContext;
+import org.infinispan.protostream.annotations.ProtoSchemaBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,17 +60,23 @@ import javax.inject.Inject;
 import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
+import static org.infinispan.query.remote.client.ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME;
 
 /**
  * Created by jdcasey on 3/8/16.
@@ -89,6 +108,8 @@ public class CacheProducer
     private ISPNClusterConfiguration clusterConfiguration;
 
     private Map<String, BasicCacheHandle> caches = new ConcurrentHashMap<>(); // hold embedded and remote caches
+
+    private Map<String, StrongCounter> counters = new ConcurrentHashMap<>();
 
     protected CacheProducer()
     {
@@ -122,8 +143,20 @@ public class CacheProducer
         }
 
         ConfigurationBuilder builder = new ConfigurationBuilder();
-        builder.addServer().host( remoteConfiguration.getRemoteServer() ).port( remoteConfiguration.getHotrodPort() );
-        remoteCacheManager = new RemoteCacheManager( builder.build() );
+        Properties props = new Properties();
+        try( Reader config = new FileReader( remoteConfiguration.getHotrodClientConfigPath()) )
+        {
+            props.load( config );
+            builder.withProperties( props );
+        }
+        catch ( IOException e )
+        {
+            logger.error( "Load hotrod client properties failure.", e );
+        }
+
+        remoteCacheManager = new RemoteCacheManager(builder.build());
+        remoteCacheManager.start();
+
         logger.info( "Infinispan remote cache manager started." );
     }
 
@@ -218,12 +251,31 @@ public class CacheProducer
     public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named )
     {
         BasicCacheHandle handle = caches.computeIfAbsent( named, ( k ) -> {
-            if ( remoteConfiguration.isEnabled() && remoteConfiguration.isRemoteCache( k ) )
+            if ( remoteConfiguration.isEnabled() )
             {
                 RemoteCache<K, V> cache = null;
                 try
                 {
-                    cache = remoteCacheManager.getCache( k );
+                    // For infinispan 9.x, it needs to load the specific cache configuration to create it
+                    // For infinispan 11.x, there is no need to load this configuration here, instead, declaring it
+                    // in hotrod-client.properties and get the cache by remoteCacheManager.getCache( "cacheName" )
+                    File confDir = indyConfiguration.getIndyConfDir();
+                    File cacheConf = new File( confDir, "caches/cache-" + named + ".xml" );
+                    if ( !cacheConf.exists() )
+                    {
+                        logger.warn( "Invalid conf path, name: {}, path: {}", named, cacheConf );
+                        return null;
+                    }
+                    String confStr;
+                    try (InputStream confStream = FileUtils.openInputStream( cacheConf ))
+                    {
+                        confStr = interpolateStrFromStream( confStream, cacheConf.getPath() );
+                    }
+                    catch ( IOException e )
+                    {
+                        throw new RuntimeException( "Cannot read cache configuration from file: " + cacheConf, e );
+                    }
+                    cache = remoteCacheManager.administration().getOrCreateCache( named, new XMLStringConfiguration( confStr ) );
                     if ( cache == null )
                     {
                         logger.warn( "Can not get remote cache, name: {}", k );
@@ -247,6 +299,64 @@ public class CacheProducer
         }
 
         return handle;
+    }
+
+    public synchronized <K> void registerProtoSchema( Class<K> kClass, String packageName, String fileName )
+    {
+        SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
+        // Use ProtoSchemaBuilder to define a Protobuf schema on the client
+        ProtoSchemaBuilder protoSchemaBuilder = new ProtoSchemaBuilder();
+        String protoFile;
+        try
+        {
+            protoFile = protoSchemaBuilder
+                            .fileName(fileName)
+                            .addClass(kClass)
+                            .packageName(packageName)
+                            .build(ctx);
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException(" Register proto schema error, schema: " + fileName, e );
+        }
+
+        // Retrieve metadata cache and register the new schema on the infinispan server too
+        RemoteCache<String, String> metadataCache =
+                        remoteCacheManager.getCache(PROTOBUF_METADATA_CACHE_NAME);
+
+        metadataCache.put(fileName, protoFile);
+    }
+
+    public synchronized void registerProtoAndMarshallers( String protofile, List<BaseMarshaller> marshallers )
+    {
+        SerializationContext ctx = ProtoStreamMarshaller.getSerializationContext( remoteCacheManager );
+        try
+        {
+            ctx.registerProtoFiles( FileDescriptorSource.fromResources( protofile ) );
+        }
+        catch ( IOException e )
+        {
+            throw new RuntimeException("Register proto files error, protofile: " + protofile, e);
+        }
+
+        for ( BaseMarshaller marshaller : marshallers )
+        {
+            try
+            {
+                ctx.registerMarshaller( marshaller );
+            }
+            catch ( Exception e )
+            {
+                throw new RuntimeException("Register the marshallers error.", e);
+            }
+        }
+
+        // Retrieve metadata cache and register the new schema on the infinispan server too
+        RemoteCache<String, String> metadataCache =
+                        remoteCacheManager.getCache(PROTOBUF_METADATA_CACHE_NAME);
+
+        metadataCache.put( protofile, FileDescriptorSource.getResourceAsString( getClass(), "/" + protofile ));
+
     }
 
     /**
@@ -452,5 +562,26 @@ public class CacheProducer
     public EmbeddedCacheManager getCacheManager()
     {
         return cacheManager;
+    }
+
+    public synchronized StrongCounter getStrongCounter( String counter )
+    {
+        if ( remoteConfiguration == null || !remoteConfiguration.isEnabled() )
+        {
+            return null;
+        }
+        return counters.computeIfAbsent( counter, ( k )->{
+            CounterManager cm = RemoteCounterManagerFactory.asCounterManager( remoteCacheManager );
+            if ( !cm.isDefined( k ) )
+            {
+                cm.defineCounter( k, CounterConfiguration.builder( CounterType.BOUNDED_STRONG )
+                                                               .initialValue( 1 )
+                                                               .lowerBound( 0 )
+                                                               .storage( Storage.VOLATILE )
+                                                               .build() );
+            }
+            return cm.getStrongCounter( k );
+        } );
+
     }
 }

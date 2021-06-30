@@ -43,6 +43,7 @@ import java.io.BufferedOutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.channels.SocketChannel;
@@ -263,6 +264,11 @@ public class ProxyMITMSSLServer implements Runnable
                         }
                     }
                 }
+                catch ( SocketTimeoutException ste )
+                {
+                    logger.error( "Socket read timeout with client hostname: {}, on port: {}.", host, port );
+                    throw ste;
+                }
             }
             logger.debug( "MITM server closed" );
         }
@@ -289,15 +295,13 @@ public class ProxyMITMSSLServer implements Runnable
         logger.debug( "Requesting remote URL: {}", remoteUrl.toString() );
 
         ArtifactStore store = proxyResponseHelper.getArtifactStore( trackingId, remoteUrl );
-        try (BufferedOutputStream out = new BufferedOutputStream( socket.getOutputStream() ))
+        try (BufferedOutputStream out = new BufferedOutputStream( socket.getOutputStream() );
+            HttpConduitWrapper http = new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
+                    cacheProvider ))
         {
-            HttpConduitWrapper http =
-                            new HttpConduitWrapper( new OutputStreamSinkChannel( out ), null, contentController,
-                                                    cacheProvider );
             proxyResponseHelper.transfer( http, store, remoteUrl.getPath(), GET_METHOD.equals( method ),
                                           proxyUserPass, meter );
             out.flush();
-            http.close();
         }
     }
 
