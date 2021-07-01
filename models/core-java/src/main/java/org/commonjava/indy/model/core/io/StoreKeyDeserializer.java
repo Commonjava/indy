@@ -15,17 +15,17 @@
  */
 package org.commonjava.indy.model.core.io;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.StoreType;
+
 import java.io.IOException;
 
-import org.commonjava.indy.model.core.StoreKey;
-
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-
 public final class StoreKeyDeserializer
-    extends StdDeserializer<StoreKey>
+        extends StdDeserializer<StoreKey>
 {
     private static final long serialVersionUID = 1L;
 
@@ -36,9 +36,17 @@ public final class StoreKeyDeserializer
 
     @Override
     public StoreKey deserialize( final JsonParser parser, final DeserializationContext context )
-        throws IOException, JsonProcessingException
+            throws IOException
     {
         final String keyStr = parser.getText();
+        if ( keyStr != null && keyStr.trim().equals( "{" ) )
+        {
+            JsonNode node = parser.getCodec().readTree( parser );
+            String pkgType = node.get( "packageType" ).textValue();
+            String type = node.get( "type" ).textValue();
+            String name = node.get( "name" ).textValue();
+            return new StoreKey( pkgType, StoreType.get( type ), name );
+        }
         return StoreKey.fromString( keyStr );
     }
 
