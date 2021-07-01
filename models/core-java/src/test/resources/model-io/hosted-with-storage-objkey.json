@@ -1,0 +1,12 @@
+{
+  "allow_snapshots":true,
+  "allow_releases":true,
+  "snapshotTimeoutSeconds":86400,
+  "type": "hosted",
+  "key": {
+    "packageType": "maven",
+    "type": "hosted",
+    "name": "local-deployments"
+  },
+  "storage":"/tmp/local-deployments"
+}
