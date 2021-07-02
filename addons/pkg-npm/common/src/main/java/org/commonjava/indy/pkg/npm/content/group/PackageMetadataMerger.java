@@ -43,7 +43,6 @@ import static org.commonjava.indy.util.LocationUtils.getKey;
 @ApplicationScoped
 public class PackageMetadataMerger
 {
-    public static final String METADATA_NAME = "package.json";
 
     @Inject
     private Instance<PackageMetadataProvider> metadataProviderInstances;

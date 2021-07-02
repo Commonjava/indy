@@ -29,6 +29,8 @@ public class NPMPackageTypeDescriptor
 {
     public static final String NPM_PKG_KEY = PKG_TYPE_NPM;
 
+    public static final String NPM_METADATA_NAME = "package.json";
+
     public static final String NPM_CONTENT_REST_BASE_PATH = "/api/content/npm";
 
     public static final String NPM_ADMIN_REST_BASE_PATH = "/api/admin/stores/npm";
