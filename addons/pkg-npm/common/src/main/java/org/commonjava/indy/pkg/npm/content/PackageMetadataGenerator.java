@@ -58,6 +58,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -127,9 +128,9 @@ public class PackageMetadataGenerator
         if ( !exists( target ) )
         {
             String toMergePath = realPath;
-            if ( !realPath.endsWith( PackageMetadataMerger.METADATA_NAME ) )
+            if ( !realPath.endsWith( NPM_METADATA_NAME ) )
             {
-                toMergePath = normalize( normalize( parentPath( toMergePath ) ), PackageMetadataMerger.METADATA_NAME );
+                toMergePath = normalize( normalize( parentPath( toMergePath ) ), NPM_METADATA_NAME );
             }
 
             final List<Transfer> sources = new ArrayList<>(  );
@@ -373,7 +374,7 @@ public class PackageMetadataGenerator
             TarArchiveEntry currentEntry = tarIn.getNextTarEntry();
             while ( currentEntry != null )
             {
-                if ( currentEntry.isFile() && currentEntry.getName().equals( "package/package.json" ) )
+                if ( currentEntry.isFile() && currentEntry.getName().equals( "package/" + NPM_METADATA_NAME ) )
                 {
                     metaFile = downloadManager.store( store, versionPath, tarIn, TransferOperation.UPLOAD, new EventMetadata().set( IGNORE_READONLY, Boolean.TRUE ) );
                     break;
@@ -397,12 +398,12 @@ public class PackageMetadataGenerator
     @Override
     public boolean canProcess( String path )
     {
-        return path.endsWith( PackageMetadataMerger.METADATA_NAME );
+        return path.endsWith( NPM_METADATA_NAME );
     }
 
     @Override
     protected String getMergedMetadataName()
     {
-        return PackageMetadataMerger.METADATA_NAME;
+        return NPM_METADATA_NAME;
     }
 }

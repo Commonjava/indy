@@ -26,7 +26,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.PackageTypeConstants;
-import org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
@@ -42,6 +41,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.commonjava.indy.util.LocationUtils.getKey;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
@@ -80,7 +80,7 @@ public class PackageStoreListener
         final StoreKey storeKey = getKey( event );
 
         final String pkgPath = normalize( parentPath( event.getTransfer().getParent().getPath() ) );
-        final String pkgMetadataPath = normalize( pkgPath, PackageMetadataMerger.METADATA_NAME ) ;
+        final String pkgMetadataPath = normalize( pkgPath, NPM_METADATA_NAME ) ;
 
         logger.info( "Package metadata: store:{} and path: {}", storeKey.getName(), pkgMetadataPath );
 
@@ -155,7 +155,7 @@ public class PackageStoreListener
 
                     logger.info( "Deleted: {} (success? {})", item, result );
 
-                    if ( item.getPath().endsWith( PackageMetadataMerger.METADATA_NAME ) )
+                    if ( item.getPath().endsWith( NPM_METADATA_NAME ) )
                     {
                         isCleared = result;
                     }
@@ -165,7 +165,7 @@ public class PackageStoreListener
                         fileEvent.fire( new FileDeletionEvent( item, new EventMetadata() ) );
                     }
                 }
-                else if ( item.getPath().endsWith( PackageMetadataMerger.METADATA_NAME ) )
+                else if ( item.getPath().endsWith( NPM_METADATA_NAME ) )
                 {
                     // we should return true here to trigger cache cleaning, because file not exists in store does not mean
                     // metadata not exists in cache.

@@ -31,7 +31,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
-import static org.commonjava.indy.pkg.npm.content.group.PackageMetadataMerger.METADATA_NAME;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 
 /**
@@ -91,11 +91,11 @@ public class NPMStoragePathCalculator
             final boolean isScopedPath = pkg.startsWith( "@" ) && pkg.split( "/" ).length < 3;
             if ( isSinglePath || isScopedPath )
             {
-                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, METADATA_NAME,
+                logger.debug( "Modifying target path: {}, appending '{}', store {}", path, NPM_METADATA_NAME,
                               key.toString() );
                 return extension != null ?
-                        normalize( pkg, METADATA_NAME + extension ) :
-                        normalize( pkg, METADATA_NAME );
+                        normalize( pkg, NPM_METADATA_NAME + extension ) :
+                        normalize( pkg, NPM_METADATA_NAME );
             }
         }
 
