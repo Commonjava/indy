@@ -65,9 +65,7 @@ public class FoloNPMContentAccessResource
     private static final String BASE_PATH = IndyDeployment.API_PREFIX + "/folo/track";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
-
-    private static final String PACKAGE_JSON = "/package.json";
-
+    
     @Inject
     @NPMContentHandler
     private NPMContentAccessHandler handler;

@@ -135,7 +135,7 @@ public class DefaultDirectContentAccess
         // npm should handle the path as '/project' not '/project/package.json' when retrieves a remote registry
         if ( store.getType() == remote && store.getPackageType().equals( NPM_PKG_KEY ) && path.endsWith( NPM_METADATA_NAME ))
         {
-            String project = path.substring( 0, path.length()-13 );
+            String project = path.substring( 0, path.length() - ( NPM_METADATA_NAME.length() + 1 ) );
             if ( project != null && project.length() > 0 )
             {
                 path = project;
