@@ -41,6 +41,7 @@ import java.util.concurrent.Future;
 
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.model.core.StoreType.remote;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
@@ -132,7 +133,7 @@ public class DefaultDirectContentAccess
             throws IndyWorkflowException
     {
         // npm should handle the path as '/project' not '/project/package.json' when retrieves a remote registry
-        if ( store.getType() == remote && store.getPackageType().equals( NPM_PKG_KEY ) )
+        if ( store.getType() == remote && store.getPackageType().equals( NPM_PKG_KEY ) && path.endsWith( NPM_METADATA_NAME ))
         {
             String project = path.substring( 0, path.length()-13 );
             if ( project != null && project.length() > 0 )
