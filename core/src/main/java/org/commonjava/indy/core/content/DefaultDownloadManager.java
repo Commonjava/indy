@@ -197,16 +197,22 @@ public class DefaultDownloadManager
             {
                 fireIndyStoreErrorEvent( e );
                 logger.warn( "Bad gateway: " + e.getMessage(), e );
+                throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
+                        store.getKey(), e.getMessage() );
             }
             catch ( final TransferTimeoutException e )
             {
                 fireIndyStoreErrorEvent( e );
                 logger.warn( "Timeout: " + e.getMessage(), e );
+                throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
+                        store.getKey(), e.getMessage() );
             }
             catch ( final TransferLocationException e )
             {
                 fireIndyStoreErrorEvent( e );
                 logger.warn( "Location Error: " + e.getMessage(), e );
+                throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
+                        store.getKey(), e.getMessage() );
             }
             catch ( final TransferException e )
             {
@@ -241,16 +247,22 @@ public class DefaultDownloadManager
                 {
                     fireIndyStoreErrorEvent( e );
                     logger.warn( "Bad gateway: " + e.getMessage(), e );
+                    throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
+                            store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferTimeoutException e )
                 {
                     fireIndyStoreErrorEvent( e );
                     logger.warn( "Timeout: " + e.getMessage(), e );
+                    throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
+                            store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferLocationException e )
                 {
                     fireIndyStoreErrorEvent( e );
                     logger.warn( "Location Error: " + e.getMessage(), e );
+                    throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
+                            store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferException e )
                 {
@@ -276,6 +288,8 @@ public class DefaultDownloadManager
                 {
                     fireIndyStoreErrorEvent( e );
                     logger.warn( "Timeout  / bad gateway: " + e.getMessage(), e );
+                    throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
+                            store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferException e )
                 {
@@ -324,16 +338,22 @@ public class DefaultDownloadManager
         {
             fireIndyStoreErrorEvent( e );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                    e.getMessage() );
         }
         catch ( final TransferTimeoutException e )
         {
             fireIndyStoreErrorEvent( e );
             logger.warn( "Timeout: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                    e.getMessage() );
         }
         catch ( final TransferLocationException e )
         {
             fireIndyStoreErrorEvent( e );
             logger.warn( "Location Error: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
+                    e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -368,16 +388,22 @@ public class DefaultDownloadManager
         {
             fireIndyStoreErrorEvent( e );
             logger.warn( "Bad gateway: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+                    e.getMessage() );
         }
         catch ( final TransferTimeoutException e )
         {
             fireIndyStoreErrorEvent( e );
             logger.warn( "Timeout: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+                    e.getMessage() );
         }
         catch ( final TransferLocationException e )
         {
             fireIndyStoreErrorEvent( e );
             logger.warn( "Location Error: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
+                    e.getMessage() );
         }
         catch ( final TransferException e )
         {
@@ -386,7 +412,6 @@ public class DefaultDownloadManager
                                              e.getMessage() );
         }
 
-        return null;
     }
 
     /*
@@ -492,13 +517,15 @@ public class DefaultDownloadManager
         {
             fileEventManager.fire( new IndyStoreErrorEvent( store.getKey(), e ) );
             logger.warn( "Timeout / bad gateway: " + res + ". Reason: " + e.getMessage(), e );
-            target = null;
+            throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+                    e.getMessage() );
         }
         catch ( final TransferContentException e )
         {
             logger.warn( "Content-Length mismatch: " + res + ". Reason: " + e.getMessage()
                                  + "\nNOTE: This may be a network error; will retry download on next request.", e );
-            target = null;
+            throw new IndyWorkflowException( "Failed to retrieve path: {} from: {}. Reason: {}", e, path, store,
+                    e.getMessage() );
         }
         catch ( final TransferException e )
         {
