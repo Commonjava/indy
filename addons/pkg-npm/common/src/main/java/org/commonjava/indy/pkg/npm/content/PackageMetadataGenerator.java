@@ -319,8 +319,8 @@ public class PackageMetadataGenerator
                     distTags.setLatest( versionMetadata.getVersion() );
                 }
 
-                // Generate tarball url if missing. Otherwise it results in incorrect download url for scoped packages
-                if ( versionMetadata.getDist() == null && packagePath.isScoped() )
+                // Generate tarball url if missing
+                if ( versionMetadata.getDist() == null )
                 {
                     String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
                     //logger.debug( "Generate dist tarball: {}", tarball );
