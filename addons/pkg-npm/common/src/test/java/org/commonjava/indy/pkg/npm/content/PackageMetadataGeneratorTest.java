@@ -278,13 +278,10 @@ public class PackageMetadataGeneratorTest
             assertEquals( "Unexpected package name.", "@babel/core", packageMetadata.getName() );
             assertEquals( "Unexpected latest version.", "7.7.7", packageMetadata.getDistTags().getLatest() );
 
-            // for scoped, verify tarball not null
-            if ( packageMetadata.getName().startsWith( "@" ) )
+            // verify tarball not null
+            for ( VersionMetadata versionMetadata : packageMetadata.getVersions().values() )
             {
-                for ( VersionMetadata versionMetadata : packageMetadata.getVersions().values() )
-                {
-                    assertNotNull( versionMetadata.getDist().getTarball() );
-                }
+                assertNotNull( versionMetadata.getDist().getTarball() );
             }
         }
 
