@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -71,6 +72,8 @@ public class NPMContentAccessHandler
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String TEMP_EXTENSION = ".temp";
+
+    private final String PROXY_ORIGIN = "proxy-origin";
 
     @Inject
     private TransferManager transfers;
@@ -270,7 +273,8 @@ public class NPMContentAccessHandler
         final StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
-        eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, baseUri );
+
+        setEntryPointBaseUri( request, baseUri, eventMetadata );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
@@ -382,6 +386,36 @@ public class NPMContentAccessHandler
 
         logger.info( "RETURNING RESULT: {}:{}", sk, path );
         return response;
+    }
+
+    private void setEntryPointBaseUri( HttpServletRequest request, String baseUri, EventMetadata eventMetadata )
+    {
+        String proxyOrigin = request.getHeader( PROXY_ORIGIN );
+        if ( isNotBlank( proxyOrigin ) )
+        {
+            eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, replaceOrigin( baseUri, proxyOrigin ) );
+        }
+        else
+        {
+            eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, baseUri );
+        }
+    }
+
+    /**
+     * Replace the entry point in the baseUri with originProxy if this is from sidecar or gateway.
+     * @param baseUri sth like http://{indy}/api/content/npm or http://{indy}/api/folo/track/{id}/npm
+     * @param proxyOrigin proxy base url, like http://indy-gateway.svc.cluster.local
+     */
+    private Object replaceOrigin( String baseUri, String proxyOrigin )
+    {
+        int index = baseUri.indexOf( "/api" );
+        if ( index > 0 )
+        {
+            StringBuilder sb = new StringBuilder( proxyOrigin );
+            sb.append( baseUri.substring( index ) );
+            return sb.toString();
+        }
+        return baseUri;
     }
 
     private List<Transfer> generateNPMContentsFromTransfer( final Transfer transfer, final EventMetadata eventMetadata )
