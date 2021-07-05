@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.StandardOpenOption;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -338,7 +338,13 @@ public abstract class AbstractIndyFunctionalTest
     protected String readTestResource( String resource )
             throws IOException
     {
-        return IOUtils.toString( Thread.currentThread().getContextClassLoader().getResourceAsStream( resource ) );
+        return IOUtils.toString( readTestResourceAsStream( resource ) );
+    }
+
+    protected InputStream readTestResourceAsStream( String resource )
+                    throws IOException
+    {
+        return Thread.currentThread().getContextClassLoader().getResourceAsStream( resource );
     }
 
     protected void writeConfigFile( String confPath, String contents )
