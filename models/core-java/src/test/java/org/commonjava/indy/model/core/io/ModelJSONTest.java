@@ -15,12 +15,19 @@
  */
 package org.commonjava.indy.model.core.io;
 
+import static org.commonjava.indy.model.core.StoreType.hosted;
+import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.PackageTypeConstants;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,13 +52,27 @@ public class ModelJSONTest
     }
 
     @Test
-    public void deserializeHostedRepo()
+    public void deserializeHostedRepoWithObjKey()
         throws Exception
     {
-        final String json = loadJson( "hosted-with-storage.json" );
+        final String json = loadJson( "hosted-with-storage-objkey.json" );
         System.out.println( json );
         final HostedRepository repo = mapper.readValue( json, HostedRepository.class );
         System.out.println( repo );
+        assertThat( repo.getPackageType(), is( PKG_TYPE_MAVEN ) );
+        assertThat( repo.getType(), is( hosted ) );
+    }
+
+    @Test
+    public void deserializeHostedRepoWithStringKey()
+            throws Exception
+    {
+        final String json = loadJson( "hosted-with-storage-stringkey.json" );
+        System.out.println( json );
+        final HostedRepository repo = mapper.readValue( json, HostedRepository.class );
+        System.out.println( repo );
+        assertThat( repo.getPackageType(), is( PKG_TYPE_MAVEN ) );
+        assertThat( repo.getType(), is( hosted ) );
     }
 
 }
