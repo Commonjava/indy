@@ -455,7 +455,7 @@ public class DefaultContentManager
     {
         if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
         {
-            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path, store.getPackageType() );
             if ( info != null && info.isMetadata() )
             {
                 // Set ignore readonly for metadata so that we can delete stale metadata from readonly hosted repo
@@ -463,7 +463,7 @@ public class DefaultContentManager
             }
             else
             {
-                logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
+                logger.info( "Can not delete from hosted {}, path: {}, info: {}", store.getKey(), path, info );
                 return false;
             }
         }
