@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
+
 public class DecoratorUtils
 {
     private static final Logger logger = LoggerFactory.getLogger( DecoratorUtils.class );
@@ -107,7 +109,7 @@ public class DecoratorUtils
         }
 
         String lastPart = pathParts[pathParts.length - 1];
-        if ( ( "package.json".equals( lastPart ) || lastPart.endsWith( "tgz" ) ) && pathParts.length > 2 )
+        if ( ( NPM_METADATA_NAME.equals( lastPart ) || lastPart.endsWith( "tgz" ) ) && pathParts.length > 2 )
         {
             final String firstPath;
             //Handle if scopedPath like "@types/jquery/***" or singlePath like "jquery/***"
