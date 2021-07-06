@@ -133,7 +133,10 @@ public class NPMContentAccessResource
             final @PathParam( "packageName" ) String packageName,
             final @ApiParam( name = CHECK_CACHE_ONLY, value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
     {
-        return handler.doDelete( NPM_PKG_KEY, type, name, packageName, new EventMetadata() );
+        EventMetadata metadata = new EventMetadata();
+        metadata.set( CHECK_CACHE_ONLY, cacheOnly );
+
+        return handler.doDelete( NPM_PKG_KEY, type, name, packageName, metadata );
     }
 
     @ApiOperation(
