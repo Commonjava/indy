@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -114,8 +115,15 @@ public class ReDownloadOnContentTransferExceptionTest
         client.stores().create( remote, "adding remote", RemoteRepository.class );
 
         StoreKey sk = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, STORE );
-
-        assertThat( client.content().get( sk, path ), nullValue() );
+        
+        try
+        {
+            client.content().get( sk, path );
+        }
+        catch ( Exception e )
+        {
+            assertThat( e.getMessage(), notNullValue()  );
+        }
 
         String result = IOUtils.toString( client.content().get( sk, path ) );
 
