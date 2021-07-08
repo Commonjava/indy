@@ -136,8 +136,8 @@ public class PathMappedResource
         }
         catch ( Exception e )
         {
-            logger.warn( e.getMessage(), e );
-            if ( e.getMessage().contains( "not exist" ) )
+            logger.warn( "Get pathmap content failed, message: " + e.getMessage(), e );
+            if ( e.getMessage() != null && e.getMessage().contains( "not exist" ) )
             {
                 return Response.status( Response.Status.NOT_FOUND ).build();
             }
