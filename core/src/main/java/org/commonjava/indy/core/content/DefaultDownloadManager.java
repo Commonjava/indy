@@ -193,20 +193,6 @@ public class DefaultDownloadManager
                     }
                 }
             }
-            catch ( final BadGatewayException e )
-            {
-                fireIndyStoreErrorEvent( e );
-                logger.warn( "Bad gateway: " + e.getMessage(), e );
-                throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
-                        store.getKey(), e.getMessage() );
-            }
-            catch ( final TransferTimeoutException e )
-            {
-                fireIndyStoreErrorEvent( e );
-                logger.warn( "Timeout: " + e.getMessage(), e );
-                throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path,
-                        store.getKey(), e.getMessage() );
-            }
             catch ( final TransferLocationException e )
             {
                 fireIndyStoreErrorEvent( e );
@@ -242,20 +228,6 @@ public class DefaultDownloadManager
                             result.add( new StoreResource( loc, path, file ) );
                         }
                     }
-                }
-                catch ( final BadGatewayException e )
-                {
-                    fireIndyStoreErrorEvent( e );
-                    logger.warn( "Bad gateway: " + e.getMessage(), e );
-                    throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
-                            store.getKey(), e.getMessage() );
-                }
-                catch ( final TransferTimeoutException e )
-                {
-                    fireIndyStoreErrorEvent( e );
-                    logger.warn( "Timeout: " + e.getMessage(), e );
-                    throw new IndyWorkflowException( "Failed to list path: {} from: {}. Reason: {}", e, path,
-                            store.getKey(), e.getMessage() );
                 }
                 catch ( final TransferLocationException e )
                 {
@@ -334,20 +306,6 @@ public class DefaultDownloadManager
                 }
             }
         }
-        catch ( final BadGatewayException e )
-        {
-            fireIndyStoreErrorEvent( e );
-            logger.warn( "Bad gateway: " + e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                    e.getMessage() );
-        }
-        catch ( final TransferTimeoutException e )
-        {
-            fireIndyStoreErrorEvent( e );
-            logger.warn( "Timeout: " + e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to list ALL paths: {} from: {}. Reason: {}", e, path, stores,
-                    e.getMessage() );
-        }
         catch ( final TransferLocationException e )
         {
             fireIndyStoreErrorEvent( e );
@@ -383,20 +341,6 @@ public class DefaultDownloadManager
             return transfers.retrieveFirst(
                     locationExpander.expand( new VirtualResource( LocationUtils.toLocations( stores ), path ) ),
                     eventMetadata );
-        }
-        catch ( final BadGatewayException e )
-        {
-            fireIndyStoreErrorEvent( e );
-            logger.warn( "Bad gateway: " + e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
-                    e.getMessage() );
-        }
-        catch ( final TransferTimeoutException e )
-        {
-            fireIndyStoreErrorEvent( e );
-            logger.warn( "Timeout: " + e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to retrieve first path: {} from: {}. Reason: {}", e, path, stores,
-                    e.getMessage() );
         }
         catch ( final TransferLocationException e )
         {
@@ -662,20 +606,6 @@ public class DefaultDownloadManager
             Transfer txfr = transfers.store( resource, stream, eventMetadata );
             nfc.clearMissing( resource );
             return txfr;
-        }
-        catch ( final BadGatewayException e )
-        {
-            fireIndyStoreErrorEvent( e );
-            logger.warn( "Bad gateway: " + e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
-                                             e.getMessage() );
-        }
-        catch ( final TransferTimeoutException e )
-        {
-            fireIndyStoreErrorEvent( e );
-            logger.warn( "Timeout: " + e.getMessage(), e );
-            throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
-                                             e.getMessage() );
         }
         catch ( final TransferLocationException e )
         {
