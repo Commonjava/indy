@@ -38,6 +38,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.commonjava.indy.content.ContentManager.ENTRY_POINT_BASE_URI;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.pkg.npm.content.DecoratorUtils.updatePackageJson;
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.jsoup.helper.StringUtil.isBlank;
 
 @ApplicationScoped
@@ -71,7 +72,7 @@ public class NPMPackageMaskingTransferDecorator
 
         logger.debug( "Masking decorator decorateRead, transfer: {}", transfer );
 
-        if ( !( transfer.getFullPath().endsWith( "package.json" ) ) )
+        if ( !( transfer.getFullPath().endsWith( NPM_METADATA_NAME ) ) )
         {
             return stream;
         }
