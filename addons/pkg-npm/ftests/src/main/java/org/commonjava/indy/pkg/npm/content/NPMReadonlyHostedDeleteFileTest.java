@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -31,21 +30,22 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 /**
- * This case tests if files can be stored in a readonly hosted repo
+ * This case tests if files can be deleted in a readonly hosted repo
  * when: <br />
  * <ul>
- *      <li>creates a readonly hosted repo</li>
- *      <li>stores file in hosted repo once</li>
+ *      <li>creates a non-readonly hosted repo and stores file in it</li>
  *      <li>updates the hosted repo to non-readonly</li>
- *      <li>stores file again</li>
+ *      <li>deletes the file in hosted repo once</li>
+ *      <li>updates the hosted repo to non-readonly</li>
+ *      <li>deletes file again</li>
  * </ul>
  * then: <br />
  * <ul>
- *     <li>the file can not be stored with 405 error first time</li>
- *     <li>the file can be stored successfully with no error second time</li>
+ *     <li>the file can not be deleted with 405 error first time</li>
+ *     <li>the file can be deleted successfully with no error second time</li>
  * </ul>
  */
-public class NPMReaonlyHostedStoreFileTest
+public class NPMReadonlyHostedDeleteFileTest
                 extends AbstractContentManagementTest
 {
 
@@ -55,41 +55,40 @@ public class NPMReaonlyHostedStoreFileTest
         final String content = "This is a test: " + System.nanoTime();
         InputStream stream = new ByteArrayInputStream( content.getBytes() );
 
-        final String path = "jquery/-/jquery-2.1.0.tgz";
+        final String path = "jquery/2.1.0";
 
-        final String repoName = "test-hosted";
+        final String repoName = "test-npm-hosted";
         HostedRepository repo = new HostedRepository( NPM_PKG_KEY, repoName );
-        repo.setReadonly( true );
         repo = client.stores().create( repo, "adding npm hosted repo", HostedRepository.class );
 
         StoreKey storeKey = repo.getKey();
         assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
+        client.content().store( storeKey, path, stream );
+
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+
+        repo.setReadonly( true );
+        client.stores().update( repo, "change read-only true" );
+
         try
         {
-            client.content().store( storeKey, path, stream );
+            client.content().delete( storeKey, path );
         }
         catch ( IndyClientException e )
         {
             assertThat( e.getStatusCode(), equalTo( ApplicationStatus.METHOD_NOT_ALLOWED.code() ) );
         }
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
 
         repo.setReadonly( false );
         client.stores().update( repo, "change read-only false" );
 
-        stream = new ByteArrayInputStream( content.getBytes() );
-        client.content().store( storeKey, path, stream );
+        client.content().delete( storeKey, path );
 
-        assertThat( client.content().exists( storeKey, path ), equalTo( true ) );
+        assertThat( client.content().exists( storeKey, path ), equalTo( false ) );
 
-        final InputStream is = client.content().get( storeKey, path );
-        final String result = IOUtils.toString( is );
-
-        assertThat( result, equalTo( content ) );
-
-        is.close();
         stream.close();
     }
 
