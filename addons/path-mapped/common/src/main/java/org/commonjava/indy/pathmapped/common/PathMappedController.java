@@ -15,15 +15,15 @@
  */
 package org.commonjava.indy.pathmapped.common;
 
-import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.pathmapped.model.PathMappedDeleteResult;
 import org.commonjava.indy.pathmapped.model.PathMappedListResult;
-import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProvider;
 import org.commonjava.maven.galley.model.ConcreteResource;
+import org.commonjava.maven.galley.model.Location;
+import org.commonjava.maven.galley.model.SimpleLocation;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.storage.pathmapped.core.PathMappedFileManager;
 import org.commonjava.storage.pathmapped.spi.PathDB;
@@ -40,9 +40,6 @@ public class PathMappedController
 {
     @Inject
     private CacheProvider cacheProvider;
-
-    @Inject
-    private StoreDataManager storeDataManager;
 
     private PathMappedCacheProvider pathMappedCacheProvider;
 
@@ -107,8 +104,27 @@ public class PathMappedController
                     throws Exception
     {
         StoreKey storeKey = new StoreKey( packageType, StoreType.get( type ), name );
-        ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
-        return new ConcreteResource( LocationUtils.toLocation( store ), path );
+        // we just need a simple keyed location which provides the name to underlying pathMappedCacheProvider
+        Location location = new SimpleKeyedLocation( storeKey );
+        return new ConcreteResource( location, path );
     }
 
+    private static class SimpleKeyedLocation
+                    extends SimpleLocation
+                    implements KeyedLocation
+    {
+        private final StoreKey storeKey;
+
+        public SimpleKeyedLocation( StoreKey storeKey )
+        {
+            super( storeKey.toString() );
+            this.storeKey = storeKey;
+        }
+
+        @Override
+        public StoreKey getKey()
+        {
+            return storeKey;
+        }
+    }
 }
