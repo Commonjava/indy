@@ -961,7 +961,7 @@ public class DefaultDownloadManager
     {
         if ( store.getKey().getType() == hosted )
         {
-            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path, store.getPackageType() );
             if ( info == null || !info.isMetadata() )
             {
                 return false;
