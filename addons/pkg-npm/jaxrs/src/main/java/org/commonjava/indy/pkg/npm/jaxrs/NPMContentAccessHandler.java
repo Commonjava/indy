@@ -61,6 +61,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static java.lang.Thread.sleep;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ApplicationScoped
@@ -350,7 +351,7 @@ public class NPMContentAccessHandler
 
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
-                        InputStream in = item.openInputStream( true, eventMetadata );
+                        InputStream in = openInputStreamSafe( item, eventMetadata );
 
                         final Response.ResponseBuilder builder =
                                 Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
@@ -386,6 +387,46 @@ public class NPMContentAccessHandler
 
         logger.info( "RETURNING RESULT: {}:{}", sk, path );
         return response;
+    }
+
+    /**
+     * Due to race condition, the target file may be deleted / regenerated, especially for metadata. Add retry here to safely open the input stream.
+     */
+    private InputStream openInputStreamSafe( Transfer item, EventMetadata eventMetadata ) throws IOException
+    {
+        int retry = 0;
+        while ( true )
+        {
+            try
+            {
+                return item.openInputStream( true, eventMetadata );
+            }
+            catch ( final IOException e )
+            {
+                if ( retry++ >= 3 ) // retry at most 3 times
+                {
+                    throw e;
+                }
+
+                String eMessage = e.getMessage();
+                if ( eMessage != null && eMessage.contains( "not exist" ) )
+                {
+                    logger.warn( "Transfer file missing, resource: {}, error: {}", item.getResource(), eMessage );
+                    try
+                    {
+                        sleep( 500 ); // sleep half a sec
+                    }
+                    catch ( InterruptedException ignored )
+                    {
+                    }
+                    logger.info( "Retry openInputStream, storagePath: {}", item.getStoragePath() );
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+        }
     }
 
     private void setEntryPointBaseUri( HttpServletRequest request, String baseUri, EventMetadata eventMetadata )
