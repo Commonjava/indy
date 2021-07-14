@@ -18,12 +18,17 @@ package org.commonjava.indy.bind.jaxrs;
 import javax.enterprise.context.ApplicationScoped;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
 
 @ApplicationScoped
 public class SlashTolerationFilter
         implements Filter
 {
+
+    private static final String PROTOCOL_HTTP = "http:";
+    private static final String PROTOCOL_HTTPS = "https:";
+
     @Override
     public void init( final FilterConfig filterConfig )
                     throws ServletException
@@ -35,8 +40,36 @@ public class SlashTolerationFilter
             throws IOException, ServletException
     {
         final HttpServletRequest hsr = (HttpServletRequest) servletRequest;
-        String newURI = hsr.getRequestURI().replaceAll( "/+", "/" );
-        servletRequest.getRequestDispatcher(newURI).forward(servletRequest, servletResponse);
+
+        final HttpServletRequestWrapper wrapped = new HttpServletRequestWrapper(hsr) {
+            @Override
+            public StringBuffer getRequestURL() {
+                final StringBuffer originalUrl = ((HttpServletRequest) getRequest()).getRequestURL();
+                if ( originalUrl.indexOf( PROTOCOL_HTTP ) != -1 )
+                {
+                    String temp = originalUrl.toString().substring( PROTOCOL_HTTP.length() + 2 );
+                    return new StringBuffer( PROTOCOL_HTTP ).append( "//" ).append( handleSlash( temp ) );
+                }
+                else if ( originalUrl.indexOf( PROTOCOL_HTTPS ) != -1 )
+                {
+                    String temp = originalUrl.toString().substring( PROTOCOL_HTTPS.length() + 2 );
+                    return new StringBuffer( PROTOCOL_HTTPS ).append( "//" ).append( handleSlash( temp ) );
+                }
+                else
+                {
+                    return originalUrl;
+                }
+            }
+            @Override
+            public String getRequestURI(){
+                return handleSlash( hsr.getRequestURI() );
+            }
+
+            private String handleSlash( String url ){
+                return url.replaceAll( "/+", "/" );
+            }
+        };
+        filterChain.doFilter(wrapped, servletResponse);
     }
 
     @Override
