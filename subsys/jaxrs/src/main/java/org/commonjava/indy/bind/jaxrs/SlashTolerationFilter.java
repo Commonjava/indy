@@ -34,6 +34,11 @@ public class SlashTolerationFilter
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Override
+    public void init( final FilterConfig filterConfig ) throws ServletException
+    {
+    }
+
+    @Override
     public void doFilter( ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain )
             throws IOException, ServletException
     {
@@ -68,6 +73,11 @@ public class SlashTolerationFilter
 
         };
         filterChain.doFilter(wrapped, servletResponse);
+    }
+
+    @Override
+    public void destroy()
+    {
     }
 
 }
