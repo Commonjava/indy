@@ -84,7 +84,7 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>1.8</pathmappedStorageVersion>
-    <o11yphantVersion>1.4-SNAPSHOT</o11yphantVersion>
+    <o11yphantVersion>1.4</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
@@ -94,8 +94,8 @@
     <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
-    <jhttpcVersion>1.12-SNAPSHOT</jhttpcVersion>
-    <weftVersion>1.19-SNAPSHOT</weftVersion>
+    <jhttpcVersion>1.12</jhttpcVersion>
+    <weftVersion>1.19</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
