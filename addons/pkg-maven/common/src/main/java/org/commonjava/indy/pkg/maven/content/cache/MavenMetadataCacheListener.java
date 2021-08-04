@@ -19,6 +19,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
@@ -70,8 +71,12 @@ public class MavenMetadataCacheListener
 
         try
         {
-            downloadManager.delete( storeDataManager.getArtifactStore( storeKey ), path,
-                                    new EventMetadata().set( IGNORE_READONLY, true ) );
+            ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+            if ( store != null )
+            {
+                downloadManager.delete(store, path,
+                        new EventMetadata().set(IGNORE_READONLY, true));
+            }
         }
         catch (IndyWorkflowException | IndyDataException e )
         {
