@@ -85,6 +85,7 @@ public class FoloISPN2CassandraMigrationAction
         logger.info( "Migrate folo records from ISPN to cassandra start" );
 
         AtomicInteger count = new AtomicInteger( 0 );
+        AtomicInteger skippedCount = new AtomicInteger( 0 );
         Map<String, String> failed = new HashMap();
         Set<String> completed = new HashSet<>(); // to hold completed keys
 
@@ -100,9 +101,17 @@ public class FoloISPN2CassandraMigrationAction
                 {
                     migrateForKey( key, count, completed, failed );
                 }
+                else
+                {
+                    int skipped = skippedCount.incrementAndGet();
+                    if ( skipped % 100 == 0 )
+                    {
+                        logger.info( "Skipped: {}", skipped );
+                    }
+                }
             } );
             logger.info( "{}", count.get() );
-            logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}\n{}", failed.size(), failed );
+            logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}, Skipped: {}", failed.size(), skippedCount.get() );
         }
         catch ( IOException e )
         {
