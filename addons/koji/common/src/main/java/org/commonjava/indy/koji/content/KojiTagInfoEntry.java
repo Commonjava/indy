@@ -13,19 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.client.core.inject;
+package org.commonjava.indy.koji.content;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
 
-@Qualifier
-@Target( { ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD } )
-@Retention( RetentionPolicy.RUNTIME )
-@Documented
-public @interface ClientMetricConfig {
+import java.util.List;
 
+public class KojiTagInfoEntry
+{
+
+    List<KojiTagInfo> tagInfos;
+
+    public KojiTagInfoEntry(){}
+
+    public KojiTagInfoEntry(List<KojiTagInfo> tagInfos)
+    {
+        this.tagInfos = tagInfos;
+    }
+
+    public List<KojiTagInfo> getTagInfos()
+    {
+        return tagInfos;
+    }
+
+    public void setTagInfos(List<KojiTagInfo> tagInfos)
+    {
+        this.tagInfos = tagInfos;
+    }
 }

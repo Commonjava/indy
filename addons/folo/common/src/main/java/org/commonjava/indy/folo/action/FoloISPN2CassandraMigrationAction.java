@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.commonjava.indy.folo.action;
 
 import org.apache.commons.io.IOUtils;
@@ -70,6 +85,7 @@ public class FoloISPN2CassandraMigrationAction
         logger.info( "Migrate folo records from ISPN to cassandra start" );
 
         AtomicInteger count = new AtomicInteger( 0 );
+        AtomicInteger skippedCount = new AtomicInteger( 0 );
         Map<String, String> failed = new HashMap();
         Set<String> completed = new HashSet<>(); // to hold completed keys
 
@@ -85,9 +101,17 @@ public class FoloISPN2CassandraMigrationAction
                 {
                     migrateForKey( key, count, completed, failed );
                 }
+                else
+                {
+                    int skipped = skippedCount.incrementAndGet();
+                    if ( skipped % 100 == 0 )
+                    {
+                        logger.info( "Skipped: {}", skipped );
+                    }
+                }
             } );
             logger.info( "{}", count.get() );
-            logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}\n{}", failed.size(), failed );
+            logger.info( "Migrate folo records from ISPN to cassandra done. Failed: {}, Skipped: {}", failed.size(), skippedCount.get() );
         }
         catch ( IOException e )
         {

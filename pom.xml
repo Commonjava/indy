@@ -58,7 +58,7 @@
     <!-- <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation> -->
 
     <!-- thirdparty projects -->
-    <javaVersion>11</javaVersion>
+    <javaVersion>1.8</javaVersion>
     <slf4j-version>1.7.16</slf4j-version>
     <logback-version>1.2.3</logback-version>
     <infinispanVersion>9.4.15.Final</infinispanVersion>
@@ -85,19 +85,19 @@
     <honeycombVersion>1.5.1</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>1.9-SNAPSHOT</pathmappedStorageVersion>
-    <o11yphantVersion>1.4-SNAPSHOT</o11yphantVersion>
+    <pathmappedStorageVersion>1.9</pathmappedStorageVersion>
+    <o11yphantVersion>1.4</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.6-SNAPSHOT</galleyVersion>
+    <galleyVersion>1.6</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
-    <jhttpcVersion>1.12-SNAPSHOT</jhttpcVersion>
-    <weftVersion>1.19-SNAPSHOT</weftVersion>
+    <jhttpcVersion>1.12</jhttpcVersion>
+    <weftVersion>1.19</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
