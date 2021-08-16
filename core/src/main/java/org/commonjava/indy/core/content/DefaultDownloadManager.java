@@ -607,6 +607,20 @@ public class DefaultDownloadManager
             nfc.clearMissing( resource );
             return txfr;
         }
+        catch ( final BadGatewayException e )
+        {
+            fireIndyStoreErrorEvent( e );
+            logger.warn( "Bad gateway: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
+                                             e.getMessage() );
+        }
+        catch ( final TransferTimeoutException e )
+        {
+            fireIndyStoreErrorEvent( e );
+            logger.warn( "Timeout: " + e.getMessage(), e );
+            throw new IndyWorkflowException( "Failed to store path: {} in: {}. Reason: {}", e, path, store,
+                                             e.getMessage() );
+        }
         catch ( final TransferLocationException e )
         {
             fireIndyStoreErrorEvent( e );

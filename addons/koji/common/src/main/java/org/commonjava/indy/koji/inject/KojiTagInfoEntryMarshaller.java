@@ -15,38 +15,38 @@
  */
 package org.commonjava.indy.koji.inject;
 
-import org.commonjava.atlas.maven.ident.ref.SimpleProjectRef;
+import com.redhat.red.build.koji.model.xmlrpc.KojiTagInfo;
+import org.commonjava.indy.koji.content.KojiTagInfoEntry;
 import org.infinispan.protostream.MessageMarshaller;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
-public class ProjectRefMarshaller
-                implements MessageMarshaller<SimpleProjectRef>
+public class KojiTagInfoEntryMarshaller implements MessageMarshaller<KojiTagInfoEntry>
 {
     @Override
-    public SimpleProjectRef readFrom( ProtoStreamReader reader ) throws IOException
+    public KojiTagInfoEntry readFrom(ProtoStreamReader reader) throws IOException
     {
-        String groupId = reader.readString( "groupId" );
-        String artifactId = reader.readString( "artifactId" );
-        return new SimpleProjectRef( groupId, artifactId );
+        KojiTagInfoEntry entry = new KojiTagInfoEntry();
+        entry.setTagInfos( reader.readCollection( "tagInfos", new ArrayList<>(), KojiTagInfo.class ) );
+        return entry;
     }
 
     @Override
-    public void writeTo( ProtoStreamWriter writer, SimpleProjectRef projectRef ) throws IOException
+    public void writeTo(ProtoStreamWriter writer, KojiTagInfoEntry kojiTagInfoEntry) throws IOException
     {
-        writer.writeString( "groupId", projectRef.getGroupId() );
-        writer.writeString( "artifactId", projectRef.getArtifactId() );
+        writer.writeCollection("tagInfos", kojiTagInfoEntry.getTagInfos(), KojiTagInfo.class);
     }
 
     @Override
-    public Class<? extends SimpleProjectRef> getJavaClass()
+    public Class<? extends KojiTagInfoEntry> getJavaClass()
     {
-        return SimpleProjectRef.class;
+        return KojiTagInfoEntry.class;
     }
 
     @Override
     public String getTypeName()
     {
-        return "koji.SimpleProjectRef";
+        return "koji.KojiTagInfoEntry";
     }
 }

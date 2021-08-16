@@ -34,12 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.redhat.red.build.koji.model.xmlrpc.messages.Constants.GET_BUILD;
@@ -88,7 +83,7 @@ public class IndyKojiContentProvider
 
     @Inject
     @KojiTagInfoCache
-    private BasicCacheHandle<Integer, List<KojiTagInfo>> kojiTagsCache;
+    private BasicCacheHandle<Integer, KojiTagInfoEntry> kojiTagsCache;
 
     public IndyKojiContentProvider()
     {
@@ -114,8 +109,21 @@ public class IndyKojiContentProvider
 
     public List<KojiTagInfo> listTags( Integer buildId, KojiSessionInfo session ) throws KojiClientException
     {
-        return computeIfAbsent( KOJI_TAGS, Integer.class, List.class, buildId,
-                                () -> kojiClient.listTags( buildId, session ) );
+
+        if ( !kojiConfig.isQueryCacheEnabled() )
+        {
+            logger.trace( "Cache not enabled, run direct kojiClient.listTags" );
+            return kojiClient.listTags( buildId, session );
+        }
+
+        KojiTagInfoEntry ret = kojiTagsCache.get( buildId );
+        if ( ret == null )
+        {
+            ret = new KojiTagInfoEntry( kojiClient.listTags( buildId, session ) );
+            kojiTagsCache.put( buildId, ret );
+        }
+
+        return ret.getTagInfos();
     }
 
     public Map<Integer, List<KojiTagInfo>> listTags( List<Integer> buildIds, KojiSessionInfo session )
@@ -133,10 +141,10 @@ public class IndyKojiContentProvider
         List<Integer> missed = new ArrayList<>();
         for ( Integer buildId : buildIds )
         {
-            List ret = kojiTagsCache.get( buildId );
+            KojiTagInfoEntry ret = kojiTagsCache.get( buildId );
             if ( ret != null )
             {
-                map.put( buildId, ret );
+                map.put( buildId, ret.getTagInfos() );
             }
             else
             {
@@ -147,7 +155,7 @@ public class IndyKojiContentProvider
         {
             Map<Integer, List<KojiTagInfo>> retrieved = kojiClient.listTags( missed, session );
             map.putAll( retrieved );
-            retrieved.forEach( ( k, v ) -> kojiTagsCache.put( k, v ) );
+            retrieved.forEach( ( k, v ) -> kojiTagsCache.put( k, new KojiTagInfoEntry(v) ) );
         }
         return map;
     }
@@ -262,7 +270,7 @@ public class IndyKojiContentProvider
             return supplier.getKojiContent();
         }
 
-        CacheHandle<K, V> cache = cacheProducer.getCache( name );
+        BasicCacheHandle<K, V> cache = cacheProducer.getBasicCache( name );
         V ret = cache.get( key );
         if ( ret == null )
         {
