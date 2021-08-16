@@ -62,12 +62,4 @@ public class StoreDataCacheProducer
         return cacheProducer.getCache( STORE_BY_PKG_CACHE );
     }
 
-    @AffectedByStoreCache
-    @Produces
-    @ApplicationScoped
-    public CacheHandle<StoreKey, Set<StoreKey>> getAffectedByStores()
-    {
-        return cacheProducer.getCache( AFFECTED_BY_STORE_CACHE );
-    }
-
 }

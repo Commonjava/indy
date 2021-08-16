@@ -20,6 +20,8 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.db.common.cache.AffectedByStoreCache;
+import org.commonjava.indy.db.common.cache.StoreKeySet;
 import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -28,6 +30,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +63,10 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
 
     @Inject
     IndyObjectMapper objectMapper;
+
+    @Inject
+    @AffectedByStoreCache
+    private CacheHandle<StoreKey, StoreKeySet> affectedByStores;
 
     protected CassandraStoreDataManager()
     {
@@ -101,7 +108,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     public void clear( ChangeSummary summary ) throws IndyDataException
     {
-
+        affectedByStores.clear();
     }
 
     @Override
@@ -223,34 +230,25 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
 
             if ( processed.add( key ) )
             {
-                DtxAffectedStore affectedStore = storeQuery.getAffectedStore( key );
-                if ( affectedStore == null )
-                {
-                    processed.add( key );
-                    continue;
-                }
-                Set<StoreKey> affected = affectedStore.getAffectedStoreKeys();
-                if ( affected != null )
-                {
-                    logger.debug( "Get affectedByStores, key: {}, affected: {}", key, affected );
-                    affected = affected.stream().filter( k -> k.getType() == group ).collect( Collectors.toSet() );
-                    for ( StoreKey gKey : affected )
-                    {
-                        // avoid loading the ArtifactStore instance again and again
-                        if ( !processed.contains( gKey ) && !toProcess.contains( gKey ) )
-                        {
-                            ArtifactStore store = getArtifactStoreInternal( gKey );
+                StoreKeySet keySet = affectedByStores.get( key );
+                if ( keySet != null ) {
+                    Set<StoreKey> affected = keySet.getStoreKeys();
+                    if (affected != null) {
+                        logger.debug("Get affectedByStores, key: {}, affected: {}", key, affected);
+                        affected = affected.stream().filter(k -> k.getType() == group).collect(Collectors.toSet());
+                        for (StoreKey gKey : affected) {
+                            // avoid loading the ArtifactStore instance again and again
+                            if (!processed.contains(gKey) && !toProcess.contains(gKey)) {
+                                ArtifactStore store = getArtifactStoreInternal(gKey);
 
-                            // if this group is disabled, we don't want to keep loading it again and again.
-                            if ( store.isDisabled() )
-                            {
-                                processed.add( gKey );
-                            }
-                            else
-                            {
-                                // add the group to the toProcess list so we can find any result that might include it in their own membership
-                                toProcess.addLast( gKey );
-                                result.add( (Group) store );
+                                // if this group is disabled, we don't want to keep loading it again and again.
+                                if (store.isDisabled()) {
+                                    processed.add(gKey);
+                                } else {
+                                    // add the group to the toProcess list so we can find any result that might include it in their own membership
+                                    toProcess.addLast(gKey);
+                                    result.add((Group) store);
+                                }
                             }
                         }
                     }
@@ -269,19 +267,19 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     @Override
     protected void removeAffectedStore( StoreKey key )
     {
-        storeQuery.removeAffectedStore( key );
+        affectedByStores.remove( key );
     }
 
     @Override
     protected void removeAffectedBy( StoreKey key, StoreKey affected )
     {
-        storeQuery.removeAffectedBy( key, affected );
+        affectedByStores.computeIfAbsent( key, k -> new StoreKeySet() ).getStoreKeys().remove( affected );
     }
 
     @Override
     protected void addAffectedBy( StoreKey key, StoreKey affected )
     {
-        storeQuery.addAffectedBy( key, affected );
+        affectedByStores.computeIfAbsent( key, k -> new StoreKeySet() ).getStoreKeys().add( affected );
     }
 
     public void initAffectedBy()
