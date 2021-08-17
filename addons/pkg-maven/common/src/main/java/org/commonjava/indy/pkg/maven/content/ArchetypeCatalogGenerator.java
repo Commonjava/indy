@@ -41,7 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -140,11 +139,16 @@ public class ArchetypeCatalogGenerator
                                                               final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        final List<StoreResource> result = new ArrayList<StoreResource>();
+        final List<StoreResource> result = new ArrayList<>();
         for ( final String filename : HANDLED_FILENAMES )
         {
-            result.add( new StoreResource( LocationUtils.toLocation( group ), Paths.get( path, filename )
-                                                                                   .toString() ) );
+            StoreResource resource =
+                    new StoreResource( LocationUtils.toLocation( group ), Paths.get( path, filename ).toString() );
+            Transfer transfer = fileManager.getTransfer( group.getKey(), resource.getPath() );
+            if ( transfer != null && transfer.exists( eventMetadata ) )
+            {
+                result.add( resource );
+            }
         }
 
         return result;
