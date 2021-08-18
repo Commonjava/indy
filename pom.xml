@@ -69,7 +69,7 @@
     <gsonVersion>2.8.2</gsonVersion>
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
-    <undertowVersion>2.1.0.Final</undertowVersion>
+    <undertowVersion>2.1.6.Final</undertowVersion>
     <xnioVersion>3.8.2.Final</xnioVersion>
     <keycloakVersion>7.0.1</keycloakVersion>
     <bouncycastleVersion>1.67</bouncycastleVersion>
