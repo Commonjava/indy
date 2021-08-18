@@ -59,7 +59,6 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.o11yphant.trace.TraceManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -88,6 +87,7 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.generateUpdateTimestamp;
@@ -290,7 +290,7 @@ public class MavenMetadataGenerator
 
         if ( existing.contains( mdResource ) )
         {
-            return null;
+            return emptyList();
         }
 
         int pathElementsCount = StringUtils.strip( path, "/" ).split( "/" ).length;
@@ -340,18 +340,21 @@ public class MavenMetadataGenerator
             if ( samplePomInfo != null )
             {
                 final List<StoreResource> result = new ArrayList<>();
-                result.add( mdResource );
-                result.add( new StoreResource( LocationUtils.toLocation( store ),
-                                               Paths.get( path, MavenMetadataMerger.METADATA_MD5_NAME )
-                                               .toString() ) );
-                result.add( new StoreResource( LocationUtils.toLocation( store ),
-                                               Paths.get( path, MavenMetadataMerger.METADATA_SHA_NAME )
-                                               .toString() ) );
+                for ( final String filename : HANDLED_FILENAMES )
+                {
+                    StoreResource resource =
+                            new StoreResource( LocationUtils.toLocation( store ), Paths.get( path, filename ).toString() );
+                    Transfer transfer = fileManager.getTransfer( store.getKey(), resource.getPath() );
+                    if ( transfer!=null && transfer.exists( eventMetadata ) )
+                    {
+                        result.add( resource );
+                    }
+                }
                 return result;
             }
         }
 
-        return null;
+        return emptyList();
     }
 
     /**
@@ -914,7 +917,7 @@ public class MavenMetadataGenerator
                                                               final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        return generateDirectoryContent( group, path, Collections.emptyList(), eventMetadata );
+        return generateDirectoryContent( group, path, emptyList(), eventMetadata );
     }
 
     @Override
