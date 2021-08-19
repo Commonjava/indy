@@ -303,11 +303,6 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     {
         final Set<ArtifactStore> allStores = getAllArtifactStores();
         allStores.stream().filter( s -> group == s.getType() ).forEach( s -> refreshAffectedBy( s, null, STORE ) );
-
-        // cache the remote koji repo
-        allStores.stream().filter( s -> remote == s.getType() && ( "koji".equals( s.getMetadata( ArtifactStore.METADATA_ORIGIN ) )
-                || "koji-binary".equals(
-                s.getMetadata( ArtifactStore.METADATA_ORIGIN) ) ) ).forEach( s -> remoteKojiStores.put( s.getKey(), s ) );
     }
 
     private DtxArtifactStore toDtxArtifactStore( StoreKey storeKey, ArtifactStore store )
@@ -572,4 +567,13 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         return null;
     }
 
+    public void initRemoteStoresCache()
+    {
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+
+        // cache the remote koji repo
+        allStores.stream().filter( s -> remote == s.getType() && ( "koji".equals( s.getMetadata( ArtifactStore.METADATA_ORIGIN ) )
+                || "koji-binary".equals(
+                s.getMetadata(ArtifactStore.METADATA_ORIGIN ) ) ) ).forEach( s -> remoteKojiStores.put( s.getKey(), s ) );
+    }
 }
