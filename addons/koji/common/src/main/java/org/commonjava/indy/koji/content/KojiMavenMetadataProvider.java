@@ -47,6 +47,7 @@ import org.commonjava.indy.koji.inject.KojiMavenVersionMetadataLocks;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.pkg.maven.content.MetadataCacheManager;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
@@ -199,9 +200,9 @@ public class KojiMavenMetadataProvider
         try
         {
             Set<Group> affected = storeDataManager.query()
-                                                  .getAll( s -> group == s.getType() && kojiConfig.isEnabledFor( s ) )
+                                                  .getAllGroups(PackageTypeConstants.PKG_TYPE_MAVEN)
                                                   .stream()
-                                                  .map( s -> (Group) s )
+                                                  .filter(s -> kojiConfig.isEnabledFor(s))
                                                   .collect( Collectors.toSet() );
 
             if ( storeDataManager instanceof AbstractStoreDataManager )
