@@ -80,6 +80,10 @@ public class TransferStreamingOutput
         if ( rs.isPresent() ){
             this.rootSpan = TraceManager.addCloseBlockingDecorator( rs, new TransferFieldInjector() );
         }
+        else
+        {
+            this.rootSpan = Optional.empty();
+        }
     }
 
     @Override
