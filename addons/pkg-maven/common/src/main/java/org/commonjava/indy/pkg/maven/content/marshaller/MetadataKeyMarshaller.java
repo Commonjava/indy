@@ -34,8 +34,8 @@ public class MetadataKeyMarshaller implements MessageMarshaller<MetadataKey>
     @Override
     public void writeTo( ProtoStreamWriter writer, MetadataKey metadataKey ) throws IOException
     {
-        writer.writeString( "path", metadataKey.getPath() );
         writer.writeObject( "storeKey", metadataKey.getStoreKey(), StoreKey.class);
+        writer.writeString( "path", metadataKey.getPath() );
     }
 
     @Override

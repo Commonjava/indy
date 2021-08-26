@@ -26,8 +26,8 @@ public class SnapshotMarshaller implements MessageMarshaller<Snapshot>
     public Snapshot readFrom( ProtoStreamReader reader ) throws IOException
     {
         Snapshot snapshot = new Snapshot();
-        snapshot.setBuildNumber( reader.readInt( "buildNumber" ) );
         snapshot.setTimestamp( reader.readString( "timestamp" ) );
+        snapshot.setBuildNumber( reader.readInt( "buildNumber" ) );
         snapshot.setLocalCopy( reader.readBoolean( "localCopy" ) );
         return snapshot;
     }
@@ -35,8 +35,8 @@ public class SnapshotMarshaller implements MessageMarshaller<Snapshot>
     @Override
     public void writeTo( ProtoStreamWriter writer, Snapshot snapshot ) throws IOException
     {
-        writer.writeInt( "buildNumber", snapshot.getBuildNumber());
         writer.writeString( "timestamp", snapshot.getTimestamp() );
+        writer.writeInt( "buildNumber", snapshot.getBuildNumber());
         writer.writeBoolean( "localCopy", snapshot.isLocalCopy());
     }
 
