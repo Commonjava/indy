@@ -86,7 +86,7 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>1.9</pathmappedStorageVersion>
-    <o11yphantVersion>1.4</o11yphantVersion>
+    <o11yphantVersion>1.5-SNAPSHOT</o11yphantVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
