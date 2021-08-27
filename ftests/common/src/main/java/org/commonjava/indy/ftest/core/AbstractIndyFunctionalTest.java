@@ -298,7 +298,7 @@ public abstract class AbstractIndyFunctionalTest
             writeConfigFile( "conf.d/default.conf", "[default]"
                             + "\nstandalone=true"
                             + "\naffected.groups.exclude=^build-\\d+"
-                            + "\nrepository.filter.enabled=true\nga-cache.store.pattern=^build-\\d+" );
+                            + "\nrepository.filter.enabled=true" );
             writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=false" );
         }
         else
