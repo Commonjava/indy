@@ -92,6 +92,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.generateUpdateTimestamp;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.getCurrentTimestamp;
+import static org.commonjava.indy.core.content.PathMaskChecker.checkMavenMetadataMask;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -216,6 +217,12 @@ public class MavenMetadataGenerator
         }
 
         if ( !canProcess( path ) )
+        {
+            return null;
+        }
+
+        boolean matchPattern = checkMavenMetadataMask( store, path );
+        if ( !matchPattern )
         {
             return null;
         }
