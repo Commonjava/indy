@@ -21,11 +21,13 @@ import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.PackageTypeConstants;
+import org.commonjava.indy.cassandra.testcat.CassandraTest;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,6 +35,7 @@ import java.util.Set;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+@Category( CassandraTest.class )
 public class CassandraStoreTest
 {
 

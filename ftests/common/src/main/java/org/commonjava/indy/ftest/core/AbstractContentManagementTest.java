@@ -127,16 +127,16 @@ public class AbstractContentManagementTest
         String storageDir = "var/lib/indy/storage";
         StoreKey storeKey = ( (KeyedLocation) location ).getKey();
 
-        File ret;
-        if ( !isPathMappedStorageEnabled() )
-        {
-            ret = Paths.get( homeDir, storageDir, storeKey.getPackageType(),
-                             storeKey.getType().singularEndpointName() + "-" + storeKey.getName(), path ).toFile();
-        }
-        else
-        {
-            ret = ( (PathMappedCacheProvider) cacheProvider ).getDetachedFile( new ConcreteResource( location, path ) );
-        }
+        File ret = cacheProvider.asAdminView().getDetachedFile( new ConcreteResource( location, path ) );
+//        if ( !isPathMappedStorageEnabled() )
+//        {
+//            ret = Paths.get( homeDir, storageDir, storeKey.getPackageType(),
+//                             storeKey.getType().singularEndpointName() + "-" + storeKey.getName(), path ).toFile();
+//        }
+//        else
+//        {
+//            ret = ( (PathMappedCacheProvider) cacheProvider ).getDetachedFile( new ConcreteResource( location, path ) );
+//        }
         logger.debug( "Get physical storage file: {}", ret );
         return ret;
     }

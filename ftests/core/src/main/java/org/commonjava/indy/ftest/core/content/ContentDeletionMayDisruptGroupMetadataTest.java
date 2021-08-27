@@ -15,11 +15,13 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
+import org.commonjava.indy.cassandra.testcat.CassandraTest;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.ExecutorService;
@@ -55,6 +57,7 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith( BMUnitRunner.class )
 @BMUnitConfig( debug = true )
+@Category( CassandraTest.class )
 public class ContentDeletionMayDisruptGroupMetadataTest
         extends ContentDeletionUpdateGroupMetadataTest
 {

@@ -95,4 +95,4 @@ jobs:
         servers: '[{ "id": "sonatype", "username": "${{ secrets.SONATYPE_BOT_USERNAME}}", "password": "${{ secrets.SONATYPE_BOT_TOKEN}}" }]'
 
     - name: "Maven Build"
-      run: mvn -B -e -Prun-its verify
+      run: mvn -B -e -Prun-its,no-cluster-tests verify

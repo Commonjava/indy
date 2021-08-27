@@ -121,6 +121,7 @@
     <skipITs>true</skipITs>
     <quickITs>true</quickITs>
     <skipTimingFTests>${skipITs}</skipTimingFTests>
+    <skipClusterFTests>false</skipClusterFTests>
 
     <dockerRegistry>docker.io</dockerRegistry>
     <dockerUser>commonjava</dockerUser>
@@ -140,9 +141,9 @@
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
 
     <skipNpmConfig>true</skipNpmConfig>
-
+    <excludedSurefireGroups></excludedSurefireGroups>
   </properties>
-  
+
   <modules>
     <module>uis</module>
     <module>models</module>
@@ -1929,6 +1930,7 @@
             <forkCount>${test-forkCount}</forkCount>
             <reportsDirectory>${junit.report.dir}</reportsDirectory>
             <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
+            <excludedGroups>${excludedSurefireGroups}</excludedGroups>
           </configuration>
         </plugin>
         <plugin>
@@ -2203,6 +2205,13 @@
           </plugin>
         </plugins>
       </build>
+    </profile>
+    <profile>
+      <id>no-cluster-tests</id>
+
+      <properties>
+        <skipClusterFTests>true</skipClusterFTests>
+      </properties>
     </profile>
   </profiles>
 

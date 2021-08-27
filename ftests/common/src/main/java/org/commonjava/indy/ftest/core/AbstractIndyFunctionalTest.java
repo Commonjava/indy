@@ -137,7 +137,12 @@ public abstract class AbstractIndyFunctionalTest
     // Override this if your test do not access storage
     protected boolean isPathMappedStorageEnabled()
     {
-        return true;
+        return !isClusterTestSkipped();
+    }
+
+    private boolean isClusterTestSkipped()
+    {
+        return Boolean.parseBoolean( System.getProperty( "skipClusterFTests", "false" ) );
     }
 
     protected Indy createIndyClient()
@@ -282,28 +287,34 @@ public abstract class AbstractIndyFunctionalTest
     protected void initBaseTestConfig( CoreServerFixture fixture )
             throws IOException
     {
-        writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" )
-                        + "\naffected.groups.exclude=^build-\\d+"
-                        + "\nrepository.filter.enabled=true\nga-cache.store.pattern=^build-\\d+" );
         writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
                         + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
                         + "storage.gc.graceperiodinhours=0\n"
                         + "storage.gc.batchsize=0\n"
                         + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
 
-        writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+        if ( isClusterTestSkipped() )
+        {
+            writeConfigFile( "conf.d/default.conf", "[default]"
+                            + "\nstandalone=true"
+                            + "\naffected.groups.exclude=^build-\\d+"
+                            + "\nrepository.filter.enabled=true\nga-cache.store.pattern=^build-\\d+" );
+            writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=false" );
+        }
+        else
+        {
+            writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" )
+                            + "\naffected.groups.exclude=^build-\\d+"
+                            + "\nrepository.filter.enabled=true\nga-cache.store.pattern=^build-\\d+" );
+            writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
+        }
+
         writeConfigFile( "conf.d/store-manager.conf", "[store-manager]\n"
                     + "store.manager.keyspace=" + getKeyspace("store_") + "_stores\nstore.manager.replica=1");
 
         writeConfigFile( "conf.d/scheduledb.conf", "[scheduledb]\nschedule.keyspace=" + getKeyspace("schedule_" )
                         + "_scheduler\nschedule.keyspace.replica=1\n"
                         + "schedule.partition.range=3600000\nschedule.rate.period=3" );
-
-
-        writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
-                        + "folo.storage=infinispan\n"
-                        + "store.storage=infinispan\n"
-                        + "schedule.storage=infinispan");
 
         writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo");
 
@@ -316,6 +327,12 @@ public abstract class AbstractIndyFunctionalTest
         }
         else
         {
+            // TODO: For full clustering test, we would need a remove Infinispan server/cluster...
+            writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
+                            + "folo.storage=infinispan\n"
+                            + "store.storage=infinispan\n"
+                            + "schedule.storage=infinispan");
+
             writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
         }
     }
