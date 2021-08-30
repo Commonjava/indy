@@ -31,6 +31,7 @@
 
   <properties>
     <skipMainFTests>${skipITs}</skipMainFTests>
+    <excludedFailsafeGroups></excludedFailsafeGroups>
   </properties>
   
   <dependencies>
@@ -488,7 +489,7 @@
             </execution>
           </executions>
           <configuration>
-            <skip>${skipITs}</skip>
+            <skip>${skipClusterFTests}</skip>
             <startNativeTransport>true</startNativeTransport>
             <cqlVersion>3.4.4</cqlVersion>
             <maxMemory>2048</maxMemory>
@@ -513,6 +514,9 @@
               <dependency>org.commonjava.indy:indy-ftests-repo-proxy</dependency>
             </dependenciesToScan>
             <jvm>${JAVA_11_HOME}/bin/java</jvm>
+            <systemPropertyVariables>
+              <skipClusterFTests>${skipClusterFTests}</skipClusterFTests>
+            </systemPropertyVariables>
           </configuration>
           <executions>
             <execution>
@@ -523,7 +527,7 @@
               </goals>
               <configuration>
                 <skip>${skipMainFTests}</skip>
-                <excludedGroups>org.commonjava.indy.ftest.core.category.TimingDependent, org.commonjava.indy.ftest.core.category.BytemanTest</excludedGroups>
+                <excludedGroups>org.commonjava.indy.ftest.core.category.TimingDependent, org.commonjava.indy.ftest.core.category.BytemanTest, ${excludedFailsafeGroups}</excludedGroups>
                 <jdkToolchain>default-integration-test</jdkToolchain>
               </configuration>
             </execution>
@@ -568,6 +572,14 @@
 
       <properties>
         <skipITs>false</skipITs>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>no-cluster-tests</id>
+
+      <properties>
+        <excludedFailsafeGroups>org.commonjava.indy.cassandra.testcat.CassandraTest,org.commonjava.indy.ftest.core.category.ClusterTest</excludedFailsafeGroups>
       </properties>
     </profile>
   </profiles>

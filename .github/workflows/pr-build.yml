@@ -88,4 +88,4 @@ jobs:
         repositories: '[{ "id": "sonatype", "url": "https://oss.sonatype.org/content/repositories/snapshots/", "releases": {"enabled": "false"}, "snapshots": {"enabled": "true" }}]'
 
     - name: Build with Maven
-      run: mvn -Prun-its -B -e verify
+      run: mvn -Prun-its,no-cluster-tests -B -e verify

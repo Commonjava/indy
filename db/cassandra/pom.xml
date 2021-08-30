@@ -27,6 +27,15 @@
     <artifactId>indy-db-cassandra</artifactId>
     <name>Indy :: DB :: Cassandra</name>
 
+    <profiles>
+      <profile>
+        <id>no-cluster-tests</id>
+        <properties>
+          <excludedSurefireGroups>org.commonjava.indy.cassandra.testcat.CassandraTest</excludedSurefireGroups>
+        </properties>
+      </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.commonjava.indy</groupId>
@@ -59,6 +68,5 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 
 </project>

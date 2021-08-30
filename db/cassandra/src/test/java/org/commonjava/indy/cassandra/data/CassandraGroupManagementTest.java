@@ -17,12 +17,15 @@ package org.commonjava.indy.cassandra.data;
 
 import org.commonjava.indy.core.data.GroupDataManagerTCK;
 import org.commonjava.indy.core.data.TCKFixtureProvider;
+import org.commonjava.indy.cassandra.testcat.CassandraTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.experimental.categories.Category;
 
 @Ignore("Cassandra dbunit always has problems to clean up resources when running test suite in maven")
+@Category( CassandraTest.class )
 public class CassandraGroupManagementTest
         extends GroupDataManagerTCK
 {

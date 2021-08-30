@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.ftest.core.category.ClusterTest;
 import org.commonjava.indy.ftest.core.fixture.ResultBufferingGroupRepoFilter;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -34,6 +35,7 @@ import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +118,7 @@ import static org.junit.Assert.assertTrue;
  * return the right file. We can only check the log to see whether the GA cache filter works. We also need to
  * make sure it works before the default path-mapped filter.
  */
+@Category( ClusterTest.class )
 public class RepositoryFilterGACacheTest
                 extends AbstractContentManagementTest
 {

@@ -15,10 +15,14 @@
  */
 package org.commonjava.indy.folo.ftest.report;
 
+import org.commonjava.indy.cassandra.testcat.CassandraTest;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
+import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 
@@ -42,6 +46,7 @@ import static org.junit.Assert.assertThat;
  *     <li>get sealed report ids correctly</li>
  * </ul>
  */
+@Category( CassandraTest.class )
 public class ReportIdsGettingTest extends AbstractTrackingReportTest
 {
     @Test
@@ -49,8 +54,11 @@ public class ReportIdsGettingTest extends AbstractTrackingReportTest
         final String trackingId = newName();
         final String path = "org/commonjava/commonjava/2/commonjava-2.pom";
 
-        final InputStream result =
-                client.module( IndyFoloContentClientModule.class ).get( trackingId, remote, CENTRAL, path );
+        final InputStream result = client.module( IndyFoloContentClientModule.class )
+                                         .get( trackingId,
+                                               new StoreKey( PackageTypeConstants.PKG_TYPE_MAVEN, remote, CENTRAL ),
+                                               path );
+
         assertThat( result, notNullValue() );
         result.close();
 

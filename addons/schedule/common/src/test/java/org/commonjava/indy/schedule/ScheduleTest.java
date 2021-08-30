@@ -16,9 +16,8 @@
 package org.commonjava.indy.schedule;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
+import org.commonjava.indy.cassandra.testcat.CassandraTest;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
 import org.commonjava.indy.schedule.datastax.model.DtxSchedule;
@@ -30,14 +29,14 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Collection;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+@Category( CassandraTest.class )
 public class ScheduleTest
 {
 
