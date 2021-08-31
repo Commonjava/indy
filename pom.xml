@@ -97,7 +97,7 @@
     <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.12</jhttpcVersion>
-    <weftVersion>1.19</weftVersion>
+    <weftVersion>1.20-SNAPSHOT</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
