@@ -27,9 +27,7 @@ public class PathMaskChecker
 
     public static boolean checkMask(final ArtifactStore repo, final String path){
         Set<String> maskPatterns = repo.getPathMaskPatterns();
-
-        logger.trace( "Checking mask in: {}, type: {}", repo.getName(), repo.getKey().getType() );
-        logger.trace( "Mask patterns in {}: {}", repo.getName(), maskPatterns );
+        logger.trace( "Checking mask in: {}, patterns: {}", repo.getKey(), maskPatterns );
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
@@ -65,9 +63,7 @@ public class PathMaskChecker
     public static boolean checkListingMask( final ArtifactStore store, final String path )
     {
         Set<String> maskPatterns = store.getPathMaskPatterns();
-
-        logger.trace( "Checking mask in: {}", store.getKey() );
-        logger.trace( "Mask patterns in {}: {}", store.getName(), maskPatterns );
+        logger.trace( "Checking mask in: {}, patterns: {}", store.getKey(), maskPatterns );
 
         if (maskPatterns == null || maskPatterns.isEmpty())
         {
@@ -97,6 +93,35 @@ public class PathMaskChecker
 
         logger.debug( "Listing for path {} not enabled by path mask {} of repo {}", path, maskPatterns, store.getKey() );
 
+        return false;
+    }
+
+    public static boolean checkMavenMetadataMask( final ArtifactStore store, final String path )
+    {
+        Set<String> maskPatterns = store.getPathMaskPatterns();
+        logger.trace( "Checking metadata mask in: {}, patterns: {}", store.getKey(), maskPatterns );
+
+        if ( maskPatterns == null || maskPatterns.isEmpty() )
+        {
+            logger.trace( "Checking mask in: {}, - NO PATTERNS", store.getName() );
+            return true;
+        }
+
+        for ( String pattern : maskPatterns )
+        {
+            if ( isRegexPattern( pattern ) )
+            {
+                continue; // metadata patterns are listed as full paths, not use regex pattern
+            }
+            else if ( path.startsWith( pattern ) || pattern.startsWith( path ) )
+            {
+                logger.trace( "Checking mask in: {}, pattern: {} - MATCH", store.getName(), pattern );
+                return true;
+            }
+        }
+
+        logger.debug( "Metadata patterns not matched, path: {}, patterns: {}, repo: {}", path, maskPatterns,
+                      store.getKey() );
         return false;
     }
 
