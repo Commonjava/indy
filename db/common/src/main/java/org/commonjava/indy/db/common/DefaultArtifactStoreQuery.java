@@ -359,7 +359,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     }
                     catch ( UnknownHostException ue )
                     {
-                        logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                        logger.warn( "Failed to filter remote: {}, ip fetch error: {}.", store.getKey(), ue.getMessage() );
                     }
 
                     logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
