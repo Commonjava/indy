@@ -285,7 +285,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         }
         catch ( Exception error )
         {
-            logger.error( "Failed to find repository, url: '{}'. Reason: {}", url, error.getMessage() );
+            logger.warn( "Failed to find repository, url: '{}'. Reason: {}", url, error.getMessage() );
             return result;
         }
 
