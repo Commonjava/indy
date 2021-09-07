@@ -183,30 +183,34 @@ public class ResponseHelper
             for ( final Map.Entry<String, List<String>> headerSet : exchangeMetadata.getResponseHeaders().entrySet() )
             {
                 final String key = headerSet.getKey();
-                if ( ApplicationHeader.content_type.upperKey().equals( key ) )
+                final List<String> val = headerSet.getValue();
+                if ( val != null && !val.isEmpty() )
                 {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.content_type.upperKey() );
-                    conTypeSet = true;
-                }
-                else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
-                {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.last_modified.upperKey() );
-                    lastModSet = true;
-                }
-                else if ( ApplicationHeader.content_length.upperKey().equals( key ) )
-                {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.content_length.upperKey() );
-                    lenSet = true;
-                    if ( !includeContentLength )
+                    if ( ApplicationHeader.content_type.upperKey().equals( key ) )
                     {
-                        continue;
+                        logger.debug( "Marking {} as already set.", ApplicationHeader.content_type.upperKey() );
+                        conTypeSet = true;
                     }
-                }
+                    else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
+                    {
+                        logger.debug( "Marking {} as already set.", ApplicationHeader.last_modified.upperKey() );
+                        lastModSet = true;
+                    }
+                    else if ( ApplicationHeader.content_length.upperKey().equals( key ) )
+                    {
+                        logger.debug( "Marking {} as already set.", ApplicationHeader.content_length.upperKey() );
+                        lenSet = true;
+                        if ( !includeContentLength )
+                        {
+                            continue;
+                        }
+                    }
 
-                for ( final String value : headerSet.getValue() )
-                {
-                    logger.debug( "Setting header: '{}'= '{}'", key, value );
-                    builder.header( key, value );
+                    for ( final String value : headerSet.getValue() )
+                    {
+                        logger.debug( "Setting header: '{}'= '{}'", key, value );
+                        builder.header( key, value );
+                    }
                 }
             }
         }
