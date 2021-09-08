@@ -156,7 +156,7 @@ public class ResponseHelper
                     {
                         if ( StringUtils.isBlank( value ) )
                         {
-                            logger.warn( "Warning: Http metadata contains a blank value for key {}, will skip setting it.", ApplicationHeader.content_type.upperKey() );
+                            logger.warn( "Warning: Http metadata contains a blank value for key {}, will skip setting it.", key );
                             continue;
                         }
                         if ( ApplicationHeader.content_type.upperKey().equals( key ) )
