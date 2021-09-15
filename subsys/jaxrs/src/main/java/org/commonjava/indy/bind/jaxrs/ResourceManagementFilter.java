@@ -47,6 +47,7 @@ import static org.commonjava.indy.util.RequestContextHelper.CUMULATIVE_TIMINGS;
 import static org.commonjava.indy.util.RequestContextHelper.IS_METERED;
 import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE;
 import static org.commonjava.indy.util.RequestContextHelper.REQUEST_PHASE_START;
+import static org.commonjava.indy.util.RequestContextHelper.X_FORWARDED_FOR;
 
 @ApplicationScoped
 public class ResourceManagementFilter
@@ -111,10 +112,11 @@ public class ResourceManagementFilter
         String tn = hsr.getMethod() + " " + hsr.getPathInfo() + " (" + System.currentTimeMillis() + "." + System.nanoTime() + ")";
         String qs = hsr.getQueryString();
 
-        String clientAddr = RequestContextHelper.getContext( CLIENT_ADDR );
-        if ( clientAddr == null )
+        String clientAddr = hsr.getRemoteAddr();
+        final String xForwardFor = hsr.getHeader( X_FORWARDED_FOR );
+        if ( xForwardFor != null )
         {
-            clientAddr = hsr.getRemoteAddr();
+            clientAddr = xForwardFor; // OSE proxy use HTTP header 'x-forwarded-for' to represent user IP
         }
 
         try
@@ -124,6 +126,10 @@ public class ResourceManagementFilter
             boolean isMetered = metricsManager.isMetered( ()-> RequestContextHelper.getContext( FORCE_METERED, Boolean.FALSE ) );
 
             threadContext.put( IS_METERED, isMetered );
+
+            mdcManager.putUserIP( clientAddr );
+            mdcManager.putExtraHeaders( hsr );
+            mdcManager.putRequestIDs( hsr );
 
             threadContext.put( ORIGINAL_THREAD_NAME, name );
 

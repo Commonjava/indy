@@ -47,11 +47,13 @@ public class TransferStreamingOutput
     implements StreamingOutput
 {
 
-    private static final String TRANSFER_METRIC_NAME = "indy.transferred.content";
+    private static final String TRANSFER_METRIC_NAME = "indy.transferred.content.";
 
-    private static final String WRITE_SPEED = TRANSFER_METRIC_NAME + ".write.kps";
+    private static final String WRITE_SPEED = "write.kps";
 
-    private static final String WRITE_SIZE = TRANSFER_METRIC_NAME + ".write.kb";
+    private static final String WRITE_SIZE = "write.kb";
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final Optional<SpanAdapter> rootSpan;
 
@@ -76,13 +78,10 @@ public class TransferStreamingOutput
         this.metricsManager = metricsManager;
         this.metricsConfig = metricsConfig;
 
-        Optional<SpanAdapter> rs = getActiveSpan();
-        if ( rs.isPresent() ){
-            this.rootSpan = TraceManager.addCloseBlockingDecorator( rs, new TransferFieldInjector() );
-        }
-        else
-        {
-            this.rootSpan = Optional.empty();
+        this.rootSpan = getActiveSpan();
+        logger.trace( "TRANSFER close-blocker >> {}", rootSpan );
+        if ( rootSpan.isPresent() ){
+            TraceManager.addCloseBlockingDecorator( rootSpan, new TransferFieldInjector() );
         }
     }
 
@@ -107,7 +106,7 @@ public class TransferStreamingOutput
 
             double elapsed = (end-start)/NANOS_PER_SEC;
 
-            String rateName = getName( metricsConfig.getNodePrefix(), WRITE_SPEED,
+            String rateName = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME + WRITE_SPEED,
                                        getDefaultName( TransferStreamingOutput.class, WRITE_SPEED ), METER );
 
             Histogram rateGram = metricsManager.getHistogram( rateName );
@@ -116,7 +115,7 @@ public class TransferStreamingOutput
 
             rateGram.update( writeSpeed );
 
-            String sizeName = getName( metricsConfig.getNodePrefix(), WRITE_SIZE,
+            String sizeName = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME + WRITE_SIZE,
                                        getDefaultName( TransferStreamingOutput.class, WRITE_SIZE ), METER );
 
             logger.info( "measured size: {} kb to metric: {}", (kbCount/1024), sizeName );
@@ -136,16 +135,20 @@ public class TransferStreamingOutput
     private class TransferFieldInjector
                     implements CloseBlockingDecorator
     {
+        private final Logger logger = LoggerFactory.getLogger( getClass() );
+
         @Override
         public void decorateSpanAtClose( SpanAdapter span )
         {
             if ( cout == null || start == -1 )
             {
+                logger.trace( "Transfer was never started. Not decorating the span." );
                 return;
             }
 
             if ( span != null )
             {
+                logger.trace( "Decorating span with write speed / size metrics." );
                 span.addField( WRITE_SPEED, writeSpeed );
                 span.addField( WRITE_SIZE, kbCount );
             }
