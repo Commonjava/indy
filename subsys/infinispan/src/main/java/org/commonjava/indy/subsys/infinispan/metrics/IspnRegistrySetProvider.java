@@ -47,26 +47,34 @@ public class IspnRegistrySetProvider
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+    private IspnCheckRegistrySet metricSet;
+
     @Override
-    public MetricSet getMetricSet()
+    public synchronized MetricSet getMetricSet()
     {
-        logger.info( "Adding ISPN checks" );
-        String gauges = metricsConfig.getIspnGauges();
-        List<String> list = null;
-        if ( gauges != null )
+        if ( metricSet == null )
         {
-            list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
+            logger.info( "Adding ISPN checks" );
+            String gauges = metricsConfig.getIspnGauges();
+            List<String> list = null;
+            if ( gauges != null )
+            {
+                list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
+            }
+
+            for ( IspnCacheRegistry cacheRegistry : cacheRegistrySet )
+            {
+                Set<String> caches = cacheRegistry.getCacheNames();
+                if ( caches != null )
+                {
+                    caches.forEach( ( n ) -> cacheProducer.getCacheManager().getCache( n ) );
+                }
+            }
+
+            this.metricSet = new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list );
         }
 
-        for ( IspnCacheRegistry cacheRegistry : cacheRegistrySet )
-        {
-            Set<String> caches = cacheRegistry.getCacheNames();
-            if ( caches != null )
-            {
-                caches.forEach( ( n ) -> cacheProducer.getCacheManager().getCache( n ) );
-            }
-        }
-        return new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list );
+        return metricSet;
     }
 
     @Override
@@ -79,5 +87,11 @@ public class IspnRegistrySetProvider
     public boolean isEnabled()
     {
         return metricsConfig.isIspnMetricsEnabled();
+    }
+
+    @Override
+    public void reset()
+    {
+        metricSet.reset();
     }
 }

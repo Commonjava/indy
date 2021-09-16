@@ -39,4 +39,10 @@ public class IndyGoldenSignalsMetricSetProvider
     {
         return "sli.golden";
     }
+
+    @Override
+    public void reset()
+    {
+        metricSet.reset();
+    }
 }
