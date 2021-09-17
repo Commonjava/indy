@@ -40,8 +40,8 @@ import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
 import static org.commonjava.o11yphant.metrics.RequestContextConstants.RAW_IO_WRITE_NANOS;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
-import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 import static org.commonjava.o11yphant.trace.TraceManager.getActiveSpan;
+import static org.commonjava.o11yphant.trace.TracingConstants.LATENCY_TIMER_PAUSE_KEY;
 
 public class TransferStreamingOutput
     implements StreamingOutput
@@ -105,6 +105,10 @@ public class TransferStreamingOutput
             RequestContextHelper.setContext( RAW_IO_WRITE_NANOS, end - start );
 
             double elapsed = (end-start)/NANOS_PER_SEC;
+
+            TraceManager.getActiveSpan()
+                        .ifPresent( s -> s.setInProgressField( LATENCY_TIMER_PAUSE_KEY,
+                                                               s.getInProgressField( LATENCY_TIMER_PAUSE_KEY, 0.0 ) + (end-start) ) );
 
             String rateName = getName( metricsConfig.getNodePrefix(), TRANSFER_METRIC_NAME + WRITE_SPEED,
                                        getDefaultName( TransferStreamingOutput.class, WRITE_SPEED ), METER );

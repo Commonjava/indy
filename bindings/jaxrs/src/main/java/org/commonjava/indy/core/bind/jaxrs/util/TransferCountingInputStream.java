@@ -16,10 +16,11 @@
 package org.commonjava.indy.core.bind.jaxrs.util;
 
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.o11yphant.metrics.api.Meter;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,7 @@ import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
 import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
+import static org.commonjava.o11yphant.trace.TracingConstants.LATENCY_TIMER_PAUSE_KEY;
 
 public class TransferCountingInputStream
         extends IdempotentCloseInputStream
@@ -75,6 +77,9 @@ public class TransferCountingInputStream
 
             long end = System.nanoTime();
             double elapsed = (end-start)/NANOS_PER_SEC;
+            TraceManager.getActiveSpan()
+                        .ifPresent( s -> s.setInProgressField( LATENCY_TIMER_PAUSE_KEY,
+                                                               s.getInProgressField( LATENCY_TIMER_PAUSE_KEY, 0.0 ) + (end-start) ) );
 
             if ( metricsConfig != null && metricsManager != null )
             {
