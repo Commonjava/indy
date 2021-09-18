@@ -550,61 +550,62 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
         final List<ArtifactStore> result = new ArrayList<>();
 
-        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
-        LinkedList<Group> toCheck = new LinkedList<>();
-        Set<StoreKey> seen = new HashSet<>();
-        toCheck.add( master );
+        return getMembersOrdering( master, enabled, result, includeGroups, recurseGroups );
 
-        while ( !toCheck.isEmpty() )
+    }
+
+    private List<ArtifactStore> getMembersOrdering(final Group groupRepo, final Boolean enabled, final List<ArtifactStore> result,
+                                                   final boolean includeGroups, final boolean recurseGroups) throws IndyDataException
+    {
+
+        if ( groupRepo == null || groupRepo.isDisabled() && Boolean.TRUE.equals(this.enabled) )
         {
-            Group next = toCheck.removeFirst();
+            return result;
+        }
 
-            if ( next == null || next.isDisabled() && Boolean.TRUE.equals( this.enabled ) )
+        Set<StoreKey> seen = new HashSet<>();
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+
+        List<StoreKey> members = new ArrayList<>( groupRepo.getConstituents() );
+        if ( includeGroups )
+        {
+            result.add( groupRepo );
+        }
+
+        members.forEach(( key ) ->
+        {
+            if (!seen.contains( key ))
             {
-                continue;
+                seen.add( key );
+                final StoreType type = key.getType();
+                try
+                {
+                    if ( recurseGroups && type == group )
+                    {
+                        // if we're here, we're definitely recursing groups...
+                        Group group = (Group) dataManager.getArtifactStore(key);
+                        getMembersOrdering( group, enabled, result, includeGroups, recurseGroups );
+                    }
+                    else
+                    {
+                        final ArtifactStore store = dataManager.getArtifactStore( key );
+                        if (store != null && !(store.isDisabled() && Boolean.TRUE.equals( this.enabled )))
+                        {
+                            result.add( store );
+                        }
+                    }
+                }
+                catch ( IndyDataException e )
+                {
+                    errorRef.set( e );
+                }
             }
+        });
 
-            List<StoreKey> members = new ArrayList<>( next.getConstituents() );
-            if ( includeGroups )
-            {
-                result.add( next );
-            }
-
-            members.forEach( ( key ) ->
-                             {
-                                 if ( !seen.contains( key ) )
-                                 {
-                                     seen.add( key );
-                                     final StoreType type = key.getType();
-                                     try
-                                     {
-                                         if ( recurseGroups && type == group )
-                                         {
-                                             // if we're here, we're definitely recursing groups...
-                                             Group group = (Group) dataManager.getArtifactStore( key );
-                                             toCheck.addFirst( group );
-                                         }
-                                         else
-                                         {
-                                             final ArtifactStore store = dataManager.getArtifactStore( key );
-                                             if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( this.enabled ) ) )
-                                             {
-                                                 result.add( store );
-                                             }
-                                         }
-                                     }
-                                     catch ( IndyDataException e )
-                                     {
-                                         errorRef.set(e);
-                                     }
-                                 }
-                             } );
-
-            IndyDataException error = errorRef.get();
-            if ( error != null )
-            {
-                throw error;
-            }
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
         }
 
         return result;
