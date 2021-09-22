@@ -37,6 +37,7 @@ import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -48,6 +49,8 @@ import java.util.stream.Collectors;
 public class FoloRecordCache implements FoloRecord {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    private final int GET_ENTRIES_PAGE_SIZE = 300;
 
     @FoloInprogressCache
     @Inject
@@ -173,14 +176,13 @@ public class FoloRecordCache implements FoloRecord {
         Logger logger = LoggerFactory.getLogger( getClass() );
         if ( record != null )
         {
-            logger.debug( "Tracking record: {} already sealed! Returning sealed record.", trackingKey );
+            logger.warn( "Tracking record: {} already sealed! Returning sealed record.", trackingKey );
             return record;
         }
 
-        logger.debug( "Listing unsealed tracking record entries for: {}...", trackingKey );
+        logger.info( "Listing unsealed tracking record entries, trackingKey: {}", trackingKey );
         return inProgressByTrackingKey( trackingKey, (qb, cacheHandle)-> {
-            Query query = qb.build();
-            List<TrackedContentEntry> results = query.list();
+            List<TrackedContentEntry> results = getAllEntries( qb );
             TrackedContent created = null;
             if ( results != null )
             {
@@ -196,16 +198,57 @@ public class FoloRecordCache implements FoloRecord {
                     {
                         uploads.add( result );
                     }
-                    logger.trace( "Removing in-progress entry: {}", result );
+                    logger.debug( "Removing in-progress entry: {}", result );
                     inProgressRecordCache.remove( result );
                 } );
                 created = new TrackedContent( trackingKey, uploads, downloads );
             }
 
-            logger.debug( "Sealing record for: {}", trackingKey );
-            sealedRecordCache.put( trackingKey, created );
+            if ( created != null )
+            {
+                logger.info( "Sealing record for: {}", trackingKey );
+                sealedRecordCache.put( trackingKey, created );
+            }
             return created;
         });
+    }
+
+    private List<TrackedContentEntry> getAllEntries( QueryBuilder qb )
+    {
+        List<TrackedContentEntry> results = new ArrayList<>();
+
+        Query query = qb.build();
+        int size = query.getResultSize();
+        logger.info( "Query TrackedContentEntry, size: {}", size );
+        if ( size <= 0 )
+        {
+            return results;
+        }
+
+        int total = 0;
+        int offset = 0;
+        while ( total < size )
+        {
+            query = qb.maxResults( GET_ENTRIES_PAGE_SIZE ).build();
+            query.startOffset( offset );
+            List<TrackedContentEntry> ret = query.list();
+            if ( ret == null || ret.isEmpty() )
+            {
+                logger.info( "Query TrackedContentEntry get null or empty, {}", ret );
+                break;
+            }
+            logger.debug( "Get TrackedContentEntry, size: {}, offset: {}", ret.size(), offset );
+            total += ret.size();
+            offset += ret.size();
+            results.addAll( ret );
+        }
+
+        if ( results.size() != size )
+        {
+            logger.error( "Query TrackedContentEntry size error, size: {}, expected: {}", results.size(), size );
+            return null;
+        }
+        return results;
     }
 
     @Override
