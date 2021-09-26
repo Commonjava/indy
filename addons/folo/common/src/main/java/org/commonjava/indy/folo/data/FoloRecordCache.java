@@ -16,6 +16,7 @@
 package org.commonjava.indy.folo.data;
 
 import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.folo.change.FoloBackupListener;
 import org.commonjava.indy.folo.change.FoloExpirationWarningListener;
 import org.commonjava.indy.folo.model.StoreEffect;
@@ -35,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +51,9 @@ public class FoloRecordCache implements FoloRecord {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final int GET_ENTRIES_PAGE_SIZE = 300;
+
+    @Inject
+    private InternalFeatureConfig internalFeatureConfig;
 
     @FoloInprogressCache
     @Inject
@@ -182,7 +185,7 @@ public class FoloRecordCache implements FoloRecord {
 
         logger.info( "Listing unsealed tracking record entries, trackingKey: {}", trackingKey );
         return inProgressByTrackingKey( trackingKey, (qb, cacheHandle)-> {
-            List<TrackedContentEntry> results = getAllEntries( qb );
+            List<TrackedContentEntry> results = getTrackedContentEntries( qb );
             TrackedContent created = null;
             if ( results != null )
             {
@@ -213,40 +216,48 @@ public class FoloRecordCache implements FoloRecord {
         });
     }
 
-    private List<TrackedContentEntry> getAllEntries( QueryBuilder qb )
+    private List<TrackedContentEntry> getTrackedContentEntries( QueryBuilder qb )
     {
-        List<TrackedContentEntry> results = new ArrayList<>();
-
-        Query query = qb.build();
-        int size = query.getResultSize();
-        logger.info( "Query TrackedContentEntry, size: {}", size );
-        if ( size <= 0 )
+        List<TrackedContentEntry> results;
+        if ( internalFeatureConfig != null && !internalFeatureConfig.getFoloISPNQueryPaginationEnabled() )
         {
-            return results;
+            results = qb.build().list();
         }
-
-        int total = 0;
-        int offset = 0;
-        while ( total < size )
+        else // use pagination
         {
-            query = qb.maxResults( GET_ENTRIES_PAGE_SIZE ).build();
-            query.startOffset( offset );
-            List<TrackedContentEntry> ret = query.list();
-            if ( ret == null || ret.isEmpty() )
+            results = new ArrayList<>();
+
+            Query query = qb.build();
+            int size = query.getResultSize();
+            logger.info( "Query TrackedContentEntry, size: {}", size );
+            if ( size <= 0 )
             {
-                logger.info( "Query TrackedContentEntry get null or empty, {}", ret );
-                break;
+                return results;
             }
-            logger.debug( "Get TrackedContentEntry, size: {}, offset: {}", ret.size(), offset );
-            total += ret.size();
-            offset += ret.size();
-            results.addAll( ret );
-        }
 
-        if ( results.size() != size )
-        {
-            logger.error( "Query TrackedContentEntry size error, size: {}, expected: {}", results.size(), size );
-            return null;
+            int total = 0;
+            int offset = 0;
+            while ( total < size )
+            {
+                query = qb.maxResults( GET_ENTRIES_PAGE_SIZE ).build();
+                query.startOffset( offset );
+                List<TrackedContentEntry> ret = query.list();
+                if ( ret == null || ret.isEmpty() )
+                {
+                    logger.info( "Query TrackedContentEntry get null or empty, {}", ret );
+                    break;
+                }
+                logger.debug( "Get TrackedContentEntry, size: {}, offset: {}", ret.size(), offset );
+                total += ret.size();
+                offset += ret.size();
+                results.addAll( ret );
+            }
+
+            if ( results.size() != size )
+            {
+                logger.error( "Query TrackedContentEntry size error, size: {}, expected: {}", results.size(), size );
+                return null;
+            }
         }
         return results;
     }

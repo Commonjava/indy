@@ -33,9 +33,22 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private Boolean storeValidation;
 
+    private Boolean foloISPNQueryPaginationEnabled;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
+    }
+
+    public Boolean getFoloISPNQueryPaginationEnabled()
+    {
+        return foloISPNQueryPaginationEnabled == null ? Boolean.TRUE : foloISPNQueryPaginationEnabled;
+    }
+
+    @ConfigName("folo.ispn.query.pagination.enabled")
+    public void setFoloISPNQueryPaginationEnabled( Boolean foloISPNQueryPaginationEnabled )
+    {
+        this.foloISPNQueryPaginationEnabled = foloISPNQueryPaginationEnabled;
     }
 
     public Boolean getStoreValidation() {
