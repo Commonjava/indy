@@ -31,12 +31,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class FoloRecordCacheTest
 {
@@ -127,6 +131,54 @@ public class FoloRecordCacheTest
     }
 
     @Test
+    public void sealLargeNumberOfRecords() // test pagination
+                    throws Exception
+    {
+        final TrackingKey key = newKey();
+        assertThat( cache.hasRecord( key ), equalTo( false ) );
+
+        int size = 1001;
+
+        Set<String> uploadPaths = new HashSet();
+        Set<String> downloadPaths = new HashSet();
+        for ( int i = 0; i < size; i++ )
+        {
+            String pUp = "/up/path_" + i;
+            String pDown = "/down/path_" + i;
+            uploadPaths.add( pUp );
+            downloadPaths.add( pDown );
+            cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( MAVEN_PKG_KEY, StoreType.hosted, "foo" ),
+                                                           AccessChannel.NATIVE, "", pUp, StoreEffect.UPLOAD, 124L, "",
+                                                           "", "" ) );
+            cache.recordArtifact( new TrackedContentEntry( key, new StoreKey( MAVEN_PKG_KEY, StoreType.hosted, "foo" ),
+                                                           AccessChannel.NATIVE, "", pDown, StoreEffect.DOWNLOAD, 124L,
+                                                           "", "", "" ) );
+        }
+
+        assertThat( cache.hasRecord( key ), equalTo( true ) );
+        assertThat( cache.hasInProgressRecord( key ), equalTo( true ) );
+        assertThat( cache.hasSealedRecord( key ), equalTo( false ) );
+
+        TrackedContent record = cache.seal( key );
+
+        assertThat( record, notNullValue() );
+        assertThat( cache.hasRecord( key ), equalTo( true ) );
+        assertThat( cache.hasInProgressRecord( key ), equalTo( false ) );
+        assertThat( cache.hasSealedRecord( key ), equalTo( true ) );
+        assertThat( record.getUploads().size(), equalTo( size ) );
+        assertTrue( record.getUploads()
+                          .stream()
+                          .map( et -> et.getPath() )
+                          .collect( Collectors.toSet() )
+                          .containsAll( uploadPaths ) );
+        assertTrue( record.getDownloads()
+                          .stream()
+                          .map( et -> et.getPath() )
+                          .collect( Collectors.toSet() )
+                          .containsAll( downloadPaths ) );
+    }
+
+    @Test
     public void clearRecordDeletesRecord()
             throws Exception
     {
@@ -165,8 +217,7 @@ public class FoloRecordCacheTest
 
     private TrackingKey newKey()
     {
-        final String id = "track";
-
+        final String id = "track-" + System.currentTimeMillis();
         return new TrackingKey( id );
     }
 
