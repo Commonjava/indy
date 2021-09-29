@@ -63,6 +63,8 @@ import java.util.function.Supplier;
 
 import static java.lang.Thread.sleep;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.commonjava.indy.IndyRequestConstants.TRANSFER_SIZE;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -110,6 +112,7 @@ public class NPMContentAccessHandler
         {
             // store the transfer of new request package.json
             final Transfer metadataFile = contentController.store( sk, path, request.getInputStream(), eventMetadata );
+            addFieldToActiveSpan( TRANSFER_SIZE, metadataFile.length() );
 
             // generate its relevant files from the metadata file package.json
             List<Transfer> generated = generateNPMContentsFromTransfer( metadataFile, eventMetadata );
@@ -353,6 +356,7 @@ public class NPMContentAccessHandler
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = openInputStreamSafe( item, eventMetadata );
 
+                        addFieldToActiveSpan( TRANSFER_SIZE, item.length() );
                         final Response.ResponseBuilder builder =
                                 Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
 

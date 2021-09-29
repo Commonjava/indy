@@ -110,6 +110,8 @@ public class TraceManagerProducer
         {
             rsfInstance.forEach( result::add );
         }
+
+        logger.trace( "Adding root-span field injectors: {}", result );
         return result;
     }
 }

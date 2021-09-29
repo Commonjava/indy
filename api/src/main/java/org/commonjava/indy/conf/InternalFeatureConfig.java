@@ -35,9 +35,22 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private Boolean fileChangeTracking;
 
+    private Boolean testFeatures;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
+    }
+
+    public Boolean getTestFeatures()
+    {
+        return testFeatures;
+    }
+
+    @ConfigName( "test.features.enabled" )
+    public void setTestFeatures( Boolean testFeatures )
+    {
+        this.testFeatures = testFeatures;
     }
 
     public Boolean getFileChangeTracking()

@@ -403,7 +403,9 @@ public class CacheProducer
 
     private String getCacheMetricPrefix( String named )
     {
-        return metricsManager == null ? null : getSupername( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN, named );
+        String prefix = metricsManager == null ? null : getSupername( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN, named );
+        logger.trace( "Cache prefix for: '{}' is: '{}'", named, prefix );
+        return prefix;
     }
 
     public synchronized Configuration getCacheConfiguration( String name )

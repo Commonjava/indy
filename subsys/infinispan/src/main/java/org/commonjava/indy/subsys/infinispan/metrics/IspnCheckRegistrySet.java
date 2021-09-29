@@ -92,8 +92,9 @@ public class IspnCheckRegistrySet
     @Override
     public Map<String, Metric> getMetrics()
     {
-        final Map<String, Metric> gauges = new HashMap<String, Metric>();
+        final Map<String, Metric> gauges = new HashMap<>();
         Set<String> names = cacheManager.getCacheNames();
+        logger.trace( "Finding metrics related to Infinispan caches: {}", names );
         names.forEach( n ->
            {
                Cache<Object, Object> cache = cacheManager.getCache( n );
@@ -197,7 +198,14 @@ public class IspnCheckRegistrySet
                }
            } );
 
+        logger.trace( "Got ISPN cache gauges: {}", gauges.keySet() );
         return gauges;
+    }
+
+    @Override
+    public void reset()
+    {
+        // No-op
     }
 
     private <T> T noExceptions( final Supplier<T> task )

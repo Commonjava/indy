@@ -29,6 +29,7 @@ import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
+import org.commonjava.indy.subsys.honeycomb.TraceManagerProducer;
 import org.commonjava.o11yphant.metrics.GoldenSignalsFilter;
 import org.commonjava.o11yphant.trace.servlet.TraceFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
@@ -85,6 +86,10 @@ public class IndyDeployment
 
     @Inject
     private TraceFilter traceFilter;
+
+    // Adding to ensure it gets initialized
+    @Inject
+    private TraceManagerProducer traceManagerProducer;
 
     @Inject
     private GoldenSignalsFilter goldenSignalsFilter;

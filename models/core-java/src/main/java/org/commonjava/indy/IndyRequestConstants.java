@@ -22,4 +22,6 @@ public final class IndyRequestConstants
 
     public static final String HEADER_COMPONENT_ID = "component-id";
 
+    public static final String TRANSFER_SIZE = "transfer-size";
+
 }

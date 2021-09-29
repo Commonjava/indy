@@ -16,10 +16,11 @@
 package org.commonjava.indy.core.bind.jaxrs.util;
 
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.o11yphant.metrics.api.Meter;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.trace.TraceManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +31,18 @@ import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
 import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
+import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
+import static org.commonjava.o11yphant.trace.TracingConstants.LATENCY_TIMER_PAUSE_KEY;
 
 public class TransferCountingInputStream
         extends IdempotentCloseInputStream
 {
 
     private static final String TRANSFER_UPLOAD_METRIC_NAME = "indy.transferred.content.upload";
+
+    private static final String READ_SPEED = "read.kps";
+
+    private static final String READ_SIZE = "read.kb";
 
     private DefaultMetricsManager metricsManager;
 
@@ -68,17 +75,26 @@ public class TransferCountingInputStream
             size = stream.getByteCount();
             logger.trace( "Reads: {} bytes", size );
 
+            long end = System.nanoTime();
+            double elapsed = (end-start)/NANOS_PER_SEC;
+            TraceManager.getActiveSpan()
+                        .ifPresent( s -> s.setInProgressField( LATENCY_TIMER_PAUSE_KEY,
+                                                               s.getInProgressField( LATENCY_TIMER_PAUSE_KEY, 0.0 ) + (end-start) ) );
+
             if ( metricsConfig != null && metricsManager != null )
             {
                 String name = getName( metricsConfig.getNodePrefix(), TRANSFER_UPLOAD_METRIC_NAME,
                                        getDefaultName( TransferCountingInputStream.class, "read" ), METER );
 
-                long end = System.nanoTime();
-                double elapsed = (end-start)/NANOS_PER_SEC;
-
                 Meter meter = metricsManager.getMeter( name );
                 meter.mark( Math.round( stream.getByteCount() / elapsed ) );
             }
+
+            double kbCount = (double) size / 1024;
+            long speed = Math.round( kbCount / elapsed );
+
+            addFieldToActiveSpan( READ_SIZE, kbCount );
+            addFieldToActiveSpan( READ_SPEED, speed );
         }
         finally
         {
