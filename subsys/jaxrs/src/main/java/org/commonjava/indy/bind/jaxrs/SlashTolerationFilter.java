@@ -15,18 +15,26 @@
  */
 package org.commonjava.indy.bind.jaxrs;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @ApplicationScoped
 public class SlashTolerationFilter
         implements Filter
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Override
-    public void init( final FilterConfig filterConfig )
-                    throws ServletException
+    public void init( final FilterConfig filterConfig ) throws ServletException
     {
     }
 
@@ -35,8 +43,36 @@ public class SlashTolerationFilter
             throws IOException, ServletException
     {
         final HttpServletRequest hsr = (HttpServletRequest) servletRequest;
-        String newURI = hsr.getRequestURI().replaceAll( "/+", "/" );
-        servletRequest.getRequestDispatcher(newURI).forward(servletRequest, servletResponse);
+
+        final HttpServletRequestWrapper wrapped = new HttpServletRequestWrapper(hsr) {
+            @Override
+            public StringBuffer getRequestURL() {
+                final StringBuffer originalUrl = hsr.getRequestURL();
+                try
+                {
+                    return new StringBuffer( new URI( originalUrl.toString()).normalize().toString() );
+                }
+                catch ( URISyntaxException e )
+                {
+                    logger.error("URL rewriting error.", e);
+                }
+                return originalUrl;
+            }
+            @Override
+            public String getRequestURI(){
+                try
+                {
+                    return new URI( hsr.getRequestURI() ).normalize().toString();
+                }
+                catch ( URISyntaxException e )
+                {
+                    logger.error("URL rewriting error.", e);
+                }
+                return hsr.getRequestURI();
+            }
+
+        };
+        filterChain.doFilter(wrapped, servletResponse);
     }
 
     @Override
