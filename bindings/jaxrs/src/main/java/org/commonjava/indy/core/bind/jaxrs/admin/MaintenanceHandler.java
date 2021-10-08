@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.core.bind.jaxrs.admin;
 
+import static org.commonjava.indy.data.StoreDataManager.IGNORE_READONLY;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
@@ -316,7 +317,7 @@ public class MaintenanceHandler
     @POST
     public Response doDelete( final BatchDeleteRequest request )
     {
-        return contentAccessHandler.doDelete( request, new EventMetadata(  ) );
+        return contentAccessHandler.doDelete( request, new EventMetadata(  ).set( IGNORE_READONLY, Boolean.TRUE ) );
     }
 
     @ApiOperation( "Import artifact stores from a ZIP file." )
