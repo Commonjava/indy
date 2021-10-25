@@ -156,7 +156,7 @@ public class ContentGeneratorManager
         {
             final List<StoreResource> generated =
                             generator.generateGroupDirectoryContent( group, members, path, eventMetadata );
-            if ( generated != null )
+            if ( generated != null && !generated.isEmpty() )
             {
                 consumer.accept( generated );
             }

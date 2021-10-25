@@ -126,29 +126,17 @@ public class NPMContentAccessResource
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
                     @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
-    @Path( "/{packageName}" )
+    @Path( "/{path: (.*)}" )
     public Response doDelete(
             final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
             final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "packageName" ) String packageName,
+            final @PathParam( "path" ) String path,
             final @ApiParam( name = CHECK_CACHE_ONLY, value = "true or false" ) @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly )
     {
-        return handler.doDelete( NPM_PKG_KEY, type, name, packageName, new EventMetadata() );
-    }
+        EventMetadata metadata = new EventMetadata();
+        metadata.set( CHECK_CACHE_ONLY, cacheOnly );
 
-    @ApiOperation(
-            "Delete NPM package and metadata content under the given artifact store (type/name), packageName and versionTarball (/version or /-/tarball)." )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
-                           @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
-    @DELETE
-    @Path( "/{packageName}/{versionTarball: (.*)}" )
-    public Response doDelete(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
-            final @ApiParam( required = true ) @PathParam( "name" ) String name, final @PathParam( "packageName" ) String packageName,
-            final @PathParam( "versionTarball" ) String versionTarball )
-    {
-        final String path = Paths.get( packageName, versionTarball ).toString();
-        return handler.doDelete( NPM_PKG_KEY, type, name, path, new EventMetadata() );
+        return handler.doDelete( NPM_PKG_KEY, type, name, path, metadata );
     }
 
     @Override

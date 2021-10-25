@@ -1,4 +1,4 @@
-application/maven+xml         pom
+text/xml                      pom
 application/java-archive      jar
 application/x-gzip            gz
 application/x-gzip            tgz

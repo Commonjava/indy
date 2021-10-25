@@ -96,12 +96,12 @@ public class IndyPathGenerator
             String dir = f.getParent();
             if ( dir == null )
             {
-                dir = "";
+                dir = "/";
             }
 
             if ( dir.length() > 1 && dir.startsWith( "/" ) )
             {
-                dir = dir.substring( 1, dir.length() );
+                dir = dir.substring( 1 );
             }
 
             String digest = DigestUtils.sha256Hex( dir );

@@ -26,6 +26,7 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -292,6 +293,11 @@ public class DefaultContentManager
             return null;
         }
 
+        if ( store.getKey().getType() == StoreType.remote && !PathMaskChecker.checkMask( store, path))
+        {
+            return null;
+        }
+
         Transfer item = null;
         try
         {
@@ -453,7 +459,7 @@ public class DefaultContentManager
     {
         if ( Boolean.TRUE.equals( eventMetadata.get( CHECK_CACHE_ONLY ) ) && hosted == store.getKey().getType() )
         {
-            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path );
+            SpecialPathInfo info = specialPathManager.getSpecialPathInfo( path, store.getPackageType() );
             if ( info != null && info.isMetadata() )
             {
                 // Set ignore readonly for metadata so that we can delete stale metadata from readonly hosted repo
@@ -461,7 +467,7 @@ public class DefaultContentManager
             }
             else
             {
-                logger.info( "Can not delete from hosted {}, path: {}", store.getKey(), path );
+                logger.info( "Can not delete from hosted {}, path: {}, info: {}", store.getKey(), path, info );
                 return false;
             }
         }

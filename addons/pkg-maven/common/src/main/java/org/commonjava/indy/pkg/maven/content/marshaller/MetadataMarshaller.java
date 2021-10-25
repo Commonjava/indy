@@ -33,8 +33,8 @@ public class MetadataMarshaller implements MessageMarshaller<Metadata>
         md.setGroupId( reader.readString( "groupId" ) );
         md.setArtifactId( reader.readString( "artifactId" ) );
         md.setVersion( reader.readString( "version" ) );
-        md.setPlugins( reader.readCollection( "plugins", new ArrayList<Plugin>(), Plugin.class ) );
         md.setVersioning( reader.readObject( "versioning", Versioning.class ) );
+        md.setPlugins( reader.readCollection( "plugins", new ArrayList<Plugin>(), Plugin.class ) );
         md.setModelEncoding( reader.readString( "modelEncoding" ) );
         return md;
     }

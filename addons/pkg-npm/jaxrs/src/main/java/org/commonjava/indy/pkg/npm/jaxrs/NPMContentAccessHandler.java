@@ -61,6 +61,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import static java.lang.Thread.sleep;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -71,6 +73,8 @@ public class NPMContentAccessHandler
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final String TEMP_EXTENSION = ".temp";
+
+    private final String PROXY_ORIGIN = "proxy-origin";
 
     @Inject
     private TransferManager transfers;
@@ -270,7 +274,8 @@ public class NPMContentAccessHandler
         final StoreKey sk = new StoreKey( packageType, st, name );
 
         eventMetadata.set( ContentManager.ENTRY_POINT_STORE, sk );
-        eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, baseUri );
+
+        setEntryPointBaseUri( request, baseUri, eventMetadata );
 
         final AcceptInfo acceptInfo = jaxRsRequestHelper.findAccept( request, ApplicationContent.text_html );
         final String standardAccept = ApplicationContent.getStandardAccept( acceptInfo.getBaseAccept() );
@@ -346,7 +351,7 @@ public class NPMContentAccessHandler
 
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
-                        InputStream in = item.openInputStream( true, eventMetadata );
+                        InputStream in = openInputStreamSafe( item, eventMetadata );
 
                         final Response.ResponseBuilder builder =
                                 Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
@@ -382,6 +387,76 @@ public class NPMContentAccessHandler
 
         logger.info( "RETURNING RESULT: {}:{}", sk, path );
         return response;
+    }
+
+    /**
+     * Due to race condition, the target file may be deleted / regenerated, especially for metadata. Add retry here to safely open the input stream.
+     */
+    private InputStream openInputStreamSafe( Transfer item, EventMetadata eventMetadata ) throws IOException
+    {
+        int retry = 0;
+        while ( true )
+        {
+            try
+            {
+                return item.openInputStream( true, eventMetadata );
+            }
+            catch ( final IOException e )
+            {
+                if ( retry++ >= 3 ) // retry at most 3 times
+                {
+                    throw e;
+                }
+
+                String eMessage = e.getMessage();
+                if ( eMessage != null && eMessage.contains( "not exist" ) )
+                {
+                    logger.warn( "Transfer file missing, resource: {}, error: {}", item.getResource(), eMessage );
+                    try
+                    {
+                        sleep( 500 ); // sleep half a sec
+                    }
+                    catch ( InterruptedException ignored )
+                    {
+                    }
+                    logger.info( "Retry openInputStream, storagePath: {}", item.getStoragePath() );
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+        }
+    }
+
+    private void setEntryPointBaseUri( HttpServletRequest request, String baseUri, EventMetadata eventMetadata )
+    {
+        String proxyOrigin = request.getHeader( PROXY_ORIGIN );
+        if ( isNotBlank( proxyOrigin ) )
+        {
+            eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, replaceOrigin( baseUri, proxyOrigin ) );
+        }
+        else
+        {
+            eventMetadata.set( ContentManager.ENTRY_POINT_BASE_URI, baseUri );
+        }
+    }
+
+    /**
+     * Replace the entry point in the baseUri with originProxy if this is from sidecar or gateway.
+     * @param baseUri sth like http://{indy}/api/content/npm or http://{indy}/api/folo/track/{id}/npm
+     * @param proxyOrigin proxy base url, like http://indy-gateway.svc.cluster.local
+     */
+    private Object replaceOrigin( String baseUri, String proxyOrigin )
+    {
+        int index = baseUri.indexOf( "/api" );
+        if ( index > 0 )
+        {
+            StringBuilder sb = new StringBuilder( proxyOrigin );
+            sb.append( baseUri.substring( index ) );
+            return sb.toString();
+        }
+        return baseUri;
     }
 
     private List<Transfer> generateNPMContentsFromTransfer( final Transfer transfer, final EventMetadata eventMetadata )

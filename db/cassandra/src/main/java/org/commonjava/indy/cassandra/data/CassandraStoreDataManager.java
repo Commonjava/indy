@@ -28,6 +28,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ import java.util.stream.Stream;
 
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
+import static org.commonjava.indy.model.core.StoreType.remote;
 
 @ApplicationScoped
 @ClusterStoreDataManager
@@ -60,6 +62,10 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
 
     @Inject
     IndyObjectMapper objectMapper;
+
+    @Inject
+    @RemoteKojiStoreDataCache
+    private CacheHandle<StoreKey, ArtifactStore> remoteKojiStores;
 
     protected CassandraStoreDataManager()
     {
@@ -82,6 +88,15 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     {
 
         logger.trace( "Get artifact store: {}", key.toString() );
+
+        if ( remote.equals( key.getType()) && key.getName().startsWith( "koji-" ) )
+        {
+            ArtifactStore store = remoteKojiStores.get( key );
+            if ( store != null )
+            {
+                return store;
+            }
+        }
 
         DtxArtifactStore dtxArtifactStore = storeQuery.getArtifactStore( key.getPackageType(), key.getType(), key.getName() );
 
@@ -428,7 +443,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                     ( (HostedRepository) store ).setAllowSnapshots( allowSnapshots );
                 }
             }
-            else if ( dtxArtifactStore.getStoreType().equals( StoreType.remote.name() ) )
+            else if ( dtxArtifactStore.getStoreType().equals( remote.name() ) )
             {
                 store = new RemoteRepository( dtxArtifactStore.getPackageType(), dtxArtifactStore.getName(),
                                               readStrValueFromExtra( CassandraStoreUtil.URL, extras ));
@@ -552,4 +567,13 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         return null;
     }
 
+    public void initRemoteStoresCache()
+    {
+        final Set<ArtifactStore> allStores = getAllArtifactStores();
+
+        // cache the remote koji repo
+        allStores.stream().filter( s -> remote == s.getType() && ( "koji".equals( s.getMetadata( ArtifactStore.METADATA_ORIGIN ) )
+                || "koji-binary".equals(
+                s.getMetadata(ArtifactStore.METADATA_ORIGIN ) ) ) ).forEach( s -> remoteKojiStores.put( s.getKey(), s ) );
+    }
 }
