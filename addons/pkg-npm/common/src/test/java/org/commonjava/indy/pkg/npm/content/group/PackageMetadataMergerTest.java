@@ -158,6 +158,28 @@ public class PackageMetadataMergerTest
     }
 
     @Test
+    public void mergePackageMetadataFilesWithComplexDevDependencies() throws Exception
+    {
+        String path = "deep-diff";
+        HostedRepository h1 = new HostedRepository( NPM_PKG_KEY, "test-hosted-1" );
+
+        Transfer t1 = cacheProvider.getTransfer( new ConcreteResource( LocationUtils.toLocation( h1 ), path ) );
+        initTestData( t1, VERSION_META + "package-3.json" );
+
+        Group g = new Group( NPM_PKG_KEY, "test-group", h1.getKey() );
+
+        List<Transfer> sources = Arrays.asList( t1 );
+
+        byte[] output = new PackageMetadataMerger( Collections.emptyList(), mapper ).merge( sources, g, path );
+
+        PackageMetadata merged = mapper.readValue( IOUtils.toString( new ByteArrayInputStream( output ) ),
+                PackageMetadata.class );
+
+        assertThat( merged.getName(), equalTo( "deep-diff" ) );
+
+    }
+
+    @Test
     public void mergeWhenOneTransferIsMissing() throws Exception
     {
         String path = "jquery";

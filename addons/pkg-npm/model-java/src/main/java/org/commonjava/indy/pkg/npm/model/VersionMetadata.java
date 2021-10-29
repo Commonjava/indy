@@ -69,7 +69,7 @@ public class VersionMetadata
 
     private Map<String, String> dependencies;
 
-    private Map<String, String> devDependencies;
+    private Map<String, Object> devDependencies;
 
     private Map<String, String> jsdomVersions;
 
@@ -290,12 +290,12 @@ public class VersionMetadata
         this.dependencies = dependencies;
     }
 
-    public Map<String, String> getDevDependencies()
+    public Map<String, Object> getDevDependencies()
     {
         return devDependencies;
     }
 
-    public void setDevDependencies( Map<String, String> devDependencies )
+    public void setDevDependencies( Map<String, Object> devDependencies )
     {
         this.devDependencies = devDependencies;
     }
