@@ -1,0 +1,2785 @@
+{
+  "_id": "deep-diff",
+  "maintainers": [
+    {
+      "email": "phillip@flitbit.com",
+      "name": "cerebralkungfu"
+    }
+  ],
+  "keywords": [
+    "diff",
+    "difference",
+    "compare",
+    "change-tracking"
+  ],
+  "dist-tags": {
+    "latest": "1.0.2",
+    "next": "1.0.0-pre.2"
+  },
+  "author": {
+    "name": "Phillip Clark",
+    "email": "phillip@flitbit.com"
+  },
+  "_rev": "91-aed21324decef71bd1a1048b168818f7",
+  "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/flitbit/diff.git"
+  },
+  "users": {
+    "sel": true,
+    "titarenko": true,
+    "guyellis": true,
+    "void": true,
+    "gotemb": true,
+    "pilsy": true,
+    "givan": true,
+    "vijaeendra": true,
+    "sexyoung1985": true,
+    "nanook": true,
+    "aileenvl": true,
+    "pmcalabrese": true,
+    "vkarpov15": true,
+    "faicalbaki": true,
+    "dubbya": true,
+    "avalexandrov": true,
+    "brien-crean": true,
+    "jaspreet.s": true,
+    "antixrist": true,
+    "freddieridell": true,
+    "trusktr": true,
+    "santihbc": true,
+    "abhisekp": true,
+    "pablo.tavarez": true,
+    "psychollama": true,
+    "jakub.knejzlik": true,
+    "michaelyurin": true,
+    "shaomingquan": true,
+    "yuch4n": true,
+    "nathofgod": true,
+    "seldszar": true,
+    "theaklair": true,
+    "usex": true,
+    "asaupup": true,
+    "solzimer": true,
+    "fatso83": true,
+    "nuwaio": true,
+    "jota": true,
+    "kiranpavan": true,
+    "endquote": true,
+    "jordanskole": true,
+    "lgh06": true,
+    "logicspaces": true,
+    "dietrich": true,
+    "dcawley": true,
+    "daizch": true,
+    "ghostcode521": true
+  },
+  "bugs": {
+    "url": "https://github.com/flitbit/diff/issues"
+  },
+  "license": "MIT",
+  "versions": {
+    "0.1.0": {
+      "name": "deep-diff",
+      "description": "Node.js module providing utility functions for working with the structural differences between objects.",
+      "version": "0.1.0",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.org"
+      },
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "lib": "./lib",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "lodash": {
+          "version": "0.9.2"
+        },
+        "extend": {
+          "version": "1.1.1"
+        },
+        "should": {
+          "version": "1.2.1"
+        },
+        "vows": {
+          "version": "0.6.4",
+          "dependencies": {
+            "eyes": {
+              "version": "0.1.8"
+            },
+            "diff": {
+              "version": "1.0.4"
+            }
+          }
+        }
+      },
+      "scripts": {
+        "test": "node test/all.js"
+      },
+      "_id": "deep-diff@0.1.0",
+      "dist": {
+        "shasum": "46473755f845ec77c4e74c95542a33f67577b6b6",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.0.tgz"
+      },
+      "_npmVersion": "1.1.65",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.1.1": {
+      "name": "deep-diff",
+      "description": "Node.js module providing utility functions for working with the structural differences between objects.",
+      "version": "0.1.1",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.org"
+      },
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "lib": "./lib",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": ">=0.0.0",
+        "expect.js": "~0.2.x",
+        "mocha": "~1.10.x"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "_id": "deep-diff@0.1.1",
+      "dist": {
+        "shasum": "d20e7d2c2b8fc205c01afae25dbbe4a1f4d616d4",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.1.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.2.12",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.1.2": {
+      "name": "deep-diff",
+      "description": "Node.js module providing utility functions for working with the structural differences between objects.",
+      "version": "0.1.2",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "lib": "./lib",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": ">=0.0.0",
+        "expect.js": "~0.2.x",
+        "mocha": "~1.10.x"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "_id": "deep-diff@0.1.2",
+      "dist": {
+        "shasum": "aef161b81a0ec34277c766e8fa2e550dd9c6ec34",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.2.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.2.12",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.1.3": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.1.3",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": ">=0.0.0",
+        "expect.js": "~0.2.x",
+        "mocha": "~1.10.x"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "_id": "deep-diff@0.1.3",
+      "dist": {
+        "shasum": "b9c31710a95d2bfb8fdb548dfd514a0fd52a0167",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.3.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.2.12",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.1.4": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.1.4",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": ">=0.0.0",
+        "expect.js": "~0.2.x",
+        "mocha": "~1.10.x"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "_id": "deep-diff@0.1.4",
+      "dist": {
+        "shasum": "c36579bc5c9cae2a98695c75015a3ea061a0811f",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.4.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.3.8",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.1.6": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.1.6",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~0.2.1",
+        "expect.js": "~0.3.1",
+        "mocha": "~1.17.1"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff",
+      "_id": "deep-diff@0.1.6",
+      "dist": {
+        "shasum": "45c45d09a1121cb8bd2d79e1f88d98cd5fd0109d",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.6.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.4.3",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.1.7": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.1.7",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~0.2.1",
+        "expect.js": "~0.3.1",
+        "mocha": "~1.17.1"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff",
+      "_id": "deep-diff@0.1.7",
+      "dist": {
+        "shasum": "d36da978b64429c268116cea941f490e7949cd3d",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.1.7.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.4.3",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.2.0": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.2.0",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        },
+        {
+          "name": "ravishivt"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~0.2.1",
+        "expect.js": "~0.3.1",
+        "mocha": "~1.17.1"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff",
+      "_id": "deep-diff@0.2.0",
+      "dist": {
+        "shasum": "6c4625c5a4bf800bdac9a9a65b8b560c882b3d03",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.2.0.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.4.3",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.3.0": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.0",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        },
+        {
+          "name": "ravishivt"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~0.2.1",
+        "expect.js": "~0.3.1",
+        "mocha": "~1.17.1"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff",
+      "_id": "deep-diff@0.3.0",
+      "dist": {
+        "shasum": "0f9f98d7ddb0a470b652f4cba71bf5f164d18a63",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.0.tgz"
+      },
+      "_from": ".",
+      "_npmVersion": "1.4.3",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.3.1": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.1",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        },
+        {
+          "name": "ravishivt"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "mocha": "^2.2.1"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "gitHead": "c97fc206a979d6be9d4f171dccb0a990fc924bd4",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff",
+      "_id": "deep-diff@0.3.1",
+      "_shasum": "d2adcb8fa9621b96ff14488bd68daeeb5d5c1deb",
+      "_from": ".",
+      "_npmVersion": "2.7.3",
+      "_nodeVersion": "0.10.36",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "dist": {
+        "shasum": "d2adcb8fa9621b96ff14488bd68daeeb5d5c1deb",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.1.tgz"
+      }
+    },
+    "0.3.2": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.2",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        },
+        {
+          "name": "ravishivt"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "mocha": "^2.2.1"
+      },
+      "scripts": {
+        "test": "mocha -R spec"
+      },
+      "gitHead": "1f7a0c19329a7d24de070f8390d353454bbc585c",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff",
+      "_id": "deep-diff@0.3.2",
+      "_shasum": "5a2268c3de09f936c994dfc0b18b4227d3dd973b",
+      "_from": ".",
+      "_npmVersion": "2.7.3",
+      "_nodeVersion": "0.12.2",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "dist": {
+        "shasum": "5a2268c3de09f936c994dfc0b18b4227d3dd973b",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.2.tgz"
+      }
+    },
+    "0.3.3": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.3",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "SocalNick"
+        },
+        {
+          "name": "sonstone"
+        },
+        {
+          "name": "ravishivt"
+        },
+        {
+          "name": "SimenB"
+        },
+        {
+          "name": "Orlando80"
+        },
+        {
+          "name": "joeldenning"
+        }
+      ],
+      "files": [
+        "index.js",
+        "releases/"
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "jscs": "^1.12.0",
+        "jshint": "^2.6.3",
+        "mocha": "^2.2.1",
+        "uglifyjs": "^2.4.10"
+      },
+      "scripts": {
+        "uglify": "uglifyjs index.js -o releases/deep-diff-$npm_package_version.min.js  -r '$,require,exports,module,window,global' -m  --comments '/^!/'",
+        "pretest": "jscs index.js test/ && jshint index.js test/",
+        "test": "mocha"
+      },
+      "gitHead": "619f6606ecef4098c4259db48387bebe68840ea5",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@0.3.3",
+      "_shasum": "649071020461d2cac3ac0c0add4774a473b7799e",
+      "_from": ".",
+      "_npmVersion": "2.14.7",
+      "_nodeVersion": "4.2.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "shasum": "649071020461d2cac3ac0c0add4774a473b7799e",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.3.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ]
+    },
+    "0.3.4": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.4",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        }
+      ],
+      "files": [
+        "index.js",
+        "releases/"
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "jscs": "^1.12.0",
+        "jshint": "^2.6.3",
+        "mocha": "^2.2.1",
+        "uglifyjs": "^2.4.10"
+      },
+      "scripts": {
+        "release": "uglifyjs index.js -o releases/deep-diff-$npm_package_version.min.js  -r '$,require,exports,module,window,global' -m  --comments '/^!/'",
+        "pretest": "jscs index.js test/ && jshint index.js test/",
+        "test": "mocha"
+      },
+      "gitHead": "e271e69f4c6dbccf657cf30355d307b46659de67",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@0.3.4",
+      "_shasum": "aac5c39952236abe5f037a2349060ba01b00ae48",
+      "_from": ".",
+      "_npmVersion": "3.8.6",
+      "_nodeVersion": "5.10.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "shasum": "aac5c39952236abe5f037a2349060ba01b00ae48",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.4.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "packages-16-east.internal.npmjs.com",
+        "tmp": "tmp/deep-diff-0.3.4.tgz_1462753495254_0.9659246993251145"
+      }
+    },
+    "0.3.5": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.5",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "files": [
+        "index.js",
+        "index.es.js",
+        "releases/"
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "module": "./index.es.js",
+      "jsnext:main": "/index.es.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "jscs": "^1.12.0",
+        "jshint": "^2.6.3",
+        "mocha": "^2.2.1",
+        "rollup": "^0.41.6",
+        "uglifyjs": "^2.4.10"
+      },
+      "scripts": {
+        "release": "uglifyjs index.js -o releases/deep-diff-$npm_package_version.min.js  -r '$,require,exports,module,window,global' -m  --comments '/^!/'",
+        "pretest": "jscs index.es.js test/ -e && jshint index.es.js test/",
+        "test": "mocha",
+        "build": "rollup index.es.js -f umd -o index.js -n DeepDiff"
+      },
+      "gitHead": "5945c6a46053844e7bf62cb0e79bc1f7c448f97f",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@0.3.5",
+      "_shasum": "9189d36fe84366eb0615af6a308eaf489c0cc0f2",
+      "_from": ".",
+      "_npmVersion": "3.8.6",
+      "_nodeVersion": "5.10.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "shasum": "9189d36fe84366eb0615af6a308eaf489c0cc0f2",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.5.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "packages-18-east.internal.npmjs.com",
+        "tmp": "tmp/deep-diff-0.3.5.tgz_1492964382222_0.7643104488961399"
+      }
+    },
+    "0.3.6": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.6",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "files": [
+        "index.js",
+        "index.es.js",
+        "releases/"
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "module": "./index.es.js",
+      "jsnext:main": "/index.es.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "jscs": "^1.12.0",
+        "jshint": "^2.6.3",
+        "mocha": "^2.2.1",
+        "rollup": "^0.41.6",
+        "uglifyjs": "^2.4.10"
+      },
+      "scripts": {
+        "release": "uglifyjs index.js -o releases/deep-diff-$npm_package_version.min.js  -r '$,require,exports,module,window,global' -m  --comments '/^!/'",
+        "pretest": "jscs index.es.js test/ -e && jshint index.es.js test/",
+        "test": "mocha",
+        "build": "rollup index.es.js -f umd -o index.js -n DeepDiff"
+      },
+      "gitHead": "f7df1a4eba06c8ce492f9bd7e3aeba7e18b8db82",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@0.3.6",
+      "_shasum": "9134a91ded42ea25b9ebe192c93ac6f4ec2e6c9a",
+      "_from": ".",
+      "_npmVersion": "3.8.6",
+      "_nodeVersion": "5.10.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "shasum": "9134a91ded42ea25b9ebe192c93ac6f4ec2e6c9a",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.6.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "packages-18-east.internal.npmjs.com",
+        "tmp": "tmp/deep-diff-0.3.6.tgz_1493125568625_0.08395319059491158"
+      }
+    },
+    "0.3.7": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.7",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "files": [
+        "index.js",
+        "index.es.js",
+        "releases/"
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "module": "./index.es.js",
+      "jsnext:main": "/index.es.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "jscs": "^1.12.0",
+        "jshint": "^2.6.3",
+        "mocha": "^2.2.1",
+        "rollup": "^0.41.6",
+        "uglifyjs": "^2.4.10"
+      },
+      "scripts": {
+        "release": "uglifyjs index.js -o releases/deep-diff-$npm_package_version.min.js  -r '$,require,exports,module,window,global' -m  --comments '/^!/'",
+        "pretest": "jscs index.es.js test/ -e && jshint index.es.js test/",
+        "test": "mocha",
+        "build": "rollup index.es.js -f umd -o index.js -n DeepDiff"
+      },
+      "gitHead": "f6f2e2a476cfa236008b867a829479a61f0b62ef",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@0.3.7",
+      "_shasum": "a486ddaefa6ac5f2a61e6b8d934c28ab45c33074",
+      "_from": ".",
+      "_npmVersion": "3.8.6",
+      "_nodeVersion": "5.10.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "shasum": "a486ddaefa6ac5f2a61e6b8d934c28ab45c33074",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.7.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "packages-12-west.internal.npmjs.com",
+        "tmp": "tmp/deep-diff-0.3.7.tgz_1493645415064_0.747206037864089"
+      }
+    },
+    "0.3.8": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "0.3.8",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "files": [
+        "index.js",
+        "index.es.js",
+        "releases/"
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "module": "./index.es.js",
+      "jsnext:main": "/index.es.js",
+      "directories": {
+        "examples": "./examples",
+        "releases": "./releases",
+        "test": "./test"
+      },
+      "devDependencies": {
+        "deep-equal": "~1.0.0",
+        "expect.js": "^0.3.1",
+        "jscs": "^1.12.0",
+        "jshint": "^2.6.3",
+        "mocha": "^2.2.1",
+        "rollup": "^0.41.6",
+        "uglifyjs": "^2.4.10"
+      },
+      "scripts": {
+        "lint": "jscs index.es.js test/ -e && jshint index.es.js test/",
+        "build": "rollup index.es.js -f umd -o index.js -n DeepDiff",
+        "test": "mocha test/",
+        "release": "uglifyjs index.js -o releases/deep-diff-$npm_package_version.min.js  -r '$,require,exports,module,window,global' -m  --comments '/^!/'",
+        "prepublish": "npm run build",
+        "prerelease": "npm test",
+        "prebuild": "npm run lint",
+        "pretest": "npm run build"
+      },
+      "gitHead": "6c210c5129f97fb76e918cfe1c052c0173929bbd",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@0.3.8",
+      "_shasum": "c01de63efb0eec9798801d40c7e0dae25b582c84",
+      "_from": ".",
+      "_npmVersion": "3.8.6",
+      "_nodeVersion": "5.10.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "shasum": "c01de63efb0eec9798801d40c7e0dae25b582c84",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-0.3.8.tgz"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "packages-18-east.internal.npmjs.com",
+        "tmp": "tmp/deep-diff-0.3.8.tgz_1493823077941_0.6450125835835934"
+      }
+    },
+    "1.0.0-pre.1": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "1.0.0-pre.1",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "scripts": {
+        "prerelease": "npm run clean && npm run test",
+        "release": "uglifyjs -c -m -o dist/deep-diff.min.js --source-map -r '$,require,exports,self,module,define' index.js",
+        "clean": "rimraf dist && mkdir dist",
+        "preversion": "npm run release",
+        "postversion": "git push && git push --tags",
+        "pretest": "npm run lint",
+        "test": "mocha test/**/*.js",
+        "test:watch": "nodemon --ext js,json --ignore dist/ --exec 'npm test'",
+        "preci": "npm run lint",
+        "ci": "mocha --reporter mocha-junit-reporter test/**/*.js",
+        "lint": "eslint index.js test"
+      },
+      "devDependencies": {
+        "bluebird": "^3.5.1",
+        "deep-equal": "^1.0.1",
+        "eslint": "^4.18.1",
+        "eslint-plugin-mocha": "^4.11.0",
+        "expect.js": "^0.3.1",
+        "json": "^9.0.6",
+        "mocha": "^5.0.1",
+        "mocha-junit-reporter": "^1.17.0",
+        "nodemon": "^1.15.1",
+        "rimraf": "^2.6.2",
+        "uglify-js": "^3.3.12"
+      },
+      "readmeFilename": "Readme.md",
+      "gitHead": "c266dc9873ba6da7aa544527f96a7606100d412b",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@1.0.0-pre.1",
+      "_npmVersion": "5.6.0",
+      "_nodeVersion": "8.9.4",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "integrity": "sha512-c2FSkXgp5ACsNURUfiuRkn4Y4Xn0XRK8YUcjL49qCBFGgMSUnMDwBt1z73rE3wOVfcRB2gsW5L0LROsraolBKw==",
+        "shasum": "0b14ddc811810a3269e50caab3327a30a4f3bfac",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-1.0.0-pre.1.tgz",
+        "fileCount": 30,
+        "unpackedSize": 539168
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "directories": {},
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/deep-diff_1.0.0-pre.1_1519599448466_0.9559632552666177"
+      },
+      "_hasShrinkwrap": false
+    },
+    "1.0.0-pre.2": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "1.0.0-pre.2",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "scripts": {
+        "prerelease": "npm run clean && npm run test",
+        "release": "uglifyjs -c -m -o dist/deep-diff.min.js --source-map -r '$,require,exports,self,module,define' index.js",
+        "clean": "rimraf dist && mkdir dist",
+        "preversion": "npm run release",
+        "postversion": "git push && git push --tags",
+        "pretest": "npm run lint",
+        "test": "mocha test/**/*.js",
+        "test:watch": "nodemon --ext js,json --ignore dist/ --exec 'npm test'",
+        "preci": "npm run lint",
+        "ci": "mocha --reporter mocha-junit-reporter test/**/*.js",
+        "lint": "eslint index.js test"
+      },
+      "devDependencies": {
+        "bluebird": "^3.5.1",
+        "deep-equal": "^1.0.1",
+        "eslint": "^4.18.1",
+        "eslint-plugin-mocha": "^4.11.0",
+        "expect.js": "^0.3.1",
+        "json": "^9.0.6",
+        "lodash": "^4.17.5",
+        "mocha": "^5.0.1",
+        "mocha-junit-reporter": "^1.17.0",
+        "nodemon": "^1.15.1",
+        "rimraf": "^2.6.2",
+        "uglify-js": "^3.3.12"
+      },
+      "readmeFilename": "Readme.md",
+      "gitHead": "d492e997d9db5dfe0a53e5d6c2bd28187f0c4c49",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@1.0.0-pre.2",
+      "_npmVersion": "5.6.0",
+      "_nodeVersion": "8.9.4",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "integrity": "sha512-+Fk17EsVzglaLABDBKim/iFjM8m5ExXDeVitHqx5RA5n9HCI3u+4Y0Kzc/zAAV0oO1z0AUf+4yjV3NevGQt1Ow==",
+        "shasum": "49315181fad7a40495c725cb5ba25917a0658b39",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-1.0.0-pre.2.tgz",
+        "fileCount": 35,
+        "unpackedSize": 536898
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "directories": {},
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/deep-diff_1.0.0-pre.2_1519615504559_0.7169512236909419"
+      },
+      "_hasShrinkwrap": false
+    },
+    "1.0.0": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "1.0.0",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "scripts": {
+        "prerelease": "npm run clean && npm run test",
+        "release": "uglifyjs -c -m -o dist/deep-diff.min.js --source-map -r '$,require,exports,self,module,define' index.js",
+        "clean": "rimraf dist && mkdir dist",
+        "preversion": "npm run release",
+        "postversion": "git push && git push --tags",
+        "pretest": "npm run lint",
+        "test": "mocha test/**/*.js",
+        "test:watch": "nodemon --ext js,json --ignore dist/ --exec 'npm test'",
+        "preci": "npm run lint",
+        "ci": "mocha --reporter mocha-junit-reporter test/**/*.js",
+        "lint": "eslint index.js test"
+      },
+      "devDependencies": {
+        "bluebird": "^3.5.1",
+        "deep-equal": "^1.0.1",
+        "eslint": "^4.18.1",
+        "eslint-plugin-mocha": "^4.11.0",
+        "expect.js": "^0.3.1",
+        "json": "^9.0.6",
+        "json-ptr": "^1.1.0",
+        "lodash": "^4.17.5",
+        "mocha": "^5.0.1",
+        "mocha-junit-reporter": "^1.17.0",
+        "nodemon": "^1.15.1",
+        "rimraf": "^2.6.2",
+        "uglify-js": "^3.3.12"
+      },
+      "gitHead": "519657033963a0d7ee8f2cbdb3cbfcb5f94a0452",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@1.0.0",
+      "_npmVersion": "5.8.0",
+      "_nodeVersion": "8.9.4",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "integrity": "sha512-tOCpoa+4UQa8u153mMcMrXwO9H5E3Ep0gMkMw42jKqg9I5lrStztyFvc90Fu8CkKq37A686r3JeSGSLx+Zx1wQ==",
+        "shasum": "0dd55f9412f22a07b2edbfbb11bb4633be6be40b",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-1.0.0.tgz",
+        "fileCount": 37,
+        "unpackedSize": 539849,
+        "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJa1469CRA9TVsSAnZWagAATM0P/3adR+1Z349X1Cwk0FHa\nQ2AFV6/jAEwZx0g+c44jU+DWWPrHrhegLKnv0wyz4KIoD3N8IpjqfZyLVoMT\nSsXq/2/MLwlFFI3wFkDHi8IZv78k5+DUwEZjdQBMce/47X+buizucAHXBzCm\nXnCqYQ1sdAzrViN1enwP7HTVgM57IedUlE2Nhei44SPe040ntzFXv+ANrFGi\nUEkIRWS9PbAjM+j8afqnGomXREUw2gsJLNSy/zrmMN4quaGa6xPrz8kr8GHH\nX5GW2eVO9KsxLxK6wg+0+0YSINxPfAQ7JeIe5hSOiHREmrNrSvd8ajtf8EYa\nqmdrxdjphC3Y0rWuCj62ROOMHIXR651kyct4G4kzmp0aJh8rG9R9U3DaQGJd\nCHKb/JKid/A2vD1WXwEA5dECh+AbkDhKlH6dT0mqWBIvnThFGcAXU2B/tw15\ndLegPRvb2xh5uPVUayBy0Bxafj9uj56YwjqSjF/B+zfyYwddMz+BEfYyNDnw\nK38iqShDhwgm+Nw3oDJCPBXMX8aVhdzR9ObmkAUQUnhvpI0koqcGDpeZaPkH\nays75+RA2EYpieJlZQkeboE8NC/YcYs/UH+dSblTCFox8mL3er3KP3nIznGT\nBRrAAhFlrUtOSxC4e0mEcxHN0OwiK+nlzLxAyX1nhbVAX0st0A0yri4sWGsI\nDWBV\r\n=LzI+\r\n-----END PGP SIGNATURE-----\r\n"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "directories": {},
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/deep-diff_1.0.0_1524076219396_0.8680105156300235"
+      },
+      "_hasShrinkwrap": false
+    },
+    "1.0.1": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "1.0.1",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "scripts": {
+        "prerelease": "npm run clean && npm run test",
+        "release": "uglifyjs -c -m -o dist/deep-diff.min.js --source-map -r '$,require,exports,self,module,define' index.js",
+        "clean": "rimraf dist && mkdir dist",
+        "preversion": "npm run release",
+        "postversion": "git push && git push --tags",
+        "pretest": "npm run lint",
+        "test": "mocha test/**/*.js",
+        "test:watch": "nodemon --ext js,json --ignore dist/ --exec 'npm test'",
+        "preci": "npm run lint",
+        "ci": "mocha --reporter mocha-junit-reporter test/**/*.js",
+        "lint": "eslint index.js test"
+      },
+      "devDependencies": {
+        "bluebird": "^3.5.1",
+        "deep-equal": "^1.0.1",
+        "eslint": "^4.19.1",
+        "eslint-plugin-mocha": "^5.0.0",
+        "expect.js": "^0.3.1",
+        "json": "^9.0.6",
+        "json-ptr": "^1.1.0",
+        "lodash": "^4.17.10",
+        "mocha": "^5.1.1",
+        "mocha-junit-reporter": "^1.17.0",
+        "nodemon": "^1.17.4",
+        "rimraf": "^2.6.2",
+        "uglify-js": "^3.3.25"
+      },
+      "gitHead": "8d942ff6a8124a2b58e43247e8bccd9ebd1d3851",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@1.0.1",
+      "_npmVersion": "5.6.0",
+      "_nodeVersion": "8.11.1",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "integrity": "sha512-Vkn+eQK6H63gObVi3KWmPMb4RdzMpfdp5t0HNppq8Oc7xbwmvBy5BIHsEYSXOiS9Lr/W+3lF020zyPTsGfea4g==",
+        "shasum": "ac437a691e88baf4205b83ae1aa095a13c6c10ac",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-1.0.1.tgz",
+        "fileCount": 37,
+        "unpackedSize": 539349,
+        "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJbACpWCRA9TVsSAnZWagAA5AEQAInBH1RpOk8hDPYlIyzC\nykbgGgyh6fgdAGfLJCBd5IvbDdDPKFmFjIdMpUPXk1axFLf4JFxw7PEF1e3M\nulTl2ic9gYEp8KEqkzFcQNnRthnQlI1SH1ZXr9kiu+Eh4Sos1EbqgWgmmg6t\nseuYoW6p3Bb1TP0KbXdIsJCwLdOSZb2KVoDqpeL3gubFYFPEMO6yck6KjQ0P\nnpXWdUTPEXBjk7gUvH38Ad7xaWSv8Pzt7jPR1mUdolYWiSzT8qbPmJO1Gz0g\nAAj1QIdZrATOHzlOGL/HSfa3wWY5q8U9heRN/X10yqblG0hxmZEsaH0juAT4\nvZteIiINX4+sqhfrTtVqajfKP4iQqVsqH8ClZaue6/9eQD7qrMUczRP0/aI4\nYXU8urv9I/9y/5+Z44cc1HKlz0645kBDMQpqDa1IyU/158RLXO3GCAiFoOq3\nv1hCJsn7rS49lfKCGroFsGQjjolPibmFh4YeF6cCBNpQNs7nLED9fVv+lqu3\npu+Hi7cEJoHjiwAED8G2M+lALl/lRD3KhLkBMQ50y8i9Ekt2MBernQpD6QXk\nAV/7UFKCkwmcc08iiid17CpRSeUZhJz5nWxSstCTWymzvMfvJjhgY5e1woSb\nfOV3IiPolnEYgnnNC1Buht1ryMHCxiPCAW7r/AqzrlRkVTdvGp7T/wInY6F0\ni44k\r\n=VKAk\r\n-----END PGP SIGNATURE-----\r\n"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "directories": {},
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/deep-diff_1.0.1_1526737492999_0.2331668187439404"
+      },
+      "_hasShrinkwrap": false
+    },
+    "1.0.2": {
+      "name": "deep-diff",
+      "description": "Javascript utility for calculating deep difference, capturing changes, and applying changes across objects; for nodejs and the browser.",
+      "version": "1.0.2",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "difference",
+        "compare",
+        "change-tracking"
+      ],
+      "author": {
+        "name": "Phillip Clark",
+        "email": "phillip@flitbit.com"
+      },
+      "contributors": [
+        {
+          "name": "Simen Bekkhus",
+          "email": "sbekkhus91@gmail.com"
+        },
+        {
+          "name": "Paul Pflugradt",
+          "email": "paulpflugradt@googlemail.com"
+        },
+        {
+          "name": "wooorm",
+          "email": "tituswormer@gmail.com"
+        },
+        {
+          "name": "Nicholas Calugar",
+          "email": "njcalugar@gmail.com"
+        },
+        {
+          "name": "Yandell",
+          "email": "hyandell@amazon.com"
+        },
+        {
+          "name": "Thiago Santos",
+          "email": "thia.mdossantos@gmail.com"
+        },
+        {
+          "name": "Steve Mao",
+          "email": "maochenyan@gmail.com"
+        },
+        {
+          "name": "Mats Bryntse",
+          "email": "mats.dev@bryntum.com"
+        },
+        {
+          "name": "Phillip Clark",
+          "email": "pclark@leisurelink.com"
+        },
+        {
+          "name": "ZauberNerd",
+          "email": "zaubernerd@zaubernerd.de"
+        },
+        {
+          "name": "ravishivt",
+          "email": "javishi@gmail.com"
+        },
+        {
+          "name": "Daniel Spangler",
+          "email": "daniel.spangler@gmail.com"
+        },
+        {
+          "name": "Sam Beran",
+          "email": "sberan@gmail.com"
+        },
+        {
+          "name": "Thomas de Barochez",
+          "email": "thomas.barochez+github@gmail.com"
+        },
+        {
+          "name": "Morton Fox",
+          "email": "github@qslw.com"
+        },
+        {
+          "name": "Amila Welihinda",
+          "email": "amilajack@users.noreply.github.com"
+        },
+        {
+          "name": "Will Biddy",
+          "email": "willbiddy@gmail.com"
+        },
+        {
+          "name": "icesoar",
+          "email": "icesoar@hotmail.com"
+        },
+        {
+          "name": "Serkan Serttop",
+          "email": "serkanserttop@yahoo.com"
+        },
+        {
+          "name": "orlando",
+          "email": "operri@opentable.com"
+        },
+        {
+          "name": "Tom MacWright",
+          "email": "tmcw@users.noreply.github.com"
+        },
+        {
+          "name": "Denning",
+          "email": "denningj@amazon.com"
+        },
+        {
+          "name": "Dan Drinkard",
+          "email": "dan.drinkard@gmail.com"
+        },
+        {
+          "name": "Elad Efrat",
+          "email": "elad@iNNU.ORG"
+        },
+        {
+          "name": "caasi Huang",
+          "email": "caasi.igd@gmail.com"
+        },
+        {
+          "name": "Tom Ashworth",
+          "email": "tashworth@twitter.com"
+        }
+      ],
+      "repository": {
+        "type": "git",
+        "url": "git://github.com/flitbit/diff.git"
+      },
+      "main": "./index.js",
+      "scripts": {
+        "prerelease": "npm run clean && npm run test",
+        "release": "uglifyjs -c -m -o dist/deep-diff.min.js --source-map -r '$,require,exports,self,module,define,navigator' index.js",
+        "clean": "rimraf dist && mkdir dist",
+        "preversion": "npm run release",
+        "postversion": "git push && git push --tags",
+        "pretest": "npm run lint",
+        "test": "mocha test/**/*.js",
+        "test:watch": "nodemon --ext js,json --ignore dist/ --exec 'npm test'",
+        "preci": "npm run lint",
+        "ci": "mocha --reporter mocha-junit-reporter test/**/*.js",
+        "lint": "eslint index.js test"
+      },
+      "devDependencies": {
+        "bluebird": "^3.5.1",
+        "deep-equal": "^1.0.1",
+        "eslint": "^4.19.1",
+        "eslint-plugin-mocha": "^5.0.0",
+        "expect.js": "^0.3.1",
+        "json": "^9.0.6",
+        "json-ptr": "^1.1.0",
+        "lodash": "^4.17.10",
+        "mocha": "^5.1.1",
+        "mocha-junit-reporter": "^1.17.0",
+        "nodemon": "^1.17.4",
+        "rimraf": "^2.6.2",
+        "uglify-js": "^3.3.25"
+      },
+      "gitHead": "5133f9c19b7d815f935d6329bc1ef7e06190f063",
+      "bugs": {
+        "url": "https://github.com/flitbit/diff/issues"
+      },
+      "homepage": "https://github.com/flitbit/diff#readme",
+      "_id": "deep-diff@1.0.2",
+      "_npmVersion": "5.6.0",
+      "_nodeVersion": "8.11.3",
+      "_npmUser": {
+        "name": "flitbit",
+        "email": "phillip@flitbit.com"
+      },
+      "dist": {
+        "integrity": "sha512-aWS3UIVH+NPGCD1kki+DCU9Dua032iSsO43LqQpcs4R3+dVv7tX0qBGjiVHJHjplsoUM2XRO/KB92glqc68awg==",
+        "shasum": "afd3d1f749115be965e89c63edc7abb1506b9c26",
+        "tarball": "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/deep-diff/-/deep-diff-1.0.2.tgz",
+        "fileCount": 40,
+        "unpackedSize": 542187,
+        "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.4\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJbdX26CRA9TVsSAnZWagAAT5IP/iA4PNle9ZfwZe6hkKeR\n7C04GrtW2v6/WFSCg8ru9j0eDLDrUeKlERynAjQZItT/GOXBsnQ/dmX7twhf\ntFb2f0CC6mwJ22PX3KY9zffFyT+o84+CmsKtlB4cIO0NSNdRkrKjYqKCYu5R\nw25+axy75zHoZ1FQ2QwQsXRyXrqLrXCwiEw+zi5D90yzEvsuKrB+iqX+S+i3\nXEAkdPa9Qo5DtHBKUUtG4QpRS1CY3qyQRWUArpAF2Z1cROuY1W93PX6AhRX5\nIUGQ3WFOhev+BSRTYFJediC2CN3dT11uATmQPlsXGk0KILr2xNf5PBL8YZf7\nLpNsjvf/xuOl5Hn8OYXGYYt/S97IO6/U+DVrSign4KqyLKqOjh2U+v0jlcgi\nwAqq/IH8e7JS4A3rA7ZUazN90KW2tULRpYdYArv2ja0ey/34UvCiLIrZOqZw\nb7vkOk/G9cDDrJzL1H9P4Sw5Wn97FFFxPuo1oUI+0xN6LXy+FpvST8T3K11a\nBHC7beYI9WQZFlCx6oOZ6eGWSU5o1MLw9FoFJg+F50i12v2DwY1MjcgbYrWB\nVqh+ZXYdGKlm7g6DUW4/EQ0i7n/uOXlmiSJObX7RF1UHPlURHg8kk54lkPfa\na9PKdGo2IIUHRRQ7VQZR5U0KqV+HzjPpv1Xx8yo33BctXcBtAb7zaepV3nY5\nojU1\r\n=uvww\r\n-----END PGP SIGNATURE-----\r\n"
+      },
+      "maintainers": [
+        {
+          "name": "flitbit",
+          "email": "phillip@flitbit.com"
+        }
+      ],
+      "directories": {},
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/deep-diff_1.0.2_1534426553870_0.262276571795397"
+      },
+      "_hasShrinkwrap": false
+    }
+  },
+  "name": "deep-diff",
+  "time": {
+    "modified": "2020-05-21T20:37:32.345Z",
+    "created": "2012-11-17T19:54:13.784Z",
+    "0.1.0": "2012-11-17T19:54:14.455Z",
+    "0.1.1": "2013-07-08T17:45:17.503Z",
+    "0.1.2": "2013-07-25T14:49:18.305Z",
+    "0.1.3": "2013-07-25T15:24:33.140Z",
+    "0.1.4": "2013-10-15T15:04:13.920Z",
+    "0.1.6": "2014-04-04T22:31:18.015Z",
+    "0.1.7": "2014-04-29T18:56:28.249Z",
+    "0.2.0": "2014-08-13T22:57:39.601Z",
+    "0.3.0": "2014-10-23T20:49:54.004Z",
+    "0.3.1": "2015-04-04T14:37:18.521Z",
+    "0.3.2": "2015-04-29T17:09:53.908Z",
+    "0.3.3": "2015-10-18T16:47:57.722Z",
+    "0.3.4": "2016-05-09T00:24:57.556Z",
+    "0.3.5": "2017-04-23T16:19:42.939Z",
+    "0.3.6": "2017-04-25T13:06:10.557Z",
+    "0.3.7": "2017-05-01T13:30:16.977Z",
+    "0.3.8": "2017-05-03T14:51:19.815Z",
+    "1.0.0-pre.1": "2018-02-25T22:57:28.586Z",
+    "1.0.0-pre.2": "2018-02-26T03:25:04.613Z",
+    "1.0.0": "2018-04-18T18:30:19.534Z",
+    "1.0.1": "2018-05-19T13:44:53.086Z",
+    "1.0.2": "2018-08-16T13:35:54.117Z"
+  },
+  "contributors": [
+    {
+      "name": "Simen Bekkhus",
+      "email": "sbekkhus91@gmail.com"
+    },
+    {
+      "name": "Paul Pflugradt",
+      "email": "paulpflugradt@googlemail.com"
+    },
+    {
+      "name": "wooorm",
+      "email": "tituswormer@gmail.com"
+    },
+    {
+      "name": "Nicholas Calugar",
+      "email": "njcalugar@gmail.com"
+    },
+    {
+      "name": "Yandell",
+      "email": "hyandell@amazon.com"
+    },
+    {
+      "name": "Thiago Santos",
+      "email": "thia.mdossantos@gmail.com"
+    },
+    {
+      "name": "Steve Mao",
+      "email": "maochenyan@gmail.com"
+    },
+    {
+      "name": "Mats Bryntse",
+      "email": "mats.dev@bryntum.com"
+    },
+    {
+      "name": "Phillip Clark",
+      "email": "pclark@leisurelink.com"
+    },
+    {
+      "name": "ZauberNerd",
+      "email": "zaubernerd@zaubernerd.de"
+    },
+    {
+      "name": "ravishivt",
+      "email": "javishi@gmail.com"
+    },
+    {
+      "name": "Daniel Spangler",
+      "email": "daniel.spangler@gmail.com"
+    },
+    {
+      "name": "Sam Beran",
+      "email": "sberan@gmail.com"
+    },
+    {
+      "name": "Thomas de Barochez",
+      "email": "thomas.barochez+github@gmail.com"
+    },
+    {
+      "name": "Morton Fox",
+      "email": "github@qslw.com"
+    },
+    {
+      "name": "Amila Welihinda",
+      "email": "amilajack@users.noreply.github.com"
+    },
+    {
+      "name": "Will Biddy",
+      "email": "willbiddy@gmail.com"
+    },
+    {
+      "name": "icesoar",
+      "email": "icesoar@hotmail.com"
+    },
+    {
+      "name": "Serkan Serttop",
+      "email": "serkanserttop@yahoo.com"
+    },
+    {
+      "name": "orlando",
+      "email": "operri@opentable.com"
+    },
+    {
+      "name": "Tom MacWright",
+      "email": "tmcw@users.noreply.github.com"
+    },
+    {
+      "name": "Denning",
+      "email": "denningj@amazon.com"
+    },
+    {
+      "name": "Dan Drinkard",
+      "email": "dan.drinkard@gmail.com"
+    },
+    {
+      "name": "Elad Efrat",
+      "email": "elad@iNNU.ORG"
+    },
+    {
+      "name": "caasi Huang",
+      "email": "caasi.igd@gmail.com"
+    },
+    {
+      "name": "Tom Ashworth",
+      "email": "tashworth@twitter.com"
+    }
+  ],
+  "readmeFilename": "Readme.md",
+  "homepage": "https://github.com/flitbit/diff#readme"
+}
