@@ -205,7 +205,7 @@ public class IndyDeployment
 
                                                       .addFilter( slashTolerationFilter )
                                                       .addFilterUrlMapping( slashTolerationFilter.getName(),
-                                                                            "//*", DispatcherType.REQUEST )
+                                                                            "/api/*", DispatcherType.REQUEST )
 
                                                       .addServlet( resteasyServlet )
 
