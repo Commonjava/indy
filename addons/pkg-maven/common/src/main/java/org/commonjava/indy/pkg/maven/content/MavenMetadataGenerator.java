@@ -142,6 +142,8 @@ public class MavenMetadataGenerator
             add( MavenMetadataMerger.METADATA_MD5_NAME );
             add( MavenMetadataMerger.METADATA_SHA_NAME );
             add( MavenMetadataMerger.METADATA_SHA256_NAME );
+            add( MavenMetadataMerger.METADATA_SHA384_NAME );
+            add( MavenMetadataMerger.METADATA_SHA512_NAME );
         }
 
         private static final long serialVersionUID = 1L;

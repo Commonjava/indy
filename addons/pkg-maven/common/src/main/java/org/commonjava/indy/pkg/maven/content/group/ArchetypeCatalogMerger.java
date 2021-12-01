@@ -36,6 +36,7 @@ import java.util.Set;
 
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.util.LocationUtils.getKey;
+import static org.commonjava.maven.galley.io.checksum.ChecksumAlgorithm.*;
 
 @javax.enterprise.context.ApplicationScoped
 public class ArchetypeCatalogMerger
@@ -45,9 +46,15 @@ public class ArchetypeCatalogMerger
 
     public static final String CATALOG_MERGEINFO_SUFFIX = ".info";
 
-    public static final String CATALOG_SHA_NAME = CATALOG_NAME + ".sha1";
+    public static final String CATALOG_SHA_NAME = CATALOG_NAME + SHA1.getExtension();
 
-    public static final String CATALOG_MD5_NAME = CATALOG_NAME + ".md5";
+    public static final String CATALOG_SHA256_NAME = CATALOG_NAME + SHA256.getExtension();
+
+    public static final String CATALOG_SHA384_NAME = CATALOG_NAME + SHA384.getExtension();
+
+    public static final String CATALOG_SHA512_NAME = CATALOG_NAME + SHA512.getExtension();
+
+    public static final String CATALOG_MD5_NAME = CATALOG_NAME + MD5.getExtension();
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -58,7 +65,7 @@ public class ArchetypeCatalogMerger
         final FileReader fr = null;
         boolean merged = false;
 
-        final Set<String> seen = new HashSet<String>();
+        final Set<String> seen = new HashSet<>();
         for ( final Transfer src : sources )
         {
             try(InputStream stream = src.openInputStream())

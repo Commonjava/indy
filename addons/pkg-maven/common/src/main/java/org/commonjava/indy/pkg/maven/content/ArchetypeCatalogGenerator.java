@@ -55,6 +55,9 @@ public class ArchetypeCatalogGenerator
             add( ArchetypeCatalogMerger.CATALOG_NAME );
             add( ArchetypeCatalogMerger.CATALOG_MD5_NAME );
             add( ArchetypeCatalogMerger.CATALOG_SHA_NAME );
+            add( ArchetypeCatalogMerger.CATALOG_SHA256_NAME );
+            add( ArchetypeCatalogMerger.CATALOG_SHA384_NAME );
+            add( ArchetypeCatalogMerger.CATALOG_SHA512_NAME );
         }
 
         private static final long serialVersionUID = 1L;
