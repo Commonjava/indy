@@ -62,12 +62,12 @@ public class ArchetypeCatalogMerger
     {
         final ArchetypeCatalog master = new ArchetypeCatalog();
         final ArchetypeCatalogXpp3Reader reader = new ArchetypeCatalogXpp3Reader();
-        final FileReader fr = null;
         boolean merged = false;
 
         final Set<String> seen = new HashSet<>();
         for ( final Transfer src : sources )
         {
+            logger.trace( "Merge archetype, src: {}", src.getResource() );
             try(InputStream stream = src.openInputStream())
             {
 
@@ -94,10 +94,6 @@ public class ArchetypeCatalogMerger
                 final StoreKey key = getKey( src );
                 logger.error( String.format( "Cannot parse archetype catalog: %s from artifact-store: %s. Reason: %s", src.getPath(), key, e.getMessage() ), e );
             }
-            finally
-            {
-                closeQuietly( fr );
-            }
         }
 
         if ( merged )
@@ -106,7 +102,6 @@ public class ArchetypeCatalogMerger
             try
             {
                 new ArchetypeCatalogXpp3Writer().write( baos, master );
-
                 return baos.toByteArray();
             }
             catch ( final IOException e )
@@ -115,6 +110,7 @@ public class ArchetypeCatalogMerger
             }
         }
 
+        logger.debug( "Merge archetype not success, path: {}", path );
         return null;
     }
 }
