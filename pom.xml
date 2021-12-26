@@ -78,7 +78,7 @@
     <logbackVersion>1.2.3</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
-    <jacksonVersion>2.10.1</jacksonVersion>
+    <jacksonVersion>2.12.1</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
@@ -87,6 +87,7 @@
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>1.9</pathmappedStorageVersion>
     <o11yphantVersion>1.4</o11yphantVersion>
+    <swaggerVersion>1.6.4</swaggerVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
@@ -1505,13 +1506,13 @@
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
-        <version>1.5.9</version>
+        <version>${swaggerVersion}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-jaxrs</artifactId>
-        <version>1.5.9</version>
+        <version>${swaggerVersion}</version>
         <exclusions>
           <exclusion>
             <groupId>javax.ws.rs</groupId>
