@@ -46,6 +46,8 @@ public class DefaultStorageProviderConfiguration
 
     private File nfsStoreBasedir;
 
+    private boolean storageTimeoutEnabled = true;
+
     public DefaultStorageProviderConfiguration()
     {
     }
@@ -214,5 +216,16 @@ public class DefaultStorageProviderConfiguration
     public void setLegacyStorageBasedir( File legacyStorageBasedir )
     {
         this.legacyStorageBasedir = legacyStorageBasedir;
+    }
+
+    public boolean isStorageTimeoutEnabled()
+    {
+        return storageTimeoutEnabled;
+    }
+
+    @ConfigName( "storage.timeout.enabled" )
+    public void setStorageTimeoutEnabled( boolean storageTimeoutEnabled )
+    {
+        this.storageTimeoutEnabled = storageTimeoutEnabled;
     }
 }
