@@ -75,7 +75,7 @@
     <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.13</bytemanVersion>
     <kafkaVersion>1.1.0</kafkaVersion>
-    <logbackVersion>1.2.3</logbackVersion>
+    <logbackVersion>1.2.9</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
     <jacksonVersion>2.10.1</jacksonVersion>
