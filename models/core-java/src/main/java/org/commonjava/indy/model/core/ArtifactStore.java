@@ -129,7 +129,7 @@ public abstract class ArtifactStore
     public final int hashCode()
     {
         final int prime = 31;
-        int result = super.hashCode();
+        int result = 1;
         result = prime * result + ( ( key == null ) ? 19 : key.hashCode() );
         return result;
     }
