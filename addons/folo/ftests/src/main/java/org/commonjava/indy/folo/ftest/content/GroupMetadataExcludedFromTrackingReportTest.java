@@ -64,7 +64,7 @@ public class GroupMetadataExcludedFromTrackingReportTest
                 client.module( IndyFoloAdminClientModule.class ).getTrackingReport( trackingId );
 
         Set<TrackedContentEntryDTO> downloads = trackingReport.getDownloads();
-        assertThat( downloads == null || downloads.isEmpty(), equalTo( true ) );
+        assertThat( downloads == null || downloads.isEmpty(), equalTo( false ) );
     }
 
 }
