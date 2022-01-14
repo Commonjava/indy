@@ -104,13 +104,13 @@ public class FoloTrackingListener
         try
         {
             final KeyedLocation keyedLocation = (KeyedLocation) location;
-            if ( !foloConfig.isGroupContentTracked() && keyedLocation.getKey().getType() == group )
+            /*if ( !foloConfig.isGroupContentTracked() && keyedLocation.getKey().getType() == group )
             {
                 logger.trace(
                         "NOT tracking content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
                         keyedLocation.getKey() );
                 return;
-            }
+            }*/
 
             logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
                           keyedLocation.getKey() );
@@ -164,13 +164,13 @@ public class FoloTrackingListener
             logger.trace( "Invalid transfer source location: {}. Not recording.", location );
             return;
         }
-        else if ( !foloConfig.isGroupContentTracked() && ( (KeyedLocation) location ).getKey().getType() == group )
+        /*else if ( !foloConfig.isGroupContentTracked() && ( (KeyedLocation) location ).getKey().getType() == group )
         {
             logger.trace(
                     "NOT tracking content stored directly in group: {}. This content is generally aggregated metadata, and can be recalculated. Groups may not be stable in some build environments",
                     ( (KeyedLocation) location ).getKey() );
             return;
-        }
+        }*/
 
 
         final TransferOperation op = event.getType();
