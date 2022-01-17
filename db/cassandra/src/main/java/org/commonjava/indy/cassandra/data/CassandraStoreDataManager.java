@@ -24,6 +24,7 @@ import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
+import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -412,6 +413,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
             store.setPathMaskPatterns( dtxArtifactStore.getPathMaskPatterns() );
             store.setDisableTimeout( dtxArtifactStore.getDisableTimeout() );
             store.setAuthoritativeIndex( dtxArtifactStore.getAuthoritativeIndex() );
+            store.setPathStyle( PathStyle.valueOf( dtxArtifactStore.getPathStyle() ) );
         }
         return store;
     }

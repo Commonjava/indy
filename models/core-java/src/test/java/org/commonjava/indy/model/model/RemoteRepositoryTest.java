@@ -22,12 +22,14 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
@@ -59,6 +61,23 @@ public class RemoteRepositoryTest
         String json = new IndyObjectMapper( true ).writeValueAsString( remote );
 
         System.out.println( json );
+    }
+
+    @Test
+    public void serializeRemoteWithPathStyle() throws IOException
+    {
+        RemoteRepository remote = new RemoteRepository( "generic-http", "test", "http://test.com/repo" );
+        remote.setPathStyle( PathStyle.hashed );
+        IndyObjectMapper mapper = new IndyObjectMapper( true );
+        mapper.init();
+
+        String json = mapper.writeValueAsString( remote );
+
+        System.out.println( json );
+
+        RemoteRepository ret = mapper.readValue( json.getBytes(), RemoteRepository.class );
+        System.out.println( ret.getPathStyle() );
+        assertTrue( ret.getPathStyle() == PathStyle.hashed );
     }
 
     @Test
