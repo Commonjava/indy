@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +33,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
+import static org.commonjava.maven.galley.io.checksum.ChecksumAlgorithm.*;
 
 @ApplicationScoped
 public class MavenMetadataMerger
@@ -59,11 +59,15 @@ public class MavenMetadataMerger
 
     public static final String METADATA_NAME = "maven-metadata.xml";
 
-    public static final String METADATA_SHA_NAME = METADATA_NAME + ".sha1";
+    public static final String METADATA_SHA_NAME = METADATA_NAME + SHA1.getExtension();
 
-    public static final String METADATA_SHA256_NAME = METADATA_NAME + ".sha256";
+    public static final String METADATA_SHA256_NAME = METADATA_NAME + SHA256.getExtension();
 
-    public static final String METADATA_MD5_NAME = METADATA_NAME + ".md5";
+    public static final String METADATA_SHA384_NAME = METADATA_NAME + SHA384.getExtension();
+
+    public static final String METADATA_SHA512_NAME = METADATA_NAME + SHA512.getExtension();
+
+    public static final String METADATA_MD5_NAME = METADATA_NAME + MD5.getExtension();
 
     public Metadata merge( final Metadata master, final Metadata src, final Group group, final String path )
     {

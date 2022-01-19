@@ -23,6 +23,7 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderConfig;
 import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.api.MetricRegistry;
 import org.commonjava.o11yphant.metrics.api.Timer;
@@ -241,9 +242,12 @@ public class DefaultGalleyStorageProvider
         PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot, legacyBaseDir );
 
         logger.info( "Create cacheProviderFactory, pathDB: {}, physicalStore: {}", pathDB, physicalStore );
+        PathMappedCacheProviderConfig cacheProviderConfig =
+                        new PathMappedCacheProviderConfig( storeRoot ).withTimeoutProcessingEnabled(
+                                        config.isStorageTimeoutEnabled() );
         cacheProviderFactory =
                         new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, pathMappedStorageConfig, pathDB,
-                                                            physicalStore );
+                                                            physicalStore, cacheProviderConfig );
     }
 
     private PathMappedStorageConfig getPathMappedStorageConfig()

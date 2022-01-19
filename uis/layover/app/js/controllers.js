@@ -46,7 +46,7 @@ indyControllers.controller('NavCtl', ['$scope', function($scope){
 indyControllers.controller('RemoteListCtl', ['$scope', '$location', 'RemoteSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $location, RemoteSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
   
-    StoreDisableSvc.setDisabledMap($scope);
+    //StoreDisableSvc.setDisabledMap($scope);
 
     $scope.remoteOptionLegend = StoreUtilSvc.remoteOptionLegend();
     $scope.packageType = packageType($location.$$path);
@@ -147,7 +147,7 @@ indyControllers.controller('RemoteCtl', ['$scope', '$routeParams', '$location', 
 indyControllers.controller('HostedListCtl', ['$scope', '$location', 'HostedSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', function($scope, $location, HostedSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
     
-    StoreDisableSvc.setDisabledMap($scope);
+    //StoreDisableSvc.setDisabledMap($scope);
 
     $scope.hostedOptionLegend = StoreUtilSvc.hostedOptionLegend();
     $scope.packageType = packageType($location.$$path);
@@ -231,7 +231,7 @@ indyControllers.controller('HostedCtl', ['$scope', '$routeParams', '$location', 
 
 indyControllers.controller('GroupListCtl', ['$q', '$scope', '$location', 'GroupSvc', 'StoreUtilSvc', 'ControlSvc', 'StoreDisableSvc', 'AllStoreDisableSvc', 'PackageTypeSvc', function($q, $scope, $location, GroupSvc, StoreUtilSvc, ControlSvc, StoreDisableSvc, AllStoreDisableSvc, PackageTypeSvc) {
     ControlSvc.addListingControlHrefs($scope, $location);
-    StoreDisableSvc.setDisabledMap($scope);
+    //StoreDisableSvc.setDisabledMap($scope);
 
     $scope.packageType = packageType($location.$$path);
     $scope.listing = GroupSvc.resource.query({packageType: $scope.packageType}, function(listing){
