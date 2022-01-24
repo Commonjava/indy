@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>2.6.4</version>
+    <version>2.6.5</version>
   </parent>
   
   <artifactId>indy-content-index</artifactId>
