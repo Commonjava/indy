@@ -29,6 +29,7 @@ import org.commonjava.indy.promote.metrics.PathGauges;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.promote.model.PathsPromoteResult;
 import org.commonjava.indy.promote.validate.PromotionValidationException;
+import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -139,10 +140,27 @@ public class PromotionHelper
     public List<Transfer> getTransfersForPaths( final StoreKey source, final Set<String> paths )
                     throws IndyWorkflowException
     {
+
+        ArtifactStore store;
+        try
+        {
+            store = storeManager.getArtifactStore( source );
+        }
+        catch ( final IndyDataException e )
+        {
+            throw new IndyWorkflowException( "Failed to retrieve ArtifactStore for: %s. Reason: %s", e, source,
+                    e.getMessage() );
+        }
+
+        if ( store == null )
+        {
+            throw new IndyWorkflowException( ApplicationStatus.NOT_FOUND.code(), "Cannot find store: {}", source );
+        }
+
         final List<Transfer> contents = new ArrayList<>();
         for ( final String path : paths )
         {
-            final Transfer transfer = downloadManager.getStorageReference( source, path );
+            final Transfer transfer = downloadManager.getStorageReference( store, path );
             contents.add( transfer );
         }
         return contents;
