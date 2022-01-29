@@ -29,7 +29,9 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +45,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -65,17 +68,25 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     IndyObjectMapper objectMapper;
 
     @Inject
+    private CacheProducer cacheProducer;
+
+    @Inject
     @RemoteKojiStoreDataCache
     private CacheHandle<StoreKey, ArtifactStore> remoteKojiStores;
+
+    private final String ARTIFACT_STORE = "artifact-store";
+
+    private final Integer STORE_EXPIRATION_IN_MINS = 15;
 
     protected CassandraStoreDataManager()
     {
     }
 
-    CassandraStoreDataManager( final CassandraStoreQuery storeQuery, final IndyObjectMapper objectMapper )
+    CassandraStoreDataManager( final CassandraStoreQuery storeQuery, final IndyObjectMapper objectMapper, final CacheProducer cacheProducer )
     {
         this.storeQuery = storeQuery;
         this.objectMapper = objectMapper;
+        this.cacheProducer = cacheProducer;
     }
 
     @Override
@@ -99,9 +110,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
             }
         }
 
-        DtxArtifactStore dtxArtifactStore = storeQuery.getArtifactStore( key.getPackageType(), key.getType(), key.getName() );
-
-        return toArtifactStore( dtxArtifactStore );
+        return computeIfAbsent( ARTIFACT_STORE, key, STORE_EXPIRATION_IN_MINS, Boolean.FALSE );
     }
 
     @Override
@@ -215,7 +224,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         DtxArtifactStore dtxArtifactStore = toDtxArtifactStore( storeKey, store );
         storeQuery.createDtxArtifactStore( dtxArtifactStore );
 
-        return toArtifactStore( dtxArtifactStore );
+        return computeIfAbsent( ARTIFACT_STORE, storeKey, STORE_EXPIRATION_IN_MINS, Boolean.TRUE );
     }
 
     @Override
@@ -577,5 +586,32 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
         allStores.stream().filter( s -> remote == s.getType() && ( "koji".equals( s.getMetadata( ArtifactStore.METADATA_ORIGIN ) )
                 || "koji-binary".equals(
                 s.getMetadata(ArtifactStore.METADATA_ORIGIN ) ) ) ).forEach( s -> remoteKojiStores.put( s.getKey(), s ) );
+    }
+
+    private ArtifactStore computeIfAbsent( String name, StoreKey key, int expirationMins, boolean forceQuery )
+    {
+        logger.debug( "computeIfAbsent, cache: {}, key: {}", name, key );
+
+        BasicCacheHandle<StoreKey, ArtifactStore> cache = cacheProducer.getBasicCache( name );
+        ArtifactStore store = cache.get( key );
+        if ( store == null || forceQuery )
+        {
+            logger.trace( "Entry not found, run put, expirationMins: {}", expirationMins );
+
+            DtxArtifactStore dtxArtifactStore = storeQuery.getArtifactStore( key.getPackageType(), key.getType(), key.getName() );
+
+            store = toArtifactStore( dtxArtifactStore );
+            if ( expirationMins > 0 )
+            {
+                cache.put( key, store, expirationMins, TimeUnit.MINUTES );
+            }
+            else
+            {
+                cache.put( key, store );
+            }
+        }
+
+        logger.trace( "Return value, cache: {}, key: {}, ret: {}", name, key, store );
+        return store;
     }
 }
