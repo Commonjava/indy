@@ -601,13 +601,16 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
             DtxArtifactStore dtxArtifactStore = storeQuery.getArtifactStore( key.getPackageType(), key.getType(), key.getName() );
 
             store = toArtifactStore( dtxArtifactStore );
-            if ( expirationMins > 0 )
+            if ( store != null )
             {
-                cache.put( key, store, expirationMins, TimeUnit.MINUTES );
-            }
-            else
-            {
-                cache.put( key, store );
+                if (expirationMins > 0)
+                {
+                    cache.put(key, store, expirationMins, TimeUnit.MINUTES);
+                }
+                else
+                {
+                    cache.put(key, store);
+                }
             }
         }
 
