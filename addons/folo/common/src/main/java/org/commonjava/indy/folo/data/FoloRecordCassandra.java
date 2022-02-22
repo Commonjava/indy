@@ -65,15 +65,16 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private Session session;
     private Mapper<DtxTrackingRecord> trackingMapper;
 
-    private PreparedStatement getTrackingRecordByBuildIdAndPath;
+    private PreparedStatement getTrackingRecord;
     private PreparedStatement getTrackingKeys;
     private PreparedStatement getTrackingRecordsByTrackingKey;
     private PreparedStatement isTrackingRecordExist;
 
+    private static final String TABLE_NAME = "records2"; // Change from records to records2 due to primary key change
 
     private static String createFoloRecordsTable( String keyspace )
     {
-        return "CREATE TABLE IF NOT EXISTS " + keyspace + ".records ("
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_NAME + " ("
                 + "tracking_key text,"
                 + "sealed boolean,"
                 + "store_key text,"
@@ -88,7 +89,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
                 + "size bigint,"
                 + "started bigint," // started timestamp *
                 + "timestamps set<bigint>,"
-                + "PRIMARY KEY ((tracking_key),path)"
+                + "PRIMARY KEY ((tracking_key),path,store_effect)"
                 + ");";
     }
 
@@ -106,16 +107,16 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         MappingManager mappingManager = new MappingManager(session);
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
 
-        getTrackingRecordByBuildIdAndPath =
-                session.prepare("SELECT * FROM " + foloCassandraKeyspace + ".records WHERE tracking_key=? AND path=?;");
+        getTrackingRecord =
+                session.prepare("SELECT * FROM " + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=? AND path=? AND store_effect=?;");
         getTrackingKeys =
-                session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + ".records;");
+                session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + "." + TABLE_NAME + ";");
 
         getTrackingRecordsByTrackingKey =
-                session.prepare("SELECT * FROM "  + foloCassandraKeyspace + ".records WHERE tracking_key=?;");
+                session.prepare("SELECT * FROM "  + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=?;");
 
         isTrackingRecordExist =
-                session.prepare("SELECT count(*) FROM "  + foloCassandraKeyspace + ".records WHERE tracking_key=?;");
+                session.prepare("SELECT count(*) FROM "  + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=?;");
 
         logger.info("-- Cassandra Folo Records Keyspace and Tables created");
     }
@@ -125,38 +126,23 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
         String buildId = entry.getTrackingKey().getId();
         String path = entry.getPath();
+        String effect = entry.getEffect().toString();
 
-        BoundStatement bind = getTrackingRecordByBuildIdAndPath.bind(buildId,path);
+        BoundStatement bind = getTrackingRecord.bind( buildId, path, effect );
         ResultSet trackingRecord = session.execute(bind);
         Row one = trackingRecord.one();
 
         if(one!=null) {
-
             DtxTrackingRecord dtxTrackingRecord = fromCassandraRow(one);
-
             Boolean state = dtxTrackingRecord.getState();
-
             if(state) {
                 throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
-            }  else {
-                DtxTrackingRecord dtxTrackingRecord1 =
-                        DtxTrackingRecord.fromTrackedContentEntry(entry,false);
-
-                if(dtxTrackingRecord.getTrackingKey().equals(dtxTrackingRecord1.getTrackingKey()) &&
-                    dtxTrackingRecord.getPath().equals(dtxTrackingRecord1.getPath())) {
-                    trackingMapper.save(dtxTrackingRecord1);
-                    return true;
-                } else {
-                    return false;
-                }
             }
-
         } else {
-
             DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
             trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
-            return true;
         }
+        return true;
     }
 
     @Override

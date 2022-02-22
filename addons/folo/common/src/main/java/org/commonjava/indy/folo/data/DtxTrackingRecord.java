@@ -17,6 +17,7 @@ package org.commonjava.indy.folo.data;
 
 
 import com.datastax.driver.core.Row;
+import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
@@ -36,7 +37,6 @@ public class DtxTrackingRecord {
     private final static Boolean SEALED = true;
     private final static Boolean IN_PROGRESS = false;
 
-
     @PartitionKey(0)
     @Column(name = "tracking_key")
     String trackingKey;
@@ -50,7 +50,7 @@ public class DtxTrackingRecord {
     @Column(name = "access_channel")
     String  accessChannel;
 
-    @PartitionKey(1)
+    @ClusteringColumn
     @Column(name = "path")
     String  path;
 
@@ -60,6 +60,7 @@ public class DtxTrackingRecord {
     @Column(name = "local_url")
     String localUrl;
 
+    @ClusteringColumn
     @Column(name = "store_effect")
     String storeEffect;
 
