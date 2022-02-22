@@ -65,7 +65,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private Session session;
     private Mapper<DtxTrackingRecord> trackingMapper;
 
-    private PreparedStatement getTrackingRecordByBuildIdAndPath;
+    private PreparedStatement getTrackingRecord;
     private PreparedStatement getTrackingKeys;
     private PreparedStatement getTrackingRecordsByTrackingKey;
     private PreparedStatement isTrackingRecordExist;
@@ -107,7 +107,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         MappingManager mappingManager = new MappingManager(session);
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
 
-        getTrackingRecordByBuildIdAndPath =
+        getTrackingRecord =
                 session.prepare("SELECT * FROM " + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=? AND path=? AND store_effect=?;");
         getTrackingKeys =
                 session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + "." + TABLE_NAME + ";");
@@ -128,7 +128,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         String path = entry.getPath();
         String effect = entry.getEffect().toString();
 
-        BoundStatement bind = getTrackingRecordByBuildIdAndPath.bind( buildId, path, effect );
+        BoundStatement bind = getTrackingRecord.bind( buildId, path, effect );
         ResultSet trackingRecord = session.execute(bind);
         Row one = trackingRecord.one();
 
