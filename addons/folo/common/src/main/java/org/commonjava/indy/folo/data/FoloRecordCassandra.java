@@ -70,7 +70,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private PreparedStatement getTrackingRecordsByTrackingKey;
     private PreparedStatement isTrackingRecordExist;
 
-    private static final String TABLE_NAME = "records2"; // Change from records to records2 due to primary key change
+    static final String TABLE_NAME = "records2"; // Change from records to records2 due to primary key change
 
     private static String createFoloRecordsTable( String keyspace )
     {

@@ -31,7 +31,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Table(name = "records" )
+import static org.commonjava.indy.folo.data.FoloRecordCassandra.TABLE_NAME;
+
+@Table(name = TABLE_NAME )
 public class DtxTrackingRecord {
 
     private final static Boolean SEALED = true;
