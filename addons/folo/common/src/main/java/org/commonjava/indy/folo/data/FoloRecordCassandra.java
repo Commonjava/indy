@@ -89,7 +89,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
                 + "size bigint,"
                 + "started bigint," // started timestamp *
                 + "timestamps set<bigint>,"
-                + "PRIMARY KEY ((tracking_key),path,store_effect)"
+                + "PRIMARY KEY ((tracking_key),store_key,path,store_effect)"
                 + ");";
     }
 
@@ -108,7 +108,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
 
         getTrackingRecord =
-                session.prepare("SELECT * FROM " + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=? AND path=? AND store_effect=?;");
+                session.prepare("SELECT * FROM " + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=? AND store_key=? AND path=? AND store_effect=?;");
         getTrackingKeys =
                 session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + "." + TABLE_NAME + ";");
 
@@ -125,10 +125,11 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     public boolean recordArtifact(TrackedContentEntry entry) throws FoloContentException, IndyWorkflowException {
 
         String buildId = entry.getTrackingKey().getId();
+        String storeKey = entry.getStoreKey().toString();
         String path = entry.getPath();
         String effect = entry.getEffect().toString();
 
-        BoundStatement bind = getTrackingRecord.bind( buildId, path, effect );
+        BoundStatement bind = getTrackingRecord.bind( buildId, storeKey, path, effect );
         ResultSet trackingRecord = session.execute(bind);
         Row one = trackingRecord.one();
 

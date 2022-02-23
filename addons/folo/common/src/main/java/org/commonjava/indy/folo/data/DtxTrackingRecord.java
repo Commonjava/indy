@@ -37,20 +37,21 @@ public class DtxTrackingRecord {
     private final static Boolean SEALED = true;
     private final static Boolean IN_PROGRESS = false;
 
-    @PartitionKey(0)
+    @PartitionKey
     @Column(name = "tracking_key")
     String trackingKey;
 
     @Column(name = "sealed")
     Boolean state;
 
+    @ClusteringColumn(0)
     @Column(name = "store_key")
     String storeKey;
 
     @Column(name = "access_channel")
     String  accessChannel;
 
-    @ClusteringColumn
+    @ClusteringColumn(1)
     @Column(name = "path")
     String  path;
 
@@ -60,7 +61,7 @@ public class DtxTrackingRecord {
     @Column(name = "local_url")
     String localUrl;
 
-    @ClusteringColumn
+    @ClusteringColumn(2)
     @Column(name = "store_effect")
     String storeEffect;
 
