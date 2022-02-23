@@ -69,6 +69,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
     private PreparedStatement getTrackingKeys;
     private PreparedStatement getTrackingRecordsByTrackingKey;
     private PreparedStatement isTrackingRecordExist;
+    private PreparedStatement deleteTrackingRecordsByTrackingKey;
 
     static final String TABLE_NAME = "records2"; // Change from records to records2 due to primary key change
 
@@ -118,6 +119,9 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         isTrackingRecordExist =
                 session.prepare("SELECT count(*) FROM "  + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=?;");
 
+        deleteTrackingRecordsByTrackingKey =
+                session.prepare("DELETE FROM "  + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=?;");
+
         logger.info("-- Cassandra Folo Records Keyspace and Tables created");
     }
 
@@ -148,11 +152,9 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Override
     public void delete(TrackingKey key) {
-        // We should not need delete logic because we need to keep all records in cassandra for auditing. But instead of
-        // throwing an exception, we only need an error message here to avoid following error.
-
-        //        throw new UnsupportedOperationException( "Deleting tracking record is not supported by Cassandra Folo" );
-        logger.warn( "Deleting tracking record is not supported by Cassandra Folo" );
+        logger.info( "Delete tracking records, tracking_id: {}", key.getId() );
+        BoundStatement bind = deleteTrackingRecordsByTrackingKey.bind(key.getId());
+        session.execute(bind);
     }
 
     @Override
