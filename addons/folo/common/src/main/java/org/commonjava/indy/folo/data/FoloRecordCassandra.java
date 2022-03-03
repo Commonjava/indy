@@ -77,9 +77,9 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     static final String LEGACY_TABLE_NAME = "records";
 
-    private static String createFoloRecordsTable( String keyspace )
+    private static String createFoloRecordsTable( String keyspace, String table )
     {
-        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_NAME + " ("
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + table + " ("
                 + "tracking_key text,"
                 + "sealed boolean,"
                 + "store_key text,"
@@ -107,7 +107,8 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
         session = cassandraClient.getSession(foloCassandraKeyspace);
         session.execute( SchemaUtils.getSchemaCreateKeyspace( foloCassandraKeyspace, indyConfig.getKeyspaceReplicas() ));
-        session.execute(createFoloRecordsTable(foloCassandraKeyspace));
+        session.execute(createFoloRecordsTable(foloCassandraKeyspace, TABLE_NAME));
+        session.execute(createFoloRecordsTable(foloCassandraKeyspace, LEGACY_TABLE_NAME));
 
         MappingManager mappingManager = new MappingManager(session);
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
@@ -348,6 +349,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         }
     }
 
+    @Override
     public TrackedContent getLegacy(TrackingKey key) {
         List<DtxTrackingRecord> trackingRecords = getLegacyDtxTrackingRecordsFromDb(key);
         if (trackingRecords == null || trackingRecords.isEmpty())
@@ -357,6 +359,7 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         return transformDtxTrackingRecordToTrackingContent(key,trackingRecords);
     }
 
+    @Override
     public Set<TrackingKey> getLegacyTrackingKeys() {
         BoundStatement statement = getLegacyTrackingKeys.bind();
         return getTrackingKeys(statement);

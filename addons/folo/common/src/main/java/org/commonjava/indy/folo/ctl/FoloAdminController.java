@@ -259,17 +259,6 @@ public class FoloAdminController
         }
     }
 
-    public TrackedContentDTO renderReport( final String id, final String apiBaseUrl )
-            throws IndyWorkflowException
-    {
-        final TrackingKey tk = new TrackingKey( id );
-        logger.debug( "Retrieving tracking record for: {}", tk );
-        final TrackedContentDTO record = constructContentDTO( recordManager.get( tk ), apiBaseUrl );
-        logger.debug( "Got: {}", record );
-
-        return record;
-    }
-
     public TrackedContentDTO getRecord( final String id, String baseUrl )
             throws IndyWorkflowException
     {
@@ -280,12 +269,8 @@ public class FoloAdminController
     public TrackedContentDTO getLegacyRecord( final String id, String baseUrl )
             throws IndyWorkflowException
     {
-        if (recordManager instanceof FoloRecordCassandra ) {
-            FoloRecordCassandra fm = (FoloRecordCassandra) recordManager;
-            final TrackingKey tk = new TrackingKey(id);
-            return constructContentDTO(fm.getLegacy(tk), baseUrl);
-        }
-        return null;
+        final TrackingKey tk = new TrackingKey( id );
+        return constructContentDTO(recordManager.getLegacy(tk), baseUrl);
     }
 
     public void clearRecord( final String id )
@@ -353,17 +338,16 @@ public class FoloAdminController
     }
 
     public TrackingIdsDTO getLegacyTrackingIds() {
+        logger.info( "Get legacy folo ids" );
         TrackingIdsDTO ret = null;
-        if (recordManager instanceof FoloRecordCassandra ) {
-            FoloRecordCassandra fm = (FoloRecordCassandra)recordManager;
-            Set<String> sealed = fm.getLegacyTrackingKeys()
-                    .stream()
-                    .map(TrackingKey::getId)
-                    .collect(Collectors.toSet());
-            if (sealed != null) {
-                ret = new TrackingIdsDTO();
-                ret.setSealed(sealed);
-            }
+        Set<String> sealed = recordManager.getLegacyTrackingKeys()
+                                          .stream()
+                                          .map( TrackingKey::getId )
+                                          .collect( Collectors.toSet() );
+        if ( sealed != null )
+        {
+            ret = new TrackingIdsDTO();
+            ret.setSealed( sealed );
         }
         return ret;
     }
