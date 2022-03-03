@@ -52,4 +52,15 @@ public interface FoloRecord {
     Set<TrackedContent> getSealed();
 
     void addSealedRecord(TrackedContent record);
+
+    // To fix a Cassandra folo table issue, we abandon the old legacy table and use a new table. Ref to FoloRecordCassandra.
+    default Set<TrackingKey> getLegacyTrackingKeys()
+    {
+        return null;
+    }
+
+    default TrackedContent getLegacy( TrackingKey tk )
+    {
+        return null;
+    }
 }

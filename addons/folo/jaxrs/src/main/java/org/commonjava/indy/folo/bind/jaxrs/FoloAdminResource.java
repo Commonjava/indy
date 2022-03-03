@@ -161,31 +161,7 @@ public class FoloAdminResource
     public Response getReport( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
                                @Context final UriInfo uriInfo )
     {
-        Response response;
-        try
-        {
-            final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
-
-            final TrackedContentDTO report = controller.renderReport( id, baseUrl );
-
-            if ( report == null )
-            {
-                response = Response.status( Status.NOT_FOUND ).build();
-            }
-            else
-            {
-                response = responseHelper.formatOkResponseWithJsonEntity( report );
-            }
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error(
-                    String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ), e );
-
-            response = responseHelper.formatResponse( e );
-        }
-
-        return response;
+        return getRecord( id, uriInfo );
     }
 
     @ApiOperation(
