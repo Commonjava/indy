@@ -24,10 +24,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.folo.conf.FoloConfig;
-import org.commonjava.indy.folo.data.FoloContentException;
-import org.commonjava.indy.folo.data.FoloFiler;
-import org.commonjava.indy.folo.data.FoloRecord;
-import org.commonjava.indy.folo.data.FoloRecordCache;
+import org.commonjava.indy.folo.data.*;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
@@ -280,6 +277,17 @@ public class FoloAdminController
         return constructContentDTO( recordManager.get( tk ), baseUrl );
     }
 
+    public TrackedContentDTO getLegacyRecord( final String id, String baseUrl )
+            throws IndyWorkflowException
+    {
+        if (recordManager instanceof FoloRecordCassandra ) {
+            FoloRecordCassandra fm = (FoloRecordCassandra) recordManager;
+            final TrackingKey tk = new TrackingKey(id);
+            return constructContentDTO(fm.getLegacy(tk), baseUrl);
+        }
+        return null;
+    }
+
     public void clearRecord( final String id )
             throws FoloContentException
     {
@@ -342,6 +350,22 @@ public class FoloAdminController
     public boolean hasRecord( final String id )
     {
         return recordManager.hasRecord( new TrackingKey( id ) );
+    }
+
+    public TrackingIdsDTO getLegacyTrackingIds() {
+        TrackingIdsDTO ret = null;
+        if (recordManager instanceof FoloRecordCassandra ) {
+            FoloRecordCassandra fm = (FoloRecordCassandra)recordManager;
+            Set<String> sealed = fm.getLegacyTrackingKeys()
+                    .stream()
+                    .map(TrackingKey::getId)
+                    .collect(Collectors.toSet());
+            if (sealed != null) {
+                ret = new TrackingIdsDTO();
+                ret.setSealed(sealed);
+            }
+        }
+        return ret;
     }
 
     public TrackingIdsDTO getTrackingIds( final Set<FoloConstants.TRACKING_TYPE> types )

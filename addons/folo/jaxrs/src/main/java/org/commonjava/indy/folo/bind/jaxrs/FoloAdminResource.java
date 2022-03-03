@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.commonjava.indy.folo.ctl.FoloConstants.ALL;
+import static org.commonjava.indy.folo.ctl.FoloConstants.LEGACY;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.IN_PROGRESS;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.SEALED;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
@@ -234,7 +235,11 @@ public class FoloAdminResource
         try
         {
             final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
-            final TrackedContentDTO record = controller.getRecord( id, baseUrl );
+            TrackedContentDTO record = controller.getRecord( id, baseUrl );
+            if ( record == null )
+            {
+                record = controller.getLegacyRecord( id, baseUrl ); // Try legacy record
+            }
             if ( record == null )
             {
                 response = Response.status( Status.NOT_FOUND ).build();
@@ -280,12 +285,19 @@ public class FoloAdminResource
     @Path( "/report/ids/{type}" )
     @GET
     public Response getRecordIds(
-            @ApiParam( "Report type, should be in_progress|sealed|all" ) final @PathParam( "type" ) String type )
+            @ApiParam( "Report type, should be in_progress|sealed|all|legacy" ) final @PathParam( "type" ) String type )
     {
         Response response;
-        Set<FoloConstants.TRACKING_TYPE> types = getRequiredTypes( type );
-
-        TrackingIdsDTO ids = controller.getTrackingIds( types );
+        TrackingIdsDTO ids;
+        if (LEGACY.equals(type))
+        {
+            ids = controller.getLegacyTrackingIds();
+        }
+        else
+        {
+            Set<FoloConstants.TRACKING_TYPE> types = getRequiredTypes( type );
+            ids = controller.getTrackingIds( types );
+        }
         if ( ids != null )
         {
             response = responseHelper.formatOkResponseWithJsonEntity( ids );
