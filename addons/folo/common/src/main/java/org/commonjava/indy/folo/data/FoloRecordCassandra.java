@@ -67,15 +67,19 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     private PreparedStatement getTrackingRecord;
     private PreparedStatement getTrackingKeys;
+    private PreparedStatement getLegacyTrackingKeys;
     private PreparedStatement getTrackingRecordsByTrackingKey;
+    private PreparedStatement getLegacyTrackingRecordsByTrackingKey;
     private PreparedStatement isTrackingRecordExist;
     private PreparedStatement deleteTrackingRecordsByTrackingKey;
 
     static final String TABLE_NAME = "records2"; // Change from records to records2 due to primary key change
 
-    private static String createFoloRecordsTable( String keyspace )
+    static final String LEGACY_TABLE_NAME = "records";
+
+    private static String createFoloRecordsTable( String keyspace, String table )
     {
-        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + TABLE_NAME + " ("
+        return "CREATE TABLE IF NOT EXISTS " + keyspace + "." + table + " ("
                 + "tracking_key text,"
                 + "sealed boolean,"
                 + "store_key text,"
@@ -103,18 +107,26 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
         session = cassandraClient.getSession(foloCassandraKeyspace);
         session.execute( SchemaUtils.getSchemaCreateKeyspace( foloCassandraKeyspace, indyConfig.getKeyspaceReplicas() ));
-        session.execute(createFoloRecordsTable(foloCassandraKeyspace));
+        session.execute(createFoloRecordsTable(foloCassandraKeyspace, TABLE_NAME));
+        session.execute(createFoloRecordsTable(foloCassandraKeyspace, LEGACY_TABLE_NAME));
 
         MappingManager mappingManager = new MappingManager(session);
         trackingMapper = mappingManager.mapper(DtxTrackingRecord.class,foloCassandraKeyspace);
 
         getTrackingRecord =
                 session.prepare("SELECT * FROM " + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=? AND store_key=? AND path=? AND store_effect=?;");
+
         getTrackingKeys =
                 session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + "." + TABLE_NAME + ";");
 
+        getLegacyTrackingKeys =
+                session.prepare("SELECT distinct tracking_key FROM " +  foloCassandraKeyspace + "." + LEGACY_TABLE_NAME + ";");
+
         getTrackingRecordsByTrackingKey =
                 session.prepare("SELECT * FROM "  + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=?;");
+
+        getLegacyTrackingRecordsByTrackingKey =
+                session.prepare("SELECT * FROM "  + foloCassandraKeyspace + "." + LEGACY_TABLE_NAME + " WHERE tracking_key=?;");
 
         isTrackingRecordExist =
                 session.prepare("SELECT count(*) FROM "  + foloCassandraKeyspace + "." + TABLE_NAME + " WHERE tracking_key=?;");
@@ -179,7 +191,11 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     @Override
     public TrackedContent get(TrackingKey key) {
-        List<DtxTrackingRecord> trackingRecords =  getDtxTrackingRecordsFromDb(key);
+        List<DtxTrackingRecord> trackingRecords = getDtxTrackingRecordsFromDb(key);
+        if (trackingRecords == null || trackingRecords.isEmpty())
+        {
+            return null;
+        }
         return transformDtxTrackingRecordToTrackingContent(key,trackingRecords);
     }
 
@@ -277,17 +293,23 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
 
     }
 
+    private List<DtxTrackingRecord>  getLegacyDtxTrackingRecordsFromDb(TrackingKey trackingKey) {
+        BoundStatement bind = getLegacyTrackingRecordsByTrackingKey.bind(trackingKey.getId());
+        ResultSet execute = session.execute(bind);
+        List<Row> rows = execute.all();
+        return fetchRecordsFromRows(rows);
+    }
+
     private List<DtxTrackingRecord>  getDtxTrackingRecordsFromDb(TrackingKey trackingKey)  {
-
-        List<DtxTrackingRecord> trackingRecords =  new ArrayList<>();
-
         BoundStatement bind = getTrackingRecordsByTrackingKey.bind(trackingKey.getId());
         ResultSet execute = session.execute(bind);
-        List<Row> allTrackingRecordsByTrackingKey = execute.all();
+        List<Row> rows = execute.all();
+        return fetchRecordsFromRows(rows);
+    }
 
-//        logger.warn("-- Fetched {} tracking  records from key {}",allTrackingRecordsByTrackingKey.size(),trackingKey);
-
-        Iterator<Row> iteratorDtxTrackingRecords = allTrackingRecordsByTrackingKey.iterator();
+    private List<DtxTrackingRecord> fetchRecordsFromRows(List<Row> rows) {
+        List<DtxTrackingRecord> trackingRecords = new ArrayList<>();
+        Iterator<Row> iteratorDtxTrackingRecords = rows.iterator();
         while (iteratorDtxTrackingRecords.hasNext()) {
             Row next = iteratorDtxTrackingRecords.next();
             DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord();
@@ -327,8 +349,28 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
         }
     }
 
+    @Override
+    public TrackedContent getLegacy(TrackingKey key) {
+        List<DtxTrackingRecord> trackingRecords = getLegacyDtxTrackingRecordsFromDb(key);
+        if (trackingRecords == null || trackingRecords.isEmpty())
+        {
+            return null;
+        }
+        return transformDtxTrackingRecordToTrackingContent(key,trackingRecords);
+    }
+
+    @Override
+    public Set<TrackingKey> getLegacyTrackingKeys() {
+        BoundStatement statement = getLegacyTrackingKeys.bind();
+        return getTrackingKeys(statement);
+    }
+
     private Set<TrackingKey> getTrackingKeys() {
         BoundStatement statement = getTrackingKeys.bind();
+        return getTrackingKeys(statement);
+    }
+
+    private Set<TrackingKey> getTrackingKeys(BoundStatement statement) {
         ResultSet resultSet = session.execute(statement);
         List<Row> all = resultSet.all();
         Iterator<Row> iterator = all.iterator();

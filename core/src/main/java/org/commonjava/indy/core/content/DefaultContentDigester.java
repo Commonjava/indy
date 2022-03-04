@@ -123,7 +123,7 @@ public class DefaultContentDigester
         final Transfer transfer = directContentAccess.getTransfer( key, path );
         if ( transfer == null || !transfer.exists() )
         {
-            logger.error( "No transfer to digest, store: {}, path: {}, transfer: {}", key, path, transfer );
+            logger.warn( "No transfer to digest, store: {}, path: {}, transfer: {}", key, path, transfer );
             return new TransferMetadata( Collections.emptyMap(), 0L );
         }
 
