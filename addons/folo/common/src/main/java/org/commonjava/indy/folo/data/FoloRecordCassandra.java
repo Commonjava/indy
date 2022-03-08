@@ -155,10 +155,10 @@ public class FoloRecordCassandra implements FoloRecord,StartupAction {
             if(state) {
                 throw new FoloContentException( "Tracking record: {} is already sealed!", entry.getTrackingKey() );
             }
-        } else {
-            DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
-            trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
         }
+        // Always override prev one since some builds may upload artifact more than once
+        DtxTrackingRecord dtxTrackingRecord = new DtxTrackingRecord(entry);
+        trackingMapper.save(dtxTrackingRecord); //  optional Options with TTL, timestamp...
         return true;
     }
 
