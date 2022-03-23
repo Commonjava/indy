@@ -15,9 +15,6 @@
  */
 package org.commonjava.indy.pkg.maven.content.cache;
 
-import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.content.DirectContentAccess;
-import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.MetadataKey;
 import org.commonjava.indy.pkg.maven.content.MetadataInfo;
 import org.commonjava.indy.pkg.maven.content.MetadataKeyTransformer;
@@ -33,33 +30,24 @@ import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
-import org.commonjava.maven.galley.model.Transfer;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
-import org.infinispan.notifications.Listener;
-import org.infinispan.notifications.cachelistener.annotation.CacheEntryExpired;
-import org.infinispan.notifications.cachelistener.event.CacheEntryExpiredEvent;
 import org.infinispan.protostream.BaseMarshaller;
-import org.infinispan.protostream.MessageMarshaller;
 import org.infinispan.query.Search;
 import org.infinispan.query.spi.SearchManagerImplementor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @ApplicationScoped
 public class MetadataCacheProducer
 {
-    private static final String METADATA_KEY_CACHE = "maven-metadata-key-cache";
+    private static final String MAVEN_METADATA_KEY_CACHE = "maven-metadata-key-cache";
 
-    private static final String METADATA_CACHE = "maven-metadata-cache";
+    private static final String MAVEN_METADATA_CACHE = "maven-metadata-cache";
 
     @Inject
     private MavenMetadataCacheListener cacheListener;
@@ -92,7 +80,7 @@ public class MetadataCacheProducer
             keyMarshallers.add( new StoreTypeMarshaller() );
             cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
         }
-        return cacheProducer.getBasicCache( METADATA_CACHE );
+        return cacheProducer.getBasicCache(MAVEN_METADATA_CACHE);
     }
 
     @MavenMetadataKeyCache
@@ -109,7 +97,7 @@ public class MetadataCacheProducer
             cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
         }
 
-        BasicCacheHandle<MetadataKey, MetadataKey> handler = cacheProducer.getBasicCache( METADATA_KEY_CACHE );
+        BasicCacheHandle<MetadataKey, MetadataKey> handler = cacheProducer.getBasicCache(MAVEN_METADATA_KEY_CACHE);
 
         registerTransformer( handler );
 

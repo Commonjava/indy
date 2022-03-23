@@ -25,6 +25,8 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 
+import static java.lang.Boolean.TRUE;
+
 @ApplicationScoped
 @SectionName( InternalFeatureConfig.SECTION_NAME )
 public class InternalFeatureConfig implements IndyConfigInfo {
@@ -35,6 +37,8 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private Boolean foloISPNQueryPaginationEnabled;
 
+    private boolean mavenMetadataCacheEnabled = TRUE;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
@@ -42,7 +46,7 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     public Boolean getFoloISPNQueryPaginationEnabled()
     {
-        return foloISPNQueryPaginationEnabled == null ? Boolean.TRUE : foloISPNQueryPaginationEnabled;
+        return foloISPNQueryPaginationEnabled == null ? TRUE : foloISPNQueryPaginationEnabled;
     }
 
     @ConfigName("folo.ispn.query.pagination.enabled")
@@ -52,7 +56,7 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     }
 
     public Boolean getStoreValidation() {
-        return storeValidation == null ? Boolean.TRUE : storeValidation;
+        return storeValidation == null ? TRUE : storeValidation;
     }
 
     @ConfigName("store.validation.enabled")
@@ -71,5 +75,14 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-internal-features.conf" );
+    }
+
+    public boolean isMavenMetadataCacheEnabled() {
+        return mavenMetadataCacheEnabled;
+    }
+
+    @ConfigName("maven.metadata.cache.enabled")
+    public void setMavenMetadataCacheEnabled(boolean mavenMetadataCacheEnabled) {
+        this.mavenMetadataCacheEnabled = mavenMetadataCacheEnabled;
     }
 }

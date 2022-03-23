@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
+import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataCache;
 import org.commonjava.indy.pkg.maven.content.cache.MavenMetadataKeyCache;
@@ -43,6 +44,9 @@ public class MetadataCacheManager
     @Inject
     @MavenMetadataCache
     private BasicCacheHandle<MetadataKey, MetadataInfo> metadataCache;
+
+    @Inject
+    private InternalFeatureConfig internalFeatureConfig;
 
     @Inject
     @MavenMetadataKeyCache
@@ -78,36 +82,45 @@ public class MetadataCacheManager
 
     public void put( MetadataKey metadataKey, MetadataInfo metadataInfo )
     {
-        metadataKeyCache.put( metadataKey, metadataKey );
-        metadataCache.put( metadataKey, metadataInfo );
+        if (internalFeatureConfig.isMavenMetadataCacheEnabled()) {
+            metadataKeyCache.put(metadataKey, metadataKey);
+            metadataCache.put(metadataKey, metadataInfo);
+        }
     }
 
     public MetadataInfo get( MetadataKey metadataKey )
     {
-        return metadataCache.get( metadataKey );
+        if (internalFeatureConfig.isMavenMetadataCacheEnabled()) {
+            return metadataCache.get(metadataKey);
+        }
+        return null;
     }
 
     public void remove( StoreKey storeKey, String path )
     {
-        remove( new MetadataKey( storeKey, path ) );
-    }
-
-    public void remove( StoreKey key, Set<String> paths )
-    {
-        paths.forEach( p -> remove( new MetadataKey( key, p ) ) );
+        if (internalFeatureConfig.isMavenMetadataCacheEnabled()) {
+            remove(new MetadataKey(storeKey, path));
+        }
     }
 
     public void remove( MetadataKey metadataKey )
     {
-        metadataKeyCache.remove( metadataKey );
-        metadataCache.remove( metadataKey );
+        if (internalFeatureConfig.isMavenMetadataCacheEnabled()) {
+            metadataKeyCache.remove(metadataKey);
+            metadataCache.remove(metadataKey);
+        }
     }
 
+    /* 'removeAll' and 'getAllPaths' are only used for unit test. Do not use them! We may delete them in the future.
+    metadataKeyCache is only for test too, and we may delete it as well. henry Mar 23, 2022 */
+
+    @Deprecated
     public void removeAll( StoreKey key )
     {
         getMatches( key ).forEach( k -> remove( k ) );
     }
 
+    @Deprecated
     public Set<String> getAllPaths( StoreKey key )
     {
         return getMatches( key ).stream().map( ( k ) -> k.getPath() ).collect( Collectors.toSet() );
