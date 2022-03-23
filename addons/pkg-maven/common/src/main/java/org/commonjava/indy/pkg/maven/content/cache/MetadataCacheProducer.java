@@ -45,8 +45,6 @@ import java.util.List;
 @ApplicationScoped
 public class MetadataCacheProducer
 {
-    private static final String MAVEN_METADATA_KEY_CACHE = "maven-metadata-key-cache";
-
     private static final String MAVEN_METADATA_CACHE = "maven-metadata-cache";
 
     @Inject
@@ -81,27 +79,6 @@ public class MetadataCacheProducer
             cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
         }
         return cacheProducer.getBasicCache(MAVEN_METADATA_CACHE);
-    }
-
-    @MavenMetadataKeyCache
-    @Produces
-    @ApplicationScoped
-    public BasicCacheHandle<MetadataKey, MetadataKey> mavenMetadataKeyCacheCfg()
-    {
-        if ( remoteConfiguration.isEnabled() )
-        {
-            List<BaseMarshaller> keyMarshallers = new ArrayList<>();
-            keyMarshallers.add( new MetadataKeyMarshaller() );
-            keyMarshallers.add( new StoreKeyMarshaller() );
-            keyMarshallers.add( new StoreTypeMarshaller() );
-            cacheProducer.registerProtoAndMarshallers( "metadata_key.proto", keyMarshallers );
-        }
-
-        BasicCacheHandle<MetadataKey, MetadataKey> handler = cacheProducer.getBasicCache(MAVEN_METADATA_KEY_CACHE);
-
-        registerTransformer( handler );
-
-        return handler;
     }
 
     private void registerTransformer( BasicCacheHandle handler )
