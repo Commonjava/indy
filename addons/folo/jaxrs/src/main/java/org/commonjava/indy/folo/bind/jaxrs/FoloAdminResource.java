@@ -34,6 +34,7 @@ import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
+import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.BatchDeleteRequest;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -60,6 +61,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ALL;
 import static org.commonjava.indy.folo.ctl.FoloConstants.LEGACY;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.IN_PROGRESS;
@@ -140,9 +142,6 @@ public class FoloAdminResource
         {
             File zip = controller.renderRepositoryZip( id );
             return zip;
-            //
-            //            final Response.ResponseBuilder builder = Response.ok( zip );
-            //            return setInfoHeaders( builder, zip, false, application_zip ).build();
         }
         catch ( IndyWorkflowException e )
         {
@@ -218,12 +217,10 @@ public class FoloAdminResource
             }
             if ( record == null )
             {
-                response = Response.status( Status.NOT_FOUND ).build();
+                // if not found, return an empty report
+                record = new TrackedContentDTO(new TrackingKey( id ), emptySet(), emptySet());
             }
-            else
-            {
-                response = responseHelper.formatOkResponseWithJsonEntity( record );
-            }
+            response = responseHelper.formatOkResponseWithJsonEntity( record );
         }
         catch ( final IndyWorkflowException e )
         {
