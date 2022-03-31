@@ -92,7 +92,7 @@ public class FoloGenericContentAccessResource
 
     @ApiOperation( "Store and track file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200,
-            message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
+            message = "Header metadata for content" ), } )
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
@@ -111,12 +111,11 @@ public class FoloGenericContentAccessResource
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
-        return handler.doHead( PKG_TYPE_GENERIC_HTTP, type, name, path, cacheOnly, baseUri, request, metadata );
+        return handler.doHead( PKG_TYPE_GENERIC_HTTP, type, name, path, cacheOnly, baseUri, request, metadata, null, Boolean.FALSE );
     }
 
     @ApiOperation( "Retrieve and track file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200, response = String.class,
-            message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
+    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ),
             @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
     @Path( "/{path: (.*)}" )
@@ -134,7 +133,7 @@ public class FoloGenericContentAccessResource
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
-        return handler.doGet( PKG_TYPE_GENERIC_HTTP, type, name, path, baseUri, request, metadata );
+        return handler.doGet( PKG_TYPE_GENERIC_HTTP, type, name, path, baseUri, request, metadata, null, Boolean.FALSE );
     }
 
 }
