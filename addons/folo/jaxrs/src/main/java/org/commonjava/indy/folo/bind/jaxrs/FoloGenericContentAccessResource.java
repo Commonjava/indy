@@ -80,7 +80,7 @@ public class FoloGenericContentAccessResource
         final TrackingKey tk = new TrackingKey( id );
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE ).set(
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY ).set(
                         STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
 
         Class cls = FoloGenericContentAccessResource.class;
@@ -107,7 +107,7 @@ public class FoloGenericContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
@@ -129,7 +129,7 @@ public class FoloGenericContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
