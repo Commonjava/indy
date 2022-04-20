@@ -80,7 +80,7 @@ public class FoloGenericContentAccessResource
         final TrackingKey tk = new TrackingKey( id );
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE ).set(
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY ).set(
                         STORE_HTTP_HEADERS, RequestUtils.extractRequestHeadersToMap( request ) );
 
         Class cls = FoloGenericContentAccessResource.class;
@@ -92,7 +92,7 @@ public class FoloGenericContentAccessResource
 
     @ApiOperation( "Store and track file/artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200,
-            message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
+            message = "Header metadata for content" ), } )
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
@@ -107,16 +107,15 @@ public class FoloGenericContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
-        return handler.doHead( PKG_TYPE_GENERIC_HTTP, type, name, path, cacheOnly, baseUri, request, metadata );
+        return handler.doHead( PKG_TYPE_GENERIC_HTTP, type, name, path, cacheOnly, baseUri, request, metadata, null, Boolean.FALSE );
     }
 
     @ApiOperation( "Retrieve and track file/artifact content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ), @ApiResponse( code = 200, response = String.class,
-            message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
+    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ),
             @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
     @Path( "/{path: (.*)}" )
@@ -130,11 +129,11 @@ public class FoloGenericContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.NATIVE );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
-        return handler.doGet( PKG_TYPE_GENERIC_HTTP, type, name, path, baseUri, request, metadata );
+        return handler.doGet( PKG_TYPE_GENERIC_HTTP, type, name, path, baseUri, request, metadata, null, Boolean.FALSE );
     }
 
 }
