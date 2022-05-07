@@ -266,6 +266,7 @@ public class DefaultGalleyStorageProvider
         ret.setGcGracePeriodInHours( config.getGcGracePeriodInHours() );
         ret.setGcIntervalInMinutes( config.getGcIntervalInMinutes() );
         ret.setDeduplicatePattern( config.getDeduplicatePattern() );
+        ret.setPhysicalFileExistenceCheckEnabled( config.isPhysicalFileExistenceCheckEnabled() );
 
         return ret;
     }
