@@ -63,7 +63,7 @@
     <logback-version>1.2.3</logback-version>
     <infinispanVersion>9.4.15.Final</infinispanVersion>
     <protostreamVersion>4.3.0.Final</protostreamVersion>
-    <gsonVersion>2.8.2</gsonVersion>
+    <gsonVersion>2.8.9</gsonVersion>
     <!--<luceneVersion>7.3.0</luceneVersion>-->
     <protostreamVersion>4.3.0.Final</protostreamVersion>
     <gsonVersion>2.8.2</gsonVersion>
