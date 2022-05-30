@@ -305,7 +305,7 @@ public abstract class AbstractIndyFunctionalTest
                         + "store.storage=infinispan\n"
                         + "schedule.storage=infinispan");
 
-        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo");
+        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo" + "\ntrack.group.content=True");
 
         if ( isSchedulerEnabled() )
         {

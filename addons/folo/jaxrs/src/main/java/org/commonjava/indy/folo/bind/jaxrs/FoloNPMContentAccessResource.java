@@ -48,9 +48,8 @@ import javax.ws.rs.core.UriInfo;
 import java.nio.file.Paths;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.folo.ctl.FoloConstants.*;
 import static org.commonjava.indy.util.RequestContextHelper.CONTENT_TRACKING_ID;
-import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
-import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_NPM;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
@@ -199,7 +198,8 @@ public class FoloNPMContentAccessResource
         final String baseUri = getBasePath( uriInfo, id );
 
         EventMetadata metadata = new EventMetadata().set( TRACKING_KEY, tk )
-                                                    .set( ACCESS_CHANNEL, AccessChannel.NATIVE );
+                                                    .set( ACCESS_CHANNEL, AccessChannel.NATIVE )
+                                                    .set( ORIGIN_PATH, packageName );
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
