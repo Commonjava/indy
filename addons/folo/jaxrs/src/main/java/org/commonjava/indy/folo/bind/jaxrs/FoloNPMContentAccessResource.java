@@ -226,6 +226,9 @@ public class FoloNPMContentAccessResource
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
         final String path = Paths.get( packageName, versionTarball ).toString();
+
+        metadata.set( ORIGIN_PATH, path );
+
         final String baseUri = getBasePath( uriInfo, id );
 
         return handler.doGet( NPM_PKG_KEY, type, name, path, baseUri, request, metadata );
