@@ -84,13 +84,13 @@
     <honeycombVersion>1.5.1</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>2.1-SNAPSHOT</pathmappedStorageVersion>
+    <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
     <o11yphantVersion>1.4</o11yphantVersion>
     <swaggerVersion>1.6.4</swaggerVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.7</galleyVersion>
+    <galleyVersion>1.8</galleyVersion>
     <bomVersion>25</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <partylineVersion>1.16</partylineVersion>

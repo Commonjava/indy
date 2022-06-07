@@ -51,6 +51,7 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.Map;
 
+import static org.commonjava.indy.folo.ctl.FoloConstants.ORIGIN_PATH;
 import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
@@ -112,7 +113,9 @@ public class FoloTrackingListener
                 return;
             }
 
-            logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
+            final String trackingPath = metadata.get( ORIGIN_PATH ) == null ? transfer.getPath() : (String)metadata.get( ORIGIN_PATH );
+
+            logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, trackingPath,
                           keyedLocation.getKey() );
 
             //Here we need to think about npm metadata retrieving case. As almost all npm metadata retrieving is through
@@ -120,7 +123,7 @@ public class FoloTrackingListener
             //so the real path for this transfer should be /$pkg but its current path is /$pkg/package.json. We need to
             //think about if need to do the replacement here, especially for the originalUrl.
             recordManager.recordArtifact(
-                    createEntry( trackingKey, keyedLocation.getKey(), accessChannel, transfer.getPath(),
+                    createEntry( trackingKey, keyedLocation.getKey(), accessChannel, trackingPath,
                                  StoreEffect.DOWNLOAD, event.getEventMetadata() ) );
         }
         catch ( final FoloContentException | IndyWorkflowException e )
