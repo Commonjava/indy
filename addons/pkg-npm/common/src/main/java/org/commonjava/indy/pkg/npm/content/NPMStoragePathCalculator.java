@@ -86,9 +86,9 @@ public class NPMStoragePathCalculator
             }
 
             // This is considering the single path for npm standard like "/jquery"
-            final boolean isSinglePath = pkg.split( "/" ).length < 2;
+            final boolean isSinglePath = !pkg.startsWith( "@" ) && pkg.split( "/" ).length == 1;
             // This is considering the scoped path for npm standard like "/@type/jquery"
-            final boolean isScopedPath = pkg.startsWith( "@" ) && pkg.split( "/" ).length < 3;
+            final boolean isScopedPath = pkg.startsWith( "@" ) && pkg.split( "/" ).length == 2;
             if ( isSinglePath || isScopedPath )
             {
                 logger.debug( "Modifying target path: {}, appending '{}', store {}", path, NPM_METADATA_NAME,
