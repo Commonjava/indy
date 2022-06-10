@@ -118,6 +118,18 @@ public class FoloTrackingListener
             logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, trackingPath,
                           keyedLocation.getKey() );
 
+            /*
+             * If a build makes a request to indy-admin service, pnc sends it through generic proxy
+             * where it gets tracked once and then it gets tracked second time on the indy-admin service.
+             * We should avoid the tracker if it sends request through generic proxy and the target is
+             * indy instance,
+             */
+            if ( trackingPath.contains("api/folo/track") )
+            {
+                logger.trace("NOT tracking content requests from indy itself, path: {}", trackingPath);
+                return;
+            }
+
             //Here we need to think about npm metadata retrieving case. As almost all npm metadata retrieving is through
             // /$pkg from remote, but we use STORAGE_PATH in EventMetadata with /$pkg/package.json to store this metadata,
             //so the real path for this transfer should be /$pkg but its current path is /$pkg/package.json. We need to
