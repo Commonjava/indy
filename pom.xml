@@ -59,13 +59,11 @@
 
     <!-- thirdparty projects -->
     <javaVersion>1.8</javaVersion>
-    <slf4j-version>1.7.16</slf4j-version>
+    <slf4j-version>1.7.36</slf4j-version>
     <infinispanVersion>9.4.23.Final</infinispanVersion>
-    <protostreamVersion>4.3.0.Final</protostreamVersion>
-    <gsonVersion>2.8.9</gsonVersion>
     <!--<luceneVersion>7.3.0</luceneVersion>-->
     <protostreamVersion>4.3.0.Final</protostreamVersion>
-    <gsonVersion>2.8.2</gsonVersion>
+    <gsonVersion>2.8.9</gsonVersion>
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.1.8.Final</undertowVersion>
@@ -77,7 +75,7 @@
     <logbackVersion>1.2.9</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
-    <jacksonVersion>2.12.1</jacksonVersion>
+    <jacksonVersion>2.13.3</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
@@ -91,13 +89,14 @@
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.8</galleyVersion>
-    <bomVersion>25</bomVersion>
+    <weftVersion>1.20</weftVersion>
+    <bomVersion>27-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
+    <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
     <jhttpcVersion>1.12</jhttpcVersion>
-    <weftVersion>1.20</weftVersion>
     <httpTestserverVersion>1.4</httpTestserverVersion>
     <propulsorVersion>1.4</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
@@ -1314,14 +1313,26 @@
       <dependency>
         <groupId>org.apache.maven.archetype</groupId>
         <artifactId>archetype-catalog</artifactId>
-        <version>2.2</version>
+        <version>2.4</version>
       </dependency>
+      <!-- Some dependency problems caused a old plexus-utils(2.0.6) is used which have cve, so forced to 3.0.21 -->
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
-        <artifactId>plexus-container-default</artifactId>
-        <version>1.6</version>
+        <artifactId>plexus-utils</artifactId>
+        <version>3.0.21</version>
       </dependency>
-      
+      <dependency>
+        <groupId>org.apache.maven</groupId>
+        <artifactId>maven-settings-builder</artifactId>
+        <version>3.0.3</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.codehaus.plexus</groupId>
+            <artifactId>plexus-utils</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
@@ -1738,16 +1749,6 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-container-default</artifactId>
-      <exclusions>
-        <exclusion>
-          <artifactId>google-collections</artifactId>
-          <groupId>com.google.collections</groupId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
   
