@@ -37,8 +37,7 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
-import static org.commonjava.indy.folo.ctl.FoloConstants.ACCESS_CHANNEL;
-import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_KEY;
+import static org.commonjava.indy.folo.ctl.FoloConstants.*;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_GENERIC_HTTP;
 import static org.commonjava.indy.util.RequestContextHelper.CONTENT_TRACKING_ID;
 import static org.commonjava.maven.galley.spi.cache.CacheProvider.STORE_HTTP_HEADERS;
@@ -129,7 +128,7 @@ public class FoloGenericContentAccessResource
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 
         EventMetadata metadata =
-                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY );
+                new EventMetadata().set( TRACKING_KEY, tk ).set( ACCESS_CHANNEL, AccessChannel.GENERIC_PROXY ).set( ORIGIN_PATH, path );
 
         RequestContextHelper.setContext( CONTENT_TRACKING_ID, id );
 
