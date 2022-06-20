@@ -126,7 +126,7 @@ public class ContentBrowseController
                         //skip npm adduser path to avoid the sensitive info showing.
                         //continue;
                     }
-                    if ( p.endsWith( NPM_METADATA_NAME ) )
+                    if ( p.contains( NPM_METADATA_NAME ) )
                     {
                         //the package.json should not be visible for user
                         continue;
