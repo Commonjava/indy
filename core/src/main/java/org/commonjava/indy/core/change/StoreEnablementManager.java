@@ -21,6 +21,7 @@ import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.change.event.IndyStoreErrorEvent;
 import org.commonjava.indy.conf.IndyConfiguration;
+import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.core.expire.IndySchedulerException;
 import org.commonjava.indy.core.expire.ScheduleManager;
 import org.commonjava.indy.core.expire.SchedulerEvent;
@@ -63,6 +64,9 @@ public class StoreEnablementManager
     @Inject
     private IndyConfiguration config;
 
+    @Inject
+    private InternalFeatureConfig internalFeatureConfig;
+
     @Measure
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
@@ -78,6 +82,13 @@ public class StoreEnablementManager
         Logger logger = LoggerFactory.getLogger( getClass() );
         StoreKey key = evt.getStoreKey();
         Throwable error = evt.getError();
+
+        if ( !internalFeatureConfig.isStoreAutoDisableAndReEnable() )
+        {
+            logger.info( "Store auto-disable-reenable is not enabled. Skipping {}", evt );
+            return;
+        }
+
         try
         {
             ArtifactStore store = storeDataManager.getArtifactStore( key );
@@ -87,16 +98,14 @@ public class StoreEnablementManager
                 return;
             }
 
-            store = store.copyOf();
-
             int disableTimeout = store.getDisableTimeout();
             if ( disableTimeout <= TIMEOUT_NEVER_DISABLE )
             {
                 logger.debug( "Disable-timeout set to {}, will never disable the repo", disableTimeout );
-                store.setDisabled( false );
             }
             else
             {
+                store = store.copyOf();
                 store.setDisabled( true );
                 final ChangeSummary changeSummary = new ChangeSummary( ChangeSummary.SYSTEM_USER, String.format(
                         "Disabling %s due to error: %s\n\nStack Trace:\n  %s", key, error,
