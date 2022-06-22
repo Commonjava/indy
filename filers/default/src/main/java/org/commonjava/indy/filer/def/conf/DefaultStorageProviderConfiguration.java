@@ -48,6 +48,8 @@ public class DefaultStorageProviderConfiguration
 
     private boolean storageTimeoutEnabled = true;
 
+    private boolean physicalFileExistenceCheckEnabled = false;
+
     public DefaultStorageProviderConfiguration()
     {
     }
@@ -227,5 +229,14 @@ public class DefaultStorageProviderConfiguration
     public void setStorageTimeoutEnabled( boolean storageTimeoutEnabled )
     {
         this.storageTimeoutEnabled = storageTimeoutEnabled;
+    }
+
+    public boolean isPhysicalFileExistenceCheckEnabled() {
+        return physicalFileExistenceCheckEnabled;
+    }
+
+    @ConfigName( "storage.physical.file.existence.check.enabled" )
+    public void setPhysicalFileExistenceCheckEnabled(boolean physicalFileExistenceCheckEnabled) {
+        this.physicalFileExistenceCheckEnabled = physicalFileExistenceCheckEnabled;
     }
 }

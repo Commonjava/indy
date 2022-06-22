@@ -51,6 +51,7 @@ import javax.inject.Inject;
 import java.net.MalformedURLException;
 import java.util.Map;
 
+import static org.commonjava.indy.folo.ctl.FoloConstants.ORIGIN_PATH;
 import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
@@ -79,6 +80,20 @@ public class FoloTrackingListener
         logger.trace( "FILE ACCESS: {}", event );
 
         EventMetadata metadata = event.getEventMetadata();
+
+        final String originPath = (String) metadata.get( ORIGIN_PATH );
+        /*
+         * If a build makes a request to indy-admin service, pnc sends it through generic proxy
+         * where it gets tracked once and then it gets tracked second time on the indy-admin service.
+         * We should avoid the tracker if it sends request through generic proxy and the target is
+         * indy instance,
+         */
+        if ( originPath != null && originPath.contains("api/folo/track") )
+        {
+            logger.trace("NOT tracking content requests from indy itself, path: {}", originPath);
+            return;
+        }
+
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
@@ -112,7 +127,9 @@ public class FoloTrackingListener
                 return;
             }
 
-            logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, transfer.getPath(),
+            final String trackingPath = originPath == null ? transfer.getPath() : originPath;
+
+            logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, trackingPath,
                           keyedLocation.getKey() );
 
             //Here we need to think about npm metadata retrieving case. As almost all npm metadata retrieving is through
@@ -120,7 +137,7 @@ public class FoloTrackingListener
             //so the real path for this transfer should be /$pkg but its current path is /$pkg/package.json. We need to
             //think about if need to do the replacement here, especially for the originalUrl.
             recordManager.recordArtifact(
-                    createEntry( trackingKey, keyedLocation.getKey(), accessChannel, transfer.getPath(),
+                    createEntry( trackingKey, keyedLocation.getKey(), accessChannel, trackingPath,
                                  StoreEffect.DOWNLOAD, event.getEventMetadata() ) );
         }
         catch ( final FoloContentException | IndyWorkflowException e )
