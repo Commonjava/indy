@@ -80,6 +80,20 @@ public class FoloTrackingListener
         logger.trace( "FILE ACCESS: {}", event );
 
         EventMetadata metadata = event.getEventMetadata();
+
+        final String originPath = (String) metadata.get( ORIGIN_PATH );
+        /*
+         * If a build makes a request to indy-admin service, pnc sends it through generic proxy
+         * where it gets tracked once and then it gets tracked second time on the indy-admin service.
+         * We should avoid the tracker if it sends request through generic proxy and the target is
+         * indy instance,
+         */
+        if ( originPath != null && originPath.contains("api/folo/track") )
+        {
+            logger.trace("NOT tracking content requests from indy itself, path: {}", originPath);
+            return;
+        }
+
         final TrackingKey trackingKey = (TrackingKey) metadata.get( FoloConstants.TRACKING_KEY );
         if ( trackingKey == null )
         {
@@ -113,7 +127,7 @@ public class FoloTrackingListener
                 return;
             }
 
-            final String trackingPath = metadata.get( ORIGIN_PATH ) == null ? transfer.getPath() : (String)metadata.get( ORIGIN_PATH );
+            final String trackingPath = originPath == null ? transfer.getPath() : originPath;
 
             logger.trace( "Tracking report: {} += {} in {} (DOWNLOAD)", trackingKey, trackingPath,
                           keyedLocation.getKey() );

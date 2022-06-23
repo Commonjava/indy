@@ -39,6 +39,13 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private boolean mavenMetadataCacheEnabled = TRUE;
 
+    /**
+     * Indy disables a remote store when transfer error happens, and try to re-enable it
+     * after a timeout specified either by global 'storeDisableTimeoutSeconds' or store specific timeout.
+     * Auto disable-and-re-enabling a store may not be very useful. Thus, false by default.
+     */
+    private boolean storeAutoDisableAndReEnable;
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
@@ -84,5 +91,14 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     @ConfigName("maven.metadata.cache.enabled")
     public void setMavenMetadataCacheEnabled(boolean mavenMetadataCacheEnabled) {
         this.mavenMetadataCacheEnabled = mavenMetadataCacheEnabled;
+    }
+
+    public boolean isStoreAutoDisableAndReEnable() {
+        return storeAutoDisableAndReEnable;
+    }
+
+    @ConfigName("store.auto.disable.reenable")
+    public void setStoreAutoDisableAndReEnable(boolean storeAutoDisableAndReEnable) {
+        this.storeAutoDisableAndReEnable = storeAutoDisableAndReEnable;
     }
 }

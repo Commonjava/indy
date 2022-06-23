@@ -19,6 +19,13 @@
 REPO_BASE="indy/var/lib/indy/data/indy"
 ETC_BASE="indy/etc/indy"
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+# Mac OSX, it has no 'realpath' and we use a function
+realpath() {
+    [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
+}
+fi
+
 DIR=$(dirname $(dirname $(realpath $0)))
 if [ "x${TEST_REPOS}" != "x" ]; then
   TEST_REPOS=$(realpath $TEST_REPOS)
