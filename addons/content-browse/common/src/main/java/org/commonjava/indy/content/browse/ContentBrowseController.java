@@ -15,12 +15,14 @@
  */
 package org.commonjava.indy.content.browse;
 
+import org.commonjava.cdi.util.weft.ThreadContext;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
@@ -43,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
 
@@ -89,7 +92,13 @@ public class ContentBrowseController
         String path = requestPath.endsWith( "/" ) ? requestPath : requestPath + "/";
 
         final ArtifactStore store = getStore( key );
+
+        // This is used to let galley ignore the NPMPathStorageCalculator handling,
+        // which will append package.json to a directory transfer and make listing not applicable.
+        ThreadContext context = ThreadContext.getContext( true );
+        context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.TRUE );
         final List<StoreResource> listed = contentManager.list( store, path, eventMetadata );
+        context.put( RequestContextHelper.IS_RAW_VIEW, Boolean.FALSE );
 
         final Map<String, Set<String>> listingUrls = new TreeMap<>();
 
@@ -115,6 +124,11 @@ public class ContentBrowseController
                     if ( p.endsWith( "-" ) || p.endsWith( "-/" ) )
                     {
                         //skip npm adduser path to avoid the sensitive info showing.
+                        //continue;
+                    }
+                    if ( p.contains( NPM_METADATA_NAME ) )
+                    {
+                        //the package.json should not be visible for user
                         continue;
                     }
                     else if ( pass == 1 )

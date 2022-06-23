@@ -83,11 +83,11 @@ public class ScheduleTest
         final String jobName = "org/jboss";
         final String payload = "json_string";
 
-        Long timeout = Long.valueOf( 10 );
+        Long timeout = Long.valueOf( 5 );
 
         scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName, payload, timeout );
 
-        Thread.sleep( 15 * 1000 );
+        Thread.sleep( 10 * 1000 );
 
         DtxSchedule schedule = scheduleDB.querySchedule( storeKey, jobName );
 

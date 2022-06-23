@@ -78,14 +78,14 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     public DefaultArtifactStoreQuery( StoreDataManager dataManager )
     {
-        logger.info( "CREATE new default store query with data manager only" );
+        logger.debug( "CREATE new default store query with data manager only" );
         this.dataManager = dataManager;
     }
 
     private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
                                        final Boolean enabled, final Class<T> storeCls )
     {
-        logger.info( "CREATE new default store query with params (internal?)" );
+        logger.debug( "CREATE new default store query with params (internal?)" );
 
         this.dataManager = dataManager;
         this.packageType = packageType;
