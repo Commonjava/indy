@@ -206,7 +206,7 @@ public class KojiMavenMetadataProvider
 
             if ( storeDataManager instanceof AbstractStoreDataManager )
             {
-                affected = ( (AbstractStoreDataManager) storeDataManager ).filterAffectedGroups( affected );
+                affected = storeDataManager.filterAffectedGroups( affected );
             }
 
             if ( !affected.isEmpty() )

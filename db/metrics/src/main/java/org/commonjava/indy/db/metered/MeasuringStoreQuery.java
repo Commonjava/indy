@@ -50,11 +50,11 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
         this.metricsManager = metricsManager;
     }
 
-    @Override
-    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
-    {
-        return new MeasuringStoreQuery<T>( query.rewrap( manager ), metricsManager );
-    }
+//    @Override
+//    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+//    {
+//        return new MeasuringStoreQuery<T>( query.rewrap( manager ), metricsManager );
+//    }
 
     @Override
     public <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( final Class<C> storeCls )
@@ -84,11 +84,11 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    @Override
-    public boolean isEmpty()
-    {
-        return metricsManager.wrapWithStandardMetrics( () -> query.isEmpty(), () -> "isEmpty" );
-    }
+//    @Override
+//    public boolean isEmpty()
+//    {
+//        return metricsManager.wrapWithStandardMetrics( () -> query.isEmpty(), () -> "isEmpty" );
+//    }
 
     @Override
     public Stream<T> stream()
@@ -144,59 +144,59 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
         return result;
     }
 
-    @Override
-    public Stream<StoreKey> keyStream()
-            throws IndyDataException
-    {
-        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
-        Stream<StoreKey> result = metricsManager.wrapWithStandardMetrics( ()->{
-            try
-            {
-                return query.keyStream();
-            }
-            catch ( IndyDataException e )
-            {
-                errorRef.set( e );
-            }
-
-            return null;
-        }, ()-> "keyStream" );
-
-        IndyDataException error = errorRef.get();
-        if ( error != null )
-        {
-            throw error;
-        }
-
-        return result;
-    }
-
-    @Override
-    public Stream<StoreKey> keyStream( final Predicate<StoreKey> filterPredicate )
-            throws IndyDataException
-    {
-        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
-        Stream<StoreKey> result = metricsManager.wrapWithStandardMetrics( ()->{
-            try
-            {
-                return query.keyStream();
-            }
-            catch ( IndyDataException e )
-            {
-                errorRef.set( e );
-            }
-
-            return null;
-        }, ()-> "keyStream-with-filter" );
-
-        IndyDataException error = errorRef.get();
-        if ( error != null )
-        {
-            throw error;
-        }
-
-        return result;
-    }
+//    @Override
+//    public Stream<StoreKey> keyStream()
+//            throws IndyDataException
+//    {
+//        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+//        Stream<StoreKey> result = metricsManager.wrapWithStandardMetrics( ()->{
+//            try
+//            {
+//                return query.keyStream();
+//            }
+//            catch ( IndyDataException e )
+//            {
+//                errorRef.set( e );
+//            }
+//
+//            return null;
+//        }, ()-> "keyStream" );
+//
+//        IndyDataException error = errorRef.get();
+//        if ( error != null )
+//        {
+//            throw error;
+//        }
+//
+//        return result;
+//    }
+//
+//    @Override
+//    public Stream<StoreKey> keyStream( final Predicate<StoreKey> filterPredicate )
+//            throws IndyDataException
+//    {
+//        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+//        Stream<StoreKey> result = metricsManager.wrapWithStandardMetrics( ()->{
+//            try
+//            {
+//                return query.keyStream();
+//            }
+//            catch ( IndyDataException e )
+//            {
+//                errorRef.set( e );
+//            }
+//
+//            return null;
+//        }, ()-> "keyStream-with-filter" );
+//
+//        IndyDataException error = errorRef.get();
+//        if ( error != null )
+//        {
+//            throw error;
+//        }
+//
+//        return result;
+//    }
 
     @Override
     public List<T> getAll()
@@ -306,32 +306,32 @@ public class MeasuringStoreQuery<T extends ArtifactStore>
         return result;
     }
 
-    @Override
-    public boolean containsByName( final String name )
-            throws IndyDataException
-    {
-        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
-        boolean result = metricsManager.wrapWithStandardMetrics( ()->{
-            try
-            {
-                return query.containsByName( name );
-            }
-            catch ( IndyDataException e )
-            {
-                errorRef.set( e );
-            }
-
-            return null;
-        }, ()-> "containsByName" );
-
-        IndyDataException error = errorRef.get();
-        if ( error != null )
-        {
-            throw error;
-        }
-
-        return result;
-    }
+//    @Override
+//    public boolean containsByName( final String name )
+//            throws IndyDataException
+//    {
+//        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+//        boolean result = metricsManager.wrapWithStandardMetrics( ()->{
+//            try
+//            {
+//                return query.containsByName( name );
+//            }
+//            catch ( IndyDataException e )
+//            {
+//                errorRef.set( e );
+//            }
+//
+//            return null;
+//        }, ()-> "containsByName" );
+//
+//        IndyDataException error = errorRef.get();
+//        if ( error != null )
+//        {
+//            throw error;
+//        }
+//
+//        return result;
+//    }
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey storeKey )

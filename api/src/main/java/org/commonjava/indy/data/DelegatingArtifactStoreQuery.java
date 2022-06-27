@@ -50,12 +50,12 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         return delegate;
     }
 
-    @Override
-    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
-    {
-        delegate.rewrap( manager );
-        return this;
-    }
+//    @Override
+//    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+//    {
+//        delegate.rewrap( manager );
+//        return this;
+//    }
 
     @Override
     public <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( final Class<C> storeCls )
@@ -85,11 +85,11 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    @Override
-    public boolean isEmpty()
-    {
-        return delegate.isEmpty();
-    }
+//    @Override
+//    public boolean isEmpty()
+//    {
+//        return delegate.isEmpty();
+//    }
 
     @Override
     public List<T> getAll()
@@ -112,19 +112,19 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         return delegate.stream( filter );
     }
 
-    @Override
-    public Stream<StoreKey> keyStream()
-            throws IndyDataException
-    {
-        return delegate.keyStream();
-    }
+//    @Override
+//    public Stream<StoreKey> keyStream()
+//            throws IndyDataException
+//    {
+//        return delegate.keyStream();
+//    }
 
-    @Override
-    public Stream<StoreKey> keyStream( final Predicate<StoreKey> filterPredicate )
-            throws IndyDataException
-    {
-        return null;
-    }
+//    @Override
+//    public Stream<StoreKey> keyStream( final Predicate<StoreKey> filterPredicate )
+//            throws IndyDataException
+//    {
+//        return null;
+//    }
 
     @Override
     public List<T> getAll( final Predicate<ArtifactStore> filter )
@@ -147,12 +147,12 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         return delegate.getByName( name );
     }
 
-    @Override
-    public boolean containsByName( final String name )
-            throws IndyDataException
-    {
-        return delegate.containsByName( name );
-    }
+//    @Override
+//    public boolean containsByName( final String name )
+//            throws IndyDataException
+//    {
+//        return delegate.containsByName( name );
+//    }
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey storeKey )
