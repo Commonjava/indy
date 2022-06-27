@@ -350,14 +350,7 @@ public abstract class AbstractStoreDataManager
     @Override
     public boolean isReadonly( final ArtifactStore store )
     {
-        if ( store != null )
-        {
-            if ( store.getKey().getType() == hosted && ( (HostedRepository) store ).isReadonly() )
-            {
-                return true;
-            }
-        }
-        return false;
+        return store != null && store.getKey().getType() == hosted && ( (HostedRepository) store ).isReadonly();
     }
 
     @Override
@@ -461,7 +454,7 @@ public abstract class AbstractStoreDataManager
         return result;
     }
 
-    private Boolean doStore( StoreKey k, ArtifactStore store, ChangeSummary summary,
+    protected Boolean doStore( StoreKey k, ArtifactStore store, ChangeSummary summary,
                              AtomicReference<IndyDataException> error, boolean skipIfExists, boolean fireEvents,
                              EventMetadata eventMetadata )
     {
@@ -518,8 +511,8 @@ public abstract class AbstractStoreDataManager
         return true;
     }
 
-    public void disableNotValidStore(ArtifactStore store,ArtifactStoreValidateData validateData) throws IndyDataException {
-        store.setDisabled(true);
+//    public void disableNotValidStore(ArtifactStore store,ArtifactStoreValidateData validateData) throws IndyDataException {
+//        store.setDisabled(true);
 
         // Problem with this way ( how it is sugested in NOS-1892 issue ) is that this is circular reference
         // Calling storeDataManager.storeArtifactStore()  ( No matter if parameter "skipIfExist" is set to true )
@@ -534,7 +527,7 @@ public abstract class AbstractStoreDataManager
 //            logger.warn("=> Disabling this store has thrown IndyDataException: " + e.getMessage());
 //            throw new IndyDataException("=> Disabling store is not applicable!", null);
 //        }
-    }
+//    }
 
     @Override
     public Set<StoreKey> getStoreKeysByPkg( String pkg )
@@ -566,6 +559,7 @@ public abstract class AbstractStoreDataManager
         return groups;
     }
 
+    @Override
     public Set<Group> affectedBy( final Collection<StoreKey> keys )
             throws IndyDataException
     {
@@ -643,6 +637,7 @@ public abstract class AbstractStoreDataManager
     /**
      * Filter unnecessary affected groups in clean-up process. Most likely to exclude all the temp groups.
      */
+    @Override
     public Set<Group> filterAffectedGroups( Set<Group> affectedGroups )
     {
         if ( affectedGroups == null )

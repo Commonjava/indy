@@ -93,12 +93,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         storeType( storeCls );
     }
 
-    @Override
-    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
-    {
-        this.dataManager = manager;
-        return this;
-    }
+//    @Override
+//    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+//    {
+//        this.dataManager = manager;
+//        return this;
+//    }
 
     @Override
     public <C extends ArtifactStore> DefaultArtifactStoreQuery<C> storeType( Class<C> storeCls )
@@ -139,11 +139,11 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    @Override
-    public boolean isEmpty()
-    {
-        return this.dataManager.isEmpty();
-    }
+//    @Override
+//    public boolean isEmpty()
+//    {
+//        return this.dataManager.isEmpty();
+//    }
 
     @Override
     @Measure
@@ -235,12 +235,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return stream( store -> name.equals( store.getName() ) ).findFirst().orElse( null );
     }
 
-    @Override
-    public boolean containsByName( String name )
-            throws IndyDataException
-    {
-        return getByName( name ) != null;
-    }
+//    @Override
+//    public boolean containsByName( String name )
+//            throws IndyDataException
+//    {
+//        return getByName( name ) != null;
+//    }
 
     @Override
     @Measure
@@ -430,31 +430,31 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return dataManager.affectedBy( keys );
     }
 
-    public Stream<StoreKey> keyStream()
-    {
-        return keyStream( null );
-    }
+//    public Stream<StoreKey> keyStream()
+//    {
+//        return keyStream( null );
+//    }
 
-    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-    {
-        final Stream<StoreKey> storeKeys;
-        if ( StringUtils.isNotBlank( this.packageType ) )
-        {
-            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
-        }
-        else
-        {
-            storeKeys = dataManager.streamArtifactStoreKeys();
-        }
-        return storeKeys.filter(key -> {
-            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
-            {
-                return false;
-            }
-
-            return filterPredicate == null || filterPredicate.test(key);
-        });
-    }
+//    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
+//    {
+//        final Stream<StoreKey> storeKeys;
+//        if ( StringUtils.isNotBlank( this.packageType ) )
+//        {
+//            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
+//        }
+//        else
+//        {
+//            storeKeys = dataManager.streamArtifactStoreKeys();
+//        }
+//        return storeKeys.filter(key -> {
+//            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
+//            {
+//                return false;
+//            }
+//
+//            return filterPredicate == null || filterPredicate.test(key);
+//        });
+//    }
 
     @Override
     public RemoteRepository getRemoteRepository( final String packageType, final String name )

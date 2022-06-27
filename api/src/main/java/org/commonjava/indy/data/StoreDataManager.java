@@ -171,6 +171,8 @@ public interface StoreDataManager
 
     Set<ArtifactStore> getArtifactStoresByPkgAndType( String packageType, StoreType storeType );
 
+    Set<Group> filterAffectedGroups( Set<Group> affectedGroups );
+
     class ContextualTask
     {
         private String threadName;
