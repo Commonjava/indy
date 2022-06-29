@@ -49,6 +49,18 @@
       <artifactId>indy-subsys-flatfile</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy.service</groupId>
+      <artifactId>indy-event-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.maven.archetype</groupId>
       <artifactId>archetype-catalog</artifactId>
     </dependency>
