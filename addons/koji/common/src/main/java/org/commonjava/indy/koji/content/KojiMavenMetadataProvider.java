@@ -48,7 +48,6 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.pkg.PackageTypeConstants;
-import org.commonjava.indy.pkg.maven.content.MetadataCacheManager;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataProvider;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
@@ -112,8 +111,8 @@ public class KojiMavenMetadataProvider
 
     private static final java.lang.String LAST_UPDATED_FORMAT = "yyyyMMddHHmmss";
 
-    @Inject
-    private MetadataCacheManager mavenMetadataCaches;
+//    @Inject
+//    private MetadataCacheManager mavenMetadataCaches;
 
     @Inject
     private StoreDataManager storeDataManager;
@@ -166,11 +165,11 @@ public class KojiMavenMetadataProvider
     {
         if ( versionMetadata.getCache() instanceof RemoteCache )
         {
-            ((RemoteCache)versionMetadata.getCache()).addClientListener( KojiMavenMetadataProvider.this );
+            ((RemoteCache<?, ?>)versionMetadata.getCache()).addClientListener( KojiMavenMetadataProvider.this );
         }
         else
         {
-            (( Cache )versionMetadata.getCache()).addListener( KojiMavenMetadataProvider.this );
+            ((Cache<?, ?>)versionMetadata.getCache()).addListener( KojiMavenMetadataProvider.this );
         }
     }
 
@@ -207,7 +206,7 @@ public class KojiMavenMetadataProvider
 
             if ( storeDataManager instanceof AbstractStoreDataManager )
             {
-                affected = ( (AbstractStoreDataManager) storeDataManager ).filterAffectedGroups( affected );
+                affected = storeDataManager.filterAffectedGroups( affected );
             }
 
             if ( !affected.isEmpty() )
@@ -260,7 +259,7 @@ public class KojiMavenMetadataProvider
             }
             catch ( final IndyWorkflowException | IOException e )
             {
-                logger.error( "Failed to delete generated file (to allow re-generation on demand: {}/{}. Error: {}", e,
+                logger.error( "Failed to delete generated file (to allow re-generation on demand: {}/{}. Error: {}",
                               group.getKey(), path, e.getMessage() );
             }
         } );
@@ -269,7 +268,6 @@ public class KojiMavenMetadataProvider
     @Override
     @Measure
     public Metadata getMetadata( StoreKey targetKey, String path )
-            throws IndyWorkflowException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -342,8 +340,6 @@ public class KojiMavenMetadataProvider
                 catch ( IndyWorkflowException e )
                 {
                     wfError.set( e );
-
-                    metadata = null;
                 }
                 catch ( KojiClientException e )
                 {
@@ -358,7 +354,6 @@ public class KojiMavenMetadataProvider
                         logger.error( "Previous exception's nested cause was a RuntimeException variant:", cause );
                     }
 
-                    metadata = null;
                 }
 
                 if ( metadata != null )
@@ -380,6 +375,7 @@ public class KojiMavenMetadataProvider
                           kojiConfig.getLockTimeoutSeconds() );
             return false;
         } );
+
     }
 
     @Measure
@@ -511,8 +507,8 @@ public class KojiMavenMetadataProvider
             catch ( KojiClientException e )
             {
                 logger.error(
-                        "Received Koji error while scanning archives during metadata-generation of: %s. Reason: %s",
-                        e, ga, e.getMessage() );
+                        "Received Koji error while scanning archives during metadata-generation of: {}. Reason: {}",
+                        ga, e.getMessage() );
             }
 
             return null;
@@ -539,7 +535,7 @@ public class KojiMavenMetadataProvider
             return scan;
         }
 
-        SingleVersion singleVersion = null;
+        SingleVersion singleVersion;
         try
         {
             singleVersion = VersionUtils.createSingleVersion( archive.getVersion() );
@@ -553,7 +549,7 @@ public class KojiMavenMetadataProvider
             return scan;
         }
 
-        KojiBuildInfo build = null;
+        KojiBuildInfo build;
         if ( seenBuilds.contains( archive.getBuildId() ) )
         {
             logger.debug( "Skipping already seen build: {}", archive.getBuildId() );
@@ -639,10 +635,6 @@ public class KojiMavenMetadataProvider
             return true;
         }
 
-        if ( Pattern.compile( versionFilter ).matcher( version ).matches())
-        {
-            return true;
-        }
-        return false;
+        return Pattern.compile( versionFilter ).matcher( version ).matches();
     }
 }
