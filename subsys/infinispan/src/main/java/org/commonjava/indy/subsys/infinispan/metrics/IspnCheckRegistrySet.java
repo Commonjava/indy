@@ -18,6 +18,7 @@ package org.commonjava.indy.subsys.infinispan.metrics;
 import org.commonjava.o11yphant.metrics.api.Gauge;
 import org.commonjava.o11yphant.metrics.api.Metric;
 import org.commonjava.o11yphant.metrics.api.MetricSet;
+import org.commonjava.o11yphant.metrics.sli.GoldenSignalsFunctionMetrics;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -198,6 +199,11 @@ public class IspnCheckRegistrySet
            } );
 
         return gauges;
+    }
+
+    @Override
+    public void reset()
+    {
     }
 
     private <T> T noExceptions( final Supplier<T> task )
