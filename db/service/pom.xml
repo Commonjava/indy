@@ -17,26 +17,42 @@
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-
+  
   <parent>
     <groupId>org.commonjava.indy</groupId>
-    <artifactId>indy-parent</artifactId>
+    <artifactId>indy-db</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-db</artifactId>
-  <packaging>pom</packaging>
-
-  <name>Indy :: DB :: Parent</name>
+  <artifactId>indy-db-repo-service</artifactId>
+  <name>Indy :: DB :: Repository Service</name>
   
-  <modules>
-    <module>common</module>
-    <module>memory</module>
-    <module>flat</module>
-    <module>infinispan</module>
-    <module>metrics</module>
-    <module>cassandra</module>
-    <module>service</module>
-  </modules>
-  
+  <dependencies>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-service</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-db</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>http-testserver</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
 </project>

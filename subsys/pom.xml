@@ -43,6 +43,7 @@
     <module>prefetch</module>
     <module>kafka</module>
     <module>cpool</module>
+    <module>service</module>
   </modules>
   
 </project>
