@@ -36,10 +36,23 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-core</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.commonjava.indy.service</groupId>
+      <artifactId>indy-event-model</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>org.jboss.slf4j</groupId>
+          <artifactId>slf4j-jboss-logmanager</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-streams</artifactId>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
