@@ -1130,12 +1130,12 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.10</version>
+        <version>1.15</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.19</version>
+        <version>1.21</version>
       </dependency>
 
       <!-- START: JAX-RS support -->
@@ -1313,7 +1313,7 @@
       <dependency>
         <groupId>org.apache.maven.archetype</groupId>
         <artifactId>archetype-catalog</artifactId>
-        <version>2.4</version>
+        <version>3.2.1</version>
       </dependency>
       <!-- Some dependency problems caused a old plexus-utils(2.0.6) is used which have cve, so forced to 3.0.21 -->
       <dependency>
@@ -1336,7 +1336,7 @@
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
-        <version>2.2.1</version>
+        <version>2.4.21</version>
       </dependency>
       
       <dependency>
