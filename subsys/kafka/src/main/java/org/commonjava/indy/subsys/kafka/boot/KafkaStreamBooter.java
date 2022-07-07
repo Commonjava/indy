@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.core.boot;
+package org.commonjava.indy.subsys.kafka.boot;
 
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -23,55 +23,74 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.commonjava.indy.action.BootupAction;
+import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
+import org.commonjava.indy.subsys.kafka.handler.ServiceEventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Properties;
 
 @ApplicationScoped
-public class KafkaStreamClientBuilder
-        implements BootupAction {
+public class KafkaStreamBooter
+                implements BootupAction
+{
+
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-//    @Inject
-//    RepoServiceEventHandler repoServiceEventHandler;
+    @Inject
+    ServiceEventHandler serviceEventHandler;
+
+    @Inject
+    private KafkaConfig config;
 
     @Override
-    public void init() {
-        logger.info( "Start build kafka streaming" );
+    public void init() throws IndyLifecycleException
+    {
+
+        if ( !config.isEnabled() )
+        {
+            logger.warn( "Kafka stream is disabled, this will effect communicating with the microservices." );
+            return;
+        }
+        logger.info( "Start init kafka streaming" );
 
         final Serde<String> stringSerde = Serdes.String();
         final StreamsBuilder builder = new StreamsBuilder();
 
-        KStream<String, String> views = builder.stream(
-                "store-event",
-                Consumed.with( stringSerde, stringSerde )
-        );
-//        repoServiceEventHandler.dispatchEvent( views );
+        for ( String topic : config.getTopics() )
+        {
+            KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
+            serviceEventHandler.dispatchEvent( stream, topic );
+        }
 
         final Properties props = new Properties();
-        props.putIfAbsent( StreamsConfig.APPLICATION_ID_CONFIG, "k-streams-group" );
-        props.putIfAbsent( StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092" );
+        props.putIfAbsent( StreamsConfig.APPLICATION_ID_CONFIG, config.getGroup() );
+        props.putIfAbsent( StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers() );
 
         final KafkaStreams streams = new KafkaStreams( builder.build(), props );
-
         try
         {
             streams.start();
-        } catch ( final Throwable e )
+        }
+        catch ( final Throwable e )
         {
+            logger.error( "Exception during start kafka streaming, will exit." );
             System.exit( 1 );
         }
     }
 
     @Override
-    public String getId() {
-        return "kafka streams build";
+    public String getId()
+    {
+        return "kafka streaming boot";
     }
 
     @Override
-    public int getBootPriority() {
+    public int getBootPriority()
+    {
         return 100;
     }
 }

@@ -90,7 +90,7 @@
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.8</galleyVersion>
     <weftVersion>1.20</weftVersion>
-    <bomVersion>27-SNAPSHOT</bomVersion>
+    <bomVersion>28-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
@@ -621,6 +621,19 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-kafka</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-subsys-kafka</artifactId>
+        <version>3.0.0-SNAPSHOT</version>
+        <type>tar.gz</type>
+        <classifier>confset</classifier>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
         <version>3.0.0-SNAPSHOT</version>
         <type>tar.gz</type>
@@ -815,6 +828,12 @@
         <groupId>org.commonjava.indy.service</groupId>
         <artifactId>indy-event-model</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jboss.slf4j</groupId>
+            <artifactId>slf4j-jboss-logmanager</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>io.agroal</groupId>

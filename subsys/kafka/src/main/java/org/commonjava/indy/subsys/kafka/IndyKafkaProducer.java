@@ -18,7 +18,7 @@ package org.commonjava.indy.subsys.kafka;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
+import org.commonjava.indy.subsys.kafka.conf.LogKafkaConfig;
 import org.commonjava.indy.subsys.kafka.util.LogbackFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +41,7 @@ public class IndyKafkaProducer
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private KafkaConfig config;
+    private LogKafkaConfig config;
 
     private KafkaProducer kafkaProducer;
 
