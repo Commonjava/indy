@@ -201,6 +201,10 @@ public class ResponseHelper
                 logger.debug( "Adding Content-Length header: {}", item.length() );
 
                 builder.header( ApplicationHeader.content_length.key(), item.length() );
+
+                logger.debug( "Removing Transfer-Encoding header if Content-Length header already set." );
+
+                builder.header( ApplicationHeader.transfer_encoding.key(), null );
             }
 
             if ( !conTypeSet )
