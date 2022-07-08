@@ -24,6 +24,7 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 
+@Deprecated
 @SectionName( "log-kafka" )
 @ApplicationScoped
 public class LogKafkaConfig extends MapSectionListener

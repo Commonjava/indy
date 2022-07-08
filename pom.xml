@@ -90,7 +90,7 @@
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.8</galleyVersion>
     <weftVersion>1.20</weftVersion>
-    <bomVersion>28-SNAPSHOT</bomVersion>
+    <bomVersion>27</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
