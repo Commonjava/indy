@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.streams.kstream.KStream;
 import org.commonjava.event.store.AbstractStoreUpdateEvent;
 import org.commonjava.event.store.EventStoreKey;
+import org.commonjava.event.store.StoreEnablementEvent;
 import org.commonjava.event.store.StorePostUpdateEvent;
 import org.commonjava.event.store.StorePreUpdateEvent;
 import org.commonjava.indy.action.IndyLifecycleException;
@@ -77,7 +78,7 @@ public class RepoServiceEventHandler
             try
             {
                 final DefualtIndyStoreEvent storeEvent = mapper.readValue( value, DefualtIndyStoreEvent.class );
-                logger.debug( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
+                logger.info( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
                 final Map<EventStoreKey, ArtifactStore> storeMap = getStoreMap( storeEvent );
                 final ArtifactStore[] stores = storeMap.values().toArray( new ArtifactStore[storeMap.size()] );
                 final EventMetadata eventMetadata = convertEventMetadata( storeEvent );
@@ -102,8 +103,29 @@ public class RepoServiceEventHandler
                         dispatcher.updating( ArtifactStoreUpdateType.valueOf( postUpdateEvent.getUpdateType().name() ),
                                              eventMetadata, changeMap );
                         break;
+                    case Enablement:
+                        StoreEnablementEvent enablementEvent = mapper.readValue( value, StoreEnablementEvent.class );
+                        boolean disabling = enablementEvent.isDisabling();
+                        boolean preprocessing = enablementEvent.isPreprocessing();
+                        if (!disabling && preprocessing)
+                        {
+                            dispatcher.enabling( eventMetadata, stores );
+                        }
+                        if ( !disabling && !preprocessing )
+                        {
+                            dispatcher.enabled( eventMetadata, stores );
+                        }
+                        if ( disabling && preprocessing )
+                        {
+                            dispatcher.disabling( eventMetadata, stores );
+                        }
+                        if ( disabling && !preprocessing )
+                        {
+                            dispatcher.disabled( eventMetadata, stores );
+                        }
+                        break;
                 }
-                logger.debug( "Finish the consumer event dispatcher for event type {}",
+                logger.info( "Finish the consumer event dispatcher for event type {}",
                               storeEvent.getEventType().name() );
             }
             catch ( JsonProcessingException e )
