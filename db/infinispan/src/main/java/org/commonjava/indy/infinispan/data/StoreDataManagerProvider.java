@@ -15,10 +15,11 @@
  */
 package org.commonjava.indy.infinispan.data;
 
-import org.commonjava.indy.cassandra.data.ClusterStoreDataManager;
 import org.commonjava.indy.core.conf.IndyDurableStateConfig;
-import org.commonjava.indy.data.StandaloneStoreDataManager;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.db.common.inject.Clustered;
+import org.commonjava.indy.db.common.inject.Serviced;
+import org.commonjava.indy.db.common.inject.Standalone;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
@@ -35,8 +36,9 @@ public class StoreDataManagerProvider
     @Produces
     @Default
     public StoreDataManager getStoreDataManager(
-                    @StandaloneStoreDataManager InfinispanStoreDataManager ispnStoreDataManager,
-                    @ClusterStoreDataManager StoreDataManager clusterStoreDataManager )
+            @Standalone StoreDataManager ispnStoreDataManager,
+            @Clustered StoreDataManager clusterStoreDataManager,
+            @Serviced StoreDataManager serviceStoreDataManager )
     {
         if ( IndyDurableStateConfig.STORAGE_INFINISPAN.equals( durableStateConfig.getStoreStorage() ) )
         {
@@ -45,6 +47,10 @@ public class StoreDataManagerProvider
         else if ( IndyDurableStateConfig.STORAGE_CASSANDRA.equals( durableStateConfig.getStoreStorage()) )
         {
             return clusterStoreDataManager;
+        }
+        else if ( IndyDurableStateConfig.STORAGE_SERVICE.equals( durableStateConfig.getStoreStorage()) )
+        {
+            return serviceStoreDataManager;
         }
         else
         {

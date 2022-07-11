@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+/*
+ * Copyright (c) 2022 Red Hat, Inc
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.cassandra.data;
+package org.commonjava.indy.db.common.inject;
 
 import javax.inject.Qualifier;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
+/**
+ * Qualifier used to supply the storeDataManager in standalone mode.
+ */
 @Qualifier
 @Target( { ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @Retention( RetentionPolicy.RUNTIME)
 @Documented
-public @interface ClusterStoreDataManager
+public @interface Standalone
 {
 }

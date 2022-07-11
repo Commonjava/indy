@@ -26,6 +26,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.db.common.StoreUpdateAction;
+import org.commonjava.indy.db.common.inject.Serviced;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -35,7 +36,6 @@ import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.service.inject.ServiceClient;
 import org.commonjava.indy.util.ApplicationStatus;
-import org.commonjava.indy.util.ValuePipe;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +57,7 @@ import static java.util.Collections.emptySet;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @ApplicationScoped
+@Serviced
 public class ServiceStoreDataManager
         extends AbstractStoreDataManager
         implements StoreDataManager
