@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.db.common;
 
-import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -153,17 +152,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return stream().collect( Collectors.toList() );
     }
 
-    @Override
     @Measure
-    public Stream<T> stream()
+    private Stream<T> stream()
             throws IndyDataException
     {
         return stream( store -> true );
     }
 
-    @Override
     @Measure
-    public Stream<T> stream( Predicate<ArtifactStore> filter )
+    private Stream<T> stream( Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
         /* @formatter:off */
@@ -307,15 +304,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 return false;
             }
 
-            if ( targetUrlInfo != null )
+            if ( urlInfo.getUrlWithNoSchemeAndLastSlash().equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
+                    && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ) )
             {
-                if ( urlInfo.getUrlWithNoSchemeAndLastSlash().equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
-                                && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ) )
-                {
-                    logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
-                                  store.getKey() );
-                    return true;
-                }
+                logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                              store.getKey() );
+                return true;
             }
 
             return false;
@@ -429,32 +423,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     {
         return dataManager.affectedBy( keys );
     }
-
-//    public Stream<StoreKey> keyStream()
-//    {
-//        return keyStream( null );
-//    }
-
-//    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-//    {
-//        final Stream<StoreKey> storeKeys;
-//        if ( StringUtils.isNotBlank( this.packageType ) )
-//        {
-//            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
-//        }
-//        else
-//        {
-//            storeKeys = dataManager.streamArtifactStoreKeys();
-//        }
-//        return storeKeys.filter(key -> {
-//            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
-//            {
-//                return false;
-//            }
-//
-//            return filterPredicate == null || filterPredicate.test(key);
-//        });
-//    }
 
     @Override
     public RemoteRepository getRemoteRepository( final String packageType, final String name )

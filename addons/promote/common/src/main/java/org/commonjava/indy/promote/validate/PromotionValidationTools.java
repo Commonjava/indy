@@ -612,6 +612,10 @@ public class PromotionValidationTools
         return storeDataManager.getArtifactStore( key );
     }
 
+    /**
+     * @deprecated This method is not used anywhere, so may be removed later
+     */
+    @Deprecated
     public Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException
     {

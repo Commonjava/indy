@@ -251,9 +251,9 @@ public class CacheProducer
     public synchronized <K, V> BasicCacheHandle<K, V> getBasicCache( String named )
     {
         BasicCacheHandle handle = caches.computeIfAbsent( named, ( k ) -> {
-            if ( remoteConfiguration.isEnabled() )
+            if ( remoteConfiguration != null && remoteConfiguration.isEnabled() )
             {
-                RemoteCache<K, V> cache = null;
+                RemoteCache<K, V> cache;
                 try
                 {
                     // For infinispan 9.x, it needs to load the specific cache configuration to create it

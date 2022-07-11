@@ -125,9 +125,7 @@ public class AdminController
         {
             if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
             {
-                return storeManager.getArtifactStoresByPkgAndType( packageType, type )
-                                   .stream()
-                                   .collect( Collectors.toList() );
+                return new ArrayList<>( storeManager.getArtifactStoresByPkgAndType( packageType, type ) );
             }
             else
             {

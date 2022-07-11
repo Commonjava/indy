@@ -1,0 +1,17 @@
+{
+  "type" : "group",
+  "key" : "npm:group:public",
+  "description" : "This group collects public repos.",
+  "metadata" : {
+    "changelog" : ""
+  },
+  "disabled" : false,
+  "constituents" : [ "npm:remote:npmjs" ],
+  "name" : "public",
+  "packageType" : "npm",
+  "disable_timeout" : -1,
+  "path_style" : "plain",
+  "authoritative_index" : false,
+  "create_time" : "2019-12-12 21:06:58 +0000",
+  "prepend_constituent" : false
+}

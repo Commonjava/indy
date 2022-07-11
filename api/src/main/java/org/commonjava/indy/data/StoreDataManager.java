@@ -75,13 +75,17 @@ public interface StoreDataManager
 
     /**
      * Return the full list of {@link ArtifactStore} instances of a given {@link StoreType} (hosted, remote, or group) available on the system.
+     * @deprecated We should avoid to call this method in new microservice architecture due to performance consideration
      */
+    @Deprecated
     Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException;
 
     /**
      * Return the {@link ArtifactStore} instances as a {@link Stream}.
+     * @deprecated We should avoid to call this method in new microservice architecture due to performance consideration
      */
+    @Deprecated
     Stream<ArtifactStore> streamArtifactStores()
             throws IndyDataException;
 
