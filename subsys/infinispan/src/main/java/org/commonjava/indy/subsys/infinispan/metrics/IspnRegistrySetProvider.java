@@ -80,4 +80,10 @@ public class IspnRegistrySetProvider
     {
         return metricsConfig.isIspnMetricsEnabled();
     }
+
+    @Override
+    public void reset()
+    {
+        getMetricSet().reset();
+    }
 }

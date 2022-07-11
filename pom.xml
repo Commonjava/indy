@@ -60,7 +60,7 @@
     <!-- thirdparty projects -->
     <javaVersion>1.8</javaVersion>
     <slf4j-version>1.7.36</slf4j-version>
-    <infinispanVersion>9.4.23.Final</infinispanVersion>
+    <infinispanVersion>9.4.24.Final</infinispanVersion>
     <!--<luceneVersion>7.3.0</luceneVersion>-->
     <protostreamVersion>4.3.0.Final</protostreamVersion>
     <gsonVersion>2.8.9</gsonVersion>
@@ -71,7 +71,7 @@
     <keycloakVersion>7.0.1</keycloakVersion>
     <bouncycastleVersion>1.64</bouncycastleVersion>
     <bytemanVersion>4.0.13</bytemanVersion>
-    <kafkaVersion>1.1.0</kafkaVersion>
+    <kafkaVersion>3.1.1</kafkaVersion>
     <logbackVersion>1.2.9</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
@@ -83,7 +83,7 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
-    <o11yphantVersion>1.4</o11yphantVersion>
+    <o11yphantVersion>1.5-SNAPSHOT</o11yphantVersion>
     <swaggerVersion>1.6.4</swaggerVersion>
 
     <!-- commonjava/redhat projects -->
@@ -1130,12 +1130,12 @@
       <dependency>
         <groupId>commons-codec</groupId>
         <artifactId>commons-codec</artifactId>
-        <version>1.10</version>
+        <version>1.15</version>
       </dependency>
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-compress</artifactId>
-        <version>1.19</version>
+        <version>1.21</version>
       </dependency>
 
       <!-- START: JAX-RS support -->
@@ -1313,7 +1313,7 @@
       <dependency>
         <groupId>org.apache.maven.archetype</groupId>
         <artifactId>archetype-catalog</artifactId>
-        <version>2.4</version>
+        <version>3.2.1</version>
       </dependency>
       <!-- Some dependency problems caused a old plexus-utils(2.0.6) is used which have cve, so forced to 3.0.21 -->
       <dependency>
@@ -1336,7 +1336,7 @@
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
-        <version>2.2.1</version>
+        <version>2.4.21</version>
       </dependency>
       
       <dependency>
@@ -1571,11 +1571,13 @@
         <artifactId>logback-core</artifactId>
         <version>${logbackVersion}</version>
       </dependency>
+      <!--
       <dependency>
         <groupId>com.github.danielwegener</groupId>
         <artifactId>logback-kafka-appender</artifactId>
         <version>0.2.0-RC2</version>
       </dependency>
+      -->
       <dependency>
         <groupId>ch.qos.logback.contrib</groupId>
         <artifactId>logback-json-classic</artifactId>
@@ -1724,10 +1726,12 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
     </dependency>
+    <!--
     <dependency>
       <groupId>com.github.danielwegener</groupId>
       <artifactId>logback-kafka-appender</artifactId>
     </dependency>
+    -->
     <dependency>
       <groupId>ch.qos.logback.contrib</groupId>
       <artifactId>logback-json-classic</artifactId>

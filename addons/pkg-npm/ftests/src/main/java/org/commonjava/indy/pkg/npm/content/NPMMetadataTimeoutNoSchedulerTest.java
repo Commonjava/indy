@@ -28,11 +28,12 @@ import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case tests if remote package.json will time out by using ONLY storage level timeout.
@@ -143,7 +144,7 @@ public class NPMMetadataTimeoutNoSchedulerTest
         try (InputStream remote = client.content().get( repo.getKey(), path ))
         {
             assertThat( remote, notNullValue() );
-            String json = IOUtils.toString( remote );
+            String json = IOUtils.toString( remote, Charset.defaultCharset() );
             PackageMetadata merged =
                     new IndyObjectMapper( true ).readValue( json, PackageMetadata.class );
 
