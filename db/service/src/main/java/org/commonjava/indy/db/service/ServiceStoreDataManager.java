@@ -127,7 +127,7 @@ public class ServiceStoreDataManager
             {
                 Class<ArtifactStore> storeCls = (Class<ArtifactStore>) key.getType().getStoreClass();
                 client.module( IndyStoresClientModule.class )
-                      .create( store, String.format( "Remove store %s", key ), storeCls );
+                      .create( store, String.format( "Create store %s", key ), storeCls );
                 return store;
             }
             catch ( IndyClientException e )
