@@ -18,7 +18,7 @@ package org.commonjava.indy.infinispan.data;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
-import org.commonjava.indy.data.StandaloneStoreDataManager;
+import org.commonjava.indy.db.common.inject.Standalone;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -50,7 +50,7 @@ import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_D
 import static org.commonjava.indy.model.core.StoreType.group;
 
 @ApplicationScoped
-@StandaloneStoreDataManager
+@Standalone
 public class InfinispanStoreDataManager
                 extends AbstractStoreDataManager
 {

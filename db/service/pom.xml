@@ -24,7 +24,7 @@
     <version>3.0.0-SNAPSHOT</version>
   </parent>
   
-  <artifactId>indy-db-repo-service</artifactId>
+  <artifactId>indy-db-service</artifactId>
   <name>Indy :: DB :: Repository Service</name>
   
   <dependencies>

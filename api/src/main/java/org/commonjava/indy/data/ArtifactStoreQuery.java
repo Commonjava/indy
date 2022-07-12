@@ -43,7 +43,6 @@ import java.util.stream.Stream;
  */
 public interface ArtifactStoreQuery<T extends ArtifactStore>
 {
-//    ArtifactStoreQuery<T> rewrap( StoreDataManager manager );
 
     <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( Class<C> storeCls );
 
@@ -55,21 +54,8 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
 
 //    boolean isEmpty();
 
-    @Deprecated
     List<T> getAll()
             throws IndyDataException;
-
-    Stream<T> stream()
-            throws IndyDataException;
-
-    Stream<T> stream( Predicate<ArtifactStore> filter )
-            throws IndyDataException;
-
-//    Stream<StoreKey> keyStream()
-//            throws IndyDataException;
-//
-//    Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-//            throws IndyDataException;
 
     @Deprecated
     List<T> getAll( Predicate<ArtifactStore> filter )
@@ -80,9 +66,6 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
 
     T getByName( String name )
             throws IndyDataException;
-
-//    boolean containsByName( String name )
-//            throws IndyDataException;
 
     Set<Group> getGroupsContaining( StoreKey storeKey )
             throws IndyDataException;

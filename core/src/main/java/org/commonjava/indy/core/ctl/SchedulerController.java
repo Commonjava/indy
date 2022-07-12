@@ -93,12 +93,11 @@ public class SchedulerController
             ExpirationSet expirations = scheduleManager.findMatchingExpirations( StoreEnablementManager.DISABLE_TIMEOUT );
 
             // TODO: This seems REALLY inefficient...
-            storeDataManager.getAllArtifactStores().forEach( (store)->{
-                if ( store.isDisabled() )
-                {
-                    expirations.getItems().add( indefiniteDisable( store ) );
-                }
-            });
+            storeDataManager.query()
+                            .enabledState( false )
+                            .noPackageType()
+                            .getAll()
+                            .forEach( s -> expirations.getItems().add( indefiniteDisable( s ) ) );
 
             return expirations;
         }

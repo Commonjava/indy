@@ -131,13 +131,19 @@ public class StatsController
         return versioning;
     }
 
+    /**
+     * @deprecated In new microservice architecture, all repository management functions are managed by
+     *             repository service, so this repository viewing functions should be triggered in
+     *             repository service but not here.
+     */
+    @Deprecated
     public EndpointViewListing getEndpointsListing( final String baseUri, final UriFormatter uriFormatter )
-        throws IndyWorkflowException
+            throws IndyWorkflowException
     {
-        final List<ArtifactStore> stores = new ArrayList<ArtifactStore>();
+        final List<ArtifactStore> stores;
         try
         {
-            stores.addAll( dataManager.getAllArtifactStores() );
+            stores = new ArrayList<>( dataManager.getAllArtifactStores() );
         }
         catch ( final IndyDataException e )
         {

@@ -130,11 +130,14 @@ public class StatsHandler
         return Response.ok( new TreeSet<>( PackageTypes.getPackageTypes() ) ).build();
     }
 
-    @ApiOperation( "Retrieve a listing of the artifact stores available on the system. This is especially useful for setting up a network of Indy instances that reference one another" )
+    @ApiOperation( "Retrieve a listing of the artifact stores available on the system. "
+            + "This is especially useful for setting up a network of Indy instances that reference one another."
+            + "Note: this method is deprecated as repository management is moved to standalone repository service." )
     @ApiResponse( code = 200, response = EndpointViewListing.class, message = "The artifact store listing" )
     @Path( "/all-endpoints" )
     @GET
     @Produces( ApplicationContent.application_json )
+    @Deprecated
     public Response getAllEndpoints( @Context final UriInfo uriInfo )
     {
         Response response;

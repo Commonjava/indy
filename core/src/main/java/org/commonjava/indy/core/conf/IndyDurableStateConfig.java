@@ -37,6 +37,8 @@ public class IndyDurableStateConfig
 
     public static final String STORAGE_CASSANDRA = "cassandra";
 
+    public static final String STORAGE_SERVICE = "service";
+
     private String foloStorage;
 
     private String storeStorage;

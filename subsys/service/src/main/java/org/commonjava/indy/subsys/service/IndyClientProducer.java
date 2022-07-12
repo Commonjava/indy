@@ -47,7 +47,7 @@ public class IndyClientProducer
     {
     }
 
-    protected IndyClientProducer( final RepositoryServiceConfig serviceConfig )
+    public IndyClientProducer( final RepositoryServiceConfig serviceConfig )
     {
         // For unit testing
         this.serviceConfig = serviceConfig;
