@@ -60,6 +60,11 @@ public class KafkaStreamBooter
         final Serde<String> stringSerde = Serdes.String();
         final StreamsBuilder builder = new StreamsBuilder();
 
+        if ( config.getTopics() == null )
+        {
+            logger.warn( "Don't find topics configured in config, will not start kafka consumer streaming." );
+            return;
+        }
         for ( String topic : config.getTopics() )
         {
             KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
