@@ -76,6 +76,10 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-kafka</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-prefetch</artifactId>
     </dependency>
     <dependency>

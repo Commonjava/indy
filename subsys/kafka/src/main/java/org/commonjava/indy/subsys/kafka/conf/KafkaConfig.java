@@ -16,23 +16,35 @@
 package org.commonjava.indy.subsys.kafka.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
-import org.commonjava.propulsor.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @SectionName( "kafka" )
 @ApplicationScoped
-public class KafkaConfig extends MapSectionListener
-        implements IndyConfigInfo
+public class KafkaConfig
+                implements IndyConfigInfo
 {
 
-    private static final boolean DEFAULT_ENABLED = false;
+    private static final String DEFAULT_BOOTSTRP_SERVERS = "127.0.0.1:9092";
+
+    private static final String DEFAULT_GROUP = "kstreams-group";
+
+    private static final boolean DEFAULT_ENABLED = true;
 
     private Boolean enabled;
+
+    private String bootstrapServers;
+
+    private List<String> topics;
+
+    private String group;
 
     public KafkaConfig()
     {
@@ -43,14 +55,50 @@ public class KafkaConfig extends MapSectionListener
         return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
-    @Override
-    public void sectionComplete(String name) throws ConfigurationException
+    public Boolean getEnabled()
     {
-        String s = getConfiguration().get( "enabled" );
-        if ( s != null)
-        {
-            this.enabled = Boolean.parseBoolean( s );
-        }
+        return enabled;
+    }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( final boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
+    public String getBootstrapServers()
+    {
+        return bootstrapServers == null ? DEFAULT_BOOTSTRP_SERVERS : bootstrapServers;
+    }
+
+    @ConfigName( "kafka.bootstrap.servers" )
+    public void setBootstrapServers( final String bootstrapServers )
+    {
+        this.bootstrapServers = bootstrapServers;
+    }
+
+    public List<String> getTopics()
+    {
+        return topics;
+    }
+
+    @ConfigName( "kafka.topics" )
+    public void setTopics( final String topic )
+    {
+        String[] topicArray = topic.split( "," );
+        this.topics = new ArrayList<>();
+        this.topics.addAll( Arrays.asList( topicArray ) );
+    }
+
+    public String getGroup()
+    {
+        return group == null ? DEFAULT_GROUP : group;
+    }
+
+    @ConfigName( "kafka.group" )
+    public void setGroup( final String group )
+    {
+        this.group = group;
     }
 
     @Override

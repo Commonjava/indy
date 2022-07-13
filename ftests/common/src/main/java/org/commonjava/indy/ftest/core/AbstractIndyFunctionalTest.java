@@ -305,6 +305,12 @@ public abstract class AbstractIndyFunctionalTest
                         + "store.storage=infinispan\n"
                         + "schedule.storage=infinispan");
 
+        writeConfigFile( "conf.d/kafka.conf", "[kafka]\n"
+                        + "enabled=true\n"
+                        + "kafka.bootstrap.servers=127.0.0.1:9092\n"
+                        + "kafka.topics=store-event\n"
+                        + "kafka.group=kstreams-group");
+
         writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo" + "\ntrack.group.content=True");
 
         if ( isSchedulerEnabled() )

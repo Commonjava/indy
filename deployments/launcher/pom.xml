@@ -165,6 +165,12 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-kafka</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
