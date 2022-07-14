@@ -1608,6 +1608,12 @@
         <version>${kafkaVersion}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-streams-test-utils</artifactId>
+        <version>${kafkaVersion}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
         <version>${logbackVersion}</version>

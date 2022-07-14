@@ -173,7 +173,7 @@ public class RepoServiceEventHandler
                              eventStoreKey.getStoreName() );
     }
 
-    private EventMetadata convertEventMetadata( DefualtIndyStoreEvent storeEvent )
+    public EventMetadata convertEventMetadata( DefualtIndyStoreEvent storeEvent )
     {
         org.commonjava.event.common.EventMetadata metadata = storeEvent.getEventMetadata();
         final EventMetadata eventMetadata = new EventMetadata( metadata.getPackageType() );

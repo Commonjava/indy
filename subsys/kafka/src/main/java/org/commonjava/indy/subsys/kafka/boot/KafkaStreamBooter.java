@@ -82,8 +82,7 @@ public class KafkaStreamBooter
         }
         catch ( final Throwable e )
         {
-            logger.error( "Exception during start kafka streaming, will exit." );
-            System.exit( 1 );
+            throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
         }
     }
 
