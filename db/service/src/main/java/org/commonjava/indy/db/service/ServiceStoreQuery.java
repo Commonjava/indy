@@ -66,17 +66,6 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         this.client = dataManager.getIndyClient();
     }
 
-    protected ServiceStoreQuery( final ServiceStoreDataManager dataManager, final String packageType,
-                                 final Boolean enabled, final Class<T> storeCls )
-    {
-        logger.trace( "CREATE new service store query with params (internal?)" );
-        this.dataManager = dataManager;
-        this.client = dataManager.getIndyClient();
-        this.packageType = packageType;
-        this.enabled = enabled;
-        storeType( storeCls );
-    }
-
     @Override
     public <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( Class<C> storeCls )
     {
@@ -101,6 +90,11 @@ public class ServiceStoreQuery<T extends ArtifactStore>
     public ArtifactStoreQuery<T> storeTypes( StoreType... types )
     {
         this.types = new HashSet<>( Arrays.asList( types ) );
+        return this;
+    }
+
+    ArtifactStoreQuery<T> noTypes(){
+        this.types = Collections.emptySet();
         return this;
     }
 
@@ -348,10 +342,15 @@ public class ServiceStoreQuery<T extends ArtifactStore>
 
     ArtifactStoreQuery<T> packageType( final String packageType )
     {
-        if ( PackageTypeConstants.isValidPackageType( packageType ) )
+        if ( packageType == null )
+        {
+            this.noPackageType();
+        }
+        else if ( PackageTypeConstants.isValidPackageType( packageType ) )
         {
             this.packageType = packageType;
         }
+
         return this;
     }
 

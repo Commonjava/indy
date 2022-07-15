@@ -44,6 +44,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -71,11 +72,14 @@ public class ServiceStoreDataManager
     @Inject
     private CacheProducer cacheProducer;
 
+    private ServiceStoreQuery<ArtifactStore> serviceStoreQuery;
+
     private final String ARTIFACT_STORE = "artifact-store";
 
     private final Integer STORE_EXPIRATION_IN_MINS = 15;
 
-    protected ServiceStoreDataManager()
+    @SuppressWarnings( "unused" )
+    ServiceStoreDataManager()
     {
     }
 
@@ -164,7 +168,7 @@ public class ServiceStoreDataManager
             throws IndyDataException
     {
         // TODO: Need to check all usage of this method and optimize to use more specific query methods.
-        return new HashSet<>( ( (ServiceStoreQuery) query() ).noPackageType().getAll() );
+        return new HashSet<>( queryInternal().noPackageType().getAll() );
     }
 
     @Override
@@ -196,8 +200,7 @@ public class ServiceStoreDataManager
     {
         try
         {
-            return new HashSet<>(
-                    ( (ServiceStoreQuery) query() ).packageType( packageType ).storeTypes( storeType ).getAll() );
+            return new HashSet<>( queryInternal().packageType( packageType ).storeTypes( storeType ).getAll() );
         }
         catch ( IndyDataException e )
         {
@@ -253,7 +256,7 @@ public class ServiceStoreDataManager
     {
         try
         {
-            return ( (ServiceStoreQuery) query() ).isEmpty();
+            return queryInternal().isEmpty();
         }
         catch ( IndyDataException e )
         {
@@ -281,10 +284,20 @@ public class ServiceStoreDataManager
     }
 
     @Override
+    @Deprecated
     public Set<StoreKey> getStoreKeysByPkg( String pkg )
     {
-        // TODO: waiting for implementation
-        return null;
+        //TODO: seems this method is not used anywhere, so may be removed in future
+        try
+        {
+            List<ArtifactStore> stores = queryInternal().packageType( pkg ).getAll();
+            return stores.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() );
+        }
+        catch ( IndyDataException e )
+        {
+            logger.error( "An error happened when get store keys by pkg: {}", e.getMessage() );
+            throw new RuntimeException( e );
+        }
     }
 
     @Override
@@ -299,9 +312,8 @@ public class ServiceStoreDataManager
     public Set<Group> affectedBy( Collection<StoreKey> keys )
             throws IndyDataException
     {
-        return ((ServiceStoreQuery)query()).getGroupsAffectedBy( keys );
+        return queryInternal().getGroupsAffectedBy( keys );
     }
-
 
     // Override methods in AbstractStoreDataManager from here
 
@@ -309,6 +321,17 @@ public class ServiceStoreDataManager
     public ArtifactStoreQuery<ArtifactStore> query()
     {
         return new ServiceStoreQuery<>( this );
+    }
+
+    // This method is a replacement of the query() for internal usage of this class to avoid
+    // duplicated objects creation
+    private synchronized ServiceStoreQuery<ArtifactStore> queryInternal()
+    {
+        if ( this.serviceStoreQuery == null )
+        {
+            this.serviceStoreQuery = new ServiceStoreQuery<>( this );
+        }
+        return this.serviceStoreQuery;
     }
 
     @Override
@@ -356,21 +379,8 @@ public class ServiceStoreDataManager
         {
             return emptySet();
         }
-        //        if ( indyConfiguration == null )
-        //        {
-        //            return affectedGroups;
-        //        }
-        //        String excludeFilter = indyConfiguration.getAffectedGroupsExcludeFilter();
-        //        logger.debug( "Filter affected groups, exclude: {}", excludeFilter );
-        //        if ( isBlank( excludeFilter ) )
-        //        {
-        //            return affectedGroups;
-        //        }
-        //        return affectedGroups.stream()
-        //                             .filter( s -> !s.getName().matches( excludeFilter ) )
-        //                             .collect( Collectors.toSet() );
 
-        //TODO: call remote query to filter this
+        //TODO: wait for implementation
         return emptySet();
     }
 
