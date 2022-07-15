@@ -530,8 +530,10 @@ public abstract class AbstractStoreDataManager
 //    }
 
     @Override
+    @Deprecated
     public Set<StoreKey> getStoreKeysByPkg( String pkg )
     {
+        //TODO: seems this method is not used anywhere, so may be removed in future
         return streamArtifactStoreKeys().filter( key -> key.getPackageType().equals( pkg ) )
                                         .collect( Collectors.toSet() );
     }

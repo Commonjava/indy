@@ -28,8 +28,6 @@ import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.service.IndyClientProducer;
 import org.commonjava.indy.subsys.service.config.RepositoryServiceConfig;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.commonjava.util.jhttpc.model.SiteConfig;
-import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Before;
@@ -71,7 +69,7 @@ public class ServiceStoreDataManagerTest
 
     private ServiceStoreDataManager dataManager;
 
-    private IndyObjectMapper mapper = new IndyObjectMapper( false );
+    private final IndyObjectMapper mapper = new IndyObjectMapper( false );
 
     @BeforeClass
     public static void setUpAll()
@@ -89,8 +87,6 @@ public class ServiceStoreDataManagerTest
         System.out.println( server.getBaseUri() );
         serviceConfig.setEnabled( true );
         serviceConfig.setServiceUrl( UrlUtils.buildUrl( server.getBaseUri(), "api" ) );
-        SiteConfig config = new SiteConfigBuilder( "indy", serviceConfig.getServiceUrl() ).withRequestTimeoutSeconds(
-                serviceConfig.getRequestTimeout() ).build();
         IndyClientProducer clientProducer = new IndyClientProducer( serviceConfig );
         clientProducer.init();
         Indy client = clientProducer.getClient();
@@ -232,4 +228,5 @@ public class ServiceStoreDataManagerTest
                 Arrays.asList( StoreKey.fromString( "maven:remote:abc" ), StoreKey.fromString( "maven:hosted:def" ) ) );
         assertThat( groups.size(), equalTo( 3 ) );
     }
+
 }

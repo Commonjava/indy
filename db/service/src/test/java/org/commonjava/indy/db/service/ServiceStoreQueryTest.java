@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.db.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
@@ -24,14 +23,11 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.service.IndyClientProducer;
 import org.commonjava.indy.subsys.service.config.RepositoryServiceConfig;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.commonjava.util.jhttpc.model.SiteConfig;
-import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.Before;
@@ -71,8 +67,6 @@ public class ServiceStoreQueryTest
 
     private ServiceStoreQuery<ArtifactStore> query;
 
-    private final ObjectMapper mapper = new IndyObjectMapper( false );
-
     @BeforeClass
     public static void setUpAll()
     {
@@ -89,8 +83,6 @@ public class ServiceStoreQueryTest
         System.out.println( server.getBaseUri() );
         serviceConfig.setEnabled( true );
         serviceConfig.setServiceUrl( UrlUtils.buildUrl( server.getBaseUri(), "api" ) );
-        SiteConfig config = new SiteConfigBuilder( "indy", serviceConfig.getServiceUrl() ).withRequestTimeoutSeconds(
-                serviceConfig.getRequestTimeout() ).build();
         IndyClientProducer clientProducer = new IndyClientProducer( serviceConfig );
         clientProducer.init();
         Indy client = clientProducer.getClient();
