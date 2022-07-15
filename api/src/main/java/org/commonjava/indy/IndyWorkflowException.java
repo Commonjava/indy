@@ -28,7 +28,7 @@ import org.commonjava.maven.galley.TransferLocationException;
  * the default: HTTP 500).
  */
 public class IndyWorkflowException
-    extends Exception
+    extends IndyException
 {
     private Object[] params;
 
@@ -89,13 +89,7 @@ public class IndyWorkflowException
                 {
                     formattedMessage = String.format( format.replaceAll( "\\{\\}", "%s" ), params );
                 }
-                catch ( final Error e )
-                {
-                }
-                catch ( final RuntimeException e )
-                {
-                }
-                catch ( final Exception e )
+                catch ( final Error | Exception e )
                 {
                 }
 

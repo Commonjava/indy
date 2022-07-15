@@ -15,10 +15,12 @@
  */
 package org.commonjava.indy.core.expire;
 
+import org.commonjava.indy.IndyException;
+
 import java.text.MessageFormat;
 
 public class IndySchedulerException
-    extends Exception
+        extends IndyException
 {
 
     private static final long serialVersionUID = 1L;
