@@ -15,10 +15,12 @@
  */
 package org.commonjava.indy.subsys.template;
 
+import org.commonjava.indy.IndyException;
+
 import java.text.MessageFormat;
 
 public class IndyGroovyException
-    extends Exception
+        extends IndyException
 {
 
     private static final long serialVersionUID = 1L;

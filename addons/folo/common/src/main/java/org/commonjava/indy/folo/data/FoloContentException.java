@@ -15,11 +15,13 @@
  */
 package org.commonjava.indy.folo.data;
 
+import org.commonjava.indy.IndyException;
+
 import java.text.MessageFormat;
 import java.util.IllegalFormatException;
 
 public class FoloContentException
-    extends Exception
+        extends IndyException
 {
     private static final long serialVersionUID = 1L;
 
