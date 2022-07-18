@@ -48,10 +48,10 @@ public class CustomJsonLayout
     {
         this.environmentMappings = environmentMappings;
 
-        String[] mappings = environmentMappings == null ? new String[0] : environmentMappings.split( "\\s*,\\s*" );
+        String[] mappings = environmentMappings == null ? new String[0] : environmentMappings.split( "," );
         envars = new HashMap<>();
         Stream.of(mappings).forEach( kv ->{
-            String[] keyAlias = kv.split( "\\s*=\\s*" );
+            String[] keyAlias = kv.trim().split( "=" );
             if ( keyAlias.length > 1 )
             {
                 String value = System.getenv( keyAlias[0].trim() );

@@ -55,7 +55,7 @@ public class IspnRegistrySetProvider
         List<String> list = null;
         if ( gauges != null )
         {
-            list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
+            list = Arrays.asList( gauges.trim().split( "," ) );
         }
 
         for ( IspnCacheRegistry cacheRegistry : cacheRegistrySet )

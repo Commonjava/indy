@@ -52,7 +52,7 @@ public class AcceptInfoParser
         final List<String> raw = new ArrayList<String>();
         for ( final String accept : accepts )
         {
-            final String[] parts = accept.split( "\\s*,\\s*" );
+            final String[] parts = accept.split( "," );
             if ( parts.length == 1 )
             {
                 logger.trace( "adding atomic addMetadata header: '{}'", accept );
