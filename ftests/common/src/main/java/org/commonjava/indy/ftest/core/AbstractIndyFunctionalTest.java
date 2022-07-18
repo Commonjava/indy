@@ -45,6 +45,7 @@ import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -399,7 +400,7 @@ public abstract class AbstractIndyFunctionalTest
 
     protected String newName()
     {
-        final Random rand = new Random();
+        final SecureRandom rand = new SecureRandom();
         final StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < NAME_LEN; i++ )
         {

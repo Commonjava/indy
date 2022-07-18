@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Random;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
@@ -60,7 +61,7 @@ public class NPMHostedRetrieveFileTest
         final String versionContent = "{\"name\": \"jquery\",\n" + "\"url\": \"jquery.com\",\n" + "\"version\": \"2.1.0\"}";
 
         byte[] tgz = new byte[32];
-        new Random().nextBytes( tgz );
+        new SecureRandom().nextBytes( tgz );
 
         final String packagePath = "jquery";
         final String versionPath = "jquery/2.1.0";

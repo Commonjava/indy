@@ -161,7 +161,7 @@ public class IndyTraceConfiguration
                 break;
             case FIELDS:
                 this.fields = Collections.unmodifiableSet(
-                                new HashSet<>( Arrays.asList( value.trim().split( "\\s*,\\s*" ) ) ) );
+                                new HashSet<>( Arrays.asList( value.trim().split( "," ) ) ) );
                 break;
             case CONSOLE_TRANSPORT:
                 this.consoleTransport = Boolean.parseBoolean( value.trim() );
@@ -170,11 +170,11 @@ public class IndyTraceConfiguration
                 this.grpcUri = value.trim();
                 break;
             case OTEL_GRPC_HEADERS:
-                String[] kvs = value.trim().split( "\\s*,\\s*" );
+                String[] kvs = value.trim().split( "," );
                 Stream.of( kvs )
-                      .map( kv -> kv.split( "\\s*=\\s*" ) )
+                      .map( kv -> kv.trim().split( "=" ) )
                       .filter( kv -> kv.length > 1 )
-                      .forEach( kv -> grpcHeaders.put( kv[0], kv[1] ) );
+                      .forEach( kv -> grpcHeaders.put( kv[0].trim(), kv[1].trim() ) );
                 break;
             default:
                 if ( name.startsWith( SAMPLE_PREFIX ) && name.length() > SAMPLE_PREFIX.length() )
