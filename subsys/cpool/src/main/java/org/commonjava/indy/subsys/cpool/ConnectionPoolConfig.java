@@ -96,15 +96,15 @@ public class ConnectionPoolConfig
     private Map<String,String> toMap( final String value )
     {
         Map<String, String> result = new HashMap<>();
-        Stream.of( value.split( "\\s*,\\s*" ) ).forEach( (s)->{
-            String[] parts = s.split( "\\s*=\\s*" );
+        Stream.of( value.split( "," ) ).forEach( (s)->{
+            String[] parts = s.trim().split( "=" );
             if ( parts.length < 1 )
             {
-                result.put( parts[0], Boolean.toString( TRUE ) );
+                result.put( parts[0].trim(), Boolean.toString( TRUE ) );
             }
             else
             {
-                result.put( parts[0], parts[1] );
+                result.put( parts[0].trim(), parts[1].trim() );
             }
         } );
 
