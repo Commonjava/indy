@@ -76,6 +76,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -291,7 +292,7 @@ public class PromotionManagerTest
     public void promoteAllByPath_RaceToPromote_FirstLocksTargetStore()
             throws Exception
     {
-        Random rand = new Random();
+        SecureRandom rand = new SecureRandom();
         final HostedRepository[] sources = { new HostedRepository( MAVEN_PKG_KEY,  "source1" ), new HostedRepository( MAVEN_PKG_KEY,  "source2" ) };
         final String[] paths = { "/path/path1", "/path/path2", "/path3", "/path/path/4" };
         Stream.of( sources ).forEach( ( source ) ->

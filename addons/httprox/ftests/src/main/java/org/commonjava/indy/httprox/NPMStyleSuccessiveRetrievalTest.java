@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,7 +65,7 @@ public class NPMStyleSuccessiveRetrievalTest
         byte[] pkg = IOUtils.toByteArray( is );
 
         byte[] tgz = new byte[32];
-        new Random().nextBytes( tgz );
+        new SecureRandom().nextBytes( tgz );
 
         final String pkgUrl = server.formatUrl( testRepo, pkgPath );
         final String tgzUrl = server.formatUrl( testRepo, tgzPath );

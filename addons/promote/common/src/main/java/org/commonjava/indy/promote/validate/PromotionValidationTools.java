@@ -207,7 +207,8 @@ public class PromotionValidationTools
         }
         else
         {
-            List<StoreKey> extras = Stream.of( verifyStores.split( "\\s*,\\s*" ) )
+            List<StoreKey> extras = Stream.of( verifyStores.split( "," ) )
+                                          .map( String::trim )
                                           .map( StoreKey::fromString )
                                           .filter( item -> item != null )
                                           .collect( Collectors.toList() );

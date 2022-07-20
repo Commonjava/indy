@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -46,7 +47,7 @@ public class RetrievedContentMatchesContentLength_SlowClient_Test
 
     private static final String PASS = "password";
 
-    private Random rand = new Random();
+    private SecureRandom rand = new SecureRandom();
 
     @Test
     public void run()
