@@ -101,6 +101,13 @@ public interface IndyConfiguration
     Boolean isStandalone();
 
     /**
+     * Is for PartyLine Cache Timeout Processing
+     * @return
+     * @since 2.7.0
+     */
+    Boolean isTimeoutProcessing();
+
+    /**
      * Decide storeDataManager to run as standalone mode or cassandra mode
      * @return
      * @since 2.5.0
