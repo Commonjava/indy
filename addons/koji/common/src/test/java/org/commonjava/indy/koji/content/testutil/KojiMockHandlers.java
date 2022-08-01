@@ -83,7 +83,6 @@ public final class KojiMockHandlers
         }
         catch ( Exception e )
         {
-            e.printStackTrace();
             fail( "Failed to serve xml-rpc request. " + e.getMessage() );
         }
     }
@@ -128,7 +127,6 @@ public final class KojiMockHandlers
             }
             catch ( SAXException e )
             {
-                e.printStackTrace();
                 fail( "Cannot find parse either requested XML or expected XML from: " + requestPath );
             }
 

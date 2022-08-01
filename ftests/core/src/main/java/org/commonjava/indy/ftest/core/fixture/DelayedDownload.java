@@ -94,7 +94,7 @@ public class DelayedDownload
         }
         catch ( IndyClientException | IOException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
         }
 
         endTime = System.nanoTime();

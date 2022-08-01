@@ -71,7 +71,6 @@ public class TestProvider
         }
         catch ( final IOException e )
         {
-            e.printStackTrace();
             Assert.fail( "Failed to setup temporary directory structures: " + e.getMessage() );
         }
 
