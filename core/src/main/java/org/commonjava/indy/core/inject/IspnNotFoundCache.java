@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.commons.codec.digest.DigestUtils.md5Hex;
+import static org.apache.commons.codec.digest.DigestUtils.sha256Hex;
 import static org.commonjava.indy.model.core.StoreKey.fromString;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
@@ -327,6 +327,6 @@ public class IspnNotFoundCache
     {
         KeyedLocation location = (KeyedLocation) resource.getLocation();
         StoreKey key = location.getKey();
-        return md5Hex( key.toString() + ":" + resource.getPath() );
+        return sha256Hex( key.toString() + ":" + resource.getPath() );
     }
 }
