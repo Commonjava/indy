@@ -23,7 +23,6 @@ import org.commonjava.event.store.EventStoreKey;
 import org.commonjava.event.store.StoreEnablementEvent;
 import org.commonjava.event.store.StorePostUpdateEvent;
 import org.commonjava.event.store.StorePreUpdateEvent;
-import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -43,16 +42,18 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.commonjava.indy.subsys.kafka.event.TopicType.STORE_EVENT;
 
 @ApplicationScoped
 public class RepoServiceEventHandler
-                implements ServiceEventHandler
+        implements ServiceEventHandler
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -67,25 +68,29 @@ public class RepoServiceEventHandler
     private ObjectMapper mapper;
 
     @Override
-    @SuppressWarnings( "unchecked" )
-    public void dispatchEvent( KStream<String, String> streams, String topic ) throws IndyLifecycleException
+    public void dispatchEvent( KStream<String, String> streams, String topic )
     {
         if ( !topic.equals( STORE_EVENT.getName() ) )
         {
             return;
         }
+        logger.trace( "Using {} as the event dispatcher", dispatcher.getClass().getName() );
         streams.foreach( ( key, value ) -> {
             try
             {
                 final DefualtIndyStoreEvent storeEvent = mapper.readValue( value, DefualtIndyStoreEvent.class );
-                logger.info( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
+                logger.debug( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
                 final Map<EventStoreKey, ArtifactStore> storeMap = getStoreMap( storeEvent );
-                final ArtifactStore[] stores = storeMap.values().toArray( new ArtifactStore[storeMap.size()] );
+                final ArtifactStore[] stores = storeMap.values().toArray( new ArtifactStore[0] );
                 final EventMetadata eventMetadata = convertEventMetadata( storeEvent );
                 Map<ArtifactStore, ArtifactStore> changeMap;
+                List<String> changeMapStr;
                 switch ( storeEvent.getEventType() )
                 {
                     case PreDelete:
+                        logger.debug( "Firing store delete event for: {} ", Arrays.stream( stores )
+                                                                                  .map( ArtifactStore::getKey )
+                                                                                  .collect( Collectors.toList() ) );
                         dispatcher.deleting( eventMetadata, stores );
                         break;
                     case PostDelete:
@@ -94,12 +99,24 @@ public class RepoServiceEventHandler
                     case PreUpdate:
                         StorePreUpdateEvent preUpdateEvent = mapper.readValue( value, StorePreUpdateEvent.class );
                         changeMap = getChangeMap( preUpdateEvent, storeMap );
+                        changeMapStr = changeMap.entrySet()
+                                                .stream()
+                                                .map( e -> String.format( "%s -> %s", e.getKey().getKey(),
+                                                                          e.getValue().getKey() ) )
+                                                .collect( Collectors.toList() );
+                        logger.debug( "Firing store pre-update event for: {} ", changeMapStr );
                         dispatcher.updating( ArtifactStoreUpdateType.valueOf( preUpdateEvent.getUpdateType().name() ),
                                              eventMetadata, changeMap );
                         break;
                     case PostUpdate:
                         StorePostUpdateEvent postUpdateEvent = mapper.readValue( value, StorePostUpdateEvent.class );
                         changeMap = getChangeMap( postUpdateEvent, storeMap );
+                        changeMapStr = changeMap.entrySet()
+                                                .stream()
+                                                .map( e -> String.format( "%s -> %s", e.getKey().getKey(),
+                                                                          e.getValue().getKey() ) )
+                                                .collect( Collectors.toList() );
+                        logger.debug( "Firing store post-update event for: {}", changeMapStr );
                         dispatcher.updating( ArtifactStoreUpdateType.valueOf( postUpdateEvent.getUpdateType().name() ),
                                              eventMetadata, changeMap );
                         break;
@@ -107,50 +124,56 @@ public class RepoServiceEventHandler
                         StoreEnablementEvent enablementEvent = mapper.readValue( value, StoreEnablementEvent.class );
                         boolean disabling = enablementEvent.isDisabling();
                         boolean preprocessing = enablementEvent.isPreprocessing();
-                        if (!disabling && preprocessing)
+                        List<StoreKey> storesKeys =
+                                Arrays.stream( stores ).map( ArtifactStore::getKey ).collect( Collectors.toList() );
+                        if ( !disabling && preprocessing )
                         {
+                            logger.debug( "Firing store enabling event for: {}", storesKeys );
                             dispatcher.enabling( eventMetadata, stores );
                         }
                         if ( !disabling && !preprocessing )
                         {
+                            logger.debug( "Firing store enabled event for: {}", storesKeys );
                             dispatcher.enabled( eventMetadata, stores );
                         }
                         if ( disabling && preprocessing )
                         {
+                            logger.debug( "Firing store disabling event for: {}", storesKeys );
                             dispatcher.disabling( eventMetadata, stores );
                         }
                         if ( disabling && !preprocessing )
                         {
+                            logger.debug( "Firing store disabled event for: {}", storesKeys );
                             dispatcher.disabled( eventMetadata, stores );
                         }
                         break;
                 }
-                logger.info( "Finish the consumer event dispatcher for event type {}",
+                logger.debug( "Finish the consumer event dispatcher for event type {}",
                               storeEvent.getEventType().name() );
             }
             catch ( JsonProcessingException e )
             {
-                logger.error( String.format(
-                                "Failed to parse and read value from event message on topic %s, "
-                                                + "it might not be the standard service event format: %s.",
-                                topic, e.getMessage() ), e );
+                logger.error( String.format( "Failed to parse and read value from event message on topic %s, "
+                                                     + "it might not be the standard service event format: %s.", topic,
+                                             e.getMessage() ), e );
             }
             catch ( IndyDataException e )
             {
-                logger.error( String.format(
-                                "Error occurred during retrieving through data manager on topic %s: %s.",
-                                topic, e.getMessage() ), e );
+                logger.error(
+                        String.format( "Error occurred during retrieving through data manager on topic %s: %s.", topic,
+                                       e.getMessage() ), e );
             }
             catch ( Exception e )
             {
-                logger.error( String.format(
-                                "Error occurred during consuming the streaming messages on topic %s: %s.",
-                                topic, e.getMessage() ), e );
+                logger.error(
+                        String.format( "Error occurred during consuming the streaming messages on topic %s: %s.", topic,
+                                       e.getMessage() ), e );
             }
         } );
     }
 
-    private Map<EventStoreKey, ArtifactStore> getStoreMap( DefualtIndyStoreEvent storeEvent ) throws IndyDataException
+    private Map<EventStoreKey, ArtifactStore> getStoreMap( DefualtIndyStoreEvent storeEvent )
+            throws IndyDataException
     {
         final Map<EventStoreKey, ArtifactStore> storeMap = new HashMap<>();
         for ( EventStoreKey eventStoreKey : storeEvent.getKeys() )
@@ -159,7 +182,7 @@ public class RepoServiceEventHandler
             ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
             if ( store == null )
             {
-                logger.error( "Failed to fetch store {} through data manager.", storeKey.toString() );
+                logger.error( "Failed to fetch store {} through data manager.", storeKey );
                 continue;
             }
             storeMap.put( eventStoreKey, store );
@@ -201,7 +224,7 @@ public class RepoServiceEventHandler
                 continue;
             }
             Map<String, List<Object>> changes = updateEvent.getChangeMap().get( storeKey );
-            ArtifactStore originalStore = newStore;
+            ArtifactStore originalStore = newStore.copyOf();
             for ( String metaName : changes.keySet() )
             {
                 List<Object> values = changes.get( metaName );
@@ -213,6 +236,7 @@ public class RepoServiceEventHandler
         return changeMap;
     }
 
+    @SuppressWarnings( {"unchecked", "rawtypes"} )
     private void revertOriginalRepo( String metaName, ArtifactStore newStore, ArtifactStore originalStore,
                                      Object originalValue )
     {
@@ -341,6 +365,7 @@ public class RepoServiceEventHandler
         }
     }
 
+    @SuppressWarnings( "unchecked" )
     private void revertOriginalGroupRepo( String metaName, Object originalValue, Group originalStore )
     {
         switch ( metaName )
