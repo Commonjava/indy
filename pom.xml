@@ -85,6 +85,7 @@
     <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
     <o11yphantVersion>1.5</o11yphantVersion>
     <swaggerVersion>1.6.4</swaggerVersion>
+    <agroalVersion>1.16</agroalVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
@@ -815,12 +816,12 @@
       <dependency>
         <groupId>io.agroal</groupId>
         <artifactId>agroal-api</artifactId>
-        <version>1.8</version>
+        <version>${agroalVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.agroal</groupId>
         <artifactId>agroal-pool</artifactId>
-        <version>1.8</version>
+        <version>${agroalVersion}</version>
       </dependency>
 
       <dependency>
