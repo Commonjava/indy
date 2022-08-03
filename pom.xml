@@ -83,12 +83,12 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
-    <o11yphantVersion>1.5-SNAPSHOT</o11yphantVersion>
+    <o11yphantVersion>1.5</o11yphantVersion>
     <swaggerVersion>1.6.4</swaggerVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.9-SNAPSHOT</galleyVersion>
+    <galleyVersion>1.9</galleyVersion>
     <weftVersion>1.20</weftVersion>
     <bomVersion>27</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>

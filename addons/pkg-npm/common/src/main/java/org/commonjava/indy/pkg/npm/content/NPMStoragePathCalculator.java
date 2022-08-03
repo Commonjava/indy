@@ -85,6 +85,11 @@ public class NPMStoragePathCalculator
                 pkg = path.substring( 0, path.indexOf( extension ) );
             }
 
+            if ( pkg.startsWith( "/" ) )
+            {
+                pkg = pkg.substring( 1 );
+            }
+
             // This is considering the single path for npm standard like "/jquery"
             final boolean isSinglePath = !pkg.startsWith( "@" ) && pkg.split( "/" ).length == 1;
             // This is considering the scoped path for npm standard like "/@type/jquery"
