@@ -124,17 +124,8 @@
     <quickITs>true</quickITs>
     <skipTimingFTests>${skipITs}</skipTimingFTests>
 
-    <dockerRegistry>docker.io</dockerRegistry>
-    <dockerUser>commonjava</dockerUser>
-    <dockerStartTimeout>60000</dockerStartTimeout>
-
-    <dockerNetworkMode>bridge</dockerNetworkMode>
-    <dockerNetwork>default</dockerNetwork>
-
-    <docker-appliance-gogs>${dockerRegistry}/${dockerUser}/gogs-test-appliance</docker-appliance-gogs>
     <gogs-waitFor>Gogs: Go Git Service</gogs-waitFor>
     <keycloak-waitFor>WFLYSRV0025</keycloak-waitFor>
-    <docker-appliance-keycloak>${dockerRegistry}/${dockerUser}/keycloak-test-appliance</docker-appliance-keycloak>
 
     <version.plugin.jacoco>0.8.3</version.plugin.jacoco>
     <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
@@ -1589,22 +1580,6 @@
           </executions>
         </plugin>
         <plugin>
-          <groupId>io.fabric8</groupId>
-          <artifactId>docker-maven-plugin</artifactId>
-          <version>0.15.14</version>
-          <extensions>true</extensions>
-
-          <configuration>
-            <skip>${disableLauncher}</skip>
-            <authConfig>
-              <push>
-                <username>${dockerUser}</username>
-                <password>${docker.password}</password>
-              </push>
-            </authConfig>
-          </configuration>
-        </plugin>
-        <plugin>
           <artifactId>maven-release-plugin</artifactId>
           <configuration>
             <autoVersionSubmodules>true</autoVersionSubmodules>
@@ -1894,8 +1869,6 @@
         <it-forkCount>2</it-forkCount>
         <testEnvTimeoutMultiplier>6</testEnvTimeoutMultiplier>
 
-        <dockerNetworkMode>custom</dockerNetworkMode>
-        <dockerNetwork>ci-network</dockerNetwork>
       </properties>
     </profile>
     <profile>
