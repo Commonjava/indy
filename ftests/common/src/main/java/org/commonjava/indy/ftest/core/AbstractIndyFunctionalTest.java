@@ -174,7 +174,7 @@ public abstract class AbstractIndyFunctionalTest
         }
         catch ( InterruptedException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Thread interrupted while waiting for server events to propagate." );
         }
 
@@ -242,7 +242,7 @@ public abstract class AbstractIndyFunctionalTest
         }
         catch ( InterruptedException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
         }
         CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
         cacheProvider.asAdminView().gc();

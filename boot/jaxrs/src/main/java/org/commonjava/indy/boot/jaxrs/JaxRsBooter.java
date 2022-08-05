@@ -52,7 +52,6 @@ public class JaxRsBooter
         }
         catch ( final BootException e )
         {
-            e.printStackTrace();
             System.err.printf( "ERROR: %s", e.getMessage() );
             System.exit( ERR_LOAD_BOOT_OPTIONS );
             return;
@@ -68,7 +67,6 @@ public class JaxRsBooter
         }
         catch ( final BootException e )
         {
-            e.printStackTrace();
             System.err.printf( "ERROR: %s", e.getMessage() );
             System.exit( ERR_START );
         }

@@ -100,7 +100,7 @@ public class CallableDelayedDownload
             }
             catch ( IndyClientException | IOException e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 missing = true;
             }
 

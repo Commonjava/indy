@@ -78,7 +78,7 @@ public class PromotionRuleAproxMigrationAction
                 }
                 catch ( IOException e )
                 {
-                    e.printStackTrace();
+                    logger.error( "Migrating promotion validation rules error: {}",  e.getMessage(), e );
                 }
             }
         }
