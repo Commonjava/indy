@@ -99,10 +99,11 @@ public class IndyLocationExpander
                     {
                         for ( final ArtifactStore member : members )
                         {
-                            if ( !result.contains( member ) )
+                            Location loc = LocationUtils.toLocation( member );
+                            if ( !result.contains( loc ) )
                             {
                                 logger.debug( "expansion += {}", member.getKey() );
-                                result.add( LocationUtils.toLocation( member ) );
+                                result.add( loc );
                             }
                         }
                         logger.debug( "Expanded group: {} to:\n  {}", gl.getKey(), new JoinString( "\n  ", result ) );
