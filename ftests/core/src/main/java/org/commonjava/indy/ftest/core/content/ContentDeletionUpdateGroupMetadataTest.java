@@ -149,7 +149,7 @@ public class ContentDeletionUpdateGroupMetadataTest
             }
             catch ( IndyClientException e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 return "ERROR";
             }
             return "OK";

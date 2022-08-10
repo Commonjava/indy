@@ -85,10 +85,11 @@
     <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
     <o11yphantVersion>1.5</o11yphantVersion>
     <swaggerVersion>1.6.4</swaggerVersion>
+    <agroalVersion>1.16</agroalVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.9</galleyVersion>
+    <galleyVersion>1.10-SNAPSHOT</galleyVersion>
     <weftVersion>1.20</weftVersion>
     <bomVersion>27</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
@@ -856,12 +857,12 @@
       <dependency>
         <groupId>io.agroal</groupId>
         <artifactId>agroal-api</artifactId>
-        <version>1.8</version>
+        <version>${agroalVersion}</version>
       </dependency>
       <dependency>
         <groupId>io.agroal</groupId>
         <artifactId>agroal-pool</artifactId>
-        <version>1.8</version>
+        <version>${agroalVersion}</version>
       </dependency>
 
       <dependency>
@@ -1989,17 +1990,17 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
           <version>${version.plugin.javadoc}</version>
+          <configuration>
+            <detectOfflineLinks>false</detectOfflineLinks>
+            <additionalparam>-Xdoclint:none</additionalparam>
+          </configuration>
           <executions>
             <execution>
               <id>attach-javadocs</id>
               <goals>
                 <goal>jar</goal>
               </goals>
-              <configuration>
-                <detectOfflineLinks>false</detectOfflineLinks>
-                <additionalparam>-Xdoclint:none</additionalparam>
-              </configuration>
-            </execution>
+          </execution>
           </executions>
         </plugin>
         <plugin>
@@ -2231,6 +2232,69 @@
               <execution>
                 <goals>
                   <goal>test-jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>run-deploy</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <configuration>
+              <keyname>${gpg.keyname}</keyname>
+              <passphraseServerId>${gpg.keyname}</passphraseServerId>
+            </configuration>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <detectOfflineLinks>false</detectOfflineLinks>
+              <additionalparam>-Xdoclint:none</additionalparam>
+            </configuration>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <artifactId>maven-deploy-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>deploy</id>
+                <phase>deploy</phase>
+                <goals>
+                  <goal>deploy</goal>
                 </goals>
               </execution>
             </executions>

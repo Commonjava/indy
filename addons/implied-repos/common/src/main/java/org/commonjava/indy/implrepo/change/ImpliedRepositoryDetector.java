@@ -397,7 +397,7 @@ public class ImpliedRepositoryDetector
                 catch ( IndyDataException e )
                 {
                     logger.error(
-                            String.format( "Cannot lookup remote repositories by URL: %s. Reason: %s", e.getMessage() ),
+                            String.format( "Cannot lookup remote repositories by URL: %s. Reason: %s", repo.getUrl(), e.getMessage() ),
                             e );
                 }
 

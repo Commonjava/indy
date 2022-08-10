@@ -64,12 +64,11 @@ public class GroupTest
                             }
                             catch ( IllegalAccessException e )
                             {
-                                e.printStackTrace();
                                 fail( "Failed to invoke: " + m.getName() );
                             }
                             catch ( InvocationTargetException e )
                             {
-                                e.printStackTrace();
+                                fail( "Failed to invoke: " + m.getName() );
                             }
                         } );
     }

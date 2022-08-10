@@ -104,7 +104,7 @@ public class ApiVersioningFilter
         String reqApiVersion = httpServletRequest.getHeader( HEADER_INDY_API_VERSION );
 
         // Insert 3 headers into outgoing responses
-        httpServletResponse.addHeader( HEADER_INDY_API_VERSION, reqApiVersion );
+        // httpServletResponse.addHeader( HEADER_INDY_API_VERSION, reqApiVersion );
         httpServletResponse.addHeader( HEADER_INDY_CUR_API_VERSION, indyVersioning.getApiVersion() );
         httpServletResponse.addHeader( HEADER_INDY_MIN_API_VERSION, indyDeprecatedApis.getMinApiVersion() );
 
