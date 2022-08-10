@@ -35,6 +35,12 @@
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>o11yphant-trace-honeycomb</artifactId>
+      <exclusions>
+        <exclusion>
+          <groupId>io.undertow</groupId>
+          <artifactId>undertow-servlet</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
@@ -43,10 +49,6 @@
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>o11yphant-trace-helper-jhttpc</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-honeycomb</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
