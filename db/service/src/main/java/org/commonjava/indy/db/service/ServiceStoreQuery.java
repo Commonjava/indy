@@ -30,16 +30,23 @@ import org.commonjava.indy.model.core.dto.SimpleBooleanResultDTO;
 import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
@@ -55,14 +62,21 @@ public class ServiceStoreQuery<T extends ArtifactStore>
 
     private String packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
+    private final String ARTIFACT_STORE_QUERY = "artifact-store-query";
+
+    private final Integer STORE_QUERY_EXPIRATION_IN_MINS = 15;
+
+    private CacheProducer cacheProducer;
+
     private Set<StoreType> types;
 
     private Boolean enabled;
 
-    public ServiceStoreQuery( final ServiceStoreDataManager dataManager )
+    public ServiceStoreQuery( final ServiceStoreDataManager dataManager, final CacheProducer producer )
     {
         logger.debug( "CREATE new default store query with data manager only" );
         this.dataManager = dataManager;
+        this.cacheProducer = producer;
         this.client = dataManager.getIndyClient();
     }
 
@@ -93,7 +107,8 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    ArtifactStoreQuery<T> noTypes(){
+    ArtifactStoreQuery<T> noTypes()
+    {
         this.types = Collections.emptySet();
         return this;
     }
@@ -245,22 +260,35 @@ public class ServiceStoreQuery<T extends ArtifactStore>
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( String packageType, String groupName, Boolean enabled )
             throws IndyDataException
     {
-        try
-        {
-            StoreListingDTO<ArtifactStore> dto = client.module( IndyStoreQueryClientModule.class )
-                                                       .getOrderedConcreteStoresInGroup( packageType, groupName,
-                                                                                         enabled.toString() );
-            if ( dto != null )
+        final AtomicReference<IndyDataException> eHolder = new AtomicReference<>();
+        final String queryKey =
+                String.format( "%s:%s:%s:%s", packageType, groupName, enabled, "orderedConcreteStoresInGroup" );
+        final Collection<ArtifactStore> stores = computeIfAbsent( queryKey, () -> {
+            try
             {
-                return dto.getItems();
+                StoreListingDTO<ArtifactStore> dto = client.module( IndyStoreQueryClientModule.class )
+                                                           .getOrderedConcreteStoresInGroup( packageType, groupName,
+                                                                                             enabled.toString() );
+                if ( dto != null )
+                {
+                    return dto.getItems();
+                }
+                return Collections.emptyList();
             }
-            return Collections.emptyList();
-        }
-        catch ( IndyClientException e )
+            catch ( IndyClientException e )
+            {
+                eHolder.set( new IndyDataException( "Failed to get ordered concrete stores for group: %s:group:%s", e,
+                                                    packageType, groupName ) );
+                return null;
+            }
+        }, STORE_QUERY_EXPIRATION_IN_MINS, Boolean.FALSE );
+
+        if ( eHolder.get() != null )
         {
-            throw new IndyDataException( "Failed to get ordered concrete stores for group: %s:group:%s", e, packageType,
-                                         groupName );
+            logger.error( eHolder.get().getMessage() );
+            throw eHolder.get();
         }
+        return new ArrayList<>( stores );
     }
 
     @Override
@@ -303,20 +331,33 @@ public class ServiceStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException
     {
-        try
-        {
-            StoreListingDTO<Group> dto =
-                    client.module( IndyStoreQueryClientModule.class ).getGroupsAffectedBy( new HashSet<>( keys ) );
-            if ( dto != null )
+        final AtomicReference<IndyDataException> eHolder = new AtomicReference<>();
+        final Set<StoreKey> queryKeys = new HashSet<>( keys );
+        Collection<ArtifactStore> stores = computeIfAbsent( queryKeys, () -> {
+            try
             {
-                return new HashSet<>( dto.getItems() );
+                StoreListingDTO<Group> dto =
+                        client.module( IndyStoreQueryClientModule.class ).getGroupsAffectedBy( new HashSet<>( keys ) );
+                if ( dto != null )
+                {
+                    return new HashSet<>( dto.getItems() );
+                }
+                return Collections.emptySet();
             }
-            return Collections.emptySet();
-        }
-        catch ( IndyClientException e )
+            catch ( IndyClientException e )
+            {
+                eHolder.set( new IndyDataException( "Failed to get groups affected by %s", e, keys ) );
+                return null;
+            }
+        }, STORE_QUERY_EXPIRATION_IN_MINS, false );
+
+        if ( eHolder.get() != null )
         {
-            throw new IndyDataException( "Failed to get groups affected by %s", e, keys );
+            logger.error( eHolder.get().getMessage() );
+            throw eHolder.get();
         }
+
+        return stores.stream().map( s -> (Group) s ).collect( Collectors.toSet() );
     }
 
     @Override
@@ -451,6 +492,36 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         {
             throw new IndyDataException( "Failed to get the result of the indy store data empty", e );
         }
+    }
+
+    private Collection<ArtifactStore> computeIfAbsent( Object key, Supplier<Collection<ArtifactStore>> storeProvider,
+                                                       int expirationMins, boolean forceQuery )
+    {
+        logger.debug( "computeIfAbsent, cache: {}, key: {}", ARTIFACT_STORE_QUERY, key );
+
+        BasicCacheHandle<Object, Collection<ArtifactStore>> cache = cacheProducer.getBasicCache( ARTIFACT_STORE_QUERY );
+        Collection<ArtifactStore> stores = cache.get( key );
+        if ( stores == null || forceQuery )
+        {
+            logger.trace( "Entry not found, run put, expirationMins: {}", expirationMins );
+
+            stores = storeProvider.get();
+
+            if ( stores != null )
+            {
+                if ( expirationMins > 0 )
+                {
+                    cache.put( key, stores, expirationMins, TimeUnit.MINUTES );
+                }
+                else
+                {
+                    cache.put( key, stores );
+                }
+            }
+        }
+
+        logger.trace( "Return value, cache: {}, key: {}, ret: {}", ARTIFACT_STORE_QUERY, key, stores );
+        return stores;
     }
 
 }

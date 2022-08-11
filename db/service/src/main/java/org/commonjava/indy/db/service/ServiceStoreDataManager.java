@@ -320,7 +320,7 @@ public class ServiceStoreDataManager
     @Override
     public ArtifactStoreQuery<ArtifactStore> query()
     {
-        return new ServiceStoreQuery<>( this );
+        return new ServiceStoreQuery<>( this, this.cacheProducer );
     }
 
     // This method is a replacement of the query() for internal usage of this class to avoid
@@ -329,7 +329,7 @@ public class ServiceStoreDataManager
     {
         if ( this.serviceStoreQuery == null )
         {
-            this.serviceStoreQuery = new ServiceStoreQuery<>( this );
+            this.serviceStoreQuery = new ServiceStoreQuery<>( this, this.cacheProducer );
         }
         return this.serviceStoreQuery;
     }
