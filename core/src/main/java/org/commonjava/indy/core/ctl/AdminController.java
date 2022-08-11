@@ -230,7 +230,7 @@ public class AdminController
             }
             return disabledArtifactStores;
         } catch (IndyDataException e) {
-            e.printStackTrace();
+            logger.error( "Get disabled remote repositories error: {}", e.getMessage(), e );
         }
         return disabledArtifactStores;
     }

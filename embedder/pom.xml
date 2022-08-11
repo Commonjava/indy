@@ -432,20 +432,20 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <includeDependencySources>true</includeDependencySources>
+            <dependencySourceIncludes>
+              <dependencySourceInclude>org.commonjava*</dependencySourceInclude>
+            </dependencySourceIncludes>
+            <detectOfflineLinks>false</detectOfflineLinks>
+            <additionalparam>-Xdoclint:none</additionalparam>
+          </configuration>
           <executions>
             <execution>
               <id>attach-javadocs</id>
               <goals>
                 <goal>jar</goal>
               </goals>
-              <configuration>
-                <includeDependencySources>true</includeDependencySources>
-                <dependencySourceIncludes>
-                  <dependencySourceInclude>org.commonjava*</dependencySourceInclude>
-                </dependencySourceIncludes>
-                <detectOfflineLinks>false</detectOfflineLinks>
-                <additionalparam>-Xdoclint:none</additionalparam>
-              </configuration>
             </execution>
           </executions>
         </plugin>

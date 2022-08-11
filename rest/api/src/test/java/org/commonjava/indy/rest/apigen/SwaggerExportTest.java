@@ -69,7 +69,6 @@ public class SwaggerExportTest
             }
             catch ( IOException e )
             {
-                e.printStackTrace();
                 fail( "failed to retrieve swagger." + ext );
             }
         } );

@@ -191,7 +191,7 @@ public class ConcurrencyTest
                     }
                     catch ( IndyDataException e )
                     {
-                        e.printStackTrace();
+                        logger.error( e.getMessage(), e );
                     }
 
                     return "Failed to retrieve groups containing: " + repo.getKey();
@@ -230,7 +230,7 @@ public class ConcurrencyTest
                 }
                 catch ( IndyDataException e )
                 {
-                    e.printStackTrace();
+                    logger.error( e.getMessage(), e );
                 }
 
                 return "Failed to list all artifact stores.";

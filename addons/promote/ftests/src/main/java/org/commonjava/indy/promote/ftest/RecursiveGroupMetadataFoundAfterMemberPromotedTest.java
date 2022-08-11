@@ -175,7 +175,6 @@ public class RecursiveGroupMetadataFoundAfterMemberPromotedTest
         }
         catch ( SAXException e )
         {
-            e.printStackTrace();
             fail( "Downloaded XML not equal to expected XML from: " + path + " in: " + store.getKey() );
         }
     }

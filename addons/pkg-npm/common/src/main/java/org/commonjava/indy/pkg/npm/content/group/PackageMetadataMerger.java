@@ -152,7 +152,10 @@ public class PackageMetadataMerger
                 logger.error( String.format( "Cannot convert from metadata: %s to String. Reason: %s", packageMetadata,
                                              e.getMessage() ), e );
             }
-            return output.getBytes();
+            if ( output != null )
+            {
+                return output.getBytes();
+            }
         }
 
         return null;

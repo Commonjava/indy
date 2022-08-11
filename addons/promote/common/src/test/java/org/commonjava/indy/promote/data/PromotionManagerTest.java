@@ -317,7 +317,6 @@ public class PromotionManagerTest
                                                                               }
                                                                               catch ( IndyWorkflowException e )
                                                                               {
-                                                                                  e.printStackTrace();
                                                                                   Assert.fail(
                                                                                           "failed to store generated file to: "
                                                                                                   + source + path );
@@ -326,7 +325,6 @@ public class PromotionManagerTest
                                           }
                                           catch ( IndyDataException e )
                                           {
-                                              e.printStackTrace();
                                               Assert.fail( "failed to store hosted repository: " + source );
                                           }
                                       } );
@@ -354,7 +352,6 @@ public class PromotionManagerTest
                                                                 }
                                                                 catch ( Exception e )
                                                                 {
-                                                                    e.printStackTrace();
                                                                     Assert.fail( "Promotion from source: " + source
                                                                                          + " failed." );
                                                                 }
@@ -420,7 +417,6 @@ public class PromotionManagerTest
                                         }
                                         catch ( IOException e )
                                         {
-                                            e.printStackTrace();
                                             Assert.fail(
                                                     "Failed to compare contents of: " + path + " between source: " + src
                                                             + " and target: " + target );

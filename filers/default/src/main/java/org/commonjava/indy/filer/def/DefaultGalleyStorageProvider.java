@@ -198,7 +198,7 @@ public class DefaultGalleyStorageProvider
             // Only work for local debug mode.
             ScheduledExecutorService debugDeleteExecutor = Executors.newScheduledThreadPool( 5, new NamedThreadFactory(
                     "debug-galley-delete-executor", new ThreadGroup( "debug-galley-delete-executor" ), true, 2 ) );
-            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, debugDeleteExecutor );
+            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, indyConfiguration.isTimeoutProcessing(), debugDeleteExecutor );
             return;
         }
 

@@ -228,7 +228,7 @@ public class GroupMembershipChangeUpdateMetadataTest
             }
             catch ( IndyClientException e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 return "ERROR";
             }
             return "OK";
@@ -255,7 +255,7 @@ public class GroupMembershipChangeUpdateMetadataTest
             }
             catch ( IndyClientException e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 return "ERROR";
             }
             return "OK";

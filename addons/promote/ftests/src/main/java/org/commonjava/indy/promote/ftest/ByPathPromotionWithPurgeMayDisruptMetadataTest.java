@@ -177,7 +177,7 @@ public class ByPathPromotionWithPurgeMayDisruptMetadataTest
             }
             catch ( IndyClientException e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 return null;
             }
         }

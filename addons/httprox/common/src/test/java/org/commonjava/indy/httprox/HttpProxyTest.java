@@ -379,7 +379,7 @@ public class HttpProxyTest
         }
         catch ( final Exception e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Failed to read POM from: " + name );
         }
 

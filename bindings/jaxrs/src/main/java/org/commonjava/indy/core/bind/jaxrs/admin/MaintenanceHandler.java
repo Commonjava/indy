@@ -188,7 +188,7 @@ public class MaintenanceHandler
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
+            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", path, e.getMessage() ), e );
             response = responseHelper.formatResponse( e );
         }
         return response;
@@ -209,7 +209,7 @@ public class MaintenanceHandler
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
+            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", path, e.getMessage() ), e );
             response = responseHelper.formatResponse( e );
         }
         return response;

@@ -72,7 +72,7 @@ public class ProxyReleasesFileLockOnCompletionTest
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 Assert.fail( currentTry + ": Failed to retrieve file: " + url );
             }
             finally
