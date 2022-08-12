@@ -87,7 +87,7 @@ public class ServiceStoreQueryTest
         clientProducer.init();
         Indy client = clientProducer.getClient();
         ServiceStoreDataManager dataManager = new ServiceStoreDataManager( producer, client );
-        query = new ServiceStoreQuery<>( dataManager );
+        query = new ServiceStoreQuery<>( dataManager, producer );
     }
 
     @Test
