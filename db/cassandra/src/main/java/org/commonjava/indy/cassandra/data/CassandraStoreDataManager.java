@@ -268,6 +268,7 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
 
                             if ( store == null )
                             {
+                                logger.error( "Error: the group {} does not exist as affected by for store {}", gKey, key );
                                 processed.add( gKey );
                                 continue;
                             }
