@@ -266,6 +266,13 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                         {
                             ArtifactStore store = getArtifactStoreInternal( gKey );
 
+                            if ( store == null )
+                            {
+                                logger.error( "Error: the group {} does not exist as affected by for store {}", gKey, key );
+                                processed.add( gKey );
+                                continue;
+                            }
+
                             // if this group is disabled, we don't want to keep loading it again and again.
                             if ( store.isDisabled() )
                             {
