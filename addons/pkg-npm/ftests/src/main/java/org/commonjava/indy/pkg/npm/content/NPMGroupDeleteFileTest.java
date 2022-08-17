@@ -28,7 +28,7 @@ import java.io.ByteArrayInputStream;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case tests if files can be deleted in a group repo

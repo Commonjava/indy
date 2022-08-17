@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * If indy download file from remote repo is not correct (lose some byte), Indy will

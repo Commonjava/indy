@@ -24,7 +24,7 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ProxyRemoteKojiContentTest
                 extends ExternalKojiTest

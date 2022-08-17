@@ -29,7 +29,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RetrievedContentMatchesContentLength_SlowClient_Test
                 extends AbstractHttproxFunctionalTest

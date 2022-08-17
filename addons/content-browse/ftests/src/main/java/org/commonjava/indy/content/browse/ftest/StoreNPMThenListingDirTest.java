@@ -37,7 +37,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Verifies that the available packages are listed via browse api.

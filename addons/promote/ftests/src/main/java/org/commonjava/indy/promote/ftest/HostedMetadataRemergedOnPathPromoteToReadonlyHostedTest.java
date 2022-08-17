@@ -34,7 +34,7 @@ import java.util.Collections;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Check that metadata in a hosted repo is merged with content from a new readonly hosted repository when it is promoted by path.

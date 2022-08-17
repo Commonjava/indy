@@ -32,7 +32,7 @@ import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Check if the repo proxy addon can proxy a hosted repo to a same-named remote repo if no creator rules defined

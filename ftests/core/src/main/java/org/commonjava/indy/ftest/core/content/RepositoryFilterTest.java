@@ -38,7 +38,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 import static org.commonjava.indy.subsys.template.ScriptEngine.SCRIPTS_SUBDIR;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Given:

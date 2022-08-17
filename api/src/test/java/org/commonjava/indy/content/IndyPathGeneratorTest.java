@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import static org.commonjava.indy.model.core.PathStyle.hashed;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class IndyPathGeneratorTest
 {

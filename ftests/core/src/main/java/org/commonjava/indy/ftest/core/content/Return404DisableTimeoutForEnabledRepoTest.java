@@ -27,7 +27,7 @@ import java.util.Date;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class Return404DisableTimeoutForEnabledRepoTest
         extends AbstractContentManagementTest

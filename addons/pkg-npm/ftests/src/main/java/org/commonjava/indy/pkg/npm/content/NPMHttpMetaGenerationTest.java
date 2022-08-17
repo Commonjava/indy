@@ -29,7 +29,7 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case tests the http-meta json generation for npm remote and hosted repos, this meta is

@@ -39,7 +39,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This test assure the group level metadata merging when added new hosted repo  to a existed group which have more repos

@@ -27,7 +27,7 @@ import java.io.IOException;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case tests if remote maven metadata will timeout correctly based on the first time retrieval
