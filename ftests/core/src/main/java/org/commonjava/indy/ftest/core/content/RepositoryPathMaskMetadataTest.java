@@ -32,7 +32,7 @@ import java.util.Set;
 
 import static org.commonjava.indy.model.core.StoreType.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RepositoryPathMaskMetadataTest
         extends AbstractContentManagementTest
