@@ -16,8 +16,6 @@
 package org.commonjava.indy.schedule;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
@@ -32,11 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class ScheduleTest
 {

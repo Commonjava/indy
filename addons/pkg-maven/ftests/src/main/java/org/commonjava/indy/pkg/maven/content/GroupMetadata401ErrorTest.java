@@ -25,7 +25,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Check that the group's merged metadata is generated then checksummed when the checksum is requested BEFORE the

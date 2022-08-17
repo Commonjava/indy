@@ -33,7 +33,7 @@ import java.io.InputStream;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
