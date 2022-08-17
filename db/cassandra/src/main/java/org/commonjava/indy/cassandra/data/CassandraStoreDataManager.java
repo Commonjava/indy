@@ -267,15 +267,24 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                             ArtifactStore store = getArtifactStoreInternal( gKey );
 
                             // if this group is disabled, we don't want to keep loading it again and again.
-                            if ( store.isDisabled() )
+                            if ( store != null )
                             {
-                                processed.add( gKey );
+                                if ( store.isDisabled() )
+                                {
+                                    processed.add( gKey );
+                                }
+                                else
+                                {
+                                    // add the group to the toProcess list so we can find any result that might include it in their own membership
+                                    toProcess.addLast( gKey );
+                                    result.add( (Group) store );
+                                }
                             }
                             else
                             {
-                                // add the group to the toProcess list so we can find any result that might include it in their own membership
-                                toProcess.addLast( gKey );
-                                result.add( (Group) store );
+                                // This should not happen except some edge cases of data corruption
+                                logger.error( "Error: the group {} does not exist as affected by for store {}", gKey,
+                                              key );
                             }
                         }
                     }
