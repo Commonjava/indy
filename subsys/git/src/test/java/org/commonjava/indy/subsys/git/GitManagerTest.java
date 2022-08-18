@@ -20,7 +20,7 @@ import static org.apache.commons.io.IOUtils.copy;
 import static org.commonjava.indy.audit.ChangeSummary.SYSTEM_USER;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;

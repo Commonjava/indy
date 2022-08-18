@@ -22,7 +22,7 @@ import org.commonjava.indy.util.ApplicationStatus;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case test if the readonly hosted repo can be deleted

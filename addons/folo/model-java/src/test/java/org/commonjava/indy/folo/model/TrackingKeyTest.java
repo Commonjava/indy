@@ -17,7 +17,7 @@ package org.commonjava.indy.folo.model;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Before;
