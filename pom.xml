@@ -68,7 +68,7 @@
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.1.8.Final</undertowVersion>
     <xnioVersion>3.8.0.Final</xnioVersion>
-    <keycloakVersion>7.0.1</keycloakVersion>
+    <keycloakVersion>17.0.1</keycloakVersion>
     <bouncycastleVersion>1.64</bouncycastleVersion>
     <bytemanVersion>4.0.13</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
@@ -1542,6 +1542,11 @@
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-adapter-core</artifactId>  
         <version>${keycloakVersion}</version>    
+      </dependency>
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-authz-client</artifactId>
+        <version>${keycloakVersion}</version>
       </dependency>
       
       <dependency>

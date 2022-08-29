@@ -18,11 +18,13 @@ package org.commonjava.indy.subsys.service;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.client.core.IndyClientModule;
+import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.module.IndyStoreQueryClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.service.config.RepositoryServiceConfig;
 import org.commonjava.indy.subsys.service.inject.ServiceClient;
+import org.commonjava.indy.subsys.service.keycloak.KeycloakTokenAuthenticator;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.commonjava.util.jhttpc.model.SiteConfigBuilder;
@@ -63,8 +65,22 @@ public class IndyClientProducer
 
         try
         {
-            client = new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( Collections.emptySet() ),
-                               modules.toArray( new IndyClientModule[0] ) );
+            if ( serviceConfig.isAuthEnabled() )
+            {
+                IndyClientAuthenticator authenticator =
+                        new KeycloakTokenAuthenticator( serviceConfig.getKeycloakAuthUrl(),
+                                                        serviceConfig.getKeycloakAuthRealm(),
+                                                        serviceConfig.getKeycloakClientId(),
+                                                        serviceConfig.getKeycloakClientSecret() );
+                client = new Indy( config, authenticator, new IndyObjectMapper( Collections.emptySet() ),
+                                   Collections.emptyMap(), modules.toArray( new IndyClientModule[0] ) );
+            }
+            else
+            {
+                client = new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( Collections.emptySet() ),
+                                   modules.toArray( new IndyClientModule[0] ) );
+            }
+
         }
         catch ( IndyClientException e )
         {
