@@ -33,6 +33,16 @@ public class RepositoryServiceConfig
 
     private Integer requestTimeout = 60;
 
+    private Boolean authEnabled = Boolean.FALSE;
+
+    private String keycloakAuthUrl;
+
+    private String keycloakAuthRealm;
+
+    private String keycloakClientId;
+
+    private String keycloakClientSecret;
+
     public Boolean isEnabled()
     {
         return enabled;
@@ -64,6 +74,61 @@ public class RepositoryServiceConfig
     public void setRequestTimeout( Integer requestTimeout )
     {
         this.requestTimeout = requestTimeout;
+    }
+
+    public Boolean isAuthEnabled()
+    {
+        return authEnabled;
+    }
+
+    @ConfigName( "auth.enabled" )
+    public void setAuthEnabled( Boolean authEnabled )
+    {
+        this.authEnabled = authEnabled;
+    }
+
+    public String getKeycloakAuthUrl()
+    {
+        return keycloakAuthUrl;
+    }
+
+    @ConfigName( "keycloak.auth.url" )
+    public void setKeycloakAuthUrl( String keycloakAuthUrl )
+    {
+        this.keycloakAuthUrl = keycloakAuthUrl;
+    }
+
+    public String getKeycloakAuthRealm()
+    {
+        return keycloakAuthRealm;
+    }
+
+    @ConfigName( "keycloak.auth.realm" )
+    public void setKeycloakAuthRealm( String keycloakAuthRealm )
+    {
+        this.keycloakAuthRealm = keycloakAuthRealm;
+    }
+
+    public String getKeycloakClientId()
+    {
+        return keycloakClientId;
+    }
+
+    @ConfigName( "keycloak.auth.clientid" )
+    public void setKeycloakClientId( String keycloakClientId )
+    {
+        this.keycloakClientId = keycloakClientId;
+    }
+
+    public String getKeycloakClientSecret()
+    {
+        return keycloakClientSecret;
+    }
+
+    @ConfigName( "keycloak.auth.clientsecret" )
+    public void setKeycloakClientSecret( String keycloakClientSecret )
+    {
+        this.keycloakClientSecret = keycloakClientSecret;
     }
 
     @Override
