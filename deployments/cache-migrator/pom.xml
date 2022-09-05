@@ -15,7 +15,8 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -23,19 +24,19 @@
     <artifactId>indy-deployments</artifactId>
     <version>2.2.0-SNAPSHOT</version>
   </parent>
-  
+
   <groupId>org.commonjava.indy.launch</groupId>
   <artifactId>indy-cache-migrator</artifactId>
 
   <name>Indy :: ISPN Cache Migrator</name>
-  
+
   <properties>
     <!-- defaults for assembly -->
     <distName>${project.artifactId}</distName>
     <disableLauncher>false</disableLauncher>
     <enforcer.skip>true</enforcer.skip>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>args4j</groupId>
