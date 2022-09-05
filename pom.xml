@@ -26,7 +26,7 @@
   
   <groupId>org.commonjava.indy</groupId>
   <artifactId>indy-parent</artifactId>
-  <version>3.0.0-SNAPSHOT</version>
+        <version>3.0.0-SNAPSHOT</version>
   
   <packaging>pom</packaging>
   
@@ -66,8 +66,8 @@
     <gsonVersion>2.8.9</gsonVersion>
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
-    <undertowVersion>2.1.8.Final</undertowVersion>
-    <xnioVersion>3.8.0.Final</xnioVersion>
+    <undertowVersion>2.2.19.Final</undertowVersion>
+    <xnioVersion>3.8.2.Final</xnioVersion>
     <keycloakVersion>17.0.1</keycloakVersion>
     <bouncycastleVersion>1.64</bouncycastleVersion>
     <bytemanVersion>4.0.13</bytemanVersion>
@@ -89,7 +89,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.10-SNAPSHOT</galleyVersion>
+    <galleyVersion>1.10</galleyVersion>
     <weftVersion>1.20</weftVersion>
     <bomVersion>27</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
