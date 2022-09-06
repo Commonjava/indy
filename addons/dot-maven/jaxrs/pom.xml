@@ -16,14 +16,15 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-dot-maven</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  
+
   <artifactId>indy-dot-maven-jaxrs</artifactId>
   <name>Indy :: Add-Ons :: Dot-Maven (.m2 WebDAV) :: JAX-RS Bindings</name>
 
@@ -48,7 +49,7 @@
       <groupId>org.commonjava.web</groupId>
       <artifactId>webdav-handler-servlet</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-core</artifactId>
@@ -58,7 +59,7 @@
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-jaxrs</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-db-memory</artifactId>
@@ -69,11 +70,11 @@
       <artifactId>indy-filer-default</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
     </dependency>
   </dependencies>
-  
+
 </project>

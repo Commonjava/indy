@@ -15,18 +15,19 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
     <version>3.0.0-SNAPSHOT</version>
   </parent>
-  
+
   <artifactId>indy-core</artifactId>
   <name>Indy :: Core</name>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -68,7 +69,7 @@
       <groupId>org.slf4j</groupId>
       <artifactId>jul-to-slf4j</artifactId>
     </dependency>
-  
+
     <dependency>
       <groupId>org.commonjava.propulsor.config</groupId>
       <artifactId>propulsor-configuration-core</artifactId>
@@ -77,20 +78,20 @@
       <groupId>org.commonjava.propulsor.config</groupId>
       <artifactId>propulsor-configuration-dotconf</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-repository-metadata</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
     </dependency>
-    
+
     <dependency>
-    	<groupId>org.jboss.weld.se</groupId>
-    	<artifactId>weld-se-core</artifactId>
+      <groupId>org.jboss.weld.se</groupId>
+      <artifactId>weld-se-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -106,15 +107,15 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-http</artifactId>
     </dependency>
-    
+
     <dependency>
       <groupId>org.commonjava.cdi.util</groupId>
       <artifactId>weft</artifactId>
     </dependency>
     <dependency>
-    	<groupId>org.commonjava.maven.galley</groupId>
-    	<artifactId>galley-test-harness-core</artifactId>
-    	<scope>test</scope>
+      <groupId>org.commonjava.maven.galley</groupId>
+      <artifactId>galley-test-harness-core</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.maven.galley</groupId>
@@ -153,7 +154,7 @@
     </dependency>
 
   </dependencies>
-  
+
   <build>
     <plugins>
       <plugin>

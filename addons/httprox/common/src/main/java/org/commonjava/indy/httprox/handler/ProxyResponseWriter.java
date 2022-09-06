@@ -268,7 +268,7 @@ public final class ProxyResponseWriter
                                      PROXY_AUTHENTICATION_REQUIRED, proxy_authenticate, realmInfo );
 
                         http.writeStatus( PROXY_AUTHENTICATION_REQUIRED );
-                        http.writeHeader( proxy_authenticate, realmInfo );
+                        http.writeHeader( proxy_authenticate, String.format( "%s\n", realmInfo ) );
                     }
                     else
                     {

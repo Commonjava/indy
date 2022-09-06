@@ -16,23 +16,24 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
     <version>16</version>
   </parent>
-  
+
   <groupId>org.commonjava.indy</groupId>
   <artifactId>indy-parent</artifactId>
   <version>3.0.0-SNAPSHOT</version>
-  
+
   <packaging>pom</packaging>
-  
+
   <name>Indy :: Project Root</name>
   <inceptionYear>2011-2020</inceptionYear>
-  
+
   <scm>
     <connection>scm:git:https://github.com/CommonJava/indy</connection>
     <developerConnection>scm:git:https://github.com/CommonJava/indy</developerConnection>
@@ -49,12 +50,12 @@
       </snapshots>
     </repository>
   </repositories>
-  
+
   <properties>
     <apiVersion>1</apiVersion>
     <projectOwner>Red Hat, Inc.</projectOwner>
     <projectEmail>https://github.com/Commonjava/indy</projectEmail>
-    
+
     <!-- <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation> -->
 
     <!-- thirdparty projects -->
@@ -66,8 +67,8 @@
     <gsonVersion>2.8.9</gsonVersion>
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
-    <undertowVersion>2.1.8.Final</undertowVersion>
-    <xnioVersion>3.8.0.Final</xnioVersion>
+    <undertowVersion>2.2.19.Final</undertowVersion>
+    <xnioVersion>3.8.2.Final</xnioVersion>
     <keycloakVersion>17.0.1</keycloakVersion>
     <bouncycastleVersion>1.64</bouncycastleVersion>
     <bytemanVersion>4.0.13</bytemanVersion>
@@ -89,7 +90,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.10-SNAPSHOT</galleyVersion>
+    <galleyVersion>1.10</galleyVersion>
     <weftVersion>1.20</weftVersion>
     <bomVersion>27</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
@@ -106,7 +107,7 @@
 
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
-    
+
     <test-forkCount>1C</test-forkCount>
     <it-forkCount>3</it-forkCount>
     <test-redirectOutput>true</test-redirectOutput>
@@ -142,7 +143,7 @@
     <skipNpmConfig>true</skipNpmConfig>
 
   </properties>
-  
+
   <modules>
     <module>uis</module>
     <module>models</module>
@@ -160,12 +161,12 @@
     <module>ftests</module>
     <module>rest</module>
     <module>clients</module>
-    
+
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
     <!-- <module>embedder-tests</module> -->
     <module>deployments</module>
   </modules>
-  
+
   <dependencyManagement>
     <dependencies>
       <!-- Override httpclient dep versions -->
@@ -179,7 +180,7 @@
         <artifactId>httpcore</artifactId>
         <version>${httpcoreVersion}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.commonjava.boms</groupId>
         <artifactId>web-commons-bom</artifactId>
@@ -187,7 +188,7 @@
         <type>pom</type>
         <scope>import</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>org.commonjava.indy.ui</groupId>
         <artifactId>indy-ui-layover</artifactId>
@@ -195,7 +196,7 @@
         <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-model-core-java</artifactId>
@@ -667,7 +668,7 @@
         <classifier>confset</classifier>
         <scope>provided</scope>
       </dependency>
-      
+
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
@@ -955,7 +956,7 @@
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
-      
+
       <dependency>
         <groupId>org.commonjava.auditquery</groupId>
         <artifactId>auditquery-api</artifactId>
@@ -1030,9 +1031,9 @@
       </dependency>
 
       <dependency>
-          <groupId>org.jboss.xnio</groupId>
-          <artifactId>xnio-nio</artifactId>
-          <version>${xnioVersion}</version>
+        <groupId>org.jboss.xnio</groupId>
+        <artifactId>xnio-nio</artifactId>
+        <version>${xnioVersion}</version>
       </dependency>
 
       <dependency>
@@ -1109,21 +1110,21 @@
         <version>${honeycombVersion}</version>
       </dependency>
 
-<!--       <dependency>
-        <groupId>org.jboss.logging</groupId>
-        <artifactId>jboss-logging</artifactId>
-        <version>3.3.0.Final</version>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.logging</groupId>
-         <artifactId>jboss-logging-processor</artifactId>
-         <version>1.1.0.Final</version>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.logmanager</groupId>
-        <artifactId>jboss-logmanager</artifactId>
-        <version>1.3.1.Final</version>
-      </dependency> -->
+      <!--       <dependency>
+              <groupId>org.jboss.logging</groupId>
+              <artifactId>jboss-logging</artifactId>
+              <version>3.3.0.Final</version>
+            </dependency>
+            <dependency>
+               <groupId>org.jboss.logging</groupId>
+               <artifactId>jboss-logging-processor</artifactId>
+               <version>1.1.0.Final</version>
+            </dependency>
+            <dependency>
+              <groupId>org.jboss.logmanager</groupId>
+              <artifactId>jboss-logmanager</artifactId>
+              <version>1.3.1.Final</version>
+            </dependency> -->
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-search-orm</artifactId>
@@ -1182,24 +1183,24 @@
 
       <!-- START: JAX-RS support -->
       <dependency>
-          <groupId>io.undertow</groupId>
-          <artifactId>undertow-core</artifactId>
-          <version>${undertowVersion}</version>
+        <groupId>io.undertow</groupId>
+        <artifactId>undertow-core</artifactId>
+        <version>${undertowVersion}</version>
       </dependency>
       <dependency>
-          <groupId>io.undertow</groupId>
-          <artifactId>undertow-servlet</artifactId>
-          <version>${undertowVersion}</version>
+        <groupId>io.undertow</groupId>
+        <artifactId>undertow-servlet</artifactId>
+        <version>${undertowVersion}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss.resteasy</groupId>
-          <artifactId>resteasy-jaxrs</artifactId>
-          <version>${resteasyVersion}</version>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-jaxrs</artifactId>
+        <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss.resteasy</groupId>
-          <artifactId>resteasy-cdi</artifactId>
-          <version>${resteasyVersion}</version>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>resteasy-cdi</artifactId>
+        <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
@@ -1207,14 +1208,14 @@
         <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss.resteasy</groupId>
-          <artifactId>jaxrs-api</artifactId>
-          <version>${resteasyVersion}</version>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>jaxrs-api</artifactId>
+        <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
-          <groupId>org.jboss.resteasy</groupId>
-          <artifactId>async-http-servlet-3.0</artifactId>
-          <version>${resteasyVersion}</version>
+        <groupId>org.jboss.resteasy</groupId>
+        <artifactId>async-http-servlet-3.0</artifactId>
+        <version>${resteasyVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.spec.javax.servlet</groupId>
@@ -1222,7 +1223,7 @@
         <version>1.0.1.Final</version>
       </dependency>
       <!-- END: JAX-RS support -->
-      
+
       <dependency>
         <groupId>org.commonjava.maven.galley</groupId>
         <artifactId>galley-api</artifactId>
@@ -1291,7 +1292,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
+
       <dependency>
         <groupId>com.redhat.red.build</groupId>
         <artifactId>kojiji</artifactId>
@@ -1321,7 +1322,7 @@
         <version>${httpTestserverVersion}</version>
         <scope>test</scope>
       </dependency>
-      
+
 
       <dependency>
         <groupId>org.commonjava.web</groupId>
@@ -1333,7 +1334,7 @@
         <artifactId>webdav-handler-servlet</artifactId>
         <version>${webdavVersion}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.eclipse.jgit</groupId>
         <artifactId>org.eclipse.jgit</artifactId>
@@ -1380,7 +1381,7 @@
         <artifactId>groovy-all</artifactId>
         <version>2.4.21</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.apache.maven.indexer</groupId>
         <artifactId>indexer-core</artifactId>
@@ -1403,7 +1404,7 @@
         <artifactId>galley-maven</artifactId>
         <version>${galleyVersion}</version>
       </dependency>
-      
+
       <!-- Support for manually embedding CDI when needed -->
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
@@ -1477,7 +1478,7 @@
         <artifactId>postgresql</artifactId>
         <version>42.3.3</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.commonjava.atservice</groupId>
         <artifactId>atservice-annotation</artifactId>
@@ -1494,7 +1495,7 @@
         <artifactId>commons-beanutils</artifactId>
         <version>1.9.4</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.apache.maven.plugin-tools</groupId>
         <artifactId>maven-plugin-annotations</artifactId>
@@ -1512,7 +1513,7 @@
         <artifactId>maven-plugin-api</artifactId>
         <version>3.0.4</version>
       </dependency>
-      
+
       <dependency>
         <groupId>org.jsoup</groupId>
         <artifactId>jsoup</artifactId>
@@ -1531,24 +1532,24 @@
       <dependency>
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-undertow-adapter</artifactId>
-        <version>${keycloakVersion}</version>    
+        <version>${keycloakVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-core</artifactId>
-        <version>${keycloakVersion}</version>    
+        <version>${keycloakVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.keycloak</groupId>
-        <artifactId>keycloak-adapter-core</artifactId>  
-        <version>${keycloakVersion}</version>    
+        <artifactId>keycloak-adapter-core</artifactId>
+        <version>${keycloakVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.keycloak</groupId>
         <artifactId>keycloak-authz-client</artifactId>
         <version>${keycloakVersion}</version>
       </dependency>
-      
+
       <dependency>
         <groupId>io.swagger</groupId>
         <artifactId>swagger-annotations</artifactId>
@@ -1597,8 +1598,8 @@
         <version>1.6</version>
         <scope>test</scope>
       </dependency>
-<!--  NOTE: Unmaintained! https://github.com/elastic/elasticsearch-metrics-reporter-java -->
-       <dependency>
+      <!--  NOTE: Unmaintained! https://github.com/elastic/elasticsearch-metrics-reporter-java -->
+      <dependency>
         <groupId>org.elasticsearch</groupId>
         <artifactId>metrics-elasticsearch-reporter</artifactId>
         <version>2.2.0</version>
@@ -1761,14 +1762,14 @@
       </dependency>
 
       <dependency>
-          <groupId>io.grpc</groupId>
-          <artifactId>grpc-netty</artifactId>
-          <version>1.35.0</version>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-netty</artifactId>
+        <version>1.35.0</version>
       </dependency>
       <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-          <version>23.6-jre</version>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>23.6-jre</version>
       </dependency>
 
       <dependency>
@@ -1778,7 +1779,7 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-  
+
   <dependencies>
     <dependency>
       <groupId>ch.qos.logback</groupId>
@@ -1813,7 +1814,7 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-  
+
   <build>
     <pluginManagement>
       <plugins>
@@ -1985,7 +1986,7 @@
             <forkCount>${it-forkCount}</forkCount>
             <reportsDirectory>${failsafe.report.dir}</reportsDirectory>
             <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
-<!--             <rerunFailingTestsCount>1</rerunFailingTestsCount> -->
+            <!--             <rerunFailingTestsCount>1</rerunFailingTestsCount> -->
             <includes>
               <include>**/*Test.java</include>
             </includes>
@@ -2005,7 +2006,7 @@
               <goals>
                 <goal>jar</goal>
               </goals>
-          </execution>
+            </execution>
           </executions>
         </plugin>
         <plugin>
@@ -2187,7 +2188,7 @@
       </plugin>
     </plugins>
   </build>
-  
+
   <profiles>
     <profile>
       <id>run-its</id>
@@ -2309,5 +2310,5 @@
     </profile>
   </profiles>
 
-  
+
 </project>
