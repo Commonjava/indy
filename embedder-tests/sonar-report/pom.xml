@@ -743,7 +743,8 @@
         <sonar.skip>false</sonar.skip>
         <sonar.projectKey>${project.groupId}:indy-sonar-report</sonar.projectKey>
         <sonar.projectName>Indy :: Overall Test coverage :: Sonar Report</sonar.projectName>
-        <sonar.projectDescription>Assemble all Indy unit test and ftest against all codes, and do sonar reporting</sonar.projectDescription>
+        <sonar.projectDescription>Assemble all Indy unit test and ftest against all codes, and do sonar reporting
+        </sonar.projectDescription>
         <sonar.projectVersion>${project.version}</sonar.projectVersion>
         <sonar.links.homepage>http://github.com/Commonjava/indy</sonar.links.homepage>
         <sonar.links.scm>scm:git:https://github.com/Commonjava/indy.git</sonar.links.scm>
