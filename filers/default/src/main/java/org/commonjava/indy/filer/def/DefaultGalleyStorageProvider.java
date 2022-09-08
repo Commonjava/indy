@@ -300,10 +300,6 @@ public class DefaultGalleyStorageProvider
         }
         decorators.add( getChecksummingTransferDecorator() );
 
-        if ( featureConfig.getFileChangeTracking() )
-        {
-            decorators.add( new FileChangeTrackingDecorator( config ) );
-        }
         transferDecorator = new TransferDecoratorManager( decorators );
     }
 
