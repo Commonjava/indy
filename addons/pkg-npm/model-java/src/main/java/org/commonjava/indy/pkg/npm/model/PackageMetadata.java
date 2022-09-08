@@ -426,11 +426,14 @@ public class PackageMetadata
         {
             for ( final String tag : sourceDistMap.keySet() )
             {
-                SingleVersion sourceVersion = VersionUtils.createSingleVersion( sourceDistMap.get( tag ) );
-                SingleVersion thisVersion = VersionUtils.createSingleVersion( thisDistMap.get( tag ) );
-                if ( thisDistMap.containsKey( tag ) && sourceVersion.compareTo( thisVersion ) <= 0 )
+                if ( thisDistMap.containsKey( tag ) )
                 {
-                    continue;
+                    SingleVersion sourceVersion = VersionUtils.createSingleVersion( sourceDistMap.get( tag ) );
+                    SingleVersion thisVersion = VersionUtils.createSingleVersion( thisDistMap.get( tag ) );
+                    if ( sourceVersion.compareTo( thisVersion ) <= 0 )
+                    {
+                        continue;
+                    }
                 }
                 distTags.putTag( tag, sourceDistMap.get( tag ) );
                 changed = true;

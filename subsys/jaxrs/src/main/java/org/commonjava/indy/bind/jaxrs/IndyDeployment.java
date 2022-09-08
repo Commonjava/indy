@@ -208,6 +208,10 @@ public class IndyDeployment
                                                       .addServletContextAttribute( ResteasyDeployment.class.getName(),
                                                                                    deployment )
 
+                                                      .addFilter( slashTolerationFilter )
+                                                      .addFilterUrlMapping( slashTolerationFilter.getName(),
+                                                                            "*", DispatcherType.REQUEST )
+
                                                       .addServlet( resteasyServlet )
 
                                                       .addFilter( apiVersioningFilter )

@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathConstants;
@@ -280,6 +281,8 @@ public class MavenContentsFilteringTransferDecorator
                 throws IOException, SAXException, ParserConfigurationException, XPathExpressionException
         {
             final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
             factory.setNamespaceAware( true );
             final Document doc =
                     factory.newDocumentBuilder().parse( new ByteArrayInputStream( buffer.toString().getBytes() ) );

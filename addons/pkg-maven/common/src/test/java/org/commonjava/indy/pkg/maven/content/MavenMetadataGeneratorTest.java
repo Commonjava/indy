@@ -32,6 +32,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger;
 import org.commonjava.indy.util.LocationUtils;
+import org.commonjava.indy.util.PathUtils;
 import org.commonjava.atlas.maven.ident.ref.SimpleProjectVersionRef;
 import org.commonjava.atlas.maven.ident.util.SnapshotUtils;
 import org.commonjava.atlas.maven.ident.util.VersionUtils;
@@ -57,15 +58,20 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_MD5_NAME;
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_NAME;
+import static org.commonjava.indy.pkg.maven.content.group.MavenMetadataMerger.METADATA_SHA_NAME;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class MavenMetadataGeneratorTest
@@ -84,7 +90,6 @@ public class MavenMetadataGeneratorTest
 
     @Before
     public void setup()
-        throws Exception
     {
         stores = new MemoryStoreDataManager( true );
 
@@ -174,7 +179,7 @@ public class MavenMetadataGeneratorTest
 
         final List<StoreResource> result =
             generator.generateDirectoryContent( stores.getArtifactStore( resource.getStoreKey() ), resource.getPath(),
-                                                Collections.<StoreResource> emptyList(), emd );
+                                                Collections.emptyList(), emd );
 
         System.out.println( StringUtils.join( result, "\n" ) );
 
@@ -236,7 +241,7 @@ public class MavenMetadataGeneratorTest
 
         final List<StoreResource> result =
             generator.generateDirectoryContent( stores.getArtifactStore( resource.getStoreKey() ), resource.getPath(),
-                                                Collections.<StoreResource> emptyList(), new EventMetadata() );
+                                                Collections.emptyList(), new EventMetadata() );
 
         System.out.println( StringUtils.join( result, "\n" ) );
 
@@ -245,10 +250,10 @@ public class MavenMetadataGeneratorTest
         for ( final StoreResource res : result )
         {
             if ( !( res.getPath()
-                       .endsWith( MavenMetadataMerger.METADATA_MD5_NAME )
+                       .endsWith( METADATA_MD5_NAME )
                 || res.getPath()
-                      .endsWith( MavenMetadataMerger.METADATA_NAME ) || res.getPath()
-                                                                           .endsWith( MavenMetadataMerger.METADATA_SHA_NAME ) ) )
+                      .endsWith( METADATA_NAME ) || res.getPath()
+                                                                           .endsWith( METADATA_SHA_NAME ) ) )
             {
                 fail( "Invalid generated content: " + res );
             }
@@ -282,6 +287,8 @@ public class MavenMetadataGeneratorTest
                                  new TestListing( new ListingResult( versionDir, new String[] { "artifact-1.1.jar",
                                      "artifact-1.1.pom" } ) ) );
 
+        generateMetadata( location, path );
+
         return resource;
     }
 
@@ -304,7 +311,22 @@ public class MavenMetadataGeneratorTest
         fixture.getTransport()
                .registerListing( resource, listing );
 
+        generateMetadata( location, path );
+
         return resource;
     }
 
+    private void generateMetadata( final KeyedLocation location, final String basePath )
+            throws Exception
+    {
+        final StoreResource metaRes = new StoreResource( location, PathUtils.join( basePath, METADATA_NAME ) );
+        fixture.getTransferManager()
+               .store( metaRes, new ByteArrayInputStream( "test-metadata".getBytes( StandardCharsets.UTF_8 ) ) );
+        final StoreResource metaMD5Res = new StoreResource( location, PathUtils.join( basePath, METADATA_MD5_NAME ) );
+        fixture.getTransferManager()
+               .store( metaMD5Res, new ByteArrayInputStream( "test-metadata-md5".getBytes( StandardCharsets.UTF_8 ) ) );
+        final StoreResource metaSHARes = new StoreResource( location, PathUtils.join( basePath, METADATA_SHA_NAME ) );
+        fixture.getTransferManager()
+               .store( metaSHARes, new ByteArrayInputStream( "test-metadata-sha".getBytes( StandardCharsets.UTF_8 ) ) );
+    }
 }

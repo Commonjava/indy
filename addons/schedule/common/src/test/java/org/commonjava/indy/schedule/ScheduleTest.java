@@ -33,8 +33,8 @@ import org.junit.experimental.categories.Category;
 
 import java.util.Collection;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 @Category( CassandraTest.class )
 public class ScheduleTest
@@ -82,11 +82,11 @@ public class ScheduleTest
         final String jobName = "org/jboss";
         final String payload = "json_string";
 
-        Long timeout = Long.valueOf( 10 );
+        Long timeout = Long.valueOf( 5 );
 
         scheduleDB.createSchedule( storeKey, JobType.CONTENT.getJobType(), jobName, payload, timeout );
 
-        Thread.sleep( 15 * 1000 );
+        Thread.sleep( 10 * 1000 );
 
         DtxSchedule schedule = scheduleDB.querySchedule( storeKey, jobName );
 

@@ -90,7 +90,7 @@ public final class StoreKey
         int result = 1;
         result = prime * result + ( ( packageType == null ) ? 7 : packageType.hashCode() );
         result = prime * result + ( ( name == null ) ? 13 : name.hashCode() );
-        result = prime * result + ( ( type == null ) ? 17 : type.hashCode() );
+        result = prime * result + ( ( type == null ) ? 17 : type.name().hashCode() );
         return result;
     }
 

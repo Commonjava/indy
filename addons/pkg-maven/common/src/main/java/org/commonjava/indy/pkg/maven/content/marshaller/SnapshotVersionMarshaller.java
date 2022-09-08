@@ -28,8 +28,8 @@ public class SnapshotVersionMarshaller implements MessageMarshaller<SnapshotVers
         SnapshotVersion version = new SnapshotVersion();
         version.setClassifier( reader.readString( "classifier" ) );
         version.setExtension( reader.readString( "extension" ) );
-        version.setUpdated( reader.readString( "updated" ) );
         version.setVersion( reader.readString( "version" ) );
+        version.setUpdated( reader.readString( "updated" ) );
         return version;
     }
 
@@ -38,8 +38,8 @@ public class SnapshotVersionMarshaller implements MessageMarshaller<SnapshotVers
     {
         writer.writeString( "classifier", snapshotVersion.getClassifier() );
         writer.writeString( "extension", snapshotVersion.getExtension() );
-        writer.writeString( "updated", snapshotVersion.getUpdated() );
         writer.writeString( "version", snapshotVersion.getVersion() );
+        writer.writeString( "updated", snapshotVersion.getUpdated() );
     }
 
     @Override

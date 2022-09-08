@@ -24,6 +24,7 @@ import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
+import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderConfig;
 import org.commonjava.o11yphant.metrics.api.Meter;
 import org.commonjava.o11yphant.metrics.api.MetricRegistry;
 import org.commonjava.o11yphant.metrics.api.Timer;
@@ -201,7 +202,7 @@ public class DefaultGalleyStorageProvider
             // Only work for local debug mode.
             ScheduledExecutorService debugDeleteExecutor = Executors.newScheduledThreadPool( 5, new NamedThreadFactory(
                     "debug-galley-delete-executor", new ThreadGroup( "debug-galley-delete-executor" ), true, 2 ) );
-            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, debugDeleteExecutor );
+            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, indyConfiguration.isTimeoutProcessing(), debugDeleteExecutor );
             return;
         }
 
@@ -245,9 +246,12 @@ public class DefaultGalleyStorageProvider
         PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot, legacyBaseDir );
 
         logger.info( "Create cacheProviderFactory, pathDB: {}, physicalStore: {}", pathDB, physicalStore );
+        PathMappedCacheProviderConfig cacheProviderConfig =
+                        new PathMappedCacheProviderConfig( storeRoot ).withTimeoutProcessingEnabled(
+                                        config.isStorageTimeoutEnabled() );
         cacheProviderFactory =
                         new PathMappedCacheProviderFactory( storeRoot, deleteExecutor, pathMappedStorageConfig, pathDB,
-                                                            physicalStore );
+                                                            physicalStore, cacheProviderConfig );
     }
 
     private PathMappedStorageConfig getPathMappedStorageConfig()
@@ -266,6 +270,7 @@ public class DefaultGalleyStorageProvider
         ret.setGcGracePeriodInHours( config.getGcGracePeriodInHours() );
         ret.setGcIntervalInMinutes( config.getGcIntervalInMinutes() );
         ret.setDeduplicatePattern( config.getDeduplicatePattern() );
+        ret.setPhysicalFileExistenceCheckEnabled( config.isPhysicalFileExistenceCheckEnabled() );
 
         return ret;
     }
@@ -295,10 +300,6 @@ public class DefaultGalleyStorageProvider
         }
         decorators.add( getChecksummingTransferDecorator() );
 
-        if ( featureConfig.getFileChangeTracking() )
-        {
-            decorators.add( new FileChangeTrackingDecorator( config ) );
-        }
         transferDecorator = new TransferDecoratorManager( decorators );
     }
 

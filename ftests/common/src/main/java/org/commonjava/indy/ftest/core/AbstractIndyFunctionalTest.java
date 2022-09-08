@@ -45,6 +45,7 @@ import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -178,7 +179,7 @@ public abstract class AbstractIndyFunctionalTest
         }
         catch ( InterruptedException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Thread interrupted while waiting for server events to propagate." );
         }
 
@@ -246,7 +247,7 @@ public abstract class AbstractIndyFunctionalTest
         }
         catch ( InterruptedException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
         }
         CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
         cacheProvider.asAdminView().gc();
@@ -316,13 +317,19 @@ public abstract class AbstractIndyFunctionalTest
                         + "_scheduler\nschedule.keyspace.replica=1\n"
                         + "schedule.partition.range=3600000\nschedule.rate.period=3" );
 
-        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo");
+
+        writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
+                        + "folo.storage=infinispan\n"
+                        + "store.storage=infinispan\n"
+                        + "schedule.storage=infinispan");
+
+        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo" + "\ntrack.group.content=True");
 
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduledb.conf", readTestResource( "default-test-scheduledb.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
-            writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
+            writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false\nstore.auto.disable.reenable=true\n" );
             writeConfigFile( "conf.d/durable-state.conf", readTestResource( "default-durable-state.conf" ) );
         }
         else
@@ -416,7 +423,7 @@ public abstract class AbstractIndyFunctionalTest
 
     protected String newName()
     {
-        final Random rand = new Random();
+        final SecureRandom rand = new SecureRandom();
         final StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < NAME_LEN; i++ )
         {

@@ -32,7 +32,7 @@ import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Check if the NPM metadata rewriting features can work well for this proxy addon

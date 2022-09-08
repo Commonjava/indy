@@ -26,7 +26,7 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case test if files can be deleted in a readonly hosted repo

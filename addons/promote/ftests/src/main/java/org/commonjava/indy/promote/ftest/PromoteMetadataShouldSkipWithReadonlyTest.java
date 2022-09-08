@@ -32,7 +32,7 @@ import java.util.Collections;
 
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Check that metadata should be skipped correctly during promotion with no error if the target repo is set to read-only for path promotion

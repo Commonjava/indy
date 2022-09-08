@@ -45,7 +45,7 @@ import java.util.Map;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -173,7 +173,7 @@ public class CacheCheckingforPromoteWithRemoteTest
         }
         catch ( SAXException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Downloaded XML not equal to expected XML" );
         }
     }

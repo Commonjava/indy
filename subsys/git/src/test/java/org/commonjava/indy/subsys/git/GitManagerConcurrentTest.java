@@ -98,7 +98,6 @@ public class GitManagerConcurrentTest
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
                 failed = true;
             }
             finally
@@ -116,7 +115,6 @@ public class GitManagerConcurrentTest
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
                 failed = true;
             }
             finally
@@ -166,7 +164,6 @@ public class GitManagerConcurrentTest
                 }
                 catch ( Exception e )
                 {
-                    e.printStackTrace();
                     failed = true;
                 }
                 finally
@@ -211,7 +208,6 @@ public class GitManagerConcurrentTest
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
                 failed = true;
             }
         }
@@ -234,7 +230,6 @@ public class GitManagerConcurrentTest
                 }
                 catch ( Exception e )
                 {
-                    e.printStackTrace();
                     failed = true;
                 }
                 finally

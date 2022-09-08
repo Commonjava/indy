@@ -43,6 +43,6 @@ public class IndyGoldenSignalsMetricSetProvider
     @Override
     public void reset()
     {
-        metricSet.reset();
+        getMetricSet().reset();
     }
 }

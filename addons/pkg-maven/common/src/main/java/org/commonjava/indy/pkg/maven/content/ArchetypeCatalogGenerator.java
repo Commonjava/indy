@@ -41,10 +41,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static org.apache.commons.io.IOUtils.closeQuietly;
-import static org.commonjava.maven.galley.util.PathUtils.normalize;
-import static org.commonjava.maven.galley.util.PathUtils.parentPath;
-
 public class ArchetypeCatalogGenerator
         extends AbstractMergedContentGenerator
 {
@@ -56,6 +52,9 @@ public class ArchetypeCatalogGenerator
             add( ArchetypeCatalogMerger.CATALOG_NAME );
             add( ArchetypeCatalogMerger.CATALOG_MD5_NAME );
             add( ArchetypeCatalogMerger.CATALOG_SHA_NAME );
+            add( ArchetypeCatalogMerger.CATALOG_SHA256_NAME );
+            add( ArchetypeCatalogMerger.CATALOG_SHA384_NAME );
+            add( ArchetypeCatalogMerger.CATALOG_SHA512_NAME );
         }
 
         private static final long serialVersionUID = 1L;
@@ -106,17 +105,32 @@ public class ArchetypeCatalogGenerator
 
         if ( !target.exists() )
         {
+            // For .md5, sha1, sha256, etc, we need to get the raw archetype path to merge to.
             String toMergePath = path;
             if ( !path.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
             {
-                toMergePath = normalize( normalize( parentPath( toMergePath ) ), ArchetypeCatalogMerger.CATALOG_NAME );
+                // Not use same way as '<parent-path>/maven-metadata.xml' because the archetype filename is not just 'archetype-catalog.xml'. Instead, they look like '.+-archetype-catalog.xml'
+                int lastDot = path.lastIndexOf( "." );
+                if ( lastDot > 0 )
+                {
+                    toMergePath = path.substring( 0, lastDot );
+                }
+                if ( !toMergePath.endsWith( ArchetypeCatalogMerger.CATALOG_NAME ) )
+                {
+                    logger.error( "Invalid archetype toMergePath, {}", toMergePath ); // should not happen!
+                    return null;
+                }
             }
+            logger.debug( "Generate archetype, toMergePath: {}", toMergePath );
 
             final List<Transfer> sources = fileManager.retrieveAllRaw( members, toMergePath, new EventMetadata() );
+            logger.trace( "Retrieve all raw, sources: {}", sources );
+
             final byte[] merged = merger.merge( sources, group, toMergePath );
             if ( merged != null )
             {
-                try(OutputStream fos = target.openOutputStream( TransferOperation.GENERATE, true, eventMetadata ))
+                Transfer toMergeTarget = fileManager.getTransfer( group, toMergePath );
+                try(OutputStream fos = toMergeTarget.openOutputStream( TransferOperation.GENERATE, true, eventMetadata ))
                 {
                     fos.write( merged );
                 }
@@ -140,11 +154,16 @@ public class ArchetypeCatalogGenerator
                                                               final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        final List<StoreResource> result = new ArrayList<StoreResource>();
+        final List<StoreResource> result = new ArrayList<>();
         for ( final String filename : HANDLED_FILENAMES )
         {
-            result.add( new StoreResource( LocationUtils.toLocation( group ), Paths.get( path, filename )
-                                                                                   .toString() ) );
+            StoreResource resource =
+                    new StoreResource( LocationUtils.toLocation( group ), Paths.get( path, filename ).toString() );
+            Transfer transfer = fileManager.getTransfer( group.getKey(), resource.getPath() );
+            if ( transfer != null && transfer.exists( eventMetadata ) )
+            {
+                result.add( resource );
+            }
         }
 
         return result;

@@ -19,6 +19,7 @@ import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.text.MessageFormat;
 
+import org.commonjava.indy.IndyException;
 import org.commonjava.indy.model.core.ArtifactStore;
 
 /**
@@ -26,7 +27,7 @@ import org.commonjava.indy.model.core.ArtifactStore;
  * {@link ArtifactStore} instances.
  */
 public class IndyDataException
-    extends Exception
+        extends IndyException
 {
     private static final long serialVersionUID = 1L;
 

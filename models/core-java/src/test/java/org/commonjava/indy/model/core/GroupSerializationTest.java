@@ -33,7 +33,7 @@ import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class GroupSerializationTest

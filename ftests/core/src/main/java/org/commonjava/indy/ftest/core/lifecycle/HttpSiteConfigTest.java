@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import static org.commonjava.indy.subsys.http.conf.IndyHttpConfig.DEFAULT_SITE;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class HttpSiteConfigTest
         extends AbstractIndyFunctionalTest

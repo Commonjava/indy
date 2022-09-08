@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -40,7 +41,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 public class NPMStyleSuccessiveRetrievalTest
@@ -64,7 +65,7 @@ public class NPMStyleSuccessiveRetrievalTest
         byte[] pkg = IOUtils.toByteArray( is );
 
         byte[] tgz = new byte[32];
-        new Random().nextBytes( tgz );
+        new SecureRandom().nextBytes( tgz );
 
         final String pkgUrl = server.formatUrl( testRepo, pkgPath );
         final String tgzUrl = server.formatUrl( testRepo, tgzPath );
@@ -96,7 +97,7 @@ public class NPMStyleSuccessiveRetrievalTest
             }
             catch ( Exception e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 fail( url + ": Failed to retrieve file. Reason: " + e.getMessage() );
             }
             finally

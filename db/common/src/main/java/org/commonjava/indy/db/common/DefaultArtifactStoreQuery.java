@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -29,6 +28,7 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.UrlInfo;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -79,14 +78,14 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
     public DefaultArtifactStoreQuery( StoreDataManager dataManager )
     {
-        logger.info( "CREATE new default store query with data manager only" );
+        logger.debug( "CREATE new default store query with data manager only" );
         this.dataManager = dataManager;
     }
 
     private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
                                        final Boolean enabled, final Class<T> storeCls )
     {
-        logger.info( "CREATE new default store query with params (internal?)" );
+        logger.debug( "CREATE new default store query with params (internal?)" );
 
         this.dataManager = dataManager;
         this.packageType = packageType;
@@ -94,12 +93,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         storeType( storeCls );
     }
 
-    @Override
-    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
-    {
-        this.dataManager = manager;
-        return this;
-    }
+//    @Override
+//    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+//    {
+//        this.dataManager = manager;
+//        return this;
+//    }
 
     @Override
     public <C extends ArtifactStore> DefaultArtifactStoreQuery<C> storeType( Class<C> storeCls )
@@ -140,11 +139,11 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    @Override
-    public boolean isEmpty()
-    {
-        return this.dataManager.isEmpty();
-    }
+//    @Override
+//    public boolean isEmpty()
+//    {
+//        return this.dataManager.isEmpty();
+//    }
 
     @Override
     @Measure
@@ -236,12 +235,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return stream( store -> name.equals( store.getName() ) ).findFirst().orElse( null );
     }
 
-    @Override
-    public boolean containsByName( String name )
-            throws IndyDataException
-    {
-        return getByName( name ) != null;
-    }
+//    @Override
+//    public boolean containsByName( String name )
+//            throws IndyDataException
+//    {
+//        return getByName( name ) != null;
+//    }
 
     @Override
     @Measure
@@ -285,7 +284,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         }
         catch ( Exception error )
         {
-            logger.error( "Failed to find repository, url: '{}'. Reason: {}", url, error.getMessage() );
+            logger.warn( "Failed to find repository, url: '{}'. Reason: {}", url, error.getMessage() );
             return result;
         }
 
@@ -359,7 +358,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     }
                     catch ( UnknownHostException ue )
                     {
-                        logger.warn( "Failed to filter remote: ip fetch error.", ue );
+                        logger.warn( "Failed to filter remote: {}, ip fetch error: {}.", store.getKey(), ue.getMessage() );
                     }
 
                     logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
@@ -431,31 +430,31 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return dataManager.affectedBy( keys );
     }
 
-    public Stream<StoreKey> keyStream()
-    {
-        return keyStream( null );
-    }
+//    public Stream<StoreKey> keyStream()
+//    {
+//        return keyStream( null );
+//    }
 
-    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-    {
-        final Stream<StoreKey> storeKeys;
-        if ( StringUtils.isNotBlank( this.packageType ) )
-        {
-            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
-        }
-        else
-        {
-            storeKeys = dataManager.streamArtifactStoreKeys();
-        }
-        return storeKeys.filter(key -> {
-            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
-            {
-                return false;
-            }
-
-            return filterPredicate == null || filterPredicate.test(key);
-        });
-    }
+//    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
+//    {
+//        final Stream<StoreKey> storeKeys;
+//        if ( StringUtils.isNotBlank( this.packageType ) )
+//        {
+//            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
+//        }
+//        else
+//        {
+//            storeKeys = dataManager.streamArtifactStoreKeys();
+//        }
+//        return storeKeys.filter(key -> {
+//            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
+//            {
+//                return false;
+//            }
+//
+//            return filterPredicate == null || filterPredicate.test(key);
+//        });
+//    }
 
     @Override
     public RemoteRepository getRemoteRepository( final String packageType, final String name )
@@ -550,61 +549,62 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 
         final List<ArtifactStore> result = new ArrayList<>();
 
-        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
-        LinkedList<Group> toCheck = new LinkedList<>();
-        Set<StoreKey> seen = new HashSet<>();
-        toCheck.add( master );
+        return getMembersOrdering( master, enabled, result, includeGroups, recurseGroups );
 
-        while ( !toCheck.isEmpty() )
+    }
+
+    private List<ArtifactStore> getMembersOrdering(final Group groupRepo, final Boolean enabled, final List<ArtifactStore> result,
+                                                   final boolean includeGroups, final boolean recurseGroups) throws IndyDataException
+    {
+
+        if ( groupRepo == null || groupRepo.isDisabled() && Boolean.TRUE.equals(this.enabled) )
         {
-            Group next = toCheck.removeFirst();
+            return result;
+        }
 
-            if ( next == null || next.isDisabled() && Boolean.TRUE.equals( this.enabled ) )
+        Set<StoreKey> seen = result.stream().map( ArtifactStore::getKey ).collect( Collectors.toSet() );
+        AtomicReference<IndyDataException> errorRef = new AtomicReference<>();
+
+        List<StoreKey> members = new ArrayList<>( groupRepo.getConstituents() );
+        if ( includeGroups )
+        {
+            result.add( groupRepo );
+        }
+
+        members.forEach(( key ) ->
+        {
+            if (!seen.contains( key ))
             {
-                continue;
+                seen.add( key );
+                final StoreType type = key.getType();
+                try
+                {
+                    if ( recurseGroups && type == group )
+                    {
+                        // if we're here, we're definitely recursing groups...
+                        Group group = (Group) dataManager.getArtifactStore(key);
+                        getMembersOrdering( group, enabled, result, includeGroups, recurseGroups );
+                    }
+                    else
+                    {
+                        final ArtifactStore store = dataManager.getArtifactStore( key );
+                        if (store != null && !(store.isDisabled() && Boolean.TRUE.equals( this.enabled )))
+                        {
+                            result.add( store );
+                        }
+                    }
+                }
+                catch ( IndyDataException e )
+                {
+                    errorRef.set( e );
+                }
             }
+        });
 
-            List<StoreKey> members = new ArrayList<>( next.getConstituents() );
-            if ( includeGroups )
-            {
-                result.add( next );
-            }
-
-            members.forEach( ( key ) ->
-                             {
-                                 if ( !seen.contains( key ) )
-                                 {
-                                     seen.add( key );
-                                     final StoreType type = key.getType();
-                                     try
-                                     {
-                                         if ( recurseGroups && type == group )
-                                         {
-                                             // if we're here, we're definitely recursing groups...
-                                             Group group = (Group) dataManager.getArtifactStore( key );
-                                             toCheck.addFirst( group );
-                                         }
-                                         else
-                                         {
-                                             final ArtifactStore store = dataManager.getArtifactStore( key );
-                                             if ( store != null && !( store.isDisabled() && Boolean.TRUE.equals( this.enabled ) ) )
-                                             {
-                                                 result.add( store );
-                                             }
-                                         }
-                                     }
-                                     catch ( IndyDataException e )
-                                     {
-                                         errorRef.set(e);
-                                     }
-                                 }
-                             } );
-
-            IndyDataException error = errorRef.get();
-            if ( error != null )
-            {
-                throw error;
-            }
+        IndyDataException error = errorRef.get();
+        if ( error != null )
+        {
+            throw error;
         }
 
         return result;

@@ -68,7 +68,7 @@ public class ValidationRuleParser
                                          e.getMessage() ), e );
         }
 
-        if ( !spec.contains( "import " ) && !spec.contains( "package " ) )
+        if ( spec != null && !spec.contains( "import " ) && !spec.contains( "package " ) )
         {
             spec = STANDARD_IMPORTS + spec;
         }

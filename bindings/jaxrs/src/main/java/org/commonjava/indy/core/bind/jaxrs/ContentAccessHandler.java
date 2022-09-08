@@ -290,6 +290,13 @@ public class ContentAccessHandler
                             final Boolean cacheOnly, final String baseUri, final HttpServletRequest request,
                             EventMetadata eventMetadata, final Consumer<ResponseBuilder> builderModifier )
     {
+        return doHead( packageType, type, name, path, cacheOnly, baseUri, request, eventMetadata, builderModifier, Boolean.TRUE );
+    }
+
+    public Response doHead( final String packageType, final String type, final String name, final String path,
+                            final Boolean cacheOnly, final String baseUri, final HttpServletRequest request,
+                            EventMetadata eventMetadata, final Consumer<ResponseBuilder> builderModifier, final Boolean allowRedirect )
+    {
         setContext( PACKAGE_TYPE, packageType );
         setContext( PATH, path );
 
@@ -311,7 +318,7 @@ public class ContentAccessHandler
 
         Response response = null;
 
-        if ( isDirectoryPath( path, request ) )
+        if ( allowRedirect && isDirectoryPath( path, request ) )
         {
             response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }
@@ -435,6 +442,13 @@ public class ContentAccessHandler
                            final String baseUri, final HttpServletRequest request, EventMetadata eventMetadata,
                            final Consumer<ResponseBuilder> builderModifier )
     {
+        return doGet( packageType, type, name, path, baseUri, request, eventMetadata, builderModifier, Boolean.TRUE );
+    }
+
+    public Response doGet( final String packageType, final String type, final String name, String path,
+                           final String baseUri, final HttpServletRequest request, EventMetadata eventMetadata,
+                           final Consumer<ResponseBuilder> builderModifier, final Boolean allowRedirect )
+    {
         setContext( PACKAGE_TYPE, packageType );
         setContext( PATH, path );
 
@@ -463,7 +477,7 @@ public class ContentAccessHandler
                 "GET path: '{}' (RAW: '{}')\nIn store: '{}'\nUser addMetadata header is: '{}'\nStandard addMetadata header for that is: '{}'",
                 path, request.getPathInfo(), sk, acceptInfo.getRawAccept(), standardAccept );
 
-        if ( isDirectoryPath( path, request ) )
+        if ( allowRedirect && isDirectoryPath( path, request ) )
         {
             response = RequestUtils.redirectContentListing( packageType, type, name, path, request, builderModifier );
         }

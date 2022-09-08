@@ -251,7 +251,7 @@ public class StoreReverseMapMigrationTest
         }
         catch ( SAXException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Downloaded XML not equal to expected XML" );
         }
     }

@@ -84,7 +84,7 @@ public class ContentBrowseHeadRequestTest extends AbstractIndyFunctionalTest {
 
 
         } catch (IndyClientException e) {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
         }
 
 
