@@ -23,6 +23,9 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
+import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.manager.DefaultCacheManager;
 
 public class CassandraTCKFixtureProvider
         implements TCKFixtureProvider
@@ -30,6 +33,8 @@ public class CassandraTCKFixtureProvider
     private static CassandraStoreDataManager dataManager;
 
     private static CassandraClient client;
+
+    private CacheProducer cacheProducer;
 
     protected void init()
             throws Exception
@@ -49,8 +54,11 @@ public class CassandraTCKFixtureProvider
 
         client = new CassandraClient( config );
 
+        DefaultCacheManager cacheManager =
+                new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
+        cacheProducer = new CacheProducer( null, cacheManager, null );
         CassandraStoreQuery storeQuery = new CassandraStoreQuery( client, storeConfig, indyConfig );
-        dataManager = new CassandraStoreDataManager( storeQuery, new IndyObjectMapper( true ) );
+        dataManager = new CassandraStoreDataManager( storeQuery, new IndyObjectMapper( true ), cacheProducer );
     }
 
     @Override

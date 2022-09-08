@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.maven.content;
 
+import org.commonjava.indy.conf.InternalFeatureConfig;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -28,8 +29,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public class MetadataCacheManagerTest
 {
@@ -43,9 +42,8 @@ public class MetadataCacheManagerTest
         DefaultCacheManager cacheManager =
                         new DefaultCacheManager( new ConfigurationBuilder().simpleCache( true ).build() );
         cacheProducer = new CacheProducer( null, cacheManager, null );
-        CacheHandle<MetadataKey, MetadataKey> metadataKeyCache = cacheProducer.getCache( "maven-metadata-key-cache" );
         CacheHandle<MetadataKey, MetadataInfo> metadataCache = cacheProducer.getCache( "maven-metadata-cache" );
-        metadataCacheManager = new MetadataCacheManager( metadataCache, metadataKeyCache );
+        metadataCacheManager = new MetadataCacheManager( metadataCache, new InternalFeatureConfig() );
     }
 
     @Test
@@ -70,16 +68,6 @@ public class MetadataCacheManagerTest
 
         MetadataInfo ret = metadataCacheManager.get( new MetadataKey( hosted, somePath ) );
         assertNotNull( ret );
-
-        Set<String> allPaths = metadataCacheManager.getAllPaths( hosted );
-        assertTrue( allPaths.size() == 20 );
-
-        metadataCacheManager.removeAll( hosted );
-        allPaths = metadataCacheManager.getAllPaths( hosted );
-        assertTrue( allPaths.size() == 0 );
-
-        ret = metadataCacheManager.get( new MetadataKey( hosted, somePath ) );
-        assertNull( ret );
 
         ret = metadataCacheManager.get( new MetadataKey( remote, somePath ) );
         assertNotNull( ret );

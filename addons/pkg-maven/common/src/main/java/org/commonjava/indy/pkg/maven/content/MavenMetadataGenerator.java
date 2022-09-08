@@ -59,7 +59,6 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.o11yphant.trace.TraceManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -88,10 +87,12 @@ import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.emptyList;
 import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.generateUpdateTimestamp;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.getCurrentTimestamp;
+import static org.commonjava.indy.core.content.PathMaskChecker.checkMavenMetadataMask;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
 import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
@@ -141,6 +142,8 @@ public class MavenMetadataGenerator
             add( MavenMetadataMerger.METADATA_MD5_NAME );
             add( MavenMetadataMerger.METADATA_SHA_NAME );
             add( MavenMetadataMerger.METADATA_SHA256_NAME );
+            add( MavenMetadataMerger.METADATA_SHA384_NAME );
+            add( MavenMetadataMerger.METADATA_SHA512_NAME );
         }
 
         private static final long serialVersionUID = 1L;
@@ -220,6 +223,12 @@ public class MavenMetadataGenerator
             return null;
         }
 
+        boolean matchPattern = checkMavenMetadataMask( store, path );
+        if ( !matchPattern )
+        {
+            return null;
+        }
+
         boolean generated;
 
         // TODO: Generation of plugin metadata files (groupId-level) is harder, and requires cracking open the jar file
@@ -290,7 +299,7 @@ public class MavenMetadataGenerator
 
         if ( existing.contains( mdResource ) )
         {
-            return null;
+            return emptyList();
         }
 
         int pathElementsCount = StringUtils.strip( path, "/" ).split( "/" ).length;
@@ -340,18 +349,21 @@ public class MavenMetadataGenerator
             if ( samplePomInfo != null )
             {
                 final List<StoreResource> result = new ArrayList<>();
-                result.add( mdResource );
-                result.add( new StoreResource( LocationUtils.toLocation( store ),
-                                               Paths.get( path, MavenMetadataMerger.METADATA_MD5_NAME )
-                                               .toString() ) );
-                result.add( new StoreResource( LocationUtils.toLocation( store ),
-                                               Paths.get( path, MavenMetadataMerger.METADATA_SHA_NAME )
-                                               .toString() ) );
+                for ( final String filename : HANDLED_FILENAMES )
+                {
+                    StoreResource resource =
+                            new StoreResource( LocationUtils.toLocation( store ), Paths.get( path, filename ).toString() );
+                    Transfer transfer = fileManager.getTransfer( store.getKey(), resource.getPath() );
+                    if ( transfer!=null && transfer.exists( eventMetadata ) )
+                    {
+                        result.add( resource );
+                    }
+                }
                 return result;
             }
         }
 
-        return null;
+        return emptyList();
     }
 
     /**
@@ -914,7 +926,7 @@ public class MavenMetadataGenerator
                                                               final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
-        return generateDirectoryContent( group, path, Collections.emptyList(), eventMetadata );
+        return generateDirectoryContent( group, path, emptyList(), eventMetadata );
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.commonjava.indy.folo.data.FoloContentException;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
+import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.BatchDeleteRequest;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -60,7 +61,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static java.util.Collections.emptySet;
 import static org.commonjava.indy.folo.ctl.FoloConstants.ALL;
+import static org.commonjava.indy.folo.ctl.FoloConstants.LEGACY;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.IN_PROGRESS;
 import static org.commonjava.indy.folo.ctl.FoloConstants.TRACKING_TYPE.SEALED;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
@@ -139,9 +142,6 @@ public class FoloAdminResource
         {
             File zip = controller.renderRepositoryZip( id );
             return zip;
-            //
-            //            final Response.ResponseBuilder builder = Response.ok( zip );
-            //            return setInfoHeaders( builder, zip, false, application_zip ).build();
         }
         catch ( IndyWorkflowException e )
         {
@@ -160,31 +160,7 @@ public class FoloAdminResource
     public Response getReport( @ApiParam( "User-assigned tracking session key" ) final @PathParam( "id" ) String id,
                                @Context final UriInfo uriInfo )
     {
-        Response response;
-        try
-        {
-            final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
-
-            final TrackedContentDTO report = controller.renderReport( id, baseUrl );
-
-            if ( report == null )
-            {
-                response = Response.status( Status.NOT_FOUND ).build();
-            }
-            else
-            {
-                response = responseHelper.formatOkResponseWithJsonEntity( report );
-            }
-        }
-        catch ( final IndyWorkflowException e )
-        {
-            logger.error(
-                    String.format( "Failed to serialize tracking report for: %s. Reason: %s", id, e.getMessage() ), e );
-
-            response = responseHelper.formatResponse( e );
-        }
-
-        return response;
+        return getRecord( id, uriInfo );
     }
 
     @ApiOperation(
@@ -234,15 +210,17 @@ public class FoloAdminResource
         try
         {
             final String baseUrl = uriInfo.getBaseUriBuilder().path( "api" ).build().toString();
-            final TrackedContentDTO record = controller.getRecord( id, baseUrl );
+            TrackedContentDTO record = controller.getRecord( id, baseUrl );
             if ( record == null )
             {
-                response = Response.status( Status.NOT_FOUND ).build();
+                record = controller.getLegacyRecord( id, baseUrl ); // Try legacy record
             }
-            else
+            if ( record == null )
             {
-                response = responseHelper.formatOkResponseWithJsonEntity( record );
+                // if not found, return an empty report
+                record = new TrackedContentDTO(new TrackingKey( id ), emptySet(), emptySet());
             }
+            response = responseHelper.formatOkResponseWithJsonEntity( record );
         }
         catch ( final IndyWorkflowException e )
         {
@@ -280,12 +258,19 @@ public class FoloAdminResource
     @Path( "/report/ids/{type}" )
     @GET
     public Response getRecordIds(
-            @ApiParam( "Report type, should be in_progress|sealed|all" ) final @PathParam( "type" ) String type )
+            @ApiParam( "Report type, should be in_progress|sealed|all|legacy" ) final @PathParam( "type" ) String type )
     {
         Response response;
-        Set<FoloConstants.TRACKING_TYPE> types = getRequiredTypes( type );
-
-        TrackingIdsDTO ids = controller.getTrackingIds( types );
+        TrackingIdsDTO ids;
+        if (LEGACY.equals(type))
+        {
+            ids = controller.getLegacyTrackingIds();
+        }
+        else
+        {
+            Set<FoloConstants.TRACKING_TYPE> types = getRequiredTypes( type );
+            ids = controller.getTrackingIds( types );
+        }
         if ( ids != null )
         {
             response = responseHelper.formatOkResponseWithJsonEntity( ids );

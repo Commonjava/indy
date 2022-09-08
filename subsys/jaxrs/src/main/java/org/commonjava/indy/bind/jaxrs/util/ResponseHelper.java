@@ -17,6 +17,7 @@ package org.commonjava.indy.bind.jaxrs.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
@@ -74,16 +75,6 @@ public class ResponseHelper
         return builder.build();
     }
 
-//    public Response formatCreatedResponse( final String baseUri, final UriFormatter uriFormatter,
-//                                                  final String... params )
-//            throws URISyntaxException
-//    {
-//        final URI location = new URI( uriFormatter.formatAbsolutePathTo( baseUri, params ) );
-//        ResponseBuilder builder = Response.created( location );
-//
-//        return builder.build();
-//    }
-
     public Response formatCreatedResponseWithJsonEntity( final URI location, final Object dto )
     {
         return formatCreatedResponseWithJsonEntity( location, dto, null );
@@ -112,22 +103,6 @@ public class ResponseHelper
         return builder.build();
     }
 
-//    public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto )
-//    {
-//        return formatCreatedResponse( baseUri, dto, null );
-//    }
-//
-//    public static Response formatCreatedResponse( final String baseUri, final CreationDTO dto,
-//                                                  final Consumer<ResponseBuilder> builderModifer )
-//    {
-//        ResponseBuilder builder = Response.created( dto.getUri() ).entity( dto.getJsonResponse() );
-//        if ( builderModifer != null )
-//        {
-//            builderModifer.accept( builder );
-//        }
-//
-//        return builder.build();
-//    }
 
     public Response formatOkResponseWithJsonEntity( final String json )
     {
@@ -146,22 +121,15 @@ public class ResponseHelper
             return Response.noContent().build();
         }
 
-//        try
-//        {
-            ResponseBuilder builder =
-                    Response.ok( new DTOStreamingOutput( mapper, dto, metricsManager, metricsConfig ), ApplicationContent.application_json );
+        ResponseBuilder builder = Response.ok( new DTOStreamingOutput( mapper, dto, metricsManager, metricsConfig ),
+                                               ApplicationContent.application_json );
 
-            if ( builderModifier != null )
-            {
-                builderModifier.accept( builder );
-            }
+        if ( builderModifier != null )
+        {
+            builderModifier.accept( builder );
+        }
 
-            return builder.build();
-//        }
-//        catch ( final JsonProcessingException e )
-//        {
-//            return formatResponse( e, "Failed to serialize DTO to JSON: " + dto, builderModifier );
-//        }
+        return builder.build();
     }
 
     public ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final Transfer item, final StoreKey sk,
@@ -175,38 +143,45 @@ public class ResponseHelper
         boolean lastModSet = false;
         boolean lenSet = false;
         boolean conTypeSet = false;
-    
-        
 
         if ( exchangeMetadata != null )
         {
             for ( final Map.Entry<String, List<String>> headerSet : exchangeMetadata.getResponseHeaders().entrySet() )
             {
                 final String key = headerSet.getKey();
-                if ( ApplicationHeader.content_type.upperKey().equals( key ) )
+                final List<String> val = headerSet.getValue();
+                if ( val != null && !val.isEmpty() )
                 {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.content_type.upperKey() );
-                    conTypeSet = true;
-                }
-                else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
-                {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.last_modified.upperKey() );
-                    lastModSet = true;
-                }
-                else if ( ApplicationHeader.content_length.upperKey().equals( key ) )
-                {
-                    logger.debug( "Marking {} as already set.", ApplicationHeader.content_length.upperKey() );
-                    lenSet = true;
-                    if ( !includeContentLength )
+                    for ( final String value : headerSet.getValue() )
                     {
-                        continue;
-                    }
-                }
+                        if ( StringUtils.isBlank( value ) )
+                        {
+                            logger.warn( "Warning: Http metadata contains a blank value for key {}, will skip setting it.", key );
+                            continue;
+                        }
+                        if ( ApplicationHeader.content_type.upperKey().equals( key ) )
+                        {
+                            logger.debug( "Marking {} as already set.", ApplicationHeader.content_type.upperKey() );
+                            conTypeSet = true;
+                        }
+                        else if ( ApplicationHeader.last_modified.upperKey().equals( key ) )
+                        {
+                            logger.debug( "Marking {} as already set.", ApplicationHeader.last_modified.upperKey() );
+                            lastModSet = true;
+                        }
+                        else if ( ApplicationHeader.content_length.upperKey().equals( key ) )
+                        {
+                            logger.debug( "Marking {} as already set.", ApplicationHeader.content_length.upperKey() );
+                            lenSet = true;
+                            if ( !includeContentLength )
+                            {
+                                continue;
+                            }
+                        }
 
-                for ( final String value : headerSet.getValue() )
-                {
-                    logger.debug( "Setting header: '{}'= '{}'", key, value );
-                    builder.header( key, value );
+                        logger.debug( "Setting header: '{}'= '{}'", key, value );
+                        builder.header( key, value );
+                    }
                 }
             }
         }
@@ -226,6 +201,10 @@ public class ResponseHelper
                 logger.debug( "Adding Content-Length header: {}", item.length() );
 
                 builder.header( ApplicationHeader.content_length.key(), item.length() );
+
+                logger.debug( "Removing Transfer-Encoding header if Content-Length header already set." );
+
+                builder.header( ApplicationHeader.transfer_encoding.key(), null );
             }
 
             if ( !conTypeSet )
@@ -256,22 +235,6 @@ public class ResponseHelper
         return builder;
     }
 
-//    public static ResponseBuilder setInfoHeaders( final ResponseBuilder builder, final File item,
-//                                                  final boolean includeContentLength, final String contentType )
-//            throws IndyWorkflowException
-//    {
-//        // I don't think we want to use the result from upstream; it's often junk...we should retain control of this.
-//        builder.header( ApplicationHeader.content_type.key(), contentType );
-//
-//        builder.header( ApplicationHeader.last_modified.key(), HttpUtils.formatDateHeader( item.lastModified() ) );
-//
-//        if ( includeContentLength )
-//        {
-//            builder.header( ApplicationHeader.content_length.key(), item.length() );
-//        }
-//
-//        return builder;
-//    }
 
     public Response formatResponseFromMetadata( final HttpExchangeMetadata metadata )
     {

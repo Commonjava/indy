@@ -43,6 +43,7 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -639,12 +640,12 @@ public class KojiRepairManager
             throws IndyDataException
     {
         return storeManager.query()
-                           .storeTypes( remote )
-                           .stream( ( remote ) ->
+                           .getAllRemoteRepositories( PackageTypeConstants.PKG_TYPE_MAVEN )
+                           .stream()
+                           .filter( ( remote ) ->
                                             KOJI_ORIGIN.equals( remote.getMetadata( ArtifactStore.METADATA_ORIGIN ) )
                                                     || KOJI_ORIGIN_BINARY.equals(
                                                     remote.getMetadata( ArtifactStore.METADATA_ORIGIN ) ) )
-                           .map( s -> (RemoteRepository) s )
                            .filter( Objects::nonNull )
                            .collect( Collectors.toList() );
     }

@@ -26,6 +26,7 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -289,6 +290,11 @@ public class DefaultContentManager
         {
             logger.debug( "Content not available in repository due to store disabled for {}, path is {}", store,
                          path );
+            return null;
+        }
+
+        if ( store.getKey().getType() == StoreType.remote && !PathMaskChecker.checkMask( store, path))
+        {
             return null;
         }
 

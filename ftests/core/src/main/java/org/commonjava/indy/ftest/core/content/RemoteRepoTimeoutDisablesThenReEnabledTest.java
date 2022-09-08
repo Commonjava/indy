@@ -32,7 +32,7 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RemoteRepoTimeoutDisablesThenReEnabledTest
         extends AbstractContentManagementTest
@@ -47,7 +47,6 @@ public class RemoteRepoTimeoutDisablesThenReEnabledTest
     {
         writeConfigFile( "main.conf", "store.disable.timeout=2\n\nInclude conf.d/*.conf\n" );
         writeConfigFile( "conf.d/scheduler.conf", readTestResource( "default-scheduler.conf" ) );
-        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
     }
 
     @Test

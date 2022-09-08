@@ -29,7 +29,7 @@ import java.io.OutputStream;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Copy of org.commonjava.indy.core.content.DefaultDownloadManagerTest#getTransferFromNotAllowedDeletionStore_DownloadOp_ThrowException()

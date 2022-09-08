@@ -29,11 +29,12 @@ public class VersioningMarshaller implements MessageMarshaller<Versioning>
     public Versioning readFrom( ProtoStreamReader reader ) throws IOException
     {
         Versioning versioning = new Versioning();
-        versioning.setRelease( reader.readString( "release" ) );
         versioning.setLatest( reader.readString( "latest" ) );
+        versioning.setRelease( reader.readString( "release" ) );
+        versioning.setSnapshot( reader.readObject( "snapshot", Snapshot.class ) );
+        versioning.setVersions( reader.readCollection( "versions", new ArrayList<String>(), String.class ) );
         versioning.setLastUpdated( reader.readString( "lastUpdated" ) );
         versioning.setSnapshotVersions( reader.readCollection( "snapshotVersions", new ArrayList<SnapshotVersion>(), SnapshotVersion.class ) );
-        versioning.setVersions( reader.readCollection( "versions", new ArrayList<String>(), String.class ) );
         return versioning;
     }
 
@@ -42,10 +43,10 @@ public class VersioningMarshaller implements MessageMarshaller<Versioning>
     {
         writer.writeString( "latest", versioning.getLatest() );
         writer.writeString( "release", versioning.getRelease() );
-        writer.writeString( "lastUpdated", versioning.getLastUpdated() );
         writer.writeObject( "snapshot", versioning.getSnapshot(), Snapshot.class);
-        writer.writeCollection( "snapshotVersions", versioning.getSnapshotVersions(), SnapshotVersion.class );
         writer.writeCollection( "versions", versioning.getVersions(), String.class );
+        writer.writeString( "lastUpdated", versioning.getLastUpdated() );
+        writer.writeCollection( "snapshotVersions", versioning.getSnapshotVersions(), SnapshotVersion.class );
     }
 
     @Override

@@ -17,8 +17,10 @@ package org.commonjava.indy.pkg.npm.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.commonjava.indy.pkg.npm.model.converter.ObjectToLicenseConverter;
 
 import java.io.Serializable;
 import java.util.List;
@@ -65,11 +67,12 @@ public class VersionMetadata
     @ApiModelProperty( value = "These styles are now deprecated. Instead, use SPDX expressions." )
     private List<License> licenses;
 
+    @JsonDeserialize(converter = ObjectToLicenseConverter.class)
     private License license;
 
     private Map<String, String> dependencies;
 
-    private Map<String, String> devDependencies;
+    private Map<String, Object> devDependencies;
 
     private Map<String, String> jsdomVersions;
 
@@ -290,12 +293,12 @@ public class VersionMetadata
         this.dependencies = dependencies;
     }
 
-    public Map<String, String> getDevDependencies()
+    public Map<String, Object> getDevDependencies()
     {
         return devDependencies;
     }
 
-    public void setDevDependencies( Map<String, String> devDependencies )
+    public void setDevDependencies( Map<String, Object> devDependencies )
     {
         this.devDependencies = devDependencies;
     }

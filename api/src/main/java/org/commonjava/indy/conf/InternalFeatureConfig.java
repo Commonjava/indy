@@ -25,6 +25,8 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 
+import static java.lang.Boolean.TRUE;
+
 @ApplicationScoped
 @SectionName( InternalFeatureConfig.SECTION_NAME )
 public class InternalFeatureConfig implements IndyConfigInfo {
@@ -33,39 +35,35 @@ public class InternalFeatureConfig implements IndyConfigInfo {
 
     private Boolean storeValidation;
 
-    private Boolean fileChangeTracking;
+    private Boolean foloISPNQueryPaginationEnabled;
 
-    private Boolean testFeatures;
+    private boolean mavenMetadataCacheEnabled = TRUE;
+
+    /**
+     * Indy disables a remote store when transfer error happens, and try to re-enable it
+     * after a timeout specified either by global 'storeDisableTimeoutSeconds' or store specific timeout.
+     * Auto disable-and-re-enabling a store may not be very useful. Thus, false by default.
+     */
+    private boolean storeAutoDisableAndReEnable;
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public InternalFeatureConfig() {
     }
 
-    public Boolean getTestFeatures()
+    public Boolean getFoloISPNQueryPaginationEnabled()
     {
-        return testFeatures;
+        return foloISPNQueryPaginationEnabled == null ? TRUE : foloISPNQueryPaginationEnabled;
     }
 
-    @ConfigName( "test.features.enabled" )
-    public void setTestFeatures( Boolean testFeatures )
+    @ConfigName("folo.ispn.query.pagination.enabled")
+    public void setFoloISPNQueryPaginationEnabled( Boolean foloISPNQueryPaginationEnabled )
     {
-        this.testFeatures = testFeatures;
-    }
-
-    public Boolean getFileChangeTracking()
-    {
-        return fileChangeTracking == null ? Boolean.FALSE : fileChangeTracking;
-    }
-
-    @ConfigName( "file.change.tracking.enabled" )
-    public void setFileChangeTracking( Boolean fileChangeTracking )
-    {
-        this.fileChangeTracking = fileChangeTracking;
+        this.foloISPNQueryPaginationEnabled = foloISPNQueryPaginationEnabled;
     }
 
     public Boolean getStoreValidation() {
-        return storeValidation == null ? Boolean.TRUE : storeValidation;
+        return storeValidation == null ? TRUE : storeValidation;
     }
 
     @ConfigName("store.validation.enabled")
@@ -84,5 +82,23 @@ public class InternalFeatureConfig implements IndyConfigInfo {
     public InputStream getDefaultConfig()
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-internal-features.conf" );
+    }
+
+    public boolean isMavenMetadataCacheEnabled() {
+        return mavenMetadataCacheEnabled;
+    }
+
+    @ConfigName("maven.metadata.cache.enabled")
+    public void setMavenMetadataCacheEnabled(boolean mavenMetadataCacheEnabled) {
+        this.mavenMetadataCacheEnabled = mavenMetadataCacheEnabled;
+    }
+
+    public boolean isStoreAutoDisableAndReEnable() {
+        return storeAutoDisableAndReEnable;
+    }
+
+    @ConfigName("store.auto.disable.reenable")
+    public void setStoreAutoDisableAndReEnable(boolean storeAutoDisableAndReEnable) {
+        this.storeAutoDisableAndReEnable = storeAutoDisableAndReEnable;
     }
 }

@@ -15,10 +15,13 @@
  */
 package org.commonjava.indy.action;
 
+import org.commonjava.indy.IndyException;
+
 import java.text.MessageFormat;
+import java.util.Objects;
 
 public class IndyLifecycleException
-    extends Exception
+        extends IndyException
 {
     private static final long serialVersionUID = 1L;
 
@@ -56,28 +59,18 @@ public class IndyLifecycleException
                 {
                     formattedMessage = String.format( format, params );
                 }
-                catch ( final Error e )
+                catch ( final Error | Exception e )
                 {
-                }
-                catch ( final RuntimeException e )
-                {
-                }
-                catch ( final Exception e )
-                {
+                    // do nothing
                 }
 
-                if ( formattedMessage == null || original == formattedMessage )
+                if ( formattedMessage == null || Objects.equals( original, formattedMessage ) )
                 {
                     try
                     {
                         formattedMessage = MessageFormat.format( format, params );
                     }
-                    catch ( final Error e )
-                    {
-                        formattedMessage = format;
-                        throw e;
-                    }
-                    catch ( final RuntimeException e )
+                    catch ( final Error | RuntimeException e )
                     {
                         formattedMessage = format;
                         throw e;

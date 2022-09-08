@@ -28,7 +28,7 @@ import java.util.Map;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * <b>GIVEN:</b>
@@ -67,7 +67,6 @@ public class RemoteRepoTimeoutDisablesStoreAndShowsInDisabledTimeoutsMapTest
             throws IOException
     {
         writeConfigFile( "conf.d/indexer.conf", "[indexer]\nenabled=false" );
-        writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false" );
     }
 
     @Override

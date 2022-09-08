@@ -34,8 +34,8 @@ public class MetadataInfoMarshaller implements MessageMarshaller<MetadataInfo>
     @Override
     public void writeTo( ProtoStreamWriter writer, MetadataInfo metadataInfo ) throws IOException
     {
-        writer.writeString( "metadataMergeInfo", metadataInfo.getMetadataMergeInfo() );
         writer.writeObject( "metadata", metadataInfo.getMetadata(), Metadata.class );
+        writer.writeString( "metadataMergeInfo", metadataInfo.getMetadataMergeInfo() );
     }
 
     @Override

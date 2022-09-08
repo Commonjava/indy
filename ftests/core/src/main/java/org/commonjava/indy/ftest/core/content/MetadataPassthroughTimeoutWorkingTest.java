@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 /**
  * Test metadata timeout working passthrough is set to true.
  * In this the passthrough timeout(default config timeout) will work, so all contents should be removed

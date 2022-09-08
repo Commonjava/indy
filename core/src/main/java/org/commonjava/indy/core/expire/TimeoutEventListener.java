@@ -155,7 +155,7 @@ public class TimeoutEventListener
                 }
                 catch ( final IndySchedulerException e )
                 {
-                    logger.error( "Failed to clean up metadata / set snapshot timeouts related to: " + transfer, e );
+                    logger.error( "Failed to clean up metadata / set snapshot timeouts related to: {}. Reason: {} ", transfer, e );
                 }
 
                 break;
@@ -168,7 +168,7 @@ public class TimeoutEventListener
                 }
                 catch ( final IndySchedulerException e )
                 {
-                    logger.error( "Failed to clean up metadata / set proxy-cache timeouts related to: " + transfer, e );
+                    logger.error( "Failed to clean up metadata / set proxy-cache timeouts related to: {}. Reason: {}", transfer, e );
                 }
 
                 break;
@@ -202,7 +202,7 @@ public class TimeoutEventListener
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to set snapshot timeouts related to: " + transfer, e );
+                        logger.error( "Failed to set snapshot timeouts related to: {}. Reason: {}", transfer, e );
                     }
                 }
                 else if ( type == StoreType.remote )
@@ -217,7 +217,7 @@ public class TimeoutEventListener
                         }
                         catch ( final IndySchedulerException e )
                         {
-                            logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
+                            logger.error( "Failed to set proxy-cache timeouts related to: {}. Reason: {}", transfer, e );
                         }
                     }
                     else
@@ -274,7 +274,7 @@ public class TimeoutEventListener
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to update proxy-cache timeouts in: " + store.getKey(), e );
+                        logger.error( "Failed to update proxy-cache timeouts in: {}. Reason: {}", store.getKey(), e );
                     }
                 }
             }

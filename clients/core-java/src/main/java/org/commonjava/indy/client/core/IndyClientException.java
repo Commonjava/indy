@@ -15,6 +15,8 @@
  */
 package org.commonjava.indy.client.core;
 
+import org.commonjava.indy.IndyException;
+
 import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.text.MessageFormat;
@@ -24,7 +26,7 @@ import java.text.MessageFormat;
  * @author jdcasey
  */
 public class IndyClientException
-    extends Exception
+        extends IndyException
 {
     private Object[] params;
 

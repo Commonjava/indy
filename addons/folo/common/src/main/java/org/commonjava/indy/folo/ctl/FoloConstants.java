@@ -24,6 +24,10 @@ public class FoloConstants
 
     public static final String ALL = "all";
 
+    public static final String LEGACY = "legacy";
+
+    public static final String ORIGIN_PATH = "origin-path";
+
     public enum TRACKING_TYPE
     {
         IN_PROGRESS("in_progress"),

@@ -27,7 +27,7 @@ import java.io.InputStream;
 
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This test is to make sure indy can retrieve huge maven-metadata successfully.

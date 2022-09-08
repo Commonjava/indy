@@ -37,7 +37,7 @@ import java.util.List;
 
 import static org.commonjava.indy.conf.IndyConfiguration.PROP_NODE_ID;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by jdcasey on 3/9/16.

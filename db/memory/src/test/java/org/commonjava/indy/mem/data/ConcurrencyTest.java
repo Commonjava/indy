@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by jdcasey on 10/21/16.
@@ -191,7 +191,7 @@ public class ConcurrencyTest
                     }
                     catch ( IndyDataException e )
                     {
-                        e.printStackTrace();
+                        logger.error( e.getMessage(), e );
                     }
 
                     return "Failed to retrieve groups containing: " + repo.getKey();
@@ -230,7 +230,7 @@ public class ConcurrencyTest
                 }
                 catch ( IndyDataException e )
                 {
-                    e.printStackTrace();
+                    logger.error( e.getMessage(), e );
                 }
 
                 return "Failed to list all artifact stores.";

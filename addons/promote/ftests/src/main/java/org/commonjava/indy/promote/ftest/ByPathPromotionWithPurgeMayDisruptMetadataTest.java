@@ -47,7 +47,7 @@ import java.util.concurrent.Future;
 
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * <b>GIVEN:</b>
@@ -177,7 +177,7 @@ public class ByPathPromotionWithPurgeMayDisruptMetadataTest
             }
             catch ( IndyClientException e )
             {
-                e.printStackTrace();
+                logger.error( e.getMessage(), e );
                 return null;
             }
         }

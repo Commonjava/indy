@@ -17,6 +17,7 @@ package org.commonjava.indy.folo.data;
 
 
 import com.datastax.driver.core.Row;
+import com.datastax.driver.mapping.annotations.ClusteringColumn;
 import com.datastax.driver.mapping.annotations.Column;
 import com.datastax.driver.mapping.annotations.PartitionKey;
 import com.datastax.driver.mapping.annotations.Table;
@@ -30,27 +31,29 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@Table(name = "records" )
+import static org.commonjava.indy.folo.data.FoloRecordCassandra.TABLE_NAME;
+
+@Table(name = TABLE_NAME )
 public class DtxTrackingRecord {
 
     private final static Boolean SEALED = true;
     private final static Boolean IN_PROGRESS = false;
 
-
-    @PartitionKey(0)
+    @PartitionKey
     @Column(name = "tracking_key")
     String trackingKey;
 
     @Column(name = "sealed")
     Boolean state;
 
+    @ClusteringColumn(0)
     @Column(name = "store_key")
     String storeKey;
 
     @Column(name = "access_channel")
     String  accessChannel;
 
-    @PartitionKey(1)
+    @ClusteringColumn(1)
     @Column(name = "path")
     String  path;
 
@@ -60,6 +63,7 @@ public class DtxTrackingRecord {
     @Column(name = "local_url")
     String localUrl;
 
+    @ClusteringColumn(2)
     @Column(name = "store_effect")
     String storeEffect;
 

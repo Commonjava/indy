@@ -24,10 +24,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.folo.conf.FoloConfig;
-import org.commonjava.indy.folo.data.FoloContentException;
-import org.commonjava.indy.folo.data.FoloFiler;
-import org.commonjava.indy.folo.data.FoloRecord;
-import org.commonjava.indy.folo.data.FoloRecordCache;
+import org.commonjava.indy.folo.data.*;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.folo.dto.TrackingIdsDTO;
@@ -262,22 +259,18 @@ public class FoloAdminController
         }
     }
 
-    public TrackedContentDTO renderReport( final String id, final String apiBaseUrl )
-            throws IndyWorkflowException
-    {
-        final TrackingKey tk = new TrackingKey( id );
-        logger.debug( "Retrieving tracking record for: {}", tk );
-        final TrackedContentDTO record = constructContentDTO( recordManager.get( tk ), apiBaseUrl );
-        logger.debug( "Got: {}", record );
-
-        return record;
-    }
-
     public TrackedContentDTO getRecord( final String id, String baseUrl )
             throws IndyWorkflowException
     {
         final TrackingKey tk = new TrackingKey( id );
         return constructContentDTO( recordManager.get( tk ), baseUrl );
+    }
+
+    public TrackedContentDTO getLegacyRecord( final String id, String baseUrl )
+            throws IndyWorkflowException
+    {
+        final TrackingKey tk = new TrackingKey( id );
+        return constructContentDTO(recordManager.getLegacy(tk), baseUrl);
     }
 
     public void clearRecord( final String id )
@@ -342,6 +335,21 @@ public class FoloAdminController
     public boolean hasRecord( final String id )
     {
         return recordManager.hasRecord( new TrackingKey( id ) );
+    }
+
+    public TrackingIdsDTO getLegacyTrackingIds() {
+        logger.info( "Get legacy folo ids" );
+        TrackingIdsDTO ret = null;
+        Set<String> sealed = recordManager.getLegacyTrackingKeys()
+                                          .stream()
+                                          .map( TrackingKey::getId )
+                                          .collect( Collectors.toSet() );
+        if ( sealed != null )
+        {
+            ret = new TrackingIdsDTO();
+            ret.setSealed( sealed );
+        }
+        return ret;
     }
 
     public TrackingIdsDTO getTrackingIds( final Set<FoloConstants.TRACKING_TYPE> types )

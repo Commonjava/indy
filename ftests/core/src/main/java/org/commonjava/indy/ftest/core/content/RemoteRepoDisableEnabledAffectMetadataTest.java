@@ -40,7 +40,7 @@ import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.PKG_TYPE_MAVEN;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Check that the group's metadata is deleted when member repo is disabled/enabled.

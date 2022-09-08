@@ -76,6 +76,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -90,7 +91,7 @@ import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAV
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PromotionManagerTest
 {
@@ -291,7 +292,7 @@ public class PromotionManagerTest
     public void promoteAllByPath_RaceToPromote_FirstLocksTargetStore()
             throws Exception
     {
-        Random rand = new Random();
+        SecureRandom rand = new SecureRandom();
         final HostedRepository[] sources = { new HostedRepository( MAVEN_PKG_KEY,  "source1" ), new HostedRepository( MAVEN_PKG_KEY,  "source2" ) };
         final String[] paths = { "/path/path1", "/path/path2", "/path3", "/path/path/4" };
         Stream.of( sources ).forEach( ( source ) ->
@@ -316,7 +317,6 @@ public class PromotionManagerTest
                                                                               }
                                                                               catch ( IndyWorkflowException e )
                                                                               {
-                                                                                  e.printStackTrace();
                                                                                   Assert.fail(
                                                                                           "failed to store generated file to: "
                                                                                                   + source + path );
@@ -325,7 +325,6 @@ public class PromotionManagerTest
                                           }
                                           catch ( IndyDataException e )
                                           {
-                                              e.printStackTrace();
                                               Assert.fail( "failed to store hosted repository: " + source );
                                           }
                                       } );
@@ -353,7 +352,6 @@ public class PromotionManagerTest
                                                                 }
                                                                 catch ( Exception e )
                                                                 {
-                                                                    e.printStackTrace();
                                                                     Assert.fail( "Promotion from source: " + source
                                                                                          + " failed." );
                                                                 }
@@ -419,7 +417,6 @@ public class PromotionManagerTest
                                         }
                                         catch ( IOException e )
                                         {
-                                            e.printStackTrace();
                                             Assert.fail(
                                                     "Failed to compare contents of: " + path + " between source: " + src
                                                             + " and target: " + target );

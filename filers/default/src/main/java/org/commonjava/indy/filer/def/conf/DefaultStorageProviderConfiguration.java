@@ -51,9 +51,9 @@ public class DefaultStorageProviderConfiguration
 
     private File nfsStoreBasedir;
 
-    private String changeTrackingDirectory;
+    private boolean storageTimeoutEnabled = true;
 
-    private Integer changeTrackingRollSize;
+    private boolean physicalFileExistenceCheckEnabled = false;
 
     public DefaultStorageProviderConfiguration()
     {
@@ -225,29 +225,23 @@ public class DefaultStorageProviderConfiguration
         this.legacyStorageBasedir = legacyStorageBasedir;
     }
 
-    public String getChangeTrackingDirectory()
+    public boolean isStorageTimeoutEnabled()
     {
-        return changeTrackingDirectory == null ?
-                        Paths.get( getStorageRootDirectory().getAbsolutePath(), ".changes" )
-                             .toAbsolutePath()
-                             .toString() :
-                        changeTrackingDirectory;
+        return storageTimeoutEnabled;
     }
 
-    @ConfigName( "change.tracking.dir" )
-    public void setChangeTrackingDirectory( String changeTrackingDirectory )
+    @ConfigName( "storage.timeout.enabled" )
+    public void setStorageTimeoutEnabled( boolean storageTimeoutEnabled )
     {
-        this.changeTrackingDirectory = changeTrackingDirectory;
+        this.storageTimeoutEnabled = storageTimeoutEnabled;
     }
 
-    public Integer getChangeTrackingRollSize()
-    {
-        return changeTrackingRollSize == null ? DEFAULT_CHANGE_TRACKING_ROLL_SIZE : changeTrackingRollSize;
+    public boolean isPhysicalFileExistenceCheckEnabled() {
+        return physicalFileExistenceCheckEnabled;
     }
 
-    @ConfigName( "change.tracking.roll.size" )
-    public void setChangeTrackingRollSize( Integer changeTrackingRollSize )
-    {
-        this.changeTrackingRollSize = changeTrackingRollSize;
+    @ConfigName( "storage.physical.file.existence.check.enabled" )
+    public void setPhysicalFileExistenceCheckEnabled(boolean physicalFileExistenceCheckEnabled) {
+        this.physicalFileExistenceCheckEnabled = physicalFileExistenceCheckEnabled;
     }
 }

@@ -37,7 +37,7 @@ import static org.commonjava.indy.subsys.http.conf.IndyHttpConfig.DEFAULT_SITE;
 import static org.commonjava.util.jhttpc.auth.AttributePasswordManager.PASSWORD_PREFIX;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * Created by jdcasey on 2/15/16.

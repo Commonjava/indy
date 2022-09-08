@@ -16,6 +16,7 @@
 package org.commonjava.indy.core.data;
 
 import static java.util.Arrays.asList;
+import static org.commonjava.indy.model.core.StoreType.hosted;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.PackageTypeConstants.PKG_TYPE_MAVEN;
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
@@ -23,7 +24,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -171,20 +172,26 @@ public abstract class GroupDataManagerTCK
     {
         final StoreDataManager manager = getFixtureProvider().getDataManager();
 
-        final Group grp =
-            new Group( "test", new StoreKey( remote, "repo2" ), new StoreKey( remote, "central" ) );
+        manager.storeArtifactStore( new HostedRepository("pnc-builds"), summary, false, false, new EventMetadata() );
 
-        store( grp );
+        final Group subGrp = new Group( "subGroup", new StoreKey( hosted, "pnc-builds" ) );
+
+        final Group grp =
+            new Group( "test",  subGrp.getKey(), new StoreKey( remote, "repo2" ), new StoreKey( remote, "central" ) );
+
+        store( grp, subGrp );
 
         final List<ArtifactStore> repos = manager.query().getOrderedConcreteStoresInGroup( MAVEN_PKG_KEY, grp.getName() );
 
         assertThat( repos, notNullValue() );
-        assertThat( repos.size(), equalTo( 2 ) );
+        assertThat( repos.size(), equalTo( 3 ) );
 
         assertThat( repos.get( 0 )
-                         .getName(), equalTo( "repo2" ) );
+                         .getName(), equalTo( "pnc-builds" ) );
         assertThat( repos.get( 1 )
-                         .getName(), equalTo( "central" ) );
+                         .getName(), equalTo( "repo2" ) );
+        assertThat( repos.get( 2 )
+                .getName(), equalTo( "central" ) );
     }
 
     @Test

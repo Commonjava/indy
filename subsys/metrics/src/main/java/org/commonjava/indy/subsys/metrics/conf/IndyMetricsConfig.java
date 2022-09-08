@@ -384,7 +384,7 @@ public class IndyMetricsConfig
         ret.setNodeLabel( prometheusNodeLabel );
         if ( prometheusExpressedMetrics != null )
         {
-            ret.setExpressedMetrics( Arrays.asList( prometheusExpressedMetrics.split( "\\s*,\\s*" ) ) );
+            ret.setExpressedMetrics( Arrays.asList( prometheusExpressedMetrics.split( "," ) ) );
         }
 
         return ret;
