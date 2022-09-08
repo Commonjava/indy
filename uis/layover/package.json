@@ -25,7 +25,7 @@
     "protractor": "~0.20.1",
     "webpack": "^4.34.0",
     "webpack-cli": "^3.3.4",
-    "webpack-dev-server": "^3.7.1",
+    "webpack-dev-server": "^3.11.3",
     "lodash": ">=4.17.21"
   },
   "engines": {
