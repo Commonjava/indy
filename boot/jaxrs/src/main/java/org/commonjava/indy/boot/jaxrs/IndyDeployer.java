@@ -152,6 +152,7 @@ public class IndyDeployer
     static
     {
         NO_NEED_GZIPPED_CONTENT.add( ApplicationContent.application_gzip );
+        NO_NEED_GZIPPED_CONTENT.add( ApplicationContent.application_zip );
     }
 
     private EncodingHandler getGzipEncodeHandler( final DeploymentManager dm )
