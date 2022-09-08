@@ -17,7 +17,7 @@
     "bootstrap": "^3.4.1",
     "keycloak-js": "^1.9.8",
     "swagger-ui-dist": "4.1.x",
-    "jquery": "^3.0.0"
+    "jquery": "^3.5.0"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^5.0.3",
