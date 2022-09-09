@@ -15,8 +15,11 @@
  */
 package org.commonjava.indy.cassandra.data;
 
-import org.commonjava.indy.core.conf.IndyStoreManagerConfig;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 public class CassandraStoreUtil
 {
 

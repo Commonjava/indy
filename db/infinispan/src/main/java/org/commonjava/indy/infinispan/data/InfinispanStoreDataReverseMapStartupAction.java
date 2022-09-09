@@ -15,14 +15,16 @@
  */
 package org.commonjava.indy.infinispan.data;
 
-import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
-import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @ApplicationScoped
 public class InfinispanStoreDataReverseMapStartupAction
         implements StartupAction

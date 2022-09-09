@@ -49,6 +49,10 @@ import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_B
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 import static org.commonjava.indy.model.core.StoreType.group;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @ApplicationScoped
 @Standalone
 public class InfinispanStoreDataManager

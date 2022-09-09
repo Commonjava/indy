@@ -25,6 +25,10 @@ import java.util.Set;
 
 import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_AFFECTED_STORE;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @Table( name = TABLE_AFFECTED_STORE, readConsistency = "QUORUM", writeConsistency = "QUORUM" )
 public class DtxAffectedStore
 {

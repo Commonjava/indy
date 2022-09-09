@@ -39,6 +39,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @Named( "infinispan-store-data-migration" )
 public class InfinispanStoreDataMigrationAction
                 implements MigrationAction

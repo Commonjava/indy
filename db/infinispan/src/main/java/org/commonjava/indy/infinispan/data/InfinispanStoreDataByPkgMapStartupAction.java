@@ -20,7 +20,10 @@ import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.data.StoreDataManager;
 
 import javax.inject.Inject;
-
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 public class InfinispanStoreDataByPkgMapStartupAction
         implements StartupAction
 {
