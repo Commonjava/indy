@@ -117,7 +117,7 @@ public class RepoServiceEventHandler
                                                                           e.getValue().getKey() ) )
                                                 .collect( Collectors.toList() );
                         logger.debug( "Firing store post-update event for: {}", changeMapStr );
-                        dispatcher.updating( ArtifactStoreUpdateType.valueOf( postUpdateEvent.getUpdateType().name() ),
+                        dispatcher.updated( ArtifactStoreUpdateType.valueOf( postUpdateEvent.getUpdateType().name() ),
                                              eventMetadata, changeMap );
                         break;
                     case Enablement:
