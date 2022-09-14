@@ -62,7 +62,7 @@ public class ServiceStoreQuery<T extends ArtifactStore>
 
     private String packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
-    private final String ARTIFACT_STORE_QUERY = "artifact-store-query";
+    final static String ARTIFACT_STORE_QUERY = "artifact-store-query";
 
     private final Integer STORE_QUERY_EXPIRATION_IN_MINS = 15;
 

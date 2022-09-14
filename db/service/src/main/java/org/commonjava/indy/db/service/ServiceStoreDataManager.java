@@ -74,7 +74,7 @@ public class ServiceStoreDataManager
 
     private ServiceStoreQuery<ArtifactStore> serviceStoreQuery;
 
-    private final String ARTIFACT_STORE = "artifact-store";
+    final static String ARTIFACT_STORE = "artifact-store";
 
     private final Integer STORE_EXPIRATION_IN_MINS = 15;
 
