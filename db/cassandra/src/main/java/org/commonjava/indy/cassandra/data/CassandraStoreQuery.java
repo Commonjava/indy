@@ -40,7 +40,11 @@ import java.util.Set;
 import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_AFFECTED_STORE;
 import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_STORE;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
 @ApplicationScoped
+@Deprecated
 public class CassandraStoreQuery
 {
 

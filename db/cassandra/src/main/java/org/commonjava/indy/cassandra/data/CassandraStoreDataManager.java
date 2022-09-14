@@ -55,8 +55,12 @@ import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
 @ApplicationScoped
 @Clustered
+@Deprecated
 public class CassandraStoreDataManager extends AbstractStoreDataManager
 {
 

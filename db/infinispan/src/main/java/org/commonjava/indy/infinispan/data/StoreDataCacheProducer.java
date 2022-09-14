@@ -27,6 +27,10 @@ import javax.inject.Inject;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 public class StoreDataCacheProducer
 {
     public static final String STORE_DATA_CACHE = "store-data-v2";

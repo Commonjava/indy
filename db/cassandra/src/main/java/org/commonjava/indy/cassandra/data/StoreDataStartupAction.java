@@ -24,6 +24,10 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @Named("Store-Cache-Initialization")
 public class StoreDataStartupAction implements StartupAction
 {

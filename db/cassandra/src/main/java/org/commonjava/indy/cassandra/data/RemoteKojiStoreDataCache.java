@@ -18,10 +18,14 @@ package org.commonjava.indy.cassandra.data;
 import javax.inject.Qualifier;
 import java.lang.annotation.*;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
 @Qualifier
 @Target( { ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @Retention( RetentionPolicy.RUNTIME)
 @Documented
+@Deprecated
 public @interface RemoteKojiStoreDataCache
 {
 }
