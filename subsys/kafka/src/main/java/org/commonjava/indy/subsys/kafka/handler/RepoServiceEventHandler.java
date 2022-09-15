@@ -79,7 +79,7 @@ public class RepoServiceEventHandler
             try
             {
                 final DefualtIndyStoreEvent storeEvent = mapper.readValue( value, DefualtIndyStoreEvent.class );
-                logger.debug( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
+                logger.info( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
                 final Map<EventStoreKey, ArtifactStore> storeMap = getStoreMap( storeEvent );
                 final ArtifactStore[] stores = storeMap.values().toArray( new ArtifactStore[0] );
                 final EventMetadata eventMetadata = convertEventMetadata( storeEvent );
@@ -88,12 +88,15 @@ public class RepoServiceEventHandler
                 switch ( storeEvent.getEventType() )
                 {
                     case PreDelete:
-                        logger.debug( "Firing store delete event for: {} ", Arrays.stream( stores )
+                        logger.info( "Firing store pre-delete event for: {} ", Arrays.stream( stores )
                                                                                   .map( ArtifactStore::getKey )
                                                                                   .collect( Collectors.toList() ) );
                         dispatcher.deleting( eventMetadata, stores );
                         break;
                     case PostDelete:
+                        logger.info( "Firing store post-delete event for: {} ", Arrays.stream( stores )
+                                                                                     .map( ArtifactStore::getKey )
+                                                                                     .collect( Collectors.toList() ) );
                         dispatcher.deleted( eventMetadata, stores );
                         break;
                     case PreUpdate:
@@ -104,7 +107,7 @@ public class RepoServiceEventHandler
                                                 .map( e -> String.format( "%s -> %s", e.getKey().getKey(),
                                                                           e.getValue().getKey() ) )
                                                 .collect( Collectors.toList() );
-                        logger.debug( "Firing store pre-update event for: {} ", changeMapStr );
+                        logger.info( "Firing store pre-update event for: {} ", changeMapStr );
                         dispatcher.updating( ArtifactStoreUpdateType.valueOf( preUpdateEvent.getUpdateType().name() ),
                                              eventMetadata, changeMap );
                         break;
@@ -116,7 +119,7 @@ public class RepoServiceEventHandler
                                                 .map( e -> String.format( "%s -> %s", e.getKey().getKey(),
                                                                           e.getValue().getKey() ) )
                                                 .collect( Collectors.toList() );
-                        logger.debug( "Firing store post-update event for: {}", changeMapStr );
+                        logger.info( "Firing store post-update event for: {}", changeMapStr );
                         dispatcher.updated( ArtifactStoreUpdateType.valueOf( postUpdateEvent.getUpdateType().name() ),
                                              eventMetadata, changeMap );
                         break;
@@ -128,27 +131,27 @@ public class RepoServiceEventHandler
                                 Arrays.stream( stores ).map( ArtifactStore::getKey ).collect( Collectors.toList() );
                         if ( !disabling && preprocessing )
                         {
-                            logger.debug( "Firing store enabling event for: {}", storesKeys );
+                            logger.info( "Firing store enabling event for: {}", storesKeys );
                             dispatcher.enabling( eventMetadata, stores );
                         }
                         if ( !disabling && !preprocessing )
                         {
-                            logger.debug( "Firing store enabled event for: {}", storesKeys );
+                            logger.info( "Firing store enabled event for: {}", storesKeys );
                             dispatcher.enabled( eventMetadata, stores );
                         }
                         if ( disabling && preprocessing )
                         {
-                            logger.debug( "Firing store disabling event for: {}", storesKeys );
+                            logger.info( "Firing store disabling event for: {}", storesKeys );
                             dispatcher.disabling( eventMetadata, stores );
                         }
                         if ( disabling && !preprocessing )
                         {
-                            logger.debug( "Firing store disabled event for: {}", storesKeys );
+                            logger.info( "Firing store disabled event for: {}", storesKeys );
                             dispatcher.disabled( eventMetadata, stores );
                         }
                         break;
                 }
-                logger.debug( "Finish the consumer event dispatcher for event type {}",
+                logger.info( "Finish the consumer event dispatcher for event type {}",
                               storeEvent.getEventType().name() );
             }
             catch ( JsonProcessingException e )
