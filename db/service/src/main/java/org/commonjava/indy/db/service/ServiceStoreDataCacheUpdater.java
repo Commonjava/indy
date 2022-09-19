@@ -36,6 +36,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import static org.commonjava.indy.change.event.ArtifactStoreUpdateType.ADD;
+
 /**
  * This class will listen to all StorePostUpdateEvent and StorePostDeleteEvent to update the
  * Cache of Store Data and Store Query Data which is used in ServiceStoreDataManager and ServiceStoreQuery
@@ -64,19 +66,32 @@ public class ServiceStoreDataCacheUpdater
         final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
                 cacheProducer.getBasicCache( ServiceStoreQuery.ARTIFACT_STORE_QUERY );
         cacheUpdateExecutor.execute( () -> {
-            for ( Map.Entry<ArtifactStore, ArtifactStore> storeEntry : updateEvent.getChangeMap().entrySet() )
+            if ( updateEvent.getType().equals( ADD ) )
             {
-                final ArtifactStore newStore = storeEntry.getKey();
-                final ArtifactStore originalStore = storeEntry.getValue();
-                if ( storeCache.get( originalStore.getKey() ) != null )
+                for ( ArtifactStore newStore : updateEvent.getChanges() )
                 {
-                    logger.info( "Fresh the store cache on update event, originalStore: {}, newStore:{}", originalStore,
-                                 newStore );
-                    storeCache.remove( originalStore.getKey() );
+                    logger.info( "Fresh the store cache on add event, newStore:{}", newStore );
                     storeCache.put( newStore.getKey(), newStore );
+                    obsoleteQueryCache( newStore.getKey() );
                 }
+            }
+            else
+            {
+                for ( Map.Entry<ArtifactStore, ArtifactStore> storeEntry : updateEvent.getChangeMap().entrySet() )
+                {
 
-                obsoleteQueryCache( newStore.getKey() );
+                    final ArtifactStore newStore = storeEntry.getKey();
+                    final ArtifactStore originalStore = storeEntry.getValue();
+                    if ( storeCache.get( originalStore.getKey() ) != null )
+                    {
+                        logger.info( "Fresh the store cache on update event, originalStore: {}, newStore:{}",
+                                     originalStore, newStore );
+                        storeCache.remove( originalStore.getKey() );
+                        storeCache.put( newStore.getKey(), newStore );
+                    }
+
+                    obsoleteQueryCache( newStore.getKey() );
+                }
             }
         } );
     }
