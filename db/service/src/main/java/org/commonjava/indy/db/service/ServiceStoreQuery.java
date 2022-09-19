@@ -35,7 +35,6 @@ import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,6 +50,7 @@ import java.util.stream.Collectors;
 
 import static org.commonjava.indy.model.core.StoreType.group;
 
+@SuppressWarnings( "unchecked" )
 public class ServiceStoreQuery<T extends ArtifactStore>
         implements ArtifactStoreQuery<T>
 {
@@ -66,7 +66,7 @@ public class ServiceStoreQuery<T extends ArtifactStore>
 
     private final Integer STORE_QUERY_EXPIRATION_IN_MINS = 15;
 
-    private CacheProducer cacheProducer;
+    private final CacheProducer cacheProducer;
 
     private Set<StoreType> types;
 
@@ -107,6 +107,7 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         return this;
     }
 
+    @SuppressWarnings( "unused" )
     ArtifactStoreQuery<T> noTypes()
     {
         this.types = Collections.emptySet();

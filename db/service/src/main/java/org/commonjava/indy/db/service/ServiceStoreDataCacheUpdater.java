@@ -32,15 +32,16 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * This Event Handler will listen to all StorePostUpdateEvent and StorePostDeleteEvent to update the
+ * This class will listen to all StorePostUpdateEvent and StorePostDeleteEvent to update the
  * Cache of Store Data and Store Query Data which is used in ServiceStoreDataManager and ServiceStoreQuery
  *
  */
 @ApplicationScoped
 @SuppressWarnings( "unused" )
-public class ServiceEventHandler
+public class ServiceStoreDataCacheUpdater
 {
     @Inject
     private CacheProducer cacheProducer;
@@ -67,20 +68,7 @@ public class ServiceEventHandler
                     storeCache.put( newStore.getKey(), newStore );
                 }
 
-                queryCache.execute( ( cache ) -> {
-                    for ( Collection<ArtifactStore> stores : cache.values() )
-                    {
-                        for ( ArtifactStore store : stores )
-                        {
-                            if ( store.getKey().equals( originalStore.getKey() ) )
-                            {
-                                stores.remove( store );
-                                stores.add( newStore );
-                            }
-                        }
-                    }
-                    return null;
-                } );
+                obsoleteQueryCache( newStore.getKey() );
             }
         } );
     }
@@ -103,21 +91,40 @@ public class ServiceEventHandler
                     return null;
                 } );
 
-                queryCache.execute( ( cache ) -> {
-                    cache.values().forEach( ( stores ) -> stores.forEach( ( store ) -> {
-                        if ( store.getKey().equals( deleted.getKey() ) )
-                        {
-                            stores.remove( store );
-                        }
-                        else if ( store.getType() == StoreType.group )
-                        {
-                            ( (Group) store ).getConstituents().remove( deleted.getKey() );
-                        }
-                    } ) );
-                    return null;
-                } );
+                obsoleteQueryCache( deleted.getKey() );
             }
         } );
 
+    }
+
+    /**
+     * For ServiceStoreQuery cache, we need to clear the related entry if any store event happened and
+     * let the query refresh from remote repository service
+     *
+     * @param storeKey
+     */
+    private void obsoleteQueryCache( StoreKey storeKey )
+    {
+        final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
+                cacheProducer.getBasicCache( ServiceStoreQuery.ARTIFACT_STORE_QUERY );
+        queryCache.execute( ( cache ) -> {
+            for ( Map.Entry<Object, Collection<ArtifactStore>> entry : cache.entrySet() )
+            {
+                Object key = entry.getKey();
+                // This is for getGroupsAffectedBy query cache
+                if ( key instanceof Set && ( (Set) key ).contains( storeKey ) )
+                {
+                    cache.remove( key );
+                }
+                // This is for getOrderedConcreteStoresInGroup query cache
+                if ( storeKey.getType() == StoreType.group && key instanceof String && ( (String) key ).indexOf(
+                        String.format( "%s:%s", storeKey.getPackageType(), storeKey.getName() ) ) > 0 )
+                {
+                    cache.remove( key );
+                }
+
+            }
+            return null;
+        } );
     }
 }
