@@ -26,6 +26,8 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
@@ -43,6 +45,9 @@ import java.util.Set;
 @SuppressWarnings( "unused" )
 public class ServiceStoreDataCacheUpdater
 {
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
     @Inject
     private CacheProducer cacheProducer;
 
@@ -53,6 +58,7 @@ public class ServiceStoreDataCacheUpdater
 
     public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent updateEvent )
     {
+        logger.info( "Start cache updater for store post update event: {}", updateEvent );
         final BasicCacheHandle<StoreKey, ArtifactStore> storeCache =
                 cacheProducer.getBasicCache( ServiceStoreDataManager.ARTIFACT_STORE );
         final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
@@ -64,6 +70,8 @@ public class ServiceStoreDataCacheUpdater
                 final ArtifactStore originalStore = storeEntry.getValue();
                 if ( storeCache.get( originalStore.getKey() ) != null )
                 {
+                    logger.info( "Fresh the store cache on update event, originalStore: {}, newStore:{}", originalStore,
+                                 newStore );
                     storeCache.remove( originalStore.getKey() );
                     storeCache.put( newStore.getKey(), newStore );
                 }
@@ -75,6 +83,7 @@ public class ServiceStoreDataCacheUpdater
 
     public void onStoreDelete( @Observes ArtifactStoreDeletePostEvent deleteEvent )
     {
+        logger.info( "Start cache updater for store delete post event: {}", deleteEvent );
         final BasicCacheHandle<StoreKey, ArtifactStore> storeCache =
                 cacheProducer.getBasicCache( ServiceStoreDataManager.ARTIFACT_STORE );
         final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
@@ -83,6 +92,7 @@ public class ServiceStoreDataCacheUpdater
             for ( ArtifactStore deleted : deleteEvent.getStores() )
             {
                 storeCache.execute( ( cache ) -> {
+                    logger.info( "Fresh the store cache on delete event, deleted: {}", deleted );
                     cache.remove( deleted.getKey() );
                     cache.values()
                          .stream()
@@ -114,12 +124,14 @@ public class ServiceStoreDataCacheUpdater
                 // This is for getGroupsAffectedBy query cache
                 if ( key instanceof Set && ( (Set) key ).contains( storeKey ) )
                 {
+                    logger.info( "Fresh the store query cache, removed: {}", storeKey );
                     cache.remove( key );
                 }
                 // This is for getOrderedConcreteStoresInGroup query cache
                 if ( storeKey.getType() == StoreType.group && key instanceof String && ( (String) key ).indexOf(
                         String.format( "%s:%s", storeKey.getPackageType(), storeKey.getName() ) ) > 0 )
                 {
+                    logger.info( "Fresh the concrete stores query cache, removed: {}", storeKey );
                     cache.remove( key );
                 }
 
