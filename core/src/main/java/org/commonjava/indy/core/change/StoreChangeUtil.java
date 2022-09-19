@@ -47,10 +47,10 @@ public class StoreChangeUtil
     public static Set<StoreKey>[] getDiffMembers( Group newGroup, Group oldGroup )
     {
         List<StoreKey> newMembers = newGroup.getConstituents();
-        logger.debug( "New members of {}: {}", newGroup, newMembers );
+        logger.info( "New members of {}: {}", newGroup, newMembers );
 
         List<StoreKey> oldMembers = oldGroup.getConstituents();
-        logger.debug( "Old members of {}: {}", oldGroup, oldMembers );
+        logger.info( "Old members of {}: {}", oldGroup, oldMembers );
 
         return getDiff( newMembers, oldMembers );
     }
