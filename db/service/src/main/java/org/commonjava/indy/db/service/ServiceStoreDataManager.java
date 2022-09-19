@@ -57,6 +57,7 @@ import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
+@SuppressWarnings( "unchecked" )
 @ApplicationScoped
 @Serviced
 public class ServiceStoreDataManager
