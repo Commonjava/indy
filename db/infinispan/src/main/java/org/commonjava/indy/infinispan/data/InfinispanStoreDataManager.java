@@ -106,6 +106,12 @@ public class InfinispanStoreDataManager
     }
 
     @Override
+    protected ArtifactStore getArtifactStoreInternal( StoreKey key, boolean forceQuery )
+    {
+        return null;
+    }
+
+    @Override
     protected synchronized ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
         final ArtifactStore store = stores.remove( key );

@@ -182,7 +182,7 @@ public class RepoServiceEventHandler
         for ( EventStoreKey eventStoreKey : storeEvent.getKeys() )
         {
             StoreKey storeKey = convertToStoreKey( eventStoreKey );
-            ArtifactStore store = storeDataManager.getArtifactStore( storeKey );
+            ArtifactStore store = storeDataManager.getArtifactStore( storeKey, true );
             if ( store == null )
             {
                 logger.error( "Failed to fetch store {} through data manager.", storeKey );
@@ -255,7 +255,7 @@ public class RepoServiceEventHandler
                 originalStore.setDisableTimeout( (Integer) originalValue );
                 break;
             case "path_mask_patterns":
-                ArrayList<String> list = (ArrayList<String>) originalValue;
+                List<String> list = objToList( originalValue, String.class );
                 originalStore.setPathMaskPatterns( new HashSet( list ) );
                 break;
             case "authoritative_index":
@@ -377,8 +377,21 @@ public class RepoServiceEventHandler
                 originalStore.setPrependConstituent( (Boolean) originalValue );
                 break;
             case "constituents":
-                originalStore.setConstituents( (List<StoreKey>) originalValue );
+                originalStore.setConstituents( objToList( originalValue, StoreKey.class ) );
                 break;
         }
+    }
+
+    private <T> List<T> objToList( Object obj, Class<T> cla )
+    {
+        List<T> list = new ArrayList<T>();
+        if ( obj instanceof ArrayList<?> )
+        {
+            for ( Object o : (List<?>) obj )
+            {
+                list.add( cla.cast( o ) );
+            }
+        }
+        return list;
     }
 }

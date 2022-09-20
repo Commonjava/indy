@@ -84,6 +84,12 @@ public class MemoryStoreDataManager
     }
 
     @Override
+    protected ArtifactStore getArtifactStoreInternal( StoreKey key, boolean forceQuery )
+    {
+        return null;
+    }
+
+    @Override
     protected void removeAffectedBy( StoreKey key, StoreKey affected )
     {
 

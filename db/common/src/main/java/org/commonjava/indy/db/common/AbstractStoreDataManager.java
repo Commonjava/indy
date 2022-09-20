@@ -113,12 +113,22 @@ public abstract class AbstractStoreDataManager
 
     protected abstract ArtifactStore getArtifactStoreInternal( final StoreKey key );
 
+    protected abstract ArtifactStore getArtifactStoreInternal( final StoreKey key, final boolean forceQuery );
+
     @Override
     @Measure
     public ArtifactStore getArtifactStore( final StoreKey key )
             throws IndyDataException
     {
         return getArtifactStoreInternal( key );
+    }
+
+    @Override
+    @Measure
+    public ArtifactStore getArtifactStore( final StoreKey key, final boolean forceQuery )
+                    throws IndyDataException
+    {
+        return getArtifactStoreInternal( key, forceQuery );
     }
 
     @Override

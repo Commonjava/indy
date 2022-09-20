@@ -74,6 +74,13 @@ public interface StoreDataManager
             throws IndyDataException;
 
     /**
+     * Return the {@link ArtifactStore} instance corresponding to the given key, where key is a composite of {@link StoreType}
+     * (hosted, remote, or group) and name.
+     */
+    ArtifactStore getArtifactStore( StoreKey key, boolean forceQuery )
+                    throws IndyDataException;
+
+    /**
      * Return the full list of {@link ArtifactStore} instances of a given {@link StoreType} (hosted, remote, or group) available on the system.
      * @deprecated We should avoid to call this method in new microservice architecture due to performance consideration
      */
