@@ -105,6 +105,16 @@ public class ServiceStoreDataManager
 
     protected ArtifactStore getArtifactStoreInternal( StoreKey key )
     {
+        return doQueryArtifactStoreInternal( key, false );
+    }
+
+    protected ArtifactStore getArtifactStoreInternal( StoreKey key, boolean forceQuery )
+    {
+        return doQueryArtifactStoreInternal( key, forceQuery );
+    }
+
+    private ArtifactStore doQueryArtifactStoreInternal( StoreKey key, boolean forceQuery )
+    {
         AtomicReference<IndyDataException> eHolder = new AtomicReference<>();
         ArtifactStore store = computeIfAbsent( key, () -> {
             try
@@ -116,7 +126,7 @@ public class ServiceStoreDataManager
                 eHolder.set( new IndyDataException( "Failed to get store %s", e, key ) );
                 return null;
             }
-        }, STORE_EXPIRATION_IN_MINS, Boolean.FALSE );
+        }, STORE_EXPIRATION_IN_MINS, forceQuery );
         if ( eHolder.get() != null )
         {
             logger.error( "Can not get ArtifactStore for {} due to: {}", key, eHolder.get().getMessage() );
@@ -239,6 +249,21 @@ public class ServiceStoreDataManager
 
         }
     }
+
+    public ArtifactStore getArtifactStore( StoreKey key, boolean forceQuery )
+                    throws IndyDataException
+    {
+        try
+        {
+            return getArtifactStoreInternal( key, forceQuery );
+        }
+        catch ( RuntimeException e )
+        {
+            throw new IndyDataException( "Failed to get store %s through forceQuery.", e, key );
+
+        }
+    }
+
 
     @Override
     public boolean isStarted()
