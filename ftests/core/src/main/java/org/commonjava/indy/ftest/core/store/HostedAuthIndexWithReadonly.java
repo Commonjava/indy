@@ -21,6 +21,7 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -50,6 +51,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *     <li>The hosted repo will set to authoritative index off when changed back to non-readonly</li>
  * </ul>
  */
+@Ignore("Need to think how to integrate with repo-service")
 public class HostedAuthIndexWithReadonly
         extends AbstractStoreManagementTest
 {

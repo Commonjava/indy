@@ -19,6 +19,7 @@ import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -39,6 +40,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
  *     <li>the hosted repo can be deleted successfully with no error second time</li>
  * </ul>
  */
+@Ignore("Need to think how to integrate with repo-service")
 public class ReadonlyHostedRepoDeleteTest
     extends AbstractStoreManagementTest
 {
