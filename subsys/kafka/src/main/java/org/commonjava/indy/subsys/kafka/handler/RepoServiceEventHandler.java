@@ -266,7 +266,7 @@ public class RepoServiceEventHandler
                 originalStore.setDisableTimeout( (Integer) originalValue );
                 break;
             case "path_mask_patterns":
-                List<String> list = objToList( originalValue, String.class );
+                List<String> list = objToList( originalValue );
                 originalStore.setPathMaskPatterns( new HashSet( list ) );
                 break;
             case "authoritative_index":
@@ -388,19 +388,32 @@ public class RepoServiceEventHandler
                 originalStore.setPrependConstituent( (Boolean) originalValue );
                 break;
             case "constituents":
-                originalStore.setConstituents( objToList( originalValue, StoreKey.class ) );
+                originalStore.setConstituents( toStoreKeyList( objToList( originalValue ) ) );
                 break;
         }
     }
 
-    private <T> List<T> objToList( Object obj, Class<T> cla )
+    private List<StoreKey> toStoreKeyList( List<String> list )
     {
-        List<T> list = new ArrayList<T>();
+        List<StoreKey> results = new ArrayList<>();
+        for ( String key : list )
+        {
+            StoreKey storeKey = StoreKey.fromString( key );
+            results.add( storeKey );
+        }
+        return results;
+    }
+
+    private List<String> objToList( Object obj )
+    {
+        List<String> list = new ArrayList<>();
         if ( obj instanceof ArrayList<?> )
         {
             for ( Object o : (List<?>) obj )
             {
-                list.add( cla.cast( o ) );
+                String value = String.valueOf( o );
+                logger.info( "Convert to string value {}", value );
+                list.add( value );
             }
         }
         return list;
