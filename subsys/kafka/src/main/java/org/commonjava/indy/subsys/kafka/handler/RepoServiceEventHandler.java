@@ -27,6 +27,7 @@ import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.db.service.ServiceStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -181,14 +182,24 @@ public class RepoServiceEventHandler
         final Map<EventStoreKey, ArtifactStore> storeMap = new HashMap<>();
         for ( EventStoreKey eventStoreKey : storeEvent.getKeys() )
         {
-            StoreKey storeKey = convertToStoreKey( eventStoreKey );
-            ArtifactStore store = storeDataManager.getArtifactStore( storeKey, true );
-            if ( store == null )
+            if ( storeDataManager instanceof ServiceStoreDataManager )
             {
-                logger.error( "Failed to fetch store {} through data manager.", storeKey );
-                continue;
+                logger.info( "Get store through store data manager {} force query.",
+                             storeDataManager.getClass().getName() );
+                StoreKey storeKey = convertToStoreKey( eventStoreKey );
+                ArtifactStore store = ( (ServiceStoreDataManager) storeDataManager ).getArtifactStore( storeKey, true );
+                if ( store == null )
+                {
+                    logger.error( "Failed to fetch store {} through data manager.", storeKey );
+                    continue;
+                }
+                storeMap.put( eventStoreKey, store );
             }
-            storeMap.put( eventStoreKey, store );
+            else
+            {
+                logger.warn( "No valid force query called from data manager: {}.",
+                             storeDataManager.getClass().getName() );
+            }
         }
         return storeMap;
     }

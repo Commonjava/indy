@@ -119,12 +119,6 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
     }
 
     @Override
-    protected ArtifactStore getArtifactStoreInternal( StoreKey key, boolean forceQuery )
-    {
-        return null;
-    }
-
-    @Override
     protected ArtifactStore removeArtifactStoreInternal( StoreKey key )
     {
 

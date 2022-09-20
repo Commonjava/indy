@@ -38,6 +38,10 @@
       <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-service</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-event-model</artifactId>
       <exclusions>

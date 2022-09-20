@@ -250,7 +250,6 @@ public class ServiceStoreDataManager
         }
     }
 
-    @Override
     public ArtifactStore getArtifactStore( StoreKey key, boolean forceQuery )
                     throws IndyDataException
     {
@@ -260,7 +259,7 @@ public class ServiceStoreDataManager
         }
         catch ( RuntimeException e )
         {
-            throw new IndyDataException( "Failed to get store %s", e, key );
+            throw new IndyDataException( "Failed to get store %s through forceQuery.", e, key );
 
         }
     }
