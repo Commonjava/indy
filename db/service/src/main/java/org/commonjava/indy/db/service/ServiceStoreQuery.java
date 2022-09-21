@@ -337,10 +337,12 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         Collection<ArtifactStore> stores = computeIfAbsent( queryKeys, () -> {
             try
             {
+                logger.trace( "Get StoreListingDTO from store query client." );
                 StoreListingDTO<Group> dto =
                         client.module( IndyStoreQueryClientModule.class ).getGroupsAffectedBy( new HashSet<>( keys ) );
                 if ( dto != null )
                 {
+                    logger.trace( "StoreListingDTO {}", dto );
                     return new HashSet<>( dto.getItems() );
                 }
                 return Collections.emptySet();
