@@ -322,6 +322,8 @@ public class IndyClientHttp
             client = newClient();
             addLoggingMDCToHeaders(request);
             response = client.execute( request, newContext() );
+            logger.trace( "Get request url path: {}, url host: {}", request.getURI().getPath(),
+                          request.getURI().getHost() );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
             {
