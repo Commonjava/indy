@@ -20,6 +20,7 @@ import org.commonjava.indy.model.core.RemoteRepository;
 import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore("Need to think how to integrate with repo-service")
 public class RemoteRepoInValidUrlTest
         extends AbstractStoreManagementTest
 {
