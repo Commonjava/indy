@@ -16,8 +16,6 @@
 package org.commonjava.indy.model.core;
 
 
-import static org.commonjava.indy.pkg.PackageTypeConstants.*;
-
 /**
  * Enumeration to distinguish between different access channels to stores.
  *
