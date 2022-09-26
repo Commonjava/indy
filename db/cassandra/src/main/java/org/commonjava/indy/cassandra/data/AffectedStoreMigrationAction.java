@@ -24,6 +24,10 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+/**
+ * @deprecated This action is using {@link CassandraStoreDataManager} which is deprecated
+ */
+@Deprecated
 @Named( "cassandra-affected-store-data-migration" )
 public class AffectedStoreMigrationAction implements MigrationAction
 {
