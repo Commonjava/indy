@@ -55,7 +55,7 @@ public class ServiceStoreDataCacheUpdater
 
     @Inject
     @WeftManaged
-    @ExecutorConfig( named = "promote-validation-rules-executor", threads = 2 )
+    @ExecutorConfig( named = "service-data-cache-update-executor", threads = 2 )
     private WeftExecutorService cacheUpdateExecutor;
 
     public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent updateEvent )
