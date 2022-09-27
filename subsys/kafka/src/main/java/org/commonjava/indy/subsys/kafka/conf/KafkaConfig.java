@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 @SectionName( "kafka" )
 @ApplicationScoped
 public class KafkaConfig
@@ -36,6 +38,8 @@ public class KafkaConfig
 
     private static final String DEFAULT_GROUP = "kstreams-group";
 
+    private static final Integer DEFAULT_RECORDS_PER_PARTITION = 1000;
+
     private static final boolean DEFAULT_ENABLED = true;
 
     private Boolean enabled;
@@ -45,6 +49,8 @@ public class KafkaConfig
     private List<String> topics;
 
     private String group;
+
+    private Integer recordsPerPartition;
 
     public KafkaConfig()
     {
@@ -92,13 +98,24 @@ public class KafkaConfig
 
     public String getGroup()
     {
-        return group == null ? DEFAULT_GROUP : group;
+        String group = System.getenv( "POD_NAME" );
+        return isBlank( group ) ? DEFAULT_GROUP : group;
     }
 
-    @ConfigName( "kafka.group" )
     public void setGroup( final String group )
     {
         this.group = group;
+    }
+
+    public Integer getRecordsPerPartition()
+    {
+        return recordsPerPartition == null ? DEFAULT_RECORDS_PER_PARTITION : recordsPerPartition;
+    }
+
+    @ConfigName( "kafka.records.per.partition" )
+    public void setRecordsPerPartition( Integer recordsPerPartition )
+    {
+        this.recordsPerPartition = recordsPerPartition;
     }
 
     @Override

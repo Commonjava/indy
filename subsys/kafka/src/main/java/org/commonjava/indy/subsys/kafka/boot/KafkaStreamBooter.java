@@ -70,11 +70,7 @@ public class KafkaStreamBooter
             KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
             serviceEventHandler.dispatchEvent( stream, topic );
         }
-
-        final Properties props = new Properties();
-        props.putIfAbsent( StreamsConfig.APPLICATION_ID_CONFIG, config.getGroup() );
-        props.putIfAbsent( StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers() );
-
+        Properties props = setKafkaProps();
         final KafkaStreams streams = new KafkaStreams( builder.build(), props );
         try
         {
@@ -96,5 +92,16 @@ public class KafkaStreamBooter
     public int getBootPriority()
     {
         return 100;
+    }
+
+    private Properties setKafkaProps()
+    {
+        final Properties props = new Properties();
+        props.putIfAbsent( StreamsConfig.APPLICATION_ID_CONFIG, config.getGroup() );
+        props.putIfAbsent( StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers() );
+        props.putIfAbsent( StreamsConfig.BUFFERED_RECORDS_PER_PARTITION_CONFIG, config.getRecordsPerPartition() );
+
+        logger.info( "Kafka props: {}", props );
+        return props;
     }
 }
