@@ -26,6 +26,7 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +34,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,8 +65,6 @@ public class ServiceStoreDataCacheUpdater
         logger.info( "Start cache updater for store post update event: {}", updateEvent );
         final BasicCacheHandle<StoreKey, ArtifactStore> storeCache =
                 cacheProducer.getBasicCache( ServiceStoreDataManager.ARTIFACT_STORE );
-        final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
-                cacheProducer.getBasicCache( ServiceStoreQuery.ARTIFACT_STORE_QUERY );
         cacheUpdateExecutor.execute( () -> {
             if ( updateEvent.getType().equals( ADD ) )
             {
@@ -102,8 +102,6 @@ public class ServiceStoreDataCacheUpdater
         logger.info( "Start cache updater for store delete post event: {}", deleteEvent );
         final BasicCacheHandle<StoreKey, ArtifactStore> storeCache =
                 cacheProducer.getBasicCache( ServiceStoreDataManager.ARTIFACT_STORE );
-        final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
-                cacheProducer.getBasicCache( ServiceStoreQuery.ARTIFACT_STORE_QUERY );
         cacheUpdateExecutor.execute( () -> {
             for ( ArtifactStore deleted : deleteEvent.getStores() )
             {
@@ -134,6 +132,7 @@ public class ServiceStoreDataCacheUpdater
         final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
                 cacheProducer.getBasicCache( ServiceStoreQuery.ARTIFACT_STORE_QUERY );
         queryCache.execute( ( cache ) -> {
+            Collection<ArtifactStore> affectedGroups = new HashSet<>();
             for ( Map.Entry<Object, Collection<ArtifactStore>> entry : cache.entrySet() )
             {
                 Object key = entry.getKey();
@@ -141,18 +140,34 @@ public class ServiceStoreDataCacheUpdater
                 if ( key instanceof Set && ( (Set) key ).contains( storeKey ) )
                 {
                     logger.info( "Fresh the store query cache, removed: {}", storeKey );
+                    affectedGroups.addAll( cache.get( key ) );
                     cache.remove( key );
                 }
                 // This is for getOrderedConcreteStoresInGroup query cache
-                if ( storeKey.getType() == StoreType.group && key instanceof String && ( (String) key ).indexOf(
-                        String.format( "%s:%s", storeKey.getPackageType(), storeKey.getName() ) ) > 0 )
-                {
-                    logger.info( "Fresh the concrete stores query cache, removed: {}", storeKey );
-                    cache.remove( key );
-                }
+                clearOrderedConcreteStoresCache( key, storeKey, cache );
+            }
 
+            // This is for affectedGroups' getOrderedConcreteStoresInGroup query cache
+            for ( ArtifactStore group : affectedGroups )
+            {
+                for ( Map.Entry<Object, Collection<ArtifactStore>> entry : cache.entrySet() )
+                {
+                    Object key = entry.getKey();
+                    clearOrderedConcreteStoresCache( key, group.getKey(), cache );
+                }
             }
             return null;
         } );
+    }
+
+    private void clearOrderedConcreteStoresCache( Object key, StoreKey storeKey,
+                                                  BasicCache<Object, Collection<ArtifactStore>> cache )
+    {
+        if ( storeKey.getType() == StoreType.group && key instanceof String && ( (String) key ).indexOf(
+                        String.format( "%s:%s", storeKey.getPackageType(), storeKey.getName() ) ) > 0 )
+        {
+            logger.info( "Fresh the concrete stores query cache, removed: {}", storeKey );
+            cache.remove( key );
+        }
     }
 }
