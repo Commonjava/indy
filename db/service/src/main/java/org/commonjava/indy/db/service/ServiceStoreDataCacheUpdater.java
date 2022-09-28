@@ -70,7 +70,8 @@ public class ServiceStoreDataCacheUpdater
             {
                 for ( ArtifactStore newStore : updateEvent.getChanges() )
                 {
-                    logger.info( "Fresh the store cache on add event, newStore:{}", newStore );
+                    logger.info( "Fresh the store cache on add event, newStore:{}, disabled:{}", newStore,
+                                 newStore.isDisabled() );
                     storeCache.put( newStore.getKey(), newStore );
                     obsoleteQueryCache( newStore.getKey() );
                 }
@@ -84,8 +85,8 @@ public class ServiceStoreDataCacheUpdater
                     final ArtifactStore originalStore = storeEntry.getValue();
                     if ( storeCache.get( originalStore.getKey() ) != null )
                     {
-                        logger.info( "Fresh the store cache on update event, originalStore: {}, newStore:{}",
-                                     originalStore, newStore );
+                        logger.info( "Fresh the store cache on update event, originalStore:{}, disabled:{}, newStore:{}, disabled:{}",
+                                     originalStore, originalStore.isDisabled(), newStore, newStore.isDisabled() );
                         storeCache.remove( originalStore.getKey() );
                         storeCache.put( newStore.getKey(), newStore );
                     }
