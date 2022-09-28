@@ -267,11 +267,13 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         final Collection<ArtifactStore> stores = computeIfAbsent( queryKey, () -> {
             try
             {
+                logger.trace( "Get OrderedConcrete StoreListingDTO from store query client." );
                 StoreListingDTO<ArtifactStore> dto = client.module( IndyStoreQueryClientModule.class )
                                                            .getOrderedConcreteStoresInGroup( packageType, groupName,
                                                                                              enabled.toString() );
                 if ( dto != null )
                 {
+                    logger.trace( "OrderedConcrete StoreListingDTO {}", dto );
                     return dto.getItems();
                 }
                 return Collections.emptyList();
@@ -337,12 +339,12 @@ public class ServiceStoreQuery<T extends ArtifactStore>
         Collection<ArtifactStore> stores = computeIfAbsent( queryKeys, () -> {
             try
             {
-                logger.trace( "Get StoreListingDTO from store query client." );
+                logger.trace( "Get GroupsAffected StoreListingDTO from store query client." );
                 StoreListingDTO<Group> dto =
                         client.module( IndyStoreQueryClientModule.class ).getGroupsAffectedBy( new HashSet<>( keys ) );
                 if ( dto != null )
                 {
-                    logger.trace( "StoreListingDTO {}", dto );
+                    logger.trace( "GroupsAffected StoreListingDTO {}", dto );
                     return new HashSet<>( dto.getItems() );
                 }
                 return Collections.emptySet();
