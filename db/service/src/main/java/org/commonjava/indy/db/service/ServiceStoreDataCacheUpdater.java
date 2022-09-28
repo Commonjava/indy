@@ -132,24 +132,29 @@ public class ServiceStoreDataCacheUpdater
         final BasicCacheHandle<Object, Collection<ArtifactStore>> queryCache =
                 cacheProducer.getBasicCache( ServiceStoreQuery.ARTIFACT_STORE_QUERY );
         queryCache.execute( ( cache ) -> {
+            Collection<ArtifactStore> affectedGroups = new HashSet<>();
             for ( Map.Entry<Object, Collection<ArtifactStore>> entry : cache.entrySet() )
             {
                 Object key = entry.getKey();
-                Collection<ArtifactStore> affectedGroups = new HashSet<>();
                 // This is for getGroupsAffectedBy query cache
                 if ( key instanceof Set && ( (Set) key ).contains( storeKey ) )
                 {
                     logger.info( "Fresh the store query cache, removed: {}", storeKey );
-                    affectedGroups = cache.get( key );
+                    affectedGroups.addAll( cache.get( key ) );
                     cache.remove( key );
-                }
-                // This is for affectedGroups' getOrderedConcreteStoresInGroup query cache
-                for ( ArtifactStore group : affectedGroups )
-                {
-                    clearOrderedConcreteStoresCache( key, group.getKey(), cache );
                 }
                 // This is for getOrderedConcreteStoresInGroup query cache
                 clearOrderedConcreteStoresCache( key, storeKey, cache );
+            }
+
+            // This is for affectedGroups' getOrderedConcreteStoresInGroup query cache
+            for ( ArtifactStore group : affectedGroups )
+            {
+                for ( Map.Entry<Object, Collection<ArtifactStore>> entry : cache.entrySet() )
+                {
+                    Object key = entry.getKey();
+                    clearOrderedConcreteStoresCache( key, group.getKey(), cache );
+                }
             }
             return null;
         } );
