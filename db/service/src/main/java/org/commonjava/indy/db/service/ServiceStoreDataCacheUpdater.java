@@ -150,6 +150,7 @@ public class ServiceStoreDataCacheUpdater
             // This is for affectedGroups' getOrderedConcreteStoresInGroup query cache
             for ( ArtifactStore group : affectedGroups )
             {
+                logger.info( "Fresh the store query cache for affectedGroups, removed: {}", storeKey );
                 for ( Map.Entry<Object, Collection<ArtifactStore>> entry : cache.entrySet() )
                 {
                     Object key = entry.getKey();

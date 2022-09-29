@@ -506,13 +506,13 @@ public class ServiceStoreQuery<T extends ArtifactStore>
 
         BasicCacheHandle<Object, Collection<ArtifactStore>> cache = cacheProducer.getBasicCache( ARTIFACT_STORE_QUERY );
         Collection<ArtifactStore> stores = cache.get( key );
-        if ( stores == null || forceQuery )
+        if ( stores == null || stores.isEmpty() || forceQuery )
         {
             logger.trace( "Entry not found, run put, expirationMins: {}", expirationMins );
 
             stores = storeProvider.get();
 
-            if ( stores != null )
+            if ( stores != null && !stores.isEmpty() )
             {
                 if ( expirationMins > 0 )
                 {
