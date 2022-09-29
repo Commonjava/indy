@@ -557,7 +557,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                                    final boolean includeGroups, final boolean recurseGroups) throws IndyDataException
     {
 
-        if ( groupRepo == null || groupRepo.isDisabled() && Boolean.TRUE.equals(this.enabled) )
+        if ( groupRepo == null || groupRepo.isDisabled() && enabled )
         {
             return result;
         }
@@ -588,7 +588,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     else
                     {
                         final ArtifactStore store = dataManager.getArtifactStore( key );
-                        if (store != null && !(store.isDisabled() && Boolean.TRUE.equals( this.enabled )))
+                        if ( store != null && ( store.isDisabled() != enabled ) )
                         {
                             result.add( store );
                         }
