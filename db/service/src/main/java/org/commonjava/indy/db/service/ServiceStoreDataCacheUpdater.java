@@ -15,9 +15,7 @@
  */
 package org.commonjava.indy.db.service;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStorePostUpdateEvent;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -37,6 +35,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.commonjava.indy.change.event.ArtifactStoreUpdateType.ADD;
 
@@ -55,10 +55,15 @@ public class ServiceStoreDataCacheUpdater
     @Inject
     private CacheProducer cacheProducer;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = "service-data-cache-update-executor", threads = 2 )
-    private WeftExecutorService cacheUpdateExecutor;
+    //TODO: we found a bug of weft with o11yphant TraceManager, which could cause ConcurrentModificationException.
+    //      Before fixing it here will use a JUC ExecutorService instead.
+    //      The exception is something like:
+    //          java.util.ConcurrentModificationException
+    //            at java.base/java.util.HashMap.forEach(HashMap.java:1339)
+    //            at java.base/java.util.Collections$UnmodifiableMap.forEach(Collections.java:1505)
+    //            at org.commonjava.o11yphant.trace.TraceManager.lambda$startThreadRootSpan$1(TraceManager.java:117)
+    private final ExecutorService cacheUpdateExecutor = Executors.newFixedThreadPool( 2, new NamedThreadFactory(
+            "service-data-cache-update-executor", new ThreadGroup( "service-data-cache-update-executor" ), true, 3 ) );
 
     public void onStoreUpdate( @Observes ArtifactStorePostUpdateEvent updateEvent )
     {
@@ -85,8 +90,9 @@ public class ServiceStoreDataCacheUpdater
                     final ArtifactStore originalStore = storeEntry.getValue();
                     if ( storeCache.get( originalStore.getKey() ) != null )
                     {
-                        logger.info( "Fresh the store cache on update event, originalStore:{}, disabled:{}, newStore:{}, disabled:{}",
-                                     originalStore, originalStore.isDisabled(), newStore, newStore.isDisabled() );
+                        logger.info(
+                                "Fresh the store cache on update event, originalStore:{}, disabled:{}, newStore:{}, disabled:{}",
+                                originalStore, originalStore.isDisabled(), newStore, newStore.isDisabled() );
                         storeCache.remove( originalStore.getKey() );
                         storeCache.put( newStore.getKey(), newStore );
                     }
@@ -155,6 +161,7 @@ public class ServiceStoreDataCacheUpdater
                 {
                     Object key = entry.getKey();
                     clearOrderedConcreteStoresCache( key, group.getKey(), cache );
+
                 }
             }
             return null;
@@ -164,8 +171,10 @@ public class ServiceStoreDataCacheUpdater
     private void clearOrderedConcreteStoresCache( Object key, StoreKey storeKey,
                                                   BasicCache<Object, Collection<ArtifactStore>> cache )
     {
-        if ( storeKey.getType() == StoreType.group && key instanceof String && ( (String) key ).indexOf(
-                        String.format( "%s:%s", storeKey.getPackageType(), storeKey.getName() ) ) > 0 )
+        final boolean isConcreteStoreCache =
+                storeKey.getType() == StoreType.group && key instanceof String && ( (String) key ).contains(
+                        String.format( "%s:%s", storeKey.getPackageType(), storeKey.getName() ) );
+        if ( isConcreteStoreCache )
         {
             logger.info( "Fresh the concrete stores query cache, removed: {}", storeKey );
             cache.remove( key );
