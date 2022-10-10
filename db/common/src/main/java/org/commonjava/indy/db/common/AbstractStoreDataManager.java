@@ -16,9 +16,8 @@
 package org.commonjava.indy.db.common;
 
 import org.apache.commons.lang3.StringUtils;
-import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.Locker;
-import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -30,7 +29,6 @@ import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.data.StoreValidator;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
@@ -39,6 +37,7 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.ValuePipe;
 import org.commonjava.maven.galley.event.EventMetadata;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -53,6 +52,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiFunction;
@@ -96,10 +96,15 @@ public abstract class AbstractStoreDataManager
 
     protected static final String AFFECTED_BY_ASYNC_RUNNER_NAME = "store-affected-by-async-runner";
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = AFFECTED_BY_ASYNC_RUNNER_NAME, priority = 4, threads = 32 )
-    protected ExecutorService affectedByAsyncRunner;
+    //TODO: we found a bug of weft with o11yphant TraceManager, which could cause ConcurrentModificationException.
+    //      Before fixing it here will use a JUC ExecutorService instead.
+    //      The exception is something like:
+    //          java.util.ConcurrentModificationException
+    //            at java.base/java.util.HashMap.forEach(HashMap.java:1339)
+    //            at java.base/java.util.Collections$UnmodifiableMap.forEach(Collections.java:1505)
+    //            at org.commonjava.o11yphant.trace.TraceManager.lambda$startThreadRootSpan$1(TraceManager.java:117)
+    protected ExecutorService affectedByAsyncRunner = Executors.newFixedThreadPool( 32, new NamedThreadFactory(
+                    AFFECTED_BY_ASYNC_RUNNER_NAME, new ThreadGroup( AFFECTED_BY_ASYNC_RUNNER_NAME ), true, 4 ) );
 
     protected AbstractStoreDataManager()
     {

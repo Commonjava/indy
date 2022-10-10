@@ -15,8 +15,7 @@
  */
 package org.commonjava.indy.core.change.event;
 
-import org.commonjava.cdi.util.weft.ExecutorConfig;
-import org.commonjava.cdi.util.weft.WeftManaged;
+import org.commonjava.cdi.util.weft.NamedThreadFactory;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePostEvent;
 import org.commonjava.indy.change.event.ArtifactStoreDeletePreEvent;
 import org.commonjava.indy.change.event.ArtifactStoreEnablementEvent;
@@ -39,7 +38,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.change.EventUtils.fireEvent;
@@ -72,12 +72,21 @@ public class DefaultStoreEventDispatcher
     @Inject
     private Event<ArtifactStoreEnablementEvent> enablementEvent;
 
-    @Inject
-    @WeftManaged
-    @ExecutorConfig( named = CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
-                     threads = CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
-                     priority = CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY )
-    private Executor executor;
+    //TODO: we found a bug of weft with o11yphant TraceManager, which could cause ConcurrentModificationException.
+    //      Before fixing it here will use a JUC ExecutorService instead.
+    //      The exception is something like:
+    //          java.util.ConcurrentModificationException
+    //            at java.base/java.util.HashMap.forEach(HashMap.java:1339)
+    //            at java.base/java.util.Collections$UnmodifiableMap.forEach(Collections.java:1505)
+    //            at org.commonjava.o11yphant.trace.TraceManager.lambda$startThreadRootSpan$1(TraceManager.java:117)
+    private final ExecutorService executor =
+                    Executors.newFixedThreadPool( CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
+                                                  new NamedThreadFactory(
+                                                                  CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME,
+                                                                  new ThreadGroup(
+                                                                                  CoreEventManagerConstants.DISPATCH_EXECUTOR_NAME ),
+                                                                  true,
+                                                                  CoreEventManagerConstants.DISPATCH_EXECUTOR_PRIORITY ) );
 
     @Inject
     private DownloadManager fileManager;
