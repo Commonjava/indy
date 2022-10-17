@@ -326,6 +326,8 @@ public class PromotionValidator
     private boolean needTempRepo( PromoteRequest promoteRequest )
             throws PromotionValidationException
     {
+        return false;
+/*
         if ( promoteRequest instanceof GroupPromoteRequest )
         {
             return false;
@@ -339,6 +341,7 @@ public class PromotionValidator
         {
             throw new PromotionValidationException( "The promote request is not a valid request, should not happen" );
         }
+*/
     }
 
     private ArtifactStore getRequestStore( PromoteRequest promoteRequest, String baseUrl )
