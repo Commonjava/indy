@@ -187,11 +187,16 @@ public class ServiceStoreQuery<T extends ArtifactStore>
     public Set<Group> getGroupsContaining( final StoreKey storeKey )
             throws IndyDataException
     {
+        Set<Group> groups = new HashSet<>();
         try
         {
-            return new HashSet<>( client.module( IndyStoreQueryClientModule.class )
-                                        .getGroupContaining( storeKey, "true" )
-                                        .getItems() );
+            StoreListingDTO<Group> groupDTO =
+                            client.module( IndyStoreQueryClientModule.class ).getGroupContaining( storeKey, "true" );
+            if ( groupDTO != null )
+            {
+                groups = groupDTO.getItems().stream().collect( Collectors.toSet() );
+            }
+            return groups;
         }
         catch ( IndyClientException e )
         {
