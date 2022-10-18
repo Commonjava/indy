@@ -31,8 +31,10 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -117,7 +119,12 @@ public class ServiceStoreDataCacheUpdater
                     cache.values()
                          .stream()
                          .filter( ( store ) -> store.getType() == StoreType.group )
-                         .forEach( ( store ) -> ( (Group) store ).getConstituents().remove( deleted.getKey() ) );
+                         .forEach( ( store ) -> {
+                             List<StoreKey> storeList = ( (Group) store ).getConstituents();
+                             List<StoreKey> stores = new ArrayList<>( storeList );
+                             stores.remove( deleted.getKey() );
+                             ( (Group) store ).setConstituents( stores );
+                         } );
                     return null;
                 } );
 
