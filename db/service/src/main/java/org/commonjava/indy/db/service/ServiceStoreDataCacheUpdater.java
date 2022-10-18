@@ -114,7 +114,7 @@ public class ServiceStoreDataCacheUpdater
             for ( ArtifactStore deleted : deleteEvent.getStores() )
             {
                 storeCache.execute( ( cache ) -> {
-                    logger.info( "Fresh the store cache on delete event, deleted: {}", deleted );
+                    logger.info( "Fresh store cache on delete event, deleted: {}", deleted );
                     cache.remove( deleted.getKey() );
                     cache.values()
                          .stream()
