@@ -75,7 +75,7 @@
     <logbackVersion>1.2.9</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>2.4.6.Final</weldVersion>
-    <jacksonVersion>2.13.3</jacksonVersion>
+    <jacksonVersion>2.13.4.1</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.13</httpclientVersion>
