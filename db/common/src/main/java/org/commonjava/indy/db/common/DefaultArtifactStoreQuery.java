@@ -61,13 +61,14 @@ import static org.commonjava.indy.model.core.StoreType.group;
  * Created by jdcasey on 5/10/17.
  */
 // TODO: Eventually, it should probably be an error if packageType isn't set explicitly
+@SuppressWarnings( "unchecked" )
 public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         implements ArtifactStoreQuery<T>
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private StoreDataManager dataManager;
+    private final StoreDataManager dataManager;
 
     private String packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
@@ -81,6 +82,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         this.dataManager = dataManager;
     }
 
+    @SuppressWarnings( "unused" )
     private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
                                        final Boolean enabled, final Class<T> storeCls )
     {
@@ -242,7 +244,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey )
-            throws IndyDataException
     {
         return getGroupsContaining( storeKey, Boolean.TRUE );
     }
@@ -250,7 +251,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey, Boolean enabled )
-                    throws IndyDataException
     {
         return getAllGroups( storeKey.getPackageType(), enabled ).stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
@@ -258,7 +258,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url )
-                    throws IndyDataException
     {
         return getRemoteRepositoryByUrl( packageType, url, Boolean.TRUE );
     }
@@ -266,7 +265,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url, Boolean enabled )
-            throws IndyDataException
     {
         /*
            This filter does these things:
@@ -333,32 +331,28 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     return false;
                 }
 
-                if (  targetUrlInfo != null )
+                String ipForUrl = null;
+                String ipForTargetUrl = null;
+                try
                 {
-                    String ipForUrl = null;
-                    String ipForTargetUrl = null;
-                    try
+                    ipForUrl = urlInfo.getIpForUrl();
+                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                    if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
+                            && urlInfo.getPort() == targetUrlInfo.getPort()
+                            && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
                     {
-                        ipForUrl = urlInfo.getIpForUrl();
-                        ipForTargetUrl = targetUrlInfo.getIpForUrl();
-                        if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
-                                && urlInfo.getPort() == targetUrlInfo.getPort()
-                                && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
-                        {
-                            logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
-                                          store.getKey() );
-                            return true;
-                        }
+                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                      store.getKey() );
+                        return true;
                     }
-                    catch ( UnknownHostException ue )
-                    {
-                        logger.warn( "Failed to filter remote: {}, ip fetch error: {}.", store.getKey(), ue.getMessage() );
-                    }
-
-                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
-                                  store.getKey(), ipForTargetUrl );
+                }
+                catch ( UnknownHostException ue )
+                {
+                    logger.warn( "Failed to filter remote: {}, ip fetch error: {}.", store.getKey(), ue.getMessage() );
                 }
 
+                logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                              store.getKey(), ipForTargetUrl );
 
             return false;
         } ).collect(Collectors.toList());
@@ -525,7 +519,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                                    final boolean includeGroups, final boolean recurseGroups) throws IndyDataException
     {
 
-        if ( groupRepo == null || groupRepo.isDisabled() && Boolean.TRUE.equals(this.enabled) )
+        if ( groupRepo == null || groupRepo.isDisabled() && enabled )
         {
             return result;
         }
@@ -556,7 +550,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     else
                     {
                         final ArtifactStore store = dataManager.getArtifactStore( key );
-                        if (store != null && !(store.isDisabled() && Boolean.TRUE.equals( this.enabled )))
+                        if ( store != null && ( store.isDisabled() != enabled ) )
                         {
                             result.add( store );
                         }

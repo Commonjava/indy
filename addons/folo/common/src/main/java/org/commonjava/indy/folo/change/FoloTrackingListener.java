@@ -252,6 +252,10 @@ public class FoloTrackingListener
                         contentDigester.digest( affectedStore, path, eventMetadata );
 
                 Map<ContentDigest, String> digests = artifactData.getDigests();
+                if ( digests.isEmpty() )
+                {
+                    throw new IndyWorkflowException("Cannot get the digest info for the transfer: %s/%s", affectedStore, path);
+                }
                 //TODO: As localUrl needs a apiBaseUrl which is from REST service context, to avoid deep propagate
                 //      of it, this step will be done in REST layer. Will think better way in the future.
                 entry = new TrackedContentEntry( trackingKey, affectedStore, accessChannel, remoteUrl, path, effect,
