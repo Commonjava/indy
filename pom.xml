@@ -83,7 +83,7 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
     <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
-    <o11yphantVersion>1.5</o11yphantVersion>
+    <o11yphantVersion>1.6-SNAPSHOT</o11yphantVersion>
     <swaggerVersion>1.6.6</swaggerVersion>
     <agroalVersion>1.16</agroalVersion>
 

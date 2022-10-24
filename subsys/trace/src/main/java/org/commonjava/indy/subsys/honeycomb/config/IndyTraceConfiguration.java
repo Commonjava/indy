@@ -63,6 +63,8 @@ public class IndyTraceConfiguration
 
     private static final String OTEL_GRPC_HEADERS = "otel.grpc.headers";
 
+    private static final String OTEL_GRPC_RESOURCES = "otel.grpc.resources";
+
     private static final String FIELDS = "fields";
 
     private static final String BASE_SAMPLE_RATE = "base.sample.rate";
@@ -87,7 +89,7 @@ public class IndyTraceConfiguration
 
     private Integer baseSampleRate;
 
-    private Map<String, Integer> spanRates = new HashMap<>();
+    private final Map<String, Integer> spanRates = new HashMap<>();
 
     private Set<String> fields;
 
@@ -97,7 +99,9 @@ public class IndyTraceConfiguration
 
     private String grpcUri;
 
-    private Map<String, String> grpcHeaders = new HashMap<>();
+    private final Map<String, String> grpcHeaders = new HashMap<>();
+
+    private final Map<String, String> grpcResources = new HashMap<>();
 
     public IndyTraceConfiguration()
     {
@@ -176,6 +180,13 @@ public class IndyTraceConfiguration
                       .filter( kv -> kv.length > 1 )
                       .forEach( kv -> grpcHeaders.put( kv[0].trim(), kv[1].trim() ) );
                 break;
+            case OTEL_GRPC_RESOURCES:
+                String[] resKvs = value.trim().split( "," );
+                Stream.of( resKvs )
+                      .map( kv -> kv.trim().split( "=" ) )
+                      .filter( kv -> kv.length > 1 )
+                      .forEach( kv -> grpcResources.put( kv[0].trim(), kv[1].trim() ) );
+                break;
             default:
                 if ( name.startsWith( SAMPLE_PREFIX ) && name.length() > SAMPLE_PREFIX.length() )
                 {
@@ -249,6 +260,10 @@ public class IndyTraceConfiguration
         return grpcHeaders;
     }
 
+    @Override
+    public Map<String, String> getResources(){
+        return grpcResources;
+    }
     @Override
     public String getGrpcEndpointUri()
     {
