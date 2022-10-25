@@ -14,11 +14,12 @@ import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 
 @ApplicationScoped
-public class MetadataServiceKafkaProducer {
+public class MetadataServiceKafkaProducer implements KafkaEventProducer {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
     static String bootstrapServers = "127.0.0.1:9092";
     private KafkaProducer kafkaProducer;
@@ -39,6 +40,7 @@ public class MetadataServiceKafkaProducer {
 
         public void send() throws IOException {
             doKafkaSend("first topic ", "hello world");
+
         }
 
         public void doKafkaSend( String topic , String message ) throws IOException {
