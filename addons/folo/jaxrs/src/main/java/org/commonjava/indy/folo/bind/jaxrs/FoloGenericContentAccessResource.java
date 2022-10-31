@@ -124,6 +124,24 @@ public class FoloGenericContentAccessResource
                            @PathParam( "path" ) final String path, @Context final HttpServletRequest request,
                            @Context final UriInfo uriInfo )
     {
+        return doGetArtifact( id, type, name, path, request, uriInfo );
+    }
+
+    @ApiOperation( "Retrieve and track file/artifact content under the given artifact store (type/name) and path." )
+    @ApiResponses( { @ApiResponse( code=404, message = "Content is not available" ),
+            @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
+    @GET
+    @Path( "/" )
+    public Response doGet( @ApiParam( "User-assigned tracking session key" ) @PathParam( "id" ) final String id,
+                           @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
+                           final String type, @PathParam( "name" ) final String name, @Context final HttpServletRequest request,
+                           @Context final UriInfo uriInfo )
+    {
+        return doGetArtifact( id, type, name, "/", request, uriInfo );
+    }
+
+    private Response doGetArtifact(String id, String type, String name, String path, HttpServletRequest request, UriInfo uriInfo)
+    {
         final TrackingKey tk = new TrackingKey( id );
         final String baseUri = uriInfo.getBaseUriBuilder().path( BASE_PATH ).path( id ).build().toString();
 

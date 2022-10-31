@@ -88,6 +88,7 @@ import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvis
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.*;
 
+@SuppressWarnings( "unused" )
 @ApplicationScoped
 public class DefaultGalleyStorageProvider
 {
@@ -226,17 +227,13 @@ public class DefaultGalleyStorageProvider
             if ( metricsConfig.isPathDBMetricsEnabled() )
             {
                 final String operations = metricsConfig.getPathDBMetricsOperations();
-                logger.info( "Create measured PathDB, operations: {}" );
+                logger.info( "Create measured PathDB, operations: {}", operations );
                 pathDB = new MeasuredPathDB( pathDB, metricsManager, getSupername( "pathDB" ) )
                 {
                     @Override
                     protected boolean isMetricEnabled( String metricName )
                     {
-                        if ( isBlank( operations ) || operations.contains( metricName ) )
-                        {
-                            return true;
-                        }
-                        return false;
+                        return isBlank( operations ) || operations.contains( metricName );
                     }
                 };
             }
