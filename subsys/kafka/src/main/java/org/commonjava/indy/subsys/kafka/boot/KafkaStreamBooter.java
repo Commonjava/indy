@@ -71,8 +71,8 @@ public class KafkaStreamBooter
             serviceEventHandler.dispatchEvent( stream, topic );
         }
         Properties props = setKafkaProps();
-        final KafkaStreams streams = new KafkaStreams( builder.build(), props );
-        try
+
+        try (final KafkaStreams streams = new KafkaStreams( builder.build(), props ))
         {
             streams.start();
         }
