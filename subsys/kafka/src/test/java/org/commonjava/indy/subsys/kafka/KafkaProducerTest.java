@@ -1,20 +1,17 @@
 package org.commonjava.indy.subsys.kafka;
 
-import jnr.ffi.annotations.Meta;
 
-
-import org.commonjava.indy.subsys.kafka.handler.MetadataServiceKafkaProducer;
-import org.commonjava.indy.subsys.kafka.handler.RepoServiceEventHandler;
-import org.commonjava.indy.subsys.kafka.util.LogbackFormatter;
-import org.junit.Ignore;
+import io.reactivex.Completable;
+import org.commonjava.indy.subsys.kafka.handler.KafkaEventProducer;
 import org.junit.Test;
 
 import java.io.IOException;
 
 public class KafkaProducerTest  {
     @Test
-    public void fff() throws IOException {
-        MetadataServiceKafkaProducer producer = new MetadataServiceKafkaProducer();
-        producer.send();
+    public void sendMessageTest() throws IOException {
+        KafkaEventProducer kafkaEventProducer = new KafkaEventProducer();
+        kafkaEventProducer.send();
+        kafkaEventProducer.close();
     }
 }
