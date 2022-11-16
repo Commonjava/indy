@@ -1776,12 +1776,6 @@
         <artifactId>gson</artifactId>
         <version>${gsonVersion}</version>
       </dependency>
-
-      <dependency>
-        <groupId>org.commonjava.indy.service</groupId>
-        <artifactId>indy-event-model</artifactId>
-        <version>1.0-SNAPSHOT</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 
