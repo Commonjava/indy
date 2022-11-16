@@ -18,7 +18,9 @@ package org.commonjava.indy.subsys.kafka.event;
 public enum TopicType
 {
 
-    STORE_EVENT( "store-event" );
+    STORE_EVENT( "store-event" ),
+
+    PROMOTE_COMPLETE_EVENT( "promote-complete-event" );
 
     private final String name;
 

@@ -30,6 +30,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.util.Properties;
 
@@ -41,7 +42,7 @@ public class KafkaStreamBooter
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    ServiceEventHandler serviceEventHandler;
+    Instance<ServiceEventHandler> serviceEventHandlers;
 
     @Inject
     private KafkaConfig config;
@@ -68,8 +69,15 @@ public class KafkaStreamBooter
         for ( String topic : config.getTopics() )
         {
             KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
-            serviceEventHandler.dispatchEvent( stream, topic );
+            for (ServiceEventHandler handler : serviceEventHandlers)
+            {
+                if ( handler.canHandle(topic) )
+                {
+                    handler.dispatchEvent( stream, topic );
+                }
+            }
         }
+
         Properties props = setKafkaProps();
 
         try (final KafkaStreams streams = new KafkaStreams( builder.build(), props ))

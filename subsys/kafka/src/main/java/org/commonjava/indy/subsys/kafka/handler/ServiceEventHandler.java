@@ -28,4 +28,6 @@ public interface ServiceEventHandler
      * @param topic Specific topic configured in kafka.conf
      */
     void dispatchEvent( KStream<String, String> streams, String topic ) throws IndyLifecycleException;
+
+    boolean canHandle(String topic);
 }

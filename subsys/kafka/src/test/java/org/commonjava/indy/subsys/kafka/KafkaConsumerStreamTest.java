@@ -15,7 +15,7 @@ import org.commonjava.event.store.StoreEventType;
 import org.commonjava.event.store.StorePostUpdateEvent;
 import org.commonjava.event.store.StoreUpdateType;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
-import org.commonjava.indy.subsys.kafka.event.DefualtIndyStoreEvent;
+import org.commonjava.indy.subsys.kafka.event.DefaultIndyStoreEvent;
 import org.commonjava.indy.subsys.kafka.handler.RepoServiceEventHandler;
 import org.junit.After;
 import org.junit.Before;
@@ -78,7 +78,7 @@ public class KafkaConsumerStreamTest
         String output = outputTopic.readValue();
         assertNotNull( output );
 
-        DefualtIndyStoreEvent storeEvent = mapper.readValue( output, DefualtIndyStoreEvent.class );
+        DefaultIndyStoreEvent storeEvent = mapper.readValue( output, DefaultIndyStoreEvent.class );
         org.commonjava.maven.galley.event.EventMetadata metadata = handler.convertEventMetadata( storeEvent );
 
         assertThat( metadata.getPackageType(), equalTo( "maven" ) );
