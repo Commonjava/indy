@@ -35,7 +35,7 @@ import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.subsys.kafka.event.DefualtIndyStoreEvent;
+import org.commonjava.indy.subsys.kafka.event.DefaultIndyStoreEvent;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,17 +69,19 @@ public class RepoServiceEventHandler
     private ObjectMapper mapper;
 
     @Override
+    public boolean canHandle(String topic)
+    {
+        return topic.equals(STORE_EVENT.getName());
+    }
+
+    @Override
     public void dispatchEvent( KStream<String, String> streams, String topic )
     {
-        if ( !topic.equals( STORE_EVENT.getName() ) )
-        {
-            return;
-        }
         logger.trace( "Using {} as the event dispatcher", dispatcher.getClass().getName() );
         streams.foreach( ( key, value ) -> {
             try
             {
-                final DefualtIndyStoreEvent storeEvent = mapper.readValue( value, DefualtIndyStoreEvent.class );
+                final DefaultIndyStoreEvent storeEvent = mapper.readValue( value, DefaultIndyStoreEvent.class );
                 logger.info( "Start the consumer streaming for event type {}", storeEvent.getEventType().name() );
                 final Map<EventStoreKey, ArtifactStore> storeMap = getStoreMap( storeEvent );
                 final ArtifactStore[] stores = storeMap.values().toArray( new ArtifactStore[0] );
@@ -176,7 +178,7 @@ public class RepoServiceEventHandler
         } );
     }
 
-    private Map<EventStoreKey, ArtifactStore> getStoreMap( DefualtIndyStoreEvent storeEvent )
+    private Map<EventStoreKey, ArtifactStore> getStoreMap( DefaultIndyStoreEvent storeEvent )
             throws IndyDataException
     {
         final Map<EventStoreKey, ArtifactStore> storeMap = new HashMap<>();
@@ -210,7 +212,7 @@ public class RepoServiceEventHandler
                              eventStoreKey.getStoreName() );
     }
 
-    public EventMetadata convertEventMetadata( DefualtIndyStoreEvent storeEvent )
+    public EventMetadata convertEventMetadata( DefaultIndyStoreEvent storeEvent )
     {
         org.commonjava.event.common.EventMetadata metadata = storeEvent.getEventMetadata();
         final EventMetadata eventMetadata = new EventMetadata( metadata.getPackageType() );
