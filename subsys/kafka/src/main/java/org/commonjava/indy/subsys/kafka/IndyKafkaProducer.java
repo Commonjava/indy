@@ -15,9 +15,13 @@
  */
 package org.commonjava.indy.subsys.kafka;
 
+import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
 import org.commonjava.indy.subsys.kafka.conf.LogKafkaConfig;
 import org.commonjava.indy.subsys.kafka.util.LogbackFormatter;
 import org.slf4j.Logger;
@@ -41,7 +45,7 @@ public class IndyKafkaProducer
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
-    private LogKafkaConfig config;
+    private KafkaConfig config;
 
     private KafkaProducer kafkaProducer;
 
@@ -71,7 +75,9 @@ public class IndyKafkaProducer
         if ( config.isEnabled() )
         {
             Properties props = new Properties();
-            props.putAll( config.getConfiguration() );
+            props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers());
+            props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ObjectMapperSerializer.class.getName());
             kafkaProducer = new KafkaProducer<>( props );
         }
     }
