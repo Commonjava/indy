@@ -74,7 +74,7 @@
     <kafkaVersion>3.1.1</kafkaVersion>
     <logbackVersion>1.2.9</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
-    <weldVersion>2.4.6.Final</weldVersion>
+    <weldVersion>3.1.9.Final</weldVersion>
     <jacksonVersion>2.13.3</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
@@ -1378,7 +1378,8 @@
       <dependency>
         <groupId>org.codehaus.groovy</groupId>
         <artifactId>groovy-all</artifactId>
-        <version>2.4.21</version>
+        <version>3.0.13</version>
+        <type>pom</type>
       </dependency>
 
       <dependency>
@@ -1407,13 +1408,12 @@
       <!-- Support for manually embedding CDI when needed -->
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
-        <artifactId>weld-se-core</artifactId>
+        <artifactId>weld-se-shaded</artifactId>
         <version>${weldVersion}</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.weld.se</groupId>
-        <artifactId>weld-se</artifactId>
+        <artifactId>weld-se-core</artifactId>
         <version>${weldVersion}</version>
         <scope>test</scope>
       </dependency>
@@ -1983,6 +1983,7 @@
             <reuseForks>false</reuseForks>
             <redirectTestOutputToFile>${test-redirectOutput}</redirectTestOutputToFile>
             <forkCount>${it-forkCount}</forkCount>
+            <forkedProcessTimeoutInSeconds>300</forkedProcessTimeoutInSeconds>
             <reportsDirectory>${failsafe.report.dir}</reportsDirectory>
             <argLine>-Djdk.attach.allowAttachSelf=true</argLine>
             <!--             <rerunFailingTestsCount>1</rerunFailingTestsCount> -->
