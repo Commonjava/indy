@@ -39,7 +39,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se-core</artifactId>
+      <artifactId>weld-se-shaded</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>
