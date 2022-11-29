@@ -22,8 +22,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
-import org.commonjava.indy.subsys.kafka.conf.LogKafkaConfig;
-import org.commonjava.indy.subsys.kafka.util.LogbackFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,11 +62,6 @@ public class IndyKafkaProducer
         }
     };
 
-    public IndyKafkaProducer( Properties properties )
-    {
-        this.kafkaProducer = new KafkaProducer<>( properties );
-    }
-
     @PostConstruct
     private void init()
     {
@@ -86,49 +79,32 @@ public class IndyKafkaProducer
      * Non-blocking send. The message will not be really available to consumers until flush()
      * or close() is called, or until another blocking send is called.
      */
-    public void send( String topic, String message ) throws IOException
+    public void send( String topic, Object message ) throws IOException
     {
-        send( topic, message, null );
+        doKafkaSend( topic, message );
     }
 
-    /**
-     * Non-blocking send with a logback formatter to format the message.
-     */
-    public void send( String topic, String message, LogbackFormatter formatter ) throws IOException
-    {
-        doKafkaSend( topic, message, formatter );
-    }
 
     /**
      * Blocking send. The message will be available to consumers immediately. Wait for at most the given time
      * for the operation to complete.
      */
-    public void send( String topic, String message, long timeoutMillis )
+    public void send( String topic, Object message, long timeoutMillis )
                     throws IOException, InterruptedException, ExecutionException, TimeoutException
     {
-        send( topic, message, null, timeoutMillis );
-    }
-
-    /**
-     * Blocking send with a logback formatter to format the message.
-     */
-    public void send( String topic, String message, LogbackFormatter formatter, long timeoutMillis )
-                    throws IOException, InterruptedException, ExecutionException, TimeoutException
-    {
-        Future future = doKafkaSend( topic, message, formatter );
+        Future future = doKafkaSend( topic, message );
         if ( future != null )
         {
             future.get( timeoutMillis, TimeUnit.MILLISECONDS );
         }
     }
 
-    //
-    private Future doKafkaSend( String topic, String message, LogbackFormatter formatter ) throws IOException
+    private Future doKafkaSend( String topic, Object message ) throws IOException
     {
         if ( kafkaProducer != null )
         {
-            ProducerRecord<String, String> producerRecord =
-                            new ProducerRecord<>( topic, formatter != null ? formatter.format( message ) : message );
+            ProducerRecord<String, Object> producerRecord =
+                            new ProducerRecord<>( topic, message );
 
             return kafkaProducer.send( producerRecord, callback );
         }

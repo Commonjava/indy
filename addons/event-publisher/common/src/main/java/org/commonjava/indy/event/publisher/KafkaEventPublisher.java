@@ -26,10 +26,12 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Date;
 
+@ApplicationScoped
 public class KafkaEventPublisher
                 implements FileEventPublisher
 {
@@ -146,7 +148,7 @@ public class KafkaEventPublisher
     {
         try
         {
-            kafkaProducer.send( kafkaConfig.getFileEventTopic(), objectMapper.writeValueAsString( fileEvent ), 60000 );
+            kafkaProducer.send( kafkaConfig.getFileEventTopic(), fileEvent, 60000 );
         }
         catch ( Throwable e )
         {
