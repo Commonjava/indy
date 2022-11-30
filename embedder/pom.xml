@@ -514,17 +514,17 @@
           <configuration>
             <dependenciesToScan>
               <dependency>org.commonjava.indy:indy-ftests-core</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>
+              <!--<dependency>org.commonjava.indy:indy-ftests-dot-maven</dependency>-->
               <dependency>org.commonjava.indy:indy-ftests-folo</dependency>
               <dependency>org.commonjava.indy:indy-ftests-httprox</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>
+              <!--<dependency>org.commonjava.indy:indy-ftests-implied-repos</dependency>-->
               <dependency>org.commonjava.indy:indy-ftests-promote</dependency>
               <dependency>org.commonjava.indy:indy-ftests-diagnostics</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>
+              <!--<dependency>org.commonjava.indy:indy-ftests-hosted-by-archive</dependency>-->
               <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>
-              <dependency>org.commonjava.indy:indy-ftests-changelog</dependency>
+              <!--<dependency>org.commonjava.indy:indy-ftests-changelog</dependency>-->
               <dependency>org.commonjava.indy:indy-ftests-repo-proxy</dependency>
             </dependenciesToScan>
             <jvm>${JAVA_11_HOME}/bin/java</jvm>
