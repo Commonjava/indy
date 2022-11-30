@@ -82,7 +82,7 @@
     <honeycombVersion>1.5.1</honeycombVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.7.2</datastaxVersion>
-    <pathmappedStorageVersion>2.1</pathmappedStorageVersion>
+    <pathmappedStorageVersion>2.2</pathmappedStorageVersion>
     <o11yphantVersion>1.7</o11yphantVersion>
     <swaggerVersion>1.6.6</swaggerVersion>
     <agroalVersion>1.16</agroalVersion>
