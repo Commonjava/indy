@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.DefaultCacheManager;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -36,7 +37,11 @@ import java.util.Collection;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-@Category( CassandraTest.class )
+/**
+ * This test is very unstable and cause a lot pr build failures. As we have deprecated scheduler, I @ignore this test too.
+ * ruhan Nov 25, 2022
+ */
+@Ignore
 public class ScheduleTest
 {
 
