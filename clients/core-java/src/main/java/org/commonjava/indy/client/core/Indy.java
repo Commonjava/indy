@@ -26,6 +26,7 @@ import org.commonjava.indy.client.core.module.IndyStoresClientModule;
 import org.commonjava.indy.inject.IndyVersioningProvider;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.stats.IndyVersioning;
+import org.commonjava.o11yphant.trace.TracerConfiguration;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 
@@ -170,13 +171,14 @@ public class Indy
      * @deprecated - since 3.1.0, we have new {@link Builder} to set up the indy client, so please use it instead in future
      */
     @Deprecated
-    public Indy( SiteConfig location, PasswordManager passwordManager, IndyObjectMapper objectMapper, IndyClientModule... modules )
+    public Indy( SiteConfig location, PasswordManager passwordManager, IndyObjectMapper objectMapper,
+                 IndyClientModule... modules )
             throws IndyClientException
     {
         loadApiVersion();
-        this.http = new IndyClientHttp( passwordManager,
-                                        objectMapper == null ? new IndyObjectMapper( true ) : objectMapper, location,
-                                        getApiVersion() );
+        this.http =
+                new IndyClientHttp( passwordManager, objectMapper == null ? new IndyObjectMapper( true ) : objectMapper,
+                                    location, getApiVersion() );
 
         this.moduleRegistry = new HashSet<>();
 
@@ -188,7 +190,7 @@ public class Indy
         }
     }
 
-    private Indy(final Set<IndyClientModule> modules)
+    private Indy( final Set<IndyClientModule> modules )
     {
         loadApiVersion();
         this.moduleRegistry = new HashSet<>();
@@ -213,6 +215,8 @@ public class Indy
         private IndyClientAuthenticator authenticator;
 
         private Map<String, String> mdcCopyMappings;
+
+        private TracerConfiguration existedTraceConfig;
 
         private Builder()
         {
@@ -249,6 +253,12 @@ public class Indy
             return this;
         }
 
+        public Builder setExistedTraceConfig( TracerConfiguration existedTraceConfig )
+        {
+            this.existedTraceConfig = existedTraceConfig;
+            return this;
+        }
+
         public Builder setAuthenticator( IndyClientAuthenticator authenticator )
         {
             this.authenticator = authenticator;
@@ -265,7 +275,7 @@ public class Indy
                 throws IndyClientException
         {
             Set<IndyClientModule> modules = this.moduleRegistry == null ? new HashSet<>() : this.moduleRegistry;
-            final Indy indy = new Indy(modules);
+            final Indy indy = new Indy( modules );
             if ( this.objectMapper == null )
             {
                 this.objectMapper = new IndyObjectMapper( true );
@@ -276,6 +286,7 @@ public class Indy
                                       .setApiVersion( indy.getApiVersion() )
                                       .setLocation( this.location )
                                       .setPasswordManager( this.passwordManager )
+                                      .setExistedTraceConfig( this.existedTraceConfig )
                                       .setMdcCopyMappings( this.mdcCopyMappings )
                                       .setObjectMapper( this.objectMapper )
                                       .build();
