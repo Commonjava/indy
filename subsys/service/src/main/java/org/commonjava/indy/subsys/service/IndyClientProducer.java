@@ -65,6 +65,11 @@ public class IndyClientProducer
 
         try
         {
+            final Indy.Builder builder = Indy.builder()
+                                             .setLocation( config )
+                                             .setObjectMapper( new IndyObjectMapper( Collections.emptySet() ) )
+                                             .setMdcCopyMappings( Collections.emptyMap() )
+                                             .setModules( modules.toArray( new IndyClientModule[0] ) );
             if ( serviceConfig.isAuthEnabled() )
             {
                 IndyClientAuthenticator authenticator =
@@ -72,13 +77,11 @@ public class IndyClientProducer
                                                         serviceConfig.getKeycloakAuthRealm(),
                                                         serviceConfig.getKeycloakClientId(),
                                                         serviceConfig.getKeycloakClientSecret() );
-                client = new Indy( config, authenticator, new IndyObjectMapper( Collections.emptySet() ),
-                                   Collections.emptyMap(), modules.toArray( new IndyClientModule[0] ) );
+                client = builder.setAuthenticator( authenticator ).build();
             }
             else
             {
-                client = new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( Collections.emptySet() ),
-                                   modules.toArray( new IndyClientModule[0] ) );
+                client = builder.setPasswordManager( new MemoryPasswordManager() ).build();
             }
 
         }

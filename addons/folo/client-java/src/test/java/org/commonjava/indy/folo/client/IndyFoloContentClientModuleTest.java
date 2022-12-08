@@ -17,6 +17,7 @@ package org.commonjava.indy.folo.client;
 
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.client.core.IndyClientHttp;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
@@ -44,7 +45,10 @@ public class IndyFoloContentClientModuleTest
             throws IndyClientException
     {
         module = new IndyFoloContentClientModule();
-        indy = new Indy( server.formatUrl( "api" ), module ).connect();
+        indy = Indy.builder()
+                   .setLocation( IndyClientHttp.defaultSiteConfig( server.formatUrl( "api" ) ) )
+                   .setModules( module )
+                   .build();
     }
 
     @Test

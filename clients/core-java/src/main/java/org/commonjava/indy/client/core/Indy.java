@@ -39,13 +39,14 @@ import java.util.Set;
 
 import static org.commonjava.indy.IndyRequestConstants.HEADER_COMPONENT_ID;
 
+@SuppressWarnings( "unused" )
 public class Indy
         implements Closeable
 {
 
     private String apiVersion;
 
-    private final IndyClientHttp http;
+    private IndyClientHttp http;
 
     private final Set<IndyClientModule> moduleRegistry;
 
@@ -53,7 +54,7 @@ public class Indy
     public Indy( final String baseUrl, final IndyClientModule... modules )
             throws IndyClientException
     {
-        this( null, null, Arrays.asList( modules ), IndyClientHttp.defaultSiteConfig( baseUrl ));
+        this( null, null, Arrays.asList( modules ), IndyClientHttp.defaultSiteConfig( baseUrl ) );
     }
 
     @Deprecated
@@ -114,27 +115,31 @@ public class Indy
             throws IndyClientException
     {
         this( location, authenticator, mapper,
-              modules == null ? new IndyClientModule[0] : modules.toArray( new IndyClientModule[modules.size()] ) );
+              modules == null ? new IndyClientModule[0] : modules.toArray( new IndyClientModule[0] ) );
     }
 
     @Deprecated
-    public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper, final IndyClientModule... modules )
-    throws IndyClientException
+    public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
+                 final IndyClientModule... modules )
+            throws IndyClientException
     {
-        this(location, authenticator, mapper, Collections.emptyMap(), modules);
+        this( location, authenticator, mapper, Collections.emptyMap(), modules );
     }
 
     /**
      *
-     * @param location
-     * @param authenticator
-     * @param mapper
+     * @param location -
+     * @param authenticator -
+     * @param mapper -
      * @param mdcCopyMappings a map of fields to copy from LoggingMDC to http request headers where key=MDCMey and value=headerName
-     * @param modules
-     * @throws IndyClientException
+     * @param modules -
+     * @throws IndyClientException -
+     * @deprecated - since 3.1.0, we have new {@link Builder} to set up the indy client, so please use it instead in future
      */
-    public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper, final Map<String, String> mdcCopyMappings, final IndyClientModule... modules )
-    throws IndyClientException
+    @Deprecated
+    public Indy( final SiteConfig location, final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
+                 final Map<String, String> mdcCopyMappings, final IndyClientModule... modules )
+            throws IndyClientException
     {
         loadApiVersion();
         this.http = new IndyClientHttp( authenticator, mapper == null ? new IndyObjectMapper( true ) : mapper, location,
@@ -148,14 +153,23 @@ public class Indy
             module.setup( this, http );
             moduleRegistry.add( module );
         }
+
     }
 
+    /**
+     * @deprecated - since 3.1.0, we have new {@link Builder} to set up the indy client, so please use it instead in future
+     */
+    @Deprecated
     public Indy( SiteConfig location, PasswordManager passwordManager, IndyClientModule... modules )
             throws IndyClientException
     {
         this( location, passwordManager, null, modules );
     }
 
+    /**
+     * @deprecated - since 3.1.0, we have new {@link Builder} to set up the indy client, so please use it instead in future
+     */
+    @Deprecated
     public Indy( SiteConfig location, PasswordManager passwordManager, IndyObjectMapper objectMapper, IndyClientModule... modules )
             throws IndyClientException
     {
@@ -171,6 +185,107 @@ public class Indy
         {
             module.setup( this, http );
             moduleRegistry.add( module );
+        }
+    }
+
+    private Indy(final Set<IndyClientModule> modules)
+    {
+        loadApiVersion();
+        this.moduleRegistry = new HashSet<>();
+        moduleRegistry.addAll( modules );
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static final class Builder
+    {
+        private Set<IndyClientModule> moduleRegistry;
+
+        private PasswordManager passwordManager;
+
+        private SiteConfig location;
+
+        private IndyObjectMapper objectMapper;
+
+        private IndyClientAuthenticator authenticator;
+
+        private Map<String, String> mdcCopyMappings;
+
+        private Builder()
+        {
+        }
+
+        public Builder setModules( Set<IndyClientModule> modules )
+        {
+            this.moduleRegistry = modules;
+            return this;
+        }
+
+        public Builder setModules( IndyClientModule... modules )
+        {
+            this.moduleRegistry = new HashSet<>();
+            Collections.addAll( moduleRegistry, modules );
+            return this;
+        }
+
+        public Builder setPasswordManager( PasswordManager passwordManager )
+        {
+            this.passwordManager = passwordManager;
+            return this;
+        }
+
+        public Builder setLocation( SiteConfig location )
+        {
+            this.location = location;
+            return this;
+        }
+
+        public Builder setObjectMapper( IndyObjectMapper objectMapper )
+        {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        public Builder setAuthenticator( IndyClientAuthenticator authenticator )
+        {
+            this.authenticator = authenticator;
+            return this;
+        }
+
+        public Builder setMdcCopyMappings( Map<String, String> mdcCopyMappings )
+        {
+            this.mdcCopyMappings = mdcCopyMappings;
+            return this;
+        }
+
+        public Indy build()
+                throws IndyClientException
+        {
+            Set<IndyClientModule> modules = this.moduleRegistry == null ? new HashSet<>() : this.moduleRegistry;
+            final Indy indy = new Indy(modules);
+            if ( this.objectMapper == null )
+            {
+                this.objectMapper = new IndyObjectMapper( true );
+            }
+
+            indy.http = IndyClientHttp.builder()
+                                      .setAuthenticator( this.authenticator )
+                                      .setApiVersion( indy.getApiVersion() )
+                                      .setLocation( this.location )
+                                      .setPasswordManager( this.passwordManager )
+                                      .setMdcCopyMappings( this.mdcCopyMappings )
+                                      .setObjectMapper( this.objectMapper )
+                                      .build();
+            indy.setupStandardModules();
+            for ( final IndyClientModule module : this.moduleRegistry )
+            {
+                module.setup( indy, indy.http );
+            }
+
+            return indy;
         }
     }
 
@@ -225,7 +340,7 @@ public class Indy
     }
 
     public IndyMaintenanceClientModule maint()
-             throws IndyClientException
+            throws IndyClientException
     {
         return module( IndyMaintenanceClientModule.class );
     }
@@ -307,7 +422,7 @@ public class Indy
         return apiVersion;
     }
 
-    private void loadApiVersion() throws IndyClientException
+    private void loadApiVersion()
     {
         this.apiVersion = new IndyVersioningProvider().getVersioningInstance().getApiVersion();
     }

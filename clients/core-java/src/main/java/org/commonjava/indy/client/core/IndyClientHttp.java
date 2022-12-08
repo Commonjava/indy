@@ -79,7 +79,7 @@ import static org.commonjava.indy.client.core.metric.ClientMetricConstants.HEADE
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
 import static org.commonjava.indy.stats.IndyVersioning.HEADER_INDY_API_VERSION;
 
-
+@SuppressWarnings( "unused" )
 public class IndyClientHttp
         implements Closeable
 {
@@ -91,7 +91,7 @@ public class IndyClientHttp
 
     private final SiteConfig location;
 
-    private final HttpFactoryIfc factory;
+    private HttpFactoryIfc factory;
 
     private final String baseUrl;
 
@@ -103,31 +103,40 @@ public class IndyClientHttp
 
     /**
      *
-     * @param authenticator
-     * @param mapper
-     * @param location
-     * @param apiVersion
+     * @param authenticator -
+     * @param mapper -
+     * @param location -
+     * @param apiVersion -
      * @param mdcCopyMappings a map of fields to copy from LoggingMDC to http request headers where key=MDCMey and value=headerName
-     * @throws IndyClientException
+     * @throws IndyClientException -
+     * @deprecated - since 3.1.0, we have introduced new {@link Builder} to set this up, so please try to use it
      */
+    @Deprecated
     public IndyClientHttp( final IndyClientAuthenticator authenticator, final IndyObjectMapper mapper,
                            SiteConfig location, String apiVersion, Map<String, String> mdcCopyMappings )
             throws IndyClientException
     {
-        this.objectMapper = mapper;
-        this.location = location;
-        baseUrl = location.getUri();
+        this( mapper, location, apiVersion );
         this.mdcCopyMappings = mdcCopyMappings;
-        checkBaseUrl( baseUrl );
-        addApiVersionHeader( apiVersion );
-        initUserAgent( apiVersion );
-
         metricManager = new ClientMetricManager( location );
         factory = new SpanningHttpFactory( new HttpFactory( authenticator ), metricManager.getTraceManager() );
     }
 
-    public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper,
-                           SiteConfig location, String apiVersion )
+    /**
+     * @deprecated - since 3.1.0, we have introduced new {@link Builder} to set this up, so please try to use it
+     */
+    @Deprecated
+    public IndyClientHttp( final PasswordManager passwordManager, final IndyObjectMapper mapper, SiteConfig location,
+                           String apiVersion )
+            throws IndyClientException
+    {
+        this( mapper, location, apiVersion );
+
+        metricManager = new ClientMetricManager( location );
+        factory = new SpanningHttpFactory( new HttpFactory( passwordManager ), metricManager.getTraceManager() );
+    }
+
+    private IndyClientHttp( final IndyObjectMapper mapper, SiteConfig location, String apiVersion )
             throws IndyClientException
     {
         this.objectMapper = mapper;
@@ -136,9 +145,106 @@ public class IndyClientHttp
         checkBaseUrl( baseUrl );
         addApiVersionHeader( apiVersion );
         initUserAgent( apiVersion );
+    }
 
-        metricManager = new ClientMetricManager( location );
-        factory = new SpanningHttpFactory( new HttpFactory( passwordManager ), metricManager.getTraceManager() );
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
+    public static final class Builder
+    {
+        private PasswordManager passwordManager;
+
+        private IndyClientAuthenticator authenticator;
+
+        private IndyObjectMapper objectMapper;
+
+        private SiteConfig location;
+
+        private String apiVersion;
+
+        private Map<String, String> mdcCopyMappings;
+
+        private Builder()
+        {
+        }
+
+        public Builder setPasswordManager( PasswordManager passwordManager )
+        {
+            this.passwordManager = passwordManager;
+            return this;
+        }
+
+        public Builder setAuthenticator( IndyClientAuthenticator authenticator )
+        {
+            this.authenticator = authenticator;
+            return this;
+        }
+
+        public Builder setObjectMapper( IndyObjectMapper objectMapper )
+        {
+            this.objectMapper = objectMapper;
+            return this;
+        }
+
+        public Builder setLocation( SiteConfig location )
+        {
+            this.location = location;
+            return this;
+        }
+
+        public Builder setApiVersion( String apiVersion )
+        {
+            this.apiVersion = apiVersion;
+            return this;
+        }
+
+        public Builder setMdcCopyMappings( Map<String, String> mdcCopyMappings )
+        {
+            this.mdcCopyMappings = mdcCopyMappings;
+            return this;
+        }
+
+        public IndyClientHttp build()
+                throws IndyClientException
+        {
+            if ( StringUtils.isBlank( this.apiVersion ) )
+            {
+                throw new IllegalArgumentException( "Missing API version!" );
+            }
+            if ( this.objectMapper == null )
+            {
+                throw new IllegalArgumentException( "Missing ObjectMapper!" );
+            }
+            if ( this.location == null )
+            {
+                throw new IllegalArgumentException( "Missing SiteConfig for setting configurations!" );
+            }
+
+            final IndyClientHttp client = new IndyClientHttp( this.objectMapper, this.location, this.apiVersion );
+
+            if ( this.mdcCopyMappings != null && !this.mdcCopyMappings.isEmpty() )
+            {
+                client.mdcCopyMappings = this.mdcCopyMappings;
+            }
+
+            HttpFactory factory;
+            if ( this.authenticator != null )
+            {
+                factory = new HttpFactory( this.authenticator );
+            }
+            else
+            {
+                factory = new HttpFactory( this.passwordManager );
+            }
+
+            ClientMetricManager metricManager =  new ClientMetricManager( location );
+            client.metricManager = metricManager;
+            client.factory = new SpanningHttpFactory( factory, metricManager.getTraceManager() );
+
+            return client;
+        }
     }
 
     private void initUserAgent( final String apiVersion )
@@ -148,7 +254,8 @@ public class IndyClientHttp
 
         String indyVersion = new IndyVersioningProvider().getVersioningInstance().getVersion();
 
-        addDefaultHeader( "User-Agent", String.format("Indy/%s (api: %s) via %s", indyVersion, apiVersion, hcUserAgent ) );
+        addDefaultHeader( "User-Agent",
+                          String.format( "Indy/%s (api: %s) via %s", indyVersion, apiVersion, hcUserAgent ) );
     }
 
     private String addClientTraceHeader()
@@ -167,7 +274,8 @@ public class IndyClientHttp
         }
     }
 
-    private void checkBaseUrl( String baseUrl ) throws IndyClientException
+    private void checkBaseUrl( String baseUrl )
+            throws IndyClientException
     {
         try
         {
@@ -203,7 +311,6 @@ public class IndyClientHttp
         return head( path, HttpStatus.SC_OK );
     }
 
-
     public Map<String, String> head( final String path, final int... responseCodes )
             throws IndyClientException
     {
@@ -215,7 +322,7 @@ public class IndyClientHttp
         ClientMetrics metrics = metricManager.register( request );
         try
         {
-            addLoggingMDCToHeaders(request);
+            addLoggingMDCToHeaders( request );
             client = newClient();
             response = client.execute( request, newContext() );
 
@@ -262,7 +369,6 @@ public class IndyClientHttp
     {
         HttpGet request = newJsonGet( buildUrl( baseUrl, path ) );
         ClientMetrics metrics = metricManager.register( request );
-        
 
         connect();
 
@@ -271,7 +377,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(request);
+            addLoggingMDCToHeaders( request );
             response = client.execute( request, newContext() );
 
             final StatusLine sl = response.getStatusLine();
@@ -312,7 +418,6 @@ public class IndyClientHttp
     {
         HttpGet request = newJsonGet( buildUrl( baseUrl, path ) );
         ClientMetrics metrics = metricManager.register( request );
-        
 
         connect();
         CloseableHttpResponse response = null;
@@ -320,7 +425,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(request);
+            addLoggingMDCToHeaders( request );
             response = client.execute( request, newContext() );
             logger.trace( "Get request url path: {}, url host: {}", request.getURI().getPath(),
                           request.getURI().getHost() );
@@ -359,7 +464,7 @@ public class IndyClientHttp
 
         connect();
 
-        addLoggingMDCToHeaders(req);
+        addLoggingMDCToHeaders( req );
         CloseableHttpResponse response = null;
         try
         {
@@ -398,7 +503,7 @@ public class IndyClientHttp
         CloseableHttpResponse response = null;
         try
         {
-            addLoggingMDCToHeaders(req);
+            addLoggingMDCToHeaders( req );
             if ( headers != null )
             {
                 headers.forEach( req::setHeader );
@@ -416,7 +521,7 @@ public class IndyClientHttp
         finally
         {
             metrics.registerEnd( response );
-//            metrics.close();
+            //            metrics.close();
             // DO NOT CLOSE!!!! We're handing off control of the response to the caller!
             //            closeQuietly( response );
         }
@@ -436,7 +541,7 @@ public class IndyClientHttp
 
         connect();
 
-        addLoggingMDCToHeaders(put);
+        addLoggingMDCToHeaders( put );
         final CloseableHttpClient client = newClient();
         CloseableHttpResponse response = null;
         try
@@ -496,7 +601,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(put);
+            addLoggingMDCToHeaders( put );
 
             put.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -530,7 +635,7 @@ public class IndyClientHttp
 
         connect();
 
-        addLoggingMDCToHeaders(request);
+        addLoggingMDCToHeaders( request );
         CloseableHttpResponse response = null;
         try
         {
@@ -552,6 +657,7 @@ public class IndyClientHttp
         }
     }
 
+    @SuppressWarnings( "UnusedReturnValue" )
     public HttpResources postRaw( final String path, Object value )
             throws IndyClientException
     {
@@ -570,7 +676,7 @@ public class IndyClientHttp
         CloseableHttpResponse response = null;
         try
         {
-            addLoggingMDCToHeaders(req);
+            addLoggingMDCToHeaders( req );
             if ( headers != null )
             {
                 for ( String key : headers.keySet() )
@@ -630,7 +736,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(post);
+            addLoggingMDCToHeaders( post );
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -693,7 +799,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(post);
+            addLoggingMDCToHeaders( post );
 
             post.setEntity( new StringEntity( objectMapper.writeValueAsString( value ) ) );
 
@@ -733,7 +839,7 @@ public class IndyClientHttp
      * clean just the cached file (storage of groups and remote repos)
      */
     public void deleteCache( final String path )
-                    throws IndyClientException
+            throws IndyClientException
     {
         delete( path + "?" + CHECK_CACHE_ONLY + "=true" );
     }
@@ -757,7 +863,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(delete);
+            addLoggingMDCToHeaders( delete );
 
             response = client.execute( delete, newContext() );
             final StatusLine sl = response.getStatusLine();
@@ -799,7 +905,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(delete);
+            addLoggingMDCToHeaders( delete );
             delete.setHeader( ArtifactStore.METADATA_CHANGELOG, changelog );
 
             response = client.execute( delete, newContext() );
@@ -854,7 +960,7 @@ public class IndyClientHttp
         try
         {
             client = newClient();
-            addLoggingMDCToHeaders(request);
+            addLoggingMDCToHeaders( request );
 
             response = client.execute( request, newContext() );
             final StatusLine sl = response.getStatusLine();
@@ -1017,18 +1123,19 @@ public class IndyClientHttp
         return null;
     }
 
-    private void addLoggingMDCToHeaders(HttpRequestBase request)
+    private void addLoggingMDCToHeaders( HttpRequestBase request )
     {
         Map<String, String> context = MDC.getCopyOfContextMap();
-        if (context == null) {
+        if ( context == null )
+        {
             return;
         }
-        for (Map.Entry<String, String> mdcKeyHeaderKey : mdcCopyMappings.entrySet())
+        for ( Map.Entry<String, String> mdcKeyHeaderKey : mdcCopyMappings.entrySet() )
         {
-            String mdcValue = context.get(mdcKeyHeaderKey.getKey());
-            if (!StringUtils.isEmpty(mdcValue))
+            String mdcValue = context.get( mdcKeyHeaderKey.getKey() );
+            if ( !StringUtils.isEmpty( mdcValue ) )
             {
-                request.addHeader(mdcKeyHeaderKey.getValue(), mdcValue);
+                request.addHeader( mdcKeyHeaderKey.getValue(), mdcValue );
             }
         }
     }
