@@ -147,8 +147,12 @@ public abstract class AbstractIndyFunctionalTest
         SiteConfig config = new SiteConfigBuilder( "indy", fixture.getUrl() ).withRequestTimeoutSeconds( 60 ).build();
         Collection<IndyClientModule> modules = getAdditionalClientModules();
 
-        return new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( getAdditionalMapperModules() ),
-                         modules.toArray(new IndyClientModule[modules.size()]) );
+        return Indy.builder()
+                   .setLocation( config )
+                   .setPasswordManager( new MemoryPasswordManager() )
+                   .setObjectMapper( new IndyObjectMapper( getAdditionalMapperModules() ) )
+                   .setModules( modules.toArray( new IndyClientModule[0] ) )
+                   .build();
     }
 
     protected float getTestEnvironmentTimeoutMultiplier()
@@ -196,7 +200,7 @@ public abstract class AbstractIndyFunctionalTest
             throws IndyLifecycleException
     {
         CassandraClient cassandraClient = CDI.current().select( CassandraClient.class ).get();
-        dropKeyspace( "cache_" , cassandraClient);
+        dropKeyspace( "cache_", cassandraClient );
         dropKeyspace( "storage_", cassandraClient );
         dropKeyspace( "schedule_", cassandraClient );
         dropKeyspace( "store_", cassandraClient );
@@ -244,7 +248,7 @@ public abstract class AbstractIndyFunctionalTest
         {
             logger.error( e.getMessage(), e );
         }
-        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
+        CacheProvider cacheProvider = CDI.current().select( CacheProvider.class ).get();
         cacheProvider.asAdminView().gc();
     }
 
@@ -265,8 +269,8 @@ public abstract class AbstractIndyFunctionalTest
         return fixture;
     }
 
-
-    protected <T> T lookup( Class<T> component )    {
+    protected <T> T lookup( Class<T> component )
+    {
         return CDI.current().select( component ).get();
     }
 
@@ -284,41 +288,40 @@ public abstract class AbstractIndyFunctionalTest
             throws IOException
     {
         writeConfigFile( "conf.d/default.conf", "[default]\ncache.keyspace=" + getKeyspace( "cache_" )
-                        + "\naffected.groups.exclude=^build-\\d+"
-                        + "\nrepository.filter.enabled=true\nga-cache.store.pattern=^build-\\d+" );
-        writeConfigFile( "conf.d/storage.conf", "[storage-default]\n"
-                        + "storage.dir=" + fixture.getBootOptions().getHomeDir() + "/var/lib/indy/storage\n"
-                        + "storage.gc.graceperiodinhours=0\n"
-                        + "storage.gc.batchsize=0\n"
-                        + "storage.cassandra.keyspace=" + getKeyspace( "storage_" ) );
+                + "\naffected.groups.exclude=^build-\\d+"
+                + "\nrepository.filter.enabled=true\nga-cache.store.pattern=^build-\\d+" );
+        writeConfigFile( "conf.d/storage.conf",
+                         "[storage-default]\n" + "storage.dir=" + fixture.getBootOptions().getHomeDir()
+                                 + "/var/lib/indy/storage\n" + "storage.gc.graceperiodinhours=0\n"
+                                 + "storage.gc.batchsize=0\n" + "storage.cassandra.keyspace=" + getKeyspace(
+                                 "storage_" ) );
 
         writeConfigFile( "conf.d/cassandra.conf", "[cassandra]\nenabled=true" );
-        writeConfigFile( "conf.d/store-manager.conf", "[store-manager]\n"
-                    + "store.manager.keyspace=" + getKeyspace("store_") + "_stores\nstore.manager.replica=1");
+        writeConfigFile( "conf.d/store-manager.conf",
+                         "[store-manager]\n" + "store.manager.keyspace=" + getKeyspace( "store_" )
+                                 + "_stores\nstore.manager.replica=1" );
 
-        writeConfigFile( "conf.d/scheduledb.conf", "[scheduledb]\nschedule.keyspace=" + getKeyspace("schedule_" )
-                        + "_scheduler\nschedule.keyspace.replica=1\n"
-                        + "schedule.partition.range=3600000\nschedule.rate.period=3" );
+        writeConfigFile( "conf.d/scheduledb.conf", "[scheduledb]\nschedule.keyspace=" + getKeyspace( "schedule_" )
+                + "_scheduler\nschedule.keyspace.replica=1\n"
+                + "schedule.partition.range=3600000\nschedule.rate.period=3" );
 
+        writeConfigFile( "conf.d/durable-state.conf",
+                         "[durable-state]\n" + "folo.storage=infinispan\n" + "store.storage=infinispan\n"
+                                 + "schedule.storage=infinispan" );
 
-        writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
-                        + "folo.storage=infinispan\n"
-                        + "store.storage=infinispan\n"
-                        + "schedule.storage=infinispan");
+        writeConfigFile( "conf.d/kafka.conf",
+                         "[kafka]\n" + "enabled=true\n" + "kafka.bootstrap.servers=127.0.0.1:9092\n"
+                                 + "kafka.topics=store-event\n" + "kafka.group=kstreams-group" );
 
-        writeConfigFile( "conf.d/kafka.conf", "[kafka]\n"
-                        + "enabled=true\n"
-                        + "kafka.bootstrap.servers=127.0.0.1:9092\n"
-                        + "kafka.topics=store-event\n"
-                        + "kafka.group=kstreams-group");
-
-        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo" + "\ntrack.group.content=True");
+        writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true" + "\nfolo.cassandra.keyspace=folo"
+                + "\ntrack.group.content=True" );
 
         if ( isSchedulerEnabled() )
         {
             writeConfigFile( "conf.d/scheduledb.conf", readTestResource( "default-test-scheduledb.conf" ) );
             writeConfigFile( "conf.d/threadpools.conf", "[threadpools]\nenabled=false" );
-            writeConfigFile( "conf.d/internal-features.conf", "[_internal]\nstore.validation.enabled=false\nstore.auto.disable.reenable=true\n" );
+            writeConfigFile( "conf.d/internal-features.conf",
+                             "[_internal]\nstore.validation.enabled=false\nstore.auto.disable.reenable=true\n" );
             writeConfigFile( "conf.d/durable-state.conf", readTestResource( "default-durable-state.conf" ) );
         }
         else
@@ -349,7 +352,7 @@ public abstract class AbstractIndyFunctionalTest
     }
 
     protected InputStream readTestResourceAsStream( String resource )
-                    throws IOException
+            throws IOException
     {
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( resource );
     }
@@ -376,22 +379,24 @@ public abstract class AbstractIndyFunctionalTest
         FileUtils.write( file, contents );
     }
 
-    protected void copyToDataFile( String resourcePath, String path ) throws IOException
+    protected void copyToDataFile( String resourcePath, String path )
+            throws IOException
     {
         File file = new File( dataDir, path );
         logger.info( "Writing data file to: {}, from: {}", file, resourcePath );
         file.getParentFile().mkdirs();
         FileUtils.copyInputStreamToFile(
-                        Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
     }
 
-    protected void copyToConfigFile( String resourcePath, String path ) throws IOException
+    protected void copyToConfigFile( String resourcePath, String path )
+            throws IOException
     {
         File file = new File( etcDir, path );
         logger.info( "Writing data file to: {}, from: {}", file, resourcePath );
         file.getParentFile().mkdirs();
         FileUtils.copyInputStreamToFile(
-                        Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
+                Thread.currentThread().getContextClassLoader().getResourceAsStream( resourcePath ), file );
     }
 
     protected Collection<Module> getAdditionalMapperModules()
