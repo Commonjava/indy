@@ -22,6 +22,7 @@ import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.module.IndyStoreQueryClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.subsys.honeycomb.config.IndyTraceConfiguration;
 import org.commonjava.indy.subsys.service.config.RepositoryServiceConfig;
 import org.commonjava.indy.subsys.service.inject.ServiceClient;
 import org.commonjava.indy.subsys.service.keycloak.KeycloakTokenAuthenticator;
@@ -43,7 +44,12 @@ public class IndyClientProducer
     private Indy client;
 
     @Inject
-    private RepositoryServiceConfig serviceConfig;
+    RepositoryServiceConfig serviceConfig;
+
+    @Inject
+    IndyTraceConfiguration indyTraceConfig;
+
+    @SuppressWarnings( "unused" )
 
     protected IndyClientProducer()
     {
@@ -68,6 +74,7 @@ public class IndyClientProducer
             final Indy.Builder builder = Indy.builder()
                                              .setLocation( config )
                                              .setObjectMapper( new IndyObjectMapper( Collections.emptySet() ) )
+                                             .setExistedTraceConfig( indyTraceConfig )
                                              .setMdcCopyMappings( Collections.emptyMap() )
                                              .setModules( modules.toArray( new IndyClientModule[0] ) );
             if ( serviceConfig.isAuthEnabled() )

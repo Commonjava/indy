@@ -47,6 +47,7 @@ import org.commonjava.indy.inject.IndyVersioningProvider;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.o11yphant.jhttpc.SpanningHttpFactory;
+import org.commonjava.o11yphant.trace.TracerConfiguration;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.HttpFactoryIfc;
 import org.commonjava.util.jhttpc.JHttpCException;
@@ -164,6 +165,8 @@ public class IndyClientHttp
 
         private String apiVersion;
 
+        private TracerConfiguration existedTraceConfig;
+
         private Map<String, String> mdcCopyMappings;
 
         private Builder()
@@ -199,6 +202,13 @@ public class IndyClientHttp
             this.apiVersion = apiVersion;
             return this;
         }
+
+        public Builder setExistedTraceConfig( TracerConfiguration existedTraceConfig )
+        {
+            this.existedTraceConfig = existedTraceConfig;
+            return this;
+        }
+
 
         public Builder setMdcCopyMappings( Map<String, String> mdcCopyMappings )
         {
@@ -239,7 +249,16 @@ public class IndyClientHttp
                 factory = new HttpFactory( this.passwordManager );
             }
 
-            ClientMetricManager metricManager =  new ClientMetricManager( location );
+            ClientMetricManager metricManager;
+            if ( this.existedTraceConfig != null )
+            {
+                metricManager = new ClientMetricManager( this.existedTraceConfig );
+            }
+            else
+            {
+                metricManager = new ClientMetricManager( location );
+            }
+
             client.metricManager = metricManager;
             client.factory = new SpanningHttpFactory( factory, metricManager.getTraceManager() );
 
