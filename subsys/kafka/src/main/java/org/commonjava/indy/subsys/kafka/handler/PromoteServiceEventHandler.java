@@ -59,10 +59,10 @@ public class PromoteServiceEventHandler
     {
         logger.debug( "Dispatch event for {}", this.getClass() );
         stream.foreach( ( key, value ) -> {
-            PathsPromoteCompleteEvent promoteCompleteEvent;
+            PathsPromoteCompleteEvent completeEvent;
             try
             {
-                promoteCompleteEvent = mapper.readValue( value, PathsPromoteCompleteEvent.class );
+                completeEvent = mapper.readValue( value, PathsPromoteCompleteEvent.class );
             }
             catch (JsonProcessingException e)
             {
@@ -70,26 +70,34 @@ public class PromoteServiceEventHandler
                 return;
             }
 
-            logger.info("Handling promote complete event: {}", promoteCompleteEvent);
-            StoreKey storeKey = StoreKey.fromString( promoteCompleteEvent.getTargetStore() );
-            ArtifactStore store;
+            logger.info("Handling promote complete event: {}", completeEvent);
+            final StoreKey sourceStoreKey = StoreKey.fromString( completeEvent.getSourceStore() );
+            final StoreKey targetStoreKey = StoreKey.fromString( completeEvent.getTargetStore() );
+            final ArtifactStore targetStore, sourceStore;
             try
             {
-                store = ( (ServiceStoreDataManager) storeDataManager ).getArtifactStore( storeKey, true );
-                if ( store == null )
+                sourceStore = ( (ServiceStoreDataManager) storeDataManager ).getArtifactStore( sourceStoreKey, true );
+                targetStore = ( (ServiceStoreDataManager) storeDataManager ).getArtifactStore( targetStoreKey, true );
+                if ( sourceStore == null || targetStore == null )
                 {
-                    logger.error( "Failed to fetch store {}", storeKey );
+                    logger.error( "Failed to fetch stores, sourceStore: {}, targetStore: {}", sourceStore, targetStore );
                     return;
                 }
             }
             catch (IndyDataException e)
             {
-                logger.error( "Failed to fetch store {}", storeKey, e );
+                logger.error( "Failed to fetch stores", e );
                 return;
             }
 
-            // clearStoreNFC, null will force querying the affected groups
-            promotionHelper.clearStoreNFC( promoteCompleteEvent.getCompletedPaths(), store, null );
+            // clear store NFC, null will force querying the affected groups
+            promotionHelper.clearStoreNFC( completeEvent.getCompletedPaths(), targetStore, null );
+
+            // when purging source, we also clean source affected groups
+            if ( completeEvent.isPurgeSource() )
+            {
+                promotionHelper.clearStoreNFC( completeEvent.getCompletedPaths(), sourceStore, null );
+            }
         } );
     }
 
