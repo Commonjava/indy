@@ -31,6 +31,9 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static org.commonjava.indy.subsys.kafka.event.TopicType.PROMOTE_COMPLETE_EVENT;
 
 @ApplicationScoped
@@ -90,15 +93,27 @@ public class PromoteServiceEventHandler
                 return;
             }
 
+            Set<String> clearPaths = new HashSet();
+            addClearPaths(clearPaths, completeEvent.getCompletedPaths());
+            addClearPaths(clearPaths, completeEvent.getSkippedPaths());
+
             // clear store NFC, null will force querying the affected groups
-            promotionHelper.clearStoreNFC( completeEvent.getCompletedPaths(), targetStore, null );
+            promotionHelper.clearStoreNFC( clearPaths, targetStore, null );
 
             // when purging source, we also clean source affected groups
             if ( completeEvent.isPurgeSource() )
             {
-                promotionHelper.clearStoreNFC( completeEvent.getCompletedPaths(), sourceStore, null );
+                promotionHelper.clearStoreNFC( clearPaths, sourceStore, null );
             }
         } );
+    }
+
+    private void addClearPaths(Set<String> clearPaths, Set<String> paths)
+    {
+        if ( paths != null )
+        {
+            clearPaths.addAll(paths);
+        }
     }
 
 }
