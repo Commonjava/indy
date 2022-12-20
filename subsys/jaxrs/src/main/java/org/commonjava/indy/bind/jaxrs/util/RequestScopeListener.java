@@ -41,10 +41,12 @@ public class RequestScopeListener
         @SuppressWarnings( "unchecked" )
         final Map<String, Object> instanceMap = (Map<String, Object>) req.getAttribute( CDI_INSTANCE_MAP );
         final BoundRequestContext ctx = (BoundRequestContext) req.getAttribute( CDI_CONTEXT );
-
-        ctx.invalidate();
-        ctx.deactivate();
-        ctx.dissociate( instanceMap );
+        if ( ctx != null )
+        {
+            ctx.invalidate();
+            ctx.deactivate();
+            ctx.dissociate( instanceMap );
+        }
 
         req.removeAttribute( CDI_CONTEXT );
         req.removeAttribute( CDI_INSTANCE_MAP );
