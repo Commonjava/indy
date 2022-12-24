@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb;
+package org.commonjava.indy.subsys.trace;
 
-import org.commonjava.indy.subsys.honeycomb.config.IndyTraceConfiguration;
+import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
 import org.commonjava.indy.subsys.metrics.IndyTrafficClassifier;
 import org.commonjava.o11yphant.honeycomb.HoneycombTracePlugin;
 import org.commonjava.o11yphant.otel.OtelTracePlugin;
@@ -23,7 +23,6 @@ import org.commonjava.o11yphant.trace.SpanFieldsDecorator;
 import org.commonjava.o11yphant.trace.TraceManager;
 import org.commonjava.o11yphant.trace.spi.O11yphantTracePlugin;
 import org.commonjava.o11yphant.trace.spi.SpanFieldsInjector;
-import org.commonjava.o11yphant.trace.thread.ThreadTracingContext;
 import org.commonjava.o11yphant.trace.thread.TraceThreadContextualizer;
 import org.commonjava.propulsor.config.ConfigurationException;
 import org.slf4j.Logger;

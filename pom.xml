@@ -80,6 +80,7 @@
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.9</httpclientVersion>
     <honeycombVersion>1.5.1</honeycombVersion>
+    <otelInstrumentationVersion>1.19.0-alpha</otelInstrumentationVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.11.3</datastaxVersion>
     <pathmappedStorageVersion>2.2</pathmappedStorageVersion>
@@ -1609,6 +1610,18 @@
         <artifactId>metrics-elasticsearch-reporter</artifactId>
         <version>2.2.0</version>
       </dependency>
+      <!-- This is used for kafka tracing -->
+      <dependency>
+        <groupId>io.opentelemetry.instrumentation</groupId>
+        <artifactId>opentelemetry-kafka-clients-2.6</artifactId>
+        <version>${otelInstrumentationVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-sdk-extension-autoconfigure</artifactId>
+        <version>${otelInstrumentationVersion}</version>
+      </dependency>
+      <!-- kafka tracing end -->
       <dependency>
         <groupId>org.apache.kafka</groupId>
         <artifactId>kafka-clients</artifactId>

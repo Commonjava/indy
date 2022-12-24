@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb.config;
+package org.commonjava.indy.subsys.trace.config;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.indy.subsys.honeycomb.TracerPlugin;
+import org.commonjava.indy.subsys.trace.TracerPlugin;
 import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
 import org.commonjava.o11yphant.otel.OtelConfiguration;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
