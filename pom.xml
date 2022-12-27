@@ -84,14 +84,14 @@
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.11.3</datastaxVersion>
     <pathmappedStorageVersion>2.2</pathmappedStorageVersion>
-    <o11yphantVersion>1.8-SNAPSHOT</o11yphantVersion>
+    <o11yphantVersion>1.8</o11yphantVersion>
     <swaggerVersion>1.6.6</swaggerVersion>
     <agroalVersion>1.16</agroalVersion>
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.11-SNAPSHOT</galleyVersion>
-    <weftVersion>1.21-SNAPSHOT</weftVersion>
+    <galleyVersion>1.11</galleyVersion>
+    <weftVersion>1.21</weftVersion>
     <bomVersion>28</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
