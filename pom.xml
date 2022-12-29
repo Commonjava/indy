@@ -853,7 +853,7 @@
       <dependency>
         <groupId>org.commonjava.indy.service</groupId>
         <artifactId>indy-event-model</artifactId>
-        <version>1.0</version>
+        <version>1.2-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.slf4j</groupId>

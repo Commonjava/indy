@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.subsys.kafka;
 
-import io.quarkus.kafka.client.serialization.ObjectMapperSerializer;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -29,7 +28,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -37,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
+@SuppressWarnings( { "unused", "rawtypes" } )
 @ApplicationScoped
 public class IndyKafkaProducer
 {
@@ -70,7 +69,7 @@ public class IndyKafkaProducer
             Properties props = new Properties();
             props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers());
             props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-            props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, ObjectMapperSerializer.class.getName());
+            props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaObjectMapperSerializer.class.getName());
             kafkaProducer = new KafkaProducer<>( props );
         }
     }
@@ -79,7 +78,7 @@ public class IndyKafkaProducer
      * Non-blocking send. The message will not be really available to consumers until flush()
      * or close() is called, or until another blocking send is called.
      */
-    public void send( String topic, Object message ) throws IOException
+    public void send( String topic, Object message )
     {
         doKafkaSend( topic, message );
     }
@@ -90,7 +89,7 @@ public class IndyKafkaProducer
      * for the operation to complete.
      */
     public void send( String topic, Object message, long timeoutMillis )
-                    throws IOException, InterruptedException, ExecutionException, TimeoutException
+                    throws InterruptedException, ExecutionException, TimeoutException
     {
         Future future = doKafkaSend( topic, message );
         if ( future != null )
@@ -99,7 +98,8 @@ public class IndyKafkaProducer
         }
     }
 
-    private Future doKafkaSend( String topic, Object message ) throws IOException
+    @SuppressWarnings( "unchecked" )
+    private Future doKafkaSend( String topic, Object message )
     {
         if ( kafkaProducer != null )
         {
@@ -123,7 +123,7 @@ public class IndyKafkaProducer
     }
 
     @PreDestroy
-    public void close() throws IOException
+    public void close()
     {
         if ( kafkaProducer != null )
         {
