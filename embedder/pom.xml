@@ -123,6 +123,7 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-dot-maven-jaxrs</artifactId>
     </dependency>
+    <!--
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-revisions-jaxrs</artifactId>
@@ -131,6 +132,7 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-revisions-common</artifactId>
     </dependency>
+    -->
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-diagnostics-jaxrs</artifactId>

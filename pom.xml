@@ -289,6 +289,7 @@
         <scope>provided</scope>
       </dependency>
 
+      <!--
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-revisions-jaxrs</artifactId>
@@ -315,6 +316,7 @@
         <classifier>uiset</classifier>
         <scope>provided</scope>
       </dependency>
+      -->
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-common</artifactId>
@@ -449,11 +451,13 @@
         <artifactId>indy-subsys-http</artifactId>
         <version>3.1.0-SNAPSHOT</version>
       </dependency>
+      <!--
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-git</artifactId>
         <version>3.1.0-SNAPSHOT</version>
       </dependency>
+      -->
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-groovy</artifactId>
@@ -1327,11 +1331,13 @@
         <version>${webdavVersion}</version>
       </dependency>
 
+      <!--
       <dependency>
         <groupId>org.eclipse.jgit</groupId>
         <artifactId>org.eclipse.jgit</artifactId>
         <version>3.4.1.201406201815-r</version>
       </dependency>
+      -->
 
       <dependency>
         <groupId>org.apache.commons</groupId>
