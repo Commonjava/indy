@@ -18,12 +18,14 @@ package org.commonjava.indy.subsys.template;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.test.utils.WeldJUnit4Runner;
 import org.commonjava.indy.subsys.template.fixture.ScriptedThingOwner;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -46,7 +48,11 @@ public class ScriptEngineTest
                                         .getContextClassLoader()
                                         .getResourceAsStream( "test-scripts/simple-injection.groovy" ))
         {
-            String scriptSrc = IOUtils.toString( stream );
+            if ( stream == null )
+            {
+                Assert.fail( "Stream is null" );
+            }
+            String scriptSrc = IOUtils.toString( stream, Charset.defaultCharset() );
             ScriptedThingOwner owner =
                     scriptEngine.parseScriptInstance( scriptSrc, ScriptedThingOwner.class, true );
 
@@ -63,7 +69,11 @@ public class ScriptEngineTest
                                         .getContextClassLoader()
                                         .getResourceAsStream( "test-scripts/simple-injection.groovy" ))
         {
-            String scriptSrc = IOUtils.toString( stream );
+            if ( stream == null )
+            {
+                Assert.fail( "Stream is null" );
+            }
+            String scriptSrc = IOUtils.toString( stream, Charset.defaultCharset() );
             ScriptedThingOwner owner =
                     scriptEngine.parseScriptInstance( scriptSrc, ScriptedThingOwner.class, false );
 
@@ -80,7 +90,11 @@ public class ScriptEngineTest
                                         .getContextClassLoader()
                                         .getResourceAsStream( "test-scripts/simple-injection.groovy" ))
         {
-            String scriptSrc = IOUtils.toString( stream );
+            if ( stream == null )
+            {
+                Assert.fail( "Stream is null" );
+            }
+            String scriptSrc = IOUtils.toString( stream, Charset.defaultCharset() );
             ScriptedThingOwner owner =
                     scriptEngine.parseScriptInstance( scriptSrc, ScriptedThingOwner.class );
 
