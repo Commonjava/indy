@@ -68,7 +68,7 @@
     <resteasyVersion>3.0.12.Final</resteasyVersion>
     <undertowVersion>2.2.19.Final</undertowVersion>
     <xnioVersion>3.8.2.Final</xnioVersion>
-    <keycloakVersion>7.0.1</keycloakVersion>
+    <keycloakVersion>20.0.3</keycloakVersion>
     <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.13</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
